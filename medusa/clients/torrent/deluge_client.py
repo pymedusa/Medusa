@@ -9,17 +9,14 @@ import logging
 from base64 import b64encode
 
 from medusa import app
-
 from medusa.clients.torrent.generic import GenericClient
-
 from medusa.helpers import (
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
+    is_media_file,
 )
-
 from medusa.logger.adapters.style import BraceAdapter
-
 from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -41,6 +38,8 @@ def read_torrent_status(torrent_data):
         for i in details['files']:
             # Check if media was processed
             # OR check hash in case of RARed torrents
+            if not is_media_file(i['path']):
+                continue
             if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
                 to_remove = True
 
@@ -468,10 +467,9 @@ class DelugeAPI(GenericClient):
                 return
             else:
                 torrent_data = self.response.json()['result']
-                self.read_torrent_status(torrent_data)
-                # Commented for now
-                # for info_hash in to_remove:
-                #    self.remove_torrent(info_hash)
+                info_hash_to_remove = read_torrent_status(torrent_data)
+                for info_hash in info_hash_to_remove:
+                    self.remove_torrent(info_hash)
 
 
 api = DelugeAPI

@@ -6,9 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
-
-from dateutil import parser
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -52,7 +49,7 @@ class ShanaProjectProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -62,8 +59,8 @@ class ShanaProjectProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if self.show and not self.show.is_anime:
-            return results
+
+        search_params = {}
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -82,8 +79,8 @@ class ShanaProjectProvider(TorrentProvider):
 
                 page = 1
                 while page and page <= self.max_pages:
-                    response = self.get_url(
-                        self.urls['search'].format(page=page), params=search_params, returns='response'
+                    response = self.session.get(
+                        self.urls['search'].format(page=page), params=search_params
                     )
                     if not response or not response.text:
                         log.debug('No data returned from provider')
@@ -111,7 +108,7 @@ class ShanaProjectProvider(TorrentProvider):
 
             torrent_rows = html('div', class_='release_block')
             if len(torrent_rows) < 2:
-                return
+                return items
 
             for row in torrent_rows[1:]:
 
@@ -128,8 +125,8 @@ class ShanaProjectProvider(TorrentProvider):
                     download_url = urljoin(self.url, download_url)
 
                     # Provider does not support seeders or leechers.
-                    seeders = -1
-                    leechers = -1
+                    seeders = 1
+                    leechers = 0
 
                     torrent_size = first_cell.find('div', class_='release_size').get_text()
                     match_size = ShanaProjectProvider.size_regex.match(torrent_size)
@@ -138,8 +135,8 @@ class ShanaProjectProvider(TorrentProvider):
                     except AttributeError:
                         size = -1
 
-                    date = cells[0].find('div', class_='release_last').get_text()
-                    pubdate = parser.parse(date)
+                    pubdate_raw = cells[0].find('div', class_='release_last').get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -155,8 +152,7 @@ class ShanaProjectProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -169,7 +165,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -181,7 +177,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

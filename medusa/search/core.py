@@ -3,12 +3,9 @@
 """Search core module."""
 
 import datetime
-import errno
 import logging
 import os
 import threading
-import traceback
-from socket import timeout as socket_timeout
 
 from medusa import (
     app,
@@ -20,7 +17,6 @@ from medusa import (
     name_cache,
     notifiers,
     nzb_splitter,
-    show_name_helpers,
     ui,
 )
 from medusa.clients import torrent
@@ -46,10 +42,8 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers import sorted_provider_list
 from medusa.providers.generic_provider import GenericProvider
-
-import requests
+from medusa.show import naming
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -123,7 +117,7 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet') or result.url.endswith(u'torrent'):
+    if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
         result.resultType = u'torrent'
 
     # NZBs can be sent straight to SAB or saved to disk
@@ -144,15 +138,15 @@ def snatch_episode(result):
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
-            if not result.content and not result.url.startswith(u'magnet'):
+            if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
-                    result.content = result.provider.get_url(result.url, returns=u'content')
+                    result.content = result.provider.get_content(result.url)
 
-            if result.content or result.url.startswith(u'magnet'):
+            if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
-                log.warning(u'Torrent file content is empty')
+                log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
         log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
@@ -235,12 +229,11 @@ def snatch_episode(result):
     return True
 
 
-def pick_best_result(results, show):  # pylint: disable=too-many-branches
+def pick_best_result(results):  # pylint: disable=too-many-branches
     """
     Find the best result out of a list of search results for a show.
 
     :param results: list of result objects
-    :param show: Shows we check for
     :return: best result object
     """
     results = results if isinstance(results, list) else [results]
@@ -251,8 +244,10 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
     # find the best result for the current episode
     for cur_result in results:
-        if show and cur_result.show is not show:
-            continue
+        assert cur_result.show, 'Every SearchResult object should have a show object available at this point.'
+
+        # Every SearchResult object should have a show attribute available at this point.
+        show = cur_result.show
 
         # build the black and white list
         if show.is_anime:
@@ -265,6 +260,18 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
+            continue
+
+        wanted_ep = True
+
+        if cur_result.actual_episodes:
+            wanted_ep = False
+            for episode in cur_result.actual_episodes:
+                if show.want_episode(cur_result.actual_season, episode, cur_result.quality, cur_result.forced_search,
+                                     cur_result.download_current_quality, search_type=cur_result.search_type):
+                    wanted_ep = True
+
+        if not wanted_ep:
             continue
 
         # If doesnt have min seeders OR min leechers then discard it
@@ -284,8 +291,8 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         ignored_words = show.show_words().ignored_words
         required_words = show.show_words().required_words
-        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
-        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
+        found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
+        found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)
@@ -295,7 +302,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.info(u'Ignoring {0} based on required words filter: {1}', cur_result.name, required_words)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
+        if not naming.filter_bad_releases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, u'size'):
@@ -303,12 +310,13 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                                                                       cur_result.provider.name):
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
-        preferred_words = ''
+
+        preferred_words = []
         if app.PREFERRED_WORDS:
-            preferred_words = app.PREFERRED_WORDS.lower().split(u',')
-        undesired_words = ''
+            preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
+        undesired_words = []
         if app.UNDESIRED_WORDS:
-            undesired_words = app.UNDESIRED_WORDS.lower().split(u',')
+            undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
         if not best_result:
             best_result = cur_result
@@ -320,12 +328,6 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                 best_result = cur_result
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
-                best_result = cur_result
-            elif u'internal' in best_result.name.lower() and u'internal' not in cur_result.name.lower():
-                log.info(u'Preferring {0} (normal instead of internal)', cur_result.name)
-                best_result = cur_result
-            elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
-                log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
             if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
@@ -400,15 +402,13 @@ def wanted_episodes(show, from_date):
     return wanted
 
 
-def search_for_needed_episodes():
+def search_for_needed_episodes(force=False):
     """
     Check providers for details on wanted episodes.
 
     :return: episodes we have a search hit for
     """
     found_results = {}
-
-    did_search = False
 
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
@@ -420,7 +420,7 @@ def search_for_needed_episodes():
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
-    if not episodes:
+    if not episodes and not force:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
@@ -429,6 +429,12 @@ def search_for_needed_episodes():
     original_thread_name = threading.currentThread().name
 
     providers = enabled_providers(u'daily')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
+                    u' Please check your settings')
+        return found_results.values()
+
     log.info(u'Using daily search providers')
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
@@ -443,12 +449,6 @@ def search_for_needed_episodes():
         except AuthException as error:
             log.error(u'Authentication error: {0}', ex(error))
             continue
-        except Exception as error:
-            log.debug(traceback.format_exc())
-            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
-            continue
-
-        did_search = True
 
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
@@ -456,7 +456,7 @@ def search_for_needed_episodes():
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.series)
+            best_result = pick_best_result(cur_found_results[cur_ep])
 
             # if all results were rejected move on to the next episode
             if not best_result:
@@ -470,12 +470,6 @@ def search_for_needed_episodes():
             found_results[cur_ep] = best_result
 
     threading.currentThread().name = original_thread_name
-
-    if not did_search:
-        log.warning(
-            u'No NZB/Torrent providers found or enabled in the application config for daily searches. '
-            u'Please check your settings.'
-        )
 
     return found_results.values()
 
@@ -497,8 +491,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
     final_results = []
     manual_search_results = []
 
-    did_search = False
-
     # build name cache for show
     name_cache.build_name_cache(show)
 
@@ -506,12 +498,14 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
 
     if manual_search:
         log.info(u'Using manual search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_manualsearch]
+        providers = enabled_providers(u'manualsearch')
     else:
         log.info(u'Using backlog search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_backlog]
+        providers = enabled_providers(u'backlog')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for {0} searches.'
+                    u' Please check your settings', 'manual' if manual_search else 'backlog')
 
     threading.currentThread().name = original_thread_name
 
@@ -548,37 +542,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             except AuthException as error:
                 log.error(u'Authentication error: {0}', ex(error))
                 break
-            except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:
-                log.debug(u'HTTP error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ConnectionError as error:
-                log.debug(u'Connection error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.Timeout as error:
-                log.debug(u'Connection timed out while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ContentDecodingError as error:
-                log.debug(u'Content-Encoding was gzip, but content was not compressed while searching {0}.'
-                          u' Error: {1!r}', cur_provider.name, ex(error))
-                break
-            except Exception as error:
-                if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-                    log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
-                                cur_provider.name, ex(error))
-                else:
-                    log.debug(traceback.format_exc())
-                    log.error(u'Unknown exception while searching {0}. Error: {1!r}',
-                              cur_provider.name, ex(error))
-                break
-
-            did_search = True
 
             if search_results:
                 # make a list of all the results for this provider
@@ -630,7 +593,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         # pick the best season NZB
         best_season_result = None
         if SEASON_RESULT in found_results[cur_provider.name]:
-            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT], show)
+            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT])
 
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
@@ -731,7 +694,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.debug(u'Seeing if we want to bother with multi-episode result {0}', _multi_result.name)
 
                 # Filter result by ignore/required/whitelist/blacklist/quality, etc
-                multi_result = pick_best_result(_multi_result, show)
+                multi_result = pick_best_result(_multi_result)
                 if not multi_result:
                     continue
 
@@ -795,7 +758,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 continue
 
             # if all results were rejected move on to the next episode
-            best_result = pick_best_result(found_results[cur_provider.name][cur_ep], show)
+            best_result = pick_best_result(found_results[cur_provider.name][cur_ep])
             if not best_result:
                 continue
 
@@ -810,10 +773,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                             found = True
             if not found:
                 final_results += [best_result]
-
-    if not did_search:
-        log.warning(u'No NZB/Torrent providers found or enabled in the application config for backlog searches.'
-                    u' Please check your settings.')
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

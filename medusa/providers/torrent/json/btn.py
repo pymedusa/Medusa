@@ -17,6 +17,7 @@ from medusa import (
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import episode_num
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -59,7 +60,7 @@ class BTNProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -210,7 +211,7 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.series.indexer == 1:
+        if ep_obj.series.indexer == INDEXER_TVDBV2:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:

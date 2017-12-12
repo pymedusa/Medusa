@@ -10,10 +10,8 @@ import re
 import time
 import traceback
 import warnings
-
 from datetime import date, datetime
 import knowit
-
 from medusa import (
     app,
     db,
@@ -36,7 +34,6 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
-from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -53,6 +50,7 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
+from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (
@@ -457,8 +455,8 @@ class Episode(TV):
         if not self.is_location_valid():
             log.debug(
                 '{id}: {series} {ep} does not exist, unable to download subtitles', {
-                    'id': self.show.indexerid,
-                    'series': self.show.name,
+                    'id': self.series.indexerid,
+                    'series': self.series.name,
                     'ep': (episode_num(self.season, self.episode) or
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
@@ -855,7 +853,7 @@ class Episode(TV):
             elif self.status in (UNAIRED, UNKNOWN):
                 # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self.status = self.show.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
                     '{id}: {series} {ep} has already aired, marking it {status}', {
                         'id': self.series.indexerid,
@@ -878,7 +876,7 @@ class Episode(TV):
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + \
                     Quality.ARCHIVED + Quality.SNATCHED_BEST:
                 old_status = self.status
-                self.status = Quality.status_from_name(self.location, anime=self.show.is_anime)
+                self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
                 log.debug(
                     '{id}: {series} {ep} status changed from {old_status} to {new_status}'
                     ' as current status is not SNATCHED|DOWNLOADED|ARCHIVED', {
@@ -925,7 +923,7 @@ class Episode(TV):
         if self.location != '':
 
             if self.status == UNKNOWN and helpers.is_media_file(self.location):
-                self.status = Quality.status_from_name(self.location, anime=self.show.is_anime)
+                self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
                 log.debug(
                     '{id}: {series} {ep} status changed from UNKNOWN to {new_status}', {
                         'id': self.series.indexerid,
@@ -1073,7 +1071,7 @@ class Episode(TV):
 
     def create_meta_files(self):
         """Create episode metadata files."""
-        if not self.show.is_location_valid():
+        if not self.series.is_location_valid():
             log.warning('{id}: The series directory is missing, unable to create metadata',
                         {'id': self.series.indexerid})
             return

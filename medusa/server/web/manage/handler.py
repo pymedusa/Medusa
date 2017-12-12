@@ -163,7 +163,7 @@ class Manage(Home, WebRoot):
             b'FROM tv_episodes '
             b'WHERE showid = ? '
             b'AND season != 0 '
-            b'AND (status LIKE \'%4\' OR status LIKE \'%6\') '
+            b'AND status LIKE \'%4\' '
             b'AND location != \'\'',
             [int(indexer_id)]
         )
@@ -204,7 +204,7 @@ class Manage(Home, WebRoot):
             b'SELECT show_name, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
-            b'AND (tv_episodes.status LIKE \'%4\' OR tv_episodes.status LIKE \'%6\') '
+            b'AND tv_episodes.status LIKE \'%4\' '
             b'AND tv_episodes.season != 0 '
             b'AND tv_episodes.location != \'\' '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
@@ -258,7 +258,7 @@ class Manage(Home, WebRoot):
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b'WHERE (status LIKE \'%4\' OR status LIKE \'%6\') '
+                    b'WHERE status LIKE \'%4\' '
                     b'AND season != 0 '
                     b'AND showid = ? '
                     b'AND location != \'\'',
@@ -731,9 +731,6 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/')
 
     def manageTorrents(self):
-        t = PageTemplate(rh=self, filename='manage_torrents.mako')
-        info_download_station = ''
-
         if re.search('localhost', app.TORRENT_HOST):
 
             if app.LOCALHOST_IP == '':
@@ -749,26 +746,9 @@ class Manage(Home, WebRoot):
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
-                info_download_station = """
-                <p>
-                    To have a better experience please set the Download Station alias as <code>download</code>, you can check
-                    this setting in the Synology DSM <b>Control Panel</b> > <b>Application Portal</b>.  Make sure you allow
-                    DSM to be embedded with iFrames too in <b>Control Panel</b> > <b>DSM Settings</b> > <b>Security</b>.
-                </p>
-                <br />
-                <p>
-                    There is more information about this available <a href="https://github.com/midgetspy/Sick-Beard/pull/338">here</a>.
-                </p>
-                <br />
-                """
+                webui_url = 'https://github.com/pymedusa/Medusa/wiki/Download-Station'
 
-        if not app.TORRENT_PASSWORD == '' and not app.TORRENT_USERNAME == '':
-            webui_url = re.sub('://', '://{username}:{password}@'.format(username=app.TORRENT_USERNAME,
-                                                                         password=app.TORRENT_PASSWORD), webui_url)
-
-        return t.render(
-            webui_url=webui_url, info_download_station=info_download_station,
-            title='Manage Torrents', header='Manage Torrents', topmenu='manage')
+        return self.redirect(webui_url)
 
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')

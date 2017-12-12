@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import json
 import logging
 import traceback
 
@@ -52,7 +51,7 @@ class NorbitsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)  # only poll Norbits every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -79,8 +78,7 @@ class NorbitsProvider(TorrentProvider):
                     'search': search_string,
                 }
 
-                response = self.get_url(self.urls['search'], post_data=json.dumps(post_data),
-                                        returns='response')
+                response = self.session.post(self.urls['search'], data=post_data)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue

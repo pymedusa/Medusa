@@ -36,7 +36,7 @@ class AlphaRatioProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'http://alpharatio.cc'
+        self.url = 'https://alpharatio.cc'
         self.urls = {
             'login': urljoin(self.url, 'login.php'),
             'search': urljoin(self.url, 'torrents.php'),
@@ -54,7 +54,7 @@ class AlphaRatioProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -87,7 +87,7 @@ class AlphaRatioProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['searchstr'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -191,7 +191,7 @@ class AlphaRatioProvider(TorrentProvider):
             'remember_me': 'on',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False

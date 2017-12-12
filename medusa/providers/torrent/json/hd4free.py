@@ -47,7 +47,7 @@ class HD4FreeProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -80,7 +80,7 @@ class HD4FreeProvider(TorrentProvider):
                 else:
                     search_params['search'] = None
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue

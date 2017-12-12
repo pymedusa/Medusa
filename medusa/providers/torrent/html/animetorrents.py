@@ -61,7 +61,7 @@ class AnimeTorrentsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -71,9 +71,6 @@ class AnimeTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-
-        if self.show and not self.show.is_anime:
-            return results
 
         if not self.login():
             return results
@@ -107,7 +104,7 @@ class AnimeTorrentsProvider(TorrentProvider):
                 self.headers = headers_paged
                 for cat in self.categories:
                     search_params['cat'] = cat
-                    response = self.get_url(self.urls['search_ajax'], params=search_params, returns='response')
+                    response = self.session.get(self.urls['search_ajax'], params=search_params)
 
                     if not response or not response.text or 'Access Denied!' in response.text:
                         log.debug('No data returned from provider')
@@ -203,13 +200,12 @@ class AnimeTorrentsProvider(TorrentProvider):
             'rememberme[]': 1,
         }
 
-        request = self.get_url(self.urls['login'], returns='response')
+        request = self.session.get(self.urls['login'])
         if not hasattr(request, 'cookies'):
             log.warning('Unable to retrieve the required cookies')
             return False
 
-        response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
-                                returns='response')
+        response = self.session.post(self.urls['login'], data=login_params, cookies=request.cookies)
 
         if not response or not response.text:
             log.warning('Unable to connect to provider')

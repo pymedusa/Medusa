@@ -145,7 +145,8 @@ def sendNZB(nzb, proper=False):
                     if not nzb.provider.login():
                         return False
 
-                    data = nzb.provider.get_url(nzb.url, returns='content')
+                    # TODO: Check if this needs exception handling
+                    data = nzb.provider.session(nzb.url).content
                     if data is None:
                         return False
 

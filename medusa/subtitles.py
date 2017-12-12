@@ -26,15 +26,21 @@ import re
 import subprocess
 import time
 
-from babelfish import Language, language_converters
+from babelfish import Country, Language, LanguageReverseError, language_converters
+
 from dogpile.cache.api import NO_VALUE
+
 import knowit
+
+from medusa.subtitle_providers.utils import hash_itasa
+
 from six import iteritems, string_types, text_type
-from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
-                        scan_video)
+
+from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+
 from . import app, db, helpers, history
 from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
@@ -49,13 +55,6 @@ logger = logging.getLogger(__name__)
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
 
-provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
-provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
-
-basename = __name__.split('.')[0]
-refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
-
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
@@ -67,11 +66,11 @@ PROVIDER_URLS = {
     'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
-    'podnapisi': 'http://www.podnapisi.net',
+    'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
-    'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
-    'tvsubtitles': 'http://www.tvsubtitles.net'
+    'tvsubtitles': 'http://www.tvsubtitles.net',
+    'wizdom': 'http://wizdom.xyz'
 }
 
 
@@ -211,8 +210,22 @@ def from_ietf_code(code, unknown='und'):
     """
     try:
         return Language.fromietf(code)
-    except ValueError:
+    except (LanguageReverseError, ValueError):
         return Language(unknown) if unknown else None
+
+
+def from_country_code_to_name(code):
+    """Convert a 2 letter country code to a country name.
+
+    :param code: the 2 letter country code
+    :type code: str
+    :return: the country name
+    :rtype: str
+    """
+    try:
+        return Country(code.upper()).name
+    except ValueError:
+        return
 
 
 def name_from_code(code):
@@ -350,6 +363,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """
     subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
+        logger.error('Unable to find cached subtitle ID: %s', subtitle_id)
         return
 
     release_name = tv_episode.release_name
@@ -475,7 +489,8 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
                                    episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
 
         if app.SUBTITLES_HISTORY:
-            logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
+            logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
+                         subtitle.provider_name, subtitle.language.opensubtitles)
             history.logSubtitle(show_indexerid, season, episode, status, subtitle)
 
     # Refresh the subtitles property
@@ -701,6 +716,12 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     except ValueError as e:
         logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
     else:
+
+        # Add hash of our custom provider Itasa
+        video.size = os.path.getsize(video_path)
+        if video.size > 10485760:
+            video.hashes['itasa'] = hash_itasa(video_path)
+
         # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
@@ -710,6 +731,8 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
+
+        video.alternative_series = list(tv_episode.series.aliases)
 
         payload['video'] = video
         memory_cache.set(key, payload)
@@ -952,7 +975,7 @@ class SubtitlesFinder(object):
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
-                "AND (e.status LIKE '%4' OR e.status LIKE '%6') "
+                "AND e.status LIKE '%4' "
                 "AND e.season > 0 "
                 "AND e.location != '' "
                 "AND age {} 30 "

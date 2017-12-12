@@ -30,7 +30,8 @@ class BacklogSearchScheduler(scheduler.Scheduler):
         if self.action._last_backlog <= 1:
             return datetime.date.today()
         else:
-            return datetime.date.fromordinal(self.action._last_backlog + self.action.cycleTime)
+            backlog_frequency_in_days = int(self.action.cycleTime)
+            return datetime.date.fromordinal(self.action._last_backlog + backlog_frequency_in_days)
 
 
 class BacklogSearcher(object):
@@ -204,6 +205,6 @@ class BacklogSearcher(object):
             if force:
                 self.forced = True
             self.search_backlog()
-        except:
+        except Exception:
             self.amActive = False
             raise

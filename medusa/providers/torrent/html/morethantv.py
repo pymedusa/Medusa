@@ -59,7 +59,7 @@ class MoreThanTVProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
@@ -99,7 +99,7 @@ class MoreThanTVProvider(TorrentProvider):
 
                 search_params['searchstr'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -154,8 +154,8 @@ class MoreThanTVProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True), 1)
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''), 1)
+                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -206,7 +206,7 @@ class MoreThanTVProvider(TorrentProvider):
             'login': 'Log in',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False
@@ -235,7 +235,7 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Take a break before querying the provider again
         time.sleep(0.5)
-        response = self.get_url(urljoin(self.url, details_url), returns='response')
+        response = self.session.get(urljoin(self.url, details_url))
         if not response or not response.text:
             log.debug("Couldn't open season pack details page for title: {0}", title)
             return title

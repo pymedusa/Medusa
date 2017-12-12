@@ -49,7 +49,7 @@ class TorrentProjectProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -87,7 +87,7 @@ class TorrentProjectProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -144,7 +144,7 @@ class TorrentProjectProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = row.find('span', class_='bc cated').get_text(strip=True)
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,

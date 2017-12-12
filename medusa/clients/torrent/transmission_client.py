@@ -9,6 +9,7 @@ import logging
 import os
 import re
 from base64 import b64encode
+from datetime import datetime, timedelta
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -16,6 +17,7 @@ from medusa.helpers import (
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
+    is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -44,18 +46,22 @@ class TransmissionAPI(GenericClient):
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
 
+    def check_response(self):
+        """Check if response is a valid json and its a success one."""
+        try:
+            return self.response.json()['result'] == 'success'
+        except ValueError:
+            return False
+
     def _get_auth(self):
 
         post_data = json.dumps({
             'method': 'session-get',
         })
 
-        try:
-            self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
-                                              verify=app.TORRENT_VERIFY_CERT)
-            self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
-        except Exception:
-            return None
+        self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
+                                          verify=app.TORRENT_VERIFY_CERT)
+        self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
@@ -85,7 +91,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _add_torrent_file(self, result):
 
@@ -104,7 +110,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _set_torrent_ratio(self, result):
 
@@ -134,7 +140,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _set_torrent_seed_time(self, result):
 
@@ -153,7 +159,7 @@ class TransmissionAPI(GenericClient):
 
             self._request(method='post', data=post_data)
 
-            return self.response.json()['result'] == 'success'
+            return self.check_response()
         else:
             return True
 
@@ -180,7 +186,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
@@ -202,7 +208,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
@@ -228,7 +234,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
@@ -246,7 +252,7 @@ class TransmissionAPI(GenericClient):
         5 = Queued to seed
         6 = Seeding
 
-        isFinished = whether seeding finished (based on idle timeout or seed ratio)
+        isFinished = whether seeding finished (based on seed ratio)
         IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
         """
         log.info('Checking Transmission torrent status.')
@@ -254,7 +260,7 @@ class TransmissionAPI(GenericClient):
         return_params = {
             'fields': ['name', 'hashString', 'percentDone', 'status',
                        'isStalled', 'errorString', 'seedRatioLimit',
-                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files']
+                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files', 'activityDate']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
@@ -286,6 +292,8 @@ class TransmissionAPI(GenericClient):
             for i in torrent['files']:
                 # Check if media was processed
                 # OR check hash in case of RARed torrents
+                if not is_media_file(i['name']):
+                    continue
                 if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 
@@ -302,10 +310,17 @@ class TransmissionAPI(GenericClient):
             elif error_string and 'unregistered torrent' in error_string.lower():
                 status = 'unregistered'
             elif torrent['status'] == 0:
-                if torrent['percentDone'] == 1 and torrent.get('isFinished'):
-                    status = 'completed'
-                else:
-                    status = 'stopped'
+                status = 'stopped'
+                if torrent['percentDone'] == 1:
+                    # Check if torrent is stopped because of idle timeout
+                    seed_timed_out = False
+                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0:
+                        last_activity_date = datetime.fromtimestamp(torrent['activityDate'])
+                        seed_timed_out = (datetime.now() - timedelta(
+                            minutes=torrent['seedIdleLimit'])) > last_activity_date
+
+                    if torrent.get('isFinished') or seed_timed_out:
+                        status = 'completed'
             elif torrent['status'] == 6:
                 status = 'seeding'
 

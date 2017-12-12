@@ -47,7 +47,7 @@ class BitCannonProvider(TorrentProvider):
         cache_params = {'RSS': ['tv', 'anime']}
         self.cache = tv.Cache(self, search_params=cache_params)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -82,7 +82,7 @@ class BitCannonProvider(TorrentProvider):
 
                 search_url = urljoin(url, 'api/search')
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue

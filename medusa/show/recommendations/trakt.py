@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import time
 
 from medusa import app
 from medusa.helper.common import try_int
@@ -12,9 +11,9 @@ from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import RecommendedShow
 
-import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.exceptions import ApiException
@@ -23,50 +22,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class MissingPosterList(list):
-    """Smart custom list, with a cache expiration.
-
-    A list used to store the trakt shows that do not have a poster on tvdb. This will prevent searches for posters
-    that have recently been searched using the tvdb's api, and resulted in a 404.
-    """
-
-    def __init__(self, items=None, cache_timeout=3600, implicit_clean=False):
-        """Initialize the MissingPosterList.
-
-        :param items: Provide the initial list.
-        :param cache_timeout: Timeout after which the item expires.
-        :param implicit_clean: If enabled, run the clean() method, to check for expired items. Else you'll have to run
-        this periodically.
-        """
-        list.__init__(self, items or [])
-        self.cache_timeout = cache_timeout
-        self.implicit_clean = implicit_clean
-
-    def append(self, item):
-        """Add new items to the list."""
-        if self.implicit_clean:
-            self.clean()
-        super(MissingPosterList, self).append((int(time.time()), item))
-
-    def clean(self):
-        """Use the cache_timeout to remove expired items."""
-        new_list = [_ for _ in self if _[0] + self.cache_timeout > int(time.time())]
-        self.__init__(new_list, self.cache_timeout, self.implicit_clean)
-
-    def has(self, value):
-        """Check if the value is in the list.
-
-        We need a smarter method to check if an item is already in the list. This will return a list with items that
-        match the value.
-        :param value: The value to check for.
-        :return: A list of tuples with matches. For example: (141234234, '12342').
-        """
-        if self.implicit_clean:
-            self.clean()
-        return [_ for _ in self if _[1] == value]
-
-
-missing_posters = MissingPosterList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
+missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
 
 
 class TraktPopular(object):
@@ -78,7 +34,6 @@ class TraktPopular(object):
     def __init__(self):
         """Initialize the trakt recommended list object."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = requests.Session()
         self.recommender = "Trakt Popular"
         self.default_img_src = 'trakt-default.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
@@ -104,7 +59,8 @@ class TraktPopular(object):
         try:
             if not missing_posters.has(show_obj['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(show_obj['show']['ids']['tvdb']) or \
-                    self.tvdb_api_v2.series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+                    self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'],
+                                                                                             key_type='poster').data[0].file_name
             else:
                 log.info('CACHE: Missing poster on TVDB for show {0}', show_obj['show']['title'])
                 use_default = self.default_img_src
@@ -117,7 +73,11 @@ class TraktPopular(object):
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
 
-        rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        if image:
+            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        else:
+            rec_show.cache_image('', default=use_default)
+
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
@@ -210,6 +170,9 @@ class TraktPopular(object):
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""
+        if not os.path.exists(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder)):
+            os.makedirs(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))
+
         for image_file_name in os.listdir(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))):
             if os.path.isfile(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder, image_file_name))):
                 if str(tvdb_id) == image_file_name.split('-')[0]:
