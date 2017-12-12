@@ -148,7 +148,6 @@ class TVChaosUKProvider(TorrentProvider):
                         continue
 
                     detail_url = row.find(class_='tooltip-target').find('a')['href']
-                    print(detail_url)
                     if title.endswith('...'):
                         title = self.get_full_title(title)
 
