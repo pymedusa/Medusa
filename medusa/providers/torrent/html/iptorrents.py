@@ -117,7 +117,7 @@ class IPTorrentsProvider(TorrentProvider):
                     download_url = urljoin(self.url, row('td')[3].find('a')['href'])
                     if not all([title, download_url]):
                         continue
-                    detail_url = urljoin(self.url, row('td')[1].find('a')['href'])
+                    details_url = urljoin(self.url, row('td')[1].find('a')['href'])
                     seeders = int(row.find('td', attrs={'class': 'ac t_seeders'}).text)
                     leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
 
@@ -139,7 +139,7 @@ class IPTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'detail_url': detail_url,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

@@ -177,7 +177,7 @@ class GenericProvider(object):
                         search_result.seeders, search_result.leechers = self._get_result_info(item)
                         search_result.size = self._get_size(item)
                         search_result.pubdate = self._get_pubdate(item)
-                        search_result.detail_url = self._get_detail_url(item)
+                        search_result.details_url = self._get_details_url(item)
 
                         # This will be retrieved from the parser
                         search_result.proper_tags = ''
@@ -266,7 +266,7 @@ class GenericProvider(object):
 
             search_result.size = self._get_size(item)
             search_result.pubdate = self._get_pubdate(item)
-            search_result.detail_url = self._get_detail_url(item)
+            search_result.details_url = self._get_details_url(item)
 
             search_result.result_wanted = True
 
@@ -676,10 +676,10 @@ class GenericProvider(object):
         """
         return None
 
-    def _get_detail_url(self, item):
-        """Return detail_url of the item.
+    def _get_details_url(self, item):
+        """Return details_url of the item.
 
-        If provider doesnt have _get_detail_url function this will be used
+        If provider doesnt have _get_details_url function this will be used
         """
         return None
 

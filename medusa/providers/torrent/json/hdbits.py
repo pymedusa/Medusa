@@ -128,7 +128,7 @@ class HDBitsProvider(TorrentProvider):
             download_url = self.urls['download'].format(urlencode({'id': torrent_id, 'passkey': self.passkey}))
             if not all([title, download_url]):
                 continue
-            detail_url = self.urls['details'].format(urlencode({'id': torrent_id}))
+            details_url = self.urls['details'].format(urlencode({'id': torrent_id}))
             seeders = row.get('seeders', 1)
             leechers = row.get('leechers', 0)
 
@@ -150,7 +150,7 @@ class HDBitsProvider(TorrentProvider):
                 'seeders': seeders,
                 'leechers': leechers,
                 'pubdate': pubdate,
-                'detail_url': detail_url,
+                'details_url': details_url,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'

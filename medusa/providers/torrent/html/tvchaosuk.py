@@ -147,7 +147,7 @@ class TVChaosUKProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    detail_url = row.find(class_='tooltip-target').find('a')['href']
+                    details_url = row.find(class_='tooltip-target').find('a')['href']
                     if title.endswith('...'):
                         title = self.get_full_title(title)
 
@@ -189,7 +189,7 @@ class TVChaosUKProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
-                        'detail_url': detail_url,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

@@ -75,7 +75,7 @@ class SearchResult(object):
         self.pubdate = None
 
         # release detail url
-        self.detail_url = None
+        self.details_url = None
 
         # release group
         self.release_group = u''
@@ -185,7 +185,7 @@ class SearchResult(object):
             # This can happen when there are unicode decoded chars in the release name.
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders, self.leechers,
-                                         self.size, self.pubdate, self.detail_url, parsed_result=self.parsed_result)
+                                         self.size, self.pubdate, self.details_url, parsed_result=self.parsed_result)
         return None
 
     def create_episode_object(self):

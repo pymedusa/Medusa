@@ -86,7 +86,7 @@ class CacheDBConnection(db.DBConnection):
                 ('size', 'NUMERIC', -1),
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
-                ('detail_url', 'TEXT', None),
+                ('details_url', 'TEXT', None),
             )
             for column, data_type, default in table:
                 # add columns to table if missing
@@ -174,9 +174,9 @@ class Cache(object):
         """Return publish date of the item."""
         return self.provider._get_pubdate(item)
 
-    def _get_detail_url(self, item):
-        """Return detail url of the item."""
-        return self.provider._get_detail_url(item)
+    def _get_details_url(self, item):
+        """Return details url of the item."""
+        return self.provider._get_details_url(item)
 
     def _get_rss_data(self):
         """Return rss data."""
@@ -255,7 +255,7 @@ class Cache(object):
                 log.debug('Adding to cache item found in manual search: {0}',
                           item.name)
                 result = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size,
-                                              item.pubdate, item.detail_url)
+                                              item.pubdate, item.details_url)
                 if result is not None:
                     results.append(result)
         except Exception as error:
@@ -293,7 +293,7 @@ class Cache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
-        detail_url = self._get_detail_url(item)
+        details_url = self._get_details_url(item)
 
         self._check_item_auth(title, url)
 
@@ -301,7 +301,7 @@ class Cache(object):
             title = self._translate_title(title)
             url = self._translate_link_url(url)
 
-            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, detail_url)
+            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, details_url)
 
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
@@ -366,7 +366,7 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, detail_url, parsed_result=None):
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, details_url, parsed_result=None):
         """Add item into cache database."""
         try:
             # Use the already passed parsed_result of possible.
@@ -408,21 +408,21 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            # Store release detail url
-            detail_url = detail_url
+            # Store release details url
+            details_url = details_url
 
             log.debug("Added RSS item: '{0}' to cache: {1}", name, self.provider_id)
             return [
                 b'INSERT OR REPLACE INTO [{name}] '
                 b'   (name, season, episodes, indexerid, url, '
                 b'    time, quality, release_group, version, '
-                b'    seeders, leechers, size, pubdate, proper_tags, detail_url) '
+                b'    seeders, leechers, size, pubdate, proper_tags, details_url) '
                 b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                     name=self.provider_id
                 ),
                 [name, season, episode_text, parse_result.show.indexerid, url,
                  cur_timestamp, quality, release_group, version,
-                 seeders, leechers, size, pubdate, proper_tags, detail_url]
+                 seeders, leechers, size, pubdate, proper_tags, details_url]
             ]
 
     def search_cache(self, episode, forced_search=False,
@@ -546,7 +546,7 @@ class Cache(object):
             search_result.size = cur_result[b'size']
             search_result.pubdate = cur_result[b'pubdate']
             search_result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
-            search_result.detail_url = cur_result[b'detail_url']
+            search_result.details_url = cur_result[b'details_url']
             search_result.content = None
 
             # FIXME: Should be changed to search_result.search_type

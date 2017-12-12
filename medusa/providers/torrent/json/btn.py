@@ -119,7 +119,7 @@ class BTNProvider(TorrentProvider):
                 continue
             group_id = row.get('GroupID')
             torrent_id = row.get('TorrentID')
-            detail_url = 'https://broadcasthe.net/torrents.php?id={0}&torrentid={1}'.format(group_id, torrent_id)
+            details_url = 'https://broadcasthe.net/torrents.php?id={0}&torrentid={1}'.format(group_id, torrent_id)
 
             seeders = row.get('Seeders', 1)
             leechers = row.get('Leechers', 0)
@@ -142,7 +142,7 @@ class BTNProvider(TorrentProvider):
                 'seeders': seeders,
                 'leechers': leechers,
                 'pubdate': pubdate,
-                'detail_url': detail_url,
+                'details_url': details_url,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'
