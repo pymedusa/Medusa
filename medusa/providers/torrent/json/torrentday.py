@@ -31,7 +31,8 @@ class TorrentDayProvider(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, '/torrents/'),
             'search': urljoin(self.url, '/V3/API/API.php'),
-            'download': urljoin(self.url, '/download.php/')
+            'download': urljoin(self.url, '/download.php/'),
+            'details': urljoin(self.url, '/details.php')
         }
 
         # Proper Strings
@@ -138,6 +139,7 @@ class TorrentDayProvider(TorrentProvider):
                                        .format(row['id'], row['fname'])) if row['id'] and row['fname'] else None
                 if not all([title, download_url]):
                     continue
+                detail_url = 'https://www.torrentday.com/details.php?id={0}'.format(row['id'])
 
                 seeders = int(row['seed']) if row['seed'] else 1
                 leechers = int(row['leech']) if row['leech'] else 0
@@ -163,6 +165,7 @@ class TorrentDayProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
+                    'detail_url': detail_url,
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
