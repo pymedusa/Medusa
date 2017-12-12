@@ -76,14 +76,14 @@ import pytest
     },
     {  # p0: None
         'title': 'pFyLzeqxIhLQS5qdjCuHXBYOgqRb5A - [887/998] - "Selfie S01E01.part1.rar" yEnc (1/82)collection size:'
-                    ' 88.54 MB, parts available: 234 / 234- 3 rar files',
+                 ' 88.54 MB, parts available: 234 / 234- 3 rar files',
         'mode': 'episode',
         'expected': 'Selfie S01E01.part1'
     },
     {  # p0: None
         'title': '[PRiVATE] Murdered.For.Her.Selfies.S01E01.WEB.h264-ROFL [newzNZB] [1/7] - "murdered.for.her.'
-                    'selfies.s01e01.web.h264-rofl.nfo" yEnc (1/1)collection size: 90.87 MB, parts available: 126 / '
-                    '126- 1 sfv file- 5 rar files- 1 nfo fileview NFO',
+                 'selfies.s01e01.web.h264-rofl.nfo" yEnc (1/1)collection size: 90.87 MB, parts available: 126 / '
+                 '126- 1 sfv file- 5 rar files- 1 nfo fileview NFO',
         'mode': 'episode',
         'expected': 'murdered.for.her.selfies.s01e01.web.h264-rofl'
     }
