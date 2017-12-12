@@ -469,10 +469,8 @@ def search_for_needed_episodes(force=False):
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
-            # if the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
-            # search_delay time (minutes) skipp it. For this we need to check if the result has already been
-            # stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
-            if delay_search(cur_provider, best_result):
+            # Skip the result if search delay is enabled for the provider.
+            if delay_search(best_result):
                 continue
 
             found_results[cur_ep] = best_result
@@ -482,10 +480,16 @@ def search_for_needed_episodes(force=False):
     return found_results.values()
 
 
-def delay_search(cur_provider, best_result):
-    # if the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
-    # search_delay time (minutes) skipp it. For this we need to check if the result has already been
-    # stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
+def delay_search(best_result):
+    """Delay the search by ignoring the best result, when search delay is enabled for this provider.
+
+    If the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
+    search_delay time (minutes) skipp it. For this we need to check if the result has already been
+    stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
+    :param best_result: SearchResult object.
+    :return: True if we want to skipp this result.
+    """
+    cur_provider = best_result.provider
     if cur_provider.enable_search_delay and cur_provider.search_delay:  # In minutes
         cur_ep = best_result.episodes[0]
         log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
@@ -824,7 +828,8 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                         else:
                             found = True
             if not found:
-                if not delay_search(cur_provider, best_result):
+                # Skip the result if search delay is enabled for the provider.
+                if not delay_search(best_result):
                     final_results += [best_result]
 
     # Remove provider from thread name before return results
