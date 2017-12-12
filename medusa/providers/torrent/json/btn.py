@@ -117,6 +117,9 @@ class BTNProvider(TorrentProvider):
             title, download_url = self._process_title_and_url(row)
             if not all([title, download_url]):
                 continue
+            group_id = row.get('GroupID')
+            torrent_id = row.get('TorrentID')
+            detail_url = 'https://broadcasthe.net/torrents.php?id={0}&torrentid={1}'.format(group_id, torrent_id)
 
             seeders = row.get('Seeders', 1)
             leechers = row.get('Leechers', 0)
@@ -129,6 +132,8 @@ class BTNProvider(TorrentProvider):
                 continue
 
             size = row.get('Size') or -1
+            pubdate_raw = row.get('Time')
+            pubdate = self.parse_pubdate(pubdate_raw)
 
             item = {
                 'title': title,
@@ -136,7 +141,8 @@ class BTNProvider(TorrentProvider):
                 'size': size,
                 'seeders': seeders,
                 'leechers': leechers,
-                'pubdate': None,
+                'pubdate': pubdate,
+                'detail_url': detail_url,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'
