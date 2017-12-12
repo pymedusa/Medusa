@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import socket
 import time
@@ -28,8 +29,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 # API docs:
-# https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
-# https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+# http://apidocs.broadcasthe.net/docs.php
 
 class BTNProvider(TorrentProvider):
     """BTN Torrent provider."""
@@ -132,8 +132,8 @@ class BTNProvider(TorrentProvider):
                 continue
 
             size = row.get('Size') or -1
-            pubdate_raw = row.get('Time')
-            pubdate = self.parse_pubdate(pubdate_raw)
+            pubdate_raw = float(row.get('Time'))
+            pubdate = self.parse_pubdate(datetime.datetime.fromtimestamp(pubdate_raw).strftime('%c'))
 
             item = {
                 'title': title,
