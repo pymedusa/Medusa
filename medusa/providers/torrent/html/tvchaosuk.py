@@ -147,6 +147,8 @@ class TVChaosUKProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
+                    detail_url = row.find(class_='tooltip-target').find('a')['href']
+                    print(detail_url)
                     if title.endswith('...'):
                         title = self.get_full_title(title)
 
@@ -178,13 +180,17 @@ class TVChaosUKProvider(TorrentProvider):
                     torrent_size = row('td')[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = row.find_all('div')[-1].get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title + '.hdtv.x264',
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
+                        'detail_url': detail_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
