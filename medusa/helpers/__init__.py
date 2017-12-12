@@ -1793,8 +1793,6 @@ def get_broken_providers():
 
 def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
-    if not is_media_file(str(full_filename)):
-        return False
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
                                         "WHERE action LIKE '%04' "
