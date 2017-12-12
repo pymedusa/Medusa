@@ -22,7 +22,7 @@ import pytest
         'title': 'Arrow S05E02 [1 of 15] "Arrow.S05E02.FRENCH.WEBRip.XviD.avi.part.par2" yEnc (1/1)collection size: '
                  '358.31 MB, parts available: 1041 / 1041- 7 rar files- 1 par2 file',
         'mode': 'episode',
-        'expected': u'Arrow.S05E02.FRENCH.WEBRip.XviD.avi'
+        'expected': 'Arrow.S05E02.FRENCH.WEBRip.XviD.avi'
     },
     {  # p0: None
         'title': '(????) [013/275] - "Arrow.S05E02.HDTV.HebSubs.XviD-AFG.par2" yEnc (1/1)collection size: 506.17 MB, '
@@ -75,17 +75,17 @@ import pytest
         'expected': 'Sense8 S01 MULTi 1080p WEBRip DD5 1 H 264-IMPERIUM'
     },
     {  # p0: None
-        'title': 'Selfie S01E01.part1',
+        'title': 'pFyLzeqxIhLQS5qdjCuHXBYOgqRb5A - [887/998] - "Selfie S01E01.part1.rar" yEnc (1/82)collection size:'
+                    ' 88.54 MB, parts available: 234 / 234- 3 rar files',
         'mode': 'episode',
-        'expected': 'pFyLzeqxIhLQS5qdjCuHXBYOgqRb5A - [887/998] - "Selfie S01E01.part1.rar" yEnc (1/82)collection size:'
-                    ' 88.54 MB, parts available: 234 / 234- 3 rar files'
+        'expected': 'Selfie S01E01.part1'
     },
     {  # p0: None
-        'title': 'murdered.for.her.selfies.s01e01.web.h264-rofl',
-        'mode': 'episode',
-        'expected': '[PRiVATE] Murdered.For.Her.Selfies.S01E01.WEB.h264-ROFL [newzNZB] [1/7] - "murdered.for.her.'
+        'title': '[PRiVATE] Murdered.For.Her.Selfies.S01E01.WEB.h264-ROFL [newzNZB] [1/7] - "murdered.for.her.'
                     'selfies.s01e01.web.h264-rofl.nfo" yEnc (1/1)collection size: 90.87 MB, parts available: 126 / '
-                    '126- 1 sfv file- 5 rar files- 1 nfo fileview NFO'
+                    '126- 1 sfv file- 5 rar files- 1 nfo fileview NFO',
+        'mode': 'episode',
+        'expected': 'murdered.for.her.selfies.s01e01.web.h264-rofl'
     }
 ])
 def test_parse_binsearch_title(p):

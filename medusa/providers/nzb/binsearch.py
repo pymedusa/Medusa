@@ -179,17 +179,20 @@ class BinSearchProvider(NZBProvider):
         RSS search requires different cleaning then the other searches.
         When adding to this function, make sure you update the tests.
         """
-        if mode == 'RSS':
-            title = BinSearchProvider.title_regex_rss.search(title).group(1)
-        else:
-            title = BinSearchProvider.title_regex.search(title).group(1)
-            if BinSearchProvider.title_reqex_clean.search(title):
-                title = BinSearchProvider.title_reqex_clean.search(title).group(1)
-        for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb', '.part'):
-            # Strip extensions that aren't part of the file name
-            if title.endswith(extension):
-                title = title[:len(title)-len(extension)]
-        return title
+        try:
+            if mode == 'RSS':
+                title = BinSearchProvider.title_regex_rss.search(title).group(1)
+            else:
+                title = BinSearchProvider.title_regex.search(title).group(1)
+                if BinSearchProvider.title_reqex_clean.search(title):
+                    title = BinSearchProvider.title_reqex_clean.search(title).group(1)
+            for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb', '.part'):
+                # Strip extensions that aren't part of the file name
+                if title.endswith(extension):
+                    title = title[:len(title)-len(extension)]
+            return title
+        except AttributeError:
+            return None
 
     def download_result(self, result):
         """
