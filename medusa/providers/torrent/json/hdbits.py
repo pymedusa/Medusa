@@ -32,10 +32,11 @@ class HDBitsProvider(TorrentProvider):
         self.urls = {
             'search': urljoin(self.url, '/api/torrents'),
             'download': urljoin(self.url, '/download.php?{0}'),
+            'details': urljoin(self.url, '/details.php?{0}'),
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.session.hooks.update({'response': self.get_url_hook})  # Enable URL logging
@@ -127,6 +128,7 @@ class HDBitsProvider(TorrentProvider):
             download_url = self.urls['download'].format(urlencode({'id': torrent_id, 'passkey': self.passkey}))
             if not all([title, download_url]):
                 continue
+            detail_url = self.urls['details'].format(urlencode({'id': torrent_id}))
             seeders = row.get('seeders', 1)
             leechers = row.get('leechers', 0)
 
@@ -148,6 +150,7 @@ class HDBitsProvider(TorrentProvider):
                 'seeders': seeders,
                 'leechers': leechers,
                 'pubdate': pubdate,
+                'detail_url': detail_url,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'
