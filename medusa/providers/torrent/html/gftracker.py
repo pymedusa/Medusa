@@ -44,7 +44,7 @@ class GFTrackerProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
@@ -153,6 +153,7 @@ class GFTrackerProvider(TorrentProvider):
                     download_url = urljoin(self.url, cells[labels.index('DL')].find('a')['href'])
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, title_anchor.get('href'))
 
                     peers = cells[labels.index('S/L')].get_text(strip=True).split('/', 1)
                     seeders = try_int(peers[0])
@@ -179,6 +180,7 @@ class GFTrackerProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
