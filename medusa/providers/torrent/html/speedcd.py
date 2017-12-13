@@ -40,13 +40,14 @@ class SpeedCDProvider(TorrentProvider):
         self.urls = {
             'login': [urljoin(self.url, 'take_login.php'),
                       urljoin(self.url, 'takeElogin.php'),
+                      urljoin(self.url, 'take.login.php'),
                       urljoin(self.url, 'takelogin.php')
                       ],
             'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.freeleech = False
@@ -138,6 +139,7 @@ class SpeedCDProvider(TorrentProvider):
                                            cells[2].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, cells[1].find('a', class_='torrent')['href'])
 
                     seeders = try_int(cells[5].get_text(strip=True))
                     leechers = try_int(cells[6].get_text(strip=True))
@@ -154,13 +156,17 @@ class SpeedCDProvider(TorrentProvider):
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = cells[1].find('span', class_='date').find('span')['title']
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
