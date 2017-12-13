@@ -131,7 +131,7 @@ class YggtorrentProvider(TorrentProvider):
                     continue
                 try:
                     title = cells[0].find('a', class_='torrent-name').get_text(strip=True)
-                    download_url = cells[0].find_all('a')[2]['href']
+                    download_url = cells[0].find_all('a')[1]['href']
                     if not (title and download_url):
                         continue
 
