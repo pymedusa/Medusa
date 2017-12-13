@@ -145,6 +145,7 @@ class HDTorrentsProvider(TorrentProvider):
                     download_url = urljoin(self.url, link) if link else None
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, cells[labels.index('Filename')].a['href'])
 
                     seeders = try_int(cells[labels.index('S')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('L')].get_text(strip=True))
@@ -170,6 +171,7 @@ class HDTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
