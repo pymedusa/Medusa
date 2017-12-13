@@ -44,7 +44,7 @@ class PretomeProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Torrent Stats
         self.minseed = None
@@ -122,6 +122,7 @@ class PretomeProvider(TorrentProvider):
                     download_url = urljoin(self.url, torrent_url)
                     if not all([title, torrent_url]):
                         continue
+                    details_url = urljoin(self.url, cells[1].find('a').get('href'))
 
                     seeders = try_int(cells[9].get_text(), 1)
                     leechers = try_int(cells[10].get_text())
@@ -137,13 +138,17 @@ class PretomeProvider(TorrentProvider):
                     torrent_size = self._norm_size(cells[7].get_text(strip=True))
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = cells[5].get_text(' ')
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
