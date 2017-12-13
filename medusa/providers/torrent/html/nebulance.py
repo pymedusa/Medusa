@@ -141,6 +141,7 @@ class NebulanceProvider(TorrentProvider):
                     title = temp_anchor['data-src']
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, temp_anchor['href'])
 
                     cells = row('td')
                     seeders = try_int(cells[5].text.strip())
@@ -166,6 +167,7 @@ class NebulanceProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
