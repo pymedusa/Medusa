@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for SceneTime."""
+"""Provider code for GFTracker."""
 
 from __future__ import unicode_literals
 
@@ -14,45 +14,46 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class SceneTimeProvider(TorrentProvider):
-    """SceneTime Torrent provider."""
+class GFTrackerProvider(TorrentProvider):
+    """GFTracker Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(SceneTimeProvider, self).__init__('SceneTime')
+        super(GFTrackerProvider, self).__init__('GFTracker')
+
+        # Credentials
+        self.username = None
+        self.password = None
 
         # URLs
-        self.url = 'https://www.scenetime.com'
+        self.url = 'https://www.thegft.org'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'browse_API.php'),
-            'download': urljoin(self.url, 'download.php/{0}/{1}'),
+            'login': urljoin(self.url, 'loginsite.php'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
-        # Provider always returns propers and non-propers in a show search
-        self.proper_strings = ['']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
-        self.enable_cookies = True
-        self.cookies = ''
-        self.required_cookies = ('uid', 'pass')
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)  # only poll SceneTime every 20 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -67,18 +68,16 @@ class SceneTimeProvider(TorrentProvider):
         if not self.login():
             return results
 
+        # https://www.thegft.org/browse.php?view=0&c26=1&c37=1&c19=1&c47=1&c17=1&c4=1&search=arrow
         # Search Params
         search_params = {
-            'sec': 'jax',
-            'cata': 'yes',
-            'c2': 1,  # TV/XviD
-            'c43': 1,  # TV/Packs
-            'c9': 1,  # TV-HD
-            'c63': 1,  # TV/Classic
-            'c77': 1,  # TV/SD
-            'c79': 1,  # Sports
-            'c100': 1,  # TV/Non-English
-            'c83': 1,  # TV/Web-Rip
+            'view': 0,  # BROWSE
+            'c4': 1,  # TV/XVID
+            'c17': 1,  # TV/X264
+            'c19': 1,  # TV/DVDRIP
+            'c26': 1,  # TV/BLURAY
+            'c37': 1,  # TV/DVDR
+            'c47': 1,  # TV/SD
             'search': '',
         }
 
@@ -87,12 +86,18 @@ class SceneTimeProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
 
-                if mode != 'RSS':
+                if mode == 'Season':
+                    search_params.update({
+                        'view': 1,  # Browse/Gems a.k.a. Season packs
+                        'c42': 1,  # TV/Gems
+                    })
+
+                elif mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_params['search'] = search_string
 
-                response = self.session.post(self.urls['search'], data=search_params)
+                search_params['search'] = search_string
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -110,20 +115,29 @@ class SceneTimeProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+
+        def process_column_header(td):
+            result = ''
+            if td.a and td.a.img:
+                result = td.a.img.get('title', td.a.get_text(strip=True))
+            if not result:
+                result = td.get_text(strip=True)
+            return result
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html.find_all('tr')
+            torrent_table = html.find('div', id='torrentBrowse')
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # Scenetime apparently uses different number of cells in #torrenttable based
-            # on who you are. This works around that by extracting labels from the first
-            # <tr> and using their index to find the correct download/seeders/leechers td.
-            labels = [label.get_text(strip=True) or label.img['title'] for label in torrent_rows[0]('td')]
+            labels = [process_column_header(label) for label in torrent_rows[0]('td')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -132,20 +146,18 @@ class SceneTimeProvider(TorrentProvider):
                     continue
 
                 try:
-                    link = cells[labels.index('Name')].find('a')
-                    torrent_id = link['href'].replace('details.php?id=', '').split('&')[0]
-                    title = link.get_text(strip=True)
-                    download_url = self.urls['download'].format(
-                        torrent_id,
-                        '{0}.torrent'.format(title.replace(' ', '.'))
-                    )
+
+                    title_anchor = cells[labels.index('Name')].find('a').find_next('a') or \
+                        cells[labels.index('Name')].find('a')
+                    title = title_anchor.get('title') if title_anchor else None
+                    download_url = urljoin(self.url, cells[labels.index('DL')].find('a')['href'])
                     if not all([title, download_url]):
                         continue
-                    print(cells[labels.index('Name')].find('span', attrs={'class':'elapsedDate'})['title'])
-                    details_url = link['href']
+                    details_url = urljoin(self.url, title_anchor.get('href'))
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    peers = cells[labels.index('S/L')].get_text(strip=True).split('/', 1)
+                    seeders = try_int(peers[0])
+                    leechers = try_int(peers[1])
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -155,11 +167,10 @@ class SceneTimeProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[labels.index('Size')].get_text()
-                    torrent_size = re.sub(r'(\d+\.?\d*)', r'\1 ', torrent_size)
-                    size = convert_size(torrent_size) or -1
+                    torrent_size = cells[labels.index('Size/Snatched')].get_text(strip=True).split('/', 1)[0]
+                    size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[labels.index('Name')].find('span', attrs={'class':'elapsedDate'})['title']
+                    pubdate_raw = cells[labels.index('Added')].get_text(' ')
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
@@ -184,7 +195,34 @@ class SceneTimeProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        return self.cookie_login('log in')
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+        }
+
+        # Initialize session with a GET to have cookies
+        self.session.get(self.url)
+        response = self.session.post(self.urls['login'], data=login_params)
+        if not response or not response.text:
+            log.warning('Unable to connect to provider')
+            return False
+
+        if re.search('Username or password incorrect', response.text):
+            log.warning('Invalid username or password. Check your settings')
+            return False
+
+        return True
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
+
+        return True
 
 
-provider = SceneTimeProvider()
+provider = GFTrackerProvider()
