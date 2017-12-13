@@ -43,7 +43,7 @@ class TorrentBytesProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.freeleech = False
@@ -133,6 +133,7 @@ class TorrentBytesProvider(TorrentProvider):
                     title = title_element.get('title', '') or title_element.get_text(strip=True)
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, title_element['href'])
 
                     # Free leech torrents are marked with green [F L] in the title
                     # (i.e. <font color=green>[F&nbsp;L]</font>)
@@ -168,6 +169,7 @@ class TorrentBytesProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
