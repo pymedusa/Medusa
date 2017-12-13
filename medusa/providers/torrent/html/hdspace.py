@@ -141,6 +141,7 @@ class HDSpaceProvider(TorrentProvider):
                     download_url = urljoin(self.url, dl_href)
                     if not all([title, dl_href]):
                         continue
+                    details_url = urljoin(self.url, row.find('td', class_='lista', attrs={'align': 'left'}).find('a')['href'])
 
                     seeders = try_int(row.find('span', class_='seedy').find('a').get_text(), 1)
                     leechers = try_int(row.find('span', class_='leechy').find('a').get_text())
@@ -166,6 +167,7 @@ class HDSpaceProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         pass
