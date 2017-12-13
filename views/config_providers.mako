@@ -220,6 +220,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${cur_newznab_provider.get_id()}_enable_search_delay" id="${cur_newznab_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_newznab_provider.enable_search_delay else ''}/>
                                     <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
                                 </span>
                             </label>
                         </div>
@@ -338,6 +339,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${cur_nzb_provider.get_id()}_enable_search_delay" id="${cur_nzb_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_nzb_provider.enable_search_delay else ''}/>
                                     <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
                                 </span>
                             </label>
                         </div>
@@ -672,6 +674,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${cur_torrent_provider.get_id()}_enable_search_delay" id="${cur_torrent_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_torrent_provider.enable_search_delay else ''}/>
                                     <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
                                 </span>
                             </label>
                         </div>
