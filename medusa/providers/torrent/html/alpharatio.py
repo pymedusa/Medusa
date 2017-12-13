@@ -36,7 +36,7 @@ class AlphaRatioProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'http://alpharatio.cc'
+        self.url = 'https://alpharatio.cc'
         self.urls = {
             'login': urljoin(self.url, 'login.php'),
             'search': urljoin(self.url, 'torrents.php'),

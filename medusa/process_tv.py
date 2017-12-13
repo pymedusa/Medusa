@@ -38,6 +38,7 @@ class ProcessResult(object):
         self.result = True
         self.succeeded = True
         self.missedfiles = []
+        self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
 
     @property
@@ -133,33 +134,17 @@ class ProcessResult(object):
                 sync_files = (filename
                               for filename in filelist
                               if is_sync_file(filename))
+
                 # Don't process files if they are still being synced
                 postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
-
                 if not postpone:
 
                     self.log('Processing folder: {0}'.format(dir_path), logger.DEBUG)
 
                     self.prepare_files(dir_path, filelist, force)
-
                     self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
-
-                    # Always delete files if they are being moved or if it's explicitly wanted
-                    if not self.process_method == 'move' or (proc_type == 'manual' and not delete_on):
-                        continue
-
-                    for folder in self.IGNORED_FOLDERS:
-                        self.delete_folder(os.path.join(dir_path, folder))
-
-                    if self.unwanted_files:
-                        self.delete_files(dir_path, self.unwanted_files)
-
-                    if all([not app.NO_DELETE or proc_type == 'manual', self.process_method == 'move',
-                            os.path.normpath(dir_path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-
-                        if self.delete_folder(dir_path):
-                            self.log('Deleted folder: {0}'.format(dir_path), logger.DEBUG)
+                    self._clean_up(dir_path, proc_type, delete=delete_on)
 
                 else:
                     self.log('Found temporary sync files in folder: {0}'.format(dir_path))
@@ -189,6 +174,25 @@ class ProcessResult(object):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash)
 
         return self.output
+
+    def _clean_up(self, path, proc_type, delete=False):
+        """Clean up post-processed folder based on the checks below."""
+        # Always delete files if they are being moved or if it's explicitly wanted
+        clean_folder = proc_type == 'manual' and delete
+        if self.process_method == 'move' or clean_folder:
+
+            for folder in self.IGNORED_FOLDERS:
+                self.delete_folder(os.path.join(path, folder))
+
+            if self.unwanted_files:
+                self.delete_files(path, self.unwanted_files)
+
+            if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
+                    os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+
+                check_empty = False if self.process_method == 'copy' else True
+                if self.delete_folder(path, check_empty=check_empty):
+                    self.log('Deleted folder: {0}'.format(path), logger.DEBUG)
 
     def should_process(self, path, failed=False):
         """
