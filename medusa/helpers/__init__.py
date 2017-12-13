@@ -1787,7 +1787,6 @@ def get_broken_providers():
         return []
 
     log.info('Broken providers found: {0}', response)
-    response = [u'sdbits', u'extratorrent', u'freshontv', u'bithdtv']
     return response
 
 
