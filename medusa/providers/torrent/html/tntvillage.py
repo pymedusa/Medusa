@@ -44,6 +44,7 @@ class TNTVillageProvider(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, 'index.php?act=Login&CODE=01'),
             'download': urljoin(self.url, 'index.php?act=Attach&type=post&id={0}'),
+            'details': urljoin(self.url, 'index.php?showtopic={0}'),
         }
 
         # Proper Strings
@@ -123,7 +124,7 @@ class TNTVillageProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_table('tr')[1:]:
                 cells = row('td')
-
+                print(cells)
                 try:
                     if not cells:
                         continue
@@ -137,6 +138,7 @@ class TNTVillageProvider(TorrentProvider):
                     title = self._process_title(cells[0], cells[1], mode)
                     if not all([title, download_url]):
                         continue
+                    details_url = self.urls['details'].format(cells[0].get('href'))
 
                     info_cell = cells[3]('td')
                     leechers = info_cell[0].find('span').get_text(strip=True)
@@ -167,6 +169,7 @@ class TNTVillageProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
