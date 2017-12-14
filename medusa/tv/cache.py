@@ -449,8 +449,7 @@ class Cache(object):
         return cache_db_con.select(
             b'SELECT COUNT(url) '
             b'FROM [{provider}] '
-            b'WHERE url=?'.format(provider=self.provider_id)
-            , [url]
+            b'WHERE url=?'.format(provider=self.provider_id), [url]
         )[0][0]
 
     def find_needed_episodes(self, episode, forced_search=False,
@@ -585,4 +584,3 @@ class Cache(object):
         self.searched = time()
 
         return needed_eps
-
