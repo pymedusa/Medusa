@@ -51,7 +51,7 @@ class CacheDBConnection(db.DBConnection):
                     b'    url TEXT,'
                     b'    time NUMERIC,'
                     b'    quality NUMERIC,'
-                    b'    release_group TEXT'
+                    b'    release_group TEXT,'
                     b'    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
