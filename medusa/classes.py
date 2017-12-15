@@ -51,7 +51,7 @@ class SearchResult(object):
         self.url = u''
 
         # used by some providers to store extra info associated with the result
-        self.extraInfo = []
+        self.extra_info = []
 
         # quality of the release
         self.quality = Quality.UNKNOWN
@@ -96,7 +96,7 @@ class SearchResult(object):
         self.content = None
 
         # Result type like: nzb, nzbdata, torrent
-        self.resultType = u''
+        self.result_type = u''
 
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
@@ -160,7 +160,7 @@ class SearchResult(object):
 
         my_string = u'{0} @ {1}\n'.format(self.provider.name, self.url)
         my_string += u'Extra Info:\n'
-        for extra in self.extraInfo:
+        for extra in self.extra_info:
             my_string += u' {0}\n'.format(extra)
 
         my_string += u'Episodes:\n'
@@ -175,7 +175,7 @@ class SearchResult(object):
         return my_string
 
     def file_name(self):
-        return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.resultType)
+        return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
@@ -204,15 +204,15 @@ class NZBSearchResult(SearchResult):
 
     def __init__(self, episodes, provider=None):
         super(NZBSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'nzb'
+        self.result_type = u'nzb'
 
 
 class NZBDataSearchResult(SearchResult):
-    """NZB result where the actual NZB XML data is stored in the extraInfo."""
+    """NZB result where the actual NZB XML data is stored in the extra_info."""
 
     def __init__(self, episodes, provider=None):
         super(NZBDataSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'nzbdata'
+        self.result_type = u'nzbdata'
 
 
 class TorrentSearchResult(SearchResult):
@@ -220,7 +220,7 @@ class TorrentSearchResult(SearchResult):
 
     def __init__(self, episodes, provider=None):
         super(TorrentSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'torrent'
+        self.result_type = u'torrent'
 
 
 class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
