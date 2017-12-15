@@ -397,6 +397,20 @@ MEDUSA.home.index = function() {
                     }
                 }
             });
+        },
+        update: function(event, ui) {
+            const showListOrder = $(event.target.children).map(function(index, el){return $(el).data('list')});
+            api.patch('config/main', {
+            layout: {
+                show: {
+                    showListLayout: showListOrder.toArray()
+                }
+            }
+            }).then(function(response) {
+                log.info(response);
+            }).catch(function(err) {
+                log.info(err);
+            });
         }
     })
 };

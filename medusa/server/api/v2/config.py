@@ -13,6 +13,7 @@ from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
     EnumField,
+    ListField,
     IntegerField,
     StringField,
     iter_nested_items,
@@ -63,6 +64,7 @@ class ConfigHandler(BaseRequestHandler):
         'theme.name': StringField(app, 'THEME_NAME'),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+        'layout.show.showListLayout': ListField(app, 'SHOW_LIST_ORDER'),
     }
 
     def get(self, identifier, path_param=None):

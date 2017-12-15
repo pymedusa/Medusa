@@ -15,7 +15,7 @@
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
 
-    <div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix">
+    <div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix" data-list="${cur_list_type}">
         <div class="showListTitle ${cur_list_type.lower()}">
             <button type="button" class="nav-show-list move-show-list" data-move-target="${'container-' + cur_list_type.lower()}">
                 <span class="icon-bar"></span>
