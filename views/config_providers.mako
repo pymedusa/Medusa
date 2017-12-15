@@ -702,6 +702,9 @@ $('#config-components').tabs();
                                 </select>
                             </span>
                         </label>
+                        <label>
+                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <a target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa')}"><font color="blue">Wiki</font></a></span>
+                        </label>
                     </div>
                     <div class="torrentRssProviderDiv" id="addTorrentRss">
                         <div class="field-pair">
