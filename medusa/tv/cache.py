@@ -51,7 +51,8 @@ class CacheDBConnection(db.DBConnection):
                     b'    url TEXT,'
                     b'    time NUMERIC,'
                     b'    quality NUMERIC,'
-                    b'    release_group TEXT)'.format(name=provider_id))
+                    b'    release_group TEXT,'
+                    b'    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
                     b'SELECT url, COUNT(url) AS count '
@@ -86,6 +87,7 @@ class CacheDBConnection(db.DBConnection):
                 ('size', 'NUMERIC', -1),
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
+                ('date_added', 'NUMERIC', 0),
             )
             for column, data_type, default in table:
                 # add columns to table if missing
@@ -405,19 +407,34 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
-            return [
-                b'INSERT OR REPLACE INTO [{name}] '
-                b'   (name, season, episodes, indexerid, url, '
-                b'    time, quality, release_group, version, '
-                b'    seeders, leechers, size, pubdate, proper_tags) '
-                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
-                    name=self.provider_id
-                ),
-                [name, season, episode_text, parse_result.show.indexerid, url,
-                 cur_timestamp, quality, release_group, version,
-                 seeders, leechers, size, pubdate, proper_tags]
-            ]
+            if not self.item_in_cache(url):
+                log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
+                return [
+                    b'INSERT INTO [{name}] '
+                    b'   (name, season, episodes, indexerid, url, '
+                    b'    time, quality, release_group, version, '
+                    b'    seeders, leechers, size, pubdate, proper_tags, date_added) '
+                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.show.indexerid, url,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp]
+                ]
+            else:
+                log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
+                return [
+                    b'UPDATE [{name}] '
+                    b'SET name=?, season=?, episodes=?, indexerid=?, '
+                    b'    time=?, quality=?, release_group=?, version=?, '
+                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
+                    b'WHERE url=?'.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.show.indexerid,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags, url]
+                ]
 
     def search_cache(self, episode, forced_search=False,
                      down_cur_quality=False):
@@ -425,6 +442,15 @@ class Cache(object):
         needed_eps = self.find_needed_episodes(episode, forced_search,
                                                down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
+
+    def item_in_cache(self, url):
+        """Check if the url is already available for the specific provider."""
+        cache_db_con = self._get_db()
+        return cache_db_con.select(
+            b'SELECT COUNT(url) '
+            b'FROM [{provider}] '
+            b'WHERE url=?'.format(provider=self.provider_id), [url]
+        )[0][0]
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):

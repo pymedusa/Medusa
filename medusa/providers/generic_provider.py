@@ -112,9 +112,9 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
-        # Police attributes
-        self.enable_api_hit_cooldown = False
-        self.enable_daily_request_reserve = False
+        # Delay downloads
+        self.enable_search_delay = False
+        self.search_delay = 480  # minutes
 
     def download_result(self, result):
         """Download result from provider."""
@@ -229,6 +229,14 @@ class GenericProvider(object):
             return results
 
         if items_list:
+            # Remove duplicate items
+            items_list_without_dups = []
+            for item in items_list:
+                if item['link'] not in [_['link'] for _ in items_list_without_dups]:
+                    items_list_without_dups.append(item)
+
+            items_list = items_list_without_dups
+
             # categorize the items into lists by quality
             items = defaultdict(list)
             for item in items_list:

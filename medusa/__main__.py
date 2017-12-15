@@ -984,6 +984,8 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_daily', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
+                load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
+                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1525,6 +1527,7 @@ class Application(object):
                     'name', 'url', 'api_key', 'username',
                     'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch',
+                    'enable_search_delay', 'search_delay',
                 ],
                 'encrypted': [
                     'password',
