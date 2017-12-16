@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
