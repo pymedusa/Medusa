@@ -244,8 +244,11 @@ class GenericProvider(object):
             # temporarily remove the list of items with unknown quality
             unknown_items = categorized_items.pop(Quality.UNKNOWN, [])
 
+            # sort qualities in descending order
+            sorted_qualities = sorted(categorized_items, reverse=True)
+
             # make a generator to sort the remaining items by descending quality
-            items_list = (categorized_items[quality] for quality in sorted(categorized_items, reverse=True))
+            items_list = (categorized_items[quality] for quality in sorted_qualities)
 
             # unpack all of the quality lists into a single sorted list
             items_list = list(chain(*items_list))
