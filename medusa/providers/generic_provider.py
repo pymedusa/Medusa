@@ -188,7 +188,7 @@ class GenericProvider(object):
         return results
 
     def remove_duplicate_urls(self, items):
-        OrderedDict(
+        return OrderedDict(
             (item['link'], item)
             for item in items
         ).values()
@@ -234,7 +234,9 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        unique_items = self.remove_duplicate_urls(items_list)
+        if items_list:
+            # Remove duplicate items
+            items_list = self.remove_duplicate_urls(items_list)
         log.debug('Found {0} unique items', len(unique_items))
 
         # categorize the items into lists by quality
