@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
@@ -229,10 +229,10 @@ class GenericProvider(object):
             return results
 
         # Remove duplicate items using 'link' as primary key
-        unique_items = {
-            item['link']:item
+        unique_items = OrderedDict(
+            (item['link'], item)
             for item in items_list
-        }.values()
+        ).values()
         log.debug('Found {0} unique items', len(unique_items))
 
         # categorize the items into lists by quality
