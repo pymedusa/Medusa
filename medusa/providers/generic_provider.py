@@ -228,38 +228,37 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        if items_list:
-            # Remove duplicate items using 'link' as primary key
-            unique_items = {
-                item['link']:item
-                for item in items_list
-            }.values()
+        # Remove duplicate items using 'link' as primary key
+        unique_items = {
+            item['link']:item
+            for item in items_list
+        }.values()
 
-            # categorize the items into lists by quality
-            categorized_items = defaultdict(list)
-            for item in unique_items:
-                quality = self.get_quality(item, anime=show.is_anime)
-                categorized_items[quality].append(item)
+        # categorize the items into lists by quality
+        categorized_items = defaultdict(list)
+        for item in unique_items:
+            quality = self.get_quality(item, anime=show.is_anime)
+            categorized_items[quality].append(item)
 
-            # sort qualities in descending order
-            sorted_qualities = sorted(categorized_items, reverse=True)
+        # sort qualities in descending order
+        sorted_qualities = sorted(categorized_items, reverse=True)
 
-            # move Quality.UNKNOWN to the end of the list
-            try:
-                sorted_qualities.remove(Quality.UNKNOWN)
-            except ValueError:
-                pass
-            else:
-                sorted_qualities.append(Quality.UNKNOWN)
+        # move Quality.UNKNOWN to the end of the list
+        try:
+            sorted_qualities.remove(Quality.UNKNOWN)
+        except ValueError:
+            pass
+        else:
+            sorted_qualities.append(Quality.UNKNOWN)
 
-            # chain items sorted by quality
-            sorted_items = chain.from_iterable(
-                categorized_items[quality]
-                for quality in sorted_qualities
-            )
+        # chain items sorted by quality
+        sorted_items = chain.from_iterable(
+            categorized_items[quality]
+            for quality in sorted_qualities
+        )
 
-            # unpack all of the quality lists into a single sorted list
-            items_list = list(sorted_items)
+        # unpack all of the quality lists into a single sorted list
+        items_list = list(sorted_items)
 
         cl = []
 
