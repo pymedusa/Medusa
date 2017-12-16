@@ -251,7 +251,7 @@ class GenericProvider(object):
             items_list = (categorized_items[quality] for quality in sorted_qualities)
 
             # unpack all of the quality lists into a single sorted list
-            items_list = list(chain(*items_list))
+            items_list = list(chain.from_iterable(items_list))
 
             # extend the list with the unknown qualities, now sorted at the bottom of the list
             items_list.extend(unknown_items)
