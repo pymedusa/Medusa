@@ -36,7 +36,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://ww1.yggtorrent.com'
+        self.url = 'https://yggtorrent.com'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
