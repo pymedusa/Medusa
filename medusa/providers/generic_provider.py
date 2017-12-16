@@ -230,14 +230,14 @@ class GenericProvider(object):
 
         if items_list:
             # Remove duplicate items using 'link' as primary key
-            items_list = {
+            unique_items = {
                 item['link']:item
                 for item in items_list
             }.values()
 
             # categorize the items into lists by quality
             categorized_items = defaultdict(list)
-            for item in items_list:
+            for item in unique_items:
                 quality = self.get_quality(item, anime=show.is_anime)
                 categorized_items[quality].append(item)
 
