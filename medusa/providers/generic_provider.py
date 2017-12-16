@@ -236,15 +236,15 @@ class GenericProvider(object):
             }.values()
 
             # categorize the items into lists by quality
-            items = defaultdict(list)
+            categorized_items = defaultdict(list)
             for item in items_list:
-                items[self.get_quality(item, anime=show.is_anime)].append(item)
+                categorized_items[self.get_quality(item, anime=show.is_anime)].append(item)
 
             # temporarily remove the list of items with unknown quality
-            unknown_items = items.pop(Quality.UNKNOWN, [])
+            unknown_items = categorized_items.pop(Quality.UNKNOWN, [])
 
             # make a generator to sort the remaining items by descending quality
-            items_list = (items[quality] for quality in sorted(items, reverse=True))
+            items_list = (categorized_items[quality] for quality in sorted(categorized_items, reverse=True))
 
             # unpack all of the quality lists into a single sorted list
             items_list = list(chain(*items_list))
