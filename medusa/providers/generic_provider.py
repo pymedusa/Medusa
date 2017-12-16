@@ -238,7 +238,8 @@ class GenericProvider(object):
             # categorize the items into lists by quality
             categorized_items = defaultdict(list)
             for item in items_list:
-                categorized_items[self.get_quality(item, anime=show.is_anime)].append(item)
+                quality = self.get_quality(item, anime=show.is_anime)
+                categorized_items[quality].append(item)
 
             # temporarily remove the list of items with unknown quality
             unknown_items = categorized_items.pop(Quality.UNKNOWN, [])
