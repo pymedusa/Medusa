@@ -185,7 +185,7 @@ class GenericProvider(object):
                         search_result.date = datetime.today()
                         search_result.show = show_obj
 
-        return self.remove_duplicate_urls(results)
+        return results
 
     def remove_duplicate_urls(self, items):
         items_list_without_dups = []
