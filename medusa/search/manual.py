@@ -207,7 +207,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
-        required_columns = ['seeders', 'leechers', 'size', 'proper_tags']
+        required_columns = ['seeders', 'leechers', 'size', 'proper_tags', 'date_added']
         if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
             common_sql = (
@@ -215,7 +215,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
                 b" ? 'provider_minleech', name, season, episodes, indexerid,"
                 b" url, time, proper_tags, quality, release_group, version,"
-                b" seeders, leechers, size, time, pubdate "
+                b" seeders, leechers, size, time, pubdate, date_added "
                 b"FROM '{provider_id}' "
                 b"WHERE indexerid = ? AND quality > 0 ".format(
                     provider_id=cur_provider.get_id()
