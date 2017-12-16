@@ -61,7 +61,7 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 
 #### Supported providers
 
-A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers)
+A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
