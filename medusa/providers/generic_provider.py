@@ -233,6 +233,7 @@ class GenericProvider(object):
             item['link']:item
             for item in items_list
         }.values()
+        log.debug('Found {0} unique items', len(unique_items))
 
         # categorize the items into lists by quality
         categorized_items = defaultdict(list)
@@ -242,14 +243,16 @@ class GenericProvider(object):
 
         # sort qualities in descending order
         sorted_qualities = sorted(categorized_items, reverse=True)
+        log.debug('Found qualities: {0}', sorted_qualities)
 
         # move Quality.UNKNOWN to the end of the list
         try:
             sorted_qualities.remove(Quality.UNKNOWN)
         except ValueError:
-            pass
+            log.debug('No unknown qualities in results')
         else:
             sorted_qualities.append(Quality.UNKNOWN)
+            log.debug('Unknown qualities moved to end of results')
 
         # chain items sorted by quality
         sorted_items = chain.from_iterable(
