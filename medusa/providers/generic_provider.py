@@ -185,7 +185,14 @@ class GenericProvider(object):
                         search_result.date = datetime.today()
                         search_result.show = show_obj
 
-        return results
+        return self.remove_duplicate_urls(results)
+
+    def remove_duplicate_urls(self, items):
+        items_list_without_dups = []
+        for item in items:
+            if item['link'] not in [_['link'] for _ in items_list_without_dups]:
+                items_list_without_dups.append(item)
+        return items
 
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
@@ -230,12 +237,7 @@ class GenericProvider(object):
 
         if items_list:
             # Remove duplicate items
-            items_list_without_dups = []
-            for item in items_list:
-                if item['link'] not in [_['link'] for _ in items_list_without_dups]:
-                    items_list_without_dups.append(item)
-
-            items_list = items_list_without_dups
+            items_list = self.remove_duplicate_urls(items_list)
 
             # categorize the items into lists by quality
             items = defaultdict(list)
