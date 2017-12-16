@@ -252,11 +252,14 @@ class GenericProvider(object):
             else:
                 sorted_qualities.append(Quality.UNKNOWN)
 
-            # make a generator to sort the remaining items by descending quality
-            items_list = (categorized_items[quality] for quality in sorted_qualities)
+            # chain items sorted by quality
+            sorted_items = chain.from_iterable(
+                categorized_items[quality]
+                for quality in sorted_qualities
+            )
 
             # unpack all of the quality lists into a single sorted list
-            items_list = list(chain.from_iterable(items_list))
+            items_list = list(sorted_items)
 
         cl = []
 
