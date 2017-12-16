@@ -241,20 +241,22 @@ class GenericProvider(object):
                 quality = self.get_quality(item, anime=show.is_anime)
                 categorized_items[quality].append(item)
 
-            # temporarily remove the list of items with unknown quality
-            unknown_items = categorized_items.pop(Quality.UNKNOWN, [])
-
             # sort qualities in descending order
             sorted_qualities = sorted(categorized_items, reverse=True)
+
+            # move Quality.UNKNOWN to the end of the list
+            try:
+                sorted_qualities.remove(Quality.UNKNOWN)
+            except ValueError:
+                pass
+            else:
+                sorted_qualities.append(Quality.UNKNOWN)
 
             # make a generator to sort the remaining items by descending quality
             items_list = (categorized_items[quality] for quality in sorted_qualities)
 
             # unpack all of the quality lists into a single sorted list
             items_list = list(chain.from_iterable(items_list))
-
-            # extend the list with the unknown qualities, now sorted at the bottom of the list
-            items_list.extend(unknown_items)
 
         cl = []
 
