@@ -376,27 +376,25 @@ MEDUSA.home.index = function() {
         handle: 'button.move-show-list',
         cancel: '',
         sort: function (event, ui) {
-            var that = $(this);
-            var h = ui.helper.outerHeight();
-            var centreOfDraggedItem = ui.position.top + h/2;
+            const draggedItem = $(ui.item);
+            const margin = 1.5;
 
-            that.children().each(function () {
-                if ($(this).hasClass('ui-sortable-helper') || $(this).hasClass('ui-sortable-placeholder'))
-                    return true;
-                var centreOfThisItem =  $(this).position().top + h/2;
-                var dist = centreOfDraggedItem - centreOfThisItem;
-                var before = centreOfDraggedItem > centreOfThisItem;
-                if (Math.abs(dist) < h/2) {
-                    if (before && dist > h/8) { // moving down
-                        $('.ui-sortable-placeholder').insertAfter($(this));
+            if (ui.position.top !== ui.originalPosition.top) {
+                if (ui.position.top > ui.originalPosition.top * margin) {
+                    // Move to bottom
+                    setTimeout(function () {
+                        $(draggedItem).appendTo('#poster-container');
                         return false;
-                    }
-                    if (!before && dist < -(h/8)) { // moving up
-                        $('.ui-sortable-placeholder').insertBefore($(this));
-                        return false;
-                    }
+                    }, 400);
                 }
-            });
+                if (ui.position.top < ui.originalPosition.top / margin) {
+                    // Move to top
+                    setTimeout(function () {
+                        $(draggedItem).prependTo('#poster-container');
+                        return false;
+                    }, 400);
+                }
+            }
         },
         update: function(event, ui) {
             const showListOrder = $(event.target.children).map(function(index, el){return $(el).data('list')});
