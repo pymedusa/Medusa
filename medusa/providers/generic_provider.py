@@ -187,9 +187,16 @@ class GenericProvider(object):
 
         return results
 
-    def remove_duplicate_urls(self, items):
+    def remove_duplicate_mappings(self, items, pk='link'):
+        """
+        Remove duplicate items from an iterable of mappings.
+
+        :param items: An iterable of mappings
+        :param pk: Primary key for removing duplicates
+        :return: An iterable of unique mappings
+        """
         return OrderedDict(
-            (item['link'], item)
+            (item[pk], item)
             for item in items
         ).values()
 
@@ -236,7 +243,7 @@ class GenericProvider(object):
 
         if items_list:
             # Remove duplicate items
-            items_list = self.remove_duplicate_urls(items_list)
+            items_list = self.remove_duplicate_mappings(items_list)
         log.debug('Found {0} unique items', len(unique_items))
 
         # categorize the items into lists by quality
