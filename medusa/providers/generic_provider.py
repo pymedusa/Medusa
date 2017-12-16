@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
@@ -188,11 +188,10 @@ class GenericProvider(object):
         return results
 
     def remove_duplicate_urls(self, items):
-        items_list_without_dups = []
-        for item in items:
-            if item['link'] not in [_['link'] for _ in items_list_without_dups]:
-                items_list_without_dups.append(item)
-        return items
+        OrderedDict(
+            (item['link'], item)
+            for item in items
+        ).values()
 
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
@@ -235,26 +234,36 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        if items_list:
-            # Remove duplicate items
-            items_list = self.remove_duplicate_urls(items_list)
+        unique_items = self.remove_duplicate_urls(items_list)
+        log.debug('Found {0} unique items', len(unique_items))
 
-            # categorize the items into lists by quality
-            items = defaultdict(list)
-            for item in items_list:
-                items[self.get_quality(item, anime=show.is_anime)].append(item)
+        # categorize the items into lists by quality
+        categorized_items = defaultdict(list)
+        for item in unique_items:
+            quality = self.get_quality(item, anime=show.is_anime)
+            categorized_items[quality].append(item)
 
-            # temporarily remove the list of items with unknown quality
-            unknown_items = items.pop(Quality.UNKNOWN, [])
+        # sort qualities in descending order
+        sorted_qualities = sorted(categorized_items, reverse=True)
+        log.debug('Found qualities: {0}', sorted_qualities)
 
-            # make a generator to sort the remaining items by descending quality
-            items_list = (items[quality] for quality in sorted(items, reverse=True))
+        # move Quality.UNKNOWN to the end of the list
+        try:
+            sorted_qualities.remove(Quality.UNKNOWN)
+        except ValueError:
+            log.debug('No unknown qualities in results')
+        else:
+            sorted_qualities.append(Quality.UNKNOWN)
+            log.debug('Unknown qualities moved to end of results')
 
-            # unpack all of the quality lists into a single sorted list
-            items_list = list(chain(*items_list))
+        # chain items sorted by quality
+        sorted_items = chain.from_iterable(
+            categorized_items[quality]
+            for quality in sorted_qualities
+        )
 
-            # extend the list with the unknown qualities, now sorted at the bottom of the list
-            items_list.extend(unknown_items)
+        # unpack all of the quality lists into a single sorted list
+        items_list = list(sorted_items)
 
         cl = []
 
