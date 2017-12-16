@@ -242,9 +242,8 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        if items_list:
-            # Remove duplicate items
-            items_list = self.remove_duplicate_mappings(items_list)
+        # Remove duplicate items
+        unique_items = self.remove_duplicate_mappings(items_list)
         log.debug('Found {0} unique items', len(unique_items))
 
         # categorize the items into lists by quality
