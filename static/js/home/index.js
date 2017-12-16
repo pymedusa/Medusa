@@ -369,35 +369,37 @@ MEDUSA.home.index = function() {
     $('#poster-container').sortable({
         appendTo: document.body,
         axis: 'y',
-        items: "> .show-grid",
+        items: '> .show-grid',
         scroll: false,
-        tolerance: "pointer",
+        tolerance: 'pointer',
         helper: 'clone',
         handle: 'button.move-show-list',
         cancel: '',
-        sort: function (event, ui) {
+        sort: function(event, ui) {
             const draggedItem = $(ui.item);
             const margin = 1.5;
 
             if (ui.position.top !== ui.originalPosition.top) {
                 if (ui.position.top > ui.originalPosition.top * margin) {
                     // Move to bottom
-                    setTimeout(function () {
+                    setTimeout(function() {
                         $(draggedItem).appendTo('#poster-container');
                         return false;
                     }, 400);
                 }
                 if (ui.position.top < ui.originalPosition.top / margin) {
                     // Move to top
-                    setTimeout(function () {
+                    setTimeout(function() {
                         $(draggedItem).prependTo('#poster-container');
                         return false;
                     }, 400);
                 }
             }
         },
-        update: function(event, ui) {
-            const showListOrder = $(event.target.children).map(function(index, el){return $(el).data('list')});
+        update: function(event) {
+            const showListOrder = $(event.target.children).map(function(index, el) {
+                return $(el).data('list');
+            });
             api.patch('config/main', {
             layout: {
                 show: {
