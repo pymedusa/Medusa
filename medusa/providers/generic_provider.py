@@ -187,7 +187,8 @@ class GenericProvider(object):
 
         return results
 
-    def remove_duplicate_mappings(self, items, pk='link'):
+    @staticmethod
+    def remove_duplicate_mappings(items, pk='link'):
         """
         Remove duplicate items from an iterable of mappings.
 
