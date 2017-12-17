@@ -3,7 +3,9 @@
 """Base class for indexer api's."""
 
 import getpass
+from itertools import chain
 import logging
+from operator import itemgetter
 import os
 import tempfile
 import time
@@ -202,20 +204,40 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
-    def _save_images(self, sid, images):
-        """Save the highest rated image (banner, poster, fanart) as show data."""
-        for image_type in images:
-            # get series data / add the base_url to the image urls
-            if image_type in ['banner', 'fanart', 'poster']:
-                # For each image type, where going to save one image based on the highest rating
-                if not len(images[image_type]):
-                    continue
-                # This will flatten all the images for all of the resolutions. Meaning it could pick a higher
-                # rated image that has a lower resolution.
-                merged_image_list = {image_id: image for image_id, image_value in iteritems(images[image_type])
-                                     for image_id, image in iteritems(image_value)}
-                highest_rated = sorted(merged_image_list.values(), key=lambda k: k['rating'], reverse=True)[0]
-                self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
+    def _save_images(self, series_id, images):
+        """
+        Save the highest rated images for the show.
+        """
+        # Get desired image types from images
+        image_types = (
+            images.get(image_type, {})
+            for image_type in ('banner', 'fanart', 'poster')
+        )
+
+        # Iterate through desired image types
+        for image_type in image_types:
+            if not image_type:
+                continue
+
+            # Flatten image_type[res][id].values() into list of values
+            merged_images = chain.from_iterable(
+                resolution.values()
+                for resolution in image_type.values()
+            )
+
+            # Sort by rating
+            images_by_rating = sorted(
+                merged_images,
+                key=itemgetter('rating'),
+                reverse=True,
+            )
+
+            # Get the highest rated image
+            highest_rated = images_by_rating[0]
+            img_url = highest_rated['_bannnerpath']
+
+            # Save the image
+            self._set_show_data(series_id, image_type, img_url)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
