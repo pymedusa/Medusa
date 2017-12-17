@@ -210,8 +210,11 @@ class BaseIndexer(object):
                 # For each image type, where going to save one image based on the highest rating
                 if not len(images[image_type]):
                     continue
-                merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
-                highest_rated = sorted(merged_image_list, key=lambda k: float(k['rating']), reverse=True)[0]
+                # This will flatten all the images for all of the resolutions. Meaning it could pick a higher
+                # rated image that has a lower resolution.
+                merged_image_list = {image_id: image for image_id, image_value in iteritems(images[image_type])
+                                     for image_id, image in iteritems(image_value)}
+                highest_rated = sorted(merged_image_list.values(), key=lambda k: k['rating'], reverse=True)[0]
                 self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
 
     def __getitem__(self, key):
