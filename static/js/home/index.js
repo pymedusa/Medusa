@@ -401,16 +401,16 @@ MEDUSA.home.index = function() {
                 return $(el).data('list');
             });
             api.patch('config/main', {
-            layout: {
-                show: {
-                    showListLayout: showListOrder.toArray()
+                layout: {
+                    show: {
+                        showListOrder: showListOrder.toArray()
+                    }
                 }
-            }
             }).then(function(response) {
                 log.info(response);
             }).catch(function(err) {
-                log.info(err);
+                log.error(err);
             });
         }
-    })
+    });
 };
