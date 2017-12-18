@@ -420,7 +420,8 @@ class ListField(PatchField):
     def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
         """Constructor."""
         super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+                                        default_value=default_value, post_processor=post_processor)
+
 
 class BooleanField(PatchField):
     """Patch boolean fields."""
