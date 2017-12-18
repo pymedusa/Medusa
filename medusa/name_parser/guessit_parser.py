@@ -13,6 +13,7 @@ from medusa.name_parser.rules import default_api
 
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
+expected_titles_cache = {'last_refresh': None, 'expected_titles': []}
 
 # release group exception list
 expected_groups = [
@@ -89,6 +90,9 @@ def get_expected_titles(show_list):
     :return:
     :rtype: list of str
     """
+    if expected_titles_cache.get('last_refresh') and expected_titles_cache.get('last_refresh') + EXPECTED_TITLES_EXPIRATION_TIME > time():
+        return expected_titles_cache.get('expected_titles')
+
     expected_titles = []
     for show in show_list:
         names = {show.name}.union(show.exceptions)
@@ -110,4 +114,5 @@ def get_expected_titles(show_list):
 
             expected_titles.append(series)
 
+    expected_titles_cache.update({'last_refresh': time(), 'expected_titles': expected_titles})
     return expected_titles
