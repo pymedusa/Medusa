@@ -2060,11 +2060,12 @@ class CMD_ShowAddNew(ApiCall):
             return _responds(RESULT_FAILURE, msg='An existing indexerid already exists in database')
 
         if not self.location:
-            if app.ROOT_DIRS != '':
-                root_dirs = app.ROOT_DIRS
-                root_dirs.pop(0)
+            if app.ROOT_DIRS:
+                log.debug(u'Root directories: {0}', app.ROOT_DIRS)
+                root_dirs = app.ROOT_DIRS[1:]
                 default_index = int(app.ROOT_DIRS[0])
                 self.location = root_dirs[default_index]
+                log.debug(u'Default location: {0}', self.location)
             else:
                 return _responds(RESULT_FAILURE, msg='Root directory is not set, please provide a location')
 

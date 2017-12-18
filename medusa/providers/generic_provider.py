@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
@@ -188,6 +188,20 @@ class GenericProvider(object):
 
         return results
 
+    @staticmethod
+    def remove_duplicate_mappings(items, pk='link'):
+        """
+        Remove duplicate items from an iterable of mappings.
+
+        :param items: An iterable of mappings
+        :param pk: Primary key for removing duplicates
+        :return: An iterable of unique mappings
+        """
+        return OrderedDict(
+            (item[pk], item)
+            for item in items
+        ).values()
+
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
@@ -229,31 +243,37 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        if items_list:
-            # Remove duplicate items
-            items_list_without_dups = []
-            for item in items_list:
-                if item['link'] not in [_['link'] for _ in items_list_without_dups]:
-                    items_list_without_dups.append(item)
+        # Remove duplicate items
+        unique_items = self.remove_duplicate_mappings(items_list)
+        log.debug('Found {0} unique items', len(unique_items))
 
-            items_list = items_list_without_dups
+        # categorize the items into lists by quality
+        categorized_items = defaultdict(list)
+        for item in unique_items:
+            quality = self.get_quality(item, anime=show.is_anime)
+            categorized_items[quality].append(item)
 
-            # categorize the items into lists by quality
-            items = defaultdict(list)
-            for item in items_list:
-                items[self.get_quality(item, anime=show.is_anime)].append(item)
+        # sort qualities in descending order
+        sorted_qualities = sorted(categorized_items, reverse=True)
+        log.debug('Found qualities: {0}', sorted_qualities)
 
-            # temporarily remove the list of items with unknown quality
-            unknown_items = items.pop(Quality.UNKNOWN, [])
+        # move Quality.UNKNOWN to the end of the list
+        try:
+            sorted_qualities.remove(Quality.UNKNOWN)
+        except ValueError:
+            log.debug('No unknown qualities in results')
+        else:
+            sorted_qualities.append(Quality.UNKNOWN)
+            log.debug('Unknown qualities moved to end of results')
 
-            # make a generator to sort the remaining items by descending quality
-            items_list = (items[quality] for quality in sorted(items, reverse=True))
+        # chain items sorted by quality
+        sorted_items = chain.from_iterable(
+            categorized_items[quality]
+            for quality in sorted_qualities
+        )
 
-            # unpack all of the quality lists into a single sorted list
-            items_list = list(chain(*items_list))
-
-            # extend the list with the unknown qualities, now sorted at the bottom of the list
-            items_list.extend(unknown_items)
+        # unpack all of the quality lists into a single sorted list
+        items_list = list(sorted_items)
 
         cl = []
 
@@ -569,8 +589,15 @@ class GenericProvider(object):
                 if pubdate.lower() in now_alias:
                     seconds = 0
                 else:
-                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time'))
+                    match = re.search(r'(?P<time>[\d.]+\W*)(?P<granularity>\w+)', pubdate)
+                    matched_time = match.group('time')
+                    matched_granularity = match.group('granularity')
+
+                    # The parse method does not support decimals used with the month, months, year or years granularities.
+                    if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
+                        matched_time = int(round(float(matched_time.strip())))
+
+                    seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
