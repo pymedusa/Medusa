@@ -3,13 +3,13 @@
 """Base class for indexer api's."""
 
 import getpass
-from itertools import chain
 import logging
-from operator import itemgetter
 import os
 import tempfile
 import time
 import warnings
+from itertools import chain
+from operator import itemgetter
 
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
@@ -22,7 +22,6 @@ from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
-from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -207,6 +206,13 @@ class BaseIndexer(object):
     def _save_images(self, series_id, images):
         """
         Save the highest rated images for the show.
+
+        :param series_id: The series ID
+        :param images: A nested mapping of image info
+            images[type][res][id] = image_info_mapping
+                type: image type such as `banner`, `poster`, etc
+                res: resolution such as `1024x768`, `original`, etc
+                id: the image id
         """
         # Get desired image types from images
         image_types = (
