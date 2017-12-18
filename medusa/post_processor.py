@@ -1174,9 +1174,11 @@ class PostProcessor(object):
 
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
-            orig_extension = self.file_name.rpartition('.')[-1]
             new_base_name = os.path.basename(proper_path)
-            new_file_name = new_base_name + '.' + orig_extension
+            new_file_name = '{base}.{ext}'.format(
+                base=new_base_name,
+                ext=os.path.splitext(self.file_name)[1]
+            )
 
         else:
             # if we're not renaming then there's no new base name, we'll just use the existing name

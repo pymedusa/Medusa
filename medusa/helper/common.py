@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+import os.path
 import re
 import traceback
 from fnmatch import fnmatch
@@ -153,11 +154,16 @@ def is_sync_file(filename):
     """
 
     if isinstance(filename, (str, text_type)):
-        extension = filename.rpartition('.')[2].lower()
+        extension = os.path.splitext(filename)[1].lower()
 
-        return (extension in app.SYNC_FILES or
-                filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES))
+        return (
+            extension in app.SYNC_FILES
+            or filename.startswith('.syncthing')
+            or any(
+                fnmatch(filename, match)
+                for match in app.SYNC_FILES
+            )
+        )
 
     return False
 
@@ -172,7 +178,8 @@ def is_torrent_or_nzb_file(filename):
     if not isinstance(filename, (str, text_type)):
         return False
 
-    return filename.rpartition('.')[2].lower() in ['nzb', 'torrent']
+    extension = os.path.splitext(filename)[1]
+    return extension.lower() in ['nzb', 'torrent']
 
 
 def pretty_file_size(size, use_decimal=False, **kwargs):
@@ -263,7 +270,7 @@ def remove_extension(filename):
     """
 
     if isinstance(filename, (str, text_type)) and '.' in filename:
-        basename, _, extension = filename.rpartition('.')
+        basename, extension = os.path.splitext(filename)
 
         if basename and extension.lower() in ['nzb', 'torrent'] + media_extensions:
             return basename
@@ -280,7 +287,7 @@ def replace_extension(filename, new_extension):
     """
 
     if isinstance(filename, (str, text_type)) and '.' in filename:
-        basename, _, _ = filename.rpartition('.')
+        basename = os.path.splitext(filename)[0]
 
         if basename:
             return '%s.%s' % (basename, new_extension)

@@ -5,14 +5,26 @@ import logging
 import os
 import re
 
-from medusa import app, exception_handler, helpers
+from medusa import (
+    app,
+    exception_handler,
+    helpers,
+)
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
-                                                IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.indexer_config import (
+    INDEXER_TMDB,
+    INDEXER_TVDBV2,
+    INDEXER_TVMAZE,
+)
+from medusa.indexers.indexer_exceptions import (
+    IndexerEpisodeNotFound,
+    IndexerException,
+    IndexerSeasonNotFound,
+    IndexerShowNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -165,13 +177,9 @@ class GenericMetadata(object):
         ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
-
-            tbn_filename = ep_obj.location.rpartition('.')
-
-            if tbn_filename[0] == '':
-                tbn_filename = ep_obj.location + '-thumb.jpg'
-            else:
-                tbn_filename = tbn_filename[0] + '-thumb.jpg'
+            tbn_filename = '{base}-thumb.jpg'.format(
+                base=os.path.splitext(ep_obj.location)
+            )
         else:
             return None
 
