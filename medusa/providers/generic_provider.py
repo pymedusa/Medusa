@@ -587,8 +587,15 @@ class GenericProvider(object):
                 if pubdate.lower() in now_alias:
                     seconds = 0
                 else:
-                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time'))
+                    match = re.search(r'(?P<time>[\d.]+\W*)(?P<granularity>\w+)', pubdate)
+                    matched_time = match.group('time')
+                    matched_granularity = match.group('granularity')
+
+                    # The parse method does not support decimals used with the month, months, year or years granularities.
+                    if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
+                        matched_time = int(float(matched_time.strip()))
+
+                    seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)

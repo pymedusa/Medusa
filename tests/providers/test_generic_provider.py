@@ -88,6 +88,28 @@ sut = GenericProvider('FakeProvider')
         'dayfirst': True,
         'yearfirst': True
     },
+    {  # p15: iptorrents test human date with decimal.
+        'pubdate': '4.8 minutes ago',
+        'expected': 288,
+        'human_time': True
+    },
+    {  # p16: iptorrents test human date with decimal.
+        'pubdate': '4.2 weeks ago',
+        'expected': 2540160,
+        'human_time': True
+    },
+    {  # p17: iptorrents test human date with decimal.
+       # The parse method does not support decimals for the months granularity.
+        'pubdate': '1.0 months ago',
+        'expected': 2592000,
+        'human_time': True
+    },
+    {  # p18: iptorrents test human date with decimal.
+       # The parse method does not support decimals for the years granularity.
+        'pubdate': '5.2 years ago',
+        'expected': 157680000,
+        'human_time': True
+    },
 ])
 def test_parse_pubdate(p):
     # Given
