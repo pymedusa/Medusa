@@ -17,6 +17,8 @@ from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 from tornroutes import route
 
+INVALID_CHARS = ['||']
+
 
 @route('/config/providers(/?.*)')
 class ConfigProviders(Config):
@@ -43,6 +45,10 @@ class ConfigProviders(Config):
 
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
+
+        found_chars = [c for c in INVALID_CHARS if c in name]
+        if found_chars:
+            return json.dumps({'error': 'Invalid character in provider name: {0}'.format(', '.join(found_chars))})
 
         provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
 
@@ -138,6 +144,10 @@ class ConfigProviders(Config):
         """
         if not name:
             return json.dumps({'error': 'Invalid name specified'})
+
+        found_chars = [c for c in INVALID_CHARS if c in name]
+        if found_chars:
+            return json.dumps({'error': 'Invalid character in provider name: {0}'.format(', '.join(found_chars))})
 
         provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
