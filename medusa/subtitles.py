@@ -32,15 +32,6 @@ from dogpile.cache.api import NO_VALUE
 
 import knowit
 
-from medusa.subtitle_providers.utils import hash_itasa
-
-from six import iteritems, string_types, text_type
-
-from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
-from subliminal.core import search_external_subtitles
-from subliminal.score import episode_scores
-from subliminal.subtitle import get_subtitle_path
-
 from medusa import (
     app,
     db,
@@ -67,7 +58,14 @@ from medusa.helpers import (
     is_rar_file,
 )
 from medusa.show.show import Show
+from medusa.subtitle_providers.utils import hash_itasa
 
+from six import iteritems, string_types, text_type
+
+from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
+from subliminal.core import search_external_subtitles
+from subliminal.score import episode_scores
+from subliminal.subtitle import get_subtitle_path
 
 logger = logging.getLogger(__name__)
 
