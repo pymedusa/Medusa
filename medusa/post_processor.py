@@ -849,6 +849,8 @@ class PostProcessor(object):
         level = logger.DEBUG
         self.log(u'Snatch in history: {0}'.format(self.in_history), level)
         self.log(u'Manually snatched: {0}'.format(self.manually_searched), level)
+        self.log(u'Info hash: {0}'.format(self.info_hash), level)
+        self.log(u'NZB: {0}'.format(bool(self.nzb_name)), level)
         self.log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
         self.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
         self.log(u'Proper: {0}'.format(self.is_proper), level)
