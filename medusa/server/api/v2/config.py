@@ -61,10 +61,10 @@ class ConfigHandler(BaseRequestHandler):
                                  default_value='poster'),
         'layout.show.allSeasons': BooleanField(app, 'DISPLAY_ALL_SEASONS'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
+        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
         'theme.name': StringField(app, 'THEME_NAME'),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
-        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
     }
 
     def get(self, identifier, path_param=None):
