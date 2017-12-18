@@ -90,7 +90,6 @@ def get_expected_titles(show_list):
     :return:
     :rtype: list of str
     """
-
     if expected_titles_cache.get('last_refresh') and expected_titles_cache.get('last_refresh') + EXPECTED_TITLES_EXPIRATION_TIME > time():
         return expected_titles_cache.get('expected_titles')
 
