@@ -104,9 +104,15 @@ sut = GenericProvider('FakeProvider')
         'expected': 2592000,
         'human_time': True
     },
-    {  # p18: iptorrents test human date with decimal.
+    {  # p18: iptorrents test human date with decimal. (round down)
        # The parse method does not support decimals for the years granularity.
         'pubdate': '5.2 years ago',
+        'expected': 157680000,
+        'human_time': True
+    },
+    {  # p19: iptorrents test human date with decimal. (round up)
+       # The parse method does not support decimals for the years granularity.
+        'pubdate': '4.8 years ago',
         'expected': 157680000,
         'human_time': True
     },

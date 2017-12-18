@@ -593,7 +593,7 @@ class GenericProvider(object):
 
                     # The parse method does not support decimals used with the month, months, year or years granularities.
                     if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
-                        matched_time = int(float(matched_time.strip()))
+                        matched_time = int(round(float(matched_time.strip())))
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
