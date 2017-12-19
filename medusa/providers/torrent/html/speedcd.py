@@ -180,7 +180,7 @@ class SpeedCDProvider(TorrentProvider):
             'password': self.password,
         }
 
-        if not (self.urls['login_post'] and self.login_url()):
+        if not self.urls['login_post'] and not self.login_url():
             log.debug('Unable to get login URL')
             return False
 
