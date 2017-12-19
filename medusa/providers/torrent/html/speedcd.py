@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
 
 from medusa import tv
@@ -190,7 +189,7 @@ class SpeedCDProvider(TorrentProvider):
             log.debug('Unable to connect to provider using login URL: {url}',
                       {'url': self.urls['login_post']})
             return False
-        if re.search('Incorrect username or Password. Please try again.', response.text):
+        if 'incorrect username or password. please try again' in response.text.lower():
             log.warning('Invalid username or password. Check your settings')
             return False
         return True
