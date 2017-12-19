@@ -1724,13 +1724,13 @@ class Series(TV):
                       {'id': self.indexerid, 'show': self.name})
             notifiers.trakt_notifier.update_watchlist(self, update='remove')
 
-    def populate_cache(self):
+    def populate_cache(self, force=False):
         """Populate image caching."""
         cache_inst = image_cache.ImageCache()
 
         log.debug(u'{id}: Checking & filling cache for show {show}',
                   {'id': self.indexerid, 'show': self.name})
-        cache_inst.fill_cache(self)
+        cache_inst.fill_cache(self, force)
 
     def refresh_dir(self):
         """Refresh show using its location.

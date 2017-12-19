@@ -219,7 +219,7 @@ class ImageCache(object):
 
         return True
 
-    def _cache_image_from_indexer(self, show_obj, img_type):
+    def _cache_image_from_indexer(self, show_obj, img_type, replace):
         """
         Retrieve an image of the type specified from the indexer and save it to the cache folder.
 
@@ -251,11 +251,11 @@ class ImageCache(object):
         # TODO: refactor
         metadata_generator = GenericMetadata()
         img_data = metadata_generator._retrieve_show_image(img_type_name, show_obj)
-        result = metadata_generator._write_image(img_data, dest_path)
+        result = metadata_generator._write_image(img_data, dest_path, replace)
 
         return result
 
-    def fill_cache(self, show_obj):
+    def fill_cache(self, show_obj, force):
         """
         Cache all images for the given show.
 
@@ -278,9 +278,8 @@ class ImageCache(object):
                 should_continue = True
                 break
 
-        if not should_continue:
+        if not should_continue and not force:
             logger.log('No new cache images needed, not retrieving new ones', logger.DEBUG)
-            logger.log('Cache check done')
             return
 
         # check the show dir for poster, banner or fanart images and use them
@@ -317,7 +316,7 @@ class ImageCache(object):
             logger.log('Seeing if we still need an image of type {0}: {1}'.format
                        (cur_image_type, need_images[cur_image_type]), logger.DEBUG)
 
-            if cur_image_type in need_images and need_images[cur_image_type]:
-                self._cache_image_from_indexer(show_obj, cur_image_type)
+            if (cur_image_type in need_images and need_images[cur_image_type]) or force:
+                self._cache_image_from_indexer(show_obj, cur_image_type, force)
 
         logger.log('Cache check done')
