@@ -182,7 +182,7 @@ class SpeedCDProvider(TorrentProvider):
         }
 
         if not (self.urls['login_post'] and self.login_url()):
-            log.debug('Unable get login URL')
+            log.debug('Unable to get login URL')
             return False
 
         response = self.session.post(self.urls['login_post'], data=login_params)
