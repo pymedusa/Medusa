@@ -222,6 +222,12 @@ class BaseIndexer(object):
             try:
                 image_type = images[img_type]
             except KeyError:
+                log.debug(
+                    u'No {image}s found for {series}', {
+                        'image': img_type,
+                        'series': series_id,
+                    }
+                )
                 continue
 
             # Flatten image_type[res][id].values() into list of values
@@ -236,26 +242,35 @@ class BaseIndexer(object):
                 key=itemgetter('rating'),
                 reverse=True,
             )
+            log.debug(
+                u'Found {x} {image}s for {series}: {results}', {
+                    'x': len(images_by_rating),
+                    'image': img_type,
+                    'series': series_id,
+                    'results': u''.join(
+                        u'\n\t{rating}: {url}'.format(
+                            rating=img['rating'],
+                            url=img['_bannerpath'],
+                        )
+                        for img in images_by_rating
+                    )
+                }
+            )
 
             # Get the highest rated image
-            log.debug(u'Found {x} {image}s: {results}'.format(
-                x=len(images_by_rating),
-                image=img_type,
-                results=u''.join(
-                    '\n\t{rating}: {url}'.format(
-                        rating=img['rating'],
-                        url=img['_bannerpath'],
-                    )
-                    for img in images_by_rating
-                )
-            ))
             highest_rated = images_by_rating[0]
-            log.debug('Highest rated: {0}', highest_rated)
             img_url = highest_rated['_bannerpath']
             log.debug(
-                'Selecting highest rated media {rating}: {url}', {
-                    'rating': highest_rated['rating'],
-                    'url': img_url,
+                u'Selecting highest rated {image} (rating={img[rating]}):'
+                u' {img[_bannerpath]}', {
+                    'image': img_type,
+                    'img': highest_rated,
+                }
+            )
+            log.debug(
+                u'{image} details: {img}', {
+                    'image': img_type.capitalize(),
+                    'img': highest_rated,
                 }
             )
 
