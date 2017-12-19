@@ -215,14 +215,13 @@ class BaseIndexer(object):
                 id: the image id
         """
         # Get desired image types from images
-        image_types = (
-            images.get(image_type, {})
-            for image_type in ('banner', 'fanart', 'poster')
-        )
+        image_types = 'banner', 'fanart', 'poster'
 
         # Iterate through desired image types
-        for image_type in image_types:
-            if not image_type:
+        for img_type in image_types:
+            try:
+                image_type = images[img_type]
+            except KeyError:
                 continue
 
             # Flatten image_type[res][id].values() into list of values
@@ -239,11 +238,29 @@ class BaseIndexer(object):
             )
 
             # Get the highest rated image
+            log.debug(u'Found {x} {image}s: {results}'.format(
+                x=len(images_by_rating),
+                image=img_type,
+                results=u''.join(
+                    '\n\t{rating}: {url}'.format(
+                        rating=img['rating'],
+                        url=img['_bannerpath'],
+                    )
+                    for img in images_by_rating
+                )
+            ))
             highest_rated = images_by_rating[0]
-            img_url = highest_rated['_bannnerpath']
+            log.debug('Highest rated: {0}', highest_rated)
+            img_url = highest_rated['_bannerpath']
+            log.debug(
+                'Selecting highest rated media {rating}: {url}', {
+                    'rating': highest_rated['rating'],
+                    'url': img_url,
+                }
+            )
 
             # Save the image
-            self._set_show_data(series_id, image_type, img_url)
+            self._set_show_data(series_id, img_type, img_url)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
