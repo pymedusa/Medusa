@@ -31,7 +31,7 @@ BANNER_THUMB = 3
 POSTER_THUMB = 4
 FANART = 5
 
-TYPE_NAMES = {
+IMAGE_TYPES = {
     BANNER: 'banner',
     POSTER: 'poster',
     BANNER_THUMB: 'banner_thumb',
@@ -59,7 +59,7 @@ def get_path(img_type, series_id):
 
     :return: full path and filename for artwork
     """
-    image = TYPE_NAMES[img_type]
+    image = IMAGE_TYPES[img_type]
     thumbnail = image.endswith('_thumb')
     location = _thumbnails_dir() if thumbnail else _cache_dir()
     filename = '{series_id}.{image}.jpg'.format(
@@ -141,7 +141,7 @@ def remove_images(series, image_types=None):
     :param image_types: iterable of integers for image types to remove
         if no image types passed, remove all images
     """
-    image_types = image_types or TYPE_NAMES
+    image_types = image_types or IMAGE_TYPES
     series_id = series.indexerid
     series_name = series.name
 
@@ -161,7 +161,7 @@ def remove_images(series, image_types=None):
             logger.log(
                 'Could not remove {img} for series {name} from cache'
                 ' [{loc}]: {msg}'.format(
-                    img=TYPE_NAMES[image_type],
+                    img=IMAGE_TYPES[image_type],
                     name=series_name,
                     loc=cur_path,
                     msg=error,
@@ -171,8 +171,8 @@ def remove_images(series, image_types=None):
         else:
             logger.log(
                 'Removed {img} for series {name}'.format(
-                    img=TYPE_NAMES[image_type],
-                    name=series_name
+                    img=IMAGE_TYPES[image_type],
+                    name=series_name,
                 ),
                 logger.INFO,
             )
