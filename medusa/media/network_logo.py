@@ -18,19 +18,20 @@
 
 from os.path import join
 
-from .generic import GenericMedia
+from medusa.media.generic import GenericMedia
 
 
 class ShowNetworkLogo(GenericMedia):
     """Get the network logo of a show."""
 
-    def get_default_media_name(self):
+    @property
+    def default_media_name(self):
         return join('network', 'nonetwork.png')
 
-    def get_media_path(self):
-        show = self.get_show()
-
-        if show:
-            return join(self.get_media_root(), 'images', 'network', show.network_logo_name + '.png')
-
-        return ''
+    @property
+    def media_path(self):
+        series = self.series
+        if series:
+            return join(self.get_media_root(), 'images', 'network', series.network_logo_name + '.png')
+        else:
+            return ''

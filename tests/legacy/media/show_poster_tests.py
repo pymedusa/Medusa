@@ -25,5 +25,5 @@ from .generic_media_tests import GenericMediaTests
 class ShowPosterTests(GenericMediaTests):
     """Test ShowPoster."""
 
-    def test_get_default_media_name(self):
-        self.assertEqual(ShowPoster(0, '').get_default_media_name(), 'poster.png')
+    def test_default_media_name(self):
+        self.assertEqual(ShowPoster(0, '').default_media_name, 'poster.png')
