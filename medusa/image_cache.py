@@ -184,6 +184,29 @@ class ImageCache(object):
             logger.log('Image has size ratio of {img_ratio}, unknown type'.format(img_ratio=img_ratio), logger.WARNING)
             return
 
+    def remove_all_images(self, series):
+        """Remove all poster, banner, fanart images."""
+        # check if the images are already cached or not
+        image_paths = {
+            self.POSTER: self.poster_path(series.indexerid),
+            self.BANNER: self.banner_path(series.indexerid),
+            self.POSTER_THUMB: self.poster_thumb_path(series.indexerid),
+            self.BANNER_THUMB: self.banner_thumb_path(series.indexerid),
+            self.FANART: self.fanart_path(series.indexerid)
+        }
+
+        removed_images = []
+
+        for image_type in image_paths:
+            if image_paths[image_type]:
+                if os.path.isfile(image_paths[image_type]):
+                    os.remove(image_paths[image_type])
+                    removed_images.append(image_type)
+
+        if removed_images:
+            logger.log('Removed images: {image_types} for series {series_name}'.format(
+                        image_types=', '.join(removed_images), series_name=series.name), logger.INFO)
+
     def _cache_image_from_file(self, image_path, img_type, indexer_id):
         """
         Take the image provided and copy it to the cache folder.
