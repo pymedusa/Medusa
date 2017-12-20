@@ -33,11 +33,29 @@ class ImageCache(object):
     POSTER_THUMB = 4
     FANART = 5
 
+    IMAGE_TYPE_NAMES = {
+        BANNER: 'banner',
+        POSTER: 'poster',
+        BANNER_THUMB: 'banner_thumb',
+        POSTER_THUMB: 'poster_thumb',
+        FANART: 'fanart',
+    }
+
     def __init__(self):
         pass
 
     def __del__(self):
         pass
+
+    @property
+    def path(self):
+        return {
+            self.POSTER: self.poster_path,
+            self.BANNER: self.banner_path,
+            self.POSTER_THUMB: self.poster_thumb_path,
+            self.BANNER_THUMB: self.banner_thumb_path,
+            self.FANART: self.fanart_path,
+        }
 
     @classmethod
     def _cache_dir(cls):
@@ -184,28 +202,47 @@ class ImageCache(object):
             logger.log('Image has size ratio of {img_ratio}, unknown type'.format(img_ratio=img_ratio), logger.WARNING)
             return
 
-    def remove_all_images(self, series):
-        """Remove all poster, banner, fanart images."""
-        # check if the images are already cached or not
-        image_paths = {
-            self.POSTER: self.poster_path(series.indexerid),
-            self.BANNER: self.banner_path(series.indexerid),
-            self.POSTER_THUMB: self.poster_thumb_path(series.indexerid),
-            self.BANNER_THUMB: self.banner_thumb_path(series.indexerid),
-            self.FANART: self.fanart_path(series.indexerid)
-        }
+    def remove_images(self, series, image_types=None):
+        """
+        Remove cached images for a series based on image type.
 
-        removed_images = []
+        :param series: Series object
+        :param image_types: iterable of integers for image types to remove
+            if no image types passed, remove all images
+        """
+        image_types = image_types or self.IMAGE_TYPE_NAMES
+        series_id = series.indexerid
+        series_name = series.name
 
-        for image_type in image_paths:
-            if image_paths[image_type]:
-                if os.path.isfile(image_paths[image_type]):
-                    os.remove(image_paths[image_type])
-                    removed_images.append(image_type)
+        for image_type in image_types:
+            cur_path = self.path[image_type](series_id)
 
-        if removed_images:
-            logger.log('Removed images: {image_types} for series {series_name}'.format(
-                        image_types=', '.join(removed_images), series_name=series.name), logger.INFO)
+            # see if image exists
+            try:
+                os.path.isfile(cur_path)
+            except OSError:
+                continue
+
+            # try to remove image
+            try:
+                os.remove(cur_path)
+            except OSError as error:
+                logger.log(
+                    'Could not remove {img} from cache [{loc}]: {msg}'.format(
+                        img=self.IMAGE_TYPE_NAMES[image_type],
+                        loc=cur_path,
+                        msg=error,
+                    ),
+                    logger.ERROR,
+                )
+            else:
+                logger.log(
+                    'Removed {img} for series {name}'.format(
+                        img=self.IMAGE_TYPE_NAMES[image_type],
+                        name=series_name
+                    ),
+                    logger.INFO,
+                )
 
     def _cache_image_from_file(self, image_path, img_type, indexer_id):
         """

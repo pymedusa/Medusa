@@ -2318,7 +2318,7 @@ class Series(TV):
 
     def remove_images(self):
         """Remove images from cache."""
-        image_cache.ImageCache().remove_all_images(self)
+        image_cache.ImageCache().remove_images(self)
 
     def get_asset(self, asset_type):
         """Get the specified asset for this series."""
