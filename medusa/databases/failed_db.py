@@ -55,3 +55,21 @@ class HistoryStatus(History):
         self.addColumn('history', 'showid', 'NUMERIC', '-1')
         self.addColumn('history', 'season', 'NUMERIC', '-1')
         self.addColumn('history', 'episode', 'NUMERIC', '-1')
+
+
+class AddIndexerIds(HistoryStatus):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    """
+
+    def test(self):
+        """
+        Test if the table history already has the indexer_id.
+        """
+        return self.hasColumn('history', 'indexer_id')
+
+    def execute(self):
+        self.addColumn('history', 'indexer_id', 'NUMERIC', -1)

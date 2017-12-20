@@ -47,6 +47,7 @@ class CacheDBConnection(db.DBConnection):
                     b'   (name TEXT,'
                     b'    season NUMERIC,'
                     b'    episodes TEXT,'
+                    b'    indexer NUMERIC,'
                     b'    indexerid NUMERIC,'
                     b'    url TEXT,'
                     b'    time NUMERIC,'
@@ -88,6 +89,7 @@ class CacheDBConnection(db.DBConnection):
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
                 ('date_added', 'NUMERIC', 0),
+                ('indexer', 'NUMERIC', -1),
             )
             for column, data_type, default in table:
                 # add columns to table if missing

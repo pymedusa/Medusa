@@ -611,3 +611,39 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
         self.inc_minor_version()
+
+
+class AddIndexerIds(AddIndexerInteger):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    """
+
+    def test(self):
+        """
+        Test if the version is at least 44.9
+        """
+        return self.connection.version >= (44, 9)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u"Adding column indexer_id in history")
+        if not self.hasColumn('history', 'indexer_id'):
+            self.addColumn('history', 'indexer_id', 'NUMERIC', -1)
+
+        log.info(u"Adding column indexer_id in blacklist")
+        if not self.hasColumn('blacklist', 'indexer_id'):
+            self.addColumn('blacklist', 'indexer_id', 'NUMERIC', -1)
+
+        log.info(u"Adding column indexer_id in whitelist")
+        if not self.hasColumn('whitelist', 'indexer_id'):
+            self.addColumn('whitelist', 'indexer_id', 'NUMERIC', -1)
+
+        log.info(u"Adding column indexer_id in whitelist")
+        if not self.hasColumn('imdb_info', 'indexer'):
+            self.addColumn('whitelist', 'indexer', 'NUMERIC', -1)
+
+        self.inc_minor_version()
