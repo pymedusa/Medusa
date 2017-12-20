@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import os.path
+import warnings
 
 from . import app, logger
 from .helper.exceptions import ShowDirectoryNotFoundException
@@ -39,78 +40,72 @@ TYPE_NAMES = {
 }
 
 
-path = {
-    POSTER: poster_path,
-    BANNER: banner_path,
-    POSTER_THUMB: poster_thumb_path,
-    BANNER_THUMB: banner_thumb_path,
-    FANART: fanart_path,
-}
-
-
 def _cache_dir():
-    """Build up the full path to the image cache directory."""
+    """Build path to the image cache directory."""
     return os.path.abspath(os.path.join(app.CACHE_DIR, 'images'))
 
 
 def _thumbnails_dir():
-    """Build up the full path to the thumbnails image cache directory."""
+    """Build path to the thumbnail image cache directory."""
     return os.path.abspath(os.path.join(_cache_dir(), 'thumbnails'))
 
 
-def poster_path(indexer_id):
+def get_path(img_type, series_id):
     """
-    Build up the path to a poster cache for a given Indexer ID.
+    Build path to a series cached artwork.
 
-    :param indexer_id: ID of the show to use in the file name
-    :return: a full path to the cached poster file for the given Indexer ID
+    :param img_type: integer constant representing an image type
+    :param series_id: the series id
+
+    :return: full path and filename for artwork
     """
-    poster_file_name = '{0}.poster.jpg'.format(indexer_id)
-    return os.path.join(_cache_dir(), poster_file_name)
+    image = TYPE_NAMES[img_type]
+    thumbnail = image.endswith('_thumb')
+    location = _thumbnails_dir() if thumbnail else _cache_dir()
+    filename = '{series_id}.{image}.jpg'.format(
+        series_id=series_id,
+        image=image.rstrip('_thumb'),
+    )
+    return os.path.join(location, filename)
 
 
 def banner_path(indexer_id):
-    """
-    Build up the path to a banner cache for a given Indexer ID.
-
-    :param indexer_id: ID of the show to use in the file name
-    :return: a full path to the cached banner file for the given Indexer ID
-    """
-    banner_file_name = '{0}.banner.jpg'.format(indexer_id)
-    return os.path.join(_cache_dir(), banner_file_name)
-
-
-def fanart_path(indexer_id):
-    """
-    Build up the path to a fanart cache for a given Indexer ID.
-
-    :param indexer_id: ID of the show to use in the file name
-    :return: a full path to the cached fanart file for the given Indexer ID
-    """
-    fanart_file_name = '{0}.fanart.jpg'.format(indexer_id)
-    return os.path.join(_cache_dir(), fanart_file_name)
-
-
-def poster_thumb_path(indexer_id):
-    """
-    Build up the path to a poster thumb cache for a given Indexer ID.
-
-    :param indexer_id: ID of the show to use in the file name
-    :return: a full path to the cached poster thumb file for the given Indexer ID
-    """
-    posterthumb_file_name = '{0}.poster.jpg'.format(indexer_id)
-    return os.path.join(_thumbnails_dir(), posterthumb_file_name)
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
 
 
 def banner_thumb_path(indexer_id):
-    """
-    Build up the path to a banner thumb cache for a given Indexer ID.
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
 
-    :param indexer_id: ID of the show to use in the file name
-    :return: a full path to the cached banner thumb file for the given Indexer ID
-    """
-    bannerthumb_file_name = '{0}.banner.jpg'.format(indexer_id)
-    return os.path.join(_thumbnails_dir(), bannerthumb_file_name)
+
+def fanart_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
+
+
+def poster_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
+
+
+def poster_thumb_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
+
+
+path = {
+    BANNER: banner_path,
+    BANNER_THUMB: banner_thumb_path,
+    FANART: fanart_path,
+    POSTER: poster_path,
+    POSTER_THUMB: poster_thumb_path,
+}
 
 
 def has_poster(indexer_id):
