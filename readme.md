@@ -40,10 +40,6 @@
  - DupeKey/DupeScore for NZBGet 12+
  - Real SSL certificate validation
 
-#### Screenshots
-- [Desktop (Full-HD)](http://imgur.com/a/4fpBk)
-- [Mobile](http://imgur.com/a/WPyG6)
-
 #### Dependencies
  To run Medusa from source you will need Python 2.7.10
 
@@ -65,8 +61,6 @@ A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-S
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
-![image](https://torrentproject.se/favicon.ico)[TorrentProject](https://torrentproject.se/about)
-![image](https://thepiratebay.se/favicon.ico)[ThePirateBay](https://thepiratebay.se/)
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
 ![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/dognzb.png)[DOGnzb](https://dognzb.cr)
