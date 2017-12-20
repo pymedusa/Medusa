@@ -228,8 +228,10 @@ class ImageCache(object):
                 os.remove(cur_path)
             except OSError as error:
                 logger.log(
-                    'Could not remove {img} from cache [{loc}]: {msg}'.format(
+                    'Could not remove {img} for series {name} from cache'
+                    ' [{loc}]: {msg}'.format(
                         img=self.IMAGE_TYPE_NAMES[image_type],
+                        name=series_name,
                         loc=cur_path,
                         msg=error,
                     ),
