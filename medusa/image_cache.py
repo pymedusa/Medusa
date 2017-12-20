@@ -78,25 +78,25 @@ def banner_path(indexer_id):
 def banner_thumb_path(indexer_id):
     """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER, indexer_id)
+    return get_path(BANNER_THUMB, indexer_id)
 
 
 def fanart_path(indexer_id):
     """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER, indexer_id)
+    return get_path(FANART, indexer_id)
 
 
 def poster_path(indexer_id):
     """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER, indexer_id)
+    return get_path(POSTER, indexer_id)
 
 
 def poster_thumb_path(indexer_id):
     """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER, indexer_id)
+    return get_path(POSTER_THUMB, indexer_id)
 
 
 path = {
@@ -108,44 +108,48 @@ path = {
 }
 
 
+def get_artwork(img_type, series_id):
+    """
+    Get path to cached artwork for a series.
+
+    :param img_type: integer constant representing an image type
+    :param series_id: the series id
+
+    :return: full path and filename for artwork if it exists
+    """
+    location = get_path(img_type, series_id)
+    if os.path.exists(location):
+        return location
+
+
 def has_poster(indexer_id):
-    """Return true if a cached poster exists for the given Indexer ID."""
-    location = poster_path(indexer_id)
-    bool_result = os.path.isfile(location)
-    logger.log('Checking if file {0} exists: {1}'.format(location, bool_result), logger.DEBUG)
-    return bool_result
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER, indexer_id)
 
 
 def has_banner(indexer_id):
-    """Return true if a cached banner exists for the given Indexer ID."""
-    location = banner_path(indexer_id)
-    bool_result = os.path.isfile(location)
-    logger.log('Checking if file {0} exists: {1}'.format(location, bool_result), logger.DEBUG)
-    return bool_result
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER, indexer_id)
 
 
 def has_fanart(indexer_id):
-    """Return true if a cached fanart exists for the given Indexer ID."""
-    location = fanart_path(indexer_id)
-    bool_result = os.path.isfile(location)
-    logger.log('Checking if file {0} exists: {1}'.format(location, bool_result), logger.DEBUG)
-    return bool_result
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(FANART, indexer_id)
 
 
 def has_poster_thumbnail(indexer_id):
-    """Return true if a cached poster thumbnail exists for the given Indexer ID."""
-    location = poster_thumb_path(indexer_id)
-    bool_result = os.path.isfile(location)
-    logger.log('Checking if file {0} exists: {1}'.format(location, bool_result), logger.DEBUG)
-    return bool_result
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER_THUMB, indexer_id)
 
 
 def has_banner_thumbnail(indexer_id):
-    """Return true if a cached banner exists for the given Indexer ID."""
-    locaton = banner_thumb_path(indexer_id)
-    bool_result = os.path.isfile(locaton)
-    logger.log('Checking if file {0} exists: {1}'.format(locaton, bool_result), logger.DEBUG)
-    return bool_result
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER_THUMB, indexer_id)
 
 
 def which_type(image_path):
