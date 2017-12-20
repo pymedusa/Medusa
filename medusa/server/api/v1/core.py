@@ -2180,25 +2180,24 @@ class CMD_ShowCache(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Check Medusa's cache to see if the images (poster, banner, fanart) for a show are valid """
-        show_obj = Show.find(app.showList, int(self.indexerid))
-        if not show_obj:
+        """Check cache to see if the images for a show are valid."""
+        # TODO: Add support for additional types
+        series_obj = Show.find(app.showList, int(self.indexerid))
+        if not series_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
         # TODO: catch if cache dir is missing/invalid.. so it doesn't break show/show.cache
         # return {"poster": 0, "banner": 0}
 
-        cache_obj = image_cache.ImageCache()
+        series = series_obj.indexerid
+        image_types = image_cache.IMAGE_TYPES
 
-        has_poster = 0
-        has_banner = 0
+        results = {
+            image_types[img]: 1 if image_cache.get_artwork(img, series) else 0
+            for img in image_types
+        }
 
-        if os.path.isfile(cache_obj.poster_path(show_obj.indexerid)):
-            has_poster = 1
-        if os.path.isfile(cache_obj.banner_path(show_obj.indexerid)):
-            has_banner = 1
-
-        return _responds(RESULT_SUCCESS, {'poster': has_poster, 'banner': has_banner})
+        return _responds(RESULT_SUCCESS, results)
 
 
 class CMD_ShowDelete(ApiCall):
