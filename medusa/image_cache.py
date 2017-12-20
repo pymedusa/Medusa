@@ -202,6 +202,15 @@ class ImageCache(object):
             logger.log('Image has size ratio of {img_ratio}, unknown type'.format(img_ratio=img_ratio), logger.WARNING)
             return
 
+    def replace_images(self, series):
+        """
+        Replace cached images for a series based on image type.
+
+        :param series: Series object
+        """
+        self.remove_images(series)
+        self.fill_cache(series)
+
     def remove_images(self, series, image_types=None):
         """
         Remove cached images for a series based on image type.
