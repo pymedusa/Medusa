@@ -69,36 +69,6 @@ def get_path(img_type, series_id):
     return os.path.join(location, filename)
 
 
-def banner_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
-    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER, indexer_id)
-
-
-def banner_thumb_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
-    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(BANNER_THUMB, indexer_id)
-
-
-def fanart_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
-    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(FANART, indexer_id)
-
-
-def poster_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
-    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(POSTER, indexer_id)
-
-
-def poster_thumb_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
-    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
-    return get_path(POSTER_THUMB, indexer_id)
-
-
 def get_artwork(img_type, series_id):
     """
     Get path to cached artwork for a series.
@@ -111,36 +81,6 @@ def get_artwork(img_type, series_id):
     location = get_path(img_type, series_id)
     if os.path.exists(location):
         return location
-
-
-def has_poster(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
-    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
-    return get_artwork(POSTER, indexer_id)
-
-
-def has_banner(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
-    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
-    return get_artwork(BANNER, indexer_id)
-
-
-def has_fanart(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
-    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
-    return get_artwork(FANART, indexer_id)
-
-
-def has_poster_thumbnail(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
-    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
-    return get_artwork(POSTER_THUMB, indexer_id)
-
-
-def has_banner_thumbnail(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
-    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
-    return get_artwork(BANNER_THUMB, indexer_id)
 
 
 def which_type(image_path):
@@ -379,3 +319,63 @@ def fill_cache(show_obj):
             _cache_image_from_indexer(show_obj, cur_image_type)
 
     logger.log('Cache check done')
+
+
+def banner_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
+
+
+def banner_thumb_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER_THUMB, indexer_id)
+
+
+def fanart_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(FANART, indexer_id)
+
+
+def poster_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(POSTER, indexer_id)
+
+
+def poster_thumb_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(POSTER_THUMB, indexer_id)
+
+
+def has_poster(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER, indexer_id)
+
+
+def has_banner(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER, indexer_id)
+
+
+def has_fanart(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(FANART, indexer_id)
+
+
+def has_poster_thumbnail(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER_THUMB, indexer_id)
+
+
+def has_banner_thumbnail(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER_THUMB, indexer_id)
