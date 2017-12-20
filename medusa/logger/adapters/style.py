@@ -62,6 +62,10 @@ class BraceMessage(object):
             args=sep.join([repr(self.msg), args, kwargs])
         )
 
+    def format(self, *args, **kwargs):
+        """Format a BraceMessage string."""
+        return str(self).format(*args, **kwargs)
+
 
 class BraceAdapter(logging.LoggerAdapter):
     """Adapt logger to use Brace-formatted messages."""
