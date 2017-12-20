@@ -251,72 +251,65 @@ def _cache_image_from_indexer(show_obj, img_type):
     return result
 
 
-def fill_cache(show_obj):
+def fill_cache(series):
     """
     Cache all images for the given show.
 
     Copies them from the show dir if possible, or downloads them from indexer if they aren't in the show dir.
 
-    :param show_obj: Series object to cache images for
+    :param series: Series object to cache images for
     """
-    logger.log('Checking if we need any cache images for show: {0}'.format(show_obj.name), logger.DEBUG)
-
-    # check if the images are already cached or not
-    need_images = {
-        POSTER: not has_poster(show_obj.indexerid),
-        BANNER: not has_banner(show_obj.indexerid),
-        POSTER_THUMB: not has_poster_thumbnail(show_obj.indexerid),
-        BANNER_THUMB: not has_banner_thumbnail(show_obj.indexerid),
-        FANART: not has_fanart(show_obj.indexerid),
+    series_id = series.name
+    # get expected paths for artwork
+    images = {
+        img_type: get_path(img_type, series_id)
+        for img_type in IMAGE_TYPES
+    }
+    # check if artwork is cached
+    needed = {
+        img_type: location
+        for img_type, location in images.items()
+        if not os.path.exists(location)
     }
 
-    should_continue = None
-    for key in need_images:
-        if need_images.get(key):
-            should_continue = True
-            break
-
-    if not should_continue:
+    if not needed:
         logger.log('No new cache images needed, not retrieving new ones', logger.DEBUG)
         logger.log('Cache check done')
         return
 
-    # check the show dir for poster, banner or fanart images and use them
-    if any([need_images[POSTER], need_images[BANNER], need_images[FANART]]):
+    # check the show for poster, banner or fanart
+    for img_type in BANNER, POSTER, FANART:
+        if not needed.get(img_type):
+            continue
         try:
-            for cur_provider in app.metadata_provider_dict.values():
-                logger.log('Checking if we can use the show image from the {provider} metadata'.format
-                           (provider=cur_provider.name), logger.DEBUG)
+            for provider in app.metadata_provider_dict.values():
+                logger.log('Checking if we can use the show image from the {provider} metadata'.format(provider=provider.name), logger.DEBUG)
 
-                if os.path.isfile(cur_provider.get_poster_path(show_obj)):
-                    cur_file_name = os.path.abspath(cur_provider.get_poster_path(show_obj))
+                if os.path.isfile(provider.get_poster_path(series)):
+                    cur_file_name = os.path.abspath(provider.get_poster_path(series))
                     cur_file_type = which_type(cur_file_name)
 
                     if cur_file_type is None:
-                        logger.log('Unable to retrieve image type, not using the image from: {0}'.format
-                                   (cur_file_name), logger.WARNING)
+                        logger.log('Unable to retrieve image type, not using the image from: {0}'.format(cur_file_name), logger.WARNING)
                         continue
 
-                    logger.log('Checking if image {0} (type {1}) needs metadata: {2}'.format
-                               (cur_file_name, cur_file_type, need_images[cur_file_type]), logger.DEBUG)
+                    logger.log('Checking if image {0} (type {1}) needs metadata: {2}'.format(cur_file_name, cur_file_type, needed[cur_file_type]), logger.DEBUG)
 
-                    if cur_file_type in need_images and need_images[cur_file_type]:
-                        logger.log("Found an image in the show dir that doesn't exist in the cache, "
-                                   "caching it: {0} (type {1})".format(cur_file_name, cur_file_type), logger.DEBUG)
+                    if cur_file_type in needed and needed[cur_file_type]:
+                        logger.log("Found an image in the show dir that doesn't exist in the cache, caching it: {0} (type {1})".format(cur_file_name, cur_file_type), logger.DEBUG)
 
-                        _cache_image_from_file(cur_file_name, cur_file_type, show_obj.indexerid)
-                        need_images[cur_file_type] = False
+                        _cache_image_from_file(cur_file_name, cur_file_type, series.indexerid)
+                        needed[cur_file_type] = False
 
         except ShowDirectoryNotFoundException:
             logger.log("Unable to search for images in the show dir because it doesn't exist", logger.WARNING)
 
     # download missing images from indexer
-    for cur_image_type in need_images:
-        logger.log('Seeing if we still need an image of type {0}: {1}'.format
-                   (cur_image_type, need_images[cur_image_type]), logger.DEBUG)
+    for cur_image_type in needed:
+        logger.log('Seeing if we still need an image of type {0}: {1}'.format(cur_image_type, needed[cur_image_type]), logger.DEBUG)
 
-        if cur_image_type in need_images and need_images[cur_image_type]:
-            _cache_image_from_indexer(show_obj, cur_image_type)
+        if cur_image_type in needed and needed[cur_image_type]:
+            _cache_image_from_indexer(series, cur_image_type)
 
     logger.log('Cache check done')
 
