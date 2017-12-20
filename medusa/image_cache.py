@@ -79,7 +79,7 @@ def get_artwork(img_type, series_id):
     :return: full path and filename for artwork if it exists
     """
     location = get_path(img_type, series_id)
-    if os.path.exists(location):
+    if os.path.isfile(location):
         return location
 
 
