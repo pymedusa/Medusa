@@ -178,26 +178,23 @@ def remove_images(series, image_types=None):
             )
 
 
-def _cache_image_from_file(image_path, img_type, indexer_id):
+def _cache_image_from_file(image_path, img_type, series_id):
     """
     Take the image provided and copy it to the cache folder.
 
     :param image_path: path to the image we're caching
     :param img_type: BANNER or POSTER or FANART
-    :param indexer_id: id of the show this image belongs to
+    :param series_id: id of the show this image belongs to
     :return: bool representing success
     """
     from . import helpers
     # generate the path based on the type and the indexer_id
-    if img_type == POSTER:
-        location = poster_path(indexer_id)
-    elif img_type == BANNER:
-        location = banner_path(indexer_id)
-    elif img_type == FANART:
-        location = fanart_path(indexer_id)
+    if img_type in (POSTER, BANNER, FANART):
+        location = get_path(img_type, series_id)
     else:
-        logger.log('Invalid cache image type: {0}'.format(img_type), logger.ERROR)
-        return False
+        type_name = IMAGE_TYPES.get(img_type, img_type)
+        logger.log('Invalid cache image type: {0}'.format(type_name), logger.ERROR)
+        return
 
     # make sure the cache folder exists before we try copying to it
     if not os.path.isdir(_cache_dir()):
