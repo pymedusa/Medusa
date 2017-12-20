@@ -214,38 +214,28 @@ def _cache_image_from_file(image_path, img_type, indexer_id):
     return True
 
 
-def _cache_image_from_indexer(show_obj, img_type):
+def _cache_image_from_indexer(series, img_type):
     """
     Retrieve an image of the type specified from the indexer and save it to the cache folder.
 
-    :param show_obj: Series object that we want to cache an image for
+    :param series: Series object that we want to cache an image for
     :param img_type: BANNER or POSTER or FANART
     :return: bool representing success
     """
     # generate the path based on the type and the indexer_id
-    if img_type == POSTER:
-        img_type_name = 'poster'
-        location = poster_path(show_obj.indexerid)
-    elif img_type == BANNER:
-        img_type_name = 'banner'
-        location = banner_path(show_obj.indexerid)
-    elif img_type == POSTER_THUMB:
-        img_type_name = 'poster_thumb'
-        location = poster_thumb_path(show_obj.indexerid)
-    elif img_type == BANNER_THUMB:
-        img_type_name = 'banner_thumb'
-        location = banner_thumb_path(show_obj.indexerid)
-    elif img_type == FANART:
-        img_type_name = 'fanart'
-        location = fanart_path(show_obj.indexerid)
-    else:
+    try:
+        img_type_name = IMAGE_TYPES[img_type]
+    except KeyError:
         logger.log('Invalid cache image type: {0}'.format(img_type), logger.ERROR)
-        return False
+        return
+
+    series_id = series.indexerid
+    location = get_path(img_type, series_id)
 
     # retrieve the image from the indexer using the generic metadata class
     # TODO: refactor
     metadata_generator = GenericMetadata()
-    img_data = metadata_generator._retrieve_show_image(img_type_name, show_obj)
+    img_data = metadata_generator._retrieve_show_image(img_type_name, series)
     result = metadata_generator._write_image(img_data, location)
 
     return result
