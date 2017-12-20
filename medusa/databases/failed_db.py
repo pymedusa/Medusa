@@ -73,3 +73,26 @@ class AddIndexerIds(HistoryStatus):
 
     def execute(self):
         self.addColumn('history', 'indexer_id', 'NUMERIC', -1)
+
+        # get all the shows. Might need them.
+        all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
+
+        series_dict = {}
+        # check for double
+        for series in all_series:
+            if series['indexer_id'] not in series_dict:
+                series_dict[series['indexer_id']] = series['indexer']
+
+        query = 'SELECT showid FROM history WHERE indexer_id = -1'
+        results = self.connection.select(query)
+        if not results:
+            return
+
+        for result in results:
+            # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
+            series_id = result[0]
+            indexer_id = series_dict.get(series_id, -1)
+
+            # Update the value in the db.
+            self.connection.action(
+                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id])
