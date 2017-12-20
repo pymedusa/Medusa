@@ -41,7 +41,7 @@ log_name_filters = {
     'POSTPROCESSOR': 'PostProcessor',
     'FINDSUBTITLES': 'Find Subtitles',
     'TRAKTCHECKER': 'Trakt Checker',
-    'TORRENTCHECKER': 'Torrent Checker',
+    'DOWNLOADCHECKER': 'Download Checker',
     'EVENT': 'Event',
     'ERROR': 'Error',
     'TORNADO': 'Tornado',

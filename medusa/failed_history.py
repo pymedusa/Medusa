@@ -24,6 +24,8 @@ from .common import FAILED, Quality, WANTED, statusStrings
 from .helper.common import episode_num
 from .helper.exceptions import EpisodeNotFoundException
 from .show.history import History
+from medusa import app
+from medusa.show import Show
 
 
 def prepare_failed_name(release):
@@ -258,15 +260,8 @@ def trim_history(days=30, seconds=0, microseconds=0, milliseconds=0,
     )
 
 
-def find_release(ep_obj):
-    """
-    Find releases in history by show ID and season.
-
-    Return None for release if multiple found or no release found.
-    """
-    release = None
-    provider = None
-
+def remove_old_releases(ep_obj):
+    """"""
     # Clear old snatches for this release if any exist
     failed_db_con = db.DBConnection('failed.db')
     failed_db_con.action(
@@ -283,6 +278,19 @@ def find_release(ep_obj):
         (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode)
     )
 
+
+def find_release(ep_obj):
+    """
+    Find releases in history by show ID and season.
+
+    Return None for release if multiple found or no release found.
+    """
+    release = None
+    provider = None
+
+    remove_old_releases(ep_obj)
+
+    failed_db_con = db.DBConnection('failed.db')
     # Search for release in snatch history
     results = failed_db_con.select(
         'SELECT release, provider, date '
@@ -316,3 +324,61 @@ def find_release(ep_obj):
     logger.log(u'No releases found for {show} {ep}'.format
                (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
     return release, provider
+
+
+def change_snatch_status(episode, old_status):
+    """Change the episode's status back to it's former status, or the default one."""
+    with episode.lock:
+        if app.NZB_DOWNLOAD_EXPIRE_MODE == app.EXPIRE_STATUS_PREVIOUS:
+            episode.status = old_status
+        if app.NZB_DOWNLOAD_EXPIRE_MODE == app.EXPIRE_STATUS_DEFAULT:
+            episode.status = episode.series.default_ep_status
+        episode.save_to_db()
+
+
+def find_expired_releases():
+    # Search for release in snatch history
+    failed_db_con = db.DBConnection('failed.db')
+    results = failed_db_con.select(
+        b'SELECT date, release, provider, old_status, showid, season, episode '
+        b'FROM history '
+        b'WHERE date < ?',
+        [(datetime.today() -
+         timedelta(hours=max(app.TORRENT_DOWNLOAD_EXPIRE_HOURS,
+                             app.NZB_DOWNLOAD_EXPIRE_HOURS))).strftime(History.date_format)]
+    )
+
+    if not results:
+        return False
+
+    from medusa.providers.generic_provider import GenericProvider
+    from providers import get_provider_class, get_provider_module
+
+    for result in results:
+        release = str(result['release'])
+        provider_name = str(result['provider'])
+        date = datetime.strptime(str(result['date']), History.date_format)
+        series = int(result['showid'])
+        season = int(result['season'])
+        episode = int(result['episode'])
+        old_status = int(result['old_status'])
+
+        # Get Provider class
+        provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
+        provider_class = [prov for prov in provider_list if prov.name == provider_name]
+        if not provider_class:
+            # Could not find the provider, maybe it was removed.
+            continue
+
+        if provider_class[0].provider_type == GenericProvider.TORRENT:
+            # Check for the torrent expire time.
+            expire = app.TORRENT_DOWNLOAD_EXPIRE_HOURS
+        else:
+            # Check for the nzb expire time.
+            expire = app.NZB_DOWNLOAD_EXPIRE_HOURS
+
+        find_by_id(app.showList, self.indexer, tvdb_id)
+
+        if datetime.today() - timedelta(hours=expire) > date:
+            change_snatch_status(episode, old_status)
+

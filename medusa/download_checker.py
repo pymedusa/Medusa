@@ -21,12 +21,13 @@ import logging
 
 import app
 from medusa.clients import torrent
+from medusa.failed_history import find_expired_releases
 
 logger = logging.getLogger(__name__)
 
 
-class TorrentChecker(object):
-    """Torrent checker class."""
+class DownloadChecker(object):
+    """Thread for periodically managing the search providers."""
 
     def __init__(self):
         """Initialize the class."""
@@ -34,15 +35,22 @@ class TorrentChecker(object):
 
     def run(self, force=False):
         """Start the Torrent Checker Thread."""
-        if not (app.USE_TORRENTS and app.REMOVE_FROM_CLIENT):
-            return
 
         self.amActive = True
 
-        try:
-            client = torrent.get_client_class(app.TORRENT_METHOD)()
-            client.remove_ratio_reached()
-        except Exception as e:
-            logger.debug('Failed to check torrent status. Error: {error}', error=e)
+        if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+            # Torrent checker. Check torrents on seed ratio. Remove torrent from client.
+            try:
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
+                client.remove_ratio_reached()
+            except Exception as e:
+                logger.debug('Failed to check torrent status. Error: {error}', error=e)
+
+        if app.TORRENT_DOWNLOAD_EXPIRE_HOURS or app.NZB_DOWNLOAD_EXPIRE_HOURS:
+
+            # Download timeout. Check the failed.db history table for expired downloads.
+            # Revert episode to previous status if possible.
+            episodes = find_expired_releases()
+            pass
 
         self.amActive = False
