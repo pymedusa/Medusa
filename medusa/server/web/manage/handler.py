@@ -681,7 +681,7 @@ class Manage(Home, WebRoot):
         subtitles = []
         image_update = []
 
-        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle +to_delete + to_remove + to_metadata +
+        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata +
                                to_image_update):
             show_obj = Show.find(app.showList, int(cur_show_id)) if cur_show_id else None
 
