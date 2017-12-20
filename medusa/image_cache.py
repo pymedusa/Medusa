@@ -99,15 +99,6 @@ def poster_thumb_path(indexer_id):
     return get_path(POSTER_THUMB, indexer_id)
 
 
-path = {
-    BANNER: banner_path,
-    BANNER_THUMB: banner_thumb_path,
-    FANART: fanart_path,
-    POSTER: poster_path,
-    POSTER_THUMB: poster_thumb_path,
-}
-
-
 def get_artwork(img_type, series_id):
     """
     Get path to cached artwork for a series.
@@ -215,7 +206,7 @@ def remove_images(series, image_types=None):
     series_name = series.name
 
     for image_type in image_types:
-        cur_path = path[image_type](series_id)
+        cur_path = get_path(image_type, series_id)
 
         # see if image exists
         try:
