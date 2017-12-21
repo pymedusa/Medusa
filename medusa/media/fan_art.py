@@ -22,5 +22,6 @@ from medusa.media.generic import GenericMedia
 
 class ShowFanArt(GenericMedia):
     """Get the fan art of a show."""
+
     img_type = image_cache.FANART
     default_media_name = 'fanart.png'
