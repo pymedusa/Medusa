@@ -583,7 +583,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var newOptions = [];
         // When the update botton is clicked, loop through the capabilities list
         // and copy the selected category id's to the category list on the right.
-        $('#newznab_cat option:selected').each(function() {
+        $('#newznab_cap option:selected').each(function() {
             var selectedCat = $(this).val();
             newOptions.push({
                 text: selectedCat,
@@ -591,7 +591,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             });
         });
         if (newOptions.length > 0) {
-            $('#torznab_cat').replaceOptions(newOptions);
+            $('#newznab_cat').replaceOptions(newOptions);
         }
 
         var selectedProvider = $('#editANewznabProvider :selected').val();
