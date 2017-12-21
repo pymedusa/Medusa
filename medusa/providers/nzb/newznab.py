@@ -32,6 +32,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -42,7 +43,7 @@ class NewznabProvider(NZBProvider):
     """
     Generic provider for built in and custom providers who expose a newznab compatible api.
 
-    Tested with: newznab, nzedb, spotweb, torznab
+    Tested with: newznab, nzedb, spotweb
     """
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
@@ -176,7 +177,8 @@ class NewznabProvider(NZBProvider):
                 if 'tvdbid' in search_params:
                     break
 
-        # Reprocess but now use force_query = True if there are no results (backlog, daily, force) or if it's a manual search.
+        # Reprocess but now use force_query = True if there are no results
+        # (backlog, daily, force) or if it's a manual search.
         if (not results or manual_search) and not force_query:
             return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
@@ -347,7 +349,7 @@ class NewznabProvider(NZBProvider):
         return default_list + custom_newznab_providers
 
     @staticmethod
-    def save_newnab_providers():
+    def save_newznab_providers():
         """Update the app.NEWZNAB_PROVIDERS list with provider names."""
         app.NEWZNAB_PROVIDERS = [provider.name for provider in app.newznabProviderList if not provider.default]
 
@@ -422,11 +424,11 @@ class NewznabProvider(NZBProvider):
             # If we don't have show, can't get tvdbid
             return return_mapping
 
-        if not self.cap_tv_search or self.cap_tv_search == 'True':
+        if not self.cap_tv_search:
             # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
             return return_mapping
 
-        for search_type in self.cap_tv_search.split(','):
+        for search_type in self.cap_tv_search:
             if search_type == 'tvdbid' and self._get_tvdb_id():
                 return_mapping['tvdbid'] = self._get_tvdb_id()
                 # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
@@ -491,7 +493,7 @@ class NewznabProvider(NZBProvider):
 
         def _parse_cap(tag):
             elm = data.find(tag)
-            return elm.get('supportedparams', 'True') if elm and elm.get('available') else ''
+            return elm.get('supportedparams').split(',') if elm and elm.get('available') == 'yes' else []
 
         self.cap_tv_search = _parse_cap('tv-search')
         # self.cap_search = _parse_cap('search')
@@ -501,7 +503,7 @@ class NewznabProvider(NZBProvider):
         # self.caps = any([self.cap_tv_search, self.cap_search, self.cap_movie_search, self.cap_audio_search])
         self.caps = any([self.cap_tv_search])
 
-    def get_newznab_categories(self, just_caps=False):
+    def get_categories(self, just_caps=False):
         """
         Use the newznab provider url and apikey to get the capabilities.
 
@@ -509,10 +511,10 @@ class NewznabProvider(NZBProvider):
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """
-        return_categories = []
+        categories = []
 
         if not self._check_auth():
-            return False, return_categories, 'Provider requires auth and your key is not set'
+            return False, categories, '', 'Provider requires auth and your key is not set'
 
         url_params = {'t': 'caps'}
         if self.needs_auth and self.api_key:
@@ -522,26 +524,26 @@ class NewznabProvider(NZBProvider):
         if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             log.warning(error_string)
-            return False, return_categories, error_string
+            return False, categories, '', error_string
 
         with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
                 error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
-                log.debug(error_string)
-                return False, return_categories, error_string
+                log.warning(error_string)
+                return False, categories, '', error_string
 
             self.set_caps(html.find('searching'))
             if just_caps:
-                return
+                return True, categories, self.cap_tv_search, ''
 
             for category in html('category'):
                 if 'TV' in category.get('name', '') and category.get('id', ''):
-                    return_categories.append({'id': category['id'], 'name': category['name']})
+                    categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
                         if subcat.get('name', '') and subcat.get('id', ''):
-                            return_categories.append({'id': subcat['id'], 'name': subcat['name']})
+                            categories.append({'id': subcat['id'], 'name': subcat['name']})
 
-            return True, return_categories, ''
+            return True, categories, self.cap_tv_search, ''
 
     @staticmethod
     def _create_default_provider(config):

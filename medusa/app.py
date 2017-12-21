@@ -90,6 +90,7 @@ showList = []
 providerList = []
 newznabProviderList = []
 torrentRssProviderList = []
+torznab_providers_list = []
 metadata_provider_dict = {}
 
 NEWEST_VERSION = None
@@ -607,6 +608,8 @@ __INITIALIZED__ = False
 NEWZNAB_PROVIDERS = []
 
 TORRENTRSS_PROVIDERS = []
+
+TORZNAB_PROVIDERS = []
 
 RECENTLY_DELETED = set()
 
