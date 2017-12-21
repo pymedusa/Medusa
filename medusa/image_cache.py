@@ -23,8 +23,8 @@ import os.path
 import warnings
 
 from medusa import app
-from medusa.logger.adapters.style import BraceAdapter
 from medusa.helper.exceptions import ShowDirectoryNotFoundException
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata.generic import GenericMetadata
 
 log = BraceAdapter(logging.getLogger(__name__))
