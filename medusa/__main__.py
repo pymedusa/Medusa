@@ -924,6 +924,7 @@ class Application(object):
             app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
+            app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -988,6 +989,8 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_daily', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
+                load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
+                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1833,6 +1836,7 @@ class Application(object):
         new_config['GUI']['poster_sortby'] = app.POSTER_SORTBY
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
+        new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
