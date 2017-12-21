@@ -103,7 +103,7 @@ class NewznabProvider(NZBProvider):
 
         # For providers that don't have caps, or for which the t=caps is not working.
         if not self.caps and all(provider not in self.url for provider in self.providers_without_caps):
-            self.get_newznab_categories(just_caps=True)
+            self.get_categories(just_caps=True)
             if not self.caps:
                 return results
 
