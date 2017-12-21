@@ -24,6 +24,8 @@ import warnings
 
 from medusa import app
 from medusa.helper.exceptions import ShowDirectoryNotFoundException
+from medusa.helpers import copy_file, get_image_size
+from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata.generic import GenericMetadata
 
@@ -118,8 +120,6 @@ def which_type(path):
     :param path: full path to the image
     :return: artwork type if detected, or None
     """
-    from .helpers import get_image_size
-    from .helper.common import try_int
 
     if not os.path.isfile(path):
         log.warning('Could not check type, file does not exist: {0}', path)
@@ -202,7 +202,6 @@ def _cache_image_from_file(image_path, img_type, series_id):
     :param series_id: id of the show this image belongs to
     :return: bool representing success
     """
-    from . import helpers
     # generate the path based on the type and the indexer_id
     if img_type in (POSTER, BANNER, FANART):
         location = get_path(img_type, series_id)
@@ -225,7 +224,7 @@ def _cache_image_from_file(image_path, img_type, series_id):
     log.info('Copying from {origin} to {dest}',
              {'origin': image_path, 'dest': location})
 
-    helpers.copy_file(image_path, location)
+    copy_file(image_path, location)
 
     return True
 
@@ -299,7 +298,7 @@ def fill_cache(series):
                     filename = os.path.abspath(path)
                     file_type = which_type(filename)
 
-                    if file_type is None:
+                    if not file_type:
                         log.warning('Unable to determine image type for {0}',
                                     filename)
                         continue
