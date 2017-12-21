@@ -616,7 +616,6 @@ $(document).ready(function() { // eslint-disable-line max-lines
         // and copy the selected category id's to the category list on the right.
         $('#torznab_cap option:selected').each(function() {
             var selectedCat = $(this).val();
-            console.debug(selectedCat);
             newOptions.push({
                 text: selectedCat,
                 value: selectedCat
