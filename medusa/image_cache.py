@@ -28,7 +28,7 @@ from medusa.helper.exceptions import ShowDirectoryNotFoundException
 from medusa.metadata.generic import GenericMetadata
 
 log = BraceAdapter(logging.getLogger(__name__))
-log.logger.addHandler(logging.NullHandler)
+log.logger.addHandler(logging.NullHandler())
 
 BANNER = 1
 POSTER = 2
@@ -85,10 +85,14 @@ def get_path(img_type, series_id):
     """
     image = IMAGE_TYPES[img_type]
     thumbnail = image.endswith('_thumb')
-    location = _thumbnails_dir() if thumbnail else _cache_dir()
+    if thumbnail:
+        location = _thumbnails_dir()
+        image = image[:-len('_thumb')]  # strip `_thumb` from the end
+    else:
+        location = _cache_dir()
     filename = '{series_id}.{image}.jpg'.format(
         series_id=series_id,
-        image=image.rstrip('_thumb'),
+        image=image,
     )
     return os.path.join(location, filename)
 
@@ -168,9 +172,7 @@ def remove_images(series, image_types=None):
         cur_path = get_path(image_type, series_id)
 
         # see if image exists
-        try:
-            os.path.isfile(cur_path)
-        except OSError:
+        if not os.path.isfile(cur_path):
             continue
 
         # try to remove image
@@ -325,7 +327,8 @@ def fill_cache(series):
 
     # download missing images from indexer
     for img_type in needed:
-        log.debug('Searching for {img} for series_id {x}')
+        log.debug('Searching for {img} for series_id {x}',
+                  {'img': IMAGE_TYPES[img_type], 'x': series_id})
         _cache_image_from_indexer(series, img_type)
 
     log.info('Cache check completed')
