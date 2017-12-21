@@ -351,6 +351,20 @@ class ConfigProviders(Config):
             except (AttributeError, KeyError):
                 provider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
+        if hasattr(provider, 'enable_search_delay'):
+                try:
+                    provider.enable_search_delay = config.checkbox_to_value(
+                        kwargs['{id}_enable_search_delay'.format(id=provider.get_id())])
+                except (AttributeError, KeyError):
+                    provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+
+        if hasattr(provider, 'search_delay'):
+            try:
+                search_delay = float(str(kwargs['{id}_search_delay'.format(id=provider.get_id())]).strip())
+                provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+            except (AttributeError, KeyError, ValueError):
+                provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
+
     @staticmethod
     def _set_torrent_settings(provider, **kwargs):
 
