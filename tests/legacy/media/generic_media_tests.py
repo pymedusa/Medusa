@@ -100,13 +100,13 @@ class GenericMediaTests(unittest.TestCase):
                 self.assertEqual(generic_media.indexer_id, expected_indexer_id)
                 self.assertEqual(generic_media.media_format, expected_media_format)
 
-    def test_default_media_name(self):
-        self.assertEqual(GenericMedia(0, '').default_media_name, '')
+    def test_get_default_media_name(self):
+        self.assertEqual(GenericMedia(0, '').get_default_media_name(), '')
 
-    def test_media_path(self):
-        self.assertEqual(GenericMedia(0, '').media_path, '')
+    def test_get_media_path(self):
+        self.assertEqual(GenericMedia(0, '').get_media_path(), '')
 
-    def test_media_root(self):
+    def test_get_media_root(self):
         app.PROG_DIR = os.path.join('some', 'path', 'to', 'application')
 
         self.assertEqual(GenericMedia.get_media_root(), os.path.join('some', 'path', 'to', 'application', 'static'))

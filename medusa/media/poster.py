@@ -16,19 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from medusa import image_cache
-from medusa.media.generic import GenericMedia
+from .generic import GenericMedia
+from ..image_cache import ImageCache
 
 
 class ShowPoster(GenericMedia):
     """Get the poster of a show."""
-    default_media_name = 'poster.png'
 
-    @property
-    def img_type(self):
-        if self.media_format == 'normal':
-            return image_cache.POSTER
-        elif self.media_format == 'thumb':
-            return image_cache.POSTER_THUMB
-        else:
-            raise ValueError('Invalid media format')
+    def get_default_media_name(self):
+        return 'poster.png'
+
+    def get_media_path(self):
+        if self.get_show():
+            if self.media_format == 'normal':
+                return ImageCache().poster_path(self.indexer_id)
+
+            if self.media_format == 'thumb':
+                return ImageCache().poster_thumb_path(self.indexer_id)
+
+        return ''

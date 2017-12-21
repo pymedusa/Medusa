@@ -65,6 +65,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
+from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
@@ -520,14 +521,16 @@ class Series(TV):
     @property
     def poster(self):
         """Return poster path."""
-        img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.indexerid)
+        poster = ImageCache.poster_path(self.indexerid)
+        if os.path.isfile(poster):
+            return poster
 
     @property
     def banner(self):
         """Return banner path."""
-        img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.indexerid)
+        banner = ImageCache.banner_path(self.indexerid)
+        if os.path.isfile(banner):
+            return banner
 
     @property
     def aliases(self):
@@ -1723,9 +1726,11 @@ class Series(TV):
 
     def populate_cache(self):
         """Populate image caching."""
+        cache_inst = image_cache.ImageCache()
+
         log.debug(u'{id}: Checking & filling cache for show {show}',
                   {'id': self.indexerid, 'show': self.name})
-        image_cache.fill_cache(self)
+        cache_inst.fill_cache(self)
 
     def refresh_dir(self):
         """Refresh show using its location.
@@ -2313,7 +2318,7 @@ class Series(TV):
 
     def remove_images(self):
         """Remove images from cache."""
-        image_cache.remove_images(self)
+        image_cache.ImageCache().remove_images(self)
 
     def get_asset(self, asset_type):
         """Get the specified asset for this series."""
