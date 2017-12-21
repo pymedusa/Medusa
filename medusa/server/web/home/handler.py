@@ -1459,7 +1459,7 @@ class Home(WebRoot):
 
             if show_obj.is_anime:
                 if not show_obj.release_groups:
-                    show_obj.release_groups = BlackAndWhiteList(show_obj.indexerid)
+                    show_obj.release_groups = BlackAndWhiteList(show_obj)
                 whitelist = show_obj.release_groups.whitelist
                 blacklist = show_obj.release_groups.blacklist
 
@@ -1560,7 +1560,7 @@ class Home(WebRoot):
             with show_obj.lock:
                 if anime:
                     if not show_obj.release_groups:
-                        show_obj.release_groups = BlackAndWhiteList(show_obj.indexerid)
+                        show_obj.release_groups = BlackAndWhiteList(show_obj)
 
                     if whitelist:
                         shortwhitelist = short_group_names(whitelist)
