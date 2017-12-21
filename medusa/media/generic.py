@@ -43,7 +43,7 @@ class GenericMedia(object):
             self.media_format = 'normal'
 
     @property
-    def get_media(self):
+    def media(self):
         """
         :return: The content of the desired media file
         """
