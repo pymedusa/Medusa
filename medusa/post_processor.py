@@ -1276,6 +1276,6 @@ class PostProcessor(object):
                     logger.log(u"Please consider manually move torrent to seed folder as it wasn't snatched from "
                                u"Medusa or we couldn't find it in history: {0}".format(self.file_path), logger.WARNING)
                 else:
-                    logger.log(u"Please consider manually move torrent to seed folder as there is no info hash in "
-                               u"snatch history: {0}".format(self.file_path), logger.WARNING)
+                    logger.log(u'Please consider manually move torrent to seed folder as there is no info hash in '
+                               u'snatch history: {0}'.format(self.file_path), logger.WARNING)
         return True
