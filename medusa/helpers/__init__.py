@@ -228,7 +228,7 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
 
             if not (seriesname and series_id):
                 continue
-            show = Show.find(app.showList, int(series_id))
+            show = Show.find_by_id(app.showList, indexer, indexer_id)
             # Check if we can find the show in our list
             # if not, it's not the right show
             if (indexer_id is None) and (show is not None) and (show.indexerid == int(series_id)):
@@ -726,13 +726,13 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     return absolute_number
 
 
-def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None):
+def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None, indexer=None):
     episodes = []
     season = None
 
     if absolute_numbers:
-        if not show and indexer_id:
-            show = Show.find(app.showList, indexer_id)
+        if not show and (indexer_id and indexer):
+            show = Show.find_by_id(app.showList, indexer, indexer_id)
 
         for absolute_number in absolute_numbers if show else []:
             ep = show.get_episode(None, None, absolute_number=absolute_number)
@@ -1009,42 +1009,44 @@ def get_show(name, try_indexers=False):
     if not app.showList:
         return
 
-    show = None
+    series = None
     from_cache = False
 
     if not name:
-        return show
+        return series
 
     for series_name in generate(name):
-        # check cache for show
-        cache = name_cache.retrieveNameFromCache(series_name)
-        if cache:
+        # check cache for series
+        indexer_id, series_id = name_cache.retrieveNameFromCache(series_name)
+        if series_id:
             from_cache = True
-            show = Show.find(app.showList, int(cache))
+            series = Show.find_by_id(app.showList, indexer_id, series_id)
 
         # try indexers
-        if not show and try_indexers:
-            show = Show.find(
-                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)[2])
+        if not series and try_indexers:
+            found_series = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)[2]
+            series = Show.find_by_id(app.showList, found_series[1], found_series[2])
 
         # try scene exceptions
-        if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(series_name)[0]
-            if show_id:
-                show = Show.find(app.showList, int(show_id))
+        if not series:
+            series_from_name = scene_exceptions.get_scene_exceptions_by_name(series_name)[0]
+            series_id = series_from_name[0]
+            indexer_id = series_from_name[2]
+            if series_id:
+                series = Show.find_by_id(app.showList, indexer_id, series_id)
 
-        if not show:
+        if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
-            for found_show in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
-                            (name=series_name, show=found_show))
+            for found_series in match_name_only:
+                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                            (name=series_name, series=found_series))
 
         # add show to cache
-        if show and not from_cache:
-            name_cache.addNameToCache(series_name, show.indexerid)
+        if series and not from_cache:
+            name_cache.addNameToCache(series_name, series.indexer, series.indexerid)
 
-        return show
+        return series
 
 
 def is_hidden_folder(folder):

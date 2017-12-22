@@ -58,7 +58,6 @@ from medusa.helper.exceptions import (
     EpisodeDeletedException,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
-    MultipleShowsInDatabaseException,
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
     ex,
@@ -225,7 +224,7 @@ class Series(TV):
         self._cached_indexer_api = None
         self.plot = None
 
-        other_show = Show.find(app.showList, self.indexerid)
+        other_show = Show.find_by_id(app.showList, self.indexer, self.indexerid)
         if other_show is not None:
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
@@ -247,7 +246,7 @@ class Series(TV):
         :return:
         :rtype:
         """
-        result = Show.find(app.showList, identifier.id, identifier.indexer.id)
+        result = Show.find_by_id(app.showList, identifier.indexer.id, identifier.id)
         if result and (not predicate or predicate(result)):
             return result
 
@@ -293,7 +292,7 @@ class Series(TV):
         """Set an Indexer API instance."""
         self._cached_indexer_api = value
 
-    def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True, ):
+    def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True):
         """Force the creation of a new Indexer API."""
         api = indexerApi(self.indexer)
         params = api.api_params.copy()
@@ -535,7 +534,7 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)
+        return self.exceptions or get_scene_exceptions(self)
 
     @property
     def release_ignore_words(self):
@@ -988,20 +987,22 @@ class Series(TV):
         try:
             main_db_con = db.DBConnection()
             sql = (b'SELECT '
-                   b'  season, episode, showid, show_name '
+                   b'  season, episode, showid, show_name, tv_shows.show_id, tv_shows.indexer '
                    b'FROM '
                    b'  tv_episodes '
                    b'JOIN '
                    b'  tv_shows '
                    b'WHERE '
-                   b'  showid = indexer_id AND showid = ?')
+                   b'  tv_episodes.showid = tv_shows.indexer_id'
+                   b'  AND tv_episodes.indexer = tv_shows.indexer'
+                   b'  AND tv_shows.indexer = ? AND tv_shows.indexer_id = ?')
             if seasons:
                 sql += b' AND season IN (%s)' % ','.join('?' * len(seasons))
-                sql_results = main_db_con.select(sql, [self.indexerid] + seasons)
+                sql_results = main_db_con.select(sql, [self.indexer, self.indexerid] + seasons)
                 log.debug(u'{id}: Loading all episodes of season(s) {seasons} from the DB',
                           {'id': self.indexerid, 'seasons': seasons})
             else:
-                sql_results = main_db_con.select(sql, [self.indexerid])
+                sql_results = main_db_con.select(sql, [self.indexer, self.indexerid])
                 log.debug(u'{id}: Loading all episodes of all seasons from the DB',
                           {'id': self.indexerid})
         except Exception as error:
@@ -1019,15 +1020,17 @@ class Series(TV):
 
             cur_season = int(cur_result[b'season'])
             cur_episode = int(cur_result[b'episode'])
+            cur_indexer = int(cur_result[b'indexer'])
             cur_show_id = int(cur_result[b'showid'])
             cur_show_name = text_type(cur_result[b'show_name'])
 
             delete_ep = False
 
             log.debug(
-                u'{id}: Loading {show} {ep} from the DB', {
+                u'{id}: Loading {show} with indexer {indexer} and ep {ep} from the DB', {
                     'id': cur_show_id,
                     'show': cur_show_name,
+                    'indexer': cur_indexer,
                     'ep': episode_num(cur_season, cur_episode),
                 }
             )
@@ -1398,15 +1401,14 @@ class Series(TV):
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_shows '
-            b'WHERE indexer_id = ?',
-            [self.indexerid]
+            b'SELECT *'
+            b' FROM tv_shows'
+            b' WHERE indexer = ?'
+            b' AND indexer_id = ?',
+            [self.indexer, self.indexerid]
         )
 
-        if len(sql_results) > 1:
-            raise MultipleShowsInDatabaseException()
-        elif not sql_results:
+        if not sql_results:
             log.info(u'{id}: Unable to find the show in the database',
                      {'id': self.indexerid})
             return
@@ -1458,7 +1460,7 @@ class Series(TV):
                 self.imdb_id = sql_results[0][b'imdb_id']
 
             if self.is_anime:
-                self.release_groups = BlackAndWhiteList(self.indexerid)
+                self.release_groups = BlackAndWhiteList(self)
 
             self.plot = sql_results[0][b'plot']
 
@@ -1469,9 +1471,10 @@ class Series(TV):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT * '
-            b'FROM imdb_info '
-            b'WHERE indexer_id = ?',
-            [self.indexerid]
+            b'FROM imdb_info'
+            b' WHERE indexer = ?'
+            b' AND indexer_id = ?',
+            [self.indexer, self.indexerid]
         )
 
         if not sql_results:
@@ -1616,13 +1619,14 @@ class Series(TV):
                 b'FROM '
                 b'  tv_episodes '
                 b'WHERE '
-                b'  showid = ? '
+                b'  indexer = ?'
+                b'  AND showid = ? '
                 b'  AND airdate >= ? '
                 b'  AND status IN (?,?) '
                 b'ORDER BY'
                 b'  airdate '
                 b'ASC LIMIT 1',
-                [self.indexerid, datetime.date.today().toordinal(), UNAIRED, WANTED])
+                [self.indexer, self.indexerid, datetime.date.today().toordinal(), UNAIRED, WANTED])
 
             if sql_results is None or len(sql_results) == 0:
                 log.debug(u'{id}: No episode found... need to implement a show status',
@@ -1646,11 +1650,11 @@ class Series(TV):
         :param full:
         :type full: bool
         """
-        sql_l = [[b'DELETE FROM tv_episodes WHERE showid = ?', [self.indexerid]],
-                 [b'DELETE FROM tv_shows WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM imdb_info WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM xem_refresh WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM scene_numbering WHERE indexer_id = ?', [self.indexerid]]]
+        sql_l = [[b'DELETE FROM tv_episodes WHERE indexer = ? AND showid = ?', [self.indexer, self.indexerid]],
+                 [b'DELETE FROM tv_shows WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.indexerid]],
+                 [b'DELETE FROM imdb_info WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.indexerid]],
+                 [b'DELETE FROM xem_refresh WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.indexerid]],
+                 [b'DELETE FROM scene_numbering WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.indexerid]]]
 
         main_db_con = db.DBConnection()
         main_db_con.mass_action(sql_l)
@@ -1756,8 +1760,9 @@ class Series(TV):
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
-            b'  showid = ? '
-            b"  AND location != ''", [self.indexerid])
+            b'  indexer = ?'
+            b'  AND showid = ? '
+            b"  AND location != ''", [self.indexer, self.indexerid])
 
         sql_l = []
         for ep in sql_results:
@@ -1885,9 +1890,8 @@ class Series(TV):
         log.debug(u'{id}: Saving to database: {show}',
                   {'id': self.indexerid, 'show': self.name})
 
-        control_value_dict = {'indexer_id': self.indexerid}
-        new_value_dict = {'indexer': self.indexer,
-                          'show_name': self.name,
+        control_value_dict = {'indexer': self.indexer, 'indexer_id': self.indexerid}
+        new_value_dict = {'show_name': self.name,
                           'location': self.raw_location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
@@ -1919,7 +1923,7 @@ class Series(TV):
         helpers.update_anime_support()
 
         if self.imdb_id and self.imdb_info.get('year'):
-            control_value_dict = {'indexer_id': self.indexerid}
+            control_value_dict = {'indexer': self.indexer, 'indexer_id': self.indexerid}
             new_value_dict = self.imdb_info
 
             main_db_con = db.DBConnection()
@@ -2068,7 +2072,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self.indexerid, self.indexer, season)
+        show_names = get_scene_exceptions(self, season)
         show_names.add(self.name)
 
         new_show_names = set()
@@ -2152,9 +2156,10 @@ class Series(TV):
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
-            b'  showid = ? '
+            b'  indexer = ? '
+            b'  AND showid = ? '
             b'  AND season = ? '
-            b'  AND episode = ?', [self.indexerid, season, episode])
+            b'  AND episode = ?', [self.indexer, self.indexerid, season, episode])
 
         if not sql_results or not len(sql_results):
             log.debug(
@@ -2322,10 +2327,10 @@ class Series(TV):
         media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
 
         if asset_type.startswith('banner'):
-            return ShowBanner(self.indexerid, media_format)
+            return ShowBanner(self, media_format)
         elif asset_type.startswith('fanart'):
-            return ShowFanArt(self.indexerid, media_format)
+            return ShowFanArt(self, media_format)
         elif asset_type.startswith('poster'):
-            return ShowPoster(self.indexerid, media_format)
+            return ShowPoster(self, media_format)
         elif asset_type.startswith('network'):
-            return ShowNetworkLogo(self.indexerid, media_format)
+            return ShowNetworkLogo(self, media_format)

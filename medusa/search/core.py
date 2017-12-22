@@ -506,7 +506,7 @@ def delay_search(best_result):
                   {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
         from medusa.search.manual import get_provider_cache_results
         results = get_provider_cache_results(
-            cur_ep.series.indexer, show_all_results=False, perform_search=False, show=cur_ep.series.indexerid,
+            cur_ep.series, show_all_results=False, perform_search=False,
             season=cur_ep.season, episode=cur_ep.episode, manual_search_type='episode'
         )
 

@@ -146,7 +146,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         if (val === 0) {
             return;
         }
-        window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
+        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + 'tvdb' + '&seriesid=' + val;
     });
 
     // show/hide different types of rows when the checkboxes are changed
@@ -195,8 +195,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     };
 
     function setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-        var showId = $('#series-id').val();
-        var indexer = $('#indexer').val();
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
 
         if (sceneSeason === '') {
             sceneSeason = null;
@@ -206,8 +206,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }
 
         $.getJSON('home/setSceneNumbering', {
-            show: showId,
-            indexer: indexer,
+            indexername: indexerName,
+            seriesid: seriesId,
             forSeason: forSeason,
             forEpisode: forEpisode,
             sceneSeason: sceneSeason,
@@ -230,16 +230,16 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }
 
     function setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-        var showId = $('#series-id').val();
-        var indexer = $('#indexer').val();
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
 
         if (sceneAbsolute === '') {
             sceneAbsolute = null;
         }
 
         $.getJSON('home/setSceneNumbering', {
-            show: showId,
-            indexer: indexer,
+            indexername: indexerName,
+            seriesid: seriesId,
             forAbsolute: forAbsolute,
             sceneAbsolute: sceneAbsolute
         }, function(data) {
@@ -409,8 +409,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
-        indexer: $('input#indexer').val(),
-        indexer_id: $('input#series-id').val() // eslint-disable-line camelcase
+        indexername: $('input#indexer-name').val(),
+        seriesid: $('input#series-id').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
     });

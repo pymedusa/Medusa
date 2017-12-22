@@ -187,20 +187,22 @@ MEDUSA.home.snatchSelection = function() {
     $('body').on('click', '.manualSearchButton', function(event) {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        var forceSearch = $(this).attr('data-force-search');
+        const indexerId = $('meta[data-last-prov-updates]').attr('data-indexer-id');
+        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const forceSearch = $(this).attr('data-force-search');
 
         if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
-                show: show,
-                season: season,
-                episode: episode,
-                manual_search_type: manualSearchType, // eslint-disable-line camelcase
-                perform_search: forceSearch // eslint-disable-line camelcase
+                'indexer_id': indexerId,
+                'series_id': seriesId,
+                'season': season,
+                'episode': episode,
+                'manual_search_type': manualSearchType, // eslint-disable-line camelcase
+                'perform_search': forceSearch // eslint-disable-line camelcase
             });
             // Force the search, but give the checkCacheUpdates the time to start up a search thread
             setTimeout(function() {

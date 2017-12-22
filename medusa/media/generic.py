@@ -27,13 +27,14 @@ from ..show.show import Show
 
 
 class GenericMedia(object):
-    def __init__(self, indexer_id, media_format='normal'):
+    def __init__(self, series_obj, media_format='normal'):
         """
         :param indexer_id: The indexer id of the show
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
         """
 
-        self.indexer_id = try_int(indexer_id, 0)
+        self.series_obj = series_obj
+        self.indexer_id = series_obj.series_id
 
         if media_format in ('normal', 'thumb'):
             self.media_format = media_format
@@ -95,7 +96,7 @@ class GenericMedia(object):
         """
 
         try:
-            return Show.find(app.showList, self.indexer_id)
+            return self.series_obj
         except MultipleShowObjectsException:
             return None
 

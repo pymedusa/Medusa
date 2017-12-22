@@ -160,11 +160,11 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            show_obj = Show.find(app.showList,
-                                 int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
-            if show_obj:
-                self.show = show_obj
-                episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+            series_obj = Show.find_by_id(app.showList, proper_candidate(b'indexer_id'), proper_candidate[b'showid'])
+
+            if series_obj:
+                self.show = series_obj
+                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
@@ -183,7 +183,7 @@ class GenericProvider(object):
 
                         search_result.search_type = PROPER_SEARCH
                         search_result.date = datetime.today()
-                        search_result.show = show_obj
+                        search_result.show = series_obj
 
         return results
 
@@ -639,9 +639,7 @@ class GenericProvider(object):
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.series.indexerid,
-                                                          episode.series.indexer,
-                                                          episode.scene_season)):
+                        show_name in get_scene_exceptions(episode.series, episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:

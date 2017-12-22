@@ -702,7 +702,7 @@ class CMD_Episode(ApiCall):
 
     def run(self):
         """Get detailed information about an episode."""
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -769,7 +769,7 @@ class CMD_EpisodeSearch(ApiCall):
 
     def run(self):
         """ Search for an episode """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -825,7 +825,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
     def run(self):
         """ Set the status of an episode or a season (when no episode is provided) """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -939,7 +939,7 @@ class CMD_SubtitleSearch(ApiCall):
 
     def run(self):
         """ Search for an episode subtitles """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -997,7 +997,7 @@ class CMD_Exceptions(ApiCall):
                 scene_exceptions[indexerid].append(row['show_name'])
 
         else:
-            show_obj = Show.find(app.showList, int(self.indexerid))
+            show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
             if not show_obj:
                 return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -1850,7 +1850,7 @@ class CMD_Show(ApiCall):
 
     def run(self):
         """ Get detailed information about a show """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -1958,7 +1958,7 @@ class CMD_ShowAddExisting(ApiCall):
 
     def run(self):
         """ Add an existing show in Medusa """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if show_obj:
             return _responds(RESULT_FAILURE, msg='An existing indexerid already exists in the database')
 
@@ -2055,7 +2055,7 @@ class CMD_ShowAddNew(ApiCall):
 
     def run(self):
         """ Add a new show to Medusa """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if show_obj:
             return _responds(RESULT_FAILURE, msg='An existing indexerid already exists in database')
 
@@ -2181,7 +2181,7 @@ class CMD_ShowCache(ApiCall):
 
     def run(self):
         """ Check Medusa's cache to see if the images (poster, banner, fanart) for a show are valid """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2225,7 +2225,7 @@ class CMD_ShowDelete(ApiCall):
 
     def run(self):
         """ Delete a show in Medusa """
-        error, show = Show.delete(self.indexerid, self.remove_files)
+        error, show = Show.delete(INDEXER_TVDBV2, self.indexerid, self.remove_files)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2253,7 +2253,7 @@ class CMD_ShowGetQuality(ApiCall):
 
     def run(self):
         """ Get the quality setting of a show """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2284,7 +2284,7 @@ class CMD_ShowGetPoster(ApiCall):
         """ Get the poster a show """
         return {
             'outputType': 'image',
-            'image': ShowPoster(self.indexerid),
+            'image': ShowPoster(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
         }
 
 
@@ -2310,7 +2310,7 @@ class CMD_ShowGetBanner(ApiCall):
         """ Get the banner of a show """
         return {
             'outputType': 'image',
-            'image': ShowBanner(self.indexerid),
+            'image': ShowBanner(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
         }
 
 
@@ -2338,7 +2338,7 @@ class CMD_ShowGetNetworkLogo(ApiCall):
         """
         return {
             'outputType': 'image',
-            'image': ShowNetworkLogo(self.indexerid),
+            'image': ShowNetworkLogo(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
         }
 
 
@@ -2364,7 +2364,7 @@ class CMD_ShowGetFanArt(ApiCall):
         """ Get the fan art of a show """
         return {
             'outputType': 'image',
-            'image': ShowFanArt(self.indexerid),
+            'image': ShowFanArt(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
         }
 
 
@@ -2390,7 +2390,7 @@ class CMD_ShowPause(ApiCall):
 
     def run(self):
         """ Pause or un-pause a show """
-        error, show = Show.pause(self.indexerid, self.pause)
+        error, show = Show.pause(INDEXER_TVDBV2, self.indexerid, self.pause)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2418,7 +2418,7 @@ class CMD_ShowRefresh(ApiCall):
 
     def run(self):
         """ Refresh a show in Medusa """
-        error, show = Show.refresh(self.indexerid)
+        error, show = Show.refresh(INDEXER_TVDBV2, self.indexerid)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2448,7 +2448,7 @@ class CMD_ShowSeasonList(ApiCall):
 
     def run(self):
         """ Get the list of seasons of a show """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2490,8 +2490,8 @@ class CMD_ShowSeasons(ApiCall):
 
     def run(self):
         """ Get the list of episodes for one or all seasons of a show """
-        sho_obj = Show.find(app.showList, int(self.indexerid))
-        if not sho_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
         main_db_con = db.DBConnection(row_type='dict')
@@ -2521,8 +2521,9 @@ class CMD_ShowSeasons(ApiCall):
 
         else:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles FROM tv_episodes WHERE showid = ? AND season = ?',
-                [self.indexerid, self.season])
+                'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
+                ' FROM tv_episodes WHERE showid = ? AND season = ? AND indexer = ?',
+                [self.indexerid, self.season, INDEXER_TVDBV2])
             if not sql_results:
                 return _responds(RESULT_FAILURE, msg='Season not found')
             seasons = {}
@@ -2570,7 +2571,7 @@ class CMD_ShowSetQuality(ApiCall):
 
     def run(self):
         """ Set the quality setting of a show. If no quality is provided, the default user setting is used. """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2614,7 +2615,7 @@ class CMD_ShowStats(ApiCall):
 
     def run(self):
         """ Get episode statistics for a given show """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2718,7 +2719,7 @@ class CMD_ShowUpdate(ApiCall):
 
     def run(self):
         """ Update a show in Medusa """
-        show_obj = Show.find(app.showList, int(self.indexerid))
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 

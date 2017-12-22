@@ -85,10 +85,11 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.indexer_id AS indexer_id '
+            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
             b'FROM tv_episodes, tv_shows '
             b'WHERE season != 0 '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
+            b'AND tv_episodes.indexer = tv_shows.indexer '
             b'AND tv_episodes.status IN ({statuses}) '
             b'ORDER BY show_name'.format(statuses=','.join(['?'] * len(status_list))),
             status_list
@@ -97,6 +98,8 @@ class Manage(Home, WebRoot):
         ep_counts = {}
         show_names = {}
         sorted_show_ids = []
+        # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
+        # Use tv_shows.show_id in stead.
         for cur_status_result in status_results:
             cur_indexer_id = int(cur_status_result[b'indexer_id'])
             if cur_indexer_id not in ep_counts:
@@ -201,13 +204,14 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
+            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
             b'AND tv_episodes.status LIKE \'%4\' '
             b'AND tv_episodes.season != 0 '
             b'AND tv_episodes.location != \'\' '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
+            b'AND tv_episodes.indexer = tv_shows.indexer'
             b'ORDER BY show_name'
         )
 
@@ -221,6 +225,8 @@ class Manage(Home, WebRoot):
             elif whichSubs in cur_status_result[b'subtitles']:
                 continue
 
+            # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
+            # Fix by using tv_shows.show_id in stead.
             cur_indexer_id = int(cur_status_result[b'indexer_id'])
             if cur_indexer_id not in ep_counts:
                 ep_counts[cur_indexer_id] = 1

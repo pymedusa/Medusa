@@ -43,28 +43,29 @@ def get_quality_class(ep_obj):
     return quality_class
 
 
-def get_episode(show, season=None, episode=None, absolute=None):
+def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):
     """
     Get a specific episode object based on show, season and episode number.
 
-    :param show: Season number
+    :param show: Series id
     :param season: Season number
     :param episode: Episode number
     :param absolute: Optional if the episode number is a scene absolute number
+    :param indexer: Optional indexer id.
     :return: episode object
     """
-    if show is None:
+    if series_id is None:
         return 'Invalid show parameters'
 
-    show_obj = Show.find(app.showList, int(show))
+    series_obj = Show.find_by_id(app.showList, indexer, series_id)
 
-    if show_obj is None:
+    if series_obj is None:
         return 'Invalid show parameters'
 
     if absolute:
-        ep_obj = show_obj.get_episode(absolute_number=absolute)
+        ep_obj = series_obj.get_episode(absolute_number=absolute)
     elif season and episode:
-        ep_obj = show_obj.get_episode(season, episode)
+        ep_obj = series_obj.get_episode(season, episode)
     else:
         return 'Invalid parameters'
 
@@ -77,10 +78,11 @@ def get_episode(show, season=None, episode=None, absolute=None):
 def get_episodes(search_thread, searchstatus):
     """Get all episodes located in a search thread with a specific status."""
     results = []
-    # NOTE!: Show.find called with just indexerid!
-    show_obj = Show.find(app.showList, int(search_thread.show.indexerid))
 
-    if not show_obj:
+    # Search again for the show in the library. Might have been deleted very recently.
+    series_obj = Show.find_by_id(app.showList, search_thread.show.indexer, search_thread.show.series_id)
+
+    if not series_obj:
         if not search_thread.show.is_recently_deleted:
             log.error(u'No Show Object found for show with indexerID: {0}',
                       search_thread.show.indexerid)
@@ -90,17 +92,19 @@ def get_episodes(search_thread, searchstatus):
         search_thread.segment = [search_thread.segment]
 
     for ep_obj in search_thread.segment:
-        ep = show_obj.get_episode(ep_obj.season, ep_obj.episode)
+        ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
-            'show': show_obj.indexerid,
+            'series_obj': series_obj,
             'episode': ep.episode,
-            'episodeindexid': ep.indexerid,
+            'episodeindexerid': ep.indexerid,
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
             'quality': get_quality_class(ep),
-            'overview': Overview.overviewStrings[show_obj.get_overview(ep.status,
-                                                                       manually_searched=ep.manually_searched)],
+            'overview': Overview.overviewStrings[series_obj.get_overview(
+                ep.status,
+                manually_searched=ep.manually_searched
+            )],
         })
 
     return results
@@ -131,7 +135,7 @@ def update_finished_search_queue_item(snatch_queue_item):
     return False
 
 
-def collect_episodes_from_search_thread(show):
+def collect_episodes_from_search_thread(series_obj):
     """Collect all episodes from from the forced_search_queue_scheduler.
 
     And looks for episodes that are in status queued or searching.
@@ -141,7 +145,7 @@ def collect_episodes_from_search_thread(show):
 
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
-    for search_thread in app.forced_search_queue_scheduler.action.get_all_ep_from_queue(show):
+    for search_thread in app.forced_search_queue_scheduler.action.get_all_ep_from_queue(series_obj):
         episodes += get_episodes(search_thread, searchstatus)
 
     # Running Searches
@@ -157,7 +161,7 @@ def collect_episodes_from_search_thread(show):
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
     for search_thread in FORCED_SEARCH_HISTORY:
-        if show and not search_thread.show.indexerid == int(show):
+        if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
         if isinstance(search_thread, ForcedSearchQueueItem):
@@ -171,15 +175,14 @@ def collect_episodes_from_search_thread(show):
     return episodes
 
 
-def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
+def get_provider_cache_results(series, show_all_results=None, perform_search=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
     down_cur_quality = 0
-    show_obj = Show.find(app.showList, int(show))
-    preferred_words = show_obj.show_words().preferred_words
-    undesired_words = show_obj.show_words().undesired_words
-    ignored_words = show_obj.show_words().ignored_words
-    required_words = show_obj.show_words().required_words
+    preferred_words = series.show_words().preferred_words
+    undesired_words = series.show_words().undesired_words
+    ignored_words = series.show_words().ignored_words
+    required_words = series.show_words().required_words
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -237,14 +240,14 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
                     list_of_episodes = '{0}{1}'.format(' episodes LIKE ', ' AND episodes LIKE '.join(
-                        ['?' for _ in show_obj.get_all_episodes(season)]
+                        ['?' for _ in series.get_all_episodes(season)]
                     ))
 
                     common_sql += " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(
                         list_of_episodes=list_of_episodes
                     )
                     add_params += [season, '||']  # When the episodes field is empty.
-                    add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in show_obj.get_all_episodes(season)]
+                    add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in series.get_all_episodes(season)]
 
             # Add the created sql, to lists, that are used down below to perform one big UNIONED query
             combined_sql_q.append(common_sql)
@@ -269,10 +272,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     # Always start a search when no items found in cache
     if not sql_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = get_episode(show, season, episode)
+        ep_obj = get_episode(indexer, show, season, episode)
         if isinstance(ep_obj, str):
             provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, \
-            and episode: {1}x{2}'.format(show_obj.name, season, episode)
+            and episode: {1}x{2}'.format(series.name, season, episode)
 
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member

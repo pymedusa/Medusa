@@ -176,7 +176,7 @@ class HomeAddShows(Home):
 
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
-                if indexer_id and Show.find(app.showList, indexer_id):
+                if indexer_id and indexer and Show.find_by_id(app.showList, indexer, indexer_id):
                     cur_dir['added_already'] = True
         return t.render(dirList=dir_list)
 
@@ -394,7 +394,7 @@ class HomeAddShows(Home):
 
             indexer_id = try_int(tvdb_id, None)
 
-        if Show.find(app.showList, int(indexer_id)):
+        if Show.find_by_id(app.showList, INDEXER_TVDBV2, indexer_id):
             return
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists

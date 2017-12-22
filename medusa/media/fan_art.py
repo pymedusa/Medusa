@@ -28,6 +28,6 @@ class ShowFanArt(GenericMedia):
 
     def get_media_path(self):
         if self.get_show():
-            return ImageCache().fanart_path(self.indexer_id)
+            return ImageCache().fanart_path(self.series_obj.series_id)
 
         return ''

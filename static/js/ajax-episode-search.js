@@ -89,8 +89,9 @@ function updateImages(data) {
 
 function checkManualSearches() {
     var pollInterval = 5000;
-    var showId = $('#series-id').val();
-    var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+    var indexerName = $('#indexer-name').val();
+    var seriesId = $('#series-id').val();
+    var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
     $.ajax({
         url: url,
         error: function() {

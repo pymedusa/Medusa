@@ -133,11 +133,11 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
                 return True
         return False
 
-    def get_all_ep_from_queue(self, show):
+    def get_all_ep_from_queue(self, series_obj):
         """
         Get QueueItems from the queue if the queue item is scheduled to search for the passed Show.
 
-        @param show: Show indexer_id
+        @param show: Series object.
 
         @return: A list of ForcedSearchQueueItem or FailedQueueItem items
         @todo: In future a show object should be passed instead of the indexer_id, as we might migrate
@@ -145,7 +145,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         """
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.identifier) == series_obj.identifier:
                 ep_obj_list.append(cur_item)
         return ep_obj_list
 

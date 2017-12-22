@@ -92,7 +92,7 @@
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></a>
+                        <a href="home/displayShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></a>
                     </div>
                 </div>
                 <div class="show-poster-footer row">
@@ -100,7 +100,7 @@
                         <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                         <div class="show-title">
                             <div class="ellipsis">${cur_show.name}</div>
-                            % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
+                            % if get_xem_numbering_for_show(cur_show, refresh_data=False):
                                 <div class="xem">
                                     <img src="images/xem.png" width="16" height="16" />
                                 </div>

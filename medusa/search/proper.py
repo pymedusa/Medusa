@@ -103,7 +103,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # Get recently subtitled episodes (last 2 days) from DB
             # Episode status becomes downloaded only after found subtitles
             last_subtitled = search_date.strftime(History.date_format)
-            recently_aired = main_db_con.select(b'SELECT showid, season, episode FROM history '
+            recently_aired = main_db_con.select(b'SELECT indexer_id, showid, season, episode FROM history '
                                                 b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
         if not recently_aired:

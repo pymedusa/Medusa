@@ -1150,10 +1150,11 @@ class Episode(TV):
                 b'FROM '
                 b'  tv_episodes '
                 b'WHERE '
-                b'  showid = ? '
+                b'  indexer = ?'
+                b'  AND showid = ? '
                 b'  AND season = ? '
                 b'  AND episode = ?',
-                [self.series.indexerid, self.season, self.episode])
+                [self.series.indexer, self.series.indexerid, self.season, self.episode])
 
             ep_id = None
             if rows:
@@ -1259,9 +1260,9 @@ class Episode(TV):
                     b'  version, '
                     b'  release_group) '
                     b'VALUES '
-                    b'  ((SELECT episode_id FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?), '
+                    b'  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
                     b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-                    [self.series.indexerid, self.season, self.episode, self.indexerid, self.indexer, self.name,
+                    [self.indexer.indexer, self.series.indexerid, self.season, self.episode, self.indexerid, self.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.location, self.file_size,
                      self.release_name, self.is_proper, self.series.indexerid, self.season, self.episode,
@@ -1276,7 +1277,6 @@ class Episode(TV):
             return
 
         new_value_dict = {b'indexerid': self.indexerid,
-                          b'indexer': self.indexer,
                           b'name': self.name,
                           b'description': self.description,
                           b'subtitles': ','.join(self.subtitles),
@@ -1295,9 +1295,12 @@ class Episode(TV):
                           b'release_group': self.release_group,
                           b'manually_searched': self.manually_searched}
 
-        control_value_dict = {b'showid': self.series.indexerid,
-                              b'season': self.season,
-                              b'episode': self.episode}
+        control_value_dict = {
+            b'indexer': self.series.indexer,
+            b'showid': self.series.indexerid,
+            b'season': self.season,
+            b'episode': self.episode
+        }
 
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()

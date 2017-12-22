@@ -3,7 +3,7 @@
     from medusa import app
     from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import mappings
+    from medusa.indexers.indexer_config import mappings, indexer_id_to_name
     from medusa import sbdatetime
     from random import choice
     import datetime
@@ -125,7 +125,7 @@
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
-            <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
+            <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</a>
 % if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
@@ -270,7 +270,7 @@
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
-                <a href="home/displayShow?show=${cur_result['showid']}">
+                <a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
                     <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
                 </a>
             </th>
@@ -281,7 +281,7 @@
             <td class="next_episode">
                 <div class="clearfix">
                     <span class="tvshowTitle">
-                        <a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
+                        <a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}}
                             ${('', '<span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
                         </a>
                     </span>
@@ -357,7 +357,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></a>
+                            <a title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">

@@ -74,6 +74,7 @@ class ComingEpisodes(object):
             'WHERE season != 0 '
             'AND airdate >= ? '
             'AND airdate < ? '
+            'AND s.indexer = e.indexer'
             'AND s.indexer_id = e.showid '
             'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
             [today, next_week] + qualities_list

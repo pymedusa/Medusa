@@ -79,7 +79,7 @@
                     <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                         <div class="col-md-12">
                             <div class="col-md-6 left-30">
-                                <h3 style="display: inline;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h3>
+                                <h3 style="display: inline;"><a href="home/displayShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}">${cur_show.name}</a></h3>
                                  % if cur_show.quality in qualityPresets:
                                     &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
                                  % endif
@@ -92,8 +92,8 @@
                                     % if showCounts[cur_show.indexerid][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[cur_show.indexerid][Overview.QUAL]}</b></span>
                                     % endif
-                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexer_id=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
-                                    <a class="btn btn-inline editShow" href="manage/editShow?show=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
+                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
+                                    <a class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
                                 </div>
                             </div>
                         </div>
