@@ -16,7 +16,7 @@
     <div id="showtitle" class="col-lg-12" data-showname="${show.name}">
         <div>
             <h1 class="title" data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
-            <a href="home/displayShow?indexername=${show.indexerid}&seriesid=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
+            <a href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
         </div>
 
     % if action == 'snatchSelection':

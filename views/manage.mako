@@ -96,7 +96,7 @@
                 %>
                 <tr>
                     <td class="triggerhighlight" align="center"><input type="checkbox" class="editCheck" id="edit-${cur_show.indexerid}" /></td>
-                    <td class="tvShow triggerhighlight"><a href="home/displayShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}">${cur_show.name}</a></td>
+                    <td class="tvShow triggerhighlight"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</a></td>
                     <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
                     <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>

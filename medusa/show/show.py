@@ -111,6 +111,11 @@ class Show(object):
         except ValueError:
             indexer_id = indexer_name_to_id(indexer_id)
 
+        try:
+            series_id = int(series_id)
+        except ValueError:
+            log.warning('Invalid series id: {series_id}', {'series_id': series_id})
+
         if series_id is None or series is None or len(series) == 0:
             return None
 

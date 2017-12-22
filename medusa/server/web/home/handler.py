@@ -867,12 +867,12 @@ class Home(WebRoot):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
                     'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series=series_obj),
+                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(show=series_obj),
+                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
