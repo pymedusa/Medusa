@@ -1272,7 +1272,10 @@ class PostProcessor(object):
                 existing_release_names.append(self.release_name or 'N/A')
                 app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
             else:
-                logger.log(u'Unable to get info to move torrent later as no info hash available for: {0}'.format
-                           (self.file_path), logger.WARNING)
-
+                if not self.in_history:
+                    logger.log(u"Please consider manually move torrent to seed folder as it wasn't snatched from "
+                               u"Medusa or we couldn't find it in history: {0}".format(self.file_path), logger.WARNING)
+                else:
+                    logger.log(u'Please consider manually move torrent to seed folder as there is no info hash in '
+                               u'snatch history: {0}'.format(self.file_path), logger.WARNING)
         return True
