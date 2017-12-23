@@ -183,7 +183,7 @@
             ${cur_show.status}
             </td>
             <td align="center">
-                <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
+                <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
                 <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" />
             </td>
         </tr>
