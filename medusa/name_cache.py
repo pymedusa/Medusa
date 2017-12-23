@@ -104,14 +104,14 @@ def build_name_cache(series=None):
             for name in season_exceptions
         }
         # Add original name to name cache
-        show_name = full_sanitize_scene_name(show.name)
-        names[show_name] = series_identifier
+        series_name = full_sanitize_scene_name(series.name)
+        names[series_name] = series_identifier
 
         # Add scene exceptions to name cache
         name_cache.update(names)
 
-        log.debug(u'Internal name cache for {show} set to: {names}', {
-            'show': show.name,
+        log.debug(u'Internal name cache for {series} set to: {names}', {
+            'series': series_name,
             'names': ', '.join(names.keys())
         })
 

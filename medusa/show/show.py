@@ -111,7 +111,8 @@ class Show(object):
         except ValueError:
             indexer_id = indexer_name_to_id(indexer_id)
         except TypeError:
-            log.warning('Invalid indexer id: {indexer_id}', {'indexer_id': indexer_id})
+            log.exception('Invalid indexer id: {indexer_id}', {'indexer_id': indexer_id})
+            return None
 
         try:
             series_id = int(series_id)

@@ -623,7 +623,7 @@ class Episode(TV):
             self.indexerid = int(sql_results[0][b'indexerid'])
             self.indexer = int(sql_results[0][b'indexer'])
 
-            xem_refresh(self.series.indexerid, self.series.indexer)
+            xem_refresh(self)
 
             self.scene_season = try_int(sql_results[0][b'scene_season'], 0)
             self.scene_episode = try_int(sql_results[0][b'scene_episode'], 0)
@@ -631,15 +631,13 @@ class Episode(TV):
 
             if self.scene_absolute_number == 0:
                 self.scene_absolute_number = get_scene_absolute_numbering(
-                    self.series.indexerid,
-                    self.series.indexer,
+                    self.series,
                     self.absolute_number
                 )
 
             if self.scene_season == 0 or self.scene_episode == 0:
                 self.scene_season, self.scene_episode = get_scene_numbering(
-                    self.series.indexerid,
-                    self.series.indexer,
+                    self.series,
                     self.season, self.episode
                 )
 
@@ -756,17 +754,15 @@ class Episode(TV):
         self.season = season
         self.episode = episode
 
-        xem_refresh(self.series.indexerid, self.series.indexer)
+        xem_refresh(self)
 
         self.scene_absolute_number = get_scene_absolute_numbering(
-            self.series.indexerid,
-            self.series.indexer,
+            self.series,
             self.absolute_number
         )
 
         self.scene_season, self.scene_episode = get_scene_numbering(
-            self.series.indexerid,
-            self.series.indexer,
+            self.series,
             self.season, self.episode
         )
 
@@ -973,8 +969,7 @@ class Episode(TV):
                     self.season = int(ep_details.findtext('season'))
 
                     self.scene_absolute_number = get_scene_absolute_numbering(
-                        self.series.indexerid,
-                        self.series.indexer,
+                        self.series,
                         self.absolute_number
                     )
 

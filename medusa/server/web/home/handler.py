@@ -174,6 +174,7 @@ class Home(WebRoot):
         snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
         downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
 
+        # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
             b"""
             SELECT showid,
@@ -831,7 +832,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='displayShow.mako')
         submenu = [{
             'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil',
         }]
 
@@ -867,41 +868,41 @@ class Home(WebRoot):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
                     'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
                 })
                 submenu.append({
                     'title': 'Re-scan files',
-                    'path': 'home/refreshShow?seriesid={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-refresh',
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?seriesid={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
                     'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?seriesid={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'requires': self.haveKODI(),
                     'icon': 'menu-icon-kodi',
                 })
                 submenu.append({
                     'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?seriesid={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'requires': self.haveEMBY(),
                     'icon': 'menu-icon-emby',
                 })
                 submenu.append({
                     'title': 'Preview Rename',
-                    'path': 'home/testRename?seriesid={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
@@ -909,7 +910,7 @@ class Home(WebRoot):
                         series_obj) and series_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?seriesid={series_obj.indexerid}&indexer={series_obj.indexer}'.format(series_obj=series_obj),
+                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                         'icon': 'menu-icon-backlog',
                     })
 
@@ -1164,7 +1165,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
         submenu = [{
             'title': 'Edit',
-            'path': 'home/editShow?seriesid={series_obj.indexerid}&indexer={series_obj.indexer}'.format(series_obj=series_obj),
+            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
@@ -1179,41 +1180,41 @@ class Home(WebRoot):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
                     'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?seriesid={series_obj.indexerid}&indexer={series_obj.indexer}'.format(series_obj=series_obj),
+                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(show=series_obj),
+                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(show=series_obj),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
                 })
                 submenu.append({
                     'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-refresh',
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
                     'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'requires': self.haveKODI(),
                     'icon': 'submenu-icon-kodi',
                 })
                 submenu.append({
                     'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'requires': self.haveEMBY(),
                     'icon': 'ui-icon ui-icon-refresh',
                 })
                 submenu.append({
                     'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
@@ -1221,7 +1222,7 @@ class Home(WebRoot):
                         series_obj) and series_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                         'icon': 'ui-icon ui-icon-comment',
                     })
 
@@ -1682,7 +1683,7 @@ class Home(WebRoot):
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
-                xem_refresh(series_obj.indexerid, series_obj.indexer)
+                xem_refresh(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors += 1
@@ -1712,7 +1713,7 @@ class Home(WebRoot):
                                    (num=errors, s='s' if errors > 1 else ''))
 
         logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     @staticmethod
     def erase_cache(series_obj):
@@ -1731,8 +1732,8 @@ class Home(WebRoot):
                 try:
                     main_db_con.action(
                         b'DELETE FROM \'{provider}\' '
-                        b'WHERE indexerid = ? AND indexer = ?'.format(provider=cur_provider.get_id()),
-                        [series_obj.indexerid, series_obj.indexer]
+                        b'WHERE indexer = ? AND indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [series_obj.indexer, series_obj.series_id]
                     )
                 except Exception:
                     logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
@@ -1742,9 +1743,10 @@ class Home(WebRoot):
             logger.log(u'Unable to delete cached results for show: {show}'.format
                        (show=series_obj.name), logger.DEBUG)
 
-    def togglePause(self, series=None):
+    def togglePause(self, indexername=None, seriesid=None):
         # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
-        error, series_obj = Show.pause(series)
+        indexer_name_to_id(indexername)
+        error, series_obj = Show.pause(indexer_name_to_id(indexername), seriesid)
 
         if error is not None:
             return self._genericMessage('Error', error)
@@ -1752,7 +1754,7 @@ class Home(WebRoot):
         ui.notifications.message('{show} has been {state}'.format
                                  (show=series_obj.name, state='paused' if series_obj.paused else 'resumed'))
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def deleteShow(self, indexername=1, seriesid=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
@@ -1790,7 +1792,7 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def updateShow(self, indexername=None, seriesid=None):
         # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
@@ -1812,7 +1814,7 @@ class Home(WebRoot):
         # just give it some time
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def subtitleShow(self, indexername=None, seriesid=None):
         if seriesid is None:
@@ -1829,12 +1831,9 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def updateKODI(self, indexername=None, seriesid=None):
-        show_name = None
-        series_obj = None
-
         if seriesid is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
@@ -1857,7 +1856,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
@@ -1885,7 +1884,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
@@ -2061,7 +2060,7 @@ class Home(WebRoot):
                 'result': 'success',
             })
         else:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def testRename(self, indexername=None, seriesid=None):
         if not indexername or not seriesid:
@@ -2095,7 +2094,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='testRename.mako')
         submenu = [{
             'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj),
+            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
@@ -2121,7 +2120,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 
         if eps is None:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
@@ -2155,7 +2154,7 @@ class Home(WebRoot):
 
             root_ep_obj.rename()
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.indexerid}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None, manual_search=None):
         """Search a ForcedSearch single episode using providers which are backlog enabled."""
@@ -2201,9 +2200,11 @@ class Home(WebRoot):
             'episodes': episodes,
         })
 
-    def searchEpisodeSubtitles(self, show=None, season=None, episode=None, lang=None):
+    def searchEpisodeSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = get_episode(show, season, episode)
+        indexer_id = indexer_name_to_id(indexername)
+        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        ep_obj = series_obj.get_episode(season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({
                 'result': 'failure',

@@ -589,12 +589,11 @@ class QueueItemAdd(ShowQueueItem):
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
         # Load XEM data to DB for show
-        scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
+        scene_numbering.xem_refresh(self.show, force=True)
 
         # check if show has XEM mapping so we can determine if searches
         # should go by scene numbering or indexer numbering.
-        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
-                                                                         self.show.indexer):
+        if not self.scene and scene_numbering.get_xem_numbering_for_show(self):
             self.show.scene = 1
 
         # After initial add, set to default_status_after.
@@ -633,7 +632,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.populate_cache()
 
             # Load XEM data to DB for show
-            scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            scene_numbering.xem_refresh(self.show)
         except Exception as e:
             logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
                        (id=self.show.indexerid, show=self.show.name, error_msg=e.message), logger.ERROR)
