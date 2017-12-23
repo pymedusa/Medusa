@@ -1,7 +1,13 @@
 # coding=utf-8
 
+import logging
 from medusa import db
 from medusa.common import Quality
+from medusa.logger.adapters.style import BraceAdapter
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 # Add new migrations at the bottom of the list
@@ -75,7 +81,8 @@ class AddIndexerIds(HistoryStatus):
         self.addColumn('history', 'indexer_id', 'NUMERIC', -1)
 
         # get all the shows. Might need them.
-        all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
+        main_db_con = db.DBConnection()
+        all_series = main_db_con.select('SELECT indexer, indexer_id FROM tv_shows')
 
         series_dict = {}
         # check for double
@@ -88,11 +95,19 @@ class AddIndexerIds(HistoryStatus):
         if not results:
             return
 
+        log.debug(u"Starting to update the history table in the failed.db database. Depending on it's size"
+                  u" this may take a while. Updating: {rows} records.", {'rows': len(results)})
+
+        counter = 0
         for result in results:
+            counter += 1
             # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
             series_id = result[0]
             indexer_id = series_dict.get(series_id, -1)
 
             # Update the value in the db.
+            if counter % 100 == 0:
+                log.debug('Updating history table, logging every 100 rows: updating row: {counter}', {'counter': counter})
             self.connection.action(
-                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id])
+                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
+            )
