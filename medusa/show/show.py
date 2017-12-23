@@ -208,17 +208,17 @@ class Show(object):
          - the show object that was refreshed, if it exists, ``None`` otherwise
         """
 
-        error, series_object = Show._validate_indexer_id(indexer_id, series_id)
+        error, series_obj = Show._validate_indexer_id(indexer_id, series_id)
 
         if error is not None:
-            return error, series_object
+            return error, series_obj
 
         try:
-            app.show_queue_scheduler.action.refreshShow(series_object)
+            app.show_queue_scheduler.action.refreshShow(series_obj)
         except CantRefreshShowException as exception:
-            return ex(exception), series_object
+            return ex(exception), series_obj
 
-        return None, series_object
+        return None, series_obj
 
     @staticmethod
     def _validate_indexer_id(indexer_id, series_id):
