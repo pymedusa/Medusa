@@ -79,7 +79,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?indexername' +
+            $('#indexername').attr('value') +
+            '&seriesid=' + $('#series-id').attr('value') +
+            '&eps=' + epArr.join('|') +
+            '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -215,9 +219,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }, function(data) {
             // Set the values we get back
             if (data.sceneSeason === null || data.sceneEpisode === null) {
-                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val('');
+                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val('');
             } else {
-                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
             }
             if (!data.success) {
                 if (data.errorMessage) {
@@ -245,9 +249,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }, function(data) {
             // Set the values we get back
             if (data.sceneAbsolute === null) {
-                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val('');
+                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val('');
             } else {
-                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val(data.sceneAbsolute);
+                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val(data.sceneAbsolute);
             }
 
             if (!data.success) {
@@ -409,8 +413,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
-        indexername: $('input#indexer-name').val(),
-        seriesid: $('input#series-id').val() // eslint-disable-line camelcase
+        indexername: $('#indexer-name').val(),
+        seriesid: $('#series-id').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
     });

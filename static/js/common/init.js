@@ -5,6 +5,7 @@ MEDUSA.common.init = function() {
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         var seriesId = $('#series-id').attr('value');
+
         if (seriesId) {
             let path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
