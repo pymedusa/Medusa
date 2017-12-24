@@ -174,11 +174,6 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("DELETE FROM tv_episodes WHERE episode_id = ?", [cur_orphan["episode_id"]])
 
     def fix_missing_table_indexes(self):
-        if not self.connection.select("PRAGMA index_info('idx_indexer_id')"):
-            log.info(u'Missing idx_indexer_id for TV Shows table detected!,'
-                     u' fixing...')
-            self.connection.action("CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);")
-
         if not self.connection.select("PRAGMA index_info('idx_tv_episodes_showid_airdate')"):
             log.info(u'Missing idx_tv_episodes_showid_airdate for TV Episodes'
                      u' table detected!, fixing...')
@@ -670,20 +665,37 @@ class AddIndexerIds(AddIndexerInteger):
     def execute(self):
         backupDatabase(self.connection.version)
 
-        log.info(u"Adding column indexer_id in history")
+        log.info(u'Adding column indexer_id in history')
         if not self.hasColumn('history', 'indexer_id'):
             self.addColumn('history', 'indexer_id', 'NUMERIC', -1)
 
-        log.info(u"Adding column indexer_id in blacklist")
+        log.info(u'Adding column indexer_id in blacklist')
         if not self.hasColumn('blacklist', 'indexer_id'):
             self.addColumn('blacklist', 'indexer_id', 'NUMERIC', -1)
 
-        log.info(u"Adding column indexer_id in whitelist")
+        log.info(u'Adding column indexer_id in whitelist')
         if not self.hasColumn('whitelist', 'indexer_id'):
             self.addColumn('whitelist', 'indexer_id', 'NUMERIC', -1)
 
-        log.info(u"Adding column indexer_id in whitelist")
+        log.info(u'Adding column indexer_id in whitelist')
         if not self.hasColumn('imdb_info', 'indexer'):
             self.addColumn('imdb_info', 'indexer', 'NUMERIC', -1)
+
+        log.info(u'Dropping the unique index on idx_indexer_id')
+        self.connection.action('DROP INDEX idx_indexer_id')
+
+        # Add the column imdb_info_id with PK
+        self.connection.action('DROP TABLE IF EXISTS tmp_imdb_info')
+        self.connection.action('ALTER TABLE imdb_info RENAME TO tmp_imdb_info')
+        self.connection.action(
+            'CREATE TABLE imdb_info(imdb_info_id INTEGER PRIMARY KEY, indexer NUMERIC, indexer_id INTEGER, imdb_id TEXT, '
+            'title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, '
+            'certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC, plot TEXT)'
+        )
+        self.connection.action('INSERT INTO imdb_info (indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot) '
+                               'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
+        self.connection.action('DROP TABLE tmp_imdb_info')
 
         self.inc_minor_version()
