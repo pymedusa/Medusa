@@ -100,9 +100,44 @@ if (!document.location.pathname.endsWith('/login/')) {
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);
         }
+
+        MEDUSA.config.indexers.indexerIdToName = (indexer) => {
+            return MEDUSA.config.indexers.config[parseInt(indexer)];
+        };
+
+        MEDUSA.config.indexers.nameToIndexerId = (name) => {
+            return Object.keys(MEDUSA.config.indexers.config).map((key, index) => {
+                if (MEDUSA.config.indexers.config[key] == name) {
+                    return key;
+                }
+            })[0];
+        };
+
         triggerConfigLoaded();
     }).catch(function(err) {
         log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
+
+// Run functions that depend on loading of the config.
+// Listen for the config loaded event.
+window.addEventListener('build', function(e) {
+    if (e.detail === 'medusa config loaded') {
+        /**
+         * Search for anchors with the attribute indexer-to-name and translate the indexer id to a name using the helper
+         * function MEDUSA.config.indexers.indexerIdToName().
+         *
+         * The anchor is rebuild using the indexer name.
+         */
+        $('a[data-indexer-to-name]').each((index, target) => {
+            const indexerId = $(target).attr('data-indexer-to-name');
+            const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
+
+            const re = /indexer-to-name/gi;
+            target.href = target.href.replace(re, indexerName);
+        });
+    }
+}, false);
+
+

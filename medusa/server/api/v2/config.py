@@ -9,6 +9,7 @@ from medusa import (
     db,
 )
 from medusa.helper.mappings import NonEmptyDict
+from medusa.indexers.indexer_config import indexerConfig
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -19,7 +20,7 @@ from medusa.server.api.v2.base import (
     iter_nested_items,
     set_nested_value,
 )
-from six import text_type
+from six import text_type, iteritems
 from tornado.escape import json_decode
 
 log = logging.getLogger(__name__)
@@ -177,6 +178,8 @@ class ConfigHandler(BaseRequestHandler):
         config_data['backlogOverview'] = NonEmptyDict()
         config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+        config_data['indexers'] = NonEmptyDict()
+        config_data['indexers']['config'] = {indexer_id: indexer['identifier'] for indexer_id, indexer in iteritems(indexerConfig)}
 
         if not identifier:
             return self._paginate([config_data])
