@@ -157,7 +157,7 @@ class HomeAddShows(Home):
 
                 # see if the folder is in KODI already
                 dir_results = main_db_con.select(
-                    b'SELECT indexer_id '
+                    b'SELECT indexer, indexer_id '
                     b'FROM tv_shows '
                     b'WHERE location = ? LIMIT 1',
                     [cur_path]

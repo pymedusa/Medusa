@@ -183,7 +183,7 @@ def make_dir(path):
     return True
 
 
-def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None):
+def search_indexer_for_show_id(show_name, indexer=None, series_id=None, ui=None):
     """Contact indexer to check for information on shows by showid.
 
     :param show_name: Name of show
@@ -212,29 +212,29 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
                       {'name': name, 'indexer': indexer_api.name})
 
             try:
-                search = t[indexer_id] if indexer_id else t[name]
+                search = t[series_id] if series_id else t[name]
             except Exception:
                 continue
 
             try:
-                seriesname = search[0]['seriesname']
+                searched_series_name = search[0]['seriesname']
             except Exception:
-                seriesname = None
+                searched_series_name = None
 
             try:
-                series_id = search[0]['id']
+                searched_series_id = search[0]['id']
             except Exception:
-                series_id = None
+                searched_series_id = None
 
-            if not (seriesname and series_id):
+            if not (searched_series_name and searched_series_id):
                 continue
-            show = Show.find_by_id(app.showList, indexer, indexer_id)
+            series = Show.find_by_id(app.showList, i, searched_series_id)
             # Check if we can find the show in our list
             # if not, it's not the right show
-            if (indexer_id is None) and (show is not None) and (show.indexerid == int(series_id)):
-                return seriesname, i, int(series_id)
-            elif (indexer_id is not None) and (int(indexer_id) == int(series_id)):
-                return seriesname, i, int(indexer_id)
+            if (series_id is None) and (series is not None) and (series.indexerid == int(searched_series_id)):
+                return searched_series_name, i, int(searched_series_id)
+            elif (series_id is not None) and (int(series_id) == int(searched_series_id)):
+                return searched_series_name, i, int(series_id)
 
         if indexer:
             break
@@ -1024,8 +1024,8 @@ def get_show(name, try_indexers=False):
 
         # try indexers
         if not series and try_indexers:
-            found_series = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)[2]
-            series = Show.find_by_id(app.showList, found_series[1], found_series[2])
+            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)
+            series = Show.find_by_id(app.showList, found_indexer_id, found_series_id)
 
         # try scene exceptions
         if not series:

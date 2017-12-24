@@ -60,7 +60,7 @@
                 % if cur_loading_show.show is None:
                 <span title="">Loading... (${cur_loading_show.show_name})</span>
                 % else:
-                <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_loading_show.show.name}</a>
                 % endif
                 </td>
                 <td></td>
@@ -138,7 +138,7 @@
             <td>
                 <span style="display: none;">${cur_show.name}</span>
                 <div class="imgbanner banner">
-                    <a href="home/displayShow?show=${cur_show.indexerid}">
+                    <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">
                     <img src="images/banner.png" lazy="on" series="${cur_show.slug}" asset="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name}"/>
                     </a>
                 </div>

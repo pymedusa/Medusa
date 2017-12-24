@@ -18,27 +18,25 @@
         if curDir['added_already']:
             continue
         show_dir = curDir['dir']
-        show_id = show_dir
+        series_id = show_dir
         if curDir['existing_info'][0]:
-            show_id = show_dir + '|' + str(curDir['existing_info'][0]) + '|' + str(curDir['existing_info'][1])
-            indexer = curDir['existing_info'][2]
-        indexer = 0
-        if curDir['existing_info'][0]:
-            indexer = curDir['existing_info'][2]
+            series_id = show_dir + '|' + str(curDir['existing_info'][0]) + '|' + str(curDir['existing_info'][1])
+            indexer_id = curDir['existing_info'][2]
+        indexer_id = 0
     %>
     <tr>
-        <td class="col-checkbox"><input type="checkbox" id="${show_id}" data-indexer="${indexer}" data-indexer-id="${curDir['existing_info'][0]}"
+        <td class="col-checkbox"><input type="checkbox" id="${series_id}" data-indexer="${indexer_id}" data-indexer-id="${series_id}"
             data-show-dir="${show_dir}" data-show-name="${curDir['existing_info'][1]}" class="dirCheck" checked=checked></td>
-        <td><label for="${show_id}">${curDir['display_dir']}</label></td>
-        % if curDir['existing_info'][1] and indexer > 0:
-            <td><a href="${anon_url(indexerApi(indexer).config['show_url'], curDir['existing_info'][0])}">${curDir['existing_info'][1]}</a></td>
+        <td><label for="${series_id}">${curDir['display_dir']}</label></td>
+        % if curDir['existing_info'][1] and indexer_id > 0:
+            <td><a href="${anon_url(indexerApi(indexer_id).config['show_url'], curDir['existing_info'][0])}">${curDir['existing_info'][1]}</a></td>
         % else:
             <td>?</td>
         % endif
         <td align="center">
             <select name="indexer">
                 % for curIndexer in indexerApi().indexers.items():
-                    <option value="${curIndexer[0]}" ${'selected="selected"' if curIndexer[0] == indexer or curIndexer[0] == app.INDEXER_DEFAULT else ''} >${curIndexer[1]}</option>
+                    <option value="${curIndexer[0]}" ${'selected="selected"' if curIndexer[0] == indexer_id or curIndexer[0] == app.INDEXER_DEFAULT else ''} >${curIndexer[1]}</option>
                 % endfor
             </select>
         </td>

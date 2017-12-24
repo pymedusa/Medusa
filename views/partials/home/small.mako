@@ -60,7 +60,7 @@
                 % if cur_loading_show.show is None:
                 <span title="">Loading... (${cur_loading_show.show_name})</span>
                 % else:
-                <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_loading_show.show.name}</a>
                 % endif
                 </td>
                 <td></td>
@@ -137,10 +137,10 @@
         % endif
             <td class="tvShow">
                 <div class="imgsmallposter small">
-                    <a href="home/displayShow?show=${cur_show.indexerid}" title="${cur_show.name}">
+                    <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}" title="${cur_show.name}">
                         <img src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
                     </a>
-                    <a href="home/displayShow?show=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
+                    <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
                 </div>
             </td>
             <td align="center">

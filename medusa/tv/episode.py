@@ -1257,7 +1257,7 @@ class Episode(TV):
                     b'VALUES '
                     b'  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
                     b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-                    [self.indexer.indexer, self.series.indexerid, self.season, self.episode, self.indexerid, self.indexer, self.name,
+                    [self.series.indexer, self.series.indexerid, self.season, self.episode, self.indexerid, self.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.location, self.file_size,
                      self.release_name, self.is_proper, self.series.indexerid, self.season, self.episode,

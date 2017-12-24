@@ -1333,9 +1333,9 @@ class Home(WebRoot):
         season_results = main_db_con.select(
             b'SELECT DISTINCT season '
             b'FROM tv_episodes '
-            b'WHERE showid = ? AND  season IS NOT NULL '
+            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
             b'ORDER BY season DESC',
-            [series_obj.indexerid]
+            [series_obj.indexer, series_obj.series_id]
         )
 
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
@@ -1343,9 +1343,9 @@ class Home(WebRoot):
         sql_results = main_db_con.select(
             b'SELECT * '
             b'FROM tv_episodes '
-            b'WHERE showid = ? AND season >= ? '
+            b'WHERE indexer = ? AND showid = ? AND season >= ? '
             b'ORDER BY season DESC, episode DESC',
-            [series_obj.indexerid, min_season]
+            [series_obj.indexer, series_obj.series_id, min_season]
         )
 
         ep_counts = {

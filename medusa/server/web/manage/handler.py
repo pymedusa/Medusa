@@ -204,7 +204,8 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
+            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
+            b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
             b'AND tv_episodes.status LIKE \'%4\' '
@@ -227,15 +228,17 @@ class Manage(Home, WebRoot):
 
             # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
             # Fix by using tv_shows.show_id in stead.
-            cur_indexer_id = int(cur_status_result[b'indexer_id'])
-            if cur_indexer_id not in ep_counts:
-                ep_counts[cur_indexer_id] = 1
-            else:
-                ep_counts[cur_indexer_id] += 1
 
-            show_names[cur_indexer_id] = cur_status_result[b'show_name']
-            if cur_indexer_id not in sorted_show_ids:
-                sorted_show_ids.append(cur_indexer_id)
+            cur_indexer_id = int(cur_status_result[b'indexer'])
+            cur_series_id = int(cur_status_result[b'indexer_id'])
+            if (cur_indexer_id, cur_series_id) not in ep_counts:
+                ep_counts[(cur_indexer_id, cur_series_id)] = 1
+            else:
+                ep_counts[(cur_indexer_id, cur_series_id)] += 1
+
+            show_names[(cur_indexer_id, cur_series_id)] = cur_status_result[b'show_name']
+            if (cur_indexer_id, cur_series_id) not in sorted_show_ids:
+                sorted_show_ids.append((cur_indexer_id, cur_series_id))
 
         return t.render(whichSubs=whichSubs, show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
                         title='Missing Subtitles', header='Missing Subtitles', topmenu='manage',

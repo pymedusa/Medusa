@@ -9,6 +9,7 @@ from babelfish import Country
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
 from medusa.helper.common import dateFormat, episode_num
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.indexers.tvdbv2.tvdbv2_api import API_BASE_TVDB
@@ -128,7 +129,9 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             plot = etree.SubElement(tv_node, 'plot')
             plot.text = my_show['overview']
 
-        if getattr(my_show, 'id', None):
+        # For now we're only using this for tvdb indexed shows. We should come with a proper strategy as how to use the
+        # metadata for TMDB/TVMAZE shows. We could try to map it a tvdb show. Or keep mixing it.
+        if show_obj.indexer == INDEXER_TVDBV2 and getattr(my_show, 'id', None):
             episode_guide = etree.SubElement(tv_node, 'episodeguide')
             episode_guide_url = etree.SubElement(episode_guide, 'url', cache='auth.json', post='yes')
             episode_guide_url.text = '{url}/login?{{"apikey":"{apikey}","id":{id}}}' \

@@ -50,6 +50,7 @@ def retrieveNameFromCache(name):
     name = full_sanitize_scene_name(name)
     if name in name_cache:
         return name_cache[name]
+    return None, None
 
 
 def clear_cache(indexer_id=0, series_id=0):

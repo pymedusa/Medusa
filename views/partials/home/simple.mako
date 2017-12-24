@@ -62,7 +62,7 @@
                 % if cur_loading_show.show is None:
                 <span title="">Loading... (${cur_loading_show.show_name})</span>
                 % else:
-                <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                <a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_loading_show.show.name}</a>
                 % endif
                 </td>
                 <td></td>
@@ -138,7 +138,7 @@
         % else:
             <td align="center" class="nowrap triggerhighlight"></td>
         % endif
-            <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+            <td class="tvShow triggerhighlight"><a href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</a></td>
             <td class="triggerhighlight">
                 <span title="${cur_show.network}">${cur_show.network}</span>
             </td>
@@ -153,7 +153,7 @@
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </a>
                 % endif
-                <a data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
+                <a data-indexer-name="${cur_show.indexer_name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
                     <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                 </a>
             </td>
@@ -173,7 +173,7 @@
             ${cur_show.status}
             </td>
             <td align="center" class="triggerhighlight">
-                <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
+                <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
                 <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" />
             </td>
         </tr>

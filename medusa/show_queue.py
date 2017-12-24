@@ -593,7 +593,7 @@ class QueueItemAdd(ShowQueueItem):
 
         # check if show has XEM mapping so we can determine if searches
         # should go by scene numbering or indexer numbering.
-        if not self.scene and scene_numbering.get_xem_numbering_for_show(self):
+        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show):
             self.show.scene = 1
 
         # After initial add, set to default_status_after.
