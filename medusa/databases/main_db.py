@@ -27,7 +27,6 @@ CURRENT_MINOR_DB_VERSION = 8
 class MainSanityCheck(db.DBSanityCheck):
     def check(self):
         self.fix_missing_table_indexes()
-        self.fix_duplicate_shows()
         self.fix_duplicate_episodes()
         self.fix_orphan_episodes()
         self.fix_unaired_episodes()
@@ -118,30 +117,10 @@ class MainSanityCheck(db.DBSanityCheck):
 
             self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" % (fixedStatus, archivedEp['episode_id']))
 
-    def fix_duplicate_shows(self, column='indexer_id'):
-        sql_results = self.connection.select(
-            "SELECT show_id, " + column + ", COUNT(" + column + ") as count FROM tv_shows GROUP BY " + column + " HAVING count > 1")
-
-        for cur_duplicate in sql_results:
-
-            log.info(u'Duplicate show detected! {0}: {1!s} count: {2!s}',
-                     column, cur_duplicate[column], cur_duplicate["count"])
-
-            cur_dupe_results = self.connection.select(
-                "SELECT show_id, " + column + " FROM tv_shows WHERE " + column + " = ? LIMIT ?",
-                [cur_duplicate[column], int(cur_duplicate["count"]) - 1]
-            )
-
-            for cur_dupe_id in cur_dupe_results:
-                log.info(u'Deleting duplicate show with {0}: {1!s}'
-                         u' show_id: {2!s}', column, cur_dupe_id[column],
-                         cur_dupe_id["show_id"])
-                self.connection.action("DELETE FROM tv_shows WHERE show_id = ?", [cur_dupe_id["show_id"]])
-
     def fix_duplicate_episodes(self):
 
         sql_results = self.connection.select(
-            "SELECT showid, season, episode, COUNT(showid) as count FROM tv_episodes GROUP BY showid, season, episode HAVING count > 1")
+            "SELECT indexer, showid, season, episode, COUNT(showid) as count FROM tv_episodes GROUP BY indexer, showid, season, episode HAVING count > 1")
 
         for cur_duplicate in sql_results:
 
@@ -150,8 +129,8 @@ class MainSanityCheck(db.DBSanityCheck):
                       cur_duplicate["showid"], cur_duplicate["season"],
                       cur_duplicate["episode"], cur_duplicate["count"])
             cur_dupe_results = self.connection.select(
-                "SELECT episode_id FROM tv_episodes WHERE showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?",
-                [cur_duplicate["showid"], cur_duplicate["season"], cur_duplicate["episode"],
+                "SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?",
+                [cur_duplicate["indexer"], cur_duplicate["showid"], cur_duplicate["season"], cur_duplicate["episode"],
                  int(cur_duplicate["count"]) - 1]
             )
 
@@ -277,6 +256,9 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def find_and_fix_indexer_ids(self):
 
+        if self.connection.version >= (44, 9):
+            return
+
         series_dict = {}
         def create_series_dict():
             if not series_dict:
@@ -289,7 +271,7 @@ class MainSanityCheck(db.DBSanityCheck):
                     if series['indexer_id'] not in series_dict:
                         series_dict[series['indexer_id']] = series['indexer']
                     else:
-                        log.warning(u'Found a duplicate series id for indexer_id: {indexer_id} and indexer: {indexer}',
+                        log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
                                     series['indexer_id'], series['indexer'])
 
         # Check if it's required for the main.db tables.

@@ -94,7 +94,8 @@ def get_episodes(search_thread, searchstatus):
     for ep_obj in search_thread.segment:
         ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
-            'series_obj': series_obj,
+            'indexer_id': series_obj.indexer,
+            'series_id': series_obj.series_id,
             'episode': ep.episode,
             'episodeindexerid': ep.indexerid,
             'season': ep.season,
@@ -165,24 +166,24 @@ def collect_episodes_from_search_thread(series_obj):
             continue
 
         if isinstance(search_thread, ForcedSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
+            if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += get_episodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
-            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexid']]:
+            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexerid']]:
                 episodes += get_episodes(search_thread, searchstatus)
 
     return episodes
 
 
-def get_provider_cache_results(series, show_all_results=None, perform_search=None,
+def get_provider_cache_results(series_obj, show_all_results=None, perform_search=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
     down_cur_quality = 0
-    preferred_words = series.show_words().preferred_words
-    undesired_words = series.show_words().undesired_words
-    ignored_words = series.show_words().ignored_words
-    required_words = series.show_words().required_words
+    preferred_words = series_obj.show_words().preferred_words
+    undesired_words = series_obj.show_words().undesired_words
+    ignored_words = series_obj.show_words().ignored_words
+    required_words = series_obj.show_words().required_words
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -210,24 +211,25 @@ def get_provider_cache_results(series, show_all_results=None, perform_search=Non
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
-        required_columns = ['seeders', 'leechers', 'size', 'proper_tags', 'date_added']
+        required_columns = ['indexer', 'indexerid', 'seeders', 'leechers', 'size', 'proper_tags', 'date_added']
         if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
             common_sql = (
                 b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
-                b" ? 'provider_minleech', name, season, episodes, indexerid,"
+                b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
                 b" url, time, proper_tags, quality, release_group, version,"
                 b" seeders, leechers, size, time, pubdate, date_added "
                 b"FROM '{provider_id}' "
-                b"WHERE indexerid = ? AND quality > 0 ".format(
+                b"WHERE indexer = ? AND indexerid = ? AND quality > 0 ".format(
                     provider_id=cur_provider.get_id()
                 )
             )
 
-            # Let's start by adding the default parameters, which are used to subsitute the '?'s.
+            # Let's start by adding the default parameters, which are used to substitute the '?'s.
             add_params = [cur_provider.provider_type.title(), cur_provider.image_name(),
-                          cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
+                          cur_provider.name, cur_provider.get_id(), minseed, minleech,
+                          series_obj.indexer, series_obj.series_id]
 
             if manual_search_type != 'season':
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
@@ -240,14 +242,14 @@ def get_provider_cache_results(series, show_all_results=None, perform_search=Non
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
                     list_of_episodes = '{0}{1}'.format(' episodes LIKE ', ' AND episodes LIKE '.join(
-                        ['?' for _ in series.get_all_episodes(season)]
+                        ['?' for _ in series_obj.get_all_episodes(season)]
                     ))
 
                     common_sql += " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(
                         list_of_episodes=list_of_episodes
                     )
                     add_params += [season, '||']  # When the episodes field is empty.
-                    add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in series.get_all_episodes(season)]
+                    add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in series_obj.get_all_episodes(season)]
 
             # Add the created sql, to lists, that are used down below to perform one big UNIONED query
             combined_sql_q.append(common_sql)
@@ -272,10 +274,10 @@ def get_provider_cache_results(series, show_all_results=None, perform_search=Non
     # Always start a search when no items found in cache
     if not sql_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = get_episode(indexer, show, season, episode)
+        ep_obj = series_obj.get_episode(season, episode)
         if isinstance(ep_obj, str):
             provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, \
-            and episode: {1}x{2}'.format(series.name, season, episode)
+            and episode: {1}x{2}'.format(series_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member

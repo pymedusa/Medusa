@@ -47,6 +47,9 @@ class SearchResult(object):
         # release show object
         self.show = None
 
+        # deprecate show in favor of series.
+        self.series = self.show
+
         # URL to the NZB/torrent file
         self.url = u''
 

@@ -78,7 +78,7 @@
             % endif
             <!-- add provider meta data -->
                 <div id='manualSearchMeta'>
-                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-indexer-id="${show.indexer}" data-series-id="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
                 </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">

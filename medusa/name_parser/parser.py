@@ -52,6 +52,7 @@ class NameParser(object):
         :type allow_multi_season: bool
         """
         self.show = show
+        self.series = self.show
         self.try_indexers = try_indexers
         self.naming_pattern = naming_pattern
         self.allow_multi_season = allow_multi_season

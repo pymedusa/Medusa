@@ -1064,16 +1064,16 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def manualSearchCheckCache(self, indexername=None, seriesid=None, season=None, episode=None, manual_search_type='episode', **last_prov_updates):
+    def manualSearchCheckCache(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode', **last_prov_updates):
         """ Periodic check if the searchthread is still running for t   he selected show/season/ep
         and if there are new results in the cache.db
         """
 
         refresh_results = 'refresh'
 
-        # Check if all params are integer. When JS issue, it can send show='undefined'
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+
         try:
             int(episode)
             int(season)
@@ -1089,10 +1089,11 @@ class Home(WebRoot):
         episodes_in_search = collect_episodes_from_search_thread(series_obj)
 
         # Check if the requested ep is in a search thread
-        searched_item = [episode for episode in episodes_in_search
-                         if all((str(episode.get('series_obj').identifier) == series_obj.identifier,
-                                 str(episode.get('season')) == season,
-                                 str(episode.get('episode')) == episode))]
+        searched_item = [ep for ep in episodes_in_search
+                         if all([ep.get('indexer_id') == series_obj.identifier.indexer.id,
+                                 ep.get('series_id') == series_obj.identifier.id,
+                                 str(ep.get('season')) == season,
+                                 str(ep.get('episode')) == episode])]
 
         # # No last_prov_updates available, let's assume we need to refresh until we get some
         # if not last_prov_updates:
@@ -1114,8 +1115,8 @@ class Home(WebRoot):
             needs_update = main_db_con.select(
                 b'SELECT * '
                 b'FROM \'{provider}\' '
-                b'WHERE episodes LIKE ? AND season = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
-                ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.series_id, int(last_update)]
+                b'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
+                ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
             )
 
             if needs_update:
@@ -1159,7 +1160,7 @@ class Home(WebRoot):
         # Retrieve cache results from providers
         search_show = {'series': series_obj, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
 
-        provider_results = get_provider_cache_results(INDEXER_TVDBV2, perform_search=perform_search,
+        provider_results = get_provider_cache_results(series_obj, perform_search=perform_search,
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
@@ -1185,7 +1186,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(show=series_obj),
+                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
