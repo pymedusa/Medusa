@@ -56,6 +56,11 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
         self.anime = 0
         self.scene = 0
 
+    @property
+    def series_id(self):
+        """To make a clear distinction between an indexer and the id for the series. You can now also use series_id."""
+        return self.indexerid
+
     def _is_anime(self):
         """
         Find out if show is anime

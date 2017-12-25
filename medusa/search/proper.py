@@ -93,7 +93,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # Get the recently aired (last 2 days) shows from DB
             search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
             recently_aired = main_db_con.select(
-                b'SELECT showid, season, episode, status, airdate'
+                b'SELECT indexer, showid, season, episode, status, airdate'
                 b' FROM tv_episodes'
                 b' WHERE airdate >= ?'
                 b' AND status IN ({0})'.format(search_q_params),
@@ -223,9 +223,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
-                                             b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
-                                             [best_result.indexerid,
+            sql_results = main_db_con.select(b"SELECT status, release_name "
+                                             b"FROM tv_episodes WHERE indexer = ? "
+                                             b"AND showid = ? AND season = ? "
+                                             b"AND episode = ? AND status LIKE '%04'",
+                                             [best_result.indexer,
+                                              best_result.series_id,
                                               best_result.actual_season,
                                               best_result.actual_episodes[0]])
             if not sql_results:
@@ -271,8 +274,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if best_result.show.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
-                    b'SELECT release_group, version FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
-                    [best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]])
+                    b'SELECT release_group, version '
+                    b'FROM tv_episodes WHERE indexer = ? AND showid = ? '
+                    b'AND season = ? AND episode = ?',
+                    [best_result.indexer, best_result.series_id, best_result.actual_season, best_result.actual_episodes[0]])
 
                 old_version = int(sql_results[0][b'version'])
                 old_release_group = (sql_results[0][b'release_group'])

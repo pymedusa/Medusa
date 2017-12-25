@@ -388,8 +388,8 @@ class GenericProvider(object):
                         air_date = search_result.parsed_result.air_date.toordinal()
                         db = DBConnection()
                         sql_results = db.select(
-                            'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?',
-                            [search_result.show.indexerid, air_date]
+                            'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+                            [search_result.show.indexer, search_result.show.series_id, air_date]
                         )
 
                         if len(sql_results) == 2:

@@ -23,6 +23,7 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import is_media_file
+from ....indexers.indexer_config import indexer_name_to_id
 from ....network_timezones import app_timezone
 from ....post_processor import PostProcessor
 from ....show.show import Show
@@ -39,7 +40,7 @@ class Manage(Home, WebRoot):
         return t.render(title='Mass Update', header='Mass Update', topmenu='manage', controller='manage', action='index')
 
     @staticmethod
-    def showEpisodeStatuses(indexer_id, whichStatus):
+    def showEpisodeStatuses(indexername, seriesid, whichStatus):
         status_list = [int(whichStatus)]
         if status_list[0] == SNATCHED:
             status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
@@ -48,9 +49,10 @@ class Manage(Home, WebRoot):
         cur_show_results = main_db_con.select(
             b'SELECT season, episode, name '
             b'FROM tv_episodes '
-            b'WHERE showid = ? AND season != 0 AND status IN ({statuses})'.format(
+            b'WHERE indexer = ? AND showid = ? '
+            b'AND season != 0 AND status IN ({statuses})'.format(
                 statuses=','.join(['?'] * len(status_list))),
-            [int(indexer_id)] + status_list
+            [int(indexer_name_to_id(indexername)), int(seriesid)] + status_list
         )
 
         result = {}

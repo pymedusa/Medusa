@@ -177,9 +177,10 @@ class Home(WebRoot):
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
             b"""
-            SELECT showid,
+            SELECT showid, indexer,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer AND
                      season > 0 AND
                      episode > 0 AND
                      airdate > 1 AND
@@ -187,6 +188,7 @@ class Home(WebRoot):
               ) AS ep_snatched,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer AND
                      season > 0 AND
                      episode > 0 AND
                      airdate > 1 AND
@@ -194,6 +196,7 @@ class Home(WebRoot):
               ) AS ep_downloaded,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer AND
                      season > 0 AND
                      episode > 0 AND
                      airdate > 1 AND
@@ -205,6 +208,7 @@ class Home(WebRoot):
               ) AS ep_total,
               (SELECT airdate FROM tv_episodes
                WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer AND
                      airdate >= {today} AND
                      (status = {unaired} OR status = {wanted})
                ORDER BY airdate ASC
@@ -212,16 +216,18 @@ class Home(WebRoot):
               ) AS ep_airs_next,
               (SELECT airdate FROM tv_episodes
                WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer AND
                      airdate > 1 AND
                      status <> {unaired}
                ORDER BY airdate DESC
                LIMIT 1
               ) AS ep_airs_prev,
               (SELECT SUM(file_size) FROM tv_episodes
-               WHERE showid=tv_eps.showid
+               WHERE showid=tv_eps.showid AND
+                     indexer=tv_eps.indexer
               ) AS show_size
             FROM tv_episodes tv_eps
-            GROUP BY showid
+            GROUP BY showid, indexer
             """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
                        status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
                        skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
@@ -231,7 +237,7 @@ class Home(WebRoot):
         show_stat = {}
         max_download_count = 1000
         for cur_result in sql_result:
-            show_stat[cur_result[b'showid']] = cur_result
+            show_stat[(cur_result[b'indexer'], cur_result[b'showid'])] = cur_result
             if cur_result[b'ep_total'] > max_download_count:
                 max_download_count = cur_result[b'ep_total']
 
@@ -814,9 +820,9 @@ class Home(WebRoot):
         season_results = main_db_con.select(
             b'SELECT DISTINCT season '
             b'FROM tv_episodes '
-            b'WHERE showid = ? AND  season IS NOT NULL '
+            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
             b'ORDER BY season DESC',
-            [series_obj.indexerid]
+            [series_obj.indexer, series_obj.series_id]
         )
 
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
@@ -824,9 +830,9 @@ class Home(WebRoot):
         sql_results = main_db_con.select(
             b'SELECT * '
             b'FROM tv_episodes '
-            b'WHERE showid = ? AND season >= ? '
+            b'WHERE indexer = ? AND showid = ? AND season >= ? '
             b'ORDER BY season DESC, episode DESC',
-            [series_obj.indexerid, min_season]
+            [series_obj.indexer, series_obj.series_id, min_season]
         )
 
         t = PageTemplate(rh=self, filename='displayShow.mako')

@@ -62,11 +62,11 @@ class NameParser(object):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
         result = self.to_parse_result(name, guess)
 
-        show = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
+        search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
         # confirm passed in show object indexer id matches result show object indexer id
-        show = None if show and self.show and show.indexerid != self.show.indexerid else show
-        result.show = show or self.show
+        series_obj = None if search_series and self.show and search_series.indexerid != self.show.indexerid else search_series
+        result.show = series_obj or self.show
 
         # if this is a naming pattern test or result doesn't have a show object then return best result
         if not result.show or self.naming_pattern:
@@ -83,8 +83,8 @@ class NameParser(object):
             airdate = result.air_date.toordinal()
             main_db_con = db.DBConnection()
             sql_result = main_db_con.select(
-                b'SELECT season, episode FROM tv_episodes WHERE showid = ? and indexer = ? and airdate = ?',
-                [result.show.indexerid, result.show.indexer, airdate])
+                b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+                [result.show.indexer, result.show.series_id, airdate])
 
             season_number = None
             episode_numbers = []

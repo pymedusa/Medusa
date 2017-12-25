@@ -709,8 +709,8 @@ class CMD_Episode(ApiCall):
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select(
             'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
-            'FROM tv_episodes WHERE showid = ? AND episode = ? AND season = ?',
-            [self.indexerid, self.e, self.s])
+            'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
+            [INDEXER_TVDBV2, self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
             raise ApiError('Episode not found')
         episode = sql_results[0]
@@ -1161,8 +1161,9 @@ class CMD_Backlog(ApiCall):
                 'SELECT tv_episodes.*, tv_shows.paused '
                 'FROM tv_episodes '
                 'INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id '
-                'WHERE showid = ? and paused = 0 ORDER BY season DESC, episode DESC',
-                [cur_show.indexerid])
+                'AND tv_episodes.indexer = tv_shows.indexer '
+                'WHERE tv_episodes.indexer = ? AND showid = ? AND paused = 0 ORDER BY season DESC, episode DESC',
+                [cur_show.indexer, cur_show.series_id])
 
             for cur_result in sql_results:
 
@@ -2455,12 +2456,12 @@ class CMD_ShowSeasonList(ApiCall):
         main_db_con = db.DBConnection(row_type='dict')
         if self.sort == 'asc':
             sql_results = main_db_con.select(
-                'SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season ASC',
-                [self.indexerid])
+                'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season ASC',
+                [INDEXER_TVDBV2, self.indexerid])
         else:
             sql_results = main_db_con.select(
-                'SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season DESC',
-                [self.indexerid])
+                'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season DESC',
+                [INDEXER_TVDBV2, self.indexerid])
         season_list = []  # a list with all season numbers
         for row in sql_results:
             season_list.append(int(row['season']))
@@ -2498,8 +2499,9 @@ class CMD_ShowSeasons(ApiCall):
 
         if self.season is None:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles FROM tv_episodes WHERE showid = ?',
-                [self.indexerid])
+                'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles '
+                'FROM tv_episodes WHERE indexer = ? AND showid = ?',
+                [INDEXER_TVDBV2, self.indexerid])
             seasons = {}
             for row in sql_results:
                 status, quality = Quality.split_composite_status(int(row['status']))
@@ -2522,8 +2524,8 @@ class CMD_ShowSeasons(ApiCall):
         else:
             sql_results = main_db_con.select(
                 'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
-                ' FROM tv_episodes WHERE showid = ? AND season = ? AND indexer = ?',
-                [self.indexerid, self.season, INDEXER_TVDBV2])
+                ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? ',
+                [INDEXER_TVDBV2, self.indexerid, self.season])
             if not sql_results:
                 return _responds(RESULT_FAILURE, msg='Season not found')
             seasons = {}
@@ -2643,8 +2645,9 @@ class CMD_ShowStats(ApiCall):
             episode_qualities_counts_snatch[statusCode] = 0
 
         main_db_con = db.DBConnection(row_type='dict')
-        sql_results = main_db_con.select('SELECT status, season FROM tv_episodes WHERE season != 0 AND showid = ?',
-                                         [self.indexerid])
+        sql_results = main_db_con.select('SELECT status, season FROM tv_episodes '
+                                         'WHERE season != 0 AND indexer = ? AND showid = ?',
+                                         [INDEXER_TVDBV2, self.indexerid])
         # the main loop that goes through all episodes
         for row in sql_results:
             status, quality = Quality.split_composite_status(int(row['status']))

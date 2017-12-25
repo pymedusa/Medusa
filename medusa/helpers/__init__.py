@@ -695,7 +695,7 @@ def update_anime_support():
     app.ANIMESUPPORT = is_anime_in_show_list()
 
 
-def get_absolute_number_from_season_and_episode(show, season, episode):
+def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     """Find the absolute number for a show episode.
 
     :param show: Show object
@@ -707,21 +707,21 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
 
     if season and episode:
         main_db_con = db.DBConnection()
-        sql = b'SELECT * FROM tv_episodes WHERE showid = ? and season = ? and episode = ?'
-        sql_results = main_db_con.select(sql, [show.indexerid, season, episode])
+        sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
+        sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
 
         if len(sql_results) == 1:
             absolute_number = int(sql_results[0][b'absolute_number'])
             log.debug(
                 u'Found absolute number {absolute} for show {show} {ep}', {
                     'absolute': absolute_number,
-                    'show': show.name,
+                    'show': series_obj.name,
                     'ep': episode_num(season, episode),
                 }
             )
         else:
             log.debug(u'No entries for absolute number for show {show} {ep}',
-                      {'show': show.name, 'ep': episode_num(season, episode)})
+                      {'show': series_obj.name, 'ep': episode_num(season, episode)})
 
     return absolute_number
 

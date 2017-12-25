@@ -1,32 +1,34 @@
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
-        var indexerId = $(this).attr('id').split('-')[1];
-        $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));
+        var seriesId = $(this).attr('id').split('-')[1];
+        $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        var curIndexerId = $(this).attr('id');
-        var checked = $('#allCheck-' + curIndexerId).prop('checked');
-        var lastRow = $('tr#' + curIndexerId);
+        var indexerName = MEDUSA.config.indexer.indexerIdToName($(this).attr('data-indexer-to-name'));
+        var seriesId = $(this).attr('id');
+        var checked = $('#allCheck-' + seriesId).prop('checked');
+        var lastRow = $('tr#' + seriesId);
         var clicked = $(this).data('clicked');
         var action = $(this).attr('value');
 
         if (clicked) {
             if (action.toLowerCase() === 'collapse') {
-                $('table tr').filter('.show-' + curIndexerId).hide();
+                $('table tr').filter('.show-' + seriesId).hide();
                 $(this).prop('value', 'Expand');
             } else if (action.toLowerCase() === 'expand') {
-                $('table tr').filter('.show-' + curIndexerId).show();
+                $('table tr').filter('.show-' + seriesId).show();
                 $(this).prop('value', 'Collapse');
             }
         } else {
             $.getJSON('manage/showEpisodeStatuses', {
-                indexer_id: curIndexerId, // eslint-disable-line camelcase
+                indexername: indexerName,
+                seriesid: seriesId, // eslint-disable-line camelcase
                 whichStatus: $('#oldStatus').val()
             }, function(data) {
                 $.each(data, function(season, eps) {
                     $.each(eps, function(episode, name) {
-                        lastRow.after($.makeEpisodeRow(curIndexerId, season, episode, name, checked));
+                        lastRow.after($.makeEpisodeRow(seriesId, season, episode, name, checked));
                     });
                 });
             });

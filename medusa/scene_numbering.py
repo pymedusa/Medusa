@@ -472,23 +472,23 @@ def xem_refresh(series_obj, force=False):
             for entry in parsed_json['data']:
                 if 'scene' in entry:
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene']['season'], entry['scene']['episode'],
-                         entry['scene']['absolute'], indexer_id,
+                         entry['scene']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                     cl.append([
-                        "UPDATE tv_episodes SET absolute_number = ? WHERE showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
-                        [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id,
+                        "UPDATE tv_episodes SET absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
+                        [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                 if 'scene_2' in entry:  # for doubles
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene_2']['season'], entry['scene_2']['episode'],
-                         entry['scene_2']['absolute'], indexer_id,
+                         entry['scene_2']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])

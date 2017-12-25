@@ -68,7 +68,7 @@
             % for cur_series in sorted_show_ids: # cur_series is build out of a tuple: (indexer_id, series_id)
                 <tr id="${cur_series[1]}">
                     <th style="width: 1%;"><input type="checkbox" class="allCheck" id="allCheck-${cur_series[1]}" name="${cur_series[1]}-all"checked="checked" /></th>
-                    <th colspan="3" style="text-align: left;"><a data-indexer-to-name="${cur_series[0]}" class="whitelink" href="home/displayShow?indexername=indexer-to-name&seriesid=${cur_series[1]}">${show_names[cur_series[1]]}</a> (${ep_counts[cur_series[1]]}) <input type="button" class="pull-right get_more_eps btn" id="${cur_series[1]}" value="Expand" /></th>
+                    <th colspan="3" style="text-align: left;"><a data-indexer-to-name="${cur_series[0]}" class="whitelink" href="home/displayShow?indexername=indexer-to-name&seriesid=${cur_series[1]}">${show_names[cur_series[1]]}</a> (${ep_counts[cur_series[1]]}) <input type="button" class="pull-right get_more_eps btn" data-indexer-to-name="${cur_series[0]}" id="${cur_series[1]}" value="Expand" /></th>
                 </tr>
             % endfor
             </table>
