@@ -209,9 +209,11 @@ def from_ietf_code(code, unknown='und'):
     :rtype: babelfish.Language
     """
     try:
-        return Language.fromietf(code)
+        ietf_code = Language.fromietf(code)
     except (LanguageReverseError, ValueError):
         return Language(unknown) if unknown else None
+    else:
+        return ietf_code if ietf_code.country else None
 
 
 def from_country_code_to_name(code):
