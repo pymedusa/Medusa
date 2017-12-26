@@ -10,7 +10,7 @@ LABEL build_version="Version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 RUN \
  apk add --no-cache \
 	--repository http://nl.alpinelinux.org/alpine/edge/community \
-	mediainfo gdbm
+	mediainfo gdbm py-gdbm
 
 # install app
 COPY . /app/medusa/

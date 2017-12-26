@@ -2321,6 +2321,10 @@ class Series(TV):
         except CantRemoveShowException:
             pass
 
+    def remove_images(self):
+        """Remove images from cache."""
+        image_cache.ImageCache().remove_images(self)
+
     def get_asset(self, asset_type):
         """Get the specified asset for this series."""
         asset_type = asset_type.lower()

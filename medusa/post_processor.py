@@ -61,6 +61,19 @@ from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
+# Most common language tags from IETF
+# https://datahub.io/core/language-codes#resource-ietf-language-tags
+LANGUAGE_TAGS = {
+    'en-us': 'en-US',
+    'en-gb': 'en-GB',
+    'en-au': 'en-AU',
+    'pt-br': 'pt-BR',
+    'pt-pt': 'pt-PT',
+    'es-mx': 'es-MX',
+    'zh-cn': 'zh-CH',
+    'zh-tw': 'zh-TW',
+}
+
 
 class PostProcessor(object):
     """A class which will process a media file according to the post processing settings in the config."""
@@ -367,14 +380,15 @@ class PostProcessor(object):
             new_extension = 'nfo-orig'
 
         elif is_subtitle(filepath):
-            sub_code = filepath.rsplit('.', 2)[1]
-            code = sub_code.lower().replace('_', '-')
-            if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
-                # TODO remove this hardcoded language
-                if code == 'pt-br':
-                    code = 'pt-BR'
-                new_extension = code + '.' + extension
-                extension = sub_code + '.' + extension
+            split_path = filepath.rsplit('.', 2)
+            # len != 3 means we have a subtitle without language
+            if len(split_path) == 3:
+                sub_code = split_path[1]
+                code = sub_code.lower().replace('_', '-')
+                if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                    code = LANGUAGE_TAGS.get(code, code)
+                    new_extension = code + '.' + extension
+                    extension = sub_code + '.' + extension
 
         # rename file with new basename
         if new_basename:
@@ -1276,7 +1290,10 @@ class PostProcessor(object):
                 existing_release_names.append(self.release_name or 'N/A')
                 app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
             else:
-                logger.log(u'Unable to get info to move torrent later as no info hash available for: {0}'.format
-                           (self.file_path), logger.WARNING)
-
+                if not self.in_history:
+                    logger.log(u"Please consider manually move torrent to seed folder as it wasn't snatched from "
+                               u"Medusa or we couldn't find it in history: {0}".format(self.file_path), logger.WARNING)
+                else:
+                    logger.log(u'Please consider manually move torrent to seed folder as there is no info hash in '
+                               u'snatch history: {0}'.format(self.file_path), logger.WARNING)
         return True

@@ -33,13 +33,15 @@ class BraceMessage(object):
                 args = []
                 kwargs = self.args[0]
 
+        msg = str(self.msg)
+
         try:
-            return self.msg.format(*args, **kwargs)
+            return msg.format(*args, **kwargs)
         except IndexError:
             try:
-                return self.msg.format(kwargs)
+                return msg.format(kwargs)
             except IndexError:
-                return self.msg
+                return msg
         except Exception:
             log.error(
                 'BraceMessage string formatting failed. '
@@ -61,6 +63,10 @@ class BraceMessage(object):
             cls=name,
             args=sep.join([repr(self.msg), args, kwargs])
         )
+
+    def format(self, *args, **kwargs):
+        """Format a BraceMessage string."""
+        return str(self).format(*args, **kwargs)
 
 
 class BraceAdapter(logging.LoggerAdapter):

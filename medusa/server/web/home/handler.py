@@ -1814,7 +1814,9 @@ class Home(WebRoot):
 
         # force the update
         try:
+            show_obj.remove_images()
             app.show_queue_scheduler.action.updateShow(series_obj)
+
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 

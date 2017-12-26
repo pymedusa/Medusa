@@ -23,6 +23,7 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import is_media_file
+from ....image_cache import ImageCache
 from ....indexers.indexer_config import indexer_name_to_id
 from ....network_timezones import app_timezone
 from ....post_processor import PostProcessor
@@ -674,7 +675,7 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/')
 
     def massUpdate(self, toUpdate=None, toRefresh=None, toRename=None, toDelete=None, toRemove=None, toMetadata=None,
-                   toSubtitle=None):
+                   toSubtitle=None, toImageUpdate=None):
         to_update = toUpdate.split('|') if toUpdate else []
         to_refresh = toRefresh.split('|') if toRefresh else []
         to_rename = toRename.split('|') if toRename else []
@@ -682,14 +683,17 @@ class Manage(Home, WebRoot):
         to_delete = toDelete.split('|') if toDelete else []
         to_remove = toRemove.split('|') if toRemove else []
         to_metadata = toMetadata.split('|') if toMetadata else []
+        to_image_update = toImageUpdate.split('|') if toImageUpdate else []
 
         errors = []
         refreshes = []
         updates = []
         renames = []
         subtitles = []
+        image_update = []
 
-        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata):
+        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata +
+                               to_image_update):
             show_obj = Show.find(app.showList, int(cur_show_id)) if cur_show_id else None
 
             if not show_obj:
@@ -722,6 +726,10 @@ class Manage(Home, WebRoot):
                 app.show_queue_scheduler.action.download_subtitles(show_obj)
                 subtitles.append(show_obj.name)
 
+            if cur_show_id in to_image_update:
+                image_cache = ImageCache()
+                image_cache.replace_images(show_obj)
+
         if errors:
             ui.notifications.error('Errors encountered',
                                    '<br />\n'.join(errors))
@@ -735,6 +743,8 @@ class Manage(Home, WebRoot):
             message += '\nRenames: {0}'.format(len(renames))
         if subtitles:
             message += '\nSubtitles: {0}'.format(len(subtitles))
+        if image_update:
+            message += '\nImage update: {0}'.format(len(subtitles))
 
         if message:
             ui.notifications.message('Queued actions:', message)
