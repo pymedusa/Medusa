@@ -630,7 +630,7 @@ class QueueItemRefresh(ShowQueueItem):
             if self.force:
                 self.show.update_metadata()
             self.show.write_metadata()
-            self.show.populate_cache()
+            self.show.populate_cache(force=self.force)
 
             # Load XEM data to DB for show
             scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)

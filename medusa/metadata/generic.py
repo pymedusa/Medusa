@@ -677,7 +677,7 @@ class GenericMetadata(object):
 
         return self._write_image(banner_data, banner_path)
 
-    def _write_image(self, image_data, image_path, obj=None):
+    def _write_image(self, image_data, image_path, replace=False):
         """
         Saves the data in image_data to the location image_path. Returns True/False
         to represent success or failure.
@@ -686,7 +686,7 @@ class GenericMetadata(object):
         image_path: file location to save the image to
         """
         # don't bother overwriting it
-        if os.path.isfile(image_path):
+        if os.path.isfile(image_path) and not replace:
             log.debug(u'Image already exists, not downloading')
             return False
 
