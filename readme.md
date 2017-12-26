@@ -61,7 +61,7 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 
 #### Supported providers
 
-A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers)
+A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
@@ -79,7 +79,7 @@ A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Me
 | Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
-[news.md and CHANGES.md have moved to a separate repo, click here](https://cdn.pymedusa.com)
+[news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/tree/master/news)
 
 #### External dependencies
 This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright (c) 2002-2016 [MediaArea.net SARL](mailto:Info@MediaArea.net)
@@ -89,11 +89,12 @@ MediaInfo is optional, but highly recommended since it increases the number of s
 
 #### Docker images
 
-The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms.
-
+The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
 
 * X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
 * armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
 * aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
+
+Now that the Dockerfile is native as of Dec 6 2017, there's also a direct build available here [Dockerhub](https://hub.docker.com/r/bobbysteel/medusa/), built directly from this repo on a daily basis.
 
 
