@@ -1,5 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    from datetime import datetime
     from medusa import app
     from medusa.helpers import anon_url
 %>
@@ -105,6 +106,7 @@
                             <th>Type</th>
                             <th>Updated</th>
                             <th>Published</th>
+                            <th>Added</th>
                             <th data-priority="critical" class="col-search">Snatch</th>
                         </tr>
                     </thead>
@@ -139,6 +141,7 @@
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
                             <td class="col-date triggerhighlight">${hItem["pubdate"]}</td>
+                            <td class="col-date triggerhighlight">${datetime.fromtimestamp(hItem["date_added"])}</td>
                             <td class="col-search triggerhighlight"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
                     % endfor

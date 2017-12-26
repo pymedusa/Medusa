@@ -18,6 +18,21 @@ from medusa.logger.adapters.style import BraceAdapter
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+ISSUE_REPORT = """
+### INFO
+**Python Version**: `{python_version}`
+**Operating System**: `{os}`
+**Locale**: `{locale}`
+**Branch**: [{branch}](../tree/{branch})
+**Database**: `{db_major_version}.{db_minor_version}`
+**Commit**: {org}/{repo}@{commit}
+**Link to Log**: {log_url}
+### ERROR
+{log_line}
+---
+_STAFF NOTIFIED_: @{org}/support @{org}/moderators
+"""
+
 
 class IssueSubmitter(object):
     """GitHub issue submitter."""
@@ -62,24 +77,18 @@ class IssueSubmitter(object):
 
         commit = app.CUR_COMMIT_HASH
         base_url = '../blob/{commit}'.format(commit=commit) if commit else None
-        return """
-        ### INFO
-        **Python Version**: `{python_version}
-        **Operating System**: `{os}`
-        **Locale**: `{locale}`
-        **Branch**: [{branch}](../tree/{branch})
-        **Database**: `{db_major_version}.{db_minor_version}`
-        **Commit**: {org}/{repo}@{commit}
-        **Link to Log**: {log_url}
-        ### ERROR
-        {log_line}
-        ---
-        _STAFF NOTIFIED_: @{org}/support @{org}/moderators
-        """.format(
-            python_version=sys.version[:120].replace('\n', ''), os=platform.platform(), locale=locale_name,
-            branch=app.BRANCH, org=app.GIT_ORG, repo=app.GIT_REPO, commit=commit,
-            db_major_version=cur_branch_major_db_version, db_minor_version=cur_branch_minor_db_version,
-            log_url=log_url or '**No Log available**', log_line=logline.format_to_html(base_url=base_url),
+        return ISSUE_REPORT.format(
+            python_version=sys.version[:120].replace('\n', ''),
+            os=platform.platform(),
+            locale=locale_name,
+            branch=app.BRANCH,
+            org=app.GIT_ORG,
+            repo=app.GIT_REPO,
+            commit=commit,
+            db_major_version=cur_branch_major_db_version,
+            db_minor_version=cur_branch_minor_db_version,
+            log_url=log_url or '**No Log available**',
+            log_line=logline.format_to_html(base_url=base_url),
         )
 
     @classmethod
