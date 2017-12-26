@@ -18,6 +18,7 @@
 """Post processor module."""
 
 import fnmatch
+import logging
 import os
 import re
 import stat
@@ -48,6 +49,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.helpers.utils import generate
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
@@ -61,9 +63,39 @@ from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+
+def make_replace_config(high, same, low):
+    """
+    Make a configuration dictionary.
+
+    :param high: Release with a higher quality should replace existing quality
+    :param same: Release with the same quality should replace existing quality
+    :param low: Release with a lower quality should replace existing quality
+    """
+    return {
+        'higher': high,
+        'same': same,
+        'lower': low,
+    }
+
+
+# -- REPLACEMENT PROFILES --
+STRICT_REPLACE = make_replace_config(False, False, False)  # never replace
+PERMISSIVE_REPLACE = make_replace_config(True, True, True)  # replace all
+UPGRADE_REPLACE = make_replace_config(True, False, False)  # only upgrade
+DOWNGRADE_REPLACE = make_replace_config(False, False, True)  # only downgrade
+
+# Use legacy settings as default
+DEFAULT_ALLOWED_REPLACE_CFG = UPGRADE_REPLACE
+DEFAULT_PREFERRED_REPLACE_CFG = UPGRADE_REPLACE
+DEFAULT_UNDESIRED_REPLACE_CFG = STRICT_REPLACE
+
 
 class PostProcessor(object):
-    """A class which will process a media file according to the post processing settings in the config."""
+    """Process a media file according to post processing config settings."""
 
     EXISTS_LARGER = 1
     EXISTS_SAME = 2
@@ -71,7 +103,12 @@ class PostProcessor(object):
     DOESNT_EXIST = 4
     IGNORED_FILESTRINGS = ['.AppleDouble', '.DS_Store']
 
-    def __init__(self, file_path, nzb_name=None, process_method=None, is_priority=None):
+    allowed_replace = DEFAULT_ALLOWED_REPLACE_CFG
+    preferred_replace = DEFAULT_PREFERRED_REPLACE_CFG
+    undesired_replace = DEFAULT_UNDESIRED_REPLACE_CFG
+
+    def __init__(self, file_path, nzb_name=None, process_method=None,
+                 is_priority=None, config=None):
         """
         Create a new post processor with the given file path and optionally an NZB name.
 
@@ -101,6 +138,12 @@ class PostProcessor(object):
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
                                            ('nzb name', self.nzb_name)])
+        self.config = config or {}
+        for level in ('preferred', 'allowed', 'undesired'):
+            attr = '{0}_replace'.format(level)
+            value = config.get(level, getattr(self, attr))
+            setattr(self, attr, value)
+        log.debug(u'Initialized post processor:\n{0}'.format(self))
 
     def log(self, message, level=logger.INFO):
         """
@@ -858,46 +901,86 @@ class PostProcessor(object):
         # If in_history is True it must be a priority download
         return bool(self.in_history or self.is_priority)
 
-    @staticmethod
-    def _should_process(current_quality, new_quality, allowed, preferred):
+    @classmethod
+    def _should_process(cls, current_quality, new_quality, allowed, preferred,
+                        allowed_cfg=None, preferred_cfg=None,
+                        undesired_cfg=None, ):
         """
-        Determine if a quality should be processed according to the quality system.
+        Determine whether to replace existing files.
 
-        This method is used only for replace existing files
-        Despite quality system rules (should_search method), in should_process method:
-         - New higher Allowed replaces current Allowed (overrrides rule where Allowed is final quality)
-         - New higher Preferred replaces current Preferred (overrides rule where Preffered is final quality)
+        This determination is completely separate from the decision on
+        whether to search for a file (the should_search method) and is
+        user configurable.
 
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
         :param allowed: Qualities that are allowed
         :param preferred: Qualities that are preferred
+        :param allowed_cfg: Configuration for replacing allowed qualities
+        :param preferred_cfg: Configuration for replacing preferred qualities
+        :param undesired_cfg: Configuration for replacing undesired qualities
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-        if current_quality is common.Quality.NONE:
-            return False, 'There is no current quality. Skipping as we can only replace existing qualities'
-        if new_quality in preferred:
-            if current_quality in preferred:
-                if new_quality > current_quality:
-                    return True, 'New quality is higher than current Preferred. Accepting quality'
-                elif new_quality < current_quality:
-                    return False, 'New quality is lower than current Preferred. Ignoring quality'
-                else:
-                    return False, 'New quality is equal than current Preferred. Ignoring quality'
-            return True, 'New quality is Preferred'
-        elif new_quality in allowed:
-            if current_quality in preferred:
-                return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
-            elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
-            elif new_quality > current_quality:
-                return True, 'New quality is higher than current Allowed. Accepting quality'
-            elif new_quality < current_quality:
-                return False, 'New quality is lower than current Allowed. Ignoring quality'
+        def get_level(quality):
+            """Determine if quality is allowed, preferred, or undesired."""
+            if quality in preferred:
+                return 'preferred'
+            elif quality in allowed:
+                return 'allowed'
             else:
-                return False, 'New quality is equal to current Allowed. Ignoring quality'
-        else:
-            return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
+                return 'undesired'
+
+        def compare(first, second):
+            """
+            Compare two qualities.
+
+            Determine if the first quality is higher, lower, or the same as
+            the second.
+            """
+            if first > second:
+                return 'higher'
+            elif new_quality < current_quality:
+                return 'lower'
+            elif new_quality == current_quality:
+                return 'same'
+            else:
+                raise ValueError('Could not compare qualities')
+
+        def higher_preference(first, second):
+            """Compare preference level."""
+            asc_order = [
+                'undesired',
+                'allowed',
+                'preferred',
+            ]
+            first_preference = asc_order.index(first)
+            second_preference = asc_order.index(second)
+            return first_preference > second_preference
+
+        replace = {
+            'undesired': undesired_cfg or cls.undesired_replace,
+            'allowed': allowed_cfg or cls.allowed_replace,
+            'preferred': preferred_cfg or cls.preferred_replace,
+        }
+
+        new = get_level(new_quality)
+        existing = get_level(current_quality)
+
+        if new != existing:  # qualities are not the same level
+            if higher_preference(new, existing):
+                msg = 'New quality is {0}'
+                return True, msg.format(new)
+            else:
+                msg = 'New quality is {0} but existing is {1}'
+                return False, msg.format(new, existing)
+        else:  # qualities are the same level
+            status = compare(new_quality, current_quality)
+            if replace[existing][status]:  # replace based on settings
+                msg = 'Replacing {0} quality with {1} {0} quality'
+                return True, msg.format(existing, status)
+            else:
+                msg = 'Not replacing {0} quality with {1} {0} quality'
+                return False, msg.format(existing, status)
 
     def _run_extra_scripts(self, ep_obj):
         """
@@ -1279,3 +1362,27 @@ class PostProcessor(object):
                     logger.log(u'Please consider manually move torrent to seed folder as there is no info hash in '
                                u'snatch history: {0}'.format(self.file_path), logger.WARNING)
         return True
+
+    def __repr__(self):
+        return u"""
+        *** POST PROCESSOR ***
+        Folder ............. {self.folder_path}
+        Full path to file .. {self.file_path}
+        File name .......... {self.file_name}
+        Relative path ...... {self.rel_path}
+        NZB name ........... {self.nzb_name}
+        Process method ..... {self.process_method}
+        In history ......... {self.in_history}
+        Release group ...... {self.release_group}
+        Release name ....... {self.release_name}
+        Is proper .......... {self.is_proper}
+        Is priority ........ {self.is_priority}
+        Version ............ {self.version}
+        aniDB episode ...... {self.anidbEpisode}
+        Manually searched .. {self.manually_searched}
+        Info hash .......... {self.info_hash}
+        -- REPLACEMENT CFG --
+        Preferred .......... {self.preferred_replace}
+        Allowed ............ {self.allowed_replace}
+        Undesired .......... {self.undesired_replace}
+        """.format(self=self)
