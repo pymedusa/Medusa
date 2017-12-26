@@ -61,6 +61,19 @@ from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
+# Most common language tags from IETF
+# https://datahub.io/core/language-codes#resource-ietf-language-tags
+LANGUAGE_TAGS = {
+    'en-us': 'en-US',
+    'en-gb': 'en-GB',
+    'en-au': 'en-AU',
+    'pt-br': 'pt-BR',
+    'pt-pt': 'pt-PT',
+    'es-mx': 'es-MX',
+    'zh-cn': 'zh-CH',
+    'zh-tw': 'zh-TW',
+}
+
 
 class PostProcessor(object):
     """A class which will process a media file according to the post processing settings in the config."""
@@ -373,9 +386,7 @@ class PostProcessor(object):
                 sub_code = split_path[1]
                 code = sub_code.lower().replace('_', '-')
                 if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
-                    # TODO remove this hardcoded language
-                    if code == 'pt-br':
-                        code = 'pt-BR'
+                    code = LANGUAGE_TAGS.get(code, code)
                     new_extension = code + '.' + extension
                     extension = sub_code + '.' + extension
 
