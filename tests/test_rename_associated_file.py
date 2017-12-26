@@ -87,6 +87,12 @@ import pytest
         'filepath': 'downloads/tv/riko.or.marty.s03e05.1080p.web-dl.mkv',
         'expected': 'media/shows/riko or marty/season 3/Riko or Marty S03E05 Episode Name.mkv'
     },
+    {  # p13: Space before subtitle extension
+        'new_path': 'media/shows/gomorra/season 3/',
+        'new_basename': 'Gomorra S03E15 Episode Name',
+        'filepath': 'downloads/tv/Gomorra S03 E11 - x264 .srt',
+        'expected': 'media/shows/gomorra/season 3/Gomorra S03E15 Episode Name.srt'
+    },
 ])
 def test_rename_associated_file(p, create_dir, monkeypatch):
     """Test rename_associated_file."""

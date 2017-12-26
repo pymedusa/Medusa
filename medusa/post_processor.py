@@ -367,14 +367,17 @@ class PostProcessor(object):
             new_extension = 'nfo-orig'
 
         elif is_subtitle(filepath):
-            sub_code = filepath.rsplit('.', 2)[1]
-            code = sub_code.lower().replace('_', '-')
-            if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
-                # TODO remove this hardcoded language
-                if code == 'pt-br':
-                    code = 'pt-BR'
-                new_extension = code + '.' + extension
-                extension = sub_code + '.' + extension
+            split_path = filepath.rsplit('.', 2)
+            # len != 3 means we have a subtitle without language
+            if len(split_path) == 3:
+                sub_code = split_path[1]
+                code = sub_code.lower().replace('_', '-')
+                if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                    # TODO remove this hardcoded language
+                    if code == 'pt-br':
+                        code = 'pt-BR'
+                    new_extension = code + '.' + extension
+                    extension = sub_code + '.' + extension
 
         # rename file with new basename
         if new_basename:
