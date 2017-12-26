@@ -228,7 +228,8 @@ class ImageCache(object):
 
             # see if image exists
             try:
-                os.path.isfile(cur_path)
+                if not os.path.isfile(cur_path):
+                    continue
             except OSError:
                 continue
 
@@ -242,7 +243,7 @@ class ImageCache(object):
                         loc=cur_path,
                         msg=error,
                     ),
-                    logger.ERROR,
+                    logger.WARNING,
                 )
             else:
                 logger.log(
