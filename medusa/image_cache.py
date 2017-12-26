@@ -33,11 +33,29 @@ class ImageCache(object):
     POSTER_THUMB = 4
     FANART = 5
 
+    IMAGE_TYPE_NAMES = {
+        BANNER: 'banner',
+        POSTER: 'poster',
+        BANNER_THUMB: 'banner_thumb',
+        POSTER_THUMB: 'poster_thumb',
+        FANART: 'fanart',
+    }
+
     def __init__(self):
         pass
 
     def __del__(self):
         pass
+
+    @property
+    def path(self):
+        return {
+            self.POSTER: self.poster_path,
+            self.BANNER: self.banner_path,
+            self.POSTER_THUMB: self.poster_thumb_path,
+            self.BANNER_THUMB: self.banner_thumb_path,
+            self.FANART: self.fanart_path,
+        }
 
     @classmethod
     def _cache_dir(cls):
@@ -183,6 +201,58 @@ class ImageCache(object):
         else:
             logger.log('Image has size ratio of {img_ratio}, unknown type'.format(img_ratio=img_ratio), logger.WARNING)
             return
+
+    def replace_images(self, series):
+        """
+        Replace cached images for a series based on image type.
+
+        :param series: Series object
+        """
+        self.remove_images(series)
+        self.fill_cache(series)
+
+    def remove_images(self, series, image_types=None):
+        """
+        Remove cached images for a series based on image type.
+
+        :param series: Series object
+        :param image_types: iterable of integers for image types to remove
+            if no image types passed, remove all images
+        """
+        image_types = image_types or self.IMAGE_TYPE_NAMES
+        series_id = series.indexerid
+        series_name = series.name
+
+        for image_type in image_types:
+            cur_path = self.path[image_type](series_id)
+
+            # see if image exists
+            try:
+                if not os.path.isfile(cur_path):
+                    continue
+            except OSError:
+                continue
+
+            # try to remove image
+            try:
+                os.remove(cur_path)
+            except OSError as error:
+                logger.log(
+                    'Could not remove {img} from cache [{loc}]: {msg}'.format(
+                        img=self.IMAGE_TYPE_NAMES[image_type],
+                        loc=cur_path,
+                        msg=error,
+                    ),
+                    logger.WARNING,
+                )
+            else:
+                logger.log(
+                    'Removed {img} for series {name}'.format(
+                        img=self.IMAGE_TYPE_NAMES[image_type],
+                        name=series_name
+                    ),
+                    logger.INFO,
+                )
 
     def _cache_image_from_file(self, image_path, img_type, indexer_id):
         """
