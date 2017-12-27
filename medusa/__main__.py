@@ -1535,7 +1535,7 @@ class Application(object):
                 ],
                 GenericProvider.TORRENT: [
                     'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease', 'onlyspasearch',
-                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
+                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
                     'cat_ids'
