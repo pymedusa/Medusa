@@ -186,8 +186,7 @@ class NameParser(object):
                     )
                 else:
                     if result.show.is_scene:
-                        a = scene_numbering.get_indexer_absolute_numbering(result.show.indexerid,
-                                                                           result.show.indexer, absolute_episode,
+                        a = scene_numbering.get_indexer_absolute_numbering(result.show, absolute_episode,
                                                                            True, scene_season)
 
                     # Translate the absolute episode number, back to the indexers season and episode.

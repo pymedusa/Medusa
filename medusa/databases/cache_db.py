@@ -151,4 +151,8 @@ class AddIndexerIds(AddIndexerSceneExceptions):
         return self.hasColumn('scene_names', 'indexer')
 
     def execute(self):
+        # Add the indexer column to the scene_names table.
         self.addColumn('scene_names', 'indexer', 'NUMERIC', -1)
+
+        # clean up null values from the scene_exceptions_table
+        self.connection.action("DELETE FROM scene_exceptions WHERE indexer = '' or indexer is null;")

@@ -86,18 +86,18 @@ def saveNameCacheToDb():
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)", [series_id, name, indexer_id])
 
 
-def build_name_cache(series=None):
+def build_name_cache(series_obj=None):
     """Build internal name cache.
 
-    :param series: Specify series to build name cache for, if None, just do all series
+    :param series_obj: Specify series to build name cache for, if None, just do all series
     :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
-    def _cache_name(series):
+    def _cache_name(cache_series_obj):
         """Build the name cache for a single show."""
 
-        clear_cache(series.indexer, series.series_id)
+        clear_cache(cache_series_obj.indexer, cache_series_obj.series_id)
 
-        series_identifier = (series.indexer, series.series_id)
+        series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
             full_sanitize_scene_name(name): series_identifier
@@ -105,7 +105,7 @@ def build_name_cache(series=None):
             for name in season_exceptions
         }
         # Add original name to name cache
-        series_name = full_sanitize_scene_name(series.name)
+        series_name = full_sanitize_scene_name(cache_series_obj.name)
         names[series_name] = series_identifier
 
         # Add scene exceptions to name cache
@@ -122,10 +122,10 @@ def build_name_cache(series=None):
     # Create cache from db for the scene_exceptions.
     refresh_exceptions_cache()
 
-    if not series:
+    if not series_obj:
         log.info(u'Building internal name cache for all shows')
         for show in app.showList:
             _cache_name(show)
     else:
-        log.info(u'Building internal name cache for {series}', {'series': series.name})
-        _cache_name(series)
+        log.info(u'Building internal name cache for {series}', {'series': series_obj.name})
+        _cache_name(series_obj)

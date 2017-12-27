@@ -41,7 +41,10 @@ def refresh_exceptions_cache():
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
-        indexer_id = int(exception[b'indexer'])
+        try:
+            indexer_id = int(exception[b'indexer'])
+        except:
+            pass
         series_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
         show = exception[b'show_name']
@@ -138,7 +141,6 @@ def get_scene_exceptions_by_name(show_name):
     )
 
     for exception in scene_exceptions:
-        # FIXME: Need to add additional layer indexer.
         indexer = int(exception[b'indexer'])
         indexer_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
@@ -190,9 +192,9 @@ def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
             # Add to db
             cache_db_con.action(
                 b'INSERT INTO scene_exceptions '
-                b'    (indexer_id, show_name, season, indexer)'
+                b'    (indexer, indexer_id, show_name, season)'
                 b'VALUES (?,?,?,?)',
-                [series_obj.series_id, exception, season, series_obj.indexer]
+                [series_obj.indexer, series_obj.series_id, exception, season]
             )
 
 
