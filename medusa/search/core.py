@@ -64,10 +64,10 @@ def _download_result(result):
         return False
 
     # nzbs with an URL can just be downloaded from the provider
-    if result.resultType == u'nzb':
+    if result.search_type == u'nzb':
         new_result = res_provider.download_result(result)
     # if it's an nzb data result
-    elif result.resultType == u'nzbdata':
+    elif result.search_type == u'nzbdata':
 
         # get the final file path to the nzb
         file_name = os.path.join(app.NZB_DIR, result.name + u'.nzb')
@@ -86,7 +86,7 @@ def _download_result(result):
         except EnvironmentError as e:
             log.error(u'Error trying to save NZB to black hole: {0}', ex(e))
             new_result = False
-    elif result.resultType == u'torrent':
+    elif result.search_type == u'torrent':
         new_result = res_provider.download_result(result)
     else:
         log.error(u'Invalid provider type - this is a coding error, report it please')
@@ -120,7 +120,7 @@ def snatch_episode(result):
         end_status = SNATCHED
 
     if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
-        result.resultType = u'torrent'
+        result.search_type = u'torrent'
 
     # Binsearch.info requires you to download the nzb through a post.
     if hasattr(result.provider, 'download_nzb_for_post'):
