@@ -26,7 +26,7 @@ import re
 import subprocess
 import time
 
-from babelfish import Country, Language, language_converters
+from babelfish import Country, Language, LanguageConvertError, LanguageReverseError, language_converters
 
 from dogpile.cache.api import NO_VALUE
 
@@ -210,7 +210,7 @@ def from_ietf_code(code, unknown='und'):
     """
     try:
         return Language.fromietf(code)
-    except ValueError:
+    except (LanguageReverseError, ValueError):
         return Language(unknown) if unknown else None
 
 
@@ -792,8 +792,13 @@ def delete_unwanted_subtitles(dirpath, filename):
 
     code = filename.rsplit('.', 2)[1].lower().replace('_', '-')
     language = from_code(code, unknown='') or from_ietf_code(code)
+    found_language = None
+    try:
+        found_language = language.opensubtitles
+    except LanguageConvertError:
+        logger.info(u"Unable to convert language code '%s' for: %s", code, filename)
 
-    if language.opensubtitles not in app.SUBTITLES_LANGUAGES:
+    if found_language and found_language not in app.SUBTITLES_LANGUAGES:
         try:
             os.remove(os.path.join(dirpath, filename))
         except OSError as error:
@@ -975,7 +980,7 @@ class SubtitlesFinder(object):
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
-                "AND (e.status LIKE '%4' OR e.status LIKE '%6') "
+                "AND e.status LIKE '%4' "
                 "AND e.season > 0 "
                 "AND e.location != '' "
                 "AND age {} 30 "

@@ -47,6 +47,7 @@
     "nyc": "^11.3.0",
     "postcss-reporter": "^5.0.0",
     "run-sequence": "^2.2.0",
+    "nyc": "^11.3.0",
     "snyk": "^1.9.1",
     "url-parse": "^1.2.0",
     "vinyl-buffer": "^1.0.0",

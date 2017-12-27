@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
 
 from medusa import tv
@@ -38,11 +37,9 @@ class SpeedCDProvider(TorrentProvider):
         # URLs
         self.url = 'https://speed.cd'
         self.urls = {
-            'login': [urljoin(self.url, 'take_login.php'),
-                      urljoin(self.url, 'takeElogin.php'),
-                      urljoin(self.url, 'takelogin.php')
-                      ],
+            'login': urljoin(self.url, 'login.php'),
             'search': urljoin(self.url, 'browse.php'),
+            'login_post': None,
         }
 
         # Proper Strings
@@ -58,7 +55,7 @@ class SpeedCDProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -183,20 +180,34 @@ class SpeedCDProvider(TorrentProvider):
             'password': self.password,
         }
 
-        for login_url in self.urls['login']:
-            response = self.session.post(login_url, data=login_params)
-            if not response or not response.text:
-                log.debug('Unable to connect to provider using login URL: {url}',
-                          {'url': login_url})
-                continue
+        if not self.urls['login_post'] and not self.login_url():
+            log.debug('Unable to get login URL')
+            return False
 
-            if re.search('Incorrect username or Password. Please try again.', response.text):
-                log.warning('Invalid username or password. Check your settings')
-                return False
-            return True
+        response = self.session.post(self.urls['login_post'], data=login_params)
+        if not response or not response.text:
+            log.debug('Unable to connect to provider using login URL: {url}',
+                      {'url': self.urls['login_post']})
+            return False
+        if 'incorrect username or password. please try again' in response.text.lower():
+            log.warning('Invalid username or password. Check your settings')
+            return False
+        return True
 
         log.warning('Unable to connect to provider')
         return
+
+    def login_url(self):
+        """Get the login url (post) as speed.cd keeps changing it."""
+        response = self.session.get(self.urls['login'])
+        if not response or not response.text:
+            log.debug('Unable to connect to provider to get login URL')
+            return
+        data = BS4Parser(response.text, 'html5lib')
+        login_post = data.soup.find('form', id='loginform').get('action')
+        if login_post:
+            self.urls['login_post'] = urljoin(self.url, login_post)
+            return True
 
 
 provider = SpeedCDProvider()

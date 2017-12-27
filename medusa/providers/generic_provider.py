@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
@@ -97,8 +97,12 @@ class GenericProvider(object):
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+
         # Ability to override the search separator. As for example anizb is using '*' instead of space.
         self.search_separator = ' '
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+        )
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
@@ -108,9 +112,9 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
-        # Police attributes
-        self.enable_api_hit_cooldown = False
-        self.enable_daily_request_reserve = False
+        # Delay downloads
+        self.enable_search_delay = False
+        self.search_delay = 480  # minutes
 
     def download_result(self, result):
         """Download result from provider."""
@@ -183,6 +187,20 @@ class GenericProvider(object):
 
         return results
 
+    @staticmethod
+    def remove_duplicate_mappings(items, pk='link'):
+        """
+        Remove duplicate items from an iterable of mappings.
+
+        :param items: An iterable of mappings
+        :param pk: Primary key for removing duplicates
+        :return: An iterable of unique mappings
+        """
+        return OrderedDict(
+            (item[pk], item)
+            for item in items
+        ).values()
+
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
@@ -205,14 +223,17 @@ class GenericProvider(object):
                     continue
 
             search_strings = []
-            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
+            season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
+            if season_search:
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(search_string, ep_obj=episode)
+                items_list += self.search(
+                    search_string, ep_obj=episode, manual_search=manual_search
+                )
 
             # In season search, we can't loop in episodes lists as we only need one episode to get the season string
             if search_mode == 'sponly':
@@ -221,23 +242,37 @@ class GenericProvider(object):
         if len(results) == len(episodes):
             return results
 
-        if items_list:
-            # categorize the items into lists by quality
-            items = defaultdict(list)
-            for item in items_list:
-                items[self.get_quality(item, anime=show.is_anime)].append(item)
+        # Remove duplicate items
+        unique_items = self.remove_duplicate_mappings(items_list)
+        log.debug('Found {0} unique items', len(unique_items))
 
-            # temporarily remove the list of items with unknown quality
-            unknown_items = items.pop(Quality.UNKNOWN, [])
+        # categorize the items into lists by quality
+        categorized_items = defaultdict(list)
+        for item in unique_items:
+            quality = self.get_quality(item, anime=show.is_anime)
+            categorized_items[quality].append(item)
 
-            # make a generator to sort the remaining items by descending quality
-            items_list = (items[quality] for quality in sorted(items, reverse=True))
+        # sort qualities in descending order
+        sorted_qualities = sorted(categorized_items, reverse=True)
+        log.debug('Found qualities: {0}', sorted_qualities)
 
-            # unpack all of the quality lists into a single sorted list
-            items_list = list(chain(*items_list))
+        # move Quality.UNKNOWN to the end of the list
+        try:
+            sorted_qualities.remove(Quality.UNKNOWN)
+        except ValueError:
+            log.debug('No unknown qualities in results')
+        else:
+            sorted_qualities.append(Quality.UNKNOWN)
+            log.debug('Unknown qualities moved to end of results')
 
-            # extend the list with the unknown qualities, now sorted at the bottom of the list
-            items_list.extend(unknown_items)
+        # chain items sorted by quality
+        sorted_items = chain.from_iterable(
+            categorized_items[quality]
+            for quality in sorted_qualities
+        )
+
+        # unpack all of the quality lists into a single sorted list
+        items_list = list(sorted_items)
 
         cl = []
 
@@ -519,7 +554,7 @@ class GenericProvider(object):
         """Login to provider."""
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Search the provider."""
         return []
 
@@ -552,8 +587,15 @@ class GenericProvider(object):
                 if pubdate.lower() in now_alias:
                     seconds = 0
                 else:
-                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time'))
+                    match = re.search(r'(?P<time>[\d.]+\W*)(?P<granularity>\w+)', pubdate)
+                    matched_time = match.group('time')
+                    matched_granularity = match.group('granularity')
+
+                    # The parse method does not support decimals used with the month, months, year or years granularities.
+                    if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
+                        matched_time = int(round(float(matched_time.strip())))
+
+                    seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
@@ -564,7 +606,7 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
@@ -635,16 +677,16 @@ class GenericProvider(object):
         }
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + self.search_separator
 
             if episode.series.air_by_date or episode.series.sports:
-                episode_string += str(episode.airdate).split('-')[0]
+                search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
             elif episode.series.anime:
-                episode_string += 'Season'
+                search_string['Season'].append(episode_string + 'Season')
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
-
-            search_string['Season'].append(episode_string.strip())
+                for season_template in self.season_templates:
+                    templated_episode_string = episode_string + season_template.format(season=episode.scene_season)
+                    search_string['Season'].append(templated_episode_string.strip())
 
         return [search_string]
 
@@ -695,7 +737,7 @@ class GenericProvider(object):
         urls = []
         filename = ''
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             try:
                 info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
@@ -723,7 +765,7 @@ class GenericProvider(object):
 
         # Some NZB providers (e.g. Jackett) can also download torrents
         if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)

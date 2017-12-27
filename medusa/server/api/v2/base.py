@@ -7,10 +7,15 @@ import json
 import operator
 import traceback
 from datetime import date, datetime
+
 from babelfish.language import Language
+
 import jwt
+
 from medusa import app
+
 from six import string_types, text_type
+
 from tornado.httpclient import HTTPError
 from tornado.web import RequestHandler
 
@@ -412,6 +417,15 @@ class IntegerField(PatchField):
         """Constructor."""
         super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
                                            default_value=default_value, post_processor=post_processor)
+
+
+class ListField(PatchField):
+    """Patch list fields."""
+
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
+                                        default_value=default_value, post_processor=post_processor)
 
 
 class BooleanField(PatchField):

@@ -30,7 +30,8 @@ class BacklogSearchScheduler(scheduler.Scheduler):
         if self.action._last_backlog <= 1:
             return datetime.date.today()
         else:
-            return datetime.date.fromordinal(self.action._last_backlog + self.action.cycleTime)
+            backlog_frequency_in_days = int(self.action.cycleTime)
+            return datetime.date.fromordinal(self.action._last_backlog + backlog_frequency_in_days)
 
 
 class BacklogSearcher(object):
@@ -105,7 +106,8 @@ class BacklogSearcher(object):
             segments = self._get_segments(cur_show, from_date)
 
             for season, segment in iteritems(segments):
-                self.currentSearchInfo = {'title': cur_show.name + ' Season ' + str(season)}
+                self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=cur_show.name,
+                                                                                          season=season)}
 
                 backlog_queue_item = BacklogQueueItem(cur_show, segment)
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable

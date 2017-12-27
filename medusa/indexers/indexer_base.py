@@ -2,14 +2,14 @@
 
 """Base class for indexer api's."""
 
-import cgi
 import getpass
 import logging
 import os
-import re
 import tempfile
 import time
 import warnings
+from itertools import chain
+from operator import itemgetter
 
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
@@ -22,7 +22,6 @@ from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
-from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -181,25 +180,6 @@ class BaseIndexer(object):
         """Indexer representation, returning representation of all shows indexed."""
         return str(self.shows)
 
-    def _clean_data(self, data):  # pylint: disable=no-self-use
-        """Clean up strings.
-
-        Issues corrected:
-        - Replaces &amp; with &
-        - Trailing whitespace
-        """
-        if isinstance(data, basestring):
-            data = data.replace('&amp;', '&')
-            data = data.strip()
-
-            tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-            # Remove well-formed tags
-            no_tags = tag_re.sub('', data)
-            # Clean up anything else by escaping
-            data = cgi.escape(no_tags)
-
-        return data
-
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Create a new episode, creating Show(), Season() and Episode()s as required.
 
@@ -223,17 +203,79 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
-    def _save_images(self, sid, images):
-        """Save the highest rated image (banner, poster, fanart) as show data."""
-        for image_type in images:
-            # get series data / add the base_url to the image urls
-            if image_type in ['banner', 'fanart', 'poster']:
-                # For each image type, where going to save one image based on the highest rating
-                if not len(images[image_type]):
-                    continue
-                merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
-                highest_rated = sorted(merged_image_list, key=lambda k: float(k['rating']), reverse=True)[0]
-                self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
+    def _save_images(self, series_id, images):
+        """
+        Save the highest rated images for the show.
+
+        :param series_id: The series ID
+        :param images: A nested mapping of image info
+            images[type][res][id] = image_info_mapping
+                type: image type such as `banner`, `poster`, etc
+                res: resolution such as `1024x768`, `original`, etc
+                id: the image id
+        """
+        # Get desired image types from images
+        image_types = 'banner', 'fanart', 'poster'
+
+        # Iterate through desired image types
+        for img_type in image_types:
+            try:
+                image_type = images[img_type]
+            except KeyError:
+                log.debug(
+                    u'No {image}s found for {series}', {
+                        'image': img_type,
+                        'series': series_id,
+                    }
+                )
+                continue
+
+            # Flatten image_type[res][id].values() into list of values
+            merged_images = chain.from_iterable(
+                resolution.values()
+                for resolution in image_type.values()
+            )
+
+            # Sort by rating
+            images_by_rating = sorted(
+                merged_images,
+                key=itemgetter('rating'),
+                reverse=True,
+            )
+            log.debug(
+                u'Found {x} {image}s for {series}: {results}', {
+                    'x': len(images_by_rating),
+                    'image': img_type,
+                    'series': series_id,
+                    'results': u''.join(
+                        u'\n\t{rating}: {url}'.format(
+                            rating=img['rating'],
+                            url=img['_bannerpath'],
+                        )
+                        for img in images_by_rating
+                    )
+                }
+            )
+
+            # Get the highest rated image
+            highest_rated = images_by_rating[0]
+            img_url = highest_rated['_bannerpath']
+            log.debug(
+                u'Selecting highest rated {image} (rating={img[rating]}):'
+                u' {img[_bannerpath]}', {
+                    'image': img_type,
+                    'img': highest_rated,
+                }
+            )
+            log.debug(
+                u'{image} details: {img}', {
+                    'image': img_type.capitalize(),
+                    'img': highest_rated,
+                }
+            )
+
+            # Save the image
+            self._set_show_data(series_id, img_type, img_url)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""

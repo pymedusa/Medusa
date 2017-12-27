@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 import threading
+import time
 
 from medusa import (
     app,
@@ -45,6 +46,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -77,7 +79,7 @@ def _download_result(result):
         # save the data to disk
         try:
             with open(file_name, u'w') as fileOut:
-                fileOut.write(result.extraInfo[0])
+                fileOut.write(result.extra_info[0])
 
             helpers.chmod_as_parent(file_name)
 
@@ -117,11 +119,21 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet') or result.url.endswith(u'torrent'):
+    if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
         result.resultType = u'torrent'
 
+    # Binsearch.info requires you to download the nzb through a post.
+    if hasattr(result.provider, 'download_nzb_for_post'):
+        result.result_type = 'nzbdata'
+        nzb_data = result.provider.download_nzb_for_post(result)
+        result.extra_info.append(nzb_data)
+
+        if not nzb_data:
+            log.warning('Error trying to get the nzb data from provider binsearch, no data returned')
+            return False
+
     # NZBs can be sent straight to SAB or saved to disk
-    if result.resultType in (u'nzb', u'nzbdata'):
+    if result.result_type in (u'nzb', u'nzbdata'):
         if app.NZB_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == u'sabnzbd':
@@ -133,23 +145,23 @@ def snatch_episode(result):
             result_downloaded = False
 
     # Torrents can be sent to clients or saved to disk
-    elif result.resultType == u'torrent':
+    elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
-            if not result.content and not result.url.startswith(u'magnet'):
+            if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
                     result.content = result.provider.get_content(result.url)
 
-            if result.content or result.url.startswith(u'magnet'):
+            if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
-                log.warning(u'Torrent file content is empty')
+                log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
-        log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
+        log.error(u'Unknown result type, unable to download it: {0!r}', result.result_type)
         result_downloaded = False
 
     if not result_downloaded:
@@ -467,11 +479,65 @@ def search_for_needed_episodes(force=False):
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
+            # Skip the result if search delay is enabled for the provider.
+            if delay_search(best_result):
+                continue
+
             found_results[cur_ep] = best_result
 
     threading.currentThread().name = original_thread_name
 
     return found_results.values()
+
+
+def delay_search(best_result):
+    """Delay the search by ignoring the best result, when search delay is enabled for this provider.
+
+    If the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
+    search_delay time (minutes) skipp it. For this we need to check if the result has already been
+    stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
+    :param best_result: SearchResult object.
+    :return: True if we want to skipp this result.
+    """
+    cur_provider = best_result.provider
+    if cur_provider.enable_search_delay and cur_provider.search_delay:  # In minutes
+        cur_ep = best_result.episodes[0]
+        log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
+                  {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
+        from medusa.search.manual import get_provider_cache_results
+        results = get_provider_cache_results(
+            cur_ep.series.indexer, show_all_results=False, perform_search=False, show=cur_ep.series.indexerid,
+            season=cur_ep.season, episode=cur_ep.episode, manual_search_type='episode'
+        )
+
+        if results.get('found_items'):
+            results['found_items'].sort(key=lambda d: int(d['date_added']))
+            first_result = results['found_items'][0]
+            if first_result['date_added'] + cur_provider.search_delay * 60 > int(time.time()):
+                # The provider's delay cooldown time hasn't expired yet. We're holding back the snatch.
+                log.debug(
+                    u'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}. The provider is waiting'
+                    u' {search_delay_minutes} hours, before accepting the release. Still {hours_left} to go.', {
+                        'best_result': best_result.name,
+                        'first_result': first_result['name'],
+                        'provider': cur_provider.name,
+                        'search_delay_minutes': round(cur_provider.search_delay / 60, 1),
+                        'hours_left': round((cur_provider.search_delay - (time.time() - first_result['date_added']) / 60) / 60, 1)
+                    }
+                )
+                return True
+            else:
+                log.debug(u'DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
+                          u'Time of first result: {first_result}',
+                          {'provider': cur_provider.name,
+                           'first_result': datetime.datetime.fromtimestamp(first_result['date_added'])})
+        else:
+            # This should never happen.
+            log.debug(
+                u'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
+                {'provider': cur_provider.name, 'series': best_result.show.name,
+                 'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
+    return False
 
 
 def search_providers(show, episodes, forced_search=False, down_cur_quality=False,
@@ -772,7 +838,9 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                         else:
                             found = True
             if not found:
-                final_results += [best_result]
+                # Skip the result if search delay is enabled for the provider.
+                if not delay_search(best_result):
+                    final_results += [best_result]
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

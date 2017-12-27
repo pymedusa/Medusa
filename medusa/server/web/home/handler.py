@@ -145,7 +145,7 @@ class Home(WebRoot):
                 shows_dir = None
                 app.SELECTED_ROOT = -1
 
-        shows = []
+        series = []
         if app.ANIME_SPLIT_HOME:
             anime = []
             for show in app.showList:
@@ -154,14 +154,15 @@ class Home(WebRoot):
                 if show.is_anime:
                     anime.append(show)
                 else:
-                    shows.append(show)
-            show_lists = [['Shows', shows], ['Anime', anime]]
+                    series.append(show)
+
+            show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
         else:
             for show in app.showList:
                 if shows_dir and not show._location.startswith(shows_dir):
                     continue
-                shows.append(show)
-            show_lists = [['Shows', shows]]
+                series.append(show)
+            show_lists = [['Series', series]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
@@ -1621,11 +1622,11 @@ class Home(WebRoot):
                         logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
                         try:
                             os.mkdir(new_location)
-                        except OSError as e:
+                        except OSError as error:
                             errors += 1
                             changed_location = False
-                            logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
-                                       (location=new_location, error=e.message or e.strerror), logger.WARNING)
+                            logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
+                                       (location=new_location, msg=error), logger.WARNING)
                         else:
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
@@ -1792,6 +1793,7 @@ class Home(WebRoot):
 
         # force the update
         try:
+            show_obj.remove_images()
             app.show_queue_scheduler.action.updateShow(show_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))

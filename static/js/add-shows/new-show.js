@@ -122,9 +122,9 @@ MEDUSA.addShows.newShow = function() {
                         const startDate = new Date(obj[5]);
                         const today = new Date();
                         if (startDate > today) {
-                            resultStr += ' (will debut on ' + obj[5] + ')';
+                            resultStr += ' (will debut on ' + obj[5] + ' on ' + obj[6] + ')';
                         } else {
-                            resultStr += ' (started on ' + obj[5] + ')';
+                            resultStr += ' (started on ' + obj[5] + ' on ' + obj[6] + ')';
                         }
                     }
 

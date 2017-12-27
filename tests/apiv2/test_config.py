@@ -114,6 +114,7 @@ def config(monkeypatch, app_config):
     config_data['layout']['show'] = NonEmptyDict()
     config_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
     config_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
+    config_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
     config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
     config_data['backlogOverview'] = NonEmptyDict()
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD

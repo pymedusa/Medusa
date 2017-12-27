@@ -551,9 +551,26 @@ div.xem {
 
 .show-grid {
     display: none;
+    margin-bottom: 60px!important;
 }
 
-#container,
+.nav-show-list {
+    position: relative;
+    margin-top: 4px;
+    background-color: transparent;
+    border: none;
+    float: left;
+}
+
+.nav-show-list .icon-bar {
+    display: block;
+    width: 22px;
+    height: 3px;
+    margin-top: 4px;
+    background-color: rgb(51, 51, 51);
+}
+
+#container-series,
 #container-anime {
     margin: 0 auto;
 }
@@ -780,6 +797,7 @@ div.xem {
 
 .posterview {
     margin: 0 auto;
+    position: relative;
 }
 
 td.tvShow a {

@@ -9,7 +9,7 @@ import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size
+from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -38,9 +38,6 @@ class AniDexProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.anime_only = True
-        self.headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
 
         # Torrent Stats
         self.minseed = None
@@ -49,7 +46,7 @@ class AniDexProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -120,8 +117,8 @@ class AniDexProvider(TorrentProvider):
 
                     download_url = urljoin(self.url, download_url)
 
-                    seeders = cells[labels.index('Seeders')].get_text()
-                    leechers = cells[labels.index('Leechers')].get_text()
+                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):

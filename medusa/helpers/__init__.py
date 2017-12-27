@@ -1283,11 +1283,13 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session, headers=None, **kwargs):
+def download_file(url, filename, session, method='GET', data=None, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
     :param filename: Target file on filesystem
+    :param method: Specity the http method. Currently only GET and POST supported
+    :param data: sessions post data
     :param session: request session to use
     :param headers: override existing headers in request session
     :return: True on success, False on failure
@@ -1296,9 +1298,9 @@ def download_file(url, filename, session, headers=None, **kwargs):
         hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
         with session as s:
-            resp = s.get(url, allow_redirects=True, stream=True,
-                         verify=verify, headers=headers, cookies=cookies,
-                         hooks=hooks, proxies=proxies)
+            resp = s.request(method, url, data=data, allow_redirects=True, stream=True,
+                             verify=verify, headers=headers, cookies=cookies,
+                             hooks=hooks, proxies=proxies)
 
             if not resp:
                 log.debug(
@@ -1790,8 +1792,6 @@ def get_broken_providers():
 
 def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
-    if not is_media_file(str(full_filename)):
-        return False
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
                                         "WHERE action LIKE '%04' "
