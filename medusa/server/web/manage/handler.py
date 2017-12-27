@@ -88,7 +88,7 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
+            b'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
             b'FROM tv_episodes, tv_shows '
             b'WHERE season != 0 '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
@@ -101,18 +101,18 @@ class Manage(Home, WebRoot):
         ep_counts = {}
         show_names = {}
         sorted_show_ids = []
-        # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
-        # Use tv_shows.show_id in stead.
-        for cur_status_result in status_results:
-            cur_indexer_id = int(cur_status_result[b'indexer_id'])
-            if cur_indexer_id not in ep_counts:
-                ep_counts[cur_indexer_id] = 1
-            else:
-                ep_counts[cur_indexer_id] += 1
 
-            show_names[cur_indexer_id] = cur_status_result[b'show_name']
-            if cur_indexer_id not in sorted_show_ids:
-                sorted_show_ids.append(cur_indexer_id)
+        for cur_status_result in status_results:
+            cur_indexer = int(cur_status_result[b'indexer'])
+            cur_series_id = int(cur_status_result[b'indexer_id'])
+            if cur_series_id not in ep_counts:
+                ep_counts[(cur_indexer, cur_series_id)] = 1
+            else:
+                ep_counts[(cur_indexer, cur_series_id)] += 1
+
+            show_names[(cur_indexer, cur_series_id)] = cur_status_result[b'show_name']
+            if (cur_indexer, cur_series_id) not in sorted_show_ids:
+                sorted_show_ids.append((cur_indexer, cur_series_id))
 
         return t.render(
             title='Episode Overview', header='Episode Overview',
@@ -215,7 +215,7 @@ class Manage(Home, WebRoot):
             b'AND tv_episodes.season != 0 '
             b'AND tv_episodes.location != \'\' '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
-            b'AND tv_episodes.indexer = tv_shows.indexer'
+            b'AND tv_episodes.indexer = tv_shows.indexer '
             b'ORDER BY show_name'
         )
 
@@ -272,6 +272,7 @@ class Manage(Home, WebRoot):
                     b'FROM tv_episodes '
                     b'WHERE status LIKE \'%4\' '
                     b'AND season != 0 '
+                    b'AND indexer != 0 '
                     b'AND showid = ? '
                     b'AND location != \'\'',
                     [cur_indexer_id]
@@ -281,7 +282,7 @@ class Manage(Home, WebRoot):
             for epResult in to_download[cur_indexer_id]:
                 season, episode = epResult.split('x')
 
-                show = Show.find(app.showList, int(cur_indexer_id))
+                show = Show.find_by_id(app.showList, int(cur_indexer_id))
                 show.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')

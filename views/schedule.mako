@@ -18,7 +18,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="series-id" value="${choice(results)['showid'] if results else ''}" />
-<input type="hidden" id="indexer-name" value="${indexer_id_to_name(choice(results)['indexer'])}" />
+<input type="hidden" data-indexer-to-name="${choice(results)['indexer'] if results else ''}" id="indexer-name" value="indexer-to-name" />
 <input type="hidden" id="series-slug" value="${choice(results)['series_slug'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">

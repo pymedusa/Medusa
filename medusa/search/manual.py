@@ -137,7 +137,7 @@ def update_finished_search_queue_item(snatch_queue_item):
 
 
 def collect_episodes_from_search_thread(series_obj):
-    """Collect all episodes from from the forced_search_queue_scheduler.
+    """Collect all episodes from the forced_search_queue_scheduler.
 
     And looks for episodes that are in status queued or searching.
     If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.

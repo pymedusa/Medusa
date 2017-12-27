@@ -106,13 +106,13 @@ class Show(object):
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
         from medusa.indexers.indexer_config import indexer_name_to_id
+        if not indexer_id or not series_id:
+            return None
+
         try:
             indexer_id = int(indexer_id)
         except ValueError:
             indexer_id = indexer_name_to_id(indexer_id)
-        except TypeError:
-            log.exception('Invalid indexer id: {indexer_id}', {'indexer_id': indexer_id})
-            return None
 
         try:
             series_id = int(series_id)

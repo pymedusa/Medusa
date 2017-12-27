@@ -5,8 +5,8 @@ MEDUSA.manage.episodeStatuses = function() {
     });
 
     $('.get_more_eps').on('click', function() {
-        var indexerName = MEDUSA.config.indexer.indexerIdToName($(this).attr('data-indexer-to-name'));
-        var seriesId = $(this).attr('id');
+        var indexerName = MEDUSA.config.indexers.indexerIdToName($(this).attr('data-indexer-id'));
+        var seriesId = $(this).attr('data-series-id');
         var checked = $('#allCheck-' + seriesId).prop('checked');
         var lastRow = $('tr#' + seriesId);
         var clicked = $(this).data('clicked');

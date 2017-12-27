@@ -1025,19 +1025,20 @@ class Home(WebRoot):
         if not cached_result or not all([cached_result[b'url'],
                                          cached_result[b'quality'],
                                          cached_result[b'name'],
+                                         cached_result[b'indexer'],
                                          cached_result[b'indexerid'],
                                          cached_result[b'season'] is not None,
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
         try:
-            show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
-            series_obj = Show.find(app.showList, show)
+            series_obj = Show.find_by_id(app.showList, cached_result[b'indexer'], cached_result[b'indexerid'])
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(show))
+            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(cached_result[b'indexerid']))
 
         if not series_obj:
-            return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, did you remove the show?'.format(show))
+            return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, '
+                                                 'did you remove the show?'.format(cached_result[b'indexerid']))
 
         # Create a list of episode object(s)
         # Multi-episode: |1|2|

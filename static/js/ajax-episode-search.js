@@ -91,6 +91,9 @@ function checkManualSearches() {
     var pollInterval = 5000;
     var indexerName = $('#indexer-name').val();
     var seriesId = $('#series-id').val();
+    if (!indexerName || !seriesId) {
+        return;
+    }
     var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
     $.ajax({
         url: url,

@@ -102,10 +102,16 @@ if (!document.location.pathname.endsWith('/login/')) {
         }
 
         MEDUSA.config.indexers.indexerIdToName = (indexer) => {
+            if (!indexer) {
+                return '';
+            }
             return MEDUSA.config.indexers.config[parseInt(indexer)];
         };
 
         MEDUSA.config.indexers.nameToIndexerId = (name) => {
+            if (!name) {
+                return '';
+            }
             return Object.keys(MEDUSA.config.indexers.config).map((key, index) => {
                 if (MEDUSA.config.indexers.config[key] == name) {
                     return key;
@@ -130,12 +136,19 @@ window.addEventListener('build', function(e) {
          *
          * The anchor is rebuild using the indexer name.
          */
-        $('a[data-indexer-to-name]').each((index, target) => {
+        $('[data-indexer-to-name]').each((index, target) => {
             const indexerId = $(target).attr('data-indexer-to-name');
             const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
 
             const re = /indexer-to-name/gi;
-            target.href = target.href.replace(re, indexerName);
+
+            $.each(target.attributes, (index, attr) => {
+                if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {
+                    target[attr.name] = target[attr.name].replace(re, indexerName);
+                }
+
+            });
+
         });
     }
 }, false);
