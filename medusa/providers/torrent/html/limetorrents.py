@@ -136,11 +136,13 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     title_url = title_anchors[0].get('href')
                     title = title_anchors[1].get_text(strip=True)
-                    regex_result = id_regex.search(title_anchors[1].get('href'))
+                    torrent_url = title_anchors[1].get('href')
+                    regex_result = id_regex.search(torrent_url)
 
                     alt_title = regex_result.group(1)
                     if len(title) < len(alt_title):
                         title = alt_title.replace('-', ' ')
+                    details_url = urljoin(self.url, torrent_url)
 
                     info_hash = hash_regex.search(title_url).group(2)
                     if not all([title, info_hash]):
@@ -172,6 +174,7 @@ class LimeTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

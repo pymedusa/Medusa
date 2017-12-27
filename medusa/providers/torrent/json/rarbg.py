@@ -181,6 +181,10 @@ class RarbgProvider(TorrentProvider):
                 pubdate_raw = row.pop('pubdate', None)
                 pubdate = self.parse_pubdate(pubdate_raw)
 
+                shorten_details_url = row.pop('info_page')
+                response = self.get_url(shorten_details_url)
+                details_url = response.url
+
                 item = {
                     'title': title,
                     'link': download_url,
@@ -188,6 +192,7 @@ class RarbgProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
+                    'details_url': details_url
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',

@@ -41,7 +41,7 @@ class BithdtvProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.enable_cookies = True
@@ -128,6 +128,7 @@ class BithdtvProvider(TorrentProvider):
                     download_url = urljoin(self.url, cells[0].find('a')['href']) if cells[0] else None
                     if not all([title, download_url]):
                         continue
+                    details_url = cells[2].find('a')['href']
 
                     seeders = try_int(cells[8].get_text(strip=True)) if len(cells) > 8 else 1
                     leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 9 else 0
@@ -153,6 +154,7 @@ class BithdtvProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

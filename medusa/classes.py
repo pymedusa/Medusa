@@ -74,6 +74,9 @@ class SearchResult(object):
         # release publish date
         self.pubdate = None
 
+        # release detail url
+        self.details_url = None
+
         # release group
         self.release_group = u''
 
@@ -177,11 +180,12 @@ class SearchResult(object):
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
         if self.add_cache_entry:
+
             # FIXME: Added repr parsing, as that prevents the logger from throwing an exception.
             # This can happen when there are unicode decoded chars in the release name.
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
-            return cache.add_cache_entry(self.name, self.url, self.seeders,
-                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
+            return cache.add_cache_entry(self.name, self.url, self.seeders, self.leechers,
+                                         self.size, self.pubdate, self.details_url, parsed_result=self.parsed_result)
         return None
 
     def create_episode_object(self):

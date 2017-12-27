@@ -87,6 +87,7 @@ class CacheDBConnection(db.DBConnection):
                 ('size', 'NUMERIC', -1),
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
+                ('details_url', 'TEXT', None),
                 ('date_added', 'NUMERIC', 0),
             )
             for column, data_type, default in table:
@@ -175,6 +176,10 @@ class Cache(object):
         """Return publish date of the item."""
         return self.provider._get_pubdate(item)
 
+    def _get_details_url(self, item):
+        """Return details url of the item."""
+        return self.provider._get_details_url(item)
+
     def _get_rss_data(self):
         """Return rss data."""
         if self.search_params:
@@ -252,10 +257,8 @@ class Cache(object):
             for item in manual_data:
                 log.debug('Adding to cache item found in manual search: {0}',
                           item.name)
-                result = self.add_cache_entry(
-                    item.name, item.url, item.seeders,
-                    item.leechers, item.size, item.pubdate
-                )
+                result = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size,
+                                              item.pubdate, item.details_url)
                 if result is not None:
                     results.append(result)
         except Exception as error:
@@ -293,6 +296,7 @@ class Cache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
+        details_url = self._get_details_url(item)
 
         self._check_item_auth(title, url)
 
@@ -300,8 +304,7 @@ class Cache(object):
             title = self._translate_title(title)
             url = self._translate_link_url(url)
 
-            return self.add_cache_entry(title, url, seeders,
-                                        leechers, size, pubdate)
+            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, details_url)
 
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
@@ -366,7 +369,7 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None):
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, details_url, parsed_result=None):
         """Add item into cache database."""
         try:
             # Use the already passed parsed_result of possible.
@@ -414,13 +417,13 @@ class Cache(object):
                     b'INSERT INTO [{name}] '
                     b'   (name, season, episodes, indexerid, url, '
                     b'    time, quality, release_group, version, '
-                    b'    seeders, leechers, size, pubdate, proper_tags, date_added) '
+                    b'    seeders, leechers, size, pubdate, proper_tags, date_added, details_url) '
                     b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
                     [name, season, episode_text, parse_result.show.indexerid, url,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp]
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, details_url]
                 ]
             else:
                 log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
@@ -428,13 +431,13 @@ class Cache(object):
                     b'UPDATE [{name}] '
                     b'SET name=?, season=?, episodes=?, indexerid=?, '
                     b'    time=?, quality=?, release_group=?, version=?, '
-                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
+                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=?, details_url=? '
                     b'WHERE url=?'.format(
                         name=self.provider_id
                     ),
                     [name, season, episode_text, parse_result.show.indexerid,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, url]
+                     seeders, leechers, size, pubdate, proper_tags, url, details_url]
                 ]
 
     def search_cache(self, episode, forced_search=False,
@@ -567,6 +570,7 @@ class Cache(object):
             search_result.size = cur_result[b'size']
             search_result.pubdate = cur_result[b'pubdate']
             search_result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
+            search_result.details_url = cur_result[b'details_url']
             search_result.content = None
 
             # FIXME: Should be changed to search_result.search_type

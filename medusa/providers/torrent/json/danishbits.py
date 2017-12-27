@@ -124,6 +124,7 @@ class DanishbitsProvider(TorrentProvider):
                 download_url = row.get('download_url')
                 if not all([title, download_url]):
                     continue
+                details_url = urljoin(self.url, row.get('details_url'))
 
                 seeders = row.get('seeders')
                 leechers = row.get('leechers')
@@ -152,6 +153,7 @@ class DanishbitsProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
+                    'details_url': details_url,
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',

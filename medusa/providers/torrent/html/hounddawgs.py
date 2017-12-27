@@ -153,6 +153,7 @@ class HoundDawgsProvider(TorrentProvider):
                     download_url = urljoin(self.url, all_as[0].attrs['href'])
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, all_as[2].attrs['href'])
 
                     seeders = try_int((row('td')[6]).text.replace(',', ''))
                     leechers = try_int((row('td')[7]).text.replace(',', ''))
@@ -179,6 +180,7 @@ class HoundDawgsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

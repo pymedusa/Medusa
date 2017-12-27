@@ -125,6 +125,7 @@ class HD4FreeProvider(TorrentProvider):
                 download_url = torrent_rows[row]['download_url']
                 if not all([title, download_url]):
                     continue
+                details_url = torrent_rows[row]['details_url']
 
                 seeders = torrent_rows[row]['seeders']
                 leechers = torrent_rows[row]['leechers']
@@ -150,6 +151,7 @@ class HD4FreeProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
+                    'details_url': details_url,
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',

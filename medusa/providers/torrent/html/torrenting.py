@@ -121,6 +121,7 @@ class TorrentingProvider(TorrentProvider):
                         if not all([title, download_url]):
                             continue
                         download_url = urljoin(self.url, download_url)
+                        details_url = urljoin(self.url, torrent_items[1].find('a')['href'])
 
                         seeders = try_int(torrent_items[5].get_text(strip=True))
                         leechers = try_int(torrent_items[6].get_text(strip=True))
@@ -146,6 +147,7 @@ class TorrentingProvider(TorrentProvider):
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': pubdate,
+                            'details_url': details_url,
                         }
                         if mode != 'RSS':
                             log.debug('Found result: {0} with {1} seeders and {2} leechers',

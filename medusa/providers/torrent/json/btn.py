@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import socket
 import time
@@ -28,8 +29,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 # API docs:
-# https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
-# https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+# http://apidocs.broadcasthe.net/docs.php
 
 class BTNProvider(TorrentProvider):
     """BTN Torrent provider."""
@@ -117,6 +117,9 @@ class BTNProvider(TorrentProvider):
             title, download_url = self._process_title_and_url(row)
             if not all([title, download_url]):
                 continue
+            group_id = row.get('GroupID')
+            torrent_id = row.get('TorrentID')
+            details_url = 'https://broadcasthe.net/torrents.php?id={0}&torrentid={1}'.format(group_id, torrent_id)
 
             seeders = row.get('Seeders', 1)
             leechers = row.get('Leechers', 0)
@@ -129,6 +132,8 @@ class BTNProvider(TorrentProvider):
                 continue
 
             size = row.get('Size') or -1
+            pubdate_raw = float(row.get('Time'))
+            pubdate = self.parse_pubdate(datetime.datetime.fromtimestamp(pubdate_raw).strftime('%c'))
 
             item = {
                 'title': title,
@@ -136,7 +141,8 @@ class BTNProvider(TorrentProvider):
                 'size': size,
                 'seeders': seeders,
                 'leechers': leechers,
-                'pubdate': None,
+                'pubdate': pubdate,
+                'details_url': details_url,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'

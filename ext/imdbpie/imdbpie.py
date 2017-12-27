@@ -13,7 +13,7 @@ from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
 from six.moves import html_parser
 from six.moves import http_client as httplib
-from six.moves.urllib.parse import urlencode, quote
+from six.moves.urllib.parse import urlencode, quote, quote_plus
 
 from imdbpie.objects import Image, Title, Person, Episode, Review
 from imdbpie.constants import (
@@ -27,7 +27,7 @@ class Imdb(object):
 
     def __init__(self, api_key=None, locale=None, anonymize=False,
                  exclude_episodes=False, user_agent=None, cache=None,
-                 proxy_uri=None, verify_ssl=True):
+                 proxy_uri=None, verify_ssl=True, session=None):
         self.api_key = api_key or SHA1_KEY
         self.timestamp = time.mktime(datetime.date.today().timetuple())
         self.user_agent = user_agent or random.choice(USER_AGENTS)
@@ -37,16 +37,17 @@ class Imdb(object):
         self.proxy_uri = proxy_uri or DEFAULT_PROXY_URI
         self.anonymize = anonymize
         self.verify_ssl = verify_ssl
-        self.session = requests
+        self.session = session or requests.Session()
 
         if self.caching_enabled:
             warnings.warn('caching will be removed in version 5.0.0 '
                           'due to not being thread safe')
             self.session = CacheControl(
-                requests.Session(), cache=FileCache('.imdbpie_cache')
+                self.session, cache=FileCache('.imdbpie_cache')
             )
 
     def get_person_by_id(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/name/maindetails', {'nconst': imdb_id})
         response = self._get(url)
 
@@ -57,6 +58,7 @@ class Imdb(object):
         return person
 
     def get_title_by_id(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/title/maindetails', {'tconst': imdb_id})
         response = self._get(url)
 
@@ -77,6 +79,7 @@ class Imdb(object):
         return title
 
     def get_title_plots(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/title/plot', {'tconst': imdb_id})
         response = self._get(url)
 
@@ -87,6 +90,7 @@ class Imdb(object):
         return [plot.get('text') for plot in plots]
 
     def title_exists(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         page_url = 'http://www.imdb.com/title/{0}/'.format(imdb_id)
 
         if self.anonymize is True:
@@ -105,74 +109,39 @@ class Imdb(object):
             response.raise_for_status()
 
     def search_for_person(self, name):
-        search_params = {
-            'json': '1',
-            'nr': 1,
-            'nn': 'on',
-            'q': name
-        }
-        query_params = urlencode(search_params)
-        search_results = self._get(
-            'http://www.imdb.com/xml/find?{0}'.format(query_params))
-
-        target_result_keys = (
-            'name_popular', 'name_exact', 'name_approx', 'name_substring')
-        person_results = []
-
-        html_unescaped = html_parser.HTMLParser().unescape
-
-        # Loop through all search_results and build a list
-        # with popular matches first
-        for key in target_result_keys:
-
-            if key not in search_results.keys():
+        query = quote(name)
+        url = 'https://v2.sg.media-imdb.com/suggests/{0}/{1}.json'.format(
+            query[0].lower(), query
+        )
+        search_results = self._get(url)
+        results = []
+        for result in search_results.get('d', ()):
+            if not result['id'].startswith('nm'):
+                # ignore non-person results
                 continue
-
-            for result in search_results[key]:
-                result_item = {
-                    'name': html_unescaped(result['name']),
-                    'imdb_id': result['id']
-                }
-                person_results.append(result_item)
-        return person_results
+            result_item = {
+                'name': result['l'],
+                'imdb_id': result['id'],
+            }
+            results.append(result_item)
+        return results
 
     def search_for_title(self, title):
-        default_search_for_title_params = {
-            'json': '1',
-            'nr': 1,
-            'tt': 'on',
-            'q': title
-        }
-        query_params = urlencode(default_search_for_title_params)
-        search_results = self._get(
-            'http://www.imdb.com/xml/find?{0}'.format(query_params)
+        query = quote(title)
+        url = 'https://v2.sg.media-imdb.com/suggests/{0}/{1}.json'.format(
+            query[0].lower(), query
         )
-
-        target_result_keys = (
-            'title_popular', 'title_exact', 'title_approx', 'title_substring')
-        title_results = []
-
-        html_unescaped = html_parser.HTMLParser().unescape
-
-        # Loop through all search_results and build a list
-        # with popular matches first
-        for key in target_result_keys:
-
-            if key not in search_results.keys():
-                continue
-
-            for result in search_results[key]:
-                year_match = re.search(r'(\d{4})', result['title_description'])
-                year = year_match.group(0) if year_match else None
-
-                result_item = {
-                    'title': html_unescaped(result['title']),
-                    'year': year,
-                    'imdb_id': result['id']
-                }
-                title_results.append(result_item)
-
-        return title_results
+        search_results = self._get(url)
+        results = []
+        for result in search_results.get('d', ()):
+            result_item = {
+                'title': result['l'],
+                'year': str(result.get('y')) if result.get('y') else None,
+                'imdb_id': result['id'],
+                'type': result.get('q'),
+            }
+            results.append(result_item)
+        return results
 
     def top_250(self):
         url = self._build_url('/chart/top', {})
@@ -190,12 +159,14 @@ class Imdb(object):
         return response['data']['list']
 
     def get_title_images(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/title/photos', {'tconst': imdb_id})
         response = self._get(url)
         return self._get_images(response)
 
     def get_title_reviews(self, imdb_id, max_results=None):
         """Retrieve reviews for a title ordered by 'Best' descending"""
+        self.validate_imdb_id(imdb_id)
         user_comments = self._get_reviews_data(
             imdb_id,
             max_results=max_results
@@ -211,11 +182,13 @@ class Imdb(object):
         return title_reviews
 
     def get_person_images(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/name/photos', {'nconst': imdb_id})
         response = self._get(url)
         return self._get_images(response)
 
     def get_episodes(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         if self.exclude_episodes:
             raise ValueError('exclude_episodes is currently set')
 
@@ -244,6 +217,7 @@ class Imdb(object):
         return episodes
 
     def _get_credits_data(self, imdb_id):
+        self.validate_imdb_id(imdb_id)
         url = self._build_url('/title/fullcredits', {'tconst': imdb_id})
         response = self._get(url)
 
@@ -253,6 +227,7 @@ class Imdb(object):
         return response.get('data').get('credits')
 
     def _get_reviews_data(self, imdb_id, max_results=None):
+        self.validate_imdb_id(imdb_id)
         params = {'tconst': imdb_id}
         if max_results:
             params['limit'] = max_results
@@ -277,15 +252,34 @@ class Imdb(object):
         with open(file_path, 'w+') as f:
             json.dump(resp, f)
 
+    def _parse_dirty_json(self, data):
+        match_json_within_dirty_json = r'imdb\$[\w_]+\({1}(.+)\){1}'
+        data_clean = re.match(
+            match_json_within_dirty_json, data, re.IGNORECASE
+        ).groups()[0]
+        return json.loads(data_clean)
+
+    @staticmethod
+    def validate_imdb_id(imdb_id):
+        match_id = r'[a-zA-Z]{2}[0-9]{7}'
+        try:
+            re.match(match_id, imdb_id, re.IGNORECASE).group()
+        except (AttributeError, TypeError):
+            raise ValueError('invalid imdb id')
+
     def _get(self, url):
         resp = self.session.get(
             url,
             headers={'User-Agent': self.user_agent},
-            verify=self.verify_ssl)
+            verify=self.verify_ssl
+        )
 
         resp.raise_for_status()
-
-        resp_dict = json.loads(resp.content.decode('utf-8'))
+        resp_data = resp.content.decode('utf-8')
+        try:
+            resp_dict = json.loads(resp_data)
+        except ValueError:
+            resp_dict = self._parse_dirty_json(resp_data)
 
         if resp_dict.get('error'):
             return None

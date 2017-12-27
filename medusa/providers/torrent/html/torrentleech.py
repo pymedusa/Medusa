@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 import traceback
 
 from medusa import tv
@@ -22,6 +23,7 @@ from requests.utils import dict_from_cookiejar
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+date_regex = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', re.I)
 
 class TorrentLeechProvider(TorrentProvider):
     """TorrentLeech Torrent provider."""
@@ -135,6 +137,7 @@ class TorrentLeechProvider(TorrentProvider):
                     download_url = urljoin(self.url, row.find('td', class_='quickdownload').find('a')['href'])
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, row.find('td', class_='name').find('a')['href'])
 
                     seeders = try_int(row.find('td', class_='seeders').get_text(strip=True))
                     leechers = try_int(row.find('td', class_='leechers').get_text(strip=True))
@@ -150,13 +153,17 @@ class TorrentLeechProvider(TorrentProvider):
                     torrent_size = row('td')[labels.index('Size')].get_text()
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = date_regex.search(row.find('td', class_='name').get_text()).group(1)
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

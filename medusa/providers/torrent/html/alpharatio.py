@@ -43,7 +43,7 @@ class AlphaRatioProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
@@ -142,6 +142,7 @@ class AlphaRatioProvider(TorrentProvider):
                     download_url = urljoin(self.url, download)
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, cells[labels.index('Name /Year')].find('a', dir='ltr')['href'])
 
                     seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
@@ -167,6 +168,7 @@ class AlphaRatioProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

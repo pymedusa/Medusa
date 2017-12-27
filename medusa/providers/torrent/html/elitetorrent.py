@@ -127,6 +127,7 @@ class EliteTorrentProvider(TorrentProvider):
                     torrent_id = EliteTorrentProvider.id_regex.match(row.find('a')['href'])
                     if not all([title, torrent_id]):
                         continue
+                    details_url = urljoin(self.url, row.find('a')['href'])
 
                     download_url = self.urls['download'].format(torrent_id.group(1))
 
@@ -150,6 +151,7 @@ class EliteTorrentProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

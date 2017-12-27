@@ -137,6 +137,7 @@ class SDBitsProvider(TorrentProvider):
                     download_url = urljoin(self.url, download)
                     if not all([title, download_url]):
                         continue
+                    details_url = urljoin(self.url, torrent_info[0]['href'])
 
                     seeders = try_int(cells[7].get_text(strip=True), 1)
                     leechers = try_int(cells[8].get_text(strip=True))
@@ -168,6 +169,7 @@ class SDBitsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

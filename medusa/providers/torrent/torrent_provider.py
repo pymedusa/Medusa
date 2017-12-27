@@ -136,9 +136,23 @@ class TorrentProvider(GenericProvider):
         """
         if isinstance(item, dict):
             pubdate = item.get('pubdate')
-        elif isinstance(item, (list, tuple)) and len(item) > 2:
+        elif isinstance(item, (list, tuple)) and len(item) >= 6:
             pubdate = item[5]
         else:
             pubdate = None
 
         return pubdate
+
+    def _get_details_url(self, item):
+        """Return details url of the item.
+
+        If provider doesnt have _details_url function this will be used
+        """
+        if isinstance(item, dict):
+            details_url = item.get('details_url')
+        elif isinstance(item, (list, tuple)) and len(item) >= 7:
+            details_url = item[6]
+        else:
+            details_url = None
+
+        return details_url

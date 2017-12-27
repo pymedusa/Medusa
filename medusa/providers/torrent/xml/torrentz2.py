@@ -115,6 +115,7 @@ class Torrentz2Provider(TorrentProvider):
                     download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
                     if not all([title, download_url]):
                         continue
+                    details_url = '{0}/{1}'.format(self.urls['base'], info_hash)
 
                     torrent_size, seeders, leechers = self._split_description(row.find('description').text)
                     size = convert_size(torrent_size) or -1
@@ -137,6 +138,7 @@ class Torrentz2Provider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

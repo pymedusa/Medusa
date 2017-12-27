@@ -459,6 +459,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         result.proper_tags = self.cached_result[b'proper_tags'].split('|') \
             if self.cached_result[b'proper_tags'] else ''
         result.manually_searched = True
+        result.details_url = self.cached_result[b'details_url']
 
         try:
             log.info('Beginning to manual snatch release: {name}',

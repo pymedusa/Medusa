@@ -80,6 +80,7 @@ class Anizb(NZBProvider):
                             try:
                                 title = item.title.get_text(strip=True)
                                 download_url = item.enclosure.get('url').strip()
+                                details_url = download_url.replace('dl', 'release')
                                 if not (title and download_url):
                                     continue
 
@@ -90,6 +91,7 @@ class Anizb(NZBProvider):
                                     'title': title,
                                     'link': download_url,
                                     'size': size,
+                                    'details_url': details_url,
                                 }
 
                                 items.append(item)

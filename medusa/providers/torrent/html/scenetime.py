@@ -141,6 +141,8 @@ class SceneTimeProvider(TorrentProvider):
                     )
                     if not all([title, download_url]):
                         continue
+                    print(cells[labels.index('Name')].find('span', attrs={'class':'elapsedDate'})['title'])
+                    details_url = link['href']
 
                     seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
@@ -157,13 +159,17 @@ class SceneTimeProvider(TorrentProvider):
                     torrent_size = re.sub(r'(\d+\.?\d*)', r'\1 ', torrent_size)
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = cells[labels.index('Name')].find('span', attrs={'class':'elapsedDate'})['title']
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
+                        'details_url': details_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
