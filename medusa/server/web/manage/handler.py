@@ -28,7 +28,8 @@ from ....indexers.indexer_config import indexer_name_to_id
 from ....network_timezones import app_timezone
 from ....post_processor import PostProcessor
 from ....show.show import Show
-from ....tv import Episode
+from ....tv import Episode, Series
+from ....tv.series import SeriesIdentifier
 
 
 @route('/manage(/?.*)')
@@ -343,11 +344,12 @@ class Manage(Home, WebRoot):
                         header='Missing Subtitles in Post Process folder', topmenu='manage',
                         controller='manage', action='subtitleMissedPP')
 
-    def backlogShow(self, indexer_id):
-        show_obj = Show.find(app.showList, int(indexer_id))
+    def backlogShow(self, indexername, seriesid):
+        indexer_id = indexer_name_to_id(indexername)
+        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
 
-        if show_obj:
-            app.backlog_search_scheduler.action.search_backlog([show_obj])
+        if series_obj:
+            app.backlog_search_scheduler.action.search_backlog([series_obj])
 
         return self.redirect('/manage/backlogOverview/')
 
@@ -440,15 +442,16 @@ class Manage(Home, WebRoot):
         if not toEdit:
             return self.redirect('/manage/')
 
-        show_ids = toEdit.split('|')
+        series_slugs = toEdit.split('|')
         show_list = []
         show_names = []
-        for cur_id in show_ids:
-            cur_id = int(cur_id)
-            show_obj = Show.find(app.showList, cur_id)
-            if show_obj:
-                show_list.append(show_obj)
-                show_names.append(show_obj.name)
+        for slug in series_slugs:
+            identifier = SeriesIdentifier.from_slug(slug)
+            series_obj = Series.find_by_identifier(identifier)
+
+            if series_obj:
+                show_list.append(series_obj)
+                show_names.append(series_obj.name)
 
         flatten_folders_all_same = True
         last_flatten_folders = None
@@ -583,84 +586,86 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        show_ids = toEdit.split('|') if toEdit else []
+        series_slugs = toEdit.split('|') if toEdit else []
         errors = 0
-        for cur_show in show_ids:
-            show_obj = Show.find(app.showList, int(cur_show))
-            if not show_obj:
+        for series_slug in series_slugs:
+            identifier = SeriesIdentifier.from_slug(series_slug)
+            series_obj = Series.find_by_identifier(identifier)
+
+            if not series_obj:
                 continue
 
-            cur_root_dir = os.path.dirname(show_obj._location)  # pylint: disable=protected-access
-            cur_show_dir = os.path.basename(show_obj._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(series_obj._location)  # pylint: disable=protected-access
+            cur_show_dir = os.path.basename(series_obj._location)  # pylint: disable=protected-access
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
-                           (show=show_obj, location=new_show_dir))  # pylint: disable=protected-access
+                           (show=series_obj, location=new_show_dir))  # pylint: disable=protected-access
             else:
-                new_show_dir = show_obj._location  # pylint: disable=protected-access
+                new_show_dir = series_obj._location  # pylint: disable=protected-access
 
             if paused == 'keep':
-                new_paused = show_obj.paused
+                new_paused = series_obj.paused
             else:
                 new_paused = True if paused == 'enable' else False
             new_paused = 'on' if new_paused else 'off'
 
             if default_ep_status == 'keep':
-                new_default_ep_status = show_obj.default_ep_status
+                new_default_ep_status = series_obj.default_ep_status
             else:
                 new_default_ep_status = default_ep_status
 
             if anime == 'keep':
-                new_anime = show_obj.anime
+                new_anime = series_obj.anime
             else:
                 new_anime = True if anime == 'enable' else False
             new_anime = 'on' if new_anime else 'off'
 
             if sports == 'keep':
-                new_sports = show_obj.sports
+                new_sports = series_obj.sports
             else:
                 new_sports = True if sports == 'enable' else False
             new_sports = 'on' if new_sports else 'off'
 
             if scene == 'keep':
-                new_scene = show_obj.is_scene
+                new_scene = series_obj.is_scene
             else:
                 new_scene = True if scene == 'enable' else False
             new_scene = 'on' if new_scene else 'off'
 
             if air_by_date == 'keep':
-                new_air_by_date = show_obj.air_by_date
+                new_air_by_date = series_obj.air_by_date
             else:
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
             if dvd_order == 'keep':
-                new_dvd_order = show_obj.dvd_order
+                new_dvd_order = series_obj.dvd_order
             else:
                 new_dvd_order = True if dvd_order == 'enable' else False
             new_dvd_order = 'on' if new_dvd_order else 'off'
 
             if flatten_folders == 'keep':
-                new_flatten_folders = show_obj.flatten_folders
+                new_flatten_folders = series_obj.flatten_folders
             else:
                 new_flatten_folders = True if flatten_folders == 'enable' else False
             new_flatten_folders = 'on' if new_flatten_folders else 'off'
 
             if subtitles == 'keep':
-                new_subtitles = show_obj.subtitles
+                new_subtitles = series_obj.subtitles
             else:
                 new_subtitles = True if subtitles == 'enable' else False
 
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                allowed_qualities, preferred_qualities = show_obj.current_qualities
+                allowed_qualities, preferred_qualities = series_obj.current_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 
             exceptions_list = []
 
-            errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
+            errors += self.editShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
                                     preferred_qualities, exceptions_list,
                                     defaultEpStatus=new_default_ep_status,
                                     flatten_folders=new_flatten_folders,
@@ -693,43 +698,44 @@ class Manage(Home, WebRoot):
         subtitles = []
         image_update = []
 
-        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata +
+        for slug in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata +
                                to_image_update):
-            show_obj = Show.find(app.showList, int(cur_show_id)) if cur_show_id else None
+            identifier = SeriesIdentifier.from_slug(slug)
+            series_obj = Series.find_by_identifier(identifier)
 
-            if not show_obj:
+            if not series_obj:
                 continue
 
             if cur_show_id in to_delete + to_remove:
-                app.show_queue_scheduler.action.removeShow(show_obj, cur_show_id in to_delete)
+                app.show_queue_scheduler.action.removeShow(series_obj, cur_show_id in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
             if cur_show_id in to_update:
                 try:
-                    app.show_queue_scheduler.action.updateShow(show_obj)
-                    updates.append(show_obj.name)
+                    app.show_queue_scheduler.action.updateShow(series_obj)
+                    updates.append(series_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    app.show_queue_scheduler.action.refreshShow(show_obj)
-                    refreshes.append(show_obj.name)
+                    app.show_queue_scheduler.action.refreshShow(series_obj)
+                    refreshes.append(series_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
-                                  (show=show_obj, error=msg))
+                                  (show=series_obj, error=msg))
 
             if cur_show_id in to_rename:
-                app.show_queue_scheduler.action.renameShowEpisodes(show_obj)
-                renames.append(show_obj.name)
+                app.show_queue_scheduler.action.renameShowEpisodes(series_obj)
+                renames.append(series_obj.name)
 
             if cur_show_id in to_subtitle:
-                app.show_queue_scheduler.action.download_subtitles(show_obj)
-                subtitles.append(show_obj.name)
+                app.show_queue_scheduler.action.download_subtitles(series_obj)
+                subtitles.append(series_obj.name)
 
             if cur_show_id in to_image_update:
                 image_cache = ImageCache()
-                image_cache.replace_images(show_obj)
+                image_cache.replace_images(series_obj)
 
         if errors:
             ui.notifications.error('Errors encountered',

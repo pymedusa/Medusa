@@ -1434,7 +1434,7 @@ class Home(WebRoot):
             indexer[series_obj.indexerid]
             return True
 
-    def editShow(self, seriesid=None, indexername=None, location=None, allowed_qualities=None, preferred_qualities=None,
+    def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,

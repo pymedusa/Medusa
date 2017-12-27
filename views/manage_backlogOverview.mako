@@ -92,7 +92,7 @@
                                     % if showCounts[cur_show.indexerid][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[cur_show.indexerid][Overview.QUAL]}</b></span>
                                     % endif
-                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
+                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
                                     <a class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexerid}&seriesid=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
                                 </div>
                             </div>
