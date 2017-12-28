@@ -49,14 +49,21 @@ def update_network_dict():
     logger.log(u'Started updating network timezones', logger.DEBUG)
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
-    if not response or not response.text:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
-        load_network_dict()
-        return
+    data = response.text
+    if not response or not data:
+        logger.log(u'Updating network timezones failed. Using local file until URL is loaded: %s' % url, logger.DEBUG)
+        try:
+            f = open('network_timezones.txt', 'rb')
+        except OSError:
+            load_network_dict()
+            return
+        else:
+            data = f.read()
+            f.close()
 
     remote_networks = {}
     try:
-        for line in response.text.splitlines():
+        for line in data.splitlines():
             (key, val) = line.strip().rsplit(u':', 1)
             if key is None or val is None:
                 continue
