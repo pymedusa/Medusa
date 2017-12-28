@@ -306,15 +306,12 @@ class CheckVersion(object):
         :force: ignored
         """
         # Grab a copy of the news
-        log.debug(u'check_for_new_news: Checking GitHub for latest news.')
-        try:
-            news = self.session.get(app.NEWS_URL).text
-        except Exception:
-            log.warning(u'check_for_new_news: Could not load news from repo.')
-            news = ''
-
-        if not news:
-            return ''
+        log.debug(u'Checking GitHub for latest news.')
+        response = self.session.get(app.NEWS_URL)
+        news = response.text
+        if not response or not news:
+            log.debug(u'Could not load news from URL: %s', app.NEWS_URL)
+            return
 
         try:
             last_read = datetime.datetime.strptime(app.NEWS_LAST_READ, '%Y-%m-%d')
