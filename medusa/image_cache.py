@@ -23,9 +23,9 @@ import os.path
 import warnings
 
 from medusa import app
+from medusa.helper.common import try_int
 from medusa.helper.exceptions import ShowDirectoryNotFoundException
 from medusa.helpers import copy_file, get_image_size
-from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata.generic import GenericMetadata
 
@@ -120,7 +120,6 @@ def which_type(path):
     :param path: full path to the image
     :return: artwork type if detected, or None
     """
-
     if not os.path.isfile(path):
         log.warning('Could not check type, file does not exist: {0}', path)
         return
