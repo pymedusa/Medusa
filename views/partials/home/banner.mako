@@ -14,9 +14,7 @@
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
     % if len(show_lists) > 1:
-        % if len(show_lists) > 1:
-            <h1 class="header">${cur_list_type}</h1>
-        % endif
+        <h1 class="header">${cur_list_type}</h1>
     % endif
 <table id="showListTable${cur_list_type}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
