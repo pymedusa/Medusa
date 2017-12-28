@@ -6,7 +6,7 @@ import markdown2
 from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
-from .... import app, logger
+from .... import app
 
 
 @route('/news(/?.*)')
