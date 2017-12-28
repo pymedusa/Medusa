@@ -32,7 +32,7 @@ class ConfigAnime(Config):
                         controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
-                  split_home=None):
+                  split_home=None, split_home_in_tabs=None):
         """
         Save anime related settings
         """
@@ -44,6 +44,7 @@ class ConfigAnime(Config):
         app.ANIDB_PASSWORD = anidb_password
         app.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
         app.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
+        app.ANIME_SPLIT_HOME_IN_TABS = config.checkbox_to_value(split_home_in_tabs)
 
         app.instance.save_config()
 

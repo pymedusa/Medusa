@@ -889,6 +889,7 @@ class Application(object):
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
+            app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1871,6 +1872,7 @@ class Application(object):
 
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
+        new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
 
         new_config.write()
 
