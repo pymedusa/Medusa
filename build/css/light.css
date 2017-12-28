@@ -1,201 +1,167 @@
 /* =======================================================================
 home.mako
 ========================================================================== */
-
 .progress-100 {
-    background-image: -moz-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    border-radius: 3px;
-}
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#a6cf41), to(#5b990d)) !important;
+  background-image: linear-gradient(#a6cf41, #5b990d) !important;
+  background-image: -o-linear-gradient(#a6cf41, #5b990d) !important;
+  border-radius: 3px; }
 
 .progress-80 {
-    background-image: -moz-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-    background-image: linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-    background-image: -webkit-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-    background-image: -o-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-    border-radius: 3px;
-}
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#e1ff97), to(#9db269)) !important;
+  background-image: linear-gradient(#e1ff97, #9db269) !important;
+  background-image: -o-linear-gradient(#e1ff97, #9db269) !important;
+  border-radius: 3px; }
 
 .progress-60 {
-    background-image: -moz-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    border-radius: 3px;
-}
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fad440), to(#f2a70d)) !important;
+  background-image: linear-gradient(#fad440, #f2a70d) !important;
+  background-image: -o-linear-gradient(#fad440, #f2a70d) !important;
+  border-radius: 3px; }
 
 .progress-40 {
-    background-image: -moz-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    border-radius: 3px;
-}
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fab543), to(#f2700d)) !important;
+  background-image: linear-gradient(#fab543, #f2700d) !important;
+  background-image: -o-linear-gradient(#fab543, #f2700d) !important;
+  border-radius: 3px; }
 
 .progress-20 {
-    background-image: -moz-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    border-radius: 3px;
-}
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#da5945), to(#b11a10)) !important;
+  background-image: linear-gradient(#da5945, #b11a10) !important;
+  background-image: -o-linear-gradient(#da5945, #b11a10) !important;
+  border-radius: 3px; }
 
 /* =======================================================================
 displayShow.mako
 ========================================================================== */
-
 .displayShowTable th.row-seasonheader {
-    border: none !important;
-    background-color: rgb(255, 255, 255) !important;
-    color: rgb(0, 0, 0) !important;
-    padding-top: 15px !important;
-    text-align: left !important;
-}
+  border: none !important;
+  background-color: white !important;
+  color: black !important;
+  padding-top: 15px !important;
+  text-align: left !important; }
 
 .displayShowTableFanArt th.row-seasonheader {
-    border: none !important;
-    background-color: transparent !important;
-    color: rgb(0, 0, 0) !important;
-    padding-top: 15px !important;
-    text-align: left !important;
-}
+  border: none !important;
+  background-color: transparent !important;
+  color: black !important;
+  padding-top: 15px !important;
+  text-align: left !important; }
 
 .snatchTitle {
-    color: rgb(0, 0, 0) !important;
-}
+  color: black !important; }
 
 /* =======================================================================
 testRename.mako
 ========================================================================== */
-
 tr.seasonheader {
-    color: rgb(0, 0, 0) !important;
-}
+  color: black !important; }
 
 /* =======================================================================
 schedule.mako
 ========================================================================== */
-
 table.cal-odd {
-    background-color: rgb(221, 221, 221);
-}
+  background-color: #dddddd; }
 
 table.cal-even {
-    background-color: rgb(210, 210, 210);
-}
+  background-color: #d2d2d2; }
 
 .calendarShow .text .airtime {
-    color: rgb(0, 0, 0);
-}
+  color: black; }
 
 .calendarShow .text .episode-title {
-    color: rgb(136, 136, 136);
-}
+  color: #888888; }
 
 /* =======================================================================
 bootstrap Overrides
 ========================================================================== */
-
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(51, 51, 51);
-    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(51, 51, 51)));
-    background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
-    /* stylelint-enable */
-    border-color: rgb(62, 63, 58);
-}
+  background-color: #333333;
+  -webkit-filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
+          filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
+  /* stylelint-disable declaration-block-no-shorthand-property-overrides */
+  background: -moz-linear-gradient(top, #555555, #333333);
+  /* stylelint-enable */
+  border-color: #3e3f3a; }
 
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
-    border-color: rgb(62, 63, 58);
-}
+  border-color: #3e3f3a; }
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(51, 51, 51);
-}
+  background-color: #333333; }
 
 /* ssubmenu styling */
 #sub-menu-container {
-    background-color: rgb(85, 85, 85);
-    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));
-    background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(85, 85, 85));
-    /* stylelint-enable */
-    border-color: rgb(62, 63, 58);
-}
+  background-color: #555555;
+  -webkit-filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
+          filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
+  /* stylelint-disable declaration-block-no-shorthand-property-overrides */
+  background: -moz-linear-gradient(top, #555555, #555555);
+  /* stylelint-enable */
+  border-color: #3e3f3a; }
 
 .dropdown-menu > li > a:hover,
 .dropdown-menu > li > a:focus {
-    color: rgb(255, 255, 255);
-    text-decoration: none;
-    background-color: rgb(51, 51, 51);
-}
+  color: white;
+  text-decoration: none;
+  background-color: #333333; }
 
 pre {
-    color: rgb(0, 0, 0);
-    background-color: rgb(245, 245, 245);
-    border-color: rgb(204, 204, 204);
-}
+  color: black;
+  background-color: whitesmoke;
+  border-color: #cccccc; }
 
 /* =======================================================================
 tablesorter.css
 ========================================================================== */
-
 .tablesorter {
-    width: 100%;
-    margin-right: auto;
-    margin-left: auto;
-    color: rgb(0, 0, 0);
-    text-align: left;
-    background-color: rgb(221, 221, 221);
-    border-spacing: 0;
-}
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  color: black;
+  text-align: left;
+  background-color: #dddddd;
+  border-spacing: 0; }
 
 /* hidden filter row */
 .tablesorter-filter-row.hideme td {
-    /* Change the padding to modify the thickness of the closed filter row (height = padding x 2) */
-    padding: 2px;
-    margin: 0;
-    line-height: 0;
-    cursor: pointer;
-}
+  /* Change the padding to modify the thickness of the closed filter row (height = padding x 2) */
+  padding: 2px;
+  margin: 0;
+  line-height: 0;
+  cursor: pointer; }
 
 .tablesorter-filter-row.hideme * {
-    height: 1px;
-    min-height: 0;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    opacity: 0; /* Don't use visibility: hidden because it disables tabbing */
-    filter: alpha(opacity=0);
-}
+  height: 1px;
+  min-height: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  /* Don't use visibility: hidden because it disables tabbing */
+  filter: alpha(opacity=0); }
 
 /* =======================================================================
 token-input.css
 ========================================================================== */
-
 div.token-input-dropdown {
-    background-color: rgb(255, 255, 255);
-    color: rgb(0, 0, 0);
-    border-left-color: rgb(204, 204, 204);
-    border-right-color: rgb(204, 204, 204);
-    border-bottom-color: rgb(204, 204, 204);
-}
+  background-color: white;
+  color: black;
+  border-left-color: #cccccc;
+  border-right-color: #cccccc;
+  border-bottom-color: #cccccc; }
 
 /* =======================================================================
 bootstrap modal
 ========================================================================== */
-
 .modal-header {
-    padding: 9px 15px;
-    border-bottom: 1px solid rgb(238, 238, 238);
-    background-color: rgb(245, 241, 228);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
+  padding: 9px 15px;
+  border-bottom: 1px solid #eeeeee;
+  background-color: #f5f1e4;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px; }
+
+/*# sourceMappingURL=light.css.map */

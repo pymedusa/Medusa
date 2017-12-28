@@ -31,6 +31,7 @@ $(document).ready(() => {
         const deleteArr = [];
         const removeArr = [];
         const metadataArr = [];
+        const imageUpdateArr = [];
 
         $('.updateCheck').each(function () {
             if (this.checked === true) {
@@ -62,6 +63,12 @@ $(document).ready(() => {
             }
         });
 
+        $('.imageCheck').each(function () {
+            if (this.checked === true) {
+                imageUpdateArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
         let deleteCount = 0;
 
         $('.deleteCheck').each(function () {
@@ -70,7 +77,7 @@ $(document).ready(() => {
             }
         });
 
-        const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
+        const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
 
         if (deleteCount >= 1) {
             window.$.confirm({
@@ -96,7 +103,8 @@ $(document).ready(() => {
                         toSubtitle: subtitleArr.join('|'),
                         toDelete: deleteArr.join('|'),
                         toRemove: removeArr.join('|'),
-                        toMetadata: metadataArr.join('|')
+                        toMetadata: metadataArr.join('|'),
+                        toImageUpdate: imageUpdateArr.join('|')
                     });
 
                     window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
@@ -107,17 +115,17 @@ $(document).ready(() => {
         if (totalCount === 0) {
             return false;
         }
-        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length + imageUpdateArr.length === 0) {
             return false;
         }
         const url = $('base').attr('href') + 'manage/massUpdate';
-        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|');
+        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
         $.post(url, params, () => {
             location.reload(true);
         });
     });
 
-    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(name => {
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(name => {
         let lastCheck = null;
 
         $(name).on('click', function (event) {

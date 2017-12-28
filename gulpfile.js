@@ -15,9 +15,8 @@ const changed = require('gulp-changed');
 const flatMap = require('gulp-flatmap');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
-//
-// const postcss = require('gulp-postcss');
-// const sass = require('gulp-sass');
+const postcss = require('gulp-postcss');
+const sass = require('gulp-sass');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
@@ -43,7 +42,8 @@ const staticAssets = [
     'static/js/lib/**/*',
     'static/js/vender.js',
     'static/js/vender.min.js',
-    'static/css/**/*'
+    'static/css/lib/*.css',
+    'static/css/**/*.min.css'
 ];
 
 gulp.task('default', ['build']);
@@ -71,8 +71,9 @@ gulp.task('watch', ['build'], () => {
 gulp.task('img', () => {
     return gulp
     .src('static/images/**/*', {
-        base: 'static'
+        base: 'static/images'
     })
+    .pipe(changed('build/images'))
     .pipe(
       imagemin({
           progressive: true,
@@ -80,42 +81,43 @@ gulp.task('img', () => {
           use: [pngquant()]
       })
     )
-    .pipe(gulp.dest('build'))
+    .pipe(gulp.dest('build/images'))
     .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    .pipe(gulpif(PROD, gulp.dest('build')));
+    .pipe(gulpif(PROD, gulp.dest('build/images')));
 });
 
 gulp.task('css', () => {
-    //
-    // return gulp
-    // .src('static/css/**/*.css', {
-    //     base: 'static'
-    // })
-    // .pipe(sourcemaps.init())
-    // .pipe(sass().on('error', sass.logError))
-    // .pipe(postcss(processors))
-    // .pipe(sourcemaps.write('./'))
-    // .pipe(gulp.dest('build'))
-    // .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    // .pipe(gulpif(PROD, gulp.dest('build')));
+    return gulp.src([
+        'static/css/**/*.css',
+        '!static/css/**/*.min.css'
+    ], {
+        base: 'static/css'
+    })
+    .pipe(changed('build/css'))
+    .pipe(sourcemaps.init())
+    .pipe(sass().on('error', sass.logError))
+    .pipe(postcss(processors))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('build/css'))
+    .pipe(gulpif(!PROD, livereload({ port: 35729 })));
 });
 
 gulp.task('lint', () => {
-    return gulp
-    .src([
+    return gulp.src([
         'static/js/**/*.js',
         '!static/js/lib/**',
         '!static/js/*.min.js',
         '!static/js/vender.js'
-    ])
+    ], {
+        base: 'static/js'
+    })
+    .pipe(changed('build/js'))
     .pipe(xo())
     .pipe(xo.format())
     .pipe(xo.failAfterError());
 });
 
-//
-// gulp.task('js', ['lint'], done => {
-gulp.task('js', () => {
+gulp.task('js', ['lint'], () => {
     return gulp.src([
         'static/js/**/*.js',
         '!static/js/lib/**',

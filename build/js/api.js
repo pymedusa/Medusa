@@ -1628,7 +1628,6 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],28:[function(require,module,exports){
-
 const axios = require('axios');
 
 const baseUrl = $('body').attr('api-root');

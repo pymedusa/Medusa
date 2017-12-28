@@ -1,16 +1,12 @@
 @media print {
-    /* Remove the top padding because we don't print the top bar */
-    body {
-        padding-top: 0;
-    }
+  /* Remove the top padding because we don't print the top bar */
+  body {
+    padding-top: 0; }
+  /* Hide URLs */
+  a[href]::after {
+    content: none !important; }
+  #content {
+    margin-left: 0;
+    margin-right: 0; } }
 
-    /* Hide URLs */
-    a[href]::after {
-        content: none !important;
-    }
-
-    #content {
-        margin-left: 0;
-        margin-right: 0;
-    }
-}
+/*# sourceMappingURL=print.css.map */

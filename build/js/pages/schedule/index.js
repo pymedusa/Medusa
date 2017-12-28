@@ -4184,7 +4184,7 @@ module.exports = function (it) {
 };
 
 },{}],75:[function(require,module,exports){
-var core = module.exports = { version: '2.5.1' };
+var core = module.exports = { version: '2.5.3' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 },{}],76:[function(require,module,exports){
@@ -4506,7 +4506,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
   var VALUES_BUG = false;
   var proto = Base.prototype;
   var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
+  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
   var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
   var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
   var methods, key, IteratorPrototype;
@@ -4668,8 +4668,8 @@ module.exports = function () {
     notify = function () {
       process.nextTick(flush);
     };
-  // browsers with MutationObserver
-  } else if (Observer) {
+  // browsers with MutationObserver, except iOS Safari - https://github.com/zloirock/core-js/issues/339
+  } else if (Observer && !(global.navigator && global.navigator.standalone)) {
     var toggle = true;
     var node = document.createTextNode('');
     new Observer(flush).observe(node, { characterData: true }); // eslint-disable-line no-new
@@ -5451,14 +5451,7 @@ var onUnhandled = function (promise) {
   });
 };
 var isUnhandled = function (promise) {
-  if (promise._h == 1) return false;
-  var chain = promise._a || promise._c;
-  var i = 0;
-  var reaction;
-  while (chain.length > i) {
-    reaction = chain[i++];
-    if (reaction.fail || !isUnhandled(reaction.promise)) return false;
-  } return true;
+  return promise._h !== 1 && (promise._a || promise._c).length === 0;
 };
 var onHandleUnhandled = function (promise) {
   task.call(global, function () {
@@ -5664,6 +5657,7 @@ var wksDefine = require('./_wks-define');
 var enumKeys = require('./_enum-keys');
 var isArray = require('./_is-array');
 var anObject = require('./_an-object');
+var isObject = require('./_is-object');
 var toIObject = require('./_to-iobject');
 var toPrimitive = require('./_to-primitive');
 var createDesc = require('./_property-desc');
@@ -5856,15 +5850,14 @@ $JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
   return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
 })), 'JSON', {
   stringify: function stringify(it) {
-    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
     var args = [it];
     var i = 1;
     var replacer, $replacer;
     while (arguments.length > i) args.push(arguments[i++]);
-    replacer = args[1];
-    if (typeof replacer == 'function') $replacer = replacer;
-    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
-      if ($replacer) value = $replacer.call(this, key, value);
+    $replacer = replacer = args[1];
+    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
       if (!isSymbol(value)) return value;
     };
     args[1] = replacer;
@@ -5881,7 +5874,7 @@ setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
 
-},{"./_an-object":71,"./_descriptors":79,"./_enum-keys":82,"./_export":83,"./_fails":84,"./_global":86,"./_has":87,"./_hide":88,"./_is-array":94,"./_library":102,"./_meta":103,"./_object-create":107,"./_object-dp":108,"./_object-gopd":110,"./_object-gopn":112,"./_object-gopn-ext":111,"./_object-gops":113,"./_object-keys":116,"./_object-pie":117,"./_property-desc":121,"./_redefine":123,"./_set-to-string-tag":125,"./_shared":127,"./_to-iobject":133,"./_to-primitive":136,"./_uid":137,"./_wks":140,"./_wks-define":138,"./_wks-ext":139}],151:[function(require,module,exports){
+},{"./_an-object":71,"./_descriptors":79,"./_enum-keys":82,"./_export":83,"./_fails":84,"./_global":86,"./_has":87,"./_hide":88,"./_is-array":94,"./_is-object":95,"./_library":102,"./_meta":103,"./_object-create":107,"./_object-dp":108,"./_object-gopd":110,"./_object-gopn":112,"./_object-gopn-ext":111,"./_object-gops":113,"./_object-keys":116,"./_object-pie":117,"./_property-desc":121,"./_redefine":123,"./_set-to-string-tag":125,"./_shared":127,"./_to-iobject":133,"./_to-primitive":136,"./_uid":137,"./_wks":140,"./_wks-define":138,"./_wks-ext":139}],151:[function(require,module,exports){
 // https://github.com/tc39/proposal-promise-finally
 'use strict';
 var $export = require('./_export');
@@ -7138,7 +7131,7 @@ module.exports = function (/* CustomCreate*/) {
 
 var isObject        = require("../is-object")
   , value           = require("../valid-value")
-  , objIsPrototypOf = Object.prototype.isPrototypeOf
+  , objIsPrototypeOf = Object.prototype.isPrototypeOf
   , defineProperty  = Object.defineProperty
   , nullDesc        = {
 	configurable: true,
@@ -7174,7 +7167,7 @@ module.exports = (function (status) {
 		fn = function self(obj, prototype) {
 			var isNullBase;
 			validate(obj, prototype);
-			isNullBase = objIsPrototypOf.call(self.nullPolyfill, obj);
+			isNullBase = objIsPrototypeOf.call(self.nullPolyfill, obj);
 			if (isNullBase) delete self.nullPolyfill.__proto__;
 			if (prototype === null) prototype = self.nullPolyfill;
 			obj.__proto__ = prototype;
@@ -29368,6 +29361,13 @@ exports.isBuffer = function isBuffer(obj) {
 };
 
 },{}],286:[function(require,module,exports){
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // This method of obtaining a reference to the global object needs to be
 // kept identical to the way it is obtained in runtime.js
 var g = (function() { return this })() || Function("return this")();
@@ -29399,13 +29399,10 @@ if (hadRuntime) {
 
 },{"./runtime":287}],287:[function(require,module,exports){
 /**
- * Copyright (c) 2014, Facebook, Inc.
- * All rights reserved.
+ * Copyright (c) 2014-present, Facebook, Inc.
  *
- * This source code is licensed under the BSD-style license found in the
- * https://raw.github.com/facebook/regenerator/master/LICENSE file. An
- * additional grant of patent rights can be found in the PATENTS file in
- * the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 !(function(global) {
