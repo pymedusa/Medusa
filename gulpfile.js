@@ -1,5 +1,4 @@
 const path = require('path');
-const gutil = require('gulp-util');
 const babelify = require('babelify');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
