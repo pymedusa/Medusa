@@ -1,3 +1,4 @@
+const path = require('path');
 const gutil = require('gulp-util');
 const babelify = require('babelify');
 const runSequence = require('run-sequence');
@@ -10,8 +11,8 @@ const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify-es').default;
 const browserify = require('browserify');
 const buffer = require('vinyl-buffer');
-const glob = require('glob');
-const es = require('event-stream');
+const changed = require('gulp-changed');
+const flatMap = require('gulp-flatmap');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
 //
@@ -114,50 +115,44 @@ gulp.task('lint', () => {
 
 //
 // gulp.task('js', ['lint'], done => {
-gulp.task('js', done => {
-    glob('js/**/*.js', {
-        cwd: 'static',
-        ignore: [
-            'js/lib/**',
-            'js/*.min.js',
-            'js/vender.js'
-        ]
-    }, (err, files) => {
-        if (err) {
-            return done(err);
-        }
-
-        const tasks = files.map(entry => {
-            return browserify({
-                entries: entry,
-                debug: false,
-                basedir: 'static'
-            })
-          .transform(babelify)
-          .bundle()
-          .on('error', function(err) {
-              gutil.log(err.message);
-              this.emit('end');
-          })
-          .pipe(source(entry))
-          .pipe(buffer())
-          .pipe(
+gulp.task('js', () => {
+    return gulp.src([
+        'static/js/**/*.js',
+        '!static/js/lib/**',
+        '!static/js/*.min.js',
+        '!static/js/vender.js'
+    ], {
+        base: 'static/js',
+        read: false
+    })
+    .pipe(changed('build/js'))
+    .pipe(flatMap((stream, file) => {
+        const cleanPath = file.path.replace(path.join(process.cwd(), 'static/js/'), '');
+        console.log('changed: ' + file.path);
+        return browserify({
+            entries: file.path,
+            debug: false
+        })
+        .transform(babelify)
+        .bundle()
+        .on('error', function(err) {
+            gutil.log(err.message);
+            this.emit('end');
+        })
+        .pipe(source(cleanPath))
+        .pipe(buffer())
+        .pipe(
             sourcemaps.init({
                 // Loads map from browserify file
                 loadMaps: true
             })
-          )
-          .pipe(gulpif(PROD, uglify()))
-          .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
-          .pipe(sourcemaps.write('./'))
-          .pipe(gulp.dest('build'))
-          .pipe(gulpif(!PROD, livereload({ port: 35729 })));
-        });
-
-        const taskStream = es.merge(tasks);
-
-        taskStream.on('end', done);
-    });
+        )
+        .pipe(gulpif(PROD, uglify()))
+        .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest('build/js'))
+        .pipe(gulpif(!PROD, livereload({ port: 35729 })));
+    }));
 });
 
 gulp.task('static', () => {
