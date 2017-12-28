@@ -1,4 +1,3 @@
-
 const MEDUSA = require('../core');
 const medusa = require('..');
 const startAjaxEpisodeSubtitles = require('../ajax-episode-subtitles');

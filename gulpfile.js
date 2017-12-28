@@ -91,14 +91,14 @@ gulp.task('css', () => {
         'static/css/**/*.css',
         '!static/css/**/*.min.css'
     ], {
-        base: 'static/css'
+        base: 'static'
     })
-    .pipe(changed('build/css'))
+    .pipe(changed('build'))
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
     .pipe(postcss(processors))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('build/css'))
+    .pipe(gulp.dest('build'))
     .pipe(gulpif(!PROD, livereload({ port: 35729 })));
 });
 
@@ -109,9 +109,9 @@ gulp.task('lint', () => {
         '!static/js/*.min.js',
         '!static/js/vender.js'
     ], {
-        base: 'static/js'
+        base: 'static'
     })
-    .pipe(changed('build/js'))
+    .pipe(changed('build'))
     .pipe(xo())
     .pipe(xo.format())
     .pipe(xo.failAfterError());
@@ -124,35 +124,25 @@ gulp.task('js', ['lint'], () => {
         '!static/js/*.min.js',
         '!static/js/vender.js'
     ], {
-        base: 'static/js',
+        base: 'static',
         read: false
     })
-    .pipe(changed('build/js'))
+    .pipe(changed('build'))
     .pipe(flatMap((stream, file) => {
-        const cleanPath = file.path.replace(path.join(process.cwd(), 'static/js/'), '');
-        console.log('changed: ' + file.path);
+        const cleanPath = file.path.replace(path.join(process.cwd(), 'static/'), '');
+        console.log('changed: ' + file.path.replace(process.cwd() + '/', ''));
         return browserify({
             entries: file.path,
-            debug: false
+            debug: true
         })
         .transform(babelify)
         .bundle()
-        .on('error', function(err) {
-            gutil.log(err.message);
-            this.emit('end');
-        })
         .pipe(source(cleanPath))
         .pipe(buffer())
-        .pipe(
-            sourcemaps.init({
-                // Loads map from browserify file
-                loadMaps: true
-            })
-        )
-        .pipe(gulpif(PROD, uglify()))
-        .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(uglify())
         .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest('build/js'))
+        .pipe(gulp.dest('build'))
         .pipe(gulpif(!PROD, livereload({ port: 35729 })));
     }));
 });
