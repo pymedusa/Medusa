@@ -17,15 +17,15 @@
 
     <div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix" data-list="${cur_list_type}">
         % if len(show_lists) > 1:
-        <div class="showListTitle ${cur_list_type.lower()}">
-            <button type="button" class="nav-show-list move-show-list" data-move-target="${'container-' + cur_list_type.lower()}">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <h2 class="header">${cur_list_type}</h2>
-            <div class="loading-spinner"></div>
-        </div>
+            <div class="showListTitle ${cur_list_type.lower()}">
+                <button type="button" class="nav-show-list move-show-list" data-move-target="${'container-' + cur_list_type.lower()}">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h2 class="header">${cur_list_type}</h2>
+                <div class="loading-spinner"></div>
+            </div>
         % endif
         <div class="posterview">
         % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
