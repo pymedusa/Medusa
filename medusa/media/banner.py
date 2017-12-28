@@ -27,6 +27,7 @@ class ShowBanner(GenericMedia):
 
     @property
     def img_type(self):
+        """Get the image type (normal or thumbnail)."""
         if self.media_format == 'normal':
             return image_cache.BANNER
         elif self.media_format == 'thumb':

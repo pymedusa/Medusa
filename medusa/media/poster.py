@@ -22,10 +22,12 @@ from medusa.media.generic import GenericMedia
 
 class ShowPoster(GenericMedia):
     """Get the poster of a show."""
+
     default_media_name = 'poster.png'
 
     @property
     def img_type(self):
+        """Get the image type (normal or thumbnail)."""
         if self.media_format == 'normal':
             return image_cache.POSTER
         elif self.media_format == 'thumb':

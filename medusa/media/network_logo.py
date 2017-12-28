@@ -26,10 +26,12 @@ class ShowNetworkLogo(GenericMedia):
 
     @property
     def default_media_name(self):
+        """Get default icon for Network missing a logo."""
         return join('network', 'nonetwork.png')
 
     @property
     def media_path(self):
+        """Get the relative path to the media."""
         series = self.series
         if series:
             return join(self.get_media_root(), 'images', 'network', series.network_logo_name + '.png')
