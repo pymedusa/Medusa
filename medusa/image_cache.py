@@ -155,6 +155,16 @@ def which_type(path):
         return
 
 
+def replace_images(series):
+    """
+    Replace cached images for a series based on image type.
+
+    :param series: Series object
+    """
+    remove_images(series)
+    fill_cache(series)
+
+
 def remove_images(series, image_types=None):
     """
     Remove cached images for a series based on image type.

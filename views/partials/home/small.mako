@@ -11,12 +11,12 @@
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
-    <% curListType = cur_show_list[0] %>
+    <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
-    % if curListType == "Anime":
-        <h1 class="header">Anime List</h1>
+    % if len(show_lists) > 1:
+        <h1 class="header">${cur_list_type}</h1>
     % endif
-<table id="showListTable${curListType}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable${cur_list_type}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th class="min-cell-width nowrap">Next Ep</th>
@@ -34,7 +34,7 @@
     </thead>
     <tfoot class="hidden-print">
         <tr>
-            <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[cur_list_type == 'Anime']}</a></th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>

@@ -257,6 +257,9 @@ class BaseIndexer(object):
                 }
             )
 
+            if not images_by_rating:
+                continue
+
             # Get the highest rated image
             highest_rated = images_by_rating[0]
             img_url = highest_rated['_bannerpath']
