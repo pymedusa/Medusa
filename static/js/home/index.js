@@ -1,6 +1,6 @@
-
 const MEDUSA = require('../core');
 const medusa = require('..');
+const api = require('../api');
 
 MEDUSA.home.index = () => {
     // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
@@ -364,29 +364,29 @@ MEDUSA.home.index = () => {
         helper: 'clone',
         handle: 'button.move-show-list',
         cancel: '',
-        sort: function(event, ui) {
+        sort(event, ui) {
             const draggedItem = $(ui.item);
             const margin = 1.5;
 
             if (ui.position.top !== ui.originalPosition.top) {
                 if (ui.position.top > ui.originalPosition.top * margin) {
                     // Move to bottom
-                    setTimeout(function() {
+                    setTimeout(() => {
                         $(draggedItem).appendTo('#poster-container');
                         return false;
                     }, 400);
                 }
                 if (ui.position.top < ui.originalPosition.top / margin) {
                     // Move to top
-                    setTimeout(function() {
+                    setTimeout(() => {
                         $(draggedItem).prependTo('#poster-container');
                         return false;
                     }, 400);
                 }
             }
         },
-        update: function(event) {
-            const showListOrder = $(event.target.children).map(function(index, el) {
+        update(event) {
+            const showListOrder = $(event.target.children).map((index, el) => {
                 return $(el).data('list');
             });
             api.patch('config/main', {
@@ -395,9 +395,9 @@ MEDUSA.home.index = () => {
                         showListOrder: showListOrder.toArray()
                     }
                 }
-            }).then(function(response) {
+            }).then(response => {
                 log.info(response);
-            }).catch(function(err) {
+            }).catch(err => {
                 log.error(err);
             });
         }

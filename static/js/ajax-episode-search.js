@@ -1,4 +1,3 @@
-
 const searchStatusUrl = 'home/getManualSearchStatus';
 let failedDownload = false;
 let qualityDownload = false;

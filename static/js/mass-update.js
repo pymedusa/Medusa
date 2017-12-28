@@ -30,7 +30,7 @@ $(document).ready(() => {
         const deleteArr = [];
         const removeArr = [];
         const metadataArr = [];
-        var imageUpdateArr = [];
+        const imageUpdateArr = [];
 
         $('.updateCheck').each(function() {
             if (this.checked === true) {
@@ -124,7 +124,7 @@ $(document).ready(() => {
         });
     });
 
-    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach((name) => {
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(name => {
         let lastCheck = null;
 
         $(name).on('click', function(event) {

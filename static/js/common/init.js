@@ -1,4 +1,3 @@
-
 const MEDUSA = require('../core');
 
 const apiKey = $('body').attr('api-key');
