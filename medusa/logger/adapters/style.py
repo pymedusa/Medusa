@@ -36,7 +36,7 @@ class BraceMessage(object):
         msg = str(self.msg)
 
         try:
-            return msg.format(*args, **kwargs)
+            return msg.decode('utf-8', 'replace').format(*args, **kwargs)
         except IndexError:
             try:
                 return msg.format(kwargs)
