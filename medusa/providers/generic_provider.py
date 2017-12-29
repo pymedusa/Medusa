@@ -183,7 +183,7 @@ class GenericProvider(object):
 
                         search_result.search_type = PROPER_SEARCH
                         search_result.date = datetime.today()
-                        search_result.show = series_obj
+                        search_result.series = series_obj
 
         return results
 
@@ -308,7 +308,7 @@ class GenericProvider(object):
 
             # I don't know why i'm doing this. Maybe remove it later on all together, now i've added the parsed_result
             # to the search_result.
-            search_result.show = search_result.parsed_result.show
+            search_result.series = search_result.parsed_result.show
             search_result.quality = search_result.parsed_result.quality
             search_result.release_group = search_result.parsed_result.release_group
             search_result.version = search_result.parsed_result.version
@@ -316,7 +316,7 @@ class GenericProvider(object):
             search_result.actual_episodes = search_result.parsed_result.episode_numbers
 
             if not manual_search:
-                if not (search_result.show.air_by_date or search_result.show.sports):
+                if not (search_result.series.air_by_date or search_result.series.sports):
                     if search_mode == 'sponly':
                         if search_result.parsed_result.episode_numbers:
                             log.debug(
@@ -389,7 +389,7 @@ class GenericProvider(object):
                         db = DBConnection()
                         sql_results = db.select(
                             'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
-                            [search_result.show.indexer, search_result.show.series_id, air_date]
+                            [search_result.series.indexer, search_result.series.series_id, air_date]
                         )
 
                         if len(sql_results) == 2:
