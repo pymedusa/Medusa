@@ -808,7 +808,7 @@ class PostProcessor(object):
                 history_result = main_db_con.select(
                     'SELECT quality, manually_searched, info_hash '
                     'FROM history '
-                    'WHERE indexer = ? '
+                    'WHERE indexer_id = ? '
                     'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
@@ -831,7 +831,7 @@ class PostProcessor(object):
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
-                        'WHERE indexer = ? '
+                        'WHERE indexer_id = ? '
                         'AND showid = ? '
                         'AND season = ? '
                         'AND episode = ? '
