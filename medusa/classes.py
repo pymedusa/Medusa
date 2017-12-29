@@ -45,10 +45,7 @@ class SearchResult(object):
         self.provider = provider
 
         # release show object
-        self.show = None
-
-        # deprecate show in favor of series.
-        self.series = self.show
+        self.series = None
 
         # URL to the NZB/torrent file
         self.url = u''
@@ -152,6 +149,22 @@ class SearchResult(object):
         self._actual_episodes = value
         if len(value) == 1:
             self._actual_episode = value[0]
+
+    @property
+    def show(self):
+        log.exception(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        return self.series
+
+    @show.setter
+    def show(self, value):
+        log.exception(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        self.series = value
 
     def __str__(self):
 

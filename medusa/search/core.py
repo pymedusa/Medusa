@@ -256,19 +256,19 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
 
     # find the best result for the current episode
     for cur_result in results:
-        assert cur_result.show, 'Every SearchResult object should have a show object available at this point.'
+        assert cur_result.series, 'Every SearchResult object should have a series object available at this point.'
 
         # Every SearchResult object should have a show attribute available at this point.
-        show = cur_result.show
+        series_obj = cur_result.series
 
         # build the black and white list
-        if show.is_anime:
-            if not show.release_groups.is_valid(cur_result):
+        if series_obj.is_anime:
+            if not series_obj.release_groups.is_valid(cur_result):
                 continue
 
         log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
 
-        allowed_qualities, preferred_qualities = show.current_qualities
+        allowed_qualities, preferred_qualities = series_obj.current_qualities
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
@@ -279,7 +279,7 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         if cur_result.actual_episodes:
             wanted_ep = False
             for episode in cur_result.actual_episodes:
-                if show.want_episode(cur_result.actual_season, episode, cur_result.quality, cur_result.forced_search,
+                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality, cur_result.forced_search,
                                      cur_result.download_current_quality, search_type=cur_result.search_type):
                     wanted_ep = True
 
@@ -301,8 +301,8 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             )
             continue
 
-        ignored_words = show.show_words().ignored_words
-        required_words = show.show_words().required_words
+        ignored_words = series_obj.show_words().ignored_words
+        required_words = series_obj.show_words().required_words
         found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
         found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
@@ -362,9 +362,9 @@ def is_first_best_match(result):
     """
     log.debug(u'Checking if we should stop searching for a better quality for for episode {0}', result.name)
 
-    show_obj = result.episodes[0].series
+    series_obj = result.episodes[0].series
 
-    _, preferred_qualities = show_obj.current_qualities
+    _, preferred_qualities = series_obj.current_qualities
     # Don't pass allowed because we only want to check if this quality is wanted preferred.
     return Quality.wanted_quality(result.quality, [], preferred_qualities)
 
@@ -373,7 +373,7 @@ def wanted_episodes(series_obj, from_date):
     """
     Get a list of episodes that we want to download.
 
-    :param show: Show these episodes are from
+    :param series_obj: Series these episodes are from
     :param from_date: Search from a certain date
     :return: list of wanted episodes
     """

@@ -2171,7 +2171,8 @@ class Home(WebRoot):
         down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = get_episode(seriesid, season, episode, indexer_name_to_id(indexername))
+        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        ep_obj = series_obj.get_episode(season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({
                 'result': 'failure',
