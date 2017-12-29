@@ -41,10 +41,7 @@ def refresh_exceptions_cache():
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
-        try:
-            indexer_id = int(exception[b'indexer'])
-        except:
-            pass
+        indexer_id = int(exception[b'indexer'])
         series_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
         show = exception[b'show_name']
