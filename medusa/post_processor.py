@@ -70,7 +70,7 @@ LANGUAGE_TAGS = {
     'pt-br': 'pt-BR',
     'pt-pt': 'pt-PT',
     'es-mx': 'es-MX',
-    'zh-cn': 'zh-CH',
+    'zh-cn': 'zh-CN',
     'zh-tw': 'zh-TW',
 }
 
