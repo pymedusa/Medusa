@@ -145,9 +145,10 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // handle the show selection dropbox
-    $('#select-show').on('change', function() {
-        var indexerName = $(this[0]).attr('data-indexer-name');
-        var seriesId = $(this[0]).attr('data-series-id');
+    $('#select-show').on('change', function(evt) {
+        const selectedOption = evt.currentTarget.selectedOptions[0];
+        const indexerName = $(selectedOption).attr('data-indexer-name');
+        const seriesId = $(selectedOption).attr('data-series-id');
         if (seriesId === 0 || !indexerName) {
             return;
         }
