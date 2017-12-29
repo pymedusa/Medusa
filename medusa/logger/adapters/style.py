@@ -33,7 +33,7 @@ class BraceMessage(object):
                 args = []
                 kwargs = self.args[0]
 
-        msg = str(self.msg)
+        msg = text_type(self.msg)
 
         try:
             return msg.format(*args, **kwargs)
