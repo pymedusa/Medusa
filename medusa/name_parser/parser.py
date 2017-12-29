@@ -152,8 +152,7 @@ class NameParser(object):
 
                 if result.show.is_scene:
                     (season, episode) = scene_numbering.get_indexer_numbering(
-                        result.show.indexerid,
-                        result.show.indexer,
+                        result.show,
                         season_number,
                         episode_number,
                     )
@@ -207,8 +206,7 @@ class NameParser(object):
 
                 if result.show.is_scene:
                     (season, episode) = scene_numbering.get_indexer_numbering(
-                        result.show.indexerid,
-                        result.show.indexer,
+                        result.show,
                         result.season_number,
                         episode_number
                     )
