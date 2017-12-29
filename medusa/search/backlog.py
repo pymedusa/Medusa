@@ -98,22 +98,22 @@ class BacklogSearcher(object):
             log.info(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
-        for cur_show in show_list:
+        for series_obj in show_list:
 
-            if cur_show.paused:
+            if series_obj.paused:
                 continue
 
-            segments = self._get_segments(cur_show, from_date)
+            segments = self._get_segments(series_obj, from_date)
 
             for season, segment in iteritems(segments):
-                self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=cur_show.name,
+                self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=series_obj.name,
                                                                                           season=season)}
 
-                backlog_queue_item = BacklogQueueItem(cur_show, segment)
+                backlog_queue_item = BacklogQueueItem(series_obj, segment)
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
-                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', cur_show.name)
+                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', series_obj.name)
 
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
