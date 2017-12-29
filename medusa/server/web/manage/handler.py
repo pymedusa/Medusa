@@ -698,26 +698,25 @@ class Manage(Home, WebRoot):
         subtitles = []
         image_update = []
 
-        for slug in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata +
-                               to_image_update):
+        for slug in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata + to_image_update):
             identifier = SeriesIdentifier.from_slug(slug)
             series_obj = Series.find_by_identifier(identifier)
 
             if not series_obj:
                 continue
 
-            if cur_show_id in to_delete + to_remove:
-                app.show_queue_scheduler.action.removeShow(series_obj, cur_show_id in to_delete)
+            if slug in to_delete + to_remove:
+                app.show_queue_scheduler.action.removeShow(series_obj, slug in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
-            if cur_show_id in to_update:
+            if slug in to_update:
                 try:
                     app.show_queue_scheduler.action.updateShow(series_obj)
                     updates.append(series_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
-            elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
+            elif slug in to_refresh:  # don't bother refreshing shows that were updated
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                     refreshes.append(series_obj.name)
@@ -725,15 +724,15 @@ class Manage(Home, WebRoot):
                     errors.append('Unable to refresh show {show.name}: {error}'.format
                                   (show=series_obj, error=msg))
 
-            if cur_show_id in to_rename:
+            if slug in to_rename:
                 app.show_queue_scheduler.action.renameShowEpisodes(series_obj)
                 renames.append(series_obj.name)
 
-            if cur_show_id in to_subtitle:
+            if slug in to_subtitle:
                 app.show_queue_scheduler.action.download_subtitles(series_obj)
                 subtitles.append(series_obj.name)
 
-            if cur_show_id in to_image_update:
+            if slug in to_image_update:
                 image_cache = ImageCache()
                 image_cache.replace_images(series_obj)
 
