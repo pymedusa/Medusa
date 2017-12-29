@@ -89,7 +89,7 @@ class CacheDBConnection(db.DBConnection):
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
                 ('date_added', 'NUMERIC', 0),
-                ('indexer', 'NUMERIC', -1),
+                ('indexer', 'NUMERIC', None),
             )
             for column, data_type, default in table:
                 # add columns to table if missing

@@ -606,19 +606,19 @@ class AddIndexerIds(AddIndexerInteger):
 
         log.info(u'Adding column indexer_id in history')
         if not self.hasColumn('history', 'indexer_id'):
-            self.addColumn('history', 'indexer_id', 'NUMERIC', -1)
+            self.addColumn('history', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer_id in blacklist')
         if not self.hasColumn('blacklist', 'indexer_id'):
-            self.addColumn('blacklist', 'indexer_id', 'NUMERIC', -1)
+            self.addColumn('blacklist', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer_id in whitelist')
         if not self.hasColumn('whitelist', 'indexer_id'):
-            self.addColumn('whitelist', 'indexer_id', 'NUMERIC', -1)
+            self.addColumn('whitelist', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer_id in whitelist')
         if not self.hasColumn('imdb_info', 'indexer'):
-            self.addColumn('imdb_info', 'indexer', 'NUMERIC', -1)
+            self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
 
         log.info(u'Dropping the unique index on idx_indexer_id')
         self.connection.action('DROP INDEX idx_indexer_id')
@@ -665,33 +665,23 @@ class AddIndexerIds(AddIndexerInteger):
                 migration_config[0], migration_config[1]
             )
 
-            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} = -1'.format(config=migration_config)
+            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} is null'.format(config=migration_config)
             results = self.connection.select(query)
             if not results:
                 continue
 
             create_series_dict()
-            counter = 0
 
-            if len(results) > 1000:
-                log.info(
-                    u'Starting to update table {0} with {1} records. Depending on the size this may take a while.',
-                    migration_config[0], len(results)
-                )
-
-            for result in results:
-                counter += 1
-                if counter % 500 == 0:
-                    log.info(
-                        u'Updating table {0}. Updating row number {1}',
-                        migration_config[0], counter
-                    )
-                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
-                series_id = result[0]
-                indexer_id = series_dict.get(series_id, -1)
-
+            # Updating all rows, using the series id.
+            for series_id in series_dict:
                 # Update the value in the db.
-                self.connection.action('UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
-                                       [indexer_id, series_id])
+                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
+                indexer_id = series_dict.get(series_id)
+                if not indexer_id:
+                    continue
+
+                self.connection.action(
+                    'UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
+                    [indexer_id, series_id])
 
         self.inc_minor_version()
