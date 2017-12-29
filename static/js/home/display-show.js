@@ -79,8 +79,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?indexername' +
-            $('#indexername').attr('value') +
+        window.location.href = $('base').attr('href') + 'home/setStatus?' +
+            'indexername=' + $('#indexer-name').attr('value') +
             '&seriesid=' + $('#series-id').attr('value') +
             '&eps=' + epArr.join('|') +
             '&status=' + $('#statusSelect').val();
