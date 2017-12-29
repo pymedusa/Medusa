@@ -411,18 +411,18 @@ class Cache(object):
             proper_tags = '|'.join(parse_result.proper_tags)
 
             if not self.item_in_cache(url):
-                log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
+                log.debug('Added RSS item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
                 return [
                     b'INSERT INTO [{name}] '
                     b'   (name, season, episodes, indexerid, url, time, quality, '
                     b'    release_group, version, seeders, leechers, size, pubdate, '
                     b'    proper_tags, date_added, indexer ) '
-                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.show.indexer, parse_result.show.series_id, url,
+                    [name, season, episode_text, parse_result.show.series_id, url,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp]
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.show.indexer]
                 ]
             else:
                 log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)

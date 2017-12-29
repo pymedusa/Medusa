@@ -113,7 +113,7 @@ def build_name_cache(series_obj=None):
 
         log.debug(u'Internal name cache for {series} set to: {names}', {
             'series': series_name,
-            'names': ', '.join(names.keys())
+            'names': u', '.join(names.keys())
         })
 
     with nameCacheLock:
