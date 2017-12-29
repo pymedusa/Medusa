@@ -21,11 +21,11 @@
 
 import re
 
-from . import classes, logger
-from .helper.encoding import ss
-from .helper.exceptions import ex
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .session.core import MedusaSession
+from medusa import classes, logger
+from medusa.helper.encoding import ss
+from medusa.helper.exceptions import ex
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.session.core import MedusaSession
 
 try:
     import xml.etree.cElementTree as ETree

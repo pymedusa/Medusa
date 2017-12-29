@@ -6,13 +6,23 @@ import os
 
 from github import GithubException
 
-from tornroutes import route
+from medusa import (
+    app,
+    config,
+    github_client,
+    helpers,
+    logger,
+    ui,
+)
+from medusa.common import (
+    Quality,
+    WANTED,
+)
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, github_client, helpers, logger, ui
-from ....common import Quality, WANTED
-from ....helper.common import try_int
+from tornroutes import route
 
 
 @route('/config/general(/?.*)')

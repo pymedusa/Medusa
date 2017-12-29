@@ -24,7 +24,7 @@ import re
 
 from medusa import app
 from medusa.tv import Series
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class XEMBasicTests(test.AppTestDBCase):

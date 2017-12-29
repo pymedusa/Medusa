@@ -62,31 +62,31 @@ import time
 
 from configobj import ConfigObj
 
-from six import text_type
-
-from . import (
+from medusa import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
-from .common import SD, SKIPPED, WANTED
-from .config import (
+from medusa.common import SD, SKIPPED, WANTED
+from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
-from .databases import cache_db, failed_db, main_db
-from .event_queue import Events
-from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
-from .providers.generic_provider import GenericProvider
-from .providers.nzb.newznab import NewznabProvider
-from .providers.torrent.rss.rsstorrent import TorrentRssProvider
-from .search.backlog import BacklogSearchScheduler, BacklogSearcher
-from .search.daily import DailySearcher
-from .search.proper import ProperFinder
-from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .server.core import AppWebServer
-from .system.shutdown import Shutdown
-from .tv import Series
+from medusa.databases import cache_db, failed_db, main_db
+from medusa.event_queue import Events
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
+from medusa.search.daily import DailySearcher
+from medusa.search.proper import ProperFinder
+from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.server.core import AppWebServer
+from medusa.system.shutdown import Shutdown
+from medusa.tv import Series
+
+from six import text_type
 
 logger = logging.getLogger(__name__)
 

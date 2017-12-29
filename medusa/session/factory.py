@@ -4,7 +4,7 @@ import logging
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
-from .. import app
+from medusa import app
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

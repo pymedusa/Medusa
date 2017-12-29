@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 from medusa.media.banner import ShowBanner
-from .generic_media_tests import GenericMediaTests
+from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 
 class ShowBannerTests(GenericMediaTests):
