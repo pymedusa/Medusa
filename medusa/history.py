@@ -20,9 +20,9 @@
 import datetime
 
 import db
-from .common import FAILED, Quality, SNATCHED, SUBTITLED
-from .helper.encoding import ss
-from .show.history import History
+from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
+from medusa.helper.encoding import ss
+from medusa.show.history import History
 
 
 def _logHistoryItem(action, showid, season, episode, quality, resource,

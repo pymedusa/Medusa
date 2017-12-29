@@ -48,7 +48,7 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-        from . import kodi_notifier
+        from medusa.notifiers import kodi_notifier
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_PLEX_CLIENT and not force:
             return False

@@ -20,8 +20,11 @@ from __future__ import unicode_literals
 import os
 import posixpath
 
-from ... import app, helpers
-from ...session.core import MedusaSession
+from medusa import (
+    app,
+    helpers,
+)
+from medusa.session.core import MedusaSession
 
 
 class MissingTvdbMapping(Exception):

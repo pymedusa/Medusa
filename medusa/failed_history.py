@@ -19,11 +19,11 @@
 """failed history code."""
 import re
 from datetime import datetime, timedelta
-from . import db, logger
-from .common import FAILED, Quality, WANTED, statusStrings
-from .helper.common import episode_num
-from .helper.exceptions import EpisodeNotFoundException
-from .show.history import History
+from medusa import db, logger
+from medusa.common import FAILED, Quality, WANTED, statusStrings
+from medusa.helper.common import episode_num
+from medusa.helper.exceptions import EpisodeNotFoundException
+from medusa.show.history import History
 
 
 def prepare_failed_name(release):

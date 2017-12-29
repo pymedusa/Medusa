@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 
 from medusa.media.network_logo import ShowNetworkLogo
-from .generic_media_tests import GenericMediaTests
+from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 
 class ShowNetworkLogoTests(GenericMediaTests):

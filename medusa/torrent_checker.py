@@ -19,7 +19,7 @@
 
 import logging
 
-import app
+from medusa import app
 from medusa.clients import torrent
 
 logger = logging.getLogger(__name__)
