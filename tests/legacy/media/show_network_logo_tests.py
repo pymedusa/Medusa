@@ -27,5 +27,5 @@ from .generic_media_tests import GenericMediaTests
 class ShowNetworkLogoTests(GenericMediaTests):
     """Test ShowNetworkLogo."""
 
-    def test_get_default_media_name(self):
-        self.assertEqual(ShowNetworkLogo(0, '').get_default_media_name(), os.path.join('network', 'nonetwork.png'))
+    def test_default_media_name(self):
+        self.assertEqual(ShowNetworkLogo(0, '').default_media_name, os.path.join('network', 'nonetwork.png'))

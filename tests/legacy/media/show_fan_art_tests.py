@@ -25,5 +25,5 @@ from .generic_media_tests import GenericMediaTests
 class ShowFanArtTests(GenericMediaTests):
     """Test ShowFanArt."""
 
-    def test_get_default_media_name(self):
-        self.assertEqual(ShowFanArt(0, '').get_default_media_name(), 'fanart.png')
+    def test_default_media_name(self):
+        self.assertEqual(ShowFanArt(0, '').default_media_name, 'fanart.png')
