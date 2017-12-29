@@ -95,7 +95,7 @@ class AddIndexerIds(HistoryStatus):
         if not results:
             return
 
-        log.debug(u"Starting to update the history table in the failed.db database. Depending on it's size"
+        log.info(u"Starting to update the history table in the failed.db database. Depending on it's size"
                   u" this may take a while. Updating: {rows} records.", {'rows': len(results)})
 
         counter = 0
@@ -107,7 +107,7 @@ class AddIndexerIds(HistoryStatus):
 
             # Update the value in the db.
             if counter % 100 == 0:
-                log.debug('Updating history table, logging every 100 rows: updating row: {counter}', {'counter': counter})
+                log.info('Updating history table, logging every 100 rows: updating row: {counter}', {'counter': counter})
             self.connection.action(
                 'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
             )

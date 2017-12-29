@@ -21,7 +21,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 8
+CURRENT_MINOR_DB_VERSION = 9
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -38,7 +38,6 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
-        self.find_and_fix_indexer_ids()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -253,48 +252,6 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 or lang = '0'")
-
-    def find_and_fix_indexer_ids(self):
-
-        if self.connection.version >= (44, 9):
-            return
-
-        series_dict = {}
-        def create_series_dict():
-            if not series_dict:
-
-                # get all the shows. Might need them.
-                all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
-
-                # check for double
-                for series in all_series:
-                    if series['indexer_id'] not in series_dict:
-                        series_dict[series['indexer_id']] = series['indexer']
-                    else:
-                        log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
-                                    series['indexer_id'], series['indexer'])
-
-        # Check if it's required for the main.db tables.
-        for migration_config in (('blacklist', 'show_id', 'indexer_id'),
-                             ('whitelist', 'show_id', 'indexer_id'),
-                             ('history', 'showid', 'indexer_id'),
-                             ('imdb_info', 'indexer_id', 'indexer')):
-
-            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} = -1'.format(config=migration_config)
-            results = self.connection.select(query)
-            if not results:
-                continue
-
-            create_series_dict()
-            for result in results:
-                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
-                series_id = result[0]
-                indexer_id = series_dict.get(series_id, -1)
-
-                # Update the value in the db.
-                self.connection.action('UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
-                                       [indexer_id, series_id])
-
 
 
 def backupDatabase(version):
@@ -679,5 +636,62 @@ class AddIndexerIds(AddIndexerInteger):
                                'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
                                'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
         self.connection.action('DROP TABLE tmp_imdb_info')
+
+        series_dict = {}
+
+        def create_series_dict():
+            """Create a dict with series[indexer]: series_id."""
+            if not series_dict:
+
+                # get all the shows. Might need them.
+                all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
+
+                # check for double
+                for series in all_series:
+                    if series['indexer_id'] not in series_dict:
+                        series_dict[series['indexer_id']] = series['indexer']
+                    else:
+                        log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
+                                    series['indexer_id'], series['indexer'])
+
+        # Check if it's required for the main.db tables.
+        for migration_config in (('blacklist', 'show_id', 'indexer_id'),
+                                 ('whitelist', 'show_id', 'indexer_id'),
+                                 ('history', 'showid', 'indexer_id'),
+                                 ('imdb_info', 'indexer_id', 'indexer')):
+
+            log.info(
+                u'Updating indexer field on table {0}. Using the series id to match with field {1}',
+                migration_config[0], migration_config[1]
+            )
+
+            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} = -1'.format(config=migration_config)
+            results = self.connection.select(query)
+            if not results:
+                continue
+
+            create_series_dict()
+            counter = 0
+
+            if len(results) > 1000:
+                log.info(
+                    u'Starting to update table {0} with {1} records. Depending on the size this may take a while.',
+                    migration_config[0], len(results)
+                )
+
+            for result in results:
+                counter += 1
+                if counter % 500 == 0:
+                    log.info(
+                        u'Updating table {0}. Updating row number {1}',
+                        migration_config[0], counter
+                    )
+                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
+                series_id = result[0]
+                indexer_id = series_dict.get(series_id, -1)
+
+                # Update the value in the db.
+                self.connection.action('UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
+                                       [indexer_id, series_id])
 
         self.inc_minor_version()
