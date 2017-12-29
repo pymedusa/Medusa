@@ -60,11 +60,9 @@ def clear_cache(indexer_id=0, series_id=0):
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
         "DELETE FROM scene_names "
-        "WHERE indexer_id = 0 OR"
-        "    indexer_id = ? OR"
-        "    indexer = 0 OR"
-        "    indexer = ?",
-        [series_id, indexer_id]
+        "WHERE (indexer_id = 0 AND indexer = ?) OR"
+        "      (indexer_id = ? AND indexer = ?) ",
+        [series_id, indexer_id, indexer_id]
     )
 
     keys = []
