@@ -18,7 +18,7 @@ from medusa import (
     scene_numbering,
 )
 from medusa.helper.common import episode_num
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,

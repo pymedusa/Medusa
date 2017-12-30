@@ -51,7 +51,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (
     IndexerEpisodeNotFound,

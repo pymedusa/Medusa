@@ -48,7 +48,7 @@ from medusa.helpers import (
     make_dir,
 )
 from medusa.helpers.externals import check_existing_shows
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerError,

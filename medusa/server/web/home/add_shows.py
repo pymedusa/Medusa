@@ -12,7 +12,7 @@ from medusa.black_and_white_list import short_group_names
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from medusa.server.web.core import PageTemplate

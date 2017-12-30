@@ -195,7 +195,7 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
     :param ui: Custom UI for indexer use
     :return:
     """
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
@@ -1083,7 +1083,7 @@ def real_path(path):
 
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
@@ -1611,7 +1611,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     indexer_api_params = indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
