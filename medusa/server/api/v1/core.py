@@ -43,7 +43,7 @@ from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFo
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner

@@ -23,7 +23,7 @@ import time
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 

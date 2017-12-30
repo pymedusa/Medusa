@@ -19,7 +19,7 @@ from medusa import (
 )
 from medusa.helper.common import episode_num
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,
     IndexerException,

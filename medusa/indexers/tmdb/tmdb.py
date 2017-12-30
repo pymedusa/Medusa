@@ -13,7 +13,7 @@ from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
+from medusa.indexers.exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException

@@ -74,7 +74,7 @@ from medusa.indexers.config import (
     mappings,
     reverse_mappings,
     slug_to_indexer_id)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
