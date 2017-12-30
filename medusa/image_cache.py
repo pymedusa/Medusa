@@ -81,7 +81,7 @@ def get_path(img_type, series_obj):
     Build path to a series cached artwork.
 
     :param img_type: integer constant representing an image type
-    :param series_obj: the series id
+    :param series_obj: the series object
 
     :return: full path and filename for artwork
     """
@@ -159,23 +159,22 @@ def replace_images(series_obj):
     """
     Replace cached images for a series based on image type.
 
-    :param series: Series object
+    :param series_obj: Series object
     """
     remove_images(series_obj)
     fill_cache(series_obj)
 
 
-def remove_images(series, image_types=None):
+def remove_images(series_obj, image_types=None):
     """
     Remove cached images for a series based on image type.
 
-    :param series: Series object
+    :param series_obj: Series object
     :param image_types: iterable of integers for image types to remove
         if no image types passed, remove all images
     """
     image_types = image_types or IMAGE_TYPES
-    series_obj = series.indexerid
-    series_name = series.name
+    series_name = series_obj.name
 
     for image_type in image_types:
         cur_path = get_path(image_type, series_obj)
@@ -208,7 +207,7 @@ def _cache_image_from_file(image_path, img_type, series_obj):
 
     :param image_path: path to the image we're caching
     :param img_type: BANNER or POSTER or FANART
-    :param series_obj: id of the show this image belongs to
+    :param series_obj: Series object
     :return: bool representing success
     """
     # generate the path based on the type and the indexer_id
@@ -242,7 +241,7 @@ def _cache_image_from_indexer(series_obj, img_type):
     """
     Retrieve specified artwork from the indexer and save to the cache folder.
 
-    :param series: Series object that we want to cache an image for
+    :param series_obj: Series object that we want to cache an image for
     :param img_type: BANNER or POSTER or FANART
     :return: bool representing success
     """
@@ -270,7 +269,7 @@ def fill_cache(series_obj):
 
     Copy artwork from series directory if possible, or download from indexer.
 
-    :param series: Series object to cache images for
+    :param series_obj: Series object to cache images for
     """
     # get expected paths for artwork
     images = {
