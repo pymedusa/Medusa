@@ -624,7 +624,7 @@ class Episode(TV):
             self.indexerid = int(sql_results[0][b'indexerid'])
             self.indexer = int(sql_results[0][b'indexer'])
 
-            xem_refresh(self)
+            xem_refresh(self.series)
 
             self.scene_season = try_int(sql_results[0][b'scene_season'], 0)
             self.scene_episode = try_int(sql_results[0][b'scene_episode'], 0)
