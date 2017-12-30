@@ -6,7 +6,7 @@ import logging
 
 from medusa import app, db
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig, mappings
+from medusa.indexers.config import indexerConfig, mappings
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 

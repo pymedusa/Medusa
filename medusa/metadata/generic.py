@@ -10,7 +10,7 @@ from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
                                                 IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter

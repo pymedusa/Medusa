@@ -66,7 +66,7 @@ from medusa.helper.exceptions import (
 from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig,

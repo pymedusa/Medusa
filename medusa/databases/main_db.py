@@ -8,7 +8,7 @@ import warnings
 
 from medusa import common, db, helpers, subtitles
 from medusa.helper.common import dateTimeFormat, episode_num
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 

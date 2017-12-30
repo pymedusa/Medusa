@@ -59,7 +59,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.indexers.api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
