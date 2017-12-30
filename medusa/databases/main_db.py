@@ -621,7 +621,7 @@ class AddIndexerIds(AddIndexerInteger):
             self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
 
         log.info(u'Dropping the unique index on idx_indexer_id')
-        self.connection.action('DROP INDEX idx_indexer_id')
+        self.connection.action('DROP INDEX IF EXISTS idx_indexer_id')
 
         # Add the column imdb_info_id with PK
         self.connection.action('DROP TABLE IF EXISTS tmp_imdb_info')

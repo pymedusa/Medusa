@@ -1659,7 +1659,7 @@ class Series(TV):
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 
         # remove self from show list
-        app.showList = [x for x in app.showList if int(x.indexerid) != self.series_id]
+        app.showList = [x for x in app.showList if x.identifier != self.identifier]
 
         # clear the cache
         image_cache_dir = os.path.join(app.CACHE_DIR, 'images')

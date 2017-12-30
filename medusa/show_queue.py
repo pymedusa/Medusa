@@ -260,7 +260,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         # remove other queued actions for this show.
         for item in self.queue:
-            if item and item.show and item != self.currentItem and show.indexerid == item.show.indexerid:
+            if item and item.show and item != self.currentItem and show.identifier == item.show.identifier:
                 self.queue.remove(item)
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
