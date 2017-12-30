@@ -6,7 +6,7 @@ import logging
 from collections import OrderedDict
 from time import time
 
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (
     IndexerError,
     IndexerException,
