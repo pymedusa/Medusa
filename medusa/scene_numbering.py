@@ -445,9 +445,8 @@ def xem_refresh(series_obj, force=False):
         # mark refreshed
         main_db_con.upsert(
             "xem_refresh",
-            {'indexer': indexer_id,
-             'last_refreshed': int(time.mktime(datetime.datetime.today().timetuple()))},
-            {'indexer_id': indexer_id}
+            {'last_refreshed': int(time.mktime(datetime.datetime.today().timetuple()))},
+            {'indexer': indexer_id, 'indexer_id': series_id}
         )
 
         try:
@@ -499,7 +498,7 @@ def xem_refresh(series_obj, force=False):
 
         except Exception as e:
             logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
-                       (indexer_id, series_obj.indexer_name, ex(e)), logger.WARNING)
+                       (series_id, series_obj.indexer_name, ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
 
