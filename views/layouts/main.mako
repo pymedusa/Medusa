@@ -43,13 +43,13 @@
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" id="theme-stylesheet" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
-        <div v-cloak id="vue-wrap" class="container-fluid">
+        <div id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -78,22 +78,12 @@
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
-
         <script type="text/javascript" src="js/add-shows/add-existing-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/schedule/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
@@ -105,15 +95,6 @@
         <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/episode-statuses.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
         <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>

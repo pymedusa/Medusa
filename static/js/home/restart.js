@@ -1,11 +1,12 @@
+const MEDUSA = require('../core');
+
 MEDUSA.home.restart = function() {
-    var currentPid = $('.messages').attr('current-pid');
-    var defaultPage = $('.messages').attr('default-page');
-    var checkIsAlive = setInterval(function() {
-        // @TODO: Move to API
-        $.get('home/is_alive/', function(data) {
+    let currentPid = $('.messages').attr('current-pid');
+    const defaultPage = $('.messages').attr('default-page');
+    const checkIsAlive = setInterval(() => {
+        $.get('home/is_alive/', data => {
             if (data.msg.toLowerCase() === 'nope') {
-                // if it's still initializing then just wait and try again
+                // If it's still initializing then just wait and try again
                 $('#restart_message').show();
             } else if (currentPid === '' || data.msg === currentPid) {
                 $('#shut_down_loading').hide();
@@ -16,7 +17,7 @@ MEDUSA.home.restart = function() {
                 $('#restart_loading').hide();
                 $('#restart_success').show();
                 $('#refresh_message').show();
-                setTimeout(function() {
+                setTimeout(() => {
                     window.location = defaultPage + '/';
                 }, 5000);
             }

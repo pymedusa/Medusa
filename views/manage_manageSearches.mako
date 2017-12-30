@@ -7,6 +7,8 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/manage-searches.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <div id="content800">

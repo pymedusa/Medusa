@@ -5,6 +5,8 @@
     from medusa.helpers import anon_url
 %>
 <%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/config/subtitles.js?${sbPID}"></script>
 <script>
 $(document).ready(function() {
     $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {

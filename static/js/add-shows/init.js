@@ -1,11 +1,13 @@
+
+const MEDUSA = require('../core');
+
 MEDUSA.addShows.init = function() {
     $('#tabs').tabs({
         collapsible: true,
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
-    var imgLazyLoad = new LazyLoad({
-        // example of options object -> see options section
+    const imgLazyLoad = new LazyLoad({
         threshold: 500
     });
 
@@ -17,16 +19,16 @@ MEDUSA.addShows.init = function() {
         $('#showsortdirection').val('asc');
 
         $('#showsort').on('change', function() {
-            var sortCriteria;
+            let sortCriteria;
             switch (this.value) {
                 case 'original':
                     sortCriteria = 'original-order';
                     break;
                 case 'rating':
-                    /* randomise, else the rating_votes can already
+                    /* Randomise, else the rating_votes can already
                      * have sorted leaving this with nothing to do.
                      */
-                    $('#container').isotope({sortBy: 'random'});
+                    $('#container').isotope({ sortBy: 'random' });
                     sortCriteria = 'rating';
                     break;
                 case 'rating_votes':
@@ -44,7 +46,7 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#rootDirs').on('change', function() {
+        $('#rootDirs').on('change', () => {
             $.rootDirCheck();
         });
 
@@ -58,14 +60,14 @@ MEDUSA.addShows.init = function() {
             sortBy: 'original-order',
             layoutMode: 'fitRows',
             getSortData: {
-                name: function(itemElem) {
-                    var name = $(itemElem).attr('data-name') || '';
+                name(itemElem) {
+                    const name = $(itemElem).attr('data-name') || '';
                     return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
             }
-        }).on('layoutComplete arrangeComplete removeComplete', function() {
+        }).on('layoutComplete arrangeComplete removeComplete', () => {
             imgLazyLoad.update();
             imgLazyLoad.handleScroll();
         });
@@ -118,18 +120,18 @@ MEDUSA.addShows.init = function() {
             $(this).html('Added').prop('disabled', true);
             $(this).parent().find('button[data-blacklist-show]').prop('disabled', true);
 
-            var anyQualArray = [];
-            var bestQualArray = [];
-            $('#allowed_qualities option:selected').each(function(i, d) {
+            const anyQualArray = [];
+            const bestQualArray = [];
+            $('#allowed_qualities option:selected').each((i, d) => {
                 anyQualArray.push($(d).val());
             });
-            $('#preferred_qualities option:selected').each(function(i, d) {
+            $('#preferred_qualities option:selected').each((i, d) => {
                 bestQualArray.push($(d).val());
             });
 
             // If we are going to add an anime, let's by default configure it as one
-            var anime = $('#anime').prop('checked');
-            var configureShowOptions = $('#configure_show_options').prop('checked');
+            const anime = $('#anime').prop('checked');
+            const configureShowOptions = $('#configure_show_options').prop('checked');
 
             $.get('addShows/addShowByID?indexer_id=' + $(this).attr('data-indexer-id'), {
                 root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
@@ -142,7 +144,7 @@ MEDUSA.addShows.init = function() {
                 best_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
                 default_flatten_folders: $('#flatten_folders').prop('checked'), // eslint-disable-line camelcase
                 subtitles: $('#subtitles').prop('checked'),
-                anime: anime,
+                anime,
                 scene: $('#scene').prop('checked'),
                 default_status_after: $('#statusSelectAfter').val() // eslint-disable-line camelcase
             });
@@ -150,12 +152,12 @@ MEDUSA.addShows.init = function() {
         });
 
         $('#saveDefaultsButton').on('click', function() {
-            var anyQualArray = [];
-            var bestQualArray = [];
-            $('#allowed_qualities option:selected').each(function(i, d) {
+            const anyQualArray = [];
+            const bestQualArray = [];
+            $('#allowed_qualities option:selected').each((i, d) => {
                 anyQualArray.push($(d).val());
             });
-            $('#preferred_qualities option:selected').each(function(i, d) {
+            $('#preferred_qualities option:selected').each((i, d) => {
                 bestQualArray.push($(d).val());
             });
 
@@ -178,12 +180,12 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
+        $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', () => {
             $('#saveDefaultsButton').prop('disabled', false);
         });
 
-        $('#qualityPreset').on('change', function() {
-            // fix issue #181 - force re-render to correct the height of the outer div
+        $('#qualityPreset').on('change', () => {
+            // Fix issue #181 - force re-render to correct the height of the outer div
             $('span.prev').click();
             $('span.next').click();
         });
@@ -198,10 +200,10 @@ MEDUSA.addShows.init = function() {
             if (showName) {
                 $.getJSON('home/fetch_releasegroups', {
                     show_name: showName // eslint-disable-line camelcase
-                }, function(data) {
+                }, data => {
                     if (data.result === 'success') {
-                        $.each(data.groups, function(i, group) {
-                            var option = $('<option>');
+                        $.each(data.groups, (i, group) => {
+                            const option = $('<option>');
                             option.prop('value', group.name);
                             option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
                             option.appendTo('#pool');

@@ -1,62 +1,58 @@
-MEDUSA.history.index = function() {
+
+const MEDUSA = require('../core');
+const medusa = require('..');
+
+MEDUSA.history.index = () => {
     $('#historyTable:has(tbody tr)').tablesorter({
         widgets: ['saveSort', 'zebra', 'filter'],
         sortList: [[0, 1]],
         textExtraction: (function() {
-            if ($.isMeta({layout: 'history'}, ['detailed'])) {
+            if ($.isMeta({ layout: 'history' }, ['detailed'])) {
                 return {
                     // 0: Time 1: Episode 2: Action 3: Provider 4: Quality
-                    0: function(node) {
+                    0(node) {
                         return $(node).find('time').attr('datetime');
                     },
-                    1: function(node) {
+                    1(node) {
                         return $(node).find('a').text();
                     }
                 };
             }
             return {
                 // 0: Time 1: Episode 2: Snatched 3: Downloaded 4: Quality
-                0: function(node) {
+                0(node) {
                     return $(node).find('time').attr('datetime');
                 },
-                1: function(node) {
+                1(node) {
                     return $(node).find('a').text();
                 }, // Episode
-                2: function(node) {
+                2(node) {
                     return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
                 },
-                3: function(node) {
+                3(node) {
                     return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
                 }
             };
         })(),
         headers: (function() {
-            if ($.isMeta({layout: 'history'}, ['detailed'])) {
+            if ($.isMeta({ layout: 'history' }, ['detailed'])) {
                 return {
-                    0: {sorter: 'realISODate'}
+                    0: { sorter: 'realISODate' }
                 };
             }
             return {
-                0: {sorter: 'realISODate'},
-                2: {sorter: 'text'}
+                0: { sorter: 'realISODate' },
+                2: { sorter: 'text' }
             };
         })()
     });
 
-    $('#history_limit').on('change', function() {
-        window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
+    $('#history_limit').on('change', event => {
+        window.location.href = $('base').attr('href') + 'history/?limit=' + $(event.currentTarget).val();
     });
 
-    $('.show-option select[name="layout"]').on('change', function() {
-        api.patch('config/main', {
-            layout: {
-                history: $(this).val()
-            }
-        }).then(function(response) {
-            log.info(response);
-            window.location.reload();
-        }).catch(function(err) {
-            log.info(err);
-        });
+    $('.show-option select[name="layout"]').on('change', async event => {
+        await medusa.config({ layout: { history: $(event.currentTarget).val() } });
+        window.location.reload();
     });
 };

@@ -6,7 +6,6 @@
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from medusa.helper import exceptions
 %>
-<%block name="scripts">
 <%
     if quality_value is not None:
         initial_quality = int(quality_value)
@@ -14,10 +13,12 @@
         initial_quality = common.SD
     allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
 %>
+<%block name="scripts">
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/mass-edit.js?${sbPID}"></script>
 </%block>
-
 <%block name="content">
 <div class="row">
     <div class="col-md-12">

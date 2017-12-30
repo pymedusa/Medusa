@@ -6,6 +6,7 @@
     from medusa.providers.generic_provider import GenericProvider
 %>
 <%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
 <script type="text/javascript" src="js/config-providers.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){

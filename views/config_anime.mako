@@ -3,6 +3,9 @@
     from medusa import app
     from medusa.helpers import anon_url
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <div id="content960">
     <h1 class="header">${header}</h1>

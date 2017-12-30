@@ -1,6 +1,6 @@
-$(document).ready(function() {
-    $('.submitMassEdit').on('click', function() {
-        var editArr = [];
+$(document).ready(() => {
+    $('.submitMassEdit').on('click', () => {
+        const editArr = [];
 
         $('.editCheck').each(function() {
             if (this.checked === true) {
@@ -12,25 +12,25 @@ $(document).ready(function() {
             return;
         }
 
-        const submitForm = $(
-            '<form method=\'post\' action=\'' + $('base').attr('href') + 'manage/massEdit\'>' +
-            '<input type=\'hidden\' name=\'toEdit\' value=\'' + editArr.join('|') + '\'/>' +
-            '</form>'
-        );
+        const submitForm = $(`
+            <form method="post" action="${$('base').attr('href')}manage/massEdit">
+                <input type="hidden" name="toEdit" value="${editArr.join('|')}"/>
+            </form>
+        `);
         submitForm.appendTo('body');
 
         submitForm.submit();
     });
 
-    $('.submitMassUpdate').on('click', function() {
-        var updateArr = [];
-        var refreshArr = [];
-        var renameArr = [];
-        var subtitleArr = [];
-        var deleteArr = [];
-        var removeArr = [];
-        var metadataArr = [];
-        var imageUpdateArr = [];
+    $('.submitMassUpdate').on('click', () => {
+        const updateArr = [];
+        const refreshArr = [];
+        const renameArr = [];
+        const subtitleArr = [];
+        const deleteArr = [];
+        const removeArr = [];
+        const metadataArr = [];
+        const imageUpdateArr = [];
 
         $('.updateCheck').each(function() {
             if (this.checked === true) {
@@ -68,7 +68,7 @@ $(document).ready(function() {
             }
         });
 
-        var deleteCount = 0;
+        let deleteCount = 0;
 
         $('.deleteCheck').each(function() {
             if (this.checked === true) {
@@ -76,17 +76,17 @@ $(document).ready(function() {
             }
         });
 
-        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
+        const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
 
         if (deleteCount >= 1) {
-            $.confirm({
+            window.$.confirm({
                 title: 'Delete Shows',
                 text: 'You have selected to delete ' + deleteCount + ' show(s).  Are you sure you wish to continue? All files will be removed from your system.',
                 confirmButton: 'Yes',
                 cancelButton: 'Cancel',
                 dialogClass: 'modal-dialog',
                 post: false,
-                confirm: function() {
+                confirm() {
                     $('.deleteCheck').each(function() {
                         if (this.checked === true) {
                             deleteArr.push($(this).attr('id').split('-')[1]);
@@ -95,7 +95,7 @@ $(document).ready(function() {
                     if (totalCount === 0) {
                         return false;
                     }
-                    var params = $.param({
+                    const params = $.param({
                         toUpdate: updateArr.join('|'),
                         toRefresh: refreshArr.join('|'),
                         toRename: renameArr.join('|'),
@@ -119,13 +119,13 @@ $(document).ready(function() {
         }
         const url = $('base').attr('href') + 'manage/massUpdate';
         const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
-        $.post(url, params, function() {
+        $.post(url, params, () => {
             location.reload(true);
         });
     });
 
-    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(function(name) {
-        var lastCheck = null;
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(name => {
+        let lastCheck = null;
 
         $(name).on('click', function(event) {
             if (!lastCheck || !event.shiftKey) {
@@ -133,8 +133,8 @@ $(document).ready(function() {
                 return;
             }
 
-            var check = this;
-            var found = 0;
+            const check = this;
+            let found = 0;
 
             $(name).each(function() {
                 if (found === 1) {

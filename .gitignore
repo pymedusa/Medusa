@@ -65,12 +65,10 @@ Thumbs.db
 ######################
 lib/unrar2/UnRAR.exe
 
-# Grunt #
+# Gulp/Frontend #
 ######################
-**/bower_components
-**/node_modules
-.build/dist
-.build/package.json
+.nyc_output
+node_modules
 
 # Unit test/Coverage #
 ######################

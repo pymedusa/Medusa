@@ -1,3 +1,6 @@
+
+const MEDUSA = require('../core');
+
 MEDUSA.addShows.trendingShows = function() {
     // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
     $.updateBlackWhiteList(undefined);
@@ -7,8 +10,8 @@ MEDUSA.addShows.trendingShows = function() {
         'Trakt timed out, refresh page to try again'
     );
 
-    $('#traktlistselection').on('change', function(e) {
-        var traktList = e.target.value;
+    $('#traktlistselection').on('change', e => {
+        const traktList = e.target.value;
         window.history.replaceState({}, document.title, 'addShows/trendingShows/?traktList=' + traktList);
         // Update the jquery tab hrefs, when switching trakt list.
         $('#trakt-tab-1').attr('href', document.location.href.split('=')[0] + '=' + e.target.value);

@@ -1,11 +1,14 @@
+
+const MEDUSA = require('../core');
+
 MEDUSA.home.status = function() {
     $('#schedulerStatusTable').tablesorter({
         widgets: ['saveSort', 'zebra'],
         textExtraction: {
-            5: function(node) {
+            5(node) {
                 return $(node).data('seconds');
             },
-            6: function(node) {
+            6(node) {
                 return $(node).data('seconds');
             }
         },

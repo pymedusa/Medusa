@@ -3004,7 +3004,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 #sub-menu-container {
-    z-index: 550;
     min-height: 41px;
 }
 

@@ -1,4 +1,16 @@
+
+const MEDUSA = require('../core');
+
 MEDUSA.home.snatchSelection = function() {
+    // Adjust the summary background position and size on page load and resize
+    const moveSummaryBackground = () => {
+        const height = $('#summary').height() + 10;
+        const top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({ top, left: 0 });
+        $('#summaryBackground').show();
+    };
+
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
         if ($(this).html() === '..show less') {
@@ -9,22 +21,13 @@ MEDUSA.home.snatchSelection = function() {
         moveSummaryBackground();
     });
 
-    // adjust the summary background position and size on page load and resize
-    function moveSummaryBackground() {
-        var height = $('#summary').height() + 10;
-        var top = $('#summary').offset().top + 5;
-        $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({top: top, left: 0});
-        $('#summaryBackground').show();
-    }
-
-    $(window).resize(function() {
+    $(window).on('resize', () => {
         moveSummaryBackground();
     });
 
-    var updateSpinner = function(message, showSpinner) {
-        // get spinner object as needed
-        var spinner = $('#searchNotification');
+    const updateSpinner = (message, showSpinner) => {
+        // Get spinner object as needed
+        const spinner = $('#searchNotification');
         if (showSpinner) {
             message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
@@ -33,16 +36,16 @@ MEDUSA.home.snatchSelection = function() {
 
     // Check the previous status of the history table, for hidden or shown, through the data attribute
     // data-history-toggle-hidden
-    function toggleHistoryTable() {
+    const toggleHistoryTable = () => {
         // Get previous state which was saved on the wrapper
-        var showOrHide = $('#wrapper').attr('data-history-toggle');
+        const showOrHide = $('#wrapper').attr('data-history-toggle');
         $('#historydata').collapse(showOrHide);
-    }
+    };
 
     $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
         updateSpinner(loadingTxt);
         $('#manualSearchMeta').load(path + ' #manualSearchMeta meta');
-        $(this).load(path + ' #manualSearchTbody tr', function(response, status) {
+        $(this).load(path + ' #manualSearchTbody tr', (response, status) => {
             if (status === 'error') {
                 updateSpinner(errorTxt, false);
             }
@@ -55,9 +58,9 @@ MEDUSA.home.snatchSelection = function() {
     // Click event for the download button for snatching a result
     $('body').on('click', '.epManualSearch', function(event) {
         event.preventDefault();
-        var link = this;
+        const link = this;
         $(link).children('img').prop('src', 'images/loading16.gif');
-        $.getJSON(this.href, function(data) {
+        $.getJSON(this.href, data => {
             if (data.result === 'success') {
                 $(link).children('img').prop('src', 'images/save.png');
             } else {
@@ -66,13 +69,7 @@ MEDUSA.home.snatchSelection = function() {
         });
     });
 
-    $.fn.generateStars = function() {
-        return this.each(function(i, e) {
-            $(e).html($('<span/>').width($(e).text() * 12));
-        });
-    };
-
-    function initTableSorter(table) {
+    const initTableSorter = table => {
         // Nasty hack to re-initialize tablesorter after refresh
         $(table).tablesorter({
             widgets: ['saveSort', 'stickyHeaders', 'columnSelector', 'filter'],
@@ -85,87 +82,86 @@ MEDUSA.home.snatchSelection = function() {
                 columnSelector_mediaquery: false, // eslint-disable-line camelcase
                 columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
             },
-            textExtraction: (function() {
+            textExtraction: (() => {
                 return {
                     // 6: The size column needs an explicit field for the filtering on raw size.
-                    6: function(node) {
+                    6(node) {
                         return node.getAttribute('data-size');
                     }
                 };
             })()
         });
-    }
+    };
 
-    $('.imdbstars').generateStars();
+    $('.imdbstars').$('.imdbstars').each((i, e) => {
+        $(e).html($('<span/>').width($(e).text() * 12));
+    });
 
-    function checkCacheUpdates(repeat) {
-        var self = this;
-        var pollInterval = 5000;
-        repeat = repeat || true;
+    const checkCacheUpdates = function(repeat = true) {
+        const self = this;
+        const show = $('meta[data-last-prov-updates]').attr('data-show');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        let pollInterval = 5000;
 
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-
-        var urlParams = show + '&season=' + season + '&episode=' + episode;
+        let urlParams = show + '&season=' + season + '&episode=' + episode;
 
         if (manualSearchType === 'season') {
             urlParams += '&manual_search_type=' + manualSearchType;
         }
 
         if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
-            setTimeout(function() {
+            setTimeout(() => {
                 checkCacheUpdates(true);
             }, 200);
         }
 
         self.refreshResults = function() {
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection?show=' + urlParams,
-                    'Loading new search results...',
-                    'Time out, refresh page to try again',
-                    toggleHistoryTable // This is a callback function
+                'home/snatchSelection?show=' + urlParams,
+                'Loading new search results...',
+                'Time out, refresh page to try again',
+                toggleHistoryTable // This is a callback function
             );
         };
 
         $.ajax({
             url: 'home/manualSearchCheckCache?show=' + urlParams,
             type: 'GET',
-            data: data,
+            data,
             contentType: 'application/json',
-            error: function() {
-                // repeat = false;
+            error() {
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
-            complete: function() {
+            complete() {
                 if (repeat) {
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
             },
-            timeout: 15000 // timeout after 15s
-        }).done(function(data) {
+            timeout: 15000 // Timeout after 15s
+        }).done(data => {
             // @TODO: Combine the lower if statements
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
             }
             if (data.result === 'searching') {
-                // ep is searched, you will get a results any minute now
+                // Ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode is being searched, please wait......', true);
             }
             if (data.result === 'queued') {
-                // ep is queued, this might take some time to get results
+                // Ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
             }
             if (data.result === 'finished') {
-                // ep search is finished
+                // Ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
@@ -173,13 +169,13 @@ MEDUSA.home.snatchSelection = function() {
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
-                // ep search is finished but with an error
+                // Ep search is finished but with an error
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
             }
         });
-    }
+    };
 
     setTimeout(checkCacheUpdates, 2000);
 
@@ -187,23 +183,23 @@ MEDUSA.home.snatchSelection = function() {
     $('body').on('click', '.manualSearchButton', function(event) {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        var forceSearch = $(this).attr('data-force-search');
+        const show = $('meta[data-last-prov-updates]').attr('data-show');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const forceSearch = $(this).attr('data-force-search');
 
         if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
-                show: show,
-                season: season,
-                episode: episode,
+                show,
+                season,
+                episode,
                 manual_search_type: manualSearchType, // eslint-disable-line camelcase
                 perform_search: forceSearch // eslint-disable-line camelcase
             });
             // Force the search, but give the checkCacheUpdates the time to start up a search thread
-            setTimeout(function() {
+            setTimeout(() => {
                 checkCacheUpdates(true);
             }, 2000);
         }
@@ -214,33 +210,33 @@ MEDUSA.home.snatchSelection = function() {
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true,
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
-        $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
+    }).on('shown.bs.popover', () => {
+        window.$.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
-    $('#btnReset').click(function() {
+    $('#btnReset').on('click', () => {
         $('#showTable')
-        .trigger('saveSortReset') // clear saved sort
-        .trigger('sortReset');    // reset current table sort
+        .trigger('saveSortReset') // Clear saved sort
+        .trigger('sortReset'); // Reset current table sort
         return false;
     });
 
-    $(function() {
+    $(() => {
         initTableSorter('#srchresults');
         moveSummaryBackground();
-        $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
+        $('body').on('hide.bs.collapse', '.collapse.toggle', () => {
             $('#showhistory').text('Show History');
             $('#wrapper').prop('data-history-toggle', 'hide');
         });
-        $('body').on('show.bs.collapse', '.collapse.toggle', function() {
+        $('body').on('show.bs.collapse', '.collapse.toggle', () => {
             $('#showhistory').text('Hide History');
             $('#wrapper').prop('data-history-toggle', 'show');
         });
     });
 
-    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', function(el) {
+    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', el => {
         const target = $(el.currentTarget);
 
         if (target.hasClass('release-name-ellipses')) {

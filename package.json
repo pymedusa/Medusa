@@ -10,37 +10,59 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "yarn lint",
-    "lint": "xo --verbose",
-    "coverage": "nyc ava",
-    "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
-    "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
-    "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt",
-    "install": "yarn run test"
+    "test": "concurrently --kill-others-on-fail --names \"xo,snyk\" \"npm run test:lint\" \"npm run test:security\"",
+    "test:lint": "xo --verbose",
+    "test:spec": "nyc ava --verbose",
+    "test:api": "dredd --config ./dredd/dredd.yml",
+    "test:security": "snyk test",
+    "build": "cross-env NODE_ENV=production gulp build"
   },
   "devDependencies": {
-    "ava": "^0.24.0",
-    "codecov": "^3.0.0",
-    "dredd": "^4.7.2",
-    "grunt": "^0.4.5",
-    "grunt-bower-concat": "^1.0.0",
-    "grunt-bower-task": "^0.4.0",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-copy": "^0.8.2",
-    "grunt-contrib-cssmin": "^0.14.0",
-    "grunt-contrib-uglify": "^0.11.1",
-    "load-grunt-tasks": "^3.3.0",
+    "autoprefixer": "^7.1.6",
+    "ava": "^0.23.0",
+    "axios": "^0.17.1",
+    "babel-core": "^6.26.0",
+    "babelify": "^8.0.0",
+    "browserify": "^14.5.0",
+    "concurrently": "^3.5.0",
+    "cssnano": "^3.10.0",
+    "dredd": "^3.3.0",
+    "event-stream": "^3.3.4",
+    "glob": "^7.1.2",
+    "gulp": "^3.9.1",
+    "gulp-changed": "^3.1.1",
+    "gulp-flatmap": "^1.0.0",
+    "gulp-if": "^2.0.2",
+    "gulp-imagemin": "^3.4.0",
+    "gulp-livereload": "^3.8.1",
+    "gulp-postcss": "^7.0.0",
+    "gulp-rev": "^8.1.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-swagger-js-codegen": "^1.0.0",
+    "gulp-uglify-es": "^0.1.4",
+    "gulp-util": "^3.0.8",
+    "gulp-xo": "^0.16.0",
+    "imagemin-pngquant": "^5.0.1",
+    "jquery": "^3.2.1",
+    "medusa-lib": "0.0.16",
     "nyc": "^11.3.0",
+    "postcss-reporter": "^5.0.0",
+    "run-sequence": "^2.2.0",
     "snyk": "^1.9.1",
-    "stylelint-config-standard": "^16.0.0",
-    "xo": "^0.17.1"
+    "url-parse": "^1.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "vue": "^2.5.5",
+    "xo": "^0.18.2"
   },
   "xo": {
     "space": 4,
     "rules": {
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ],
       "space-before-function-paren": [
         "error",
         "never"
@@ -48,47 +70,24 @@
     },
     "envs": [
       "browser",
-      "jquery"
+      "node"
     ],
     "globals": [
       "PNotify",
       "LazyLoad",
       "_",
       "log",
-      "MEDUSA",
-      "api",
-      "apiKey",
-      "apiRoot",
-      "s"
+      "s",
+      "$"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "static/js/api.js",
-      "vue/**/*.js"
-    ]
-  },
-  "stylelint": {
-    "extends": "stylelint-config-standard",
-    "rules": {
-      "indentation": [
-        4,
-        {
-          "ignore": [
-            "inside-parens"
-          ],
-          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
-          "severity": "error"
-        }
-      ]
-    },
-    "ignoreFiles": [
-      "static/css/lib/**",
-      "static/css/*.min.css"
+      "build/**"
     ]
   },
   "dependencies": {
-    "stylelint": "^7.9.0"
+    "tablesorter": "^2.29.0"
   }
 }

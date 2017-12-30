@@ -77,6 +77,7 @@ class Config(WebRoot):
 
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
+            controller="config", action="info",
             header='Medusa Configuration', topmenu='config',
             app_user=app_user, app_locale=app_locale, ssl_version=ssl_version,
             app_version=app_version, cur_branch_major_db_version=cur_branch_major_db_version,
