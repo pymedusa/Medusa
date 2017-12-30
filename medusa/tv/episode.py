@@ -755,7 +755,7 @@ class Episode(TV):
         self.season = season
         self.episode = episode
 
-        xem_refresh(self)
+        xem_refresh(self.series)
 
         self.scene_absolute_number = get_scene_absolute_numbering(
             self.series,
