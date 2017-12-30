@@ -1681,7 +1681,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(series_obj.indexerid, series_obj.indexer, exceptions)
+                update_scene_exceptions(series_obj, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
                 name_cache.build_name_cache(series_obj)
             except CantUpdateShowException:
