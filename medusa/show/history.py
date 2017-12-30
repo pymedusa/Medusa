@@ -118,7 +118,7 @@ class History(object):
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
 
-    index_fields = ('indexer_id' ,'show_id', 'season', 'episode', 'quality')
+    index_fields = ('indexer_id', 'show_id', 'season', 'episode', 'quality')
     # An index for an item or compact item from history
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)

@@ -153,7 +153,7 @@
                         </td>
                         <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
-                            <span><a data-indexer-to-name="${hItem.indexer_id}") href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
+                            <span><a data-indexer-to-name="${hItem.index.indexer_id}") href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                         </td>
                         <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
