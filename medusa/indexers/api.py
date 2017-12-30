@@ -5,7 +5,7 @@ import os
 from medusa import app
 from medusa.helper.common import try_int
 from medusa.indexers.config import indexerConfig, initConfig
-from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
+from medusa.indexers.tvdb.fallback import PlexFallBackConfig
 
 
 class indexerApi(object):
