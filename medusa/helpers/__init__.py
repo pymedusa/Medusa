@@ -42,11 +42,19 @@ from imdbpie import imdbpie
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import (episode_num, http_code_description, media_extensions,
-                                  pretty_file_size, subtitle_extensions)
+from medusa.helper.common import (
+    episode_num,
+    http_code_description,
+    media_extensions,
+    pretty_file_size,
+    subtitle_extensions,
+)
 from medusa.helpers.utils import generate
 from medusa.indexers.indexer_exceptions import IndexerException
-from medusa.logger.adapters.style import BraceAdapter, BraceMessage
+from medusa.logger.adapters.style import (
+    BraceAdapter,
+    BraceMessage,
+)
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
@@ -104,12 +112,12 @@ def is_media_file(filename):
         if filename.startswith('._'):
             return False
 
-        sep_file = filename.rpartition(".")
+        name, ext = os.path.splitext(filename)
 
-        if re.search('extras?$', sep_file[0], re.I):
+        if re.search('extras?$', name, re.I):
             return False
 
-        return sep_file[2].lower() in media_extensions
+        return ext.lower() in media_extensions
     except TypeError as error:  # Not a string
         log.debug(u'Invalid filename. Filename must be a string. {error}',
                   {'error': error})

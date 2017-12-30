@@ -17,19 +17,32 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """failed history code."""
+import os.path
 import re
-from datetime import datetime, timedelta
-from . import db, logger
-from .common import FAILED, Quality, WANTED, statusStrings
-from .helper.common import episode_num
-from .helper.exceptions import EpisodeNotFoundException
-from .show.history import History
+from datetime import (
+    datetime,
+    timedelta,
+)
+
+from medusa import (
+    db,
+    logger,
+)
+from medusa.common import (
+    FAILED,
+    Quality,
+    WANTED,
+    statusStrings,
+)
+from medusa.helper.common import episode_num
+from medusa.helper.exceptions import EpisodeNotFoundException
+from medusa.show.history import History
 
 
 def prepare_failed_name(release):
     """Standardize release name for failed DB."""
     if release.endswith('.nzb'):
-        release = release.rpartition('.')[0]
+        release = os.path.splitext(release)[0]
 
     fixed = re.sub(r'\W', '_', release)
 

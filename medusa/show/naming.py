@@ -122,7 +122,7 @@ def determine_release_name(dir_name=None, nzb_name=None):
     """Determine a release name from an nzb and/or folder name."""
     if nzb_name is not None:
         log.info('Using nzb_name for release name.')
-        return nzb_name.rpartition('.')[0]
+        return os.path.splitext(nzb_name)[0]
 
     if dir_name is None:
         return None
@@ -140,11 +140,11 @@ def determine_release_name(dir_name=None, nzb_name=None):
 
         if len(results) == 1:
             found_file = os.path.basename(results[0])
-            found_file = found_file.rpartition('.')[0]
+            found_file = os.path.splitext(found_file)[0]
             if filter_bad_releases(found_file):
                 log.info('Release name ({0}) found from file ({1})',
                          found_file, results[0])
-                return found_file.rpartition('.')[0]
+                return os.path.splitext(found_file)[0]
 
     # If that fails, we try the folder
     folder = os.path.basename(dir_name)

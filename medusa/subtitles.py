@@ -32,6 +32,32 @@ from dogpile.cache.api import NO_VALUE
 
 import knowit
 
+from medusa import (
+    app,
+    db,
+    helpers,
+    history,
+)
+from medusa.cache import (
+    cache,
+    memory_cache,
+)
+from medusa.common import (
+    Quality,
+    cpu_presets,
+)
+from medusa.helper.common import (
+    dateTimeFormat,
+    episode_num,
+    remove_extension,
+    subtitle_extensions,
+)
+from medusa.helper.exceptions import ex
+from medusa.helpers import (
+    is_media_file,
+    is_rar_file,
+)
+from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
 from six import iteritems, string_types, text_type
@@ -40,15 +66,6 @@ from subliminal import ProviderPool, compute_score, provider_manager, refine, sa
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-
-from . import app, db, helpers, history
-from .cache import cache, memory_cache
-from .common import Quality, cpu_presets
-from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
-from .helper.exceptions import ex
-from .helpers import is_media_file, is_rar_file
-from .show.show import Show
-
 
 logger = logging.getLogger(__name__)
 
@@ -786,8 +803,10 @@ def delete_unwanted_subtitles(dirpath, filename):
     :param filename: the subtitle filename
     :type dirpath: str
     """
-    if not app.SUBTITLES_MULTI or not app.SUBTITLES_KEEP_ONLY_WANTED or \
-            filename.rpartition('.')[2] not in subtitle_extensions:
+    extension = os.path.splitext(filename)[1]
+    if not (app.SUBTITLES_MULTI
+            or app.SUBTITLES_KEEP_ONLY_WANTED
+            or extension.lower() in subtitle_extensions):
         return
 
     code = filename.rsplit('.', 2)[1].lower().replace('_', '-')
