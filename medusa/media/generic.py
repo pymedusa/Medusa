@@ -40,12 +40,20 @@ class GenericMedia(object):
         """
 
         self.series_obj = series_obj
-        self.indexer_id = series_obj.series_id
+        self.series_id = series_obj.series_id
 
         if media_format in ('normal', 'thumb'):
             self.media_format = media_format
         else:
             self.media_format = 'normal'
+
+    @property
+    def indexerid(self):
+        return self.series_id
+
+    @indexerid.setter
+    def indexerid(self, value):
+        self.series_id = value
 
     @property
     def media(self):
@@ -63,7 +71,7 @@ class GenericMedia(object):
     def media_path(self):
         """Get the relative path to the media."""
         if self.series:
-            return image_cache.get_path(self.img_type, self.indexer_id)
+            return image_cache.get_path(self.img_type, self.series_obj)
         else:
             return ''
 
