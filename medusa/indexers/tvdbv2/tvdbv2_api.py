@@ -12,7 +12,7 @@ from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
                                         IndexerShowIncomplete, IndexerShowNotFound,
                                         IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show

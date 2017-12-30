@@ -18,7 +18,7 @@ from medusa.indexers.exceptions import (
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
 )
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
