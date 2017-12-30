@@ -52,14 +52,8 @@ def update_network_dict():
     data = response.text
     if not response or not data:
         logger.log(u'Updating network timezones failed. Using local file until URL is loaded: %s' % url, logger.DEBUG)
-        try:
-            f = open('network_timezones.txt', 'rb')
-        except OSError:
-            load_network_dict()
-            return
-        else:
-            data = f.read()
-            f.close()
+        load_network_dict()
+        return
 
     remote_networks = {}
     try:
