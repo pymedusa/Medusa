@@ -28,10 +28,14 @@ class SeriesHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'PATCH', 'DELETE', )
 
     def get(self, series_slug, path_param=None):
-        """Query series information.
-
-        :param series_slug: series slug. E.g.: tvdb1234
-        :param path_param:
+        """A cute furry animal endpoint.
+        ---
+        get:
+            description: Get a random pet
+            responses:
+                200:
+                    description: A pet to be returned
+                    schema: PetSchema
         """
         arg_paused = self._parse_boolean(self.get_argument('paused', default=None))
 

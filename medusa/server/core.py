@@ -19,6 +19,7 @@ from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
+from medusa.tv.series import SeriesSchema
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
@@ -139,6 +140,19 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
+        # Create an APISpec
+        from apispec import APISpec
+        spec = APISpec(
+            title=b'Swagger Medusa',
+            version=b'1.0.0',
+            plugins=(
+                'apispec.ext.tornado',
+                'apispec.ext.marshmallow',
+            ),
+        )
+
+        spec.definition('Series', schema=SeriesSchema)
+
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
         # Websocket handler
@@ -208,6 +222,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # webui handlers
         ] + self._get_webui_routes())
+
+        for urlspec in get_apiv2_handlers(self.options['api_v2_root']):
+            spec.add_path(urlspec=urlspec)
+
+        print str(spec.to_dict())
 
     def _get_webui_routes(self):
         webroot = self.options['web_root']

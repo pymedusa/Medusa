@@ -22,11 +22,14 @@ class EpisodeHandler(BaseRequestHandler):
     allowed_methods = ('GET', )
 
     def get(self, series_slug, episode_slug, path_param):
-        """Query episode information.
-
-        :param series_slug: series slug. E.g.: tvdb1234
-        :param episode_number:
-        :param path_param:
+        """A cute furry animal endpoint.
+        ---
+        get:
+            description: Get a random pet
+            responses:
+                200:
+                    description: A pet to be returned
+                    schema: PetSchema
         """
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
