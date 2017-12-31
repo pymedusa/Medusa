@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
-from . import app
-from .init import initialize
+
+from medusa import app
+from medusa.init import initialize
 
 # Initialize functions replacements
 initialize()

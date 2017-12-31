@@ -6,7 +6,7 @@ import unittest
 from medusa import common, db, name_cache, scene_exceptions
 from medusa.show import naming
 from medusa.tv import Series as Show
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class SceneTests(test.AppTestDBCase):

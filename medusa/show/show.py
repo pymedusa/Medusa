@@ -18,10 +18,19 @@
 
 from datetime import date
 
-from .. import app
-from ..common import Quality, SKIPPED, WANTED
-from ..db import DBConnection
-from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
+from medusa import app
+from medusa.common import (
+    Quality,
+    SKIPPED,
+    WANTED,
+)
+from medusa.db import DBConnection
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantRemoveShowException,
+    MultipleShowObjectsException,
+    ex,
+)
 
 
 class Show(object):

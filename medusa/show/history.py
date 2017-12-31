@@ -18,16 +18,17 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
+from medusa.common import Quality
+from medusa.helper.common import try_int
+
 from six import text_type
-from ..common import Quality
-from ..helper.common import try_int
 
 
 class History(object):
     date_format = '%Y%m%d%H%M%S'
 
     def __init__(self):
-        from ..db import DBConnection
+        from medusa.db import DBConnection
         self.db = DBConnection()
 
     def clear(self):

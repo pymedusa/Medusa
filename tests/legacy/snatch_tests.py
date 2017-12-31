@@ -25,7 +25,7 @@ import unittest
 from medusa import app, common, providers
 from medusa.search.core import search_providers
 from medusa.tv import Episode, Series
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 TESTS = {
     "Dexter": {"a": 1, "q": common.HD, "s": 5, "e": [7], "b": 'Dexter.S05E07.720p.BluRay.X264-REWARD',
