@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
-from . import app, db, helpers
+from medusa import app, db, helpers
 
 
 logger = logging.getLogger(__name__)

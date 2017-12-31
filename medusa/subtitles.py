@@ -32,23 +32,20 @@ from dogpile.cache.api import NO_VALUE
 
 import knowit
 
+from medusa import app, db, helpers, history
+from medusa.cache import cache, memory_cache
+from medusa.common import Quality, cpu_presets
+from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
+from medusa.helper.exceptions import ex
+from medusa.helpers import is_media_file, is_rar_file
+from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
 from six import iteritems, string_types, text_type
-
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-
-from . import app, db, helpers, history
-from .cache import cache, memory_cache
-from .common import Quality, cpu_presets
-from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
-from .helper.exceptions import ex
-from .helpers import is_media_file, is_rar_file
-from .show.show import Show
-
 
 logger = logging.getLogger(__name__)
 
@@ -821,8 +818,8 @@ class SubtitlesFinder(object):
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
-        from . import process_tv
-        from .tv import Episode
+        from medusa import process_tv
+        from medusa.tv import Episode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 
@@ -898,7 +895,7 @@ class SubtitlesFinder(object):
         :param dirpath: the directory path to be used
         :type dirpath: str
         """
-        from . import process_tv
+        from medusa import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
             # Skip folders that are being used for unpacking
             if u'_UNPACK' in root.upper():

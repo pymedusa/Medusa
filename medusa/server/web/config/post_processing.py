@@ -6,12 +6,19 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    naming,
+    ui,
+)
+from medusa.helper.exceptions import ex
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
 from unrar2 import RarFile
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, naming, ui
-from ....helper.exceptions import ex
 
 
 @route('/config/postProcessing(/?.*)')
