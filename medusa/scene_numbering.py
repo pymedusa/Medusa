@@ -25,11 +25,11 @@ import datetime
 import time
 import traceback
 
-from . import app, db, logger
-from .helper.exceptions import ex
-from .indexers.indexer_api import indexerApi
-from .scene_exceptions import safe_session
-from .show.show import Show
+from medusa import app, db, logger
+from medusa.helper.exceptions import ex
+from medusa.indexers.indexer_api import indexerApi
+from medusa.scene_exceptions import safe_session
+from medusa.show.show import Show
 
 
 def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):

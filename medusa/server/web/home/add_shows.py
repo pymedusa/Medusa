@@ -7,31 +7,27 @@ import json
 import os
 import re
 
+from medusa import app, classes, config, db, helpers, logger, ui
+from medusa.black_and_white_list import short_group_names
+from medusa.common import Quality
+from medusa.helper.common import sanitize_filename, try_int
+from medusa.helpers import get_showname_from_indexer
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+from medusa.show.recommendations.anidb import AnidbPopular
+from medusa.show.recommendations.imdb import ImdbPopular
+from medusa.show.recommendations.trakt import TraktPopular
+from medusa.show.show import Show
+
 from requests import RequestException
 from requests.compat import unquote_plus
-
 from simpleanidb import REQUEST_HOT
-
 from six import iteritems
-
 from tornroutes import route
-
 from traktor import TraktApi
-
-from .handler import Home
-from ..core import PageTemplate
-from .... import app, classes, config, db, helpers, logger, ui
-from ....black_and_white_list import short_group_names
-from ....common import Quality
-from ....helper.common import sanitize_filename, try_int
-from ....helpers import get_showname_from_indexer
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerUnavailable
-from ....show.recommendations.anidb import AnidbPopular
-from ....show.recommendations.imdb import ImdbPopular
-from ....show.recommendations.trakt import TraktPopular
-from ....show.show import Show
 
 
 @route('/addShows(/?.*)')

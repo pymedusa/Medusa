@@ -22,11 +22,12 @@ import re
 
 from app import BASE_PYMEDUSA_URL
 from dateutil import tz
-from six import iteritems
 
-from . import db, logger
-from .helper.common import try_int
-from .session.core import MedusaSafeSession
+from medusa import db, logger
+from medusa.helper.common import try_int
+from medusa.session.core import MedusaSafeSession
+
+from six import iteritems
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()

@@ -2,10 +2,11 @@
 
 from __future__ import unicode_literals
 
+from medusa import app, logger, ui
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.manage.handler import Manage
+
 from tornroutes import route
-from .handler import Manage
-from ..core import PageTemplate
-from .... import app, logger, ui
 
 
 @route('/manage/manageSearches(/?.*)')

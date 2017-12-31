@@ -311,7 +311,7 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-        from .tagger.episode import EpisodeTags
+        from medusa.tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:

@@ -25,7 +25,7 @@ from medusa import app
 from medusa.name_cache import addNameToCache
 from medusa.post_processor import PostProcessor
 from medusa.tv import Episode, Series
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class PPInitTests(unittest.TestCase):

@@ -81,6 +81,7 @@ class ConfigHandler(BaseRequestHandler):
         config_data = NonEmptyDict()
         config_data['anonRedirect'] = app.ANON_REDIRECT
         config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
+        config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
         config_data['comingEpsSort'] = app.COMING_EPS_SORT
         config_data['datePreset'] = app.DATE_PRESET
         config_data['fuzzyDating'] = app.FUZZY_DATING

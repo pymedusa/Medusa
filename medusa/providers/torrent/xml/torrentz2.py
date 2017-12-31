@@ -105,7 +105,7 @@ class Torrentz2Provider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
+                    if row.category and 'video' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text

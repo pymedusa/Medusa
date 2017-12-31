@@ -11,11 +11,13 @@ import warnings
 from collections import defaultdict
 
 import adba
+
+from medusa import app, db, helpers
 from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.session.core import MedusaSafeSession
+
 from six import iteritems
-from . import app, db, helpers
-from .indexers.indexer_config import INDEXER_TVDBV2
-from .session.core import MedusaSafeSession
 
 logger = logging.getLogger(__name__)
 

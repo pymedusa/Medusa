@@ -19,9 +19,9 @@
 import datetime
 import os
 
-from . import app, common, logger, tv
-from .common import DOWNLOADED, Quality
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa import app, common, logger, tv
+from medusa.common import DOWNLOADED, Quality
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 name_presets = (
     '%SN - %Sx%0E - %EN',

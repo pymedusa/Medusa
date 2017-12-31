@@ -27,7 +27,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('@eaDir',)
+    IGNORED_FOLDERS = ('@eaDir', '#recycle',)
 
     def __init__(self, path, process_method=None):
 

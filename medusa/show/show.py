@@ -20,9 +20,18 @@ from datetime import date
 import logging
 
 from medusa import app
-from medusa.common import Quality, SKIPPED, WANTED
+from medusa.common import (
+    Quality,
+    SKIPPED,
+    WANTED,
+)
 from medusa.db import DBConnection
-from medusa.helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantRemoveShowException,
+    MultipleShowObjectsException,
+    ex,
+)
 from medusa.logger.adapters.style import BraceAdapter
 
 

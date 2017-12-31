@@ -2,14 +2,13 @@
 
 from __future__ import unicode_literals
 
+from medusa import process_tv
+from medusa.helper.encoding import ss
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+
 from six import string_types
-
 from tornroutes import route
-
-from .handler import Home
-from ..core import PageTemplate
-from .... import process_tv
-from ....helper.encoding import ss
 
 
 @route('/home/postprocess(/?.*)')
