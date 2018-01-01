@@ -49,6 +49,22 @@ from tornado.web import (
 from tornroutes import route
 
 
+
+def clean_url_path(*args, **kwargs):
+    from posixpath import join
+    end_with_slash = kwargs.pop('end_with_slash', False)
+    build_path = ''
+    for arg in args:
+        build_path = join(build_path.strip('/'), arg.strip('/'))
+
+    build_path = '/' + build_path
+
+    if end_with_slash:
+        build_path += '/'
+
+    return build_path
+
+
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
@@ -118,6 +134,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         if self.options['web_root']:
             app.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
 
+        # Configure root to selected theme.
+        app.THEME_PATH = self.options['theme_path'] = clean_url_path(app.WEB_ROOT, app.THEME)
+
+        app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME)
+
         # api root
         if not app.API_KEY:
             app.API_KEY = generate_api_key()
@@ -154,7 +175,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             gzip=app.WEB_USE_GZIP,
             xheaders=app.HANDLE_REVERSE_PROXY,
             cookie_secret=app.WEB_COOKIE_SECRET,
-            login_url=r'{root}/login/'.format(root=self.options['web_root']),
+            login_url=r'{root}/login/'.format(root=self.options['theme_path']),
         )
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
@@ -167,39 +188,39 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         # Static File Handlers
         self.app.add_handlers('.*$', [
             # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images/ico/favicon.ico')}),
+            (r'{base}/(favicon\.ico)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'static', 'images/ico/favicon.ico')}),
 
             # images
-            (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images')}),
+            (r'{base}/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'static', 'images')}),
 
             # cached images
-            (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+            (r'{base}/cache/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
              {'path': os.path.join(app.CACHE_DIR, 'images')}),
 
             # css
-            (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'css')}),
+            (r'{base}/css/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'static', 'css')}),
 
             # javascript
-            (r'{base}/js/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'js')}),
+            (r'{base}/js/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'static', 'js')}),
 
             # fonts
-            (r'{base}/fonts/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'fonts')}),
+            (r'{base}/fonts/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'static', 'fonts')}),
 
             # videos
-            (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+            (r'{base}/videos/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
              {'path': self.video_root}),
 
             # vue dist
-            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
              {'path': os.path.join(self.options['vue_root'], 'dist')}),
 
             # vue index.html
-            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+            (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
              {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
@@ -228,7 +249,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         ] + self._get_webui_routes())
 
     def _get_webui_routes(self):
-        webroot = self.options['web_root']
+        webroot = self.options['theme_path']
         route._routes = list(reversed([url(webroot + u.regex.pattern, u.handler_class, u.kwargs, u.name) for u in route.get_routes()]))
         return route.get_routes()
 
@@ -244,7 +265,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
                    (scheme=protocol,
                     host=self.options['host'],
                     port=self.options['port'],
-                    web_root=self.options['web_root']))
+                    web_root=self.options['theme_path']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])

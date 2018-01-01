@@ -142,6 +142,9 @@ WEB_HOST = None
 WEB_IPV6 = None
 WEB_COOKIE_SECRET = None
 WEB_USE_GZIP = True
+THEME = 'black'
+THEME_PATH = None
+THEME_DATA_ROOT = None
 
 SUBLIMINAL_LOG = False
 

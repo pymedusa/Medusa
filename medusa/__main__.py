@@ -331,7 +331,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'static'),
+            'data_root': os.path.join(app.PROG_DIR, 'theme'),
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -365,7 +365,7 @@ class Application(object):
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
-            Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
+            Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.THEME_PATH)
 
         # main loop
         while app.started:
