@@ -9,7 +9,7 @@ import re
 
 from medusa import helpers
 from medusa.helper.common import dateFormat, episode_num as ep_num, replace_extension
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
@@ -184,7 +184,7 @@ class WDTVMetadata(generic.GenericMetadata):
                 log.info(
                     'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         'number': ep_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': IndexerAPI(ep_obj.series.indexer).name,
                     }
                 )
                 return None

@@ -13,7 +13,7 @@ from collections import defaultdict
 import adba
 
 from medusa import app, db, helpers
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.session.core import MedusaSafeSession
 
@@ -281,8 +281,8 @@ def _get_custom_exceptions(force):
     custom_exceptions = defaultdict(dict)
 
     if force or should_refresh('custom_exceptions'):
-        for indexer in indexerApi().indexers:
-            location = indexerApi(indexer).config['scene_loc']
+        for indexer in IndexerAPI().indexers:
+            location = IndexerAPI(indexer).config['scene_loc']
             logger.info(
                 'Checking for scene exception updates from {location}',
                 location=location
@@ -300,7 +300,7 @@ def _get_custom_exceptions(force):
                 # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
                 return custom_exceptions
 
-            indexer_ids = jdata[indexerApi(indexer).config['identifier']]
+            indexer_ids = jdata[IndexerAPI(indexer).config['identifier']]
             for indexer_id in indexer_ids:
                 indexer_exceptions = indexer_ids[indexer_id]
                 alias_list = [{exception: int(season)}
@@ -322,8 +322,8 @@ def _get_xem_exceptions(force):
     }
 
     if force or should_refresh('xem'):
-        for indexer in indexerApi().indexers:
-            indexer_api = indexerApi(indexer)
+        for indexer in IndexerAPI().indexers:
+            indexer_api = IndexerAPI(indexer)
 
             try:
                 # Get XEM origin for indexer

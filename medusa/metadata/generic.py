@@ -9,7 +9,7 @@ from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
                                         IndexerSeasonNotFound, IndexerShowNotFound)
@@ -731,7 +731,7 @@ class GenericMetadata(object):
         if image_type not in (u'fanart', u'poster', u'banner', u'thumbnail', u'poster_thumb', u'banner_thumb'):
             log.error(
                 u'Invalid {image}, unable to find it in the {indexer}',
-                {u'image': image_type, u'indexer': indexerApi(show_obj.indexer).name}
+                {u'image': image_type, u'indexer': IndexerAPI(show_obj.indexer).name}
             )
             return None
 
@@ -853,14 +853,14 @@ class GenericMetadata(object):
         except IndexerShowNotFound:
             log.warning(
                 u'Unable to find {indexer} show {id}, skipping it',
-                {u'indexer': indexerApi(show_obj.indexer).name, u'id': show_id}
+                {u'indexer': IndexerAPI(show_obj.indexer).name, u'id': show_id}
             )
             return False
 
         except (IndexerException, RequestException):
             log.warning(
                 u'{indexer} is down, cannot use its data to add this show',
-                {u'indexer': indexerApi(show_obj.indexer).name}
+                {u'indexer': IndexerAPI(show_obj.indexer).name}
             )
             return False
 
@@ -868,7 +868,7 @@ class GenericMetadata(object):
         if not (getattr(my_show, u'seriesname', None) and getattr(my_show, u'id', None)):
             log.warning(
                 u'Incomplete info for {indexer} show {id}, skipping it',
-                {u'indexer': indexerApi(show_obj.indexer).name, u'id': show_id}
+                {u'indexer': IndexerAPI(show_obj.indexer).name, u'id': show_id}
             )
             return False
 

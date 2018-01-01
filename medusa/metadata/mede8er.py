@@ -10,7 +10,7 @@ import os
 from medusa import helpers
 from medusa.helper.common import dateFormat, episode_num, replace_extension
 from medusa.helper.exceptions import ex
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import media_browser
@@ -203,7 +203,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     'Unable to find episode {ep_num} on {indexer}...'
                     ' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': IndexerAPI(ep_obj.series.indexer).name,
                     }
                 )
                 return None

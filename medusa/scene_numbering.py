@@ -27,7 +27,7 @@ import traceback
 
 from medusa import app, db, logger
 from medusa.helper.exceptions import ex
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.scene_exceptions import safe_session
 from medusa.show.show import Show
 
@@ -481,7 +481,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
     if refresh or force:
         logger.log(
-            u'Looking up XEM scene mapping for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
+            u'Looking up XEM scene mapping for show ID {0} on {1}'.format(indexer_id, IndexerAPI(indexer).name), logger.DEBUG)
 
         # mark refreshed
         main_db_con.upsert(
@@ -492,21 +492,21 @@ def xem_refresh(indexer_id, indexer, force=False):
         )
 
         try:
-            if not indexerApi(indexer).config.get('xem_origin'):
-                logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer).name), logger.DEBUG)
+            if not IndexerAPI(indexer).config.get('xem_origin'):
+                logger.log(u'{0} is an unsupported indexer in XEM'.format(IndexerAPI(indexer).name), logger.DEBUG)
                 return
             # XEM MAP URL
-            url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
+            url = "http://thexem.de/map/havemap?origin={0}".format(IndexerAPI(indexer).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(indexer_id) not in parsed_json['data']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, IndexerAPI(indexer).name), logger.DEBUG)
                 return
 
             # XEM API URL
-            url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
+            url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, IndexerAPI(indexer).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, IndexerAPI(indexer).name), logger.DEBUG)
                 return
 
             cl = []
@@ -516,22 +516,22 @@ def xem_refresh(indexer_id, indexer, force=False):
                         "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
                         [entry['scene']['season'], entry['scene']['episode'],
                          entry['scene']['absolute'], indexer_id,
-                         entry[indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[indexerApi(indexer).config['xem_origin']]['episode']]
+                         entry[IndexerAPI(indexer).config['xem_origin']]['season'],
+                         entry[IndexerAPI(indexer).config['xem_origin']]['episode']]
                     ])
                     cl.append([
                         "UPDATE tv_episodes SET absolute_number = ? WHERE showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
-                        [entry[indexerApi(indexer).config['xem_origin']]['absolute'], indexer_id,
-                         entry[indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[indexerApi(indexer).config['xem_origin']]['episode']]
+                        [entry[IndexerAPI(indexer).config['xem_origin']]['absolute'], indexer_id,
+                         entry[IndexerAPI(indexer).config['xem_origin']]['season'],
+                         entry[IndexerAPI(indexer).config['xem_origin']]['episode']]
                     ])
                 if 'scene_2' in entry:  # for doubles
                     cl.append([
                         "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
                         [entry['scene_2']['season'], entry['scene_2']['episode'],
                          entry['scene_2']['absolute'], indexer_id,
-                         entry[indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[indexerApi(indexer).config['xem_origin']]['episode']]
+                         entry[IndexerAPI(indexer).config['xem_origin']]['season'],
+                         entry[IndexerAPI(indexer).config['xem_origin']]['episode']]
                     ])
 
             if cl:
@@ -540,7 +540,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
         except Exception as e:
             logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
-                       (indexer_id, indexerApi(indexer).name, ex(e)), logger.WARNING)
+                       (indexer_id, IndexerAPI(indexer).name, ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
 
@@ -572,7 +572,7 @@ def fix_xem_numbering(indexer_id, indexer):  # pylint:disable=too-many-locals, t
     update_scene_absolute_number = False
 
     logger.log(
-        u'Fixing any XEM scene mapping issues for show ID %s on %s' % (indexer_id, indexerApi(indexer).name,),
+        u'Fixing any XEM scene mapping issues for show ID %s on %s' % (indexer_id, IndexerAPI(indexer).name,),
         logger.DEBUG)
 
     cl = []

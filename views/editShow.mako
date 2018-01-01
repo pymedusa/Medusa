@@ -5,7 +5,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import statusStrings
     from medusa.helper import exceptions
-    from medusa.indexers.api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     from medusa.indexers.config import mappings
     from medusa import scene_exceptions
 %>

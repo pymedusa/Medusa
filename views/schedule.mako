@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     from medusa.helpers import anon_url
-    from medusa.indexers.api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     from medusa.indexers.config import mappings
     from medusa import sbdatetime
     from random import choice

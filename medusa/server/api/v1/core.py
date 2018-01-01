@@ -41,7 +41,7 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.indexers.exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
@@ -1609,7 +1609,7 @@ class CMD_SearchIndexers(ApiCall):
     }
 
     def __init__(self, args, kwargs):
-        self.valid_languages = indexerApi().config['langabbv_to_id']
+        self.valid_languages = IndexerAPI().config['langabbv_to_id']
         # required
         # optional
         self.name, args = self.check_params(args, kwargs, 'name', None, False, 'string', [])
@@ -1627,8 +1627,8 @@ class CMD_SearchIndexers(ApiCall):
         lang_id = self.valid_languages[self.lang]
 
         if self.name and not self.indexerid:  # only name was given
-            for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
-                indexer_api_params = indexerApi(_indexer).api_params.copy()
+            for _indexer in IndexerAPI().indexers if self.indexer == 0 else [int(self.indexer)]:
+                indexer_api_params = IndexerAPI(_indexer).api_params.copy()
 
                 if self.lang and not self.lang == app.INDEXER_DEFAULT_LANGUAGE:
                     indexer_api_params['language'] = self.lang
@@ -1636,7 +1636,7 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api_params['actors'] = False
                 indexer_api_params['custom_ui'] = classes.AllShowsListUI
 
-                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = IndexerAPI(_indexer).indexer(**indexer_api_params)
 
                 try:
                     api_data = indexer_api[str(self.name).encode()]
@@ -1653,15 +1653,15 @@ class CMD_SearchIndexers(ApiCall):
             return _responds(RESULT_SUCCESS, {'results': results, 'langid': lang_id})
 
         elif self.indexerid:
-            for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
-                indexer_api_params = indexerApi(_indexer).api_params.copy()
+            for _indexer in IndexerAPI().indexers if self.indexer == 0 else [int(self.indexer)]:
+                indexer_api_params = IndexerAPI(_indexer).api_params.copy()
 
                 if self.lang and not self.lang == app.INDEXER_DEFAULT_LANGUAGE:
                     indexer_api_params['language'] = self.lang
 
                 indexer_api_params['actors'] = False
 
-                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = IndexerAPI(_indexer).indexer(**indexer_api_params)
 
                 try:
                     my_show = indexer_api[int(self.indexerid)]
@@ -2027,7 +2027,7 @@ class CMD_ShowAddNew(ApiCall):
     }
 
     def __init__(self, args, kwargs):
-        self.valid_languages = indexerApi().config['langabbv_to_id']
+        self.valid_languages = IndexerAPI().config['langabbv_to_id']
         # required
         self.indexerid, args = self.check_params(args, kwargs, 'indexerid', None, True, 'int', [])
         # optional

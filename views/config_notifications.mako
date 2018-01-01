@@ -5,7 +5,7 @@
     from medusa.helpers import anon_url
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from medusa.indexers.api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     from medusa.indexers.config import get_trakt_indexer
 %>
 <%block name="content">

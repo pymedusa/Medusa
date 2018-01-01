@@ -9,7 +9,7 @@ from babelfish import Country
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
 from medusa.helper.common import dateFormat, episode_num
-from medusa.indexers.api import indexerApi
+from medusa.indexers.api import IndexerAPI
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.indexers.tvdb.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
@@ -230,7 +230,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     u'Unable to find episode {ep_num} on {indexer}...'
                     u' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': IndexerAPI(ep_obj.series.indexer).name,
                     }
                 )
                 return None
