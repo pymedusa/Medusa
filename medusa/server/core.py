@@ -49,7 +49,6 @@ from tornado.web import (
 from tornroutes import route
 
 
-
 def clean_url_path(*args, **kwargs):
     from posixpath import join
     end_with_slash = kwargs.pop('end_with_slash', False)
@@ -135,9 +134,9 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             app.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
 
         # Configure root to selected theme.
-        app.THEME_PATH = self.options['theme_path'] = clean_url_path(app.WEB_ROOT, app.THEME)
+        app.THEME_PATH = self.options['theme_path'] = clean_url_path(app.WEB_ROOT, app.THEME_NAME)
 
-        app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME)
+        app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME_NAME)
 
         # api root
         if not app.API_KEY:
