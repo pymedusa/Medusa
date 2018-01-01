@@ -160,7 +160,7 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer_id'], proper_candidate[b'showid'])
+            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
 
             if series_obj:
                 self.show = series_obj
