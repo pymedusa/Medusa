@@ -331,7 +331,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'theme'),
+            'data_root': os.path.join(app.PROG_DIR, 'themes'),
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -346,6 +346,10 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
+
+        # Initialize all available themes
+        from medusa.themes import read_themes
+        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()

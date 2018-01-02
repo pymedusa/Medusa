@@ -136,6 +136,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         # Configure root to selected theme.
         app.THEME_PATH = self.options['theme_path'] = clean_url_path(app.WEB_ROOT, app.THEME_NAME)
 
+        # Configure the directory to the theme's data root.
         app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME_NAME)
 
         # api root
@@ -188,11 +189,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         self.app.add_handlers('.*$', [
             # favicon
             (r'{base}/(favicon\.ico)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'static', 'images/ico/favicon.ico')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img/ico/favicon.ico')}),
 
             # images
             (r'{base}/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'static', 'images')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img')}),
 
             # cached images
             (r'{base}/cache/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
@@ -200,15 +201,15 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # css
             (r'{base}/css/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'static', 'css')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'css')}),
 
             # javascript
             (r'{base}/js/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'static', 'js')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'js')}),
 
             # fonts
             (r'{base}/fonts/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'static', 'fonts')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'fonts')}),
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
@@ -216,11 +217,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # vue dist
             (r'{base}/vue/dist/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['vue_root'], 'dist')}),
+             {'path': os.path.join(self.options['theme_data_root'], 'vue')}),
 
             # vue index.html
             (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
-             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
+             {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
         # API v1 handlers
