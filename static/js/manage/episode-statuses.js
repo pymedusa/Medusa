@@ -1,23 +1,24 @@
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
-        var seriesId = $(this).attr('id').split('-')[1];
+        var seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
         $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        var indexerName = MEDUSA.config.indexers.indexerIdToName($(this).attr('data-indexer-id'));
+        var indexerId = $(this).attr('data-indexer-id');
+        var indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
         var seriesId = $(this).attr('data-series-id');
-        var checked = $('#allCheck-' + seriesId).prop('checked');
-        var lastRow = $('tr#' + seriesId);
+        var checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
+        var lastRow = $('tr#' + indexerId + '-' + seriesId);
         var clicked = $(this).data('clicked');
         var action = $(this).attr('value');
 
         if (clicked) {
             if (action.toLowerCase() === 'collapse') {
-                $('table tr').filter('.show-' + seriesId).hide();
+                $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
                 $(this).prop('value', 'Expand');
             } else if (action.toLowerCase() === 'expand') {
-                $('table tr').filter('.show-' + seriesId).show();
+                $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
                 $(this).prop('value', 'Collapse');
             }
         } else {
@@ -28,7 +29,7 @@ MEDUSA.manage.episodeStatuses = function() {
             }, function(data) {
                 $.each(data, function(season, eps) {
                     $.each(eps, function(episode, name) {
-                        lastRow.after($.makeEpisodeRow(seriesId, season, episode, name, checked));
+                        lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
                     });
                 });
             });

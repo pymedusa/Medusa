@@ -32,7 +32,7 @@ from medusa.helper.exceptions import (
     CantUpdateShowException,
 )
 from medusa.helpers import is_media_file
-from medusa.indexers.indexer_config import indexer_name_to_id
+from medusa.indexers.indexer_config import indexer_name_to_id, indexer_id_to_name
 from medusa.network_timezones import app_timezone
 from medusa.post_processor import PostProcessor
 from medusa.server.web.core import PageTemplate, WebRoot
@@ -117,7 +117,7 @@ class Manage(Home, WebRoot):
         for cur_status_result in status_results:
             cur_indexer = int(cur_status_result[b'indexer'])
             cur_series_id = int(cur_status_result[b'indexer_id'])
-            if cur_series_id not in ep_counts:
+            if (cur_indexer, cur_series_id) not in ep_counts:
                 ep_counts[(cur_indexer, cur_series_id)] = 1
             else:
                 ep_counts[(cur_indexer, cur_series_id)] += 1
@@ -141,35 +141,36 @@ class Manage(Home, WebRoot):
 
         # make a list of all shows and their associated args
         for arg in kwargs:
-            indexer_id, what = arg.split('-')
+            indexer_id, series_id, what = arg.split('-')
 
             # we don't care about unchecked checkboxes
             if kwargs[arg] != 'on':
                 continue
 
-            if indexer_id not in to_change:
-                to_change[indexer_id] = []
+            if (indexer_id, series_id) not in to_change:
+                to_change[(indexer_id, series_id)] = []
 
-            to_change[indexer_id].append(what)
+            to_change[(indexer_id, series_id)].append(what)
 
         main_db_con = db.DBConnection()
-        for cur_indexer_id in to_change:
+        for cur_indexer_id, cur_series_id in to_change:
 
             # get a list of all the eps we want to change if they just said 'all'
-            if 'all' in to_change[cur_indexer_id]:
+            if 'all' in to_change[(cur_indexer_id, cur_series_id)]:
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
                     b'WHERE status IN ({statuses}) '
                     b'AND season != 0 '
+                    b'AND indexer = ? '
                     b'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
-                    status_list + [cur_indexer_id]
+                    status_list + [cur_indexer_id, cur_series_id]
                 )
 
                 all_eps = ['{season}x{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
-                to_change[cur_indexer_id] = all_eps
+                to_change[cur_indexer_id, cur_series_id] = all_eps
 
-            self.setStatus(cur_indexer_id, '|'.join(to_change[cur_indexer_id]), newStatus, direct=True)
+            self.setStatus(indexer_id_to_name(int(cur_indexer_id)), cur_series_id, '|'.join(to_change[(cur_indexer_id, cur_series_id)]), newStatus, direct=True)
 
         return self.redirect('/manage/episodeStatuses/')
 
