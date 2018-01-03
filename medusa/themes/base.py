@@ -14,10 +14,12 @@ themes = []
 class Theme(object):
     """Base theme class."""
 
-    def __init__(self, name, version, dep_version=None, author=None):
-        self.name = name
-        self.version = version
-        self.dep_version = dep_version
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('baseName')
+        self.version = kwargs.get('version')
+        self.package_name = kwargs.get('name')
+        self.dep_version = kwargs.get('depVersion')
+        self.author = kwargs.get('author')
 
 
 def read_themes():
@@ -32,12 +34,11 @@ def read_themes():
             log.error('Error reading theme {theme}, {error!r}', {'theme': theme_path, 'error': error})
             raise Exception('Error in one of the theme paths. Please fix the error and start medusa.')
 
-        # validate the manifest
-        manifest = json.load(open(os.path.join(theme_path, 'manifest.json')))
+        # validate the package.json
+        package_json = json.load(open(os.path.join(theme_path, 'package.json')))
         if theme_path:
-            name = manifest['name']
-            version = manifest['version']
-            themes.append(Theme(name, version))
+            package_json['baseName'] = os.path.basename(os.path.normpath(theme_path))
+            themes.append(Theme(**package_json))
 
     return themes
 
@@ -53,18 +54,14 @@ def validate_theme(theme_path):
                             'Please refer to the medusa theming documentation.'.format(check_folder=check_folder))
 
     try:
-        manifest = json.load(open(os.path.join(theme_path, 'manifest.json')))
+        package_json = json.load(open(os.path.join(theme_path, 'package.json')))
     except IOError:
-        raise Exception('Cannot read manifest.json. Please refer to the medusa theming documentation.')
+        raise Exception('Cannot read package.json. Please refer to the medusa theming documentation.')
 
-    # Validate if they mandatory keys are configured in the manifest.
-    if not manifest.get('name') or not manifest.get('version'):
+    # Validate if they mandatory keys are configured in the package.json.
+    if not package_json.get('name') or not package_json.get('version'):
         raise Exception("As a bare minimum you'l need at least to provide the 'name' and and 'version' key. "
                         "Please refer to the medusa theming documentation.")
-
-    # The theme's folder name should be the same as the name in the manifest
-    if os.path.basename(os.path.normpath(theme_path)) != manifest['name']:
-        raise Exception('The folder name should be identical to the name specified in the manifest.')
 
     if not os.path.isdir(os.path.join(theme_path, 'templates')) and not os.path.isfile(os.path.join(theme_path, 'index.html')):
         raise Exception("You need to have at least a templates folder with mako temnplates, "
