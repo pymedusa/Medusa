@@ -2,6 +2,9 @@
 <%!
 from medusa import app
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
+</%block>
 <%block name="css">
 <style>
 .upgrade-notification {

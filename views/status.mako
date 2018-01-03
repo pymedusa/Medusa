@@ -6,6 +6,9 @@
     from medusa.helper.common import dateTimeFormat
     from random import choice
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <%
     schedulerList = {

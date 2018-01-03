@@ -14,7 +14,7 @@
 </%block>
 <%block name="scripts">
     <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/edit-show.js"></script>
+    <script type="text/javascript" src="js/home/edit-show.js?${sbPID}"></script>
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif

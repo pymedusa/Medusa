@@ -1,4 +1,3 @@
-
 const MEDUSA = require('../core');
 
 MEDUSA.home.snatchSelection = function() {

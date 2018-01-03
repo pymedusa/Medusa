@@ -2,6 +2,9 @@
 <%!
     from medusa import app
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 
 <div class="row">

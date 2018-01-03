@@ -8,6 +8,9 @@
     from random import choice
     import re
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
+</%block>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>

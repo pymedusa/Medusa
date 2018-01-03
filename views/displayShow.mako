@@ -12,6 +12,7 @@
     from medusa.indexers.indexer_config import mappings
 %>
 <%block name="scripts">
+<script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
@@ -383,4 +384,3 @@
 <%include file="subtitle_modal.mako"/>
 <!--End - Bootstrap Modal-->
 </%block>
-
