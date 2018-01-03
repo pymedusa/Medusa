@@ -175,16 +175,17 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/episodeStatuses/')
 
     @staticmethod
-    def showSubtitleMissed(indexer_id, whichSubs):
+    def showSubtitleMissed(indexer, seriesid, whichSubs):
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
             b'SELECT season, episode, name, subtitles '
             b'FROM tv_episodes '
-            b'WHERE showid = ? '
+            b'WHERE indexer = ? '
+            b'AND showid = ? '
             b'AND season != 0 '
             b'AND status LIKE \'%4\' '
             b'AND location != \'\'',
-            [int(indexer_id)]
+            [int(indexer), int(seriesid)]
         )
 
         result = {}
@@ -265,38 +266,38 @@ class Manage(Home, WebRoot):
 
         # make a list of all shows and their associated args
         for arg in kwargs:
-            indexer_id, what = arg.split('-')
+            indexer_id, series_id, what = arg.split('-')
 
             # we don't care about unchecked checkboxes
             if kwargs[arg] != 'on':
                 continue
 
-            if indexer_id not in to_download:
-                to_download[indexer_id] = []
+            if (indexer_id, series_id) not in to_download:
+                to_download[(indexer_id, series_id)] = []
 
-            to_download[indexer_id].append(what)
+            to_download[(indexer_id, series_id)].append(what)
 
-        for cur_indexer_id in to_download:
+        for cur_indexer_id, cur_series_id in to_download:
             # get a list of all the eps we want to download subtitles if they just said 'all'
-            if 'all' in to_download[cur_indexer_id]:
+            if 'all' in to_download[(cur_indexer_id, cur_series_id)]:
                 main_db_con = db.DBConnection()
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
                     b'WHERE status LIKE \'%4\' '
                     b'AND season != 0 '
-                    b'AND indexer != 0 '
+                    b'AND indexer = ? '
                     b'AND showid = ? '
                     b'AND location != \'\'',
-                    [cur_indexer_id]
+                    [cur_indexer_id, cur_series_id]
                 )
-                to_download[cur_indexer_id] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
-            for epResult in to_download[cur_indexer_id]:
+            for epResult in to_download[(cur_indexer_id, cur_series_id)]:
                 season, episode = epResult.split('x')
 
-                show = Show.find_by_id(app.showList, int(cur_indexer_id))
-                show.get_episode(season, episode).download_subtitles()
+                series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
+                series_obj.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')
 
@@ -405,10 +406,10 @@ class Manage(Home, WebRoot):
                 SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND
-                      e.showid = ?
+                      e.indexer = ? AND e.showid = ?
                 ORDER BY e.season DESC, e.episode DESC
                 """,
-                [cur_show.indexerid]
+                [cur_show.indexer, cur_show.series_id]
             )
             filtered_episodes = []
             backlogged_episodes = [dict(row) for row in sql_results]
@@ -438,9 +439,9 @@ class Manage(Home, WebRoot):
                         cur_result[b'episode_string'] = episode_string
                         filtered_episodes.append(cur_result)
 
-            show_counts[cur_show.indexerid] = ep_counts
-            show_cats[cur_show.indexerid] = ep_cats
-            show_sql_results[cur_show.indexerid] = filtered_episodes
+            show_counts[(cur_show.indexer, cur_show.series_id)] = ep_counts
+            show_cats[(cur_show.indexer, cur_show.series_id)] = ep_cats
+            show_sql_results[(cur_show.indexer, cur_show.series_id)] = filtered_episodes
 
         return t.render(
             showCounts=show_counts, showCats=show_cats,
