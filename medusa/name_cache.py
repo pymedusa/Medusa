@@ -62,13 +62,13 @@ def clear_cache(indexer_id=0, series_id=0):
         "DELETE FROM scene_names "
         "WHERE (indexer_id = 0 AND indexer = ?) OR"
         "      (indexer_id = ? AND indexer = ?) ",
-        [series_id, indexer_id, indexer_id]
+        [series_id, indexer_id, series_id]
     )
 
     keys = []
     for key, value in iteritems(name_cache):
         i_id, s_id = value
-        if i_id in indexer_ids or s_id in series_ids:
+        if i_id in indexer_ids and s_id in series_ids:
             keys.append(key)
 
     for key in keys:
