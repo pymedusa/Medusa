@@ -26,7 +26,7 @@ function updateImages(data) {
         var searchImage = 'search16.png';
         var htmlContent = '';
         // Try to get the <a> Element
-        var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
         var img = el.children('img[data-ep-search]');
         var parent = el.parent();
         if (el) {
@@ -61,7 +61,7 @@ function updateImages(data) {
             // update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
         var imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
@@ -89,11 +89,11 @@ function updateImages(data) {
 
 function checkManualSearches() {
     var pollInterval = 5000;
+
+    // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
     var indexerName = $('#indexer-name').val();
     var seriesId = $('#series-id').val();
-    if (!indexerName || !seriesId) {
-        return;
-    }
+
     var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
     $.ajax({
         url: url,

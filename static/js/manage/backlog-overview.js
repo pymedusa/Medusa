@@ -30,7 +30,7 @@ MEDUSA.manage.backlogOverview = function() {
 
     function updateForcedSearch(data) {
         $.each(data.episodes, function(name, ep) {
-            var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+            var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
             var img = el.children('img[data-ep-search]');
             var episodeStatus = ep.status.toLowerCase();
             var episodeSearchStatus = ep.searchstatus.toLowerCase();

@@ -63,7 +63,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                        <a href="displayShow?indexername=${cur_loading_show.show.indexer_name}&seriesid=${cur_loading_show.show.series_id}">${cur_loading_show.show.name}</a>
                         % endif
                         </td>
                         <td></td>
