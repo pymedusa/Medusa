@@ -42,7 +42,9 @@ const staticAssets = [
     'static/js/vender.js',
     'static/js/vender.min.js',
     'static/css/lib/*.css',
-    'static/css/**/*.min.css'
+    'static/css/**/*.min.css',
+    'static/css/lib/images/**/**',
+    'static/**/**.ttf'
 ];
 
 gulp.task('default', ['build']);

@@ -87,7 +87,9 @@ const triggerConfigLoaded = function() {
     document.dispatchEvent(event);
 };
 
-if (!document.location.pathname.endsWith('/login/')) {
+const hasInit = Boolean(window.medusaInit);
+window.medusaInit = true;
+if (!document.location.pathname.endsWith('/login/') && !hasInit) {
     medusa.config().then(config => {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, config);

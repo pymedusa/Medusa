@@ -69,25 +69,12 @@
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/api.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/core.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/add-shows/add-existing-show.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
-
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 

@@ -13,6 +13,9 @@
     from medusa.show.history import History
     from medusa.providers.generic_provider import GenericProvider
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 

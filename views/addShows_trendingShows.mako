@@ -8,6 +8,8 @@
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
+<script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <div class="row">

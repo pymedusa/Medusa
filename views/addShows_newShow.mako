@@ -8,6 +8,8 @@
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
+<script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
