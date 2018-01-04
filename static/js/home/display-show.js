@@ -421,7 +421,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setSeasonSceneException(data);
     });
 
-    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
     $('.display-specials a').on('click', function() {
         api.patch('config/main', {
             layout: {
