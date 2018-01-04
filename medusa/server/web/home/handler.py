@@ -1282,12 +1282,13 @@ class Home(WebRoot):
             episode_status_result = main_db_con.action(
                 b'SELECT date, action, provider, resource, size '
                 b'FROM history '
-                b'WHERE showid = ? '
+                b'WHERE indexer_id = ? '
+                b'AND showid = ? '
                 b'AND season = ? '
                 b'AND episode = ? '
                 b'AND (action LIKE \'%02\' OR action LIKE \'%04\' OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') '
                 b'ORDER BY date DESC',
-                [indexer_id, season, episode]
+                [indexer_id, series_id, season, episode]
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
