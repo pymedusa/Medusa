@@ -56,15 +56,16 @@
                     display_status = 'Continuing'
                 elif re.search(r'(?i)(?:nded)', cur_show.status):
                     display_status = 'Ended'
-            if cur_show.indexerid in show_stat:
-                cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
-                cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
+            if (cur_show.indexer, cur_show.series_id) in show_stat:
+                series = (cur_show.indexer, cur_show.series_id)
+                cur_airs_next = show_stat[series]['ep_airs_next']
+                cur_snatched = show_stat[series]['ep_snatched']
                 if not cur_snatched:
                     cur_snatched = 0
-                cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
+                cur_downloaded = show_stat[series]['ep_downloaded']
                 if not cur_downloaded:
                     cur_downloaded = 0
-                cur_total = show_stat[cur_show.indexerid]['ep_total']
+                cur_total = show_stat[series]['ep_total']
                 if not cur_total:
                     cur_total = 0
             download_stat = str(cur_downloaded)

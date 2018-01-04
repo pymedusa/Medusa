@@ -85,19 +85,20 @@
                 cur_total = 0
                 show_size = 0
                 download_stat_tip = ''
-                if cur_show.indexerid in show_stat:
-                    cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
-                    cur_airs_prev = show_stat[cur_show.indexerid]['ep_airs_prev']
-                    cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
+                if (cur_show.indexer, cur_show.series_id) in show_stat:
+                    series = (cur_show.indexer, cur_show.series_id)
+                    cur_airs_next = show_stat[series]['ep_airs_next']
+                    cur_airs_prev = show_stat[series]['ep_airs_prev']
+                    cur_snatched = show_stat[series]['ep_snatched']
                     if not cur_snatched:
                         cur_snatched = 0
-                    cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
+                    cur_downloaded = show_stat[series]['ep_downloaded']
                     if not cur_downloaded:
                         cur_downloaded = 0
-                    cur_total = show_stat[cur_show.indexerid]['ep_total']
+                    cur_total = show_stat[series]['ep_total']
                     if not cur_total:
                         cur_total = 0
-                    show_size = show_stat[cur_show.indexerid]['show_size']
+                    show_size = show_stat[series]['show_size']
                 download_stat = str(cur_downloaded)
                 download_stat_tip = "Downloaded: " + str(cur_downloaded)
                 if cur_snatched:
