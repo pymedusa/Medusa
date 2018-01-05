@@ -113,9 +113,10 @@ def initialize():
     if os.name != 'nt':
         affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
 
-    handle_arg = _handle_input if not fs_encoding or fs_encoding.lower() != 'utf-8' else lambda x: x
+    if not fs_encoding or fs_encoding.lower() != 'utf-8':
+        handle_arg = _handle_input
 
-    for k, v in affected_functions.items():
-        handle_output = handle_output_map.get(k, _handle_output_u)
-        for f in v:
-            setattr(k, f, make_closure(getattr(k, f), handle_arg, handle_output))
+        for k, v in affected_functions.items():
+            handle_output = handle_output_map.get(k, _handle_output_u)
+            for f in v:
+                setattr(k, f, make_closure(getattr(k, f), handle_arg, handle_output))
