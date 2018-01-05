@@ -2255,7 +2255,8 @@ class Home(WebRoot):
             if release_id:
                 # Release ID is sent when using postpone
                 release = app.RELEASES_IN_PP[int(release_id)]
-                show = release['show']
+                seriesid = release['seriesid']
+                indexername = release['indexername']
                 season = release['season']
                 episode = release['episode']
                 filepath = release['release']

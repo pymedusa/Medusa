@@ -349,9 +349,11 @@ class Manage(Home, WebRoot):
                     age_unit = 'm'
                     age_value = age_minutes
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.series.indexerid, 'show_name': tv_episode.series.name,
-                                           'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
-                                           'age': age_value, 'age_unit': age_unit, 'date': video_date})
+                app.RELEASES_IN_PP.append({'release': video_path, 'seriesid': tv_episode.series.indexerid,
+                                           'show_name': tv_episode.series.name, 'season': tv_episode.season,
+                                           'episode': tv_episode.episode, 'status': status, 'age': age_value,
+                                           'age_unit': age_unit, 'date': video_date,
+                                           'indexername': tv_episode.series.indexer_name})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
                         header='Missing Subtitles in Post Process folder', topmenu='manage',
