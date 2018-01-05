@@ -98,36 +98,36 @@
                 <% removed_from_medusa = context.get('removed_from_medusa') %>
             % endif
 
-            % for cur_result in recommended_shows:
+            % for cur_show in recommended_shows:
 
                 <% cur_rating = 0 %>
                 <% cur_votes = 0 %>
 
-                % if cur_result.rating:
-                    <% cur_rating = cur_result.rating %>
+                % if cur_show.rating:
+                    <% cur_rating = cur_show.rating %>
                 % endif
 
-                % if cur_result.votes:
-                    <% cur_votes = cur_result.votes %>
+                % if cur_show.votes:
+                    <% cur_votes = cur_show.votes %>
                 % endif
 
-                <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
-                    <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa]}">
+                <div class="show-row" data-name="${cur_show.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_show.is_anime}">
+                    <div class="recommended-container default-poster ${('', 'show-in-list')[cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa]}">
                         <div class="recommended-image">
-                            <a href="${anon_url(cur_result.image_href)}" target="_blank">
-                                <img alt="" class="recommended-image" src="images/poster.png" data-original="${cur_result.image_src}" height="273px" width="186px"/>
+                            <a href="${anon_url(cur_show.image_href)}" target="_blank">
+                                <img alt="" class="recommended-image" src="images/poster.png" data-original="${cur_show.image_src}" height="273px" width="186px"/>
                             </a>
                         </div>
                         <div id="check-overlay"></div>
 
                         <div class="show-title">
-                            ${cur_result.title}
+                            ${cur_show.title}
                         </div>
 
                         <div class="clearfix show-attributes">
                             <p>${int(float(cur_rating)*10)}% <img src="images/heart.png">
-                                % if cur_result.is_anime and cur_result.ids.get('aid'):
-                                    <a class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_result.ids["aid"]))}'>
+                                % if cur_show.is_anime and cur_show.ids.get('aid'):
+                                    <a class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_show.ids["aid"]))}'>
                                         <img src="images/anidb_inline_refl.png" class="anidb-inline" alt=""/>
                                     </a>
                                 % endif
@@ -135,18 +135,18 @@
                             <i>${cur_votes} votes</i>
 
                             <div class="recommendedShowTitleIcons">
-                                % if cur_result.show_in_list:
-                                    <button href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}" class="btn btn-xs">In List</button>
+                                % if cur_show.show_in_list:
+                                    <button class="btn btn-xs"><a href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">In List</a></button>
                                 % else:
-                                    <button class="btn btn-xs" data-isanime="1" data-indexer="TVDB"
-                                    data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}"
+                                    <button class="btn btn-xs" data-isanime="1" data-indexer="${cur_show.mapped_indexer_name}"
+                                    data-indexer-id="${cur_show.mapped_series_id}" data-show-name="${cur_show.title | u}"
                                     data-add-show>Add</button>
                                 % endif
-                                % if cur_result.indexer_id in removed_from_medusa:
-                                    <button href="displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}" class="btn btn-xs">Watched</button>
+                                % if cur_show.mapped_series_id in removed_from_medusa:
+                                    <button class="btn btn-xs"><a href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">Watched</a></button>
                                 % endif
-                                % if trakt_b and not (cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa):
-                                    <button data-indexer-id="${cur_result.indexer_id}" class="btn btn-xs" data-blacklist-show>Blacklist</button>
+                                % if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa):
+                                    <button data-indexer-id="${cur_show.mapped_series_id}" class="btn btn-xs" data-blacklist-show>Blacklist</button>
                                 % endif
                             </div>
                         </div>
