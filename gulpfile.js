@@ -118,7 +118,7 @@ gulp.task('lint', () => {
     .pipe(xo.failAfterError());
 });
 
-gulp.task('js', ['lint'], () => {
+gulp.task('js', () => {
     return gulp.src([
         'static/js/**/*.js',
         '!static/js/lib/**',

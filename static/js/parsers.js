@@ -1,4 +1,4 @@
-const MEDUSA = require('./core');
+const state = require('./state');
 
 window.$.tablesorter.addParser({
     id: 'loadingNames',
@@ -7,10 +7,11 @@ window.$.tablesorter.addParser({
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (MEDUSA.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
+        return (state.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
     },
     type: 'text'
 });
+
 window.$.tablesorter.addParser({
     id: 'quality',
     is: false,
@@ -33,6 +34,7 @@ window.$.tablesorter.addParser({
     },
     type: 'numeric'
 });
+
 window.$.tablesorter.addParser({
     id: 'realISODate',
     is: false,
@@ -46,6 +48,7 @@ window.$.tablesorter.addParser({
     format: s => s,
     type: 'numeric'
 });
+
 window.$.tablesorter.addParser({
     id: 'eps',
     is: false,

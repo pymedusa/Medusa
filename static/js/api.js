@@ -1,15 +1,13 @@
 const axios = require('axios');
-
-const baseUrl = $('body').attr('api-root');
-const idToken = $('body').attr('api-key');
+const state = require('./state');
 
 const api = axios.create({
-    baseURL: baseUrl,
+    baseURL: state.auth.apiRoot,
     timeout: 10000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'X-Api-Key': idToken
+        'X-Api-Key': state.auth.apiKey
     }
 });
 

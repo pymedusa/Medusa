@@ -1,11 +1,10 @@
+const state = require('./state');
 
-const MEDUSA = require('./core');
-
-const startAjaxEpisodeSubtitles = function() {
+const startAjaxEpisodeSubtitles = () => {
     const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     const subtitlesResultModal = $('#manualSubtitleSearchModal');
-    const subtitlesMulti = MEDUSA.config.subtitlesMulti;
-    const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
+    const subtitlesMulti = state.config.subtitlesMulti;
+    const loadingSpinner = 'images/loading32' + state.components.themeSpinner + '.gif';
     let subtitlesTd;
     let selectedEpisode;
 

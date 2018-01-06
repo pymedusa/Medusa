@@ -1,7 +1,6 @@
 const URL = require('url-parse');
 
 const wsMessageUrl = 'ws/ui';
-const test = !1;
 
 const iconUrl = 'images/ico/favicon-120.png';
 
@@ -52,19 +51,13 @@ const wsCheckNotifications = async () => {
     };
 
     ws.onerror = () => {
-        log.warn('Error connecting to websocket. Please check your network connection. ' +
-            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
-        displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
-            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
+        const error = new Error(`
+            Error connecting to websocket. Please check your network connection.
+            If you are using a reverse proxy, please take a look at our wiki for config examples.
+        `);
+        log.warn(error.message);
+        displayPNotify('notice', 'Error connecting to websocket.', error.message);
     };
 };
 
-// Listen for the config loaded event.
-window.addEventListener('build', e => {
-    if (e.detail === 'medusa config loaded') {
-        wsCheckNotifications();
-        if (test) {
-            displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
-        }
-    }
-}, false);
+module.exports = wsCheckNotifications;

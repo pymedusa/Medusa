@@ -2402,6 +2402,10 @@ doctrine@^2.0.0, doctrine@^2.0.2:
   dependencies:
     esutils "^2.0.2"
 
+dom-loaded@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/dom-loaded/-/dom-loaded-1.0.1.tgz#a6d32851ddff3fc43d8517e7633b2220b53a58c2"
+
 dom-serializer@0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.1.0.tgz#073c697546ce0780ce23be4a28e293e40bc30c82"
@@ -8435,6 +8439,10 @@ static-extend@^0.1.1:
 statuses@1:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.4.0.tgz#bb73d446da2796106efcc1b601a253d6c46bd087"
+
+statux@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/statux/-/statux-0.6.0.tgz#d30807f6a544f262e92a62004710d7d66b55fefe"
 
 stdout-stream@^1.4.0:
   version "1.4.0"

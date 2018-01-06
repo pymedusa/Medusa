@@ -74,7 +74,7 @@
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 

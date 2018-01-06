@@ -88,6 +88,9 @@
     ]
   },
   "dependencies": {
+    "debug": "^3.1.0",
+    "dom-loaded": "^1.0.1",
+    "statux": "^0.6.0",
     "tablesorter": "^2.29.0"
   }
 }
