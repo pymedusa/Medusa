@@ -7,27 +7,39 @@ import json
 import os
 import re
 
-from tornroutes import route
-
-from ..core import PageTemplate, WebRoot
-from ..home import Home
-from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
-from ....common import (
-    Overview, Quality, SNATCHED,
+from medusa import (
+    app,
+    db,
+    helpers,
+    image_cache,
+    logger,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
-from ....helper.common import (
-    episode_num, try_int,
+from medusa.common import (
+    Overview,
+    Quality,
+    SNATCHED,
 )
-from ....helper.exceptions import (
+from medusa.helper.common import (
+    episode_num,
+    try_int,
+)
+from medusa.helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
-from ....helpers import is_media_file
-from ....image_cache import ImageCache
-from ....network_timezones import app_timezone
-from ....post_processor import PostProcessor
-from ....show.show import Show
-from ....tv import Episode
+from medusa.helpers import is_media_file
+from medusa.network_timezones import app_timezone
+from medusa.post_processor import PostProcessor
+from medusa.server.web.core import PageTemplate, WebRoot
+from medusa.server.web.home import Home
+from medusa.show.show import Show
+from medusa.tv import Episode
+
+from tornroutes import route
 
 
 @route('/manage(/?.*)')
@@ -716,7 +728,6 @@ class Manage(Home, WebRoot):
                 subtitles.append(show_obj.name)
 
             if cur_show_id in to_image_update:
-                image_cache = ImageCache()
                 image_cache.replace_images(show_obj)
 
         if errors:

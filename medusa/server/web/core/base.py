@@ -15,22 +15,39 @@ from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 
+from medusa import (
+    app,
+    classes,
+    db,
+    exception_handler,
+    helpers,
+    logger,
+    network_timezones,
+    ui,
+)
+from medusa.server.api.v1.core import function_mapper
+from medusa.show.coming_episodes import ComingEpisodes
+
 from requests.compat import urljoin
 
-from six import binary_type, iteritems, text_type
-
+from six import (
+    binary_type,
+    iteritems,
+    text_type,
+)
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.web import HTTPError, RequestHandler, StaticFileHandler, addslash, authenticated
-
+from tornado.web import (
+    HTTPError,
+    RequestHandler,
+    StaticFileHandler,
+    addslash,
+    authenticated,
+)
 from tornroutes import route
-
-from ...api.v1.core import function_mapper
-from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
-from ....show.coming_episodes import ComingEpisodes
 
 
 mako_lookup = None

@@ -46,7 +46,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.1.21'
+VERSION = '0.1.23'
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -311,7 +311,7 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-        from .tagger.episode import EpisodeTags
+        from medusa.tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:

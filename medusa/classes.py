@@ -232,7 +232,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     def select_series(self, all_series):
-        from .helper.common import dateTimeFormat
+        from medusa.helper.common import dateTimeFormat
 
         search_results = []
         series_names = []

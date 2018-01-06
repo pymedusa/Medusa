@@ -19,11 +19,11 @@
 from __future__ import print_function
 
 from medusa.media.banner import ShowBanner
-from .generic_media_tests import GenericMediaTests
+from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 
 class ShowBannerTests(GenericMediaTests):
     """Test ShowBanner."""
 
-    def test_get_default_media_name(self):
-        self.assertEqual(ShowBanner(0, '').get_default_media_name(), 'banner.png')
+    def test_default_media_name(self):
+        self.assertEqual(ShowBanner(0, '').default_media_name, 'banner.png')

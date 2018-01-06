@@ -78,6 +78,15 @@
                                     <span class="component-desc">Separate anime and normal shows in groups</span>
                                 </label>
                             </div><!-- .field-pair //-->
+                            <div id="content_split_home">
+                                <div class="field-pair">
+                                    <input type="checkbox" class="enabler" name="split_home_in_tabs" id="split_home_in_tabs" ${'checked="checked"' if app.ANIME_SPLIT_HOME_IN_TABS else ''}/>
+                                    <label for="use_notifo">
+                                        <span class="component-title">Split in tabs</span>
+                                        <span class="component-desc">Use tabs when splitting show lists</span>
+                                    </label>
+                                </div><!-- .field-pair //-->
+                            </div><!-- #content_split_home //-->
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                        </fieldset><!-- .component-group-list //-->
                     </div><!-- #anime-look-feel //-->

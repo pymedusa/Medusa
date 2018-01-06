@@ -95,6 +95,4 @@ The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docke
 * armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
 * aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
 
-Now that the Dockerfile is native as of Dec 6 2017, there's also a direct build available here [Dockerhub](https://hub.docker.com/r/bobbysteel/medusa/), built directly from this repo on a daily basis.
-
-
+There's also a direct build available here [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit.
