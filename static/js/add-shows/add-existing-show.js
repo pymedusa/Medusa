@@ -1,4 +1,7 @@
 MEDUSA.addShows.addExistingShow = function() {
+    // Hide the black/whitelist, because it can only be used for a single anime show
+    $.updateBlackWhiteList(undefined);
+
     $('#tableDiv').on('click', '#checkAll', function() {
         var seasonCheck = this;
         $('.dirCheck').each(function() {
