@@ -1,5 +1,8 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
+import datetime
+
+from medusa import app
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
@@ -505,8 +508,32 @@ import pytest
         'search_type': PROPER_SEARCH,
         'expected': False
     },
+    {  # p45: Downloaded SDTV and found preferred HDTV. Search has expired: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'airdate': (datetime.datetime.today() - datetime.timedelta(days=40)).toordinal(),
+        'expected': False
+    },
+    {  # p46: Downloaded SDTV and found preferred HDTV. Search has expired: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'airdate': (datetime.datetime.today() - datetime.timedelta(days=20)).toordinal(),
+        'expected': True
+    },
 ])
-def test_should_replace(p):
+def test_should_replace(monkeypatch, p):
     """Run the test."""
     # Given
     ep_status = p['ep_status']
@@ -519,10 +546,12 @@ def test_should_replace(p):
     force = p['force']
     manually_searched = p['manually_searched']
     search_type = p.get('search_type', DAILY_SEARCH)
+    airdate = p.get('airdate', datetime.date.today().toordinal())
+    monkeypatch.setattr(app, 'PREFERRED_EXPIRATION_DAYS', 30)
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manually_searched, search_type)
+                                          airdate, download_current_quality, force, manually_searched, search_type)
     actual = replace
 
     # Then

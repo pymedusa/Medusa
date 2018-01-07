@@ -577,6 +577,7 @@ class Application(object):
             app.SHOWUPDATE_HOUR = max(0, min(23, check_setting_int(app.CFG, 'General', 'showupdate_hour', app.DEFAULT_SHOWUPDATE_HOUR)))
 
             app.BACKLOG_DAYS = check_setting_int(app.CFG, 'General', 'backlog_days', 7)
+            app.PREFERRED_EXPIRATION_DAYS = check_setting_int(app.CFG, 'General', 'preferred_expiration_days', 30)
 
             app.NEWS_LAST_READ = check_setting_str(app.CFG, 'General', 'news_last_read', '1970-01-01')
             app.NEWS_LATEST = app.NEWS_LAST_READ
@@ -1466,6 +1467,7 @@ class Application(object):
         new_config['General']['metadata_mede8er'] = app.METADATA_MEDE8ER
 
         new_config['General']['backlog_days'] = int(app.BACKLOG_DAYS)
+        new_config['General']['preferred_expiration_days'] = int(app.PREFERRED_EXPIRATION_DAYS)
 
         new_config['General']['cache_dir'] = app.ACTUAL_CACHE_DIR if app.ACTUAL_CACHE_DIR else 'cache'
         new_config['General']['root_dirs'] = app.ROOT_DIRS if app.ROOT_DIRS else []

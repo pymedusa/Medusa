@@ -2145,7 +2145,8 @@ class Series(TV):
         sql_results = main_db_con.select(
             b'SELECT '
             b'  status, '
-            b'  manually_searched '
+            b'  manually_searched, '
+            b'  airdate '
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
@@ -2168,6 +2169,7 @@ class Series(TV):
         ep_status = int(sql_results[0][b'status'])
         ep_status_text = statusStrings[ep_status].upper()
         manually_searched = sql_results[0][b'manually_searched']
+        airdate = sql_results[0][b'airdate']
         _, cur_quality = Quality.split_composite_status(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
@@ -2179,7 +2181,7 @@ class Series(TV):
             )
         else:
             should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
-                                                            preferred_qualities, download_current_quality,
+                                                            preferred_qualities, airdate, download_current_quality,
                                                             forced_search, manually_searched, search_type)
 
         log.debug(

@@ -52,7 +52,7 @@ class ConfigSearch(Config):
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, torrent_checker_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
-                   torrent_seed_location=None):
+                   torrent_seed_location=None, preferred_expiration_days=None):
         """
         Save Search related settings
         """
@@ -69,6 +69,7 @@ class ConfigSearch(Config):
         config.change_TORRENT_CHECKER_FREQUENCY(torrent_checker_frequency)
         config.change_BACKLOG_FREQUENCY(backlog_frequency)
         app.BACKLOG_DAYS = try_int(backlog_days, 7)
+        app.PREFERRED_EXPIRATION_DAYS = try_int(preferred_expiration_days, 30)
 
         app.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
         app.MAX_CACHE_AGE = try_int(max_cache_age, 0)

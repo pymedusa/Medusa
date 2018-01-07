@@ -87,6 +87,15 @@
                             </div><!-- backlog frequency -->
                             <div class="field-pair">
                                 <label>
+                                    <span class="component-title">Backlog Preferred quality expiration days</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="7" step="1" name="preferred_expiration_days" value="${app.PREFERRED_EXPIRATION_DAYS}" class="form-control input-sm input75"/>
+                                        <p>number of day(s) to expire preferred quality search</p>
+                                    </span>
+                                </label>
+                            </div><!-- preferred expiration days -->
+                            <div class="field-pair">
+                                <label>
                                     <span class="component-title">Daily search frequency</span>
                                     <span class="component-desc">
                                         <input type="number" min="10" step="1" name="dailysearch_frequency" value="${app.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75"/>

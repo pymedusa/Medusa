@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Common interface for Quality and Status."""
 
+import datetime
 import operator
 import os
 import platform
@@ -24,10 +25,12 @@ import re
 import uuid
 from collections import namedtuple
 from os import path
+
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
+from medusa import app
 from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
@@ -634,7 +637,7 @@ class Quality(object):
         return False, 'No rule set to allow the search'
 
     @staticmethod
-    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
+    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities, airdate,
                        download_current_quality=False, force=False, manually_searched=False, search_type=None):
         """Return true if the old quality should be replaced with new quality.
 
@@ -649,6 +652,7 @@ class Quality(object):
         :param new_quality: quality of the episode we found it and check if we should snatch it
         :param allowed_qualities: List of selected allowed qualities of the show we are checking
         :param preferred_qualities: List of selected preferred qualities of the show we are checking
+        :param airdate: airdate of the episode to check if search has expired
         :param download_current_quality: True if user wants the same existing quality to be snatched
         :param force: True if user did a forced search for that episode
         :param manually_searched: True if episode was manually searched by user
@@ -658,6 +662,11 @@ class Quality(object):
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+
+        expiration_date = datetime.datetime.today() - datetime.timedelta(days=app.PREFERRED_EXPIRATION_DAYS)
+        if airdate < expiration_date.toordinal():
+            if not force:
+                return False, 'Episode search has expired based on airdate. Ignoring new quality'
 
         # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:
