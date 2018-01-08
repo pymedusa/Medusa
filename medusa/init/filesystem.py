@@ -84,7 +84,7 @@ def make_closure(f, handle_arg=None, handle_output=None):
     """Applies an input handler and output handler to a function.
     Used to ensure UTF-8 encoding at input and output.
     """
-    patch_output(patch_input(f, handle_arg), handle_output)
+    return patch_output(patch_input(f, handle_arg), handle_output)
 
 
 def patch_input(f, handle_arg=None):
