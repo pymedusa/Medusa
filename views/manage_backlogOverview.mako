@@ -26,10 +26,10 @@
     <div class="col-md-12">
 <%
     totalWanted = totalQual = 0
-    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[(x.indexer, x.series_id)][Overview.QUAL] + showCounts[(x.indexer, x.series_id)][Overview.WANTED]], key=lambda x: x.name)
     for cur_show in backLogShows:
-        totalWanted += showCounts[cur_show.indexerid][Overview.WANTED]
-        totalQual += showCounts[cur_show.indexerid][Overview.QUAL]
+        totalWanted += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED]
+        totalQual += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]
 %>
         <div class="show-option pull-left">Jump to Show:
             <select id="pickShow" class="form-control-inline input-sm-custom">
@@ -72,7 +72,7 @@
         <div class="col-md-12 horizontal-scroll">
             <table class="defaultTable" cellspacing="0" border="0" cellpadding="0">
             % for cur_show in backLogShows:
-                % if not showCounts[cur_show.indexerid][Overview.WANTED] + showCounts[cur_show.indexerid][Overview.QUAL]:
+                % if not showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED] + showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]:
                     <% continue %>
                 % endif
                 <tr class="seasonheader" id="show-${cur_show.indexer_name}${cur_show.series_id}">
@@ -86,11 +86,11 @@
                             </div>
                             <div class="col-md-6 pull-right right-30">
                                 <div class="top-5 bottom-5 pull-right">
-                                    % if showCounts[cur_show.series_id][Overview.WANTED] > 0:
-                                    <span class="listing-key wanted">Wanted: <b>${showCounts[cur_show.series_id][Overview.WANTED]}</b></span>
+                                    % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED] > 0:
+                                    <span class="listing-key wanted">Wanted: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED]}</b></span>
                                     % endif
-                                    % if showCounts[cur_show.series_id][Overview.QUAL] > 0:
-                                    <span class="listing-key qual">Quality: <b>${showCounts[cur_show.series_id][Overview.QUAL]}</b></span>
+                                    % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
+                                    <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
                                     <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
                                     <a class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.series_id}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
@@ -125,12 +125,12 @@
                     <th class="nowrap">Airdate</th>
                     <th>Actions</th>
                 </tr>
-                % for cur_result in showSQLResults[cur_show.series_id]:
+                % for cur_result in showSQLResults[(cur_show.indexer, cur_show.series_id)]:
                     <%
                         old_status, old_quality = Quality.split_composite_status(cur_result['status'])
                         archived_status = Quality.composite_status(ARCHIVED, old_quality)
                     %>
-                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.series_id][cur_result["episode_string"]]]}">
+                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result["episode_string"]]]}">
                         <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
                         <td class="col-status">
                             % if old_quality != Quality.NONE:
