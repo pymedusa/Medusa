@@ -1782,10 +1782,10 @@ def get_broken_providers():
 
     response = MedusaSafeSession().get_json(url)
     if response is None:
-        log.warning('Unable to update the list with broken providers.'
-                    ' This list is used to disable broken providers.'
-                    ' You may encounter errors in the log files if you are'
-                    ' using a broken provider.')
+        log.info('Unable to update the list with broken providers.'
+                 ' This list is used to disable broken providers.'
+                 ' You may encounter errors in the log files if you are'
+                 ' using a broken provider.')
         return []
 
     log.info('Broken providers found: {0}', response)

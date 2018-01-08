@@ -362,8 +362,8 @@ class HomeAddShows(Home):
         Prints out the page to add existing shows from a root dir
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
-        return t.render(enable_anime_options=False, title='Existing Show',
-                        header='Existing Show', topmenu='home',
+        return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
+                        title='Existing Show', header='Existing Show', topmenu='home',
                         controller='addShows', action='addExistingShow')
 
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
