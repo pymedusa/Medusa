@@ -53,7 +53,7 @@
             % if app.show_queue_scheduler.action.loadingShowList:
                 <tbody class="tablesorter-infoOnly">
                 % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
-                    <% if cur_loading_show.series is not None and cur_loading_show.series in app.showList:
+                    <% if cur_loading_show.show is not None and cur_loading_show.show in app.showList:
                         continue
                     %>
                     <tr>
