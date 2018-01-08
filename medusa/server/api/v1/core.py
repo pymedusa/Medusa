@@ -2190,11 +2190,10 @@ class CMD_ShowCache(ApiCall):
         # TODO: catch if cache dir is missing/invalid.. so it doesn't break show/show.cache
         # return {"poster": 0, "banner": 0}
 
-        series = series_obj.indexerid
         image_types = image_cache.IMAGE_TYPES
 
         results = {
-            image_types[img]: 1 if image_cache.get_artwork(img, series) else 0
+            image_types[img]: 1 if image_cache.get_artwork(img, series_obj) else 0
             for img in image_types
         }
 
