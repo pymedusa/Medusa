@@ -2283,7 +2283,7 @@ class CMD_ShowGetPoster(ApiCall):
         """ Get the poster a show """
         return {
             'outputType': 'image',
-            'image': ShowPoster(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowPoster(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
         }
 
 
