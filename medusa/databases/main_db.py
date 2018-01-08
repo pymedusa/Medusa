@@ -616,7 +616,7 @@ class AddIndexerIds(AddIndexerInteger):
         if not self.hasColumn('whitelist', 'indexer_id'):
             self.addColumn('whitelist', 'indexer_id', 'NUMERIC', None)
 
-        log.info(u'Adding column indexer_id in whitelist')
+        log.info(u'Adding column indexer in imdb_info')
         if not self.hasColumn('imdb_info', 'indexer'):
             self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
 
@@ -636,6 +636,18 @@ class AddIndexerIds(AddIndexerInteger):
                                'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
                                'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
         self.connection.action('DROP TABLE tmp_imdb_info')
+
+        # recreate the xem_refresh table, without the primary key on indexer_id. Add the column xem_refresh_id.
+        log.info(u'Dropping the primary key on the table xem_refresh')
+
+        self.connection.action('DROP TABLE IF EXISTS tmp_xem_refresh')
+        self.connection.action('ALTER TABLE xem_refresh RENAME TO tmp_xem_refresh')
+        self.connection.action(
+            'CREATE TABLE xem_refresh (xem_refresh_id INTEGER PRIMARY KEY, indexer INTEGER, indexer_id INTEGER, last_refreshed INTEGER)'
+        )
+        self.connection.action('INSERT INTO xem_refresh (indexer, indexer_id, last_refreshed) '
+                               'SELECT CAST(indexer AS INTEGER), indexer_id, last_refreshed FROM tmp_xem_refresh')
+        self.connection.action('DROP TABLE tmp_xem_refresh')
 
         series_dict = {}
 
