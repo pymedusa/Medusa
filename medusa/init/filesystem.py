@@ -82,7 +82,7 @@ def _varkwargs(**kwargs):
 
 def make_closure(f, handle_arg=None, handle_output=None):
     """Apply an input handler and output handler to a function.
-    
+
     Used to ensure UTF-8 encoding at input and output.
     """
     return patch_output(patch_input(f, handle_arg), handle_output)
@@ -90,7 +90,7 @@ def make_closure(f, handle_arg=None, handle_output=None):
 
 def patch_input(f, handle_arg=None):
     """Patch all args and kwargs of function f.
-    
+
     If handle_arg is None, just return the original function.
     """
     def patched_input(*args, **kwargs):
@@ -100,7 +100,7 @@ def patch_input(f, handle_arg=None):
 
 def patch_output(f, handle_output=None):
     """Patch the output of function f with the handle_output function.
-    
+
     If handle_output is None, just return the original function.
     """
     def patched_output(*args, **kwargs):
