@@ -214,7 +214,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only get anime proper if it has release group and version
-            if best_result.show.is_anime:
+            if best_result.series.is_anime:
                 if not best_result.release_group and best_result.version == -1:
                     log.info('Ignoring proper without release group and version: {name}', {'name': best_result.name})
                     if cur_proper.name not in processed_propers_names:
@@ -271,7 +271,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 })
 
             # check if we actually want this proper (if it's the right release group and a higher version)
-            if best_result.show.is_anime:
+            if best_result.series.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
                     b'SELECT release_group, version '

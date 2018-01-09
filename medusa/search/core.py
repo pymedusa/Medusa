@@ -225,14 +225,14 @@ def snatch_episode(result):
                 trakt_data.append((curEpObj.season, curEpObj.episode))
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
-                    result.show.name,
+                    result.series.name,
                     episode_num(curEpObj.season, curEpObj.episode),
                 )
 
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
         if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update=u'add')
+            notifiers.trakt_notifier.update_watchlist(result.series, data_episode=data_episode, update=u'add')
 
     if sql_l:
         main_db_con = db.DBConnection()

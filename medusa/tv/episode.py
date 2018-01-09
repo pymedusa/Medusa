@@ -335,11 +335,11 @@ class Episode(TV):
         try:
             parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
             results = []
-            if parse_result.show.is_anime and parse_result.ab_episode_numbers:
+            if parse_result.series.is_anime and parse_result.ab_episode_numbers:
                 results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
                            for episode_number in parse_result.ab_episode_numbers]
 
-            if not parse_result.show.is_anime and parse_result.episode_numbers:
+            if not parse_result.series.is_anime and parse_result.episode_numbers:
                 results = [parse_result.show.get_episode(season=parse_result.season_number,
                                                          episode=episode_number, should_cache=False)
                            for episode_number in parse_result.episode_numbers]
