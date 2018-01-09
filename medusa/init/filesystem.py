@@ -9,6 +9,7 @@ import sys
 import tarfile
 
 import certifi
+
 from six import binary_type, text_type
 
 
@@ -136,7 +137,7 @@ def initialize():
     if os.name != 'nt':
         affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
 
-    if not fs_encoding or fs_encoding.lower() != 'utf-8':
+    if not fs_encoding or fs_encoding.lower() not in ('utf-8', 'mbcs'):
         handle_input = _handle_input
     else:
         handle_input = None
