@@ -744,7 +744,7 @@ class Manage(Home, WebRoot):
         if subtitles:
             message += '\nSubtitles: {0}'.format(len(subtitles))
         if image_update:
-            message += '\nImage update: {0}'.format(len(subtitles))
+            message += '\nImage updates: {0}'.format(len(image_update))
 
         if message:
             ui.notifications.message('Queued actions:', message)
