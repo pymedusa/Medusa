@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""Base Indexer API."""
+
 import os
 
 from medusa import app
