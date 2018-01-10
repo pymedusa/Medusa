@@ -214,6 +214,26 @@ class BaseIndexer(object):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
+        def penalize_images(images):
+            """Penalize images that have a rating count of less then 5 and images that are not withing the highest
+            category of resolution, if there are multiple."""
+            images = list(images)  # We don't need to the generator.
+            banner_types = set([image['bannertype2'] for image in images])
+
+            # Try to sort the banner types based on quality (might not be needed)
+            banner_types = sorted(banner_types)
+
+            for image in images:
+                if image['ratingcount'] is not None and image['ratingcount'] < 5:
+                    image['rating'] -= 1
+
+                if len(banner_types) > 1:
+                    # If the image is not of the highest quality resolution available subtract rating by 1.
+                    if banner_types.index(image['bannertype2']) < len(banner_types) - 1:
+                        image['rating'] -= 1
+
+            return images
+
         # Get desired image types from images
         image_types = 'banner', 'fanart', 'poster'
 
@@ -235,6 +255,9 @@ class BaseIndexer(object):
                 resolution.values()
                 for resolution in image_type.values()
             )
+
+            # Penalize the images
+            merged_images = penalize_images(merged_images)
 
             # Sort by rating
             images_by_rating = sorted(
