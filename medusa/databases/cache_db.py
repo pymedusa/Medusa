@@ -145,9 +145,7 @@ class AddIndexerIds(AddIndexerSceneExceptions):
     """
 
     def test(self):
-        """
-        Test if the table history already has the indexer_id.
-        """
+        """Test if the table history already has the indexer_id."""
         return self.hasColumn('scene_names', 'indexer')
 
     def execute(self):
