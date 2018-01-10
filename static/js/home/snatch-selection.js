@@ -110,7 +110,7 @@ MEDUSA.home.snatchSelection = function() {
         const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
         const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        const checkParams = [indexerName, seriesId, season, episode].every((checkIsTrue) => {
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
             return checkIsTrue;
         });
 
@@ -211,7 +211,7 @@ MEDUSA.home.snatchSelection = function() {
         const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
         const forceSearch = $(this).attr('data-force-search');
 
-        const checkParams = [indexerName, seriesId, season, episode].every((checkIsTrue) => {
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
             return checkIsTrue;
         });
 
@@ -224,12 +224,12 @@ MEDUSA.home.snatchSelection = function() {
         if ($.isNumeric(seriesId) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
-                'indexername': indexerName,
-                'seriesid': seriesId,
-                'season': season,
-                'episode': episode,
-                'manual_search_type': manualSearchType, // eslint-disable-line camelcase
-                'perform_search': forceSearch // eslint-disable-line camelcase
+                indexername: indexerName,
+                seriesid: seriesId,
+                season: season,
+                episode: episode,
+                manual_search_type: manualSearchType, // eslint-disable-line camelcase
+                perform_search: forceSearch // eslint-disable-line camelcase
             });
             // Force the search, but give the checkCacheUpdates the time to start up a search thread
             setTimeout(function() {

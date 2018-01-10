@@ -131,7 +131,7 @@ MEDUSA.addShows.init = function() {
             var anime = $('#anime').prop('checked');
             var configureShowOptions = $('#configure_show_options').prop('checked');
 
-            $.get('addShows/addShowByID?indexername='+ $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
+            $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
                 root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
                 configure_show_options: configureShowOptions, // eslint-disable-line camelcase
                 show_name: $(this).attr('data-show-name'), // eslint-disable-line camelcase

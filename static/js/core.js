@@ -101,19 +101,19 @@ if (!document.location.pathname.endsWith('/login/')) {
             $(document).ready(UTIL.init);
         }
 
-        MEDUSA.config.indexers.indexerIdToName = (indexer) => {
+        MEDUSA.config.indexers.indexerIdToName = function(indexer) {
             if (!indexer) {
                 return '';
             }
-            return MEDUSA.config.indexers.config[parseInt(indexer)];
+            return MEDUSA.config.indexers.config[parseInt(indexer, 10)];
         };
 
-        MEDUSA.config.indexers.nameToIndexerId = (name) => {
+        MEDUSA.config.indexers.nameToIndexerId = function(name) {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map((key, index) => {
-                if (MEDUSA.config.indexers.config[key] == name) {
+            return Object.keys(MEDUSA.config.indexers.config).map(function(key) {  // eslint-disable-line array-callback-return
+                if (MEDUSA.config.indexers.config[key] === name) {
                     return key;
                 }
             })[0];
@@ -136,21 +136,17 @@ window.addEventListener('build', function(e) {
          *
          * The anchor is rebuild using the indexer name.
          */
-        $('[data-indexer-to-name]').each((index, target) => {
+        $('[data-indexer-to-name]').each(function(index, target) {
             const indexerId = $(target).attr('data-indexer-to-name');
             const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
 
             const re = /indexer-to-name/gi;
 
-            $.each(target.attributes, (index, attr) => {
+            $.each(target.attributes, function(index, attr) {
                 if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {
                     target[attr.name] = target[attr.name].replace(re, indexerName);
                 }
-
             });
-
         });
     }
 }, false);
-
-
