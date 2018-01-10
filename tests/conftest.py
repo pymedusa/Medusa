@@ -97,7 +97,7 @@ def tvshow(create_tvshow):
 
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
-    return create_tvepisode(show=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
+    return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
                             name='Episode Title', status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
                             release_group='SuperGroup')
 
@@ -107,7 +107,7 @@ def parse_method(create_tvshow):
     def parse(self, name):
         """Parse the string and add a TVShow object with the parsed series name."""
         result = self._parse_string(name)
-        result.show = create_tvshow(name=result.series_name)
+        result.series = create_tvshow(name=result.series_name)
         return result
     return parse
 

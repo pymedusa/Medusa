@@ -536,7 +536,7 @@ def delay_search(best_result):
             # This should never happen.
             log.debug(
                 u'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
-                {'provider': cur_provider.name, 'series': best_result.show.name,
+                {'provider': cur_provider.name, 'series': best_result.series.name,
                  'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
     return False
 
