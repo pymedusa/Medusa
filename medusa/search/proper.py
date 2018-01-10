@@ -159,9 +159,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
-            if not cur_proper.show.episodes.get(cur_proper.parse_result.season_number) or \
+            if not cur_proper.series.episodes.get(cur_proper.parse_result.season_number) or \
                     any([ep for ep in cur_proper.parse_result.episode_numbers
-                         if not cur_proper.show.episodes[cur_proper.parse_result.season_number].get(ep)]):
+                         if not cur_proper.series.episodes[cur_proper.parse_result.season_number].get(ep)]):
                 log.info('Skipping proper for wrong season/episode: {name}', {'name': cur_proper.name})
                 continue
 
@@ -194,7 +194,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.indexer = cur_proper.parse_result.show.indexer
 
             # Map our Proper instance
-            cur_proper.show = cur_proper.parse_result.show
+            cur_proper.series = cur_proper.parse_result.show
             cur_proper.actual_season = cur_proper.parse_result.season_number \
                 if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
@@ -228,7 +228,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                                              b"AND showid = ? AND season = ? "
                                              b"AND episode = ? AND status LIKE '%04'",
                                              [best_result.indexer,
-                                              best_result.series_id,
+                                              best_result.series.indexerid,
                                               best_result.actual_season,
                                               best_result.actual_episodes[0]])
             if not sql_results:
@@ -277,7 +277,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     b'SELECT release_group, version '
                     b'FROM tv_episodes WHERE indexer = ? AND showid = ? '
                     b'AND season = ? AND episode = ?',
-                    [best_result.indexer, best_result.series_id, best_result.actual_season, best_result.actual_episodes[0]])
+                    [best_result.indexer, best_result.series.indexerid, best_result.actual_season,
+                     best_result.actual_episodes[0]])
 
                 old_version = int(sql_results[0][b'version'])
                 old_release_group = (sql_results[0][b'release_group'])
