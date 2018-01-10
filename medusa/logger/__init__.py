@@ -431,7 +431,7 @@ class LogLine(object):
         """Format logline to html."""
         results = ['<pre>', self.line]
 
-        cwd = os.getcwd() + '/'
+        cwd = os.getcwd() + os.path.sep
         fmt = '{before}{cwd}<a href="{base_url}/{relativepath}#L{line}">{relativepath}</a>{middle}{line}{after}'
         for traceback_line in self.traceback_lines or []:
             if not base_url:
