@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""TVMaze API wrapper for series metadata."""
+
 from __future__ import unicode_literals
 
 import logging
@@ -14,22 +16,24 @@ from medusa.indexers.exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
-from pytvmaze import TVMaze
+import pytvmaze
 from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class TVmaze(BaseIndexer):
-    """Create easy-to-use interface to name of season/episode name
+class TVMaze(BaseIndexer):
+    """
+    Create easy-to-use interface to name of season/episode name.
+
     >>> indexer_api = tvmaze()
     >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
-        super(TVmaze, self).__init__(*args, **kwargs)
+        super(TVMaze, self).__init__(*args, **kwargs)
 
         self.indexer = 3
 
@@ -51,7 +55,7 @@ class TVmaze(BaseIndexer):
                                          'hu': 19, 'ja': 25, 'he': 24, 'ko': 32, 'sv': 8, 'sl': 30}
 
         # Initiate the pytvmaze API
-        self.tvmaze_api = TVMaze(session=self.config['session'])
+        self.tvmaze_api = pytvmaze.TVMaze(session=self.config['session'])
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
@@ -156,9 +160,10 @@ class TVmaze(BaseIndexer):
 
     def _show_search(self, show, request_language='en'):
         """
-        Uses the TVMaze API to search for a show
+        Search for a series using the `pytvmaze.TVMaze` API.
+
         :param show: The show name that's searched for as a string
-        :param request_language: Language in two letter code. TVMaze fallsback to en itself.
+        :param request_language: Language in two letter code. pytvmaze.TVMaze fallsback to en itself.
         :return: A list of Show objects.
         """
         try:
@@ -177,7 +182,8 @@ class TVmaze(BaseIndexer):
 
     # Tvdb implementation
     def search(self, series):
-        """This searches tvmaze.com for the series name
+        """
+        Search TVMaze for the series by name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -215,10 +221,10 @@ class TVmaze(BaseIndexer):
 
     def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """
-        Get all the episodes for a show by tvmaze id
+        Get all the episodes for a series by tvmaze id.
 
         :param tvmaze_id: Series tvmaze id.
-        :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
+        :return: An ordered dict with the series searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         # Parse episode data
         log.debug('Getting all episodes of {0}', tvmaze_id)
@@ -275,7 +281,7 @@ class TVmaze(BaseIndexer):
 
         images are retrieved using t['show name]['_banners'], for example:
 
-        >>> indexer_api = TVMaze(images = True)
+        >>> indexer_api = pytvmaze.TVMaze(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
@@ -335,12 +341,12 @@ class TVmaze(BaseIndexer):
         return _images
 
     def _parse_actors(self, tvmaze_id):
-        """Parsers actors XML, from
-        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """
+        Parse data for actors from TVMaze.
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
-        >>> indexer_api = TVMaze(actors = True)
+        >>> indexer_api = pytvmaze.TVMaze(actors = True)
         >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
         <class 'tvmaze_api.Actors'>
@@ -380,11 +386,14 @@ class TVmaze(BaseIndexer):
         self._set_show_data(tvmaze_id, '_actors', cur_actors)
 
     def _get_show_data(self, tvmaze_id, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the tvmaze json response
-        into the shows dict in layout:
-        shows[series_id][season_number][episode_number]
         """
+        Parse TVMaze response into series dict layout.
 
+        :param tvmaze_id: Series id from TVMaze
+        :param language: Metadata language
+        :returns: Nested dictionary of series data.
+            e.g. series[series_id][season_number][episode_number]
+        """
         if self.config['language'] is None:
             log.debug('Config language is none, using show language')
             if language is None:
@@ -436,7 +445,7 @@ class TVmaze(BaseIndexer):
         return True
 
     def _get_all_updates(self, start_date=None, end_date=None):
-        """Retrieve all updates (show,season,episode) from TVMaze."""
+        """Retrieve all updates (show,season,episode) from pytvmaze.TVMaze."""
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
@@ -455,7 +464,8 @@ class TVmaze(BaseIndexer):
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-        """Retrieve a list with updated shows
+        """
+        Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
         :param weeks: number of weeks to get updates for.
