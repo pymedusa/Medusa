@@ -134,6 +134,27 @@ class Application(object):
 
         return help_msg
 
+
+    @staticmethod
+    def migrate_images():
+        """Migrate pre-multi-indexer images to their correct place."""
+        if app.MIGRATE_IMAGES:
+            for series_obj in app.showList:
+                images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+
+                # Create the cache/images/tvdb folder if not exists
+                if not os.path.isdir(images_root_indexer):
+                    os.makedirs(images_root_indexer)
+
+                # Check for the different possible images and move them.
+                for image_type in ('poster', 'fanart', 'banner'):
+                    image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                    src = os.path.join(app.CACHE_DIR, 'images', image_name)
+                    dst = os.path.join(images_root_indexer, image_name)
+                    if os.path.isfile(src) and not os.path.isfile(dst):
+                        # image found, let's try to move it
+                        os.rename(src, dst)
+
     def start(self, args):
         """Start Application."""
         app.instance = self
@@ -308,6 +329,7 @@ class Application(object):
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
+        self.migrate_images()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)

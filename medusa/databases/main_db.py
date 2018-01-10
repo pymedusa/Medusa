@@ -697,3 +697,6 @@ class AddIndexerIds(AddIndexerInteger):
                     [indexer_id, series_id])
 
         self.inc_minor_version()
+        # Flag the image migration.
+        from medusa import app
+        app.MIGRATE_IMAGES = True
