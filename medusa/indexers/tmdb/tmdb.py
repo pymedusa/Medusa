@@ -350,6 +350,15 @@ class Tmdb(BaseIndexer):
                                     image_size=size,
                                     file_path=v)
 
+                            if k in ('ratingcount', 'height', 'width'):
+                                _images[image_type][resolution][bid][k] = int(_images[image_type][resolution][bid][k])
+
+                            if k == 'rating':
+                                _images[image_type][resolution][bid][k] = float(_images[image_type][resolution][bid][k])
+
+                        # Add the bannertype2 resolution.
+                        _images[image_type][resolution][bid]['bannertype2'] = resolution
+
             except Exception as error:
                 log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', sid, error)
                 return False

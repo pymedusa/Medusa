@@ -214,6 +214,11 @@ class BaseIndexer(object):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
+        def calculate_pixels(resolution):
+            w_x_h = resolution.split('x')
+            return int(w_x_h[0]) * int(w_x_h[1])
+
+
         def penalize_images(images):
             """Penalize images that have a rating count of less then 5 and images that are not withing the highest
             category of resolution, if there are multiple."""
@@ -221,10 +226,10 @@ class BaseIndexer(object):
             banner_types = set([image['bannertype2'] for image in images])
 
             # Try to sort the banner types based on quality (might not be needed)
-            banner_types = sorted(banner_types)
+            banner_types = sorted(banner_types, key=calculate_pixels)
 
             for image in images:
-                if image['ratingcount'] is not None and image['ratingcount'] < 5:
+                if image['ratingcount'] is not None and int(image['ratingcount']) < 5:
                     image['rating'] -= 1
 
                 if len(banner_types) > 1:
