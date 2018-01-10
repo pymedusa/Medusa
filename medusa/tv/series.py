@@ -1536,6 +1536,8 @@ class Series(TV):
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
+        # TODO: Use new parser or wait upstream API fix
+        return
         imdb_api = imdbpie.Imdb()
 
         if not self.imdb_id:

@@ -532,7 +532,7 @@ class QueueItemAdd(ShowQueueItem):
         try:
             self.show.load_imdb_info()
         except IMDbHTTPError as e:
-            logger.log(u"Something wrong on IMDb api: " + e.message, logger.WARNING)
+            logger.log(u"Something wrong on IMDb api: " + e.message, logger.INFO)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + e.message, logger.ERROR)
 
@@ -747,7 +747,7 @@ class QueueItemUpdate(ShowQueueItem):
             self.show.load_imdb_info()
         except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
@@ -868,7 +868,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             self.show.load_imdb_info()
         except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)

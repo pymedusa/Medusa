@@ -51,7 +51,7 @@ def update_network_dict():
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
     if not response or not response.text:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
+        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.INFO)
         load_network_dict()
         return
 
