@@ -92,7 +92,6 @@ def build_name_cache(series_obj=None):
     """
     def _cache_name(cache_series_obj):
         """Build the name cache for a single show."""
-
         clear_cache(cache_series_obj.indexer, cache_series_obj.series_id)
 
         series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
