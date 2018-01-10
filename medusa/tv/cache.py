@@ -509,14 +509,15 @@ class Cache(object):
 
         # for each cache entry
         for cur_result in sql_results:
+            if cur_result[b'indexer'] is None:
+                log.debug('Ignoring result: {0}, missing indexer. This is probably a result added prior to medusa version 0.2.0', cur_result[b'name'])
+                continue
+
             search_result = self.provider.get_result()
 
             # ignored/required words, and non-tv junk
             if not naming.filter_bad_releases(cur_result[b'name']):
                 continue
-
-            if cur_result[b'indexer'] is None:
-                log.debug('Ignoring result: {0}, missing indexer. This is probably a result added prior to medusa version 0.2.0', cur_result[b'name'])
 
             # get the show, or ignore if it's not one of our shows
             series_obj = Show.find_by_id(app.showList, int(cur_result[b'indexer']), int(cur_result[b'indexerid']))
