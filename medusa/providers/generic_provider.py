@@ -249,7 +249,7 @@ class GenericProvider(object):
         # categorize the items into lists by quality
         categorized_items = defaultdict(list)
         for item in unique_items:
-            quality = self.get_quality(item, anime=show.is_anime)
+            quality = self.get_quality(item, anime=series.is_anime)
             categorized_items[quality].append(item)
 
         # sort qualities in descending order
@@ -297,7 +297,7 @@ class GenericProvider(object):
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
+                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',

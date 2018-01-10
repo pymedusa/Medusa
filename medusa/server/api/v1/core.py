@@ -2507,7 +2507,7 @@ class CMD_ShowSeasons(ApiCall):
                 row['quality'] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row['airdate'], sho_obj.airs, sho_obj.network))
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
                     row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
                     row['airdate'] = 'Never'
@@ -2535,7 +2535,7 @@ class CMD_ShowSeasons(ApiCall):
                 row['quality'] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row['airdate'], sho_obj.airs, sho_obj.network))
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
                     row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
                     row['airdate'] = 'Never'
