@@ -1,6 +1,5 @@
-"""
-Use setup tools to install Medusa
-"""
+"""Use setup tools to install Medusa."""
+
 import os
 from setuptools import find_packages, setup
 
