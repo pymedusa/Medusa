@@ -662,14 +662,14 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
-        if parse_result.show and all([parse_result.show.air_by_date, parse_result.is_air_by_date]):
+        if parse_result.series and all([parse_result.series.air_by_date, parse_result.is_air_by_date]):
             season = -1
             episodes = [parse_result.air_date]
         else:
             season = parse_result.season_number
             episodes = parse_result.episode_numbers
 
-        to_return = (parse_result.show, season, episodes, parse_result.quality, parse_result.version)
+        to_return = (parse_result.series, season, episodes, parse_result.quality, parse_result.version)
 
         self._finalize(parse_result)
         return to_return

@@ -420,9 +420,9 @@ class Cache(object):
                     b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.show.series_id, url,
+                    [name, season, episode_text, parse_result.series.series_id, url,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.show.indexer]
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
                 ]
             else:
                 log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
@@ -434,7 +434,7 @@ class Cache(object):
                     b'WHERE url=?'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.show.indexer, parse_result.show.series_id,
+                    [name, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, url]
                 ]

@@ -184,17 +184,17 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             log.debug('Successful match! Matched {original_name} to show {new_name}',
                       {'original_name': cur_proper.parse_result.original_name,
-                       'new_name': cur_proper.parse_result.show.name
+                       'new_name': cur_proper.parse_result.series.name
                        })
 
             # Map the indexerid in the db to the show's indexerid
-            cur_proper.indexerid = cur_proper.parse_result.show.indexerid
+            cur_proper.indexerid = cur_proper.parse_result.series.indexerid
 
             # Map the indexer in the db to the show's indexer
-            cur_proper.indexer = cur_proper.parse_result.show.indexer
+            cur_proper.indexer = cur_proper.parse_result.series.indexer
 
             # Map our Proper instance
-            cur_proper.series = cur_proper.parse_result.show
+            cur_proper.series = cur_proper.parse_result.series
             cur_proper.actual_season = cur_proper.parse_result.season_number \
                 if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers

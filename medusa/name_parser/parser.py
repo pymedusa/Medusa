@@ -36,12 +36,12 @@ log.logger.addHandler(logging.NullHandler())
 class NameParser(object):
     """Responsible to parse release names."""
 
-    def __init__(self, show=None, try_indexers=False, naming_pattern=False, parse_method=None,
+    def __init__(self, series=None, try_indexers=False, naming_pattern=False, parse_method=None,
                  allow_multi_season=False):
         """Initialize the class.
 
-        :param show:
-        :type show: medusa.tv.Series
+        :param series:
+        :type series: medusa.tv.Series
         :param try_indexers:
         :type try_indexers: bool
         :param naming_pattern:
@@ -51,12 +51,11 @@ class NameParser(object):
         :param allow_multi_season:
         :type allow_multi_season: bool
         """
-        self.show = show
-        self.series = self.show
+        self.series = series
         self.try_indexers = try_indexers
         self.naming_pattern = naming_pattern
         self.allow_multi_season = allow_multi_season
-        self.show_type = parse_method or ('anime' if show and show.is_anime else ('normal' if show else None))
+        self.show_type = parse_method or ('anime' if series and series.is_anime else ('normal' if series else None))
 
     def _parse_string(self, name):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
@@ -65,11 +64,11 @@ class NameParser(object):
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
         # confirm passed in show object indexer id matches result show object indexer id
-        series_obj = None if search_series and self.show and search_series.indexerid != self.show.indexerid else search_series
-        result.show = series_obj or self.show
+        series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
+        result.series = series_obj or self.series
 
         # if this is a naming pattern test or result doesn't have a show object then return best result
-        if not result.show or self.naming_pattern:
+        if not result.series or self.naming_pattern:
             return result
 
         new_episode_numbers = []
@@ -78,13 +77,13 @@ class NameParser(object):
 
         # if we have an air-by-date show and the result is air-by-date,
         # then get the real season/episode numbers
-        if result.show.air_by_date and result.is_air_by_date:
-            log.debug('Series {name} is air by date', {'name': result.show.name})
+        if result.series.air_by_date and result.is_air_by_date:
+            log.debug('Series {name} is air by date', {'name': result.series.name})
             airdate = result.air_date.toordinal()
             main_db_con = db.DBConnection()
             sql_result = main_db_con.select(
                 b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
-                [result.show.indexer, result.show.series_id, airdate])
+                [result.series.indexer, result.series.series_id, airdate])
 
             season_number = None
             episode_numbers = []
@@ -101,7 +100,7 @@ class NameParser(object):
 
                 log.debug(
                     'Database info for series {name}: Season: {season} Episode(s): {episodes}', {
-                        'name': result.show.name,
+                        'name': result.series.name,
                         'season': season_number,
                         'episodes': episode_numbers
                     }
@@ -109,28 +108,28 @@ class NameParser(object):
 
             if season_number is None or not episode_numbers:
                 log.debug('Series {name} has no season or episodes, using indexer',
-                          {'name': result.show.name})
+                          {'name': result.series.name})
                 try:
-                    indexer_api_params = indexerApi(result.show.indexer).api_params.copy()
+                    indexer_api_params = indexerApi(result.series.indexer).api_params.copy()
 
-                    if result.show.lang:
-                        indexer_api_params['language'] = result.show.lang
+                    if result.series.lang:
+                        indexer_api_params['language'] = result.series.lang
 
-                    indexer_api = indexerApi(result.show.indexer).indexer(**indexer_api_params)
-                    tv_episode = indexer_api[result.show.indexerid].aired_on(result.air_date)[0]
+                    indexer_api = indexerApi(result.series.indexer).indexer(**indexer_api_params)
+                    tv_episode = indexer_api[result.series.indexerid].aired_on(result.air_date)[0]
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]
                     log.debug(
                         'Indexer info for series {name}: {ep}', {
-                            'name': result.show.name,
+                            'name': result.series.name,
                             'ep': episode_num(season_number, episode_numbers[0]),
                         }
                     )
                 except IndexerEpisodeNotFound:
                     log.warning(
                         'Unable to find episode with date {date} for series {name}. Skipping',
-                        {'date': result.air_date, 'name': result.show.name}
+                        {'date': result.air_date, 'name': result.series.name}
                     )
                     episode_numbers = []
                 except IndexerError as error:
@@ -150,22 +149,22 @@ class NameParser(object):
                 season = season_number
                 episode = episode_number
 
-                if result.show.is_scene:
+                if result.series.is_scene:
                     (season, episode) = scene_numbering.get_indexer_numbering(
-                        result.show,
+                        result.series,
                         season_number,
                         episode_number,
                     )
                     log.debug(
                         'Scene numbering enabled series {name}, using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(season, episode)}
+                        {'name': result.series.name, 'ep': episode_num(season, episode)}
                     )
                 new_episode_numbers.append(episode)
                 new_season_numbers.append(season)
 
-        elif result.show.is_anime and result.is_anime:
+        elif result.series.is_anime and result.is_anime:
             log.debug('Scene numbering enabled series {name} is anime',
-                      {'name': result.show.name})
+                      {'name': result.series.name})
             scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
 
             for absolute_episode in result.ab_episode_numbers:
@@ -184,15 +183,15 @@ class NameParser(object):
                         {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a}
                     )
                 else:
-                    if result.show.is_scene:
-                        a = scene_numbering.get_indexer_absolute_numbering(result.show, absolute_episode,
+                    if result.series.is_scene:
+                        a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode,
                                                                            True, scene_season)
 
                     # Translate the absolute episode number, back to the indexers season and episode.
-                    (season, episode) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
+                    (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
                     log.debug(
                         'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                        {'name': result.show.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
                     )
 
                 new_absolute_numbers.append(a)
@@ -204,24 +203,24 @@ class NameParser(object):
                 season = result.season_number
                 episode = episode_number
 
-                if result.show.is_scene:
+                if result.series.is_scene:
                     (season, episode) = scene_numbering.get_indexer_numbering(
-                        result.show,
+                        result.series,
                         result.season_number,
                         episode_number
                     )
                     log.debug(
                         'Scene numbering enabled series {name} using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(season, episode)}
+                        {'name': result.series.name, 'ep': episode_num(season, episode)}
                     )
 
-                if result.show.is_anime:
-                    a = helpers.get_absolute_number_from_season_and_episode(result.show, season, episode)
+                if result.series.is_anime:
+                    a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
                     if a:
                         new_absolute_numbers.append(a)
                         log.debug(
                             'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
-                            {'name': result.show.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                            {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
                         )
 
                 new_episode_numbers.append(episode)
@@ -250,15 +249,15 @@ class NameParser(object):
             result.season_number = new_season_numbers[0]
 
         # For anime that we still couldn't get a season, let's assume we should use 1.
-        if result.show.is_anime and result.season_number is None and result.episode_numbers:
+        if result.series.is_anime and result.season_number is None and result.episode_numbers:
             result.season_number = 1
             log.warning(
                 'Unable to parse season number for anime {name}, '
                 'assuming absolute numbered anime with season 1',
-                {'name': result.show.name}
+                {'name': result.series.name}
             )
 
-        if result.show.is_scene:
+        if result.series.is_scene:
             log.debug(
                 'Converted parsed result {original} into {result}',
                 {'original': result.original_name, 'result': result}
@@ -310,13 +309,13 @@ class NameParser(object):
         :param result:
         :type result: ParseResult
         """
-        if not result.show:
+        if not result.series:
             raise InvalidShowException('Unable to match {result.original_name} to a series in your database. '
                                        'Parser result: {result}'.format(result=result))
 
         log.debug(
             'Matched release {release} to a series in your database: {name}',
-            {'release': result.original_name, 'name': result.show.name}
+            {'release': result.original_name, 'name': result.series.name}
         )
 
         if result.season_number is None and not result.episode_numbers and \
@@ -389,7 +388,7 @@ class ParseResult(object):
         self.quality = self.get_quality(guess)
         self.release_group = release_group
         self.air_date = air_date
-        self.show = None
+        self.series = None
         self.version = version
         self.proper_tags = proper_tags
         self.guess = guess
@@ -409,7 +408,7 @@ class ParseResult(object):
             self.release_group == other.release_group,
             self.air_date == other.air_date,
             self.ab_episode_numbers == other.ab_episode_numbers,
-            self.show == other.show,
+            self.series == other.series,
             self.quality == other.quality,
             self.version == other.version,
             self.proper_tags == other.proper_tags,
@@ -515,7 +514,7 @@ class NameParserCache(object):
         if not indexer or not indexer_id:
             return
         to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
-                     cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
+                     cached_parsed_result.series.indexer == indexer and cached_parsed_result.series.indexerid == indexer_id)
         for item in to_remove:
             self.cache.popitem(item)
             log.debug('Removed parsed cached result for release: {release}'.format(release=item))

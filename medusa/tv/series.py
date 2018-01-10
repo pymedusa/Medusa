@@ -942,7 +942,7 @@ class Series(TV):
             ep_file_name = os.path.splitext(ep_file_name)[0]
 
             try:
-                parse_result = NameParser(show=self, try_indexers=True).parse(ep_file_name)
+                parse_result = NameParser(series=self, try_indexers=True).parse(ep_file_name)
             except (InvalidNameException, InvalidShowException):
                 parse_result = None
 
@@ -1270,7 +1270,7 @@ class Series(TV):
                   {'indexer_id': self.series_id, 'filepath': filepath})
 
         try:
-            parse_result = NameParser(show=self, try_indexers=True, parse_method=(
+            parse_result = NameParser(series=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
             log.debug(u'{indexerid}: {error}',
