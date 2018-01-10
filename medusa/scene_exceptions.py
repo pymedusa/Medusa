@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import logging
 import threading
 import time
-import warnings
 from collections import defaultdict
 
 import adba
