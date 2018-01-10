@@ -308,10 +308,6 @@ class BaseIndexer(object):
         """
         raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
 
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]
-
 
 class ShowContainer(dict):
     """Simple dict that holds a series of Show instances."""
