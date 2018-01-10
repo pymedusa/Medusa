@@ -556,7 +556,7 @@ class TraktChecker(object):
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
                 indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
-                show =  Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
+                show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             # If can't find show add with default trakt indexer
             if not show:
@@ -574,7 +574,7 @@ class TraktChecker(object):
     @staticmethod
     def add_show(indexer, indexer_id, show_name, status):
         """Add a new show with default settings."""
-        if not  Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id):
+        if not Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id):
             root_dirs = app.ROOT_DIRS
 
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
@@ -594,7 +594,7 @@ class TraktChecker(object):
                                                         default_status_after=status, root_dir=location)
                 tries = 0
                 while tries < 3:
-                    if  Show.find_by_id(app.showList, indexer, indexer_id):
+                    if Show.find_by_id(app.showList, indexer, indexer_id):
                         return
                     # Wait before show get's added and refreshed
                     time.sleep(60)
