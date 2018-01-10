@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.logger.py."""
+import os
 from datetime import datetime
 
 import medusa.logger as sut
@@ -113,12 +114,13 @@ def describe_logline(logline):
 ])
 def test_reverse_readlines(create_file, line_pattern):
     # Given
+    encoding = 'latin1' if os.name == 'nt' else 'utf-8'
     no_lines = 10000
     filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
     expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
     for i, v in enumerate(expected):
         if not isinstance(v, text_type):
-            expected[i] = text_type(v, errors='replace')
+            expected[i] = text_type(v, encoding)
 
     # When
     actual = list(sut.reverse_readlines(filename, buf_size=1024))
