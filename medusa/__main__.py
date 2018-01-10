@@ -138,13 +138,17 @@ class Application(object):
     @staticmethod
     def migrate_images():
         """Migrate pre-multi-indexer images to their correct place."""
-        if app.MIGRATE_IMAGES:
+        if hasattr(app, 'MIGRATE_IMAGES'):
             for series_obj in app.showList:
                 images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
 
                 # Create the cache/images/tvdb folder if not exists
                 if not os.path.isdir(images_root_indexer):
                     os.makedirs(images_root_indexer)
+
+                if not os.path.isdir(images_root_indexer_thumbnails):
+                    os.makedirs(images_root_indexer_thumbnails)
 
                 # Check for the different possible images and move them.
                 for image_type in ('poster', 'fanart', 'banner'):
@@ -154,6 +158,16 @@ class Application(object):
                     if os.path.isfile(src) and not os.path.isfile(dst):
                         # image found, let's try to move it
                         os.rename(src, dst)
+
+                    src_thumb = os.path.join(app.CACHE_DIR, 'images', 'thumbnails', image_name)
+                    dst_thumb = os.path.join(images_root_indexer_thumbnails, image_name)
+                    if os.path.isfile(src_thumb) and not os.path.isfile(dst_thumb):
+                        # image found, let's try to move it
+                        os.rename(src_thumb, dst_thumb)
+
+            # # Remove the old thumbnails folder
+            # import shutil
+            # shutil.rmtree(os.path.join(app.CACHE_DIR, 'images', 'thumbnails'))
 
     def start(self, args):
         """Start Application."""
