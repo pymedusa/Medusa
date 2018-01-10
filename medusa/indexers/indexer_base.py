@@ -214,31 +214,6 @@ class BaseIndexer(object):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
-        def calculate_pixels(resolution):
-            w_x_h = resolution.split('x')
-            return int(w_x_h[0]) * int(w_x_h[1])
-
-
-        def penalize_images(images):
-            """Penalize images that have a rating count of less then 5 and images that are not withing the highest
-            category of resolution, if there are multiple."""
-            images = list(images)  # We don't need to the generator.
-            banner_types = set([image['bannertype2'] for image in images])
-
-            # Try to sort the banner types based on quality (might not be needed)
-            banner_types = sorted(banner_types, key=calculate_pixels)
-
-            for image in images:
-                if image['ratingcount'] is not None and int(image['ratingcount']) < 5:
-                    image['rating'] -= 1
-
-                if len(banner_types) > 1:
-                    # If the image is not of the highest quality resolution available subtract rating by 1.
-                    if banner_types.index(image['bannertype2']) < len(banner_types) - 1:
-                        image['rating'] -= 1
-
-            return images
-
         # Get desired image types from images
         image_types = 'banner', 'fanart', 'poster'
 
@@ -261,13 +236,13 @@ class BaseIndexer(object):
                 for resolution in image_type.values()
             )
 
-            # Penalize the images
-            merged_images = penalize_images(merged_images)
+            def weighted_score(image):
+                return image['rating'] * image['ratingcount']
 
             # Sort by rating
             images_by_rating = sorted(
                 merged_images,
-                key=itemgetter('rating'),
+                key=weighted_score,
                 reverse=True,
             )
             log.debug(
@@ -276,7 +251,9 @@ class BaseIndexer(object):
                     'image': img_type,
                     'series': series_id,
                     'results': u''.join(
-                        u'\n\t{rating}: {url}'.format(
+                        u'\n\t{score:>04.2f}\t{rating:>04.2f}\t{count:>4}: {url}'.format(
+                            score=weighted_score(img),
+                            count=img['ratingcount'],
                             rating=img['rating'],
                             url=img['_bannerpath'],
                         )
