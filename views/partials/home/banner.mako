@@ -3,7 +3,7 @@
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show

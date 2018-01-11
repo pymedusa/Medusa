@@ -45,7 +45,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
-from medusa.indexers.indexer_exceptions import IndexerException
+from medusa.indexers.exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
@@ -195,13 +195,13 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
     :param ui: Custom UI for indexer use
     :return:
     """
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
-    for i in indexerApi().indexers if not indexer else int(indexer or []):
+    for i in IndexerAPI().indexers if not indexer else int(indexer or []):
         # Query Indexers for each search term and build the list of results
-        indexer_api = indexerApi(i)
+        indexer_api = IndexerAPI(i)
         indexer_api_params = indexer_api.api_params.copy()
         if ui is not None:
             indexer_api_params['custom_ui'] = ui
@@ -1083,12 +1083,12 @@ def real_path(path):
 
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
+    from medusa.indexers.api import IndexerAPI
+    from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
     try:
-        indexer_api_params = indexerApi(show.indexer).api_params.copy()
+        indexer_api_params = IndexerAPI(show.indexer).api_params.copy()
 
         if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             indexer_api_params['language'] = indexer_lang
@@ -1611,22 +1611,22 @@ def get_tvdb_from_id(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    from medusa.indexers.indexer_api import indexerApi
-    indexer_api_params = indexerApi(indexer).api_params.copy()
+    from medusa.indexers.api import IndexerAPI
+    indexer_api_params = IndexerAPI(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
 
-    log.info(u'{0}: {1!r}', indexerApi(indexer).name, indexer_api_params)
+    log.info(u'{0}: {1!r}', IndexerAPI(indexer).name, indexer_api_params)
 
     s = None
     try:
-        indexer_api = indexerApi(indexer).indexer(**indexer_api_params)
+        indexer_api = IndexerAPI(indexer).indexer(**indexer_api_params)
         s = indexer_api[int(indexer_id)]
     except IndexerException as msg:
         log.warning(
             'Show name unavailable for {name} id {id} in {language}:'
             ' {reason}', {
-                'name': indexerApi(indexer).name,
+                'name': IndexerAPI(indexer).name,
                 'id': indexer_id,
                 'language': lang,
                 'reason': msg,

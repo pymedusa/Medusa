@@ -8,7 +8,7 @@
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
     from medusa.helpers import anon_url
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import IndexerAPI
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
 <%block name="content">

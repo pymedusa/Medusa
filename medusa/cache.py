@@ -17,25 +17,27 @@ class MutexLock(AbstractFileLock):
 
         :param filename:
         """
+        super(MutexLock).__init__(filename)
         self.mutex = ReadWriteMutex()
 
     def acquire_read_lock(self, wait):
-        """Default acquire_read_lock."""
+        """Get a read lock."""
         ret = self.mutex.acquire_read_lock(wait)
         return wait or ret
 
     def acquire_write_lock(self, wait):
-        """Default acquire_write_lock."""
+        """Get a write lock."""
         ret = self.mutex.acquire_write_lock(wait)
         return wait or ret
 
     def release_read_lock(self):
-        """Default release_read_lock."""
+        """Release a read lock."""
         return self.mutex.release_read_lock()
 
     def release_write_lock(self):
-        """Default release_write_lock."""
+        """Release a write lock."""
         return self.mutex.release_write_lock()
+
 
 cache = make_region()
 memory_cache = make_region()

@@ -6,7 +6,7 @@ import logging
 import traceback
 
 from medusa import app
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)

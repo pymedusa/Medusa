@@ -1,19 +1,20 @@
 # coding=utf-8
 
+"""Base Indexer API."""
+
 import os
 
 from medusa import app
 from medusa.helper.common import try_int
-from medusa.indexers.indexer_config import indexerConfig, initConfig
-from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
+from medusa.indexers.config import indexerConfig, initConfig
+from medusa.indexers.tvdb.fallback import PlexFallBackConfig
 
 
-class indexerApi(object):
+class IndexerAPI(object):
+    """Base Indexer API."""
+
     def __init__(self, indexer_id=None):
         self.indexer_id = try_int(indexer_id, None)
-
-    def __del__(self):
-        pass
 
     @PlexFallBackConfig
     def indexer(self, *args, **kwargs):
@@ -53,9 +54,15 @@ class indexerApi(object):
 
     @property
     def indexers(self):
-        return dict((int(x['id']), x['name']) for x in indexerConfig.values() if x.get('enabled', None))
+        """Build dict of enabled indexers by id of the indexer."""
+        return {
+            int(x['id']): x['name']
+            for x in indexerConfig.values()
+            if x.get('enabled', None)
+        }
 
     @property
     def session(self):
+        """Get requests session for indexer requests."""
         if self.indexer_id:
             return indexerConfig[self.indexer_id]['api_params']['session']

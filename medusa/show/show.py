@@ -71,7 +71,7 @@ class Show(object):
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
-        from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT
+        from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT
         if indexer_id is None or shows is None or len(shows) == 0:
             return None
 

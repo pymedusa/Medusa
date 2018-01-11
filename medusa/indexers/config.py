@@ -5,9 +5,9 @@
 import re
 
 from medusa.app import BASE_PYMEDUSA_URL
-from medusa.indexers.tmdb.tmdb import Tmdb
-from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
-from medusa.indexers.tvmaze.tvmaze_api import TVmaze
+from medusa.indexers.tmdb.api import Tmdb
+from medusa.indexers.tvdb.api import TVDBv2
+from medusa.indexers.tvmaze.api import TVMaze
 from medusa.session.core import MedusaSession
 
 
@@ -83,7 +83,7 @@ indexerConfig = {
         'enabled': True,
         'id': INDEXER_TVMAZE,
         'name': 'TVmaze',
-        'module': TVmaze,
+        'module': TVMaze,
         'api_params': {
             'language': 'en',
             'use_zip': True,

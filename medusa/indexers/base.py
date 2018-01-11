@@ -11,14 +11,14 @@ import warnings
 from itertools import chain
 from operator import itemgetter
 
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
     IndexerSeasonNotFound,
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
 )
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
@@ -307,10 +307,6 @@ class BaseIndexer(object):
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
         raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]
 
 
 class ShowContainer(dict):

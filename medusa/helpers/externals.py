@@ -5,9 +5,9 @@
 import logging
 
 from medusa import app, db
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig, mappings
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
+from medusa.indexers.api import IndexerAPI
+from medusa.indexers.config import indexerConfig, mappings
+from medusa.indexers.exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -92,14 +92,14 @@ def get_externals(show=None, indexer=None, indexed_show=None):
     # If tmdb doesn't have a mapping to imdb, but tvmaze does, there is a small chance we can use that.
 
     for other_indexer in other_indexers:
-        lindexer_api_pararms = indexerApi(other_indexer).api_params.copy()
+        lindexer_api_pararms = IndexerAPI(other_indexer).api_params.copy()
         try:
-            t = indexerApi(other_indexer).indexer(**lindexer_api_pararms)
+            t = IndexerAPI(other_indexer).indexer(**lindexer_api_pararms)
         except IndexerUnavailable:
             continue
         if hasattr(t, 'get_id_by_external'):
             log.debug(u"Trying other indexer: {indexer} get_id_by_external",
-                      {'indexer': indexerApi(other_indexer).name})
+                      {'indexer': IndexerAPI(other_indexer).name})
             # Call the get_id_by_external and pass all the externals we have,
             # except for the indexers own.
             try:
@@ -108,7 +108,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
                 log.warning(
                     u'Error getting external ids for other'
                     u' indexer {name}: {reason}',
-                    {'name': indexerApi(show.indexer).name, 'reason': error.message})
+                    {'name': IndexerAPI(show.indexer).name, 'reason': error.message})
 
     # Try to update with the Trakt externals.
     if app.USE_TRAKT:
@@ -142,8 +142,8 @@ def check_existing_shows(indexed_show, indexer):
                       {'name': show.name, 'id': indexed_show['id']})
             raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
                                                'Please remove the show, before you can add it through {2}.'
-                                               .format(show.name, indexerApi(show.indexer).name,
-                                                       indexerApi(indexer).name))
+                                               .format(show.name, IndexerAPI(show.indexer).name,
+                                                       IndexerAPI(indexer).name))
 
         for new_show_external_key in new_show_externals.keys():
             if show.indexer not in other_indexers:
@@ -165,8 +165,8 @@ def check_existing_shows(indexed_show, indexer):
                 )
                 raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
                                                    'Please remove the show, before you can add it through {2}.'
-                                                   .format(show.name, indexerApi(show.indexer).name,
-                                                           indexerApi(indexer).name))
+                                                   .format(show.name, IndexerAPI(show.indexer).name,
+                                                           IndexerAPI(indexer).name))
 
 
 def load_externals_from_db(indexer=None, indexer_id=None):

@@ -15,7 +15,7 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
-from medusa.indexers.indexer_config import mappings
+from medusa.indexers.config import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 

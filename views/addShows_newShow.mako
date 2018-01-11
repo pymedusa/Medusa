@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     from medusa.helpers import anon_url
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import IndexerAPI
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>

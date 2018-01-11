@@ -12,9 +12,9 @@ from medusa.black_and_white_list import short_group_names
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.api import IndexerAPI
+from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
@@ -41,7 +41,7 @@ class HomeAddShows(Home):
 
     @staticmethod
     def getIndexerLanguages():
-        result = indexerApi().config['valid_languages']
+        result = IndexerAPI().config['valid_languages']
 
         return json.dumps({'results': result})
 
@@ -73,19 +73,19 @@ class HomeAddShows(Home):
         final_results = []
 
         # Query Indexers for each search term and build the list of results
-        for indexer in indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            l_indexer_api_parms = indexerApi(indexer).api_params.copy()
+        for indexer in IndexerAPI().indexers if not int(indexer) else [int(indexer)]:
+            l_indexer_api_parms = IndexerAPI(indexer).api_params.copy()
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
             try:
-                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_parms)
+                indexer_api = IndexerAPI(indexer).indexer(**l_indexer_api_parms)
             except IndexerUnavailable as msg:
                 logger.log(u'Could not initialize Indexer {indexer}: {error}'.
-                           format(indexer=indexerApi(indexer).name, error=msg))
+                           format(indexer=IndexerAPI(indexer).name, error=msg))
                 continue
 
             logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                search_terms, indexerApi(indexer).name), logger.DEBUG)
+                search_terms, IndexerAPI(indexer).name), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
                     indexer_results = indexer_api[searchTerm]
@@ -95,11 +95,11 @@ class HomeAddShows(Home):
                     logger.log(u'Error searching for show: {error}'.format(error=e.message))
 
         for i, shows in iteritems(results):
-            final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
+            final_results.extend({(IndexerAPI(i).name, i, IndexerAPI(i).config['show_url'], int(show['id']),
                                    show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
                                    show.get('network', '').encode('utf-8') or 'N/A') for show in shows})
 
-        lang_id = indexerApi().config['langabbv_to_id'][lang]
+        lang_id = IndexerAPI().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
     def massAddTable(self, rootDir=None):
@@ -215,7 +215,7 @@ class HomeAddShows(Home):
             default_show_name=default_show_name, other_shows=other_shows,
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
-            indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
+            indexers=IndexerAPI().indexers, whitelist=[], blacklist=[], groups=[],
             title='New Show', header='New Show', topmenu='home',
             controller='addShows', action='newShow'
         )

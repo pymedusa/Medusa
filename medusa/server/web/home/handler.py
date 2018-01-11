@@ -58,9 +58,9 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import IndexerAPI
+from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
@@ -1399,7 +1399,7 @@ class Home(WebRoot):
         """
 
         # Get the Indexer used by the show
-        show_indexer = indexerApi(show_obj.indexer)
+        show_indexer = IndexerAPI(show_obj.indexer)
 
         # Add the language to the show indexer's parameters
         params = show_indexer.api_params.copy()
@@ -1501,7 +1501,7 @@ class Home(WebRoot):
                 ' for {indexer_name} show {show_id}'.format(
                     language=indexer_lang,
                     show_id=show_obj.indexerid,
-                    indexer_name=indexerApi(show_obj.indexer).name,
+                    indexer_name=IndexerAPI(show_obj.indexer).name,
                 )
             )
             status = 'Unexpected result when changing language to'

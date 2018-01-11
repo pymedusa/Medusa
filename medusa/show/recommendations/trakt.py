@@ -8,8 +8,8 @@ import os
 from medusa import app
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import IndexerAPI
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import RecommendedShow
@@ -37,7 +37,7 @@ class TraktPopular(object):
         self.recommender = "Trakt Popular"
         self.default_img_src = 'trakt-default.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
-        self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
+        self.tvdb_api_v2 = IndexerAPI(INDEXER_TVDBV2).indexer()
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
