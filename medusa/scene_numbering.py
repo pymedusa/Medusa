@@ -170,43 +170,38 @@ def get_indexer_absolute_numbering(series_obj, sceneAbsoluteNumber, fallback_to_
         return sceneAbsoluteNumber
 
 
-def set_scene_numbering(indexer_id, series_id, season=None, episode=None,  # pylint:disable=too-many-arguments
+def set_scene_numbering(series_obj, season=None, episode=None,  # pylint:disable=too-many-arguments
                         absolute_number=None, sceneSeason=None,
                         sceneEpisode=None, sceneAbsolute=None):
     """
     Set scene numbering for a season/episode.
     To clear the scene numbering, leave both sceneSeason and sceneEpisode as None.
     """
-    if indexer_id is None:
+    if series_obj is None:
         return
-
-    indexer_id = int(indexer_id)
-    series_id = int(series_id)
 
     main_db_con = db.DBConnection()
     # Season/episode can be 0 so can't check "if season"
     if season is not None and episode is not None and absolute_number is None:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, season, episode) VALUES (?,?,?,?)",
-            [indexer_id, series_id, season, episode])
+            [series_obj.indexer, series_obj.series_id, season, episode])
 
         main_db_con.action(
             "UPDATE scene_numbering SET scene_season = ?, scene_episode = ? WHERE indexer = ? and indexer_id = ? and season = ? and episode = ?",
-            [sceneSeason, sceneEpisode, indexer_id, series_id, season, episode])
+            [sceneSeason, sceneEpisode, series_obj.indexer, series_obj.series_id, season, episode])
     # absolute_number can be 0 so can't check "if absolute_number"
     else:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, absolute_number) VALUES (?,?,?)",
-            [indexer_id, series_id, absolute_number])
+            [series_obj.indexer, series_obj.series_id, absolute_number])
 
         main_db_con.action(
             "UPDATE scene_numbering SET scene_absolute_number = ? WHERE indexer = ? and indexer_id = ? and absolute_number = ?",
-            [sceneAbsolute, indexer_id, series_id, absolute_number])
+            [sceneAbsolute, series_obj.indexer, series_obj.series_id, absolute_number])
 
-    # Reload data from DB so that cache and db are in sync
-    show = Show.find_by_id(app.showList, indexer_id, series_id)
-    show.flush_episodes()
-    show.erase_cached_parse()
+    series_obj.flush_episodes()
+    series_obj.erase_cached_parse()
 
 
 def find_xem_numbering(series_obj, season, episode):

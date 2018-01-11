@@ -1765,7 +1765,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
-    def deleteShow(self, indexername=1, seriesid=None, full=0):
+    def deleteShow(self, indexername=None, seriesid=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
         if seriesid and indexername:
             error, series_obj = Show.delete(indexer_name_to_id(indexername), seriesid, full)
@@ -2309,7 +2309,7 @@ class Home(WebRoot):
             'subtitles': subtitles_result
         })
 
-    def setSceneNumbering(self, indexername, seriesid, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
+    def setSceneNumbering(self, indexername=None, seriesid=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
 
         # sanitize:
@@ -2376,8 +2376,8 @@ class Home(WebRoot):
             if sceneEpisode is not None:
                 sceneEpisode = int(sceneEpisode)
 
-            set_scene_numbering(series_obj, season=forSeason, episode=forEpisode, sceneSeason=sceneSeason,
-                                sceneEpisode=sceneEpisode)
+            set_scene_numbering(series_obj, season=forSeason, episode=forEpisode,
+                                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode)
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
