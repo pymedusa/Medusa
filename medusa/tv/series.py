@@ -65,6 +65,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
+from medusa.helpers.utils import safe_get
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
@@ -1536,8 +1537,6 @@ class Series(TV):
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
-        # TODO: Use new parser or wait upstream API fix
-        return
         imdb_api = imdbpie.Imdb()
 
         if not self.imdb_id:
@@ -1551,10 +1550,11 @@ class Series(TV):
         # Make sure we only use the first ID
         self.imdb_id = self.imdb_id.split(',')[0]
 
+        # Set retrieved IMDb ID as imdb_id for externals
+        self.externals['imdb_id'] = self.imdb_id
+
         log.debug(u'{id}: Loading show info from IMDb with ID: {imdb_id}',
                   {'id': self.indexerid, 'imdb_id': self.imdb_id})
-
-        imdb_obj = imdb_api.get_title_by_id(self.imdb_id)
 
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
@@ -1569,26 +1569,26 @@ class Series(TV):
         self.imdb_info['countries'] = self.imdb_info.get('countries', '')
         self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
 
-        # If the show has no year, IMDb returned something we don't want
-        if not imdb_obj or not imdb_obj.year:
-            log.debug(u'{id}: IMDb returned none or invalid info for {imdb_id}, skipping update.',
+        imdb_obj = imdb_api.get_title(self.imdb_id)
+        if not imdb_obj:
+            log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
 
-        # Set retrieved IMDb ID as imdb_id for externals
-        self.externals['imdb_id'] = self.imdb_id
+        # Additional query needed to get genres
+        imdb_genres = imdb_api.get_title_genres(self.imdb_id)
 
         self.imdb_info.update({
-            'imdb_id': imdb_obj.imdb_id,
-            'title': imdb_obj.title,
-            'year': imdb_obj.year,
+            'imdb_id': self.imdb_id,
+            'title': safe_get(imdb_obj, ('base', 'title')),
+            'year': safe_get(imdb_obj, ('base', 'year')),
             'akas': '',
-            'genres': '|'.join(imdb_obj.genres or ''),
-            'rating': str(imdb_obj.rating) if imdb_obj.rating else '',
-            'votes': imdb_obj.votes or '',
-            'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
-            'certificates': imdb_obj.certification or '',
-            'plot': imdb_obj.plots[0] if imdb_obj.plots else imdb_obj.plot_outline or '',
+            'genres': '|'.join(safe_get(imdb_genres, ('genres',))),
+            'rating': text_type(safe_get(imdb_obj, ('ratings', 'rating'))),
+            'votes': safe_get(imdb_obj, ('ratings', 'ratingCount')),
+            'runtimes': safe_get(imdb_obj, ('base', 'runningTimeInMinutes')),
+            'certificates': '',
+            'plot': safe_get(imdb_obj, ('plot', 'outline', 'text')),
             'last_update': datetime.date.today().toordinal(),
         })
 
