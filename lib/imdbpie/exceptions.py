@@ -1,3 +1,0 @@
-
-class ImdbAPIError(Exception):
-    pass
