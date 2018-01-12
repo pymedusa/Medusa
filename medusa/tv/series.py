@@ -1575,7 +1575,7 @@ class Series(TV):
         imdb_info = imdb_api.get_title(self.imdb_id)
         if not imdb_info:
             log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
-                      {'id': self.indexerid, 'imdb_id': self.imdb_id})
+                      {'id': self.series_id, 'imdb_id': self.imdb_id})
             return
 
         # Additional query needed to get genres
