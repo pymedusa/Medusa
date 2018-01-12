@@ -310,7 +310,7 @@ class Series(TV):
 
         params[b'episodes'] = episodes
 
-        self._cached_indexer_api = api.indexer(**params)
+        self.indexer_api = api.indexer(**params)
 
     @property
     def is_anime(self):

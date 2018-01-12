@@ -296,7 +296,7 @@ def fill_cache(series_obj):
             continue
         try:
             for provider in app.metadata_provider_dict.values():
-                log.debug('Checking {provider} metadata for {img}',
+                log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
                 if os.path.isfile(provider.get_poster_path(series_obj)):

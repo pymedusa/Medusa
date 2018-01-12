@@ -20,9 +20,7 @@ from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
 from medusa import app, image_cache
-from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
-from medusa.show.show import Show
 
 
 class GenericMedia(object):
