@@ -134,7 +134,6 @@ class Application(object):
 
         return help_msg
 
-
     @staticmethod
     def migrate_images():
         """Migrate pre-multi-indexer images to their correct place."""
