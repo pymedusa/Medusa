@@ -147,7 +147,7 @@ class Imdb(BaseIndexer):
         for item in imdb_response:
             return_dict = {}
             try:
-                if item.get('type') in ('feature',):
+                if item.get('type') in ('feature', 'video game', 'TV short'):
                     continue
 
                 # return_dict['id'] = ImdbIdentifier(item.pop('imdb_id')).series_id
