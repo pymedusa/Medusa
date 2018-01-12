@@ -1569,8 +1569,8 @@ class Series(TV):
         self.imdb_info['countries'] = self.imdb_info.get('countries', '')
         self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
 
-        imdb_obj = imdb_api.get_title(self.imdb_id)
-        if not imdb_obj:
+        imdb_info = imdb_api.get_title(self.imdb_id)
+        if not imdb_info:
             log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
@@ -1580,15 +1580,15 @@ class Series(TV):
 
         self.imdb_info.update({
             'imdb_id': self.imdb_id,
-            'title': safe_get(imdb_obj, ('base', 'title')),
-            'year': safe_get(imdb_obj, ('base', 'year')),
+            'title': safe_get(imdb_info, ('base', 'title')),
+            'year': safe_get(imdb_info, ('base', 'year')),
             'akas': '',
             'genres': '|'.join(safe_get(imdb_genres, ('genres',))),
-            'rating': text_type(safe_get(imdb_obj, ('ratings', 'rating'))),
-            'votes': safe_get(imdb_obj, ('ratings', 'ratingCount')),
-            'runtimes': safe_get(imdb_obj, ('base', 'runningTimeInMinutes')),
+            'rating': text_type(safe_get(imdb_info, ('ratings', 'rating'))),
+            'votes': safe_get(imdb_info, ('ratings', 'ratingCount')),
+            'runtimes': safe_get(imdb_info, ('base', 'runningTimeInMinutes')),
             'certificates': '',
-            'plot': safe_get(imdb_obj, ('plot', 'outline', 'text')),
+            'plot': safe_get(imdb_info, ('plot', 'outline', 'text')),
             'last_update': datetime.date.today().toordinal(),
         })
 
