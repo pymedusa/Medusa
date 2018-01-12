@@ -44,7 +44,7 @@ def write_pkg_file(self, file):
             self.classifiers or self.download_url):
         version = '1.1'
     # Setuptools specific for PEP 345
-    if hasattr(self, 'python_requires'):
+    if hasattr(self, 'python_requires') or self.project_urls:
         version = '1.2'
 
     file.write('Metadata-Version: %s\n' % version)
@@ -57,12 +57,11 @@ def write_pkg_file(self, file):
     file.write('License: %s\n' % self.get_license())
     if self.download_url:
         file.write('Download-URL: %s\n' % self.download_url)
+    for project_url in self.project_urls.items():
+        file.write('Project-URL: %s, %s\n' % project_url)
 
-    long_desc_content_type = getattr(
-        self,
-        'long_description_content_type',
-        None
-    ) or 'UNKNOWN'
+    long_desc_content_type = \
+        self.long_description_content_type or 'UNKNOWN'
     file.write('Description-Content-Type: %s\n' % long_desc_content_type)
 
     long_desc = rfc822_escape(self.get_long_description())
@@ -166,6 +165,8 @@ def check_requirements(dist, attr, value):
     """Verify that install_requires is a valid requirements list"""
     try:
         list(pkg_resources.parse_requirements(value))
+        if isinstance(value, (dict, set)):
+            raise TypeError("Unordered types are not allowed")
     except (TypeError, ValueError) as error:
         tmpl = (
             "{attr!r} must be a string or list of strings "
@@ -316,26 +317,29 @@ class Distribution(Distribution_parse_config_files, _Distribution):
         have_package_data = hasattr(self, "package_data")
         if not have_package_data:
             self.package_data = {}
-        _attrs_dict = attrs or {}
-        if 'features' in _attrs_dict or 'require_features' in _attrs_dict:
+        attrs = attrs or {}
+        if 'features' in attrs or 'require_features' in attrs:
             Feature.warn_deprecated()
         self.require_features = []
         self.features = {}
         self.dist_files = []
-        self.src_root = attrs and attrs.pop("src_root", None)
+        self.src_root = attrs.pop("src_root", None)
         self.patch_missing_pkg_info(attrs)
-        self.long_description_content_type = _attrs_dict.get(
-            'long_description_content_type'
-        )
-        # Make sure we have any eggs needed to interpret 'attrs'
-        if attrs is not None:
-            self.dependency_links = attrs.pop('dependency_links', [])
-            assert_string_list(self, 'dependency_links', self.dependency_links)
-        if attrs and 'setup_requires' in attrs:
-            self.fetch_build_eggs(attrs['setup_requires'])
+        self.project_urls = attrs.get('project_urls', {})
+        self.dependency_links = attrs.pop('dependency_links', [])
+        self.setup_requires = attrs.pop('setup_requires', [])
         for ep in pkg_resources.iter_entry_points('distutils.setup_keywords'):
             vars(self).setdefault(ep.name, None)
         _Distribution.__init__(self, attrs)
+
+        # The project_urls attribute may not be supported in distutils, so
+        # prime it here from our value if not automatically set
+        self.metadata.project_urls = getattr(
+            self.metadata, 'project_urls', self.project_urls)
+        self.metadata.long_description_content_type = attrs.get(
+            'long_description_content_type'
+        )
+
         if isinstance(self.metadata.version, numbers.Number):
             # Some people apparently take "version number" too literally :)
             self.metadata.version = str(self.metadata.version)
@@ -427,14 +431,15 @@ class Distribution(Distribution_parse_config_files, _Distribution):
         req.marker = None
         return req
 
-    def parse_config_files(self, filenames=None):
+    def parse_config_files(self, filenames=None, ignore_option_errors=False):
         """Parses configuration files from various levels
         and loads configuration.
 
         """
         _Distribution.parse_config_files(self, filenames=filenames)
 
-        parse_configuration(self, self.command_options)
+        parse_configuration(self, self.command_options,
+                            ignore_option_errors=ignore_option_errors)
         self._finalize_requires()
 
     def parse_command_line(self):
@@ -497,19 +502,20 @@ class Distribution(Distribution_parse_config_files, _Distribution):
         """Fetch an egg needed for building"""
         from setuptools.command.easy_install import easy_install
         dist = self.__class__({'script_args': ['easy_install']})
-        dist.parse_config_files()
         opts = dist.get_option_dict('easy_install')
-        keep = (
-            'find_links', 'site_dirs', 'index_url', 'optimize',
-            'site_dirs', 'allow_hosts'
-        )
-        for key in list(opts):
-            if key not in keep:
-                del opts[key]  # don't use any other settings
+        opts.clear()
+        opts.update(
+            (k, v)
+            for k, v in self.get_option_dict('easy_install').items()
+            if k in (
+                # don't use any other settings
+                'find_links', 'site_dirs', 'index_url',
+                'optimize', 'site_dirs', 'allow_hosts',
+        ))
         if self.dependency_links:
             links = self.dependency_links[:]
             if 'find_links' in opts:
-                links = opts['find_links'][1].split() + links
+                links = opts['find_links'][1] + links
             opts['find_links'] = ('setup', links)
         install_dir = self.get_egg_cache_dir()
         cmd = easy_install(
