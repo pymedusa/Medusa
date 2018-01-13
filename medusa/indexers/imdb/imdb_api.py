@@ -43,8 +43,12 @@ class ImdbIdentifier(object):
 
     @imdb_id.setter
     def imdb_id(self, value):
-        self._imdb_id = value
-        self.series_id = int(value.split('tt')[-1])
+        if isinstance(value, text_type) and 'tt' in value:
+            self._imdb_id = value
+            self.series_id = int(value.split('tt')[-1])
+        else:
+            self._imdb_id = 'tt{0}'.format(text_type(value).zfill(7))
+            self.series_id = int(value)
 
 
 class Imdb(BaseIndexer):

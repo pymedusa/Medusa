@@ -69,6 +69,7 @@ from medusa.helpers.utils import safe_get
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
+    INDEXER_IMDB,
     STATUS_MAP,
     indexerConfig,
     indexer_id_to_slug,
@@ -80,6 +81,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerSeasonNotFound,
 )
+from medusa.indexers.imdb.imdb_api import ImdbIdentifier
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
@@ -1519,6 +1521,9 @@ class Series(TV):
 
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
+
+        if self.indexer_api.indexer == INDEXER_IMDB:
+            self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).imdb_id
 
         self.imdb_id = self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', '')
 
