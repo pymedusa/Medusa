@@ -161,7 +161,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         if getattr(my_show, 'firstaired', None):
             premiered = etree.SubElement(tv_node, 'premiered')
-            premiered.text = my_show['firstaired']
+            premiered.text = str(my_show['firstaired'])
 
         if getattr(my_show, 'network', None):
             studio = etree.SubElement(tv_node, 'studio')

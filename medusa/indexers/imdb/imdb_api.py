@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-
+from itertools import chain
 import logging
 from collections import OrderedDict
 from imdbpie import imdbpie
@@ -11,7 +11,6 @@ from six import text_type
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (
     IndexerError,
-    IndexerException,
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -159,6 +158,8 @@ class Imdb(BaseIndexer):
                     value = Imdb.get_nested_value(item, config)
                     if key == 'id' and value:
                         value = ImdbIdentifier(value.rstrip('/')).series_id
+                    if key == 'contentrating':
+                        value = text_type(value)
 
                     if value is not None:
                         return_dict[key] = value
@@ -278,28 +279,117 @@ class Imdb(BaseIndexer):
         """
         log.debug('Getting show banners for {0}', imdb_id)
 
+        images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
+
+        _images = {}
         try:
-            image_medium = self.shows[imdb_id]['image_medium']
-        except Exception:
-            log.debug('Could not parse Poster for showid: {0}', imdb_id)
-            return False
+            for image in images.get('images', []):
+                if image.get('type') not in ('poster',):
+                    continue
 
-        # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
-                                                     u'language': u'en',
-                                                     u'ratingcount': 1,
-                                                     u'bannerpath': image_medium.split('/')[-1],
-                                                     u'bannertype': u'poster',
-                                                     u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_medium,
-                                                     u'id': u'1035106'}}}}
+                image_type = image.get('type')
+                if image_type not in _images:
+                    _images[image_type] = {}
 
-        season_images = self._parse_season_images(imdb_id)
-        if season_images:
-            _images.update(season_images)
+                # Store the images for each resolution available
+                # Always provide a resolution or 'original'.
+                resolution = '{0}x{1}'.format(image['width'], image['height'])
+                if resolution not in _images[image_type]:
+                    _images[image_type][resolution] = {}
+
+                bid = image['id'].split('/')[-1]
+
+                if image_type in ['season', 'seasonwide']:
+                    if int(image.sub_key) not in _images[image_type][resolution]:
+                        _images[image_type][resolution][int(image.sub_key)] = {}
+                    if bid not in _images[image_type][resolution][int(image.sub_key)]:
+                        _images[image_type][resolution][int(image.sub_key)][bid] = {}
+                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                else:
+                    if bid not in _images[image_type][resolution]:
+                        _images[image_type][resolution][bid] = {}
+                    base_path = _images[image_type][resolution][bid]
+
+                base_path['bannertype'] = image_type
+                base_path['bannertype2'] = resolution
+                base_path['_bannerpath'] = image.get('url')
+                base_path['bannerpath'] = image.get('url').split('/')[-1]
+                base_path['id'] = bid
+
+        except Exception as error:
+            log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', imdb_id, error)
+            return
 
         self._save_images(imdb_id, _images)
         self._set_show_data(imdb_id, '_banners', _images)
+
+    def _save_images(self, series_id, images):
+        """
+        Save the highest rated images for the show.
+
+        :param series_id: The series ID
+        :param images: A nested mapping of image info
+            images[type][res][id] = image_info_mapping
+                type: image type such as `banner`, `poster`, etc
+                res: resolution such as `1024x768`, `original`, etc
+                id: the image id
+        """
+        # Get desired image types from images
+        image_types = 'banner', 'fanart', 'poster'
+
+        def get_resolution(image):
+            w, h = image['bannertype2'].split('x')
+            return int(w) * int(h)
+
+        # Iterate through desired image types
+        for img_type in image_types:
+
+            try:
+                image_type = images[img_type]
+            except KeyError:
+                log.debug(
+                    u'No {image}s found for {series}', {
+                        'image': img_type,
+                        'series': series_id,
+                    }
+                )
+                continue
+
+            # Flatten image_type[res][id].values() into list of values
+            merged_images = chain.from_iterable(
+                resolution.values()
+                for resolution in image_type.values()
+            )
+
+            # Sort by resolution
+            sort_images = sorted(
+                merged_images,
+                key=get_resolution,
+                reverse=True,
+            )
+
+            if not sort_images:
+                continue
+
+            # Get the highest rated image
+            highest_rated = sort_images[0]
+            img_url = highest_rated['_bannerpath']
+            log.debug(
+                u'Selecting highest rated {image} (rating={img[rating]}):'
+                u' {img[_bannerpath]}', {
+                    'image': img_type,
+                    'img': highest_rated,
+                }
+            )
+            log.debug(
+                u'{image} details: {img}', {
+                    'image': img_type.capitalize(),
+                    'img': highest_rated,
+                }
+            )
+
+            # Save the image
+            self._set_show_data(series_id, img_type, img_url)
 
     def _parse_season_images(self, imdb_id):
         """Parse Show and Season posters."""
