@@ -59,7 +59,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexer_name_to_id, INDEXER_TVDBV2
+from medusa.indexers.indexer_config import indexer_name_to_id
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
@@ -86,7 +86,6 @@ from medusa.search.manual import (
     SEARCH_STATUS_QUEUED,
     SEARCH_STATUS_SEARCHING,
     collect_episodes_from_search_thread,
-    get_episode,
     get_provider_cache_results,
     update_finished_search_queue_item,
 )
@@ -2332,7 +2331,8 @@ class Home(WebRoot):
                 'sceneSeason': None,
                 'sceneAbsolute': None,
             })
-        elif series_obj.is_anime:
+
+        if series_obj.is_anime:
             result = {
                 'success': True,
                 'forAbsolute': forAbsolute,

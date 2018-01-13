@@ -19,6 +19,8 @@
 from __future__ import print_function
 
 from medusa.media.banner import ShowBanner
+from medusa.tv import Series
+
 from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 
@@ -26,4 +28,5 @@ class ShowBannerTests(GenericMediaTests):
     """Test ShowBanner."""
 
     def test_default_media_name(self):
-        self.assertEqual(ShowBanner(0, '').default_media_name, 'banner.png')
+        series_obj = Series(1, 70726)
+        self.assertEqual(ShowBanner(series_obj, '').default_media_name, 'banner.png')

@@ -546,7 +546,7 @@ class Cache(object):
 
             # if the show says we want that episode then add it to the list
             if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
-                                         forced_search, down_cur_quality):
+                                           forced_search, down_cur_quality):
                 log.debug('Ignoring {0}', cur_result[b'name'])
                 continue
 

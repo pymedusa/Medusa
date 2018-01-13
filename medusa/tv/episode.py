@@ -11,7 +11,9 @@ import time
 import traceback
 import warnings
 from datetime import date, datetime
+
 import knowit
+
 from medusa import (
     app,
     db,
@@ -341,7 +343,7 @@ class Episode(TV):
 
             if not parse_result.series.is_anime and parse_result.episode_numbers:
                 results = [parse_result.series.get_episode(season=parse_result.season_number,
-                                                         episode=episode_number, should_cache=False)
+                                                           episode=episode_number, should_cache=False)
                            for episode_number in parse_result.episode_numbers]
 
             for episode in results:

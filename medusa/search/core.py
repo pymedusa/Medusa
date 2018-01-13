@@ -279,8 +279,9 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         if cur_result.actual_episodes:
             wanted_ep = False
             for episode in cur_result.actual_episodes:
-                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality, cur_result.forced_search,
-                                     cur_result.download_current_quality, search_type=cur_result.search_type):
+                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality,
+                                           cur_result.forced_search, cur_result.download_current_quality,
+                                           search_type=cur_result.search_type):
                     wanted_ep = True
 
         if not wanted_ep:

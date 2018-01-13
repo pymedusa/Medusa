@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import logging
+
 from medusa import db
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
@@ -72,9 +73,7 @@ class AddIndexerIds(HistoryStatus):
     """
 
     def test(self):
-        """
-        Test if the table history already has the indexer_id.
-        """
+        """Test if the table history already has the indexer_id."""
         return self.hasColumn('history', 'indexer_id')
 
     def execute(self):

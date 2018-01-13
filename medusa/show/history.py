@@ -20,7 +20,6 @@ from datetime import datetime, timedelta
 
 from medusa.common import Quality
 from medusa.helper.common import try_int
-from medusa.indexers.indexer_config import indexer_id_to_name
 
 from six import text_type
 
