@@ -19,6 +19,8 @@ script:
   - tox -v --recreate
   - 'cd vue && yarn test && cd ..'
   - yarn test
+  - yarn test-api
+  - yarn coverage
 cache:
   yarn: true
   directories:

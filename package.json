@@ -12,7 +12,7 @@
   "scripts": {
     "test": "yarn lint",
     "lint": "xo --verbose",
-    "coverage": "nyc ava",
+    "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
