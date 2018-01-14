@@ -2,15 +2,18 @@
 
 """Base class for indexer api's."""
 
+from __future__ import division
+
 import getpass
 import logging
 import os
 import tempfile
 import time
 import warnings
-from itertools import chain
 from operator import itemgetter
 
+from medusa import statistics as stats
+from medusa.helpers.utils import gen_values_by_key
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
@@ -20,6 +23,7 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.statistics import weights
 
 import requests
 
@@ -211,50 +215,149 @@ class BaseIndexer(object):
         :param series: ID of series being processed
         :param images: Images to be processed
         """
-        def weighted_score(image):
-            return image['rating'] * image['ratingcount']
 
-        # Sort by rating
-        images_by_rating = sorted(
-            images,
-            key=weighted_score,
-            reverse=True,
+        def pop_stats(it, key):
+            """Get the population statistics for a key."""
+            values = list(gen_values_by_key(it, key))
+            num_values = len(values)
+            total = sum(values)
+            mean = total / num_values
+            std_dev = stats.population_standard_deviation(values)
+            return mean, std_dev, values
+
+        def result(item, threshold, mean):
+            """Calculate a score given a threshold and population mean."""
+            if not threshold:
+                threshold = 1  # Prevent division by zero
+            value = item['rating']
+            weight = item['ratingcount']
+            res = item['resolution']
+            score = weights.bayesian(weight, value, threshold, mean)
+            return score, value, weight, res, item
+
+        def format_result(item):
+            """Format result row for logging output."""
+            row = '{score:>10.3f} {rating:>10.3f} {votes:>6} {res:>15}\t{url}'
+            return row.format(
+                score=item[0],
+                rating=item[1],
+                votes=item[2],
+                res=item[3],
+                url=item[4]['_bannerpath'],
+            )
+        # Header for display of format results
+        column_header = '{:>10} {:>10} {:>6} {:>15}\t{}'.format(
+            'Score', 'Rating', 'Votes', 'Resolution', 'URL'
         )
+
+        # add resolution information to each image and flatten dict
+        merged_images = []
+        for resolution in images:
+            images_by_resolution = images[resolution]
+            for image in images_by_resolution.values():
+                image['resolution'] = resolution
+            # add all current resolution images to the merged list
+            merged_images.extend(images_by_resolution.values())
+            log.debug(
+                u'Found {x} {image}s at {this} resolution for series {id}', {
+                    'x': len(images_by_resolution),
+                    'image': image_type,
+                    'this': resolution,
+                    'id': series_id,
+                }
+            )
+
+        # Get population statistics
+        num_items = len(merged_images)
         log.debug(
-            u'Found {x} {image}s for {series}: {results}', {
-                'x': len(images_by_rating),
+            u'Found {x} total {image}s for series {id}', {
+                'x': num_items,
                 'image': image_type,
-                'series': series_id,
-                'results': u''.join(
-                    u'\n\t{score:>04.2f}\t{rating:>04.2f}\t{count:>4}: {url}'.format(
-                        score=weighted_score(img),
-                        count=img['ratingcount'],
-                        rating=img['rating'],
-                        url=img['_bannerpath'],
-                    )
-                    for img in images_by_rating
+                'id': series_id,
+            }
+        )
+
+        # Get population rating statistics
+        rating_mean, rating_dev, ratings = pop_stats(merged_images, 'rating')
+        log.debug(u'{image} rating mean: {x}',
+                  {'image': image_type.capitalize(), 'x': rating_mean})
+        log.debug(u'{image} rating standard deviation: {x}',
+                  {'image': image_type.capitalize(), 'x': rating_dev})
+        log.debug(u'{image} ratings: {x}',
+                  {'image': image_type.capitalize(), 'x': ratings})
+
+        # Get population rating statistics
+        vote_mean, vote_dev, votes = pop_stats(merged_images, 'ratingcount')
+        log.debug(u'{image} vote mean: {x}',
+                  {'image': image_type.capitalize(), 'x': vote_mean})
+        log.debug(u'{image} vote standard deviation: {x}',
+                  {'image': image_type.capitalize(), 'x': vote_dev})
+        log.debug(u'{image} votes: {x}',
+                  {'image': image_type.capitalize(), 'x': votes})
+
+        # Set vote threshold to one standard deviation above the mean
+        # This would be the 84th percentile in a normal distribution
+        vote_threshold = vote_mean + vote_dev
+        log.debug(u'{image} threshold set to {x} votes',
+                  {'image': image_type.capitalize(), 'x': vote_threshold})
+
+        # create a list of results
+        rated_images = (
+            result(image, vote_threshold, rating_mean)
+            for image in merged_images
+        )
+        # sort results by score
+        sorted_results = sorted(rated_images, key=itemgetter(0), reverse=True)
+        log.debug(
+            u'Weighted {image} results for series {id}:'
+            u'\n{header}'
+            u'\n{items}', {
+                'image': image_type,
+                'id': series_id,
+                'header': column_header,
+                'items': '\n'.join(
+                    format_result(item)
+                    for item in sorted_results
                 )
             }
         )
-
-        # Get the highest rated image
-        highest_rated = images_by_rating[0]
-        img_url = highest_rated['_bannerpath']
-        log.debug(
-            u'Selecting highest rated {image} (rating={img[rating]}):'
-            u' {img[_bannerpath]}', {
+        # filter only highest rated results
+        best_result = sorted_results[0]
+        best_results = [
+            item for item in sorted_results
+            if item[0] > best_result[0]
+        ]
+        if len(best_results) > 1:
+            log.warning(
+                u'Multiple {image}s at highest weighted score for series {id}:'
+                u'\n{header}'
+                u'\n{results}', {
+                    'image': image_type,
+                    'id': series_id,
+                    'header': column_header,
+                    'results': '\n'.join(
+                        format_result(item)
+                        for item in best_results
+                    )
+                }
+            )
+        img_score, img_rating, img_votes, img_res, img = best_result
+        img_url = img['_bannerpath']
+        log.info(
+            u'Selected {image} for series {id}'
+            u' (score={x}, rating={y}, votes={z}, res={r}): {url}', {
                 'image': image_type,
-                'img': highest_rated,
+                'id': series_id,
+                'x': img_score,
+                'y': img_rating,
+                'z': img_votes,
+                'r': img_res,
+                'url': img_url,
             }
         )
-        log.debug(
-            u'{image} details: {img}', {
-                'image': image_type.capitalize(),
-                'img': highest_rated,
-            }
-        )
+        log.debug(u'Full info for best {image} for series {id}: {info}',
+                  {'image': image_type, 'id': series_id, 'info': img})
 
-        # Save the image
         self._set_show_data(series_id, image_type, img_url)
 
     def _save_images(self, series_id, images):
