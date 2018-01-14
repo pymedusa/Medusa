@@ -2376,8 +2376,6 @@ class Home(WebRoot):
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
                         scene_season=sceneSeason, scene_episode=sceneEpisode), logger.DEBUG)
 
-
-
             forSeason = int(forSeason)
             forEpisode = int(forEpisode)
             if sceneSeason is not None:
