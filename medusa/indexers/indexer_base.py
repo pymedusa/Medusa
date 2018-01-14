@@ -203,6 +203,60 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
+    def _save_images_by_type(self, image_type, series_id, images):
+        """
+        Save the highest rated images for a show by image type.
+
+        :param image_type: Image type being processed (e.g. `fanart`)
+        :param series: ID of series being processed
+        :param images: Images to be processed
+        """
+        def weighted_score(image):
+            return image['rating'] * image['ratingcount']
+
+        # Sort by rating
+        images_by_rating = sorted(
+            images,
+            key=weighted_score,
+            reverse=True,
+        )
+        log.debug(
+            u'Found {x} {image}s for {series}: {results}', {
+                'x': len(images_by_rating),
+                'image': image_type,
+                'series': series_id,
+                'results': u''.join(
+                    u'\n\t{score:>04.2f}\t{rating:>04.2f}\t{count:>4}: {url}'.format(
+                        score=weighted_score(img),
+                        count=img['ratingcount'],
+                        rating=img['rating'],
+                        url=img['_bannerpath'],
+                    )
+                    for img in images_by_rating
+                )
+            }
+        )
+
+        # Get the highest rated image
+        highest_rated = images_by_rating[0]
+        img_url = highest_rated['_bannerpath']
+        log.debug(
+            u'Selecting highest rated {image} (rating={img[rating]}):'
+            u' {img[_bannerpath]}', {
+                'image': image_type,
+                'img': highest_rated,
+            }
+        )
+        log.debug(
+            u'{image} details: {img}', {
+                'image': image_type.capitalize(),
+                'img': highest_rated,
+            }
+        )
+
+        # Save the image
+        self._set_show_data(series_id, image_type, img_url)
+
     def _save_images(self, series_id, images):
         """
         Save the highest rated images for the show.
@@ -214,13 +268,12 @@ class BaseIndexer(object):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
-        # Get desired image types from images
         image_types = 'banner', 'fanart', 'poster'
 
         # Iterate through desired image types
         for img_type in image_types:
             try:
-                image_type = images[img_type]
+                images_by_type = images[img_type]
             except KeyError:
                 log.debug(
                     u'No {image}s found for {series}', {
@@ -230,60 +283,7 @@ class BaseIndexer(object):
                 )
                 continue
 
-            # Flatten image_type[res][id].values() into list of values
-            merged_images = chain.from_iterable(
-                resolution.values()
-                for resolution in image_type.values()
-            )
-
-            def weighted_score(image):
-                return image['rating'] * image['ratingcount']
-
-            # Sort by rating
-            images_by_rating = sorted(
-                merged_images,
-                key=weighted_score,
-                reverse=True,
-            )
-            log.debug(
-                u'Found {x} {image}s for {series}: {results}', {
-                    'x': len(images_by_rating),
-                    'image': img_type,
-                    'series': series_id,
-                    'results': u''.join(
-                        u'\n\t{score:>04.2f}\t{rating:>04.2f}\t{count:>4}: {url}'.format(
-                            score=weighted_score(img),
-                            count=img['ratingcount'],
-                            rating=img['rating'],
-                            url=img['_bannerpath'],
-                        )
-                        for img in images_by_rating
-                    )
-                }
-            )
-
-            if not images_by_rating:
-                continue
-
-            # Get the highest rated image
-            highest_rated = images_by_rating[0]
-            img_url = highest_rated['_bannerpath']
-            log.debug(
-                u'Selecting highest rated {image} (rating={img[rating]}):'
-                u' {img[_bannerpath]}', {
-                    'image': img_type,
-                    'img': highest_rated,
-                }
-            )
-            log.debug(
-                u'{image} details: {img}', {
-                    'image': img_type.capitalize(),
-                    'img': highest_rated,
-                }
-            )
-
-            # Save the image
-            self._set_show_data(series_id, img_type, img_url)
+            self._save_images_by_type(img_type, series_id, images_by_type)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
