@@ -171,7 +171,7 @@ class ProcessResult(object):
             to_remove_hashes = app.RECENTLY_POSTPROCESSED.items()
             for info_hash, release_names in to_remove_hashes:
                 if self.move_torrent(info_hash, release_names):
-                    app.RECENTLY_POSTPROCESSED.pop(info_hash)
+                    app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
 
         return self.output
 
