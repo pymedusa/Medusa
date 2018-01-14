@@ -44,11 +44,3 @@ def standard_deviation(it, population=False):
 def population_standard_deviation(it):
     """Calculate the standard deviation of a population."""
     return standard_deviation(it, population=True)
-
-
-if __name__ == '__main__':
-    pop = [1]
-    print(mean(pop))
-    print(variance(pop))
-    print(standard_deviation(pop))
-    print(population_standard_deviation(pop))
