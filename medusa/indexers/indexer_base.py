@@ -325,7 +325,7 @@ class BaseIndexer(object):
         best_result = sorted_results[0]
         best_results = [
             item for item in sorted_results
-            if item[0] > best_result[0]
+            if item[0] >= best_result[0]
         ]
         if len(best_results) > 1:
             log.warning(
