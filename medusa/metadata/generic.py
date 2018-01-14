@@ -738,7 +738,10 @@ class GenericMetadata(object):
         if image_type == u'thumbnail' and episode:
             image_url = self._get_episode_thumb_url(indexer_show_obj, episode)
         elif image_type == u'poster_thumb':
-            if getattr(indexer_show_obj, u'poster', None):
+            if getattr(indexer_show_obj, u'poster_thumb', None):
+                # For now only applies to tvmaze and imdb
+                image_url = indexer_show_obj[u'poster_thumb']
+            elif getattr(indexer_show_obj, u'poster', None):
                 image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
             if not image_url:
                 # Try and get images from TMDB

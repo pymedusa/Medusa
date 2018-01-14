@@ -62,7 +62,7 @@ class TVmaze(BaseIndexer):
             'name': 'seriesname',
             'summary': 'overview',
             'premiered': 'firstaired',
-            'image': 'fanart',
+            'image': 'poster_thumb',
             'url': 'show_url',
             'genres': 'genre',
             'epnum': 'absolute_number',
@@ -113,9 +113,8 @@ class TVmaze(BaseIndexer):
                             return_dict['timezone'] = value.timezone
                         if key == 'image':
                             if value.get('medium'):
-                                return_dict['image_medium'] = value.get('medium')
-                                return_dict['image_original'] = value.get('original')
-                                return_dict['poster'] = value.get('medium')
+                                return_dict['poster_thumb'] = value.get('medium')
+                                return_dict['poster'] = value.get('original')
                         if key == 'externals':
                             return_dict['tvrage_id'] = value.get('tvrage')
                             return_dict['tvdb_id'] = value.get('thetvdb')

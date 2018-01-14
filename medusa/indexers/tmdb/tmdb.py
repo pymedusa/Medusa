@@ -65,7 +65,7 @@ class Tmdb(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'vote_average': 'contentrating',
-            'poster_path': 'poster',
+            'poster_path': 'poster_thumb',
             'genres': 'genre',
             'type': 'classification',
             'networks': 'network',

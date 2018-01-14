@@ -273,7 +273,7 @@ def fill_cache(series):
 
     :param series: Series object to cache images for
     """
-    series_id = series.name
+    series_id = series.indexerid
     # get expected paths for artwork
     images = {
         img_type: get_path(img_type, series_id)

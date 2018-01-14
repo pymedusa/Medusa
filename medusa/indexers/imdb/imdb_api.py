@@ -1,6 +1,8 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
+
+import re
 from itertools import chain
 import logging
 from collections import OrderedDict
@@ -92,7 +94,7 @@ class Imdb(BaseIndexer):
             ('seriesname', 'base.title'),
             ('summary', 'plot.summaries[0].text'),
             ('firstaired', 'year'),
-            ('fanart', 'base.image.url'),
+            ('poster', 'base.image.url'),
             ('show_url', 'base.id'),
             ('firstaired', 'base.seriesStartYear'),
             ('contentrating', 'ratings.rating'),
@@ -128,7 +130,8 @@ class Imdb(BaseIndexer):
         for item in imdb_response:
             return_dict = {}
             try:
-                if item.get('type') in ('feature', 'video game', 'TV short'):
+                title_type = item.get('type') or item.get('base',{}).get('titleType')
+                if title_type in ('feature', 'video game', 'TV short', None):
                     continue
 
                 # return_dict['id'] = ImdbIdentifier(item.pop('imdb_id')).series_id
@@ -138,11 +141,16 @@ class Imdb(BaseIndexer):
                         value = ImdbIdentifier(value.rstrip('/')).series_id
                     if key == 'contentrating':
                         value = text_type(value)
+                    if key == 'poster':
+                        return_dict['poster_thumb'] = value.split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format('1000').split('/')[-1]
                     if value is not None:
                         return_dict[key] = value
 
                 # Check if the show is continuing
                 return_dict['status'] = 'Continuing' if item.get('base', {}).get('nextEpisode') else 'Ended'
+
+                # Add static value for airs time.
+                return_dict['airs_time'] = '0:00AM'
 
             except Exception as error:
                 log.warning('Exception trying to parse attribute: {0}, with exception: {1!r}', item, error)
@@ -203,11 +211,25 @@ class Imdb(BaseIndexer):
 
         mapped_results = self._map_results(results, self.series_map)
 
+        if not mapped_results:
+            return
+
         # Get firstaired
         releases = self.imdb_api.get_title_releases(imdb_id)
         if releases.get('releases'):
-            first_released = sorted([r['date'] for r in releases['releases']])[0]
-            mapped_results['firstaired'] = first_released
+            first_released = sorted([r for r in releases['releases']])[0]
+            mapped_results['firstaired'] = first_released['date']
+
+        companies = self.imdb_api.get_title_companies(imdb_id)
+        if companies:
+            distribution = [x['company'] for x in companies['distribution']
+                            if x['company'].get('region') and first_released['region'] in x['company']['region']]
+            if distribution:
+                match_short = re.compile(r'.*\((.+)\)$').search(distribution[0]['name'])
+                if match_short:
+                    distribution = match_short.group(1)
+                mapped_results['network'] = distribution
+
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, imdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
@@ -256,6 +278,7 @@ class Imdb(BaseIndexer):
         log.debug('Getting show banners for {0}', imdb_id)
 
         images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
+        thumb_height = 640
 
         _images = {}
         try:
@@ -264,14 +287,20 @@ class Imdb(BaseIndexer):
                     continue
 
                 image_type = image.get('type')
+                image_type_thumb = image_type + '_thumb'
                 if image_type not in _images:
                     _images[image_type] = {}
+                    _images[image_type + '_thumb'] = {}
 
                 # Store the images for each resolution available
                 # Always provide a resolution or 'original'.
                 resolution = '{0}x{1}'.format(image['width'], image['height'])
+                thumb_width = int((float(image['width']) / image['height']) * thumb_height)
+                resolution_thumb = '{0}x{1}'.format(thumb_width, thumb_height)
+
                 if resolution not in _images[image_type]:
                     _images[image_type][resolution] = {}
+                    _images[image_type_thumb][resolution_thumb] = {}
 
                 bid = image['id'].split('/')[-1]
 
@@ -280,17 +309,25 @@ class Imdb(BaseIndexer):
                         _images[image_type][resolution][int(image.sub_key)] = {}
                     if bid not in _images[image_type][resolution][int(image.sub_key)]:
                         _images[image_type][resolution][int(image.sub_key)][bid] = {}
-                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                    base_path = _images[image_type_thumb][resolution][int(image.sub_key)][bid]
                 else:
                     if bid not in _images[image_type][resolution]:
                         _images[image_type][resolution][bid] = {}
+                        _images[image_type_thumb][resolution_thumb][bid] = {}
                     base_path = _images[image_type][resolution][bid]
+                    base_path_thumb = _images[image_type_thumb][resolution_thumb][bid]
 
                 base_path['bannertype'] = image_type
                 base_path['bannertype2'] = resolution
                 base_path['_bannerpath'] = image.get('url')
                 base_path['bannerpath'] = image.get('url').split('/')[-1]
                 base_path['id'] = bid
+
+                base_path_thumb['bannertype'] = image_type_thumb
+                base_path_thumb['bannertype2'] = resolution_thumb
+                base_path_thumb['_bannerpath'] = image['url'].split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format(thumb_height)
+                base_path_thumb['bannerpath'] = image['url'].split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format(thumb_height).split('/')[-1]
+                base_path_thumb['id'] = bid
 
         except Exception as error:
             log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', imdb_id, error)
@@ -485,70 +522,70 @@ class Imdb(BaseIndexer):
 
         return True
 
-    def _get_all_updates(self, start_date=None, end_date=None):
-        """Retrieve all updates (show,season,episode) from TVMaze."""
-        results = []
-        try:
-            updates = self.imdb_api.show_updates()
-        except (ShowIndexError, UpdateNotFound):
-            return results
-        except BaseError as e:
-            log.warning('Getting show updates failed. Cause: {0}', e)
-            return results
+    # def _get_all_updates(self, start_date=None, end_date=None):
+    #     """Retrieve all updates (show,season,episode) from TVMaze."""
+    #     results = []
+    #     try:
+    #         updates = self.imdb_api.show_updates()
+    #     except (ShowIndexError, UpdateNotFound):
+    #         return results
+    #     except BaseError as e:
+    #         log.warning('Getting show updates failed. Cause: {0}', e)
+    #         return results
+    #
+    #     if getattr(updates, 'updates', None):
+    #         for show_id, update_ts in updates.updates.items():
+    #             if start_date < update_ts.seconds_since_epoch < (end_date or int(time())):
+    #                 results.append(int(show_id))
+    #
+    #     return results
+    #
+    # # Public methods, usable separate from the default api's interface api['show_id']
+    # def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    #     """Retrieve a list with updated shows
+    #
+    #     :param from_time: epoch timestamp, with the start date/time
+    #     :param weeks: number of weeks to get updates for.
+    #     :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
+    #     """
+    #     total_updates = []
+    #     updates = self._get_all_updates(from_time, from_time + (weeks * 604800))  # + seconds in a week
+    #
+    #     if updates and filter_show_list:
+    #         new_list = []
+    #         for show in filter_show_list:
+    #             if show.indexerid in total_updates:
+    #                 new_list.append(show.indexerid)
+    #         updates = new_list
+    #
+    #     return updates
 
-        if getattr(updates, 'updates', None):
-            for show_id, update_ts in updates.updates.items():
-                if start_date < update_ts.seconds_since_epoch < (end_date or int(time())):
-                    results.append(int(show_id))
-
-        return results
-
-    # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-        """Retrieve a list with updated shows
-
-        :param from_time: epoch timestamp, with the start date/time
-        :param weeks: number of weeks to get updates for.
-        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
-        """
-        total_updates = []
-        updates = self._get_all_updates(from_time, from_time + (weeks * 604800))  # + seconds in a week
-
-        if updates and filter_show_list:
-            new_list = []
-            for show in filter_show_list:
-                if show.indexerid in total_updates:
-                    new_list.append(show.indexerid)
-            updates = new_list
-
-        return updates
-
-    def get_id_by_external(self, **kwargs):
-        """Search imdb for a show, using an external id.
-
-        Accepts as kwargs, so you'l need to add the externals as key/values.
-        :param tvrage: The tvrage id.
-        :param thetvdb: The tvdb id.
-        :param imdb: An imdb id (inc. tt).
-        :returns: A dict with externals, including the imdb id.
-        """
-        mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-        for external_id in mapping.values():
-            if kwargs.get(external_id):
-                try:
-                    result = self.imdb_api.get_show(**{external_id: kwargs.get(external_id)})
-                    if result:
-                        externals = {mapping[imdb_external_id]: external_value
-                                     for imdb_external_id, external_value
-                                     in result.externals.items()
-                                     if external_value and mapping.get(imdb_external_id)}
-                        externals['imdb_id'] = result.maze_id
-                        return externals
-                except ShowNotFound:
-                    log.debug('Could not get imdb externals using external key {0} and id {1}',
-                              external_id, kwargs.get(external_id))
-                    continue
-                except BaseError as e:
-                    log.warning('Could not get imdb externals. Cause: {0}', e)
-                    continue
-        return {}
+    # def get_id_by_external(self, **kwargs):
+    #     """Search imdb for a show, using an external id.
+    #
+    #     Accepts as kwargs, so you'l need to add the externals as key/values.
+    #     :param tvrage: The tvrage id.
+    #     :param thetvdb: The tvdb id.
+    #     :param imdb: An imdb id (inc. tt).
+    #     :returns: A dict with externals, including the imdb id.
+    #     """
+    #     mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
+    #     for external_id in mapping.values():
+    #         if kwargs.get(external_id):
+    #             try:
+    #                 result = self.imdb_api.get_show(**{external_id: kwargs.get(external_id)})
+    #                 if result:
+    #                     externals = {mapping[imdb_external_id]: external_value
+    #                                  for imdb_external_id, external_value
+    #                                  in result.externals.items()
+    #                                  if external_value and mapping.get(imdb_external_id)}
+    #                     externals['imdb_id'] = result.maze_id
+    #                     return externals
+    #             except ShowNotFound:
+    #                 log.debug('Could not get imdb externals using external key {0} and id {1}',
+    #                           external_id, kwargs.get(external_id))
+    #                 continue
+    #             except BaseError as e:
+    #                 log.warning('Could not get imdb externals. Cause: {0}', e)
+    #                 continue
+    #     return {}
