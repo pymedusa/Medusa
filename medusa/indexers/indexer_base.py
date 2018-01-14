@@ -121,7 +121,37 @@ class BaseIndexer(object):
             else:
                 self.config['language'] = language
 
-    def _get_temp_dir(self):  # pylint: disable=no-self-use
+    def get_nested_value(self, value, config):
+        """
+        Get a nested value from a dictionary using a dot separated string.
+
+        For example the config 'plot.summaries[0].text' will return the value for dict['plot']['summaries'][0].
+        :param value: Dictionary you want to get a value from.
+        :param config: Dot separated string.
+        :return: The value matching the config.
+        """
+        # Remove a level
+        split_config = config.split('.')
+        check_key = split_config[0]
+
+        if check_key.endswith(']'):
+            list_index = int(check_key.split('[')[-1].rstrip(']'))
+            check_key = check_key.split('[')[0]
+            check_value = value.get(check_key)[list_index]
+        else:
+            check_value = value.get(check_key)
+        next_keys = '.'.join(split_config[1:])
+
+        if not check_value:
+            return None
+
+        if isinstance(check_value, dict):
+            return self.get_nested_value(check_value, next_keys)
+        else:
+            return check_value
+
+    @staticmethod
+    def _get_temp_dir():  # pylint: disable=no-self-use
         """Return the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)."""
         if hasattr(os, 'getuid'):
             uid = 'u{0}'.format(os.getuid())  # pylint: disable=no-member

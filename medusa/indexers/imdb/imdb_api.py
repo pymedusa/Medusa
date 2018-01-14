@@ -104,28 +104,6 @@ class Imdb(BaseIndexer):
             ('firstaired', 'year'),
         ]
 
-    @classmethod
-    def get_nested_value(cls, value, config):
-        # Remove a level
-        split_config = config.split('.')
-        check_key = split_config[0]
-
-        if check_key.endswith(']'):
-            list_index = int(check_key.split('[')[-1].rstrip(']'))
-            check_key = check_key.split('[')[0]
-            check_value = value.get(check_key)[list_index]
-        else:
-            check_value = value.get(check_key)
-        next_keys = '.'.join(split_config[1:])
-
-        if not check_value:
-            return None
-
-        if isinstance(check_value, dict):
-            return cls.get_nested_value(check_value, next_keys)
-        else:
-            return check_value
-
     def _map_results(self, imdb_response, key_mappings=None, list_separator='|'):
         """
         Map results to a a key_mapping dict.
@@ -155,14 +133,16 @@ class Imdb(BaseIndexer):
 
                 # return_dict['id'] = ImdbIdentifier(item.pop('imdb_id')).series_id
                 for key, config in self.series_map:
-                    value = Imdb.get_nested_value(item, config)
+                    value = self.get_nested_value(item, config)
                     if key == 'id' and value:
                         value = ImdbIdentifier(value.rstrip('/')).series_id
                     if key == 'contentrating':
                         value = text_type(value)
-
                     if value is not None:
                         return_dict[key] = value
+
+                # Check if the show is continuing
+                return_dict['status'] = 'Continuing' if item.get('base', {}).get('nextEpisode') else 'Ended'
 
             except Exception as error:
                 log.warning('Exception trying to parse attribute: {0}, with exception: {1!r}', item, error)
@@ -213,7 +193,7 @@ class Imdb(BaseIndexer):
         :return: An ordered dict with the show searched for.
         """
         results = None
-        imdb_id = 'tt{0}'.format(text_type(imdb_id).zfill(7))
+        imdb_id = ImdbIdentifier(imdb_id).imdb_id
         if imdb_id:
             log.debug('Getting all show data for {0}', imdb_id)
             results = self.imdb_api.get_title(imdb_id)
@@ -223,6 +203,11 @@ class Imdb(BaseIndexer):
 
         mapped_results = self._map_results(results, self.series_map)
 
+        # Get firstaired
+        releases = self.imdb_api.get_title_releases(imdb_id)
+        if releases.get('releases'):
+            first_released = sorted([r['date'] for r in releases['releases']])[0]
+            mapped_results['firstaired'] = first_released
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, imdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
@@ -251,7 +236,7 @@ class Imdb(BaseIndexer):
                     continue  # Skip to next episode
 
                 for k, config in self.episode_map:
-                    v = Imdb.get_nested_value(episode, config)
+                    v = self.get_nested_value(episode, config)
                     if v is not None:
                         if k == 'id':
                             v = ImdbIdentifier(v.rstrip('/')).series_id
@@ -262,15 +247,6 @@ class Imdb(BaseIndexer):
 
     def _parse_images(self, imdb_id):
         """Parse Show and Season posters.
-
-        images are retrieved using t['show name]['_banners'], for example:
-
-        >>> indexer_api = TVMaze(images = True)
-        >>> indexer_api['scrubs']['_banners'].keys()
-        ['fanart', 'poster', 'series', 'season']
-        >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
-        u'http://theimdb.com/banners/posters/76156-2.jpg'
-        >>>
 
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
