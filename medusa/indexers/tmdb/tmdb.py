@@ -304,6 +304,7 @@ class Tmdb(BaseIndexer):
         """
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
+        typecasts = {'rating': float, 'ratingcount': int}
 
         log.debug('Getting show banners for {0}', sid)
         _images = {}
@@ -340,6 +341,13 @@ class Tmdb(BaseIndexer):
                         for k, v in image_mapped.items():
                             if k is None or v is None:
                                 continue
+
+                            try:
+                                typecast = typecasts[k]
+                            except KeyError:
+                                pass
+                            else:
+                                v = typecast(v)
 
                             _images[image_type][resolution][bid][k] = v
                             if k.endswith('path'):
