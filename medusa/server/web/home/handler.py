@@ -2323,7 +2323,7 @@ class Home(WebRoot):
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
-        if series_obj.is_anime and not forAbsolute:
+        if series_obj.is_anime and forAbsolute is None:
             return json.dumps({
                 'success': False,
                 'errorMessage': 'You can\'t use the Scene numbering for anime shows. '
@@ -2331,8 +2331,15 @@ class Home(WebRoot):
                 'sceneSeason': None,
                 'sceneAbsolute': None,
             })
-
-        if series_obj.is_anime:
+        elif not series_obj.is_anime and (forSeason is None or forEpisode is None):
+            return json.dumps({
+                'success': False,
+                'errorMessage': 'You can\'t use the Scene Absolute for non-anime shows. '
+                                'Use the scene field, to configure a diverging episode number.',
+                'sceneSeason': None,
+                'sceneAbsolute': None,
+            })
+        elif series_obj.is_anime:
             result = {
                 'success': True,
                 'forAbsolute': forAbsolute,
@@ -2368,6 +2375,8 @@ class Home(WebRoot):
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
                         scene_season=sceneSeason, scene_episode=sceneEpisode), logger.DEBUG)
+
+
 
             forSeason = int(forSeason)
             forEpisode = int(forEpisode)
