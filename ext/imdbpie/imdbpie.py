@@ -130,6 +130,48 @@ class Imdb(Auth):
         self._redirection_title_check(imdb_id)
         return self._get_resource('/title/{0}/plotsynopsis'.format(imdb_id))
 
+    def get_title_plot_taglines(self, imdb_id):
+        logger.info('getting title {0} plot taglines'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/taglines'.format(imdb_id))
+
+    def get_title_news(self, imdb_id):
+        logger.info('getting title {0} plot news'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/news'.format(imdb_id))
+
+    def get_title_trivia(self, imdb_id):
+        logger.info('getting title {0} plot trivia'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/trivia'.format(imdb_id))
+
+    def get_title_soundtracks(self, imdb_id):
+        logger.info('getting title {0} plot soundtracks'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/soundtracks'.format(imdb_id))
+
+    def get_title_goofs(self, imdb_id):
+        logger.info('getting title {0} plot goofs'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/goofs'.format(imdb_id))
+
+    def get_title_technical(self, imdb_id):
+        logger.info('getting title {0} plot technical'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/technical'.format(imdb_id))
+
+    def get_title_companies(self, imdb_id):
+        logger.info('getting title {0} plot technical'.format(imdb_id))
+        self.validate_imdb_id(imdb_id)
+        self._redirection_title_check(imdb_id)
+        return self._get_resource('/title/{0}/companies'.format(imdb_id))
+
     def title_exists(self, imdb_id):
         self.validate_imdb_id(imdb_id)
         page_url = 'http://www.imdb.com/title/{0}/'.format(imdb_id)
@@ -238,7 +280,6 @@ class Imdb(Auth):
         if self.exclude_episodes:
             raise ValueError('exclude_episodes is current set to true')
         return self._get_resource('/title/{0}/episodes'.format(imdb_id))
-
     @staticmethod
     def _cache_response(file_path, resp):
         with open(file_path, 'w+') as f:
