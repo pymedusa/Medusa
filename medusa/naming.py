@@ -205,26 +205,27 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
     logger.log(u"Trying to parse " + new_name, logger.DEBUG)
 
     try:
-        result = NameParser(series=ep.series, naming_pattern=True).parse(new_name)
+        parse_result = NameParser(series=ep.series, naming_pattern=True).parse(new_name)
     except (InvalidNameException, InvalidShowException) as error:
         logger.log(u"{}".format(error), logger.DEBUG)
         return False
 
-    logger.log(u"The name " + new_name + " parsed into " + str(result), logger.DEBUG)
+    logger.log(u"The name " + new_name + " parsed into " + str(parse_result), logger.DEBUG)
 
     if abd or sports:
-        if result.air_date != ep.airdate:
+        if parse_result.air_date != ep.airdate:
             logger.log(u"Air date incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     elif anime_type != 3:
-        if len(result.ab_episode_numbers) and result.ab_episode_numbers != [x.absolute_number for x in [ep] + ep.related_episodes]:
+        if parse_result.ab_episode_numbers and parse_result.ab_episode_numbers != [x.absolute_number
+                                                                                   for x in [ep] + ep.related_episodes]:
             logger.log(u"Absolute numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     else:
-        if result.season_number != ep.season:
+        if parse_result.season_number != ep.season:
             logger.log(u"Season number incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
-        if result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
+        if parse_result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
             logger.log(u"Episode numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
 
