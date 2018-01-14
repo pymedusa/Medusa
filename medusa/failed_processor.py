@@ -62,7 +62,7 @@ class FailedProcessor(object):
 
         if segment:
             self.log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=releaseName))
-            cur_failed_queue_item = FailedQueueItem(parsed_result.series, segment)
+            cur_failed_queue_item = FailedQueueItem(parse_result.series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
         return True
