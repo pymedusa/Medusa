@@ -1710,6 +1710,12 @@ td.col-status {
     text-align: center;
 }
 
+@media screen and (min-width: 992px) {
+    td.col-status {
+        white-space: nowrap;
+    }
+}
+
 th.col-quality,
 td.col-quality {
     width: 110px;
