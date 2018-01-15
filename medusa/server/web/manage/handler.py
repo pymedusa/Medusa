@@ -611,14 +611,14 @@ class Manage(Home, WebRoot):
             if not series_obj:
                 continue
 
-            cur_root_dir = os.path.dirname(show_obj._location)
-            cur_show_dir = os.path.basename(show_obj._location)
+            cur_root_dir = os.path.dirname(series_obj._location)
+            cur_show_dir = os.path.basename(series_obj._location)
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show._location} to {location}'.format
-                           (show=show_obj, location=new_show_dir))
+                           (show=series_obj, location=new_show_dir))
             else:
-                new_show_dir = show_obj._location
+                new_show_dir = series_obj._location
 
             if paused == 'keep':
                 new_paused = series_obj.paused
