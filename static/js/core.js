@@ -183,15 +183,8 @@ function wsCheckNotifications() {
         displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
     };
-    console.log('Notifications library loaded.')
+    console.log('Notifications library loaded.');
 }
-
-// Listen for the config loaded event.
-window.addEventListener('build', function(e) {
-    if (e.detail === 'medusa config loaded') {
-
-    }
-}, false);
 
 // Run functions that depend on loading of the config.
 // Listen for the config loaded event.
