@@ -126,10 +126,9 @@ if (!document.location.pathname.endsWith('/login/')) {
     });
 }
 
-
+// Notifications
 var WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
 var test = !1;
-
 var iconUrl = 'images/ico/favicon-120.png';
 
 PNotify.prototype.options.addclass = 'stack-bottomright';
