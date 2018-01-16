@@ -7,27 +7,39 @@ import json
 import os
 import re
 
-from tornroutes import route
-
-from ..core import PageTemplate, WebRoot
-from ..home import Home
-from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
-from ....common import (
-    Overview, Quality, SNATCHED,
+from medusa import (
+    app,
+    db,
+    helpers,
+    image_cache,
+    logger,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
-from ....helper.common import (
-    episode_num, try_int,
+from medusa.common import (
+    Overview,
+    Quality,
+    SNATCHED,
 )
-from ....helper.exceptions import (
+from medusa.helper.common import (
+    episode_num,
+    try_int,
+)
+from medusa.helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
-from ....helpers import is_media_file
-from ....image_cache import ImageCache
-from ....network_timezones import app_timezone
-from ....post_processor import PostProcessor
-from ....show.show import Show
-from ....tv import Episode
+from medusa.helpers import is_media_file
+from medusa.network_timezones import app_timezone
+from medusa.post_processor import PostProcessor
+from medusa.server.web.core import PageTemplate, WebRoot
+from medusa.server.web.home import Home
+from medusa.show.show import Show
+from medusa.tv import Episode
+
+from tornroutes import route
 
 
 @route('/manage(/?.*)')
@@ -578,14 +590,14 @@ class Manage(Home, WebRoot):
             if not show_obj:
                 continue
 
-            cur_root_dir = os.path.dirname(show_obj._location)  # pylint: disable=protected-access
-            cur_show_dir = os.path.basename(show_obj._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(show_obj._location)
+            cur_show_dir = os.path.basename(show_obj._location)
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
-                logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
-                           (show=show_obj, location=new_show_dir))  # pylint: disable=protected-access
+                logger.log(u'For show {show.name} changing dir from {show._location} to {location}'.format
+                           (show=show_obj, location=new_show_dir))
             else:
-                new_show_dir = show_obj._location  # pylint: disable=protected-access
+                new_show_dir = show_obj._location
 
             if paused == 'keep':
                 new_paused = show_obj.paused
@@ -716,7 +728,6 @@ class Manage(Home, WebRoot):
                 subtitles.append(show_obj.name)
 
             if cur_show_id in to_image_update:
-                image_cache = ImageCache()
                 image_cache.replace_images(show_obj)
 
         if errors:
@@ -733,7 +744,7 @@ class Manage(Home, WebRoot):
         if subtitles:
             message += '\nSubtitles: {0}'.format(len(subtitles))
         if image_update:
-            message += '\nImage update: {0}'.format(len(subtitles))
+            message += '\nImage updates: {0}'.format(len(image_update))
 
         if message:
             ui.notifications.message('Queued actions:', message)

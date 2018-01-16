@@ -93,6 +93,11 @@ import pytest
         'filepath': 'downloads/tv/Gomorra S03 E11 - x264 .srt',
         'expected': 'media/shows/gomorra/season 3/Gomorra S03E15 Episode Name.srt'
     },
+    {  # p14: Subtitle with language tag
+        'new_path': 'media/shows/riko or marty/season 3/',
+        'filepath': 'downloads/tv/riko.or.marty.s03e05.1080p.web-dl.en-au.srt',
+        'expected': 'media/shows/riko or marty/season 3/riko.or.marty.s03e05.1080p.web-dl.en-AU.srt'
+    },
 ])
 def test_rename_associated_file(p, create_dir, monkeypatch):
     """Test rename_associated_file."""

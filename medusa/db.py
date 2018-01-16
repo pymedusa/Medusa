@@ -24,9 +24,10 @@ import threading
 import time
 import warnings
 
+from medusa import app, logger
+from medusa.helper.exceptions import ex
+
 from six import text_type
-from . import app, logger
-from .helper.exceptions import ex
 
 db_cons = {}
 db_locks = {}
@@ -445,7 +446,7 @@ def restoreDatabase(version):
     :param version: Version to restore to
     :return: True if restore succeeds, False if it fails
     """
-    from . import helpers
+    from medusa import helpers
     logger.log(u"Restoring database before trying upgrade again")
     if not helpers.restore_versioned_file(dbFilename(suffix='v' + str(version)), version):
         logger.log_error_and_exit(u"Database restore failed, abort upgrading database")

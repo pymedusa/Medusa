@@ -29,7 +29,7 @@ from medusa.notifiers.emailnotify import Notifier as EmailNotifier
 from medusa.notifiers.prowl import Notifier as ProwlNotifier
 from medusa.server.web import Home
 from medusa.tv import Episode, Series
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class NotifierTests(test.AppTestDBCase):

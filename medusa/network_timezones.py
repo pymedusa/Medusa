@@ -22,11 +22,12 @@ import re
 
 from app import BASE_PYMEDUSA_URL
 from dateutil import tz
-from six import iteritems
 
-from . import db, logger
-from .helper.common import try_int
-from .session.core import MedusaSafeSession
+from medusa import db, logger
+from medusa.helper.common import try_int
+from medusa.session.core import MedusaSafeSession
+
+from six import iteritems
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
@@ -50,7 +51,7 @@ def update_network_dict():
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
     if not response or not response.text:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
+        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.INFO)
         load_network_dict()
         return
 

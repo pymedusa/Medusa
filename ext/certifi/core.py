@@ -26,7 +26,8 @@ def where():
 
 def old_where():
     warnings.warn(
-        "The weak security bundle is being deprecated.",
+        "The weak security bundle is being deprecated. It will be removed in "
+        "2018.",
         DeprecatedBundleWarning
     )
     f = os.path.dirname(__file__)

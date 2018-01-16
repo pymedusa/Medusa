@@ -32,6 +32,13 @@ from dogpile.cache.api import NO_VALUE
 
 import knowit
 
+from medusa import app, db, helpers, history
+from medusa.cache import cache, memory_cache
+from medusa.common import Quality, cpu_presets
+from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
+from medusa.helper.exceptions import ex
+from medusa.helpers import is_media_file, is_rar_file
+from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
 from six import iteritems, string_types, text_type
@@ -40,15 +47,6 @@ from subliminal import ProviderPool, compute_score, provider_manager, refine, sa
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-
-from . import app, db, helpers, history
-from .cache import cache, memory_cache
-from .common import Quality, cpu_presets
-from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
-from .helper.exceptions import ex
-from .helpers import is_media_file, is_rar_file
-from .show.show import Show
-
 
 logger = logging.getLogger(__name__)
 
@@ -596,7 +594,7 @@ def get_current_subtitles(tv_episode):
         return get_subtitles(video)
 
 
-def _encode(value, encoding='utf-8', fallback=None):
+def _encode(value, fallback=None):
     """Encode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -610,6 +608,8 @@ def _encode(value, encoding='utf-8', fallback=None):
     :return: the encoded value
     :rtype: str
     """
+    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+
     try:
         return value.encode(encoding)
     except UnicodeEncodeError:
@@ -618,7 +618,7 @@ def _encode(value, encoding='utf-8', fallback=None):
         return value.encode(fallback or app.SYS_ENCODING)
 
 
-def _decode(value, encoding='utf-8', fallback=None):
+def _decode(value, fallback=None):
     """Decode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -632,12 +632,14 @@ def _decode(value, encoding='utf-8', fallback=None):
     :return: the decoded value
     :rtype: unicode
     """
+    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+
     try:
-        return value.decode(encoding)
+        return text_type(value, encoding)
     except UnicodeDecodeError:
         logger.debug(u'Failed to decode to %s, falling back to %s: %r',
                      encoding, fallback or app.SYS_ENCODING, value)
-        return value.decode(fallback or app.SYS_ENCODING)
+        return text_type(value, fallback or app.SYS_ENCODING)
 
 
 def get_subtitle_description(subtitle):
@@ -821,8 +823,8 @@ class SubtitlesFinder(object):
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
-        from . import process_tv
-        from .tv import Episode
+        from medusa import process_tv
+        from medusa.tv import Episode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 
@@ -898,7 +900,7 @@ class SubtitlesFinder(object):
         :param dirpath: the directory path to be used
         :type dirpath: str
         """
-        from . import process_tv
+        from medusa import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
             # Skip folders that are being used for unpacking
             if u'_UNPACK' in root.upper():
@@ -1003,7 +1005,7 @@ class SubtitlesFinder(object):
 
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
-            subtitle_path = _encode(ep_to_sub['location'], encoding=app.SYS_ENCODING, fallback='utf-8')
+            subtitle_path = _encode(ep_to_sub['location'], fallback='utf-8')
             if not os.path.isfile(subtitle_path):
                 logger.debug(u'Episode file does not exist, cannot download subtitles for %s %s',
                              ep_to_sub['show_name'], ep_num)

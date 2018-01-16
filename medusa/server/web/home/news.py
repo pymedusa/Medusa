@@ -3,10 +3,12 @@
 from __future__ import unicode_literals
 
 import markdown2
+
+from medusa import app
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+
 from tornroutes import route
-from .handler import Home
-from ..core import PageTemplate
-from .... import app, logger
 
 
 @route('/news(/?.*)')
@@ -15,11 +17,9 @@ class HomeNews(Home):
         super(HomeNews, self).__init__(*args, **kwargs)
 
     def index(self):
-        try:
-            news = app.version_check_scheduler.action.check_for_new_news(force=True)
-        except Exception:
-            logger.log('Could not load news from repo, giving a link!', logger.DEBUG)
-            news = 'Could not load news from the repo. [Click here for news.md]({url})'.format(url=app.NEWS_URL)
+        news = app.version_check_scheduler.action.check_for_new_news(force=True)
+        if not news:
+            news = 'Could not load news from the repository. [Click here for news.md]({url})'.format(url=app.NEWS_URL)
 
         app.NEWS_LAST_READ = app.NEWS_LATEST
         app.NEWS_UNREAD = 0

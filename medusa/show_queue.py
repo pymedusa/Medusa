@@ -19,7 +19,7 @@
 import os
 import traceback
 
-from imdbpie.exceptions import HTTPError as IMDbHTTPError
+from imdbpie.exceptions import ImdbAPIError
 
 from medusa import (
     app,
@@ -531,8 +531,8 @@ class QueueItemAdd(ShowQueueItem):
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
-            logger.log(u"Something wrong on IMDb api: " + e.message, logger.WARNING)
+        except ImdbAPIError as e:
+            logger.log(u"Something wrong on IMDb api: " + e.message, logger.INFO)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + e.message, logger.ERROR)
 
@@ -745,9 +745,9 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
+        except ImdbAPIError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
@@ -866,9 +866,9 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
+        except ImdbAPIError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
