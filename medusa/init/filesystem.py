@@ -11,6 +11,8 @@ import tarfile
 import tempfile # noqa # pylint: disable=unused-import
 from builtins import map
 
+# unused import but needs to be monkeypatched here
+import tempfile
 import certifi
 
 import rarfile
