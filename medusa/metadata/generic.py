@@ -323,6 +323,8 @@ class GenericMetadata(object):
                 u'Metadata provider {name} creating episode thumbnail for {episode}',
                 {u'name': self.name, u'episode': ep_obj.pretty_name()}
             )
+            if self.indexer_api:
+                ep_obj.set_indexer_data(season=ep_obj.season, indexer_api=self.indexer_api)
             return self.save_thumbnail(ep_obj)
         return False
 

@@ -146,7 +146,7 @@ class SeriesIdentifier(Identifier):
     @property
     def slug(self):
         """Slug."""
-        return str(self)
+        return text_type(self)
 
     @property
     def api(self):
@@ -588,33 +588,33 @@ class Series(TV):
         :return:
         :rtype: list of Episode
         """
-        sql_selection = b'SELECT season, episode, '
-
         # subselection to detect multi-episodes early, share_location > 0
-        sql_selection += (b'(SELECT '
-                          b'  COUNT (*) '
-                          b'FROM '
-                          b'  tv_episodes '
-                          b'WHERE '
-                          b'  showid = tve.showid '
-                          b'  AND season = tve.season '
-                          b"  AND location != '' "
-                          b'  AND location = tve.location '
-                          b'  AND episode != tve.episode) AS share_location ')
-
-        sql_selection = sql_selection + b' FROM tv_episodes tve WHERE showid = ' + str(self.series_id)
+        sql_selection = (b'SELECT season, episode, (SELECT '
+                         b'  COUNT (*) '
+                         b'FROM '
+                         b'  tv_episodes '
+                         b'WHERE '
+                         b'  showid = tve.showid '
+                         b'  AND season = tve.season '
+                         b"  AND location != '' "
+                         b'  AND location = tve.location '
+                         b'  AND episode != tve.episode) AS share_location '
+                         b' FROM tv_episodes tve WHERE showid = ?'
+                         )
+        sql_args = [self.series_id]
 
         if season is not None:
-            sql_selection = sql_selection + b' AND season = ' + str(season)
+            sql_selection += b' AND season IN (?)'
+            sql_args.append(','.join(map(text_type, season)))
 
         if has_location:
-            sql_selection += b" AND location != '' "
+            sql_selection += b" AND location != ''"
 
         # need ORDER episode ASC to rename multi-episodes in order S01E01-02
         sql_selection += b' ORDER BY season ASC, episode ASC'
 
         main_db_con = db.DBConnection()
-        results = main_db_con.select(sql_selection)
+        results = main_db_con.select(sql_selection, sql_args)
 
         ep_list = []
         for cur_result in results:
