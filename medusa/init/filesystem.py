@@ -8,6 +8,8 @@ import shutil
 import sys
 import tarfile
 
+# unused import but needs to be monkeypatched here
+import tempfile
 import certifi
 
 from six import binary_type, text_type
