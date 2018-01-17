@@ -80,7 +80,7 @@ class TorrentLeechProvider(TorrentProvider):
 
                     categories = ['2', '7', '35']
                     categories += ['26', '32', '44'] if mode == 'Episode' else ['27']
-                    if self.show and self.show.is_anime:
+                    if self.series and self.series.is_anime:
                         categories += ['34']
                 else:
                     categories = ['2', '26', '27', '32', '7', '34', '35', '44']
