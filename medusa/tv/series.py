@@ -599,7 +599,7 @@ class Series(TV):
                          b"  AND location != '' "
                          b'  AND location = tve.location '
                          b'  AND episode != tve.episode) AS share_location '
-                         b' FROM tv_episodes tve WHERE showid = ?'
+                         b'FROM tv_episodes tve WHERE showid = ?'
                          )
         sql_args = [self.series_id]
 
