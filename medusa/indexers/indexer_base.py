@@ -215,7 +215,6 @@ class BaseIndexer(object):
         :param series: ID of series being processed
         :param images: Images to be processed
         """
-
         def pop_stats(it, key):
             """Get the population statistics for a key."""
             values = list(gen_values_by_key(it, key))
