@@ -488,7 +488,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
-                self.show.release_groups = BlackAndWhiteList(self.show.indexerid)
+                self.show.release_groups = BlackAndWhiteList(self.show)
                 if self.blacklist:
                     self.show.release_groups.set_black_keywords(self.blacklist)
                 if self.whitelist:

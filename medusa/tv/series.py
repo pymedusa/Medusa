@@ -1986,7 +1986,7 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        bw_list = self.release_groups or BlackAndWhiteList(self.series_id)
+        bw_list = self.release_groups or BlackAndWhiteList(self)
 
         data = NonEmptyDict()
         data['id'] = NonEmptyDict()
