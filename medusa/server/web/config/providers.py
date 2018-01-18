@@ -36,7 +36,7 @@ class ConfigProviders(Config):
 
     @staticmethod
     def canAddProvider(kind, name, url, api_key=None):
-        """See if a Newznab provider can be added."""
+        """See if a Newznab or Torznab provider can be added."""
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
