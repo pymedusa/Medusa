@@ -589,19 +589,21 @@ class Series(TV):
         :rtype: list of Episode
         """
         # subselection to detect multi-episodes early, share_location > 0
+        # If a multi-episode release has been downloaded. For example my.show.S01E1E2.1080p.WEBDL.mkv, you'll find the same location
+        # in the database for those episodes (S01E01 and S01E02). The query is to mark that the location for each episode is shared with another episode.
         sql_selection = (b'SELECT season, episode, (SELECT '
                          b'  COUNT (*) '
                          b'FROM '
                          b'  tv_episodes '
                          b'WHERE '
-                         b'  showid = tve.showid '
+                         b'  indexer = tve.indexer AND showid = tve.showid '
                          b'  AND season = tve.season '
                          b"  AND location != '' "
                          b'  AND location = tve.location '
                          b'  AND episode != tve.episode) AS share_location '
-                         b'FROM tv_episodes tve WHERE showid = ?'
+                         b'FROM tv_episodes tve WHERE indexer = ? AND showid = ?'
                          )
-        sql_args = [self.series_id]
+        sql_args = [self.indexer, self.series_id]
 
         if season is not None:
             sql_selection += b' AND season IN (?)'
