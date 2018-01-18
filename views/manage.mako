@@ -65,12 +65,13 @@
                         <!-- <th>Force Metadata Regen <input type="checkbox" class="bulkCheck" id="metadataCheck" /></th>//-->
                         <th width="1%">Delete<br><input type="checkbox" class="bulkCheck" id="deleteCheck" /></th>
                         <th width="1%">Remove<br><input type="checkbox" class="bulkCheck" id="removeCheck" /></th>
+                        <th width="1%">Update image<br><input type="checkbox" class="bulkCheck" id="imageCheck" /></th>
                     </tr>
                 </thead>
                 <tfoot>
                     <tr>
                         <td rowspan="1" colspan="2" class="align-center alt"><input class="btn pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-                        <td rowspan="1" colspan="${(15, 16)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
+                        <td rowspan="1" colspan="${(16, 17)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
                     </tr>
                 </tfoot>
                 <tbody>
@@ -82,21 +83,22 @@
                 <%
                     cur_ep = cur_show.next_aired
                     disabled = app.show_queue_scheduler.action.isBeingUpdated(cur_show) or app.show_queue_scheduler.action.isInUpdateQueue(cur_show)
-                    curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     disabled = app.show_queue_scheduler.action.isBeingRefreshed(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show)
-                    curRename = "<input type=\"checkbox\" class=\"renameCheck\" id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curRename = "<input type=\"checkbox\" class=\"renameCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     disabled = not cur_show.subtitles or app.show_queue_scheduler.action.isBeingSubtitled(cur_show) or app.show_queue_scheduler.action.isInSubtitleQueue(cur_show)
-                    curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curRemove = "<input type=\"checkbox\" class=\"removeCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curImage = "<input type=\"checkbox\" class=\"imageCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"image-" + str(cur_show.indexerid) + "\" " + "/>"
                 %>
                 <tr>
-                    <td class="triggerhighlight" align="center"><input type="checkbox" class="editCheck" id="edit-${cur_show.indexerid}" /></td>
-                    <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+                    <td class="triggerhighlight" align="center"><input type="checkbox" class="editCheck" data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" id="edit-${cur_show.series_id}" /></td>
+                    <td class="tvShow triggerhighlight"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</a></td>
                     <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
                     <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
@@ -115,6 +117,7 @@
                     % endif
                     <td class="triggerhighlight" align="center">${curDelete}</td>
                     <td class="triggerhighlight" align="center">${curRemove}</td>
+                    <td class="triggerhighlight" align="center">${curImage}</td>
                 </tr>
             % endfor
             </tbody>

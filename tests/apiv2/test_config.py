@@ -6,8 +6,12 @@ import sys
 
 from medusa import app, db
 from medusa.helper.mappings import NonEmptyDict
+from medusa.indexers.indexer_config import indexerConfig
 
 import pytest
+
+from six import iteritems, text_type
+
 from tornado.httpclient import HTTPError
 
 
@@ -22,6 +26,7 @@ def config(monkeypatch, app_config):
     config_data = NonEmptyDict()
     config_data['anonRedirect'] = app.ANON_REDIRECT
     config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
+    config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
     config_data['datePreset'] = app.DATE_PRESET
     config_data['fuzzyDating'] = app.FUZZY_DATING
@@ -119,6 +124,9 @@ def config(monkeypatch, app_config):
     config_data['backlogOverview'] = NonEmptyDict()
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
     config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+    config_data['indexers'] = NonEmptyDict()
+    config_data['indexers']['config'] = {text_type(indexer_id): indexer['identifier'] for indexer_id,
+                                         indexer in iteritems(indexerConfig)}
 
     return config_data
 

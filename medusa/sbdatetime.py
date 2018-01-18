@@ -20,8 +20,8 @@ import datetime
 import functools
 import locale
 
-from . import app
-from .network_timezones import app_timezone
+from medusa import app
+from medusa.network_timezones import app_timezone
 
 date_presets = (
     '%Y-%m-%d',

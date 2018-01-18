@@ -80,7 +80,7 @@ def sendNZB(nzb, proper=False):
     addToTop = False
     nzbgetprio = 0
     category = app.NZBGET_CATEGORY
-    if nzb.show.is_anime:
+    if nzb.series.is_anime:
         category = app.NZBGET_CATEGORY_ANIME
 
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
@@ -109,7 +109,7 @@ def sendNZB(nzb, proper=False):
             nzbgetprio = app.NZBGET_PRIORITY
         else:
             category = app.NZBGET_CATEGORY_BACKLOG
-            if nzb.show.is_anime:
+            if nzb.series.is_anime:
                 category = app.NZBGET_CATEGORY_ANIME_BACKLOG
 
     if nzb.quality != Quality.UNKNOWN:

@@ -62,32 +62,31 @@ import time
 
 from configobj import ConfigObj
 
-from six import text_type
-
-from . import (
+from medusa import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
-from .common import SD, SKIPPED, WANTED
-from .config import (
+from medusa.common import SD, SKIPPED, WANTED
+from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
-from .databases import cache_db, failed_db, main_db
-from .event_queue import Events
-from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
-from .providers.generic_provider import GenericProvider
-from .providers.nzb.newznab import NewznabProvider
-from .providers.torrent.rss.rsstorrent import TorrentRssProvider
-from .providers.torrent.torznab.torznab import TorznabProvider
-from .search.backlog import BacklogSearchScheduler, BacklogSearcher
-from .search.daily import DailySearcher
-from .search.proper import ProperFinder
-from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .server.core import AppWebServer
-from .system.shutdown import Shutdown
-from .tv import Series
+from medusa.databases import cache_db, failed_db, main_db
+from medusa.event_queue import Events
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
+from medusa.search.daily import DailySearcher
+from medusa.search.proper import ProperFinder
+from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.server.core import AppWebServer
+from medusa.system.shutdown import Shutdown
+from medusa.tv import Series
+
+from six import text_type
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +133,41 @@ class Application(object):
         help_msg = help_msg.replace('Medusa directory', app.PROG_DIR)
 
         return help_msg
+
+    @staticmethod
+    def migrate_images():
+        """Migrate pre-multi-indexer images to their correct place."""
+        if hasattr(app, 'MIGRATE_IMAGES'):
+            for series_obj in app.showList:
+                try:
+                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                    images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
+
+                    # Create the cache/images/tvdb folder if not exists
+                    if not os.path.isdir(images_root_indexer):
+                        os.makedirs(images_root_indexer)
+
+                    if not os.path.isdir(images_root_indexer_thumbnails):
+                        os.makedirs(images_root_indexer_thumbnails)
+
+                    # Check for the different possible images and move them.
+                    for image_type in ('poster', 'fanart', 'banner'):
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        src = os.path.join(app.CACHE_DIR, 'images', image_name)
+                        dst = os.path.join(images_root_indexer, image_name)
+                        if os.path.isfile(src) and not os.path.isfile(dst):
+                            # image found, let's try to move it
+                            os.rename(src, dst)
+
+                        src_thumb = os.path.join(app.CACHE_DIR, 'images', 'thumbnails', image_name)
+                        dst_thumb = os.path.join(images_root_indexer_thumbnails, image_name)
+                        if os.path.isfile(src_thumb) and not os.path.isfile(dst_thumb):
+                            # image found, let's try to move it
+                            os.rename(src_thumb, dst_thumb)
+                except Exception as error:
+                    logger.warning('Error while trying to move the images for series {series}. '
+                                   'Try to refresh the show, or move the images manually if you know '
+                                   'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
     def start(self, args):
         """Start Application."""
@@ -309,6 +343,7 @@ class Application(object):
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
+        self.migrate_images()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -890,6 +925,7 @@ class Application(object):
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
+            app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1881,6 +1917,7 @@ class Application(object):
 
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
+        new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
 
         new_config.write()
 

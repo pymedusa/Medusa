@@ -119,7 +119,6 @@
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
         <%block name="scripts" />
     </body>
 </html>

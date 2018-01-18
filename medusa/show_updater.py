@@ -20,15 +20,14 @@ import logging
 import threading
 import time
 
-import app
-from requests.exceptions import HTTPError
+from medusa import app, db, network_timezones, ui
+from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.scene_exceptions import refresh_exceptions_cache
+from medusa.session.core import MedusaSession
 
-from . import db, network_timezones, ui
-from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
-from .indexers.indexer_api import indexerApi
-from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
-from .scene_exceptions import refresh_exceptions_cache
-from .session.core import MedusaSession
+from requests.exceptions import HTTPError
 
 logger = logging.getLogger(__name__)
 

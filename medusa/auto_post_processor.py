@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import logging
 import os.path
 
-from . import app
+from medusa import app
 
 
 logger = logging.getLogger(__name__)

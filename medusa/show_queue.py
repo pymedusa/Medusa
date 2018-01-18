@@ -19,7 +19,7 @@
 import os
 import traceback
 
-from imdbpie.exceptions import HTTPError as IMDbHTTPError
+from imdbpie.exceptions import ImdbAPIError
 
 from medusa import (
     app,
@@ -260,7 +260,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         # remove other queued actions for this show.
         for item in self.queue:
-            if item and item.show and item != self.currentItem and show.indexerid == item.show.indexerid:
+            if item and item.show and item != self.currentItem and show.identifier == item.show.identifier:
                 self.queue.remove(item)
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
@@ -488,7 +488,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
-                self.show.release_groups = BlackAndWhiteList(self.show.indexerid)
+                self.show.release_groups = BlackAndWhiteList(self.show)
                 if self.blacklist:
                     self.show.release_groups.set_black_keywords(self.blacklist)
                 if self.whitelist:
@@ -531,8 +531,8 @@ class QueueItemAdd(ShowQueueItem):
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
-            logger.log(u"Something wrong on IMDb api: " + e.message, logger.WARNING)
+        except ImdbAPIError as e:
+            logger.log(u"Something wrong on IMDb api: " + e.message, logger.INFO)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + e.message, logger.ERROR)
 
@@ -589,12 +589,11 @@ class QueueItemAdd(ShowQueueItem):
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
         # Load XEM data to DB for show
-        scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
+        scene_numbering.xem_refresh(self.show, force=True)
 
         # check if show has XEM mapping so we can determine if searches
         # should go by scene numbering or indexer numbering.
-        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
-                                                                         self.show.indexer):
+        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show):
             self.show.scene = 1
 
         # After initial add, set to default_status_after.
@@ -633,7 +632,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.populate_cache()
 
             # Load XEM data to DB for show
-            scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            scene_numbering.xem_refresh(self.show)
         except Exception as e:
             logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
                        (id=self.show.indexerid, show=self.show.name, error_msg=e.message), logger.ERROR)
@@ -745,9 +744,9 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
+        except ImdbAPIError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
@@ -866,9 +865,9 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except IMDbHTTPError as e:
+        except ImdbAPIError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.INFO)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=e.message), logger.WARNING)

@@ -183,7 +183,7 @@ def make_dir(path):
     return True
 
 
-def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None):
+def search_indexer_for_show_id(show_name, indexer=None, series_id=None, ui=None):
     """Contact indexer to check for information on shows by showid.
 
     :param show_name: Name of show
@@ -212,29 +212,29 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
                       {'name': name, 'indexer': indexer_api.name})
 
             try:
-                search = t[indexer_id] if indexer_id else t[name]
+                search = t[series_id] if series_id else t[name]
             except Exception:
                 continue
 
             try:
-                seriesname = search[0]['seriesname']
+                searched_series_name = search[0]['seriesname']
             except Exception:
-                seriesname = None
+                searched_series_name = None
 
             try:
-                series_id = search[0]['id']
+                searched_series_id = search[0]['id']
             except Exception:
-                series_id = None
+                searched_series_id = None
 
-            if not (seriesname and series_id):
+            if not (searched_series_name and searched_series_id):
                 continue
-            show = Show.find(app.showList, int(series_id))
+            series = Show.find_by_id(app.showList, i, searched_series_id)
             # Check if we can find the show in our list
             # if not, it's not the right show
-            if (indexer_id is None) and (show is not None) and (show.indexerid == int(series_id)):
-                return seriesname, i, int(series_id)
-            elif (indexer_id is not None) and (int(indexer_id) == int(series_id)):
-                return seriesname, i, int(indexer_id)
+            if (series_id is None) and (series is not None) and (series.indexerid == int(searched_series_id)):
+                return searched_series_name, i, int(searched_series_id)
+            elif (series_id is not None) and (int(series_id) == int(searched_series_id)):
+                return searched_series_name, i, int(series_id)
 
         if indexer:
             break
@@ -695,7 +695,7 @@ def update_anime_support():
     app.ANIMESUPPORT = is_anime_in_show_list()
 
 
-def get_absolute_number_from_season_and_episode(show, season, episode):
+def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     """Find the absolute number for a show episode.
 
     :param show: Show object
@@ -707,32 +707,32 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
 
     if season and episode:
         main_db_con = db.DBConnection()
-        sql = b'SELECT * FROM tv_episodes WHERE showid = ? and season = ? and episode = ?'
-        sql_results = main_db_con.select(sql, [show.indexerid, season, episode])
+        sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
+        sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
 
         if len(sql_results) == 1:
             absolute_number = int(sql_results[0][b'absolute_number'])
             log.debug(
                 u'Found absolute number {absolute} for show {show} {ep}', {
                     'absolute': absolute_number,
-                    'show': show.name,
+                    'show': series_obj.name,
                     'ep': episode_num(season, episode),
                 }
             )
         else:
             log.debug(u'No entries for absolute number for show {show} {ep}',
-                      {'show': show.name, 'ep': episode_num(season, episode)})
+                      {'show': series_obj.name, 'ep': episode_num(season, episode)})
 
     return absolute_number
 
 
-def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None):
+def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None, indexer=None):
     episodes = []
     season = None
 
     if absolute_numbers:
-        if not show and indexer_id:
-            show = Show.find(app.showList, indexer_id)
+        if not show and (indexer_id and indexer):
+            show = Show.find_by_id(app.showList, indexer, indexer_id)
 
         for absolute_number in absolute_numbers if show else []:
             ep = show.get_episode(None, None, absolute_number=absolute_number)
@@ -1009,42 +1009,44 @@ def get_show(name, try_indexers=False):
     if not app.showList:
         return
 
-    show = None
+    series = None
     from_cache = False
 
     if not name:
-        return show
+        return series
 
     for series_name in generate(name):
-        # check cache for show
-        cache = name_cache.retrieveNameFromCache(series_name)
-        if cache:
+        # check cache for series
+        indexer_id, series_id = name_cache.retrieveNameFromCache(series_name)
+        if series_id:
             from_cache = True
-            show = Show.find(app.showList, int(cache))
+            series = Show.find_by_id(app.showList, indexer_id, series_id)
 
         # try indexers
-        if not show and try_indexers:
-            show = Show.find(
-                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)[2])
+        if not series and try_indexers:
+            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)
+            series = Show.find_by_id(app.showList, found_indexer_id, found_series_id)
 
         # try scene exceptions
-        if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(series_name)[0]
-            if show_id:
-                show = Show.find(app.showList, int(show_id))
+        if not series:
+            series_from_name = scene_exceptions.get_scene_exceptions_by_name(series_name)[0]
+            series_id = series_from_name[0]
+            indexer_id = series_from_name[2]
+            if series_id:
+                series = Show.find_by_id(app.showList, indexer_id, series_id)
 
-        if not show:
+        if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
-            for found_show in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
-                            (name=series_name, show=found_show))
+            for found_series in match_name_only:
+                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                            (name=series_name, series=found_series))
 
         # add show to cache
-        if show and not from_cache:
-            name_cache.addNameToCache(series_name, show.indexerid)
+        if series and not from_cache:
+            name_cache.addNameToCache(series_name, series.indexer, series.indexerid)
 
-        return show
+        return series
 
 
 def is_hidden_folder(folder):
@@ -1780,10 +1782,10 @@ def get_broken_providers():
 
     response = MedusaSafeSession().get_json(url)
     if response is None:
-        log.warning('Unable to update the list with broken providers.'
-                    ' This list is used to disable broken providers.'
-                    ' You may encounter errors in the log files if you are'
-                    ' using a broken provider.')
+        log.info('Unable to update the list with broken providers.'
+                 ' This list is used to disable broken providers.'
+                 ' You may encounter errors in the log files if you are'
+                 ' using a broken provider.')
         return []
 
     log.info('Broken providers found: {0}', response)

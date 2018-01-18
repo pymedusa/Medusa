@@ -306,32 +306,31 @@ class CheckVersion(object):
         :force: ignored
         """
         # Grab a copy of the news
-        log.debug(u'check_for_new_news: Checking GitHub for latest news.')
-        try:
-            news = self.session.get(app.NEWS_URL).text
-        except Exception:
-            log.warning(u'check_for_new_news: Could not load news from repo.')
-            news = ''
-
-        if not news:
-            return ''
+        log.debug(u'Checking GitHub for latest news.')
+        response = self.session.get(app.NEWS_URL)
+        if not response or not response.text:
+            log.debug(u'Could not load news from URL: %s', app.NEWS_URL)
+            return
 
         try:
             last_read = datetime.datetime.strptime(app.NEWS_LAST_READ, '%Y-%m-%d')
-        except Exception:
+        except ValueError:
+            log.warning(u'Invalid news last read date: %s', app.NEWS_LAST_READ)
             last_read = 0
 
+        news = response.text
         app.NEWS_UNREAD = 0
-        gotLatest = False
+        got_latest = False
         for match in re.finditer(r'^####\s*(\d{4}-\d{2}-\d{2})\s*####', news, re.M):
-            if not gotLatest:
-                gotLatest = True
+            if not got_latest:
+                got_latest = True
                 app.NEWS_LATEST = match.group(1)
 
             try:
                 if datetime.datetime.strptime(match.group(1), '%Y-%m-%d') > last_read:
                     app.NEWS_UNREAD += 1
-            except Exception:
+            except ValueError:
+                log.warning(u'Unable to match latest news date. Repository news date: %s', match.group(1))
                 pass
 
         return news

@@ -323,6 +323,8 @@ class GenericMetadata(object):
                 u'Metadata provider {name} creating episode thumbnail for {episode}',
                 {u'name': self.name, u'episode': ep_obj.pretty_name()}
             )
+            if self.indexer_api:
+                ep_obj.set_indexer_data(season=ep_obj.season, indexer_api=self.indexer_api)
             return self.save_thumbnail(ep_obj)
         return False
 
@@ -831,36 +833,36 @@ class GenericMetadata(object):
 
         return result
 
-    def _get_show_data(self, show_obj):
+    def _get_show_data(self, series_obj):
         """
         Retrieve show data from the indexer.
 
         Try to reuse the indexer_api class instance attribute.
         As we are reusing the indexers results, we need to do a full index including actors and images.
 
-        :param show_obj: A TVshow object.
+        :param series_obj: A TVshow object.
         :return: A re-indexed show object.
         """
-        show_id = show_obj.indexerid
+        series_id = series_obj.series_id
 
         try:
-            if not (show_obj.indexer_api and all([show_obj.indexer_api.config[u'banners_enabled'],
-                                                  show_obj.indexer_api.config[u'actors_enabled']])):
-                show_obj.create_indexer(banners=True, actors=True)
+            if not (series_obj.indexer_api and all([series_obj.indexer_api.config[u'banners_enabled'],
+                                                    series_obj.indexer_api.config[u'actors_enabled']])):
+                series_obj.create_indexer(banners=True, actors=True)
 
-            self.indexer_api = show_obj.indexer_api
-            my_show = self.indexer_api[int(show_id)]
+            self.indexer_api = series_obj.indexer_api
+            my_show = self.indexer_api[int(series_id)]
         except IndexerShowNotFound:
             log.warning(
                 u'Unable to find {indexer} show {id}, skipping it',
-                {u'indexer': indexerApi(show_obj.indexer).name, u'id': show_id}
+                {u'indexer': indexerApi(series_obj.indexer).name, u'id': series_id}
             )
             return False
 
         except (IndexerException, RequestException):
             log.warning(
                 u'{indexer} is down, cannot use its data to add this show',
-                {u'indexer': indexerApi(show_obj.indexer).name}
+                {u'indexer': indexerApi(series_obj.indexer).name}
             )
             return False
 
@@ -868,7 +870,7 @@ class GenericMetadata(object):
         if not (getattr(my_show, u'seriesname', None) and getattr(my_show, u'id', None)):
             log.warning(
                 u'Incomplete info for {indexer} show {id}, skipping it',
-                {u'indexer': indexerApi(show_obj.indexer).name, u'id': show_id}
+                {u'indexer': indexerApi(series_obj.indexer).name, u'id': series_id}
             )
             return False
 

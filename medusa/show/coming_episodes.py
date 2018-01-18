@@ -18,14 +18,19 @@
 
 from datetime import date, timedelta
 
+from medusa import app
+from medusa.common import (
+    IGNORED,
+    Quality,
+    UNAIRED,
+    WANTED,
+)
+from medusa.db import DBConnection
+from medusa.helper.common import dateFormat, timeFormat
 from medusa.helpers.quality import get_quality_string
+from medusa.network_timezones import parse_date_time
+from medusa.sbdatetime import sbdatetime
 from medusa.tv.series import SeriesIdentifier
-from .. import app
-from ..common import IGNORED, Quality, UNAIRED, WANTED
-from ..db import DBConnection
-from ..helper.common import dateFormat, timeFormat
-from ..network_timezones import parse_date_time
-from ..sbdatetime import sbdatetime
 
 
 class ComingEpisodes(object):
@@ -74,6 +79,7 @@ class ComingEpisodes(object):
             'WHERE season != 0 '
             'AND airdate >= ? '
             'AND airdate < ? '
+            'AND s.indexer = e.indexer '
             'AND s.indexer_id = e.showid '
             'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
             [today, next_week] + qualities_list
@@ -83,6 +89,7 @@ class ComingEpisodes(object):
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER))
 
+        # FIXME: This inner join is not multi indexer friendly.
         results += db.select(
             'SELECT %s ' % fields_to_select +
             'FROM tv_episodes e, tv_shows s '
@@ -93,6 +100,7 @@ class ComingEpisodes(object):
                                                   'FROM tv_episodes inner_e '
                                                   'WHERE inner_e.season != 0 '
                                                   'AND inner_e.showid = e.showid '
+                                                  'AND inner_e.indexer = e.indexer '
                                                   'AND inner_e.airdate >= ? '
                                                   'ORDER BY inner_e.airdate ASC LIMIT 1) '
                                                   'AND e.status NOT IN (' + placeholder2 + ')',

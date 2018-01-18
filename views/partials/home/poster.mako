@@ -14,17 +14,23 @@
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
-
+    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
+    <div id=${("seriesTabContent", "animeTabContent")[cur_list_type == "Anime"]}>
+    % endif
     <div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix" data-list="${cur_list_type}">
-        <div class="showListTitle ${cur_list_type.lower()}">
-            <button type="button" class="nav-show-list move-show-list" data-move-target="${'container-' + cur_list_type.lower()}">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <h2 class="header">${cur_list_type}</h2>
-            <div class="loading-spinner"></div>
-        </div>
+        % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
+            % if len(show_lists) > 1:
+            <div class="showListTitle ${cur_list_type.lower()}">
+                <button type="button" class="nav-show-list move-show-list" data-move-target="${'container-' + cur_list_type.lower()}">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h2 class="header">${cur_list_type}</h2>
+                <div class="loading-spinner"></div>
+            </div>
+            % endif
+        % endif
         <div class="posterview">
         % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
             % if cur_loading_show.show is None:
@@ -50,15 +56,16 @@
                     display_status = 'Continuing'
                 elif re.search(r'(?i)(?:nded)', cur_show.status):
                     display_status = 'Ended'
-            if cur_show.indexerid in show_stat:
-                cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
-                cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
+            if (cur_show.indexer, cur_show.series_id) in show_stat:
+                series = (cur_show.indexer, cur_show.series_id)
+                cur_airs_next = show_stat[series]['ep_airs_next']
+                cur_snatched = show_stat[series]['ep_snatched']
                 if not cur_snatched:
                     cur_snatched = 0
-                cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
+                cur_downloaded = show_stat[series]['ep_downloaded']
                 if not cur_downloaded:
                     cur_downloaded = 0
-                cur_total = show_stat[cur_show.indexerid]['ep_total']
+                cur_total = show_stat[series]['ep_total']
                 if not cur_total:
                     cur_total = 0
             download_stat = str(cur_downloaded)
@@ -92,7 +99,7 @@
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></a>
+                        <a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></a>
                     </div>
                 </div>
                 <div class="show-poster-footer row">
@@ -100,7 +107,7 @@
                         <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                         <div class="show-title">
                             <div class="ellipsis">${cur_show.name}</div>
-                            % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
+                            % if get_xem_numbering_for_show(cur_show, refresh_data=False):
                                 <div class="xem">
                                     <img src="images/xem.png" width="16" height="16" />
                                 </div>
@@ -155,5 +162,8 @@
         % endfor
         </div>
     </div>
+    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
+    </div> <!-- #...TabContent -->
+    % endif
 % endfor
 </div>

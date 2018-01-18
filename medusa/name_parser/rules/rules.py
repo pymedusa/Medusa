@@ -1212,8 +1212,8 @@ class AvoidMultipleValuesRule(Rule):
                     to_remove.extend(matches.named('title', predicate=lambda match: match.value != values[0].value))
                     continue
 
-                log.info(u"Guessed more than one '%s' for '%s': %s",
-                         name, matches.input_string, u','.join(unique_values), exc_info=False)
+                log.debug(u"Guessed more than one '%s' for '%s': %s",
+                          name, matches.input_string, u','.join(unique_values), exc_info=False)
                 to_remove.extend(values)
 
         return to_remove

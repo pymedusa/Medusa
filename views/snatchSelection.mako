@@ -22,6 +22,7 @@
         <div class="clearfix"></div><!-- .clearfix //-->
         <div id="wrapper" data-history-toggle="hide">
             <div id="container">
+
             % if episode_history:
                 <table id="snatchhistory" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default" cellspacing="1" border="0" cellpadding="0">
                     <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
@@ -78,7 +79,7 @@
             % endif
             <!-- add provider meta data -->
                 <div id='manualSearchMeta'>
-                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
                 </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">
@@ -141,7 +142,7 @@
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
                             <td class="col-date triggerhighlight">${hItem["pubdate"]}</td>
-                            <td class="col-date triggerhighlight">${datetime.fromtimestamp(hItem["date_added"])}</td>
+                            <td class="col-date triggerhighlight">${datetime.fromtimestamp(float(hItem["date_added"])) if hItem["date_added"] else 'NA'}</td>
                             <td class="col-search triggerhighlight"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
                     % endfor

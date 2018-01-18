@@ -83,7 +83,7 @@ class QBittorrentAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = app.TORRENT_LABEL_ANIME if result.show.is_anime else app.TORRENT_LABEL
+        label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
 
         if self.api > 6 and label:
             label_key = 'Category' if self.api >= 10 else 'Label'
