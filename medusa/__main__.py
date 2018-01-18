@@ -78,6 +78,7 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
