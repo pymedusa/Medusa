@@ -13,7 +13,7 @@ $(document).ready(function(){
     // @TODO: This needs to be moved to an API function
     % if app.USE_NZBS:
         % for cur_newznab_provider in app.newznabProviderList:
-            $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)});
+            $(this).addNewznabProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)});
         % endfor
     % endif
     % if app.USE_TORRENTS:
@@ -760,6 +760,7 @@ $('#config-components').tabs();
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
                                         <input class="btn" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="newznab_cat_select" id="newznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>
@@ -890,6 +891,7 @@ $('#config-components').tabs();
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
                                         <input class="btn" type="button" class="torznab_cat_update" id="torznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="torznab_cat_select" id="torznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>
