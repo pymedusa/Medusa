@@ -176,7 +176,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeTorrentRssProviderString();
     };
 
-    $.fn.updateTorznabProvider = function(id, url, apiKey, cats, caps) {
+    $.fn.updateTorznabProvider = function(id, url, apiKey, cats, caps) { // eslint-disable-line max-params
         torznabProviders[id][1] = url;
         torznabProviders[id][2] = apiKey;
         torznabProviders[id][3] = cats;
@@ -682,7 +682,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             return;
         }
 
-        var params = {kind: 'torznab', name: name, url: url, api_key: apiKey};
+        var params = {kind: 'torznab', name: name, url: url, api_key: apiKey}; // eslint-disable-line camelcase
 
         // Send to the form with ajax, get a return value
         $.getJSON('config/providers/canAddProvider', params, function(data) {
