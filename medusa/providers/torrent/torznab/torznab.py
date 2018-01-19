@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for Newznab provider."""
+"""Provider code for Torznab provider."""
 
 from __future__ import unicode_literals
 
@@ -242,19 +242,11 @@ class TorznabProvider(TorrentProvider):
         """Return custom rss torrent providers."""
         return [TorznabProvider(custom_provider) for custom_provider in providers]
 
-    def config_string(self):
-        """Generate a '|' delimited string of instance attributes, for saving to config.ini."""
-        return '|'.join([
-            self.name, self.url, self.api_key, self.cat_ids, str(int(self.enabled)),
-            self.search_mode, str(int(self.search_fallback)),
-            str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
-        ])
-
     def image_name(self):
         """
         Check if we have an image for this provider already.
 
-        Returns found image or the default newznab image
+        Returns found image or the default Torznab image
         """
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
@@ -272,7 +264,7 @@ class TorznabProvider(TorrentProvider):
 
         return_mapping = {}
 
-        if not self.show:
+        if not self.series:
             # If we don't have show, can't get tvdbid
             return return_mapping
 
@@ -290,13 +282,13 @@ class TorznabProvider(TorrentProvider):
                 # Move to the configured capability / indexer mappings. To see if we can get a match.
                 for map_indexer in map_caps:
                     if map_caps[map_indexer] == search_type:
-                        if self.show.indexer == map_indexer:
+                        if self.series.indexer == map_indexer:
                             # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.show.indexerid
+                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
                             return return_mapping
-                        elif self.show.externals.get(mappings[map_indexer]):
+                        elif self.series.externals.get(mappings[map_indexer]):
                             # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
                             if mapped_external_indexer:
                                 return_mapping[map_caps[map_indexer]] = mapped_external_indexer
 
@@ -315,7 +307,7 @@ class TorznabProvider(TorrentProvider):
 
     def get_categories(self, just_caps=False):
         """
-        Use the newznab provider url and apikey to get the capabilities.
+        Use the provider url and apikey to get the capabilities.
 
         Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
@@ -354,3 +346,46 @@ class TorznabProvider(TorrentProvider):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, categories, self.cap_tv_search, ''
+
+    def _make_url(self, result):
+        """Return url if result is a magnet link."""
+        if not result:
+            return '', ''
+
+        urls = []
+        filename = ''
+
+        if result.url.startswith('magnet:'):
+            try:
+                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
+
+                try:
+                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
+                except Exception:
+                    torrent_name = 'NO_DOWNLOAD_NAME'
+
+                if len(info_hash) == 32:
+                    info_hash = b16encode(b32decode(info_hash)).upper()
+
+                if not info_hash:
+                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
+                    return urls, filename
+
+                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                shuffle(urls)
+            except Exception:
+                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
+                return urls, filename
+        else:
+            urls = [result.url]
+
+        result_name = sanitize_filename(result.name)
+
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+
+        return urls, filename
