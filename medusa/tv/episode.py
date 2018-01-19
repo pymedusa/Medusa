@@ -670,7 +670,7 @@ class Episode(TV):
         if season is None:
             season = self.season
 
-        if indexer_api is None:
+        if indexer_api is None or indexer_api.indexer != self.series.indexer_api.indexer:
             api = self.series.indexer_api
         else:
             api = indexer_api
