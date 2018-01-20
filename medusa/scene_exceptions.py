@@ -108,7 +108,7 @@ def get_scene_exceptions(series_obj, season=-1):
 
 def get_season_scene_exceptions(series_obj, season=-1):
     """
-    Get sason scene exceptions from exceptions_cache for an indexer id.
+    Get season scene exceptions from exceptions_cache for an indexer id.
 
     Use this method if you expect to get back a season exception, or a series exception. But without any fallback between the to.
     As opposed to the function get_scene_exceptions.
