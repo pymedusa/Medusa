@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
 
 from medusa import tv
@@ -168,7 +167,7 @@ class PrivateHDProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('These credentials do not match our records.', response.text):
+        if 'These credentials do not match our records.' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
