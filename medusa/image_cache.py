@@ -332,7 +332,7 @@ def fill_cache(series_obj):
 
     # download missing images from indexer
     for img_type in needed:
-        log.debug('Searching for {img} for series_obj {x}',
+        log.debug('Searching for {img} for series {x}',
                   {'img': IMAGE_TYPES[img_type], 'x': series_obj})
         _cache_image_from_indexer(series_obj, img_type)
 
