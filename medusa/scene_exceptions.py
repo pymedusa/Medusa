@@ -106,6 +106,24 @@ def get_scene_exceptions(series_obj, season=-1):
     return set(exceptions_list)
 
 
+def get_season_scene_exceptions(series_obj, season=-1):
+    """
+    Get sason scene exceptions from exceptions_cache for an indexer id.
+
+    Use this method if you expect to get back a season exception, or a series exception. But without any fallback between the to.
+    As opposed to the function get_scene_exceptions.
+    :param series_obj: A Series object.
+    :param season: The season to return exceptions for. Or -1 for the series exceptions.
+
+    :return: A set of exception names.
+    """
+    exceptions_list = exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]
+
+    # Return a set to avoid duplicates and it makes a copy of the list so the
+    # original doesn't get modified
+    return set(exceptions_list)
+
+
 def get_all_scene_exceptions(series_obj):
     """
     Get all scene exceptions for a show ID.
