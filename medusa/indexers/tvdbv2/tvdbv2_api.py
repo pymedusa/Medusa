@@ -41,8 +41,6 @@ class TVDBv2(BaseIndexer):
         """Init object."""
         super(TVDBv2, self).__init__(*args, **kwargs)
 
-        self.indexer = 1
-
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url

@@ -18,7 +18,10 @@ class indexerApi(object):
     @PlexFallBackConfig
     def indexer(self, *args, **kwargs):
         if self.indexer_id:
-            return indexerConfig[self.indexer_id]['module'](*args, **kwargs)
+            indexer_obj = indexerConfig[self.indexer_id]['module'](*args, **kwargs)
+            indexer_obj.indexer = self.config['id']
+            indexer_obj.name = self.config['identifier']
+            return indexer_obj
 
     @property
     def config(self):

@@ -121,10 +121,6 @@ class BaseIndexer(object):
             else:
                 self.config['language'] = language
 
-    @property
-    def name(self):
-        return self.__class__.__name__
-
     def _get_temp_dir(self):  # pylint: disable=no-self-use
         """Return the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)."""
         if hasattr(os, 'getuid'):
