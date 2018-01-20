@@ -114,7 +114,7 @@ class Show(object):
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
-        from medusa.indexers.indexer_config import indexer_name_to_id
+        from medusa.indexers.utils import indexer_name_to_id
         if not indexer_id or not series_id:
             return None
 

@@ -6,7 +6,7 @@
     from medusa.common import statusStrings
     from medusa.helper import exceptions
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import mappings
+    from medusa.indexers.utils import mappings
     from medusa import scene_exceptions
 %>
 <%block name="metas">

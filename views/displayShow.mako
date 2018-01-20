@@ -9,7 +9,7 @@
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import mappings
+    from medusa.indexers.utils import mappings
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>

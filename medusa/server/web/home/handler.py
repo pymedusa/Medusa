@@ -59,11 +59,11 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexer_name_to_id
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
+from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
