@@ -20,6 +20,8 @@ from medusa.show.show import Show
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
+from six import string_types, text_type
+
 from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
@@ -98,7 +100,7 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
+                            if list_separator and all(isinstance(x, (string_types)) for x in value):
                                 value = list_separator.join(value)
                             else:
                                 value = [self._object_to_dict(x, key_mapping) for x in value]
@@ -569,7 +571,7 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
+        self._set_show_data(sid, 'externals', {'imdb_id': text_type(getattr(self[sid], 'imdb_id', ''))})
 
         # get episode data
         if self.config['episodes_enabled']:
