@@ -23,6 +23,7 @@ from medusa.providers.torrent.html import (
     nebulance,
     newpct,
     pretome,
+    privatehd,
     scenetime,
     sdbits,
     shanaproject,
@@ -66,5 +67,5 @@ __all__ = [
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker'
+    'elitetracker', 'privatehd'
 ]
