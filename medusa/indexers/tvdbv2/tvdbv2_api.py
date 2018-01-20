@@ -215,13 +215,13 @@ class TVDBv2(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, tvdb_id, specials=False, aired_season=None, full_info=False):
+    def _get_episodes(self, tvdb_id, specials=False, aired_season=None):
         """Get all the episodes for a show by tvdbv id.
 
         :param tvdb_id: tvdb series id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
-        episodes = self._query_series(tvdb_id, specials=specials, aired_season=aired_season, full_info=full_info)
+        episodes = self._query_series(tvdb_id, specials=specials, aired_season=aired_season, full_info=True)
 
         return self._parse_episodes(tvdb_id, episodes)
 
@@ -238,8 +238,8 @@ class TVDBv2(BaseIndexer):
         for i, ep in enumerate(episodes):
             # Try to be as conservative as possible. Only query if the episode
             # exists on disk and it needs episode metadata.
-            if any(eep.indexerid == ep.id and needs_metadata(eep)
-                   for eep in existing_episodes):
+            if any(ep_obj.indexerid == ep.id and needs_metadata(ep_obj)
+                   for ep_obj in existing_episodes):
                 episode = self.config['session'].episodes_api.episodes_id_get(
                     ep.id, accept_language=self.config['language']
                 )
@@ -575,7 +575,7 @@ class TVDBv2(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(sid, specials=False, aired_season=None, full_info=True)
+            self._get_episodes(sid, specials=False, aired_season=None)
 
         # Parse banners
         if self.config['banners_enabled']:

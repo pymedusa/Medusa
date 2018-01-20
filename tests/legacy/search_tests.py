@@ -53,14 +53,14 @@ def generator(cur_data, cur_name, cur_provider):
     """
     def do_test(self):
         """Test to perform."""
-        show = Series(1, int(cur_data["tvdbid"]))
-        show.name = cur_name
-        show.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
-        # show.save_to_db()
-        # app.showList.append(show)
+        series = Series(1, int(cur_data["tvdbid"]))
+        series.name = cur_name
+        series.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
+        # series.save_to_db()
+        # app.showList.append(series)
 
         for ep_number in cur_data["e"]:
-            episode = Episode(show, cur_data["s"], ep_number)
+            episode = Episode(series, cur_data["s"], ep_number)
             episode.status = common.WANTED
 
             # We aren't updating scene numbers, so fake it here
@@ -69,7 +69,7 @@ def generator(cur_data, cur_name, cur_provider):
 
             # episode.save_to_db()
 
-            cur_provider.show = show
+            cur_provider.series = series
             season_strings = cur_provider._get_season_search_strings(episode)  # pylint: disable=protected-access
             episode_strings = cur_provider._get_episode_search_strings(episode)  # pylint: disable=protected-access
 
@@ -108,7 +108,7 @@ def generator(cur_data, cur_name, cur_provider):
                 continue
 
             title, url = cur_provider._get_title_and_url(items[0])  # pylint: disable=protected-access
-            for word in show.name.split(" "):
+            for word in series.name.split(" "):
                 if not word.lower() in title.lower():
                     print("Show cur_name not in title: %s. URL: %s" % (title, url))
                     continue
@@ -120,7 +120,7 @@ def generator(cur_data, cur_name, cur_provider):
             quality = cur_provider.get_quality(items[0])
             size = cur_provider._get_size(items[0])  # pylint: disable=protected-access
 
-            if not show.quality & quality:
+            if not series.quality & quality:
                 print("Quality not in common.ANY, %r %s" % (quality, size))
                 continue
 

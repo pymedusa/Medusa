@@ -8,6 +8,7 @@ import shutil
 import sys
 import tarfile
 
+import tempfile # noqa # pylint: disable=unused-import
 import certifi
 
 from six import binary_type, text_type

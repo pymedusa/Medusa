@@ -1,7 +1,14 @@
 # coding=utf-8
 
+import logging
+
 from medusa import db
 from medusa.common import Quality
+from medusa.logger.adapters.style import BraceAdapter
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 # Add new migrations at the bottom of the list
@@ -55,3 +62,48 @@ class HistoryStatus(History):
         self.addColumn('history', 'showid', 'NUMERIC', '-1')
         self.addColumn('history', 'season', 'NUMERIC', '-1')
         self.addColumn('history', 'episode', 'NUMERIC', '-1')
+
+
+class AddIndexerIds(HistoryStatus):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    """
+
+    def test(self):
+        """Test if the table history already has the indexer_id."""
+        return self.hasColumn('history', 'indexer_id')
+
+    def execute(self):
+        self.addColumn('history', 'indexer_id', 'NUMERIC', None)
+
+        # get all the shows. Might need them.
+        main_db_con = db.DBConnection()
+        all_series = main_db_con.select('SELECT indexer, indexer_id FROM tv_shows')
+
+        series_dict = {}
+        # check for double
+        for series in all_series:
+            if series['indexer_id'] not in series_dict:
+                series_dict[series['indexer_id']] = series['indexer']
+
+        query = 'SELECT showid FROM history WHERE indexer_id is null'
+        results = self.connection.select(query)
+        if not results:
+            return
+
+        log.info(u'Starting to update the history table in the failed.db database')
+
+        # Updating all rows, using the series id.
+        for series_id in series_dict:
+            # Update the value in the db.
+            # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
+            indexer_id = series_dict.get(series_id)
+            if not indexer_id:
+                continue
+
+            self.connection.action(
+                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
+            )

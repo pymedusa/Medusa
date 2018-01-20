@@ -4,8 +4,9 @@ MEDUSA.manage.backlogOverview = function() {
     function checkForcedSearch() {
         var pollInterval = 5000;
         var searchStatusUrl = 'home/getManualSearchStatus';
-        var showId = $('#series-id').val();
-        var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
+        var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
         $.ajax({
             url: url,
             error: function() {
@@ -29,7 +30,7 @@ MEDUSA.manage.backlogOverview = function() {
 
     function updateForcedSearch(data) {
         $.each(data.episodes, function(name, ep) {
-            var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+            var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
             var img = el.children('img[data-ep-search]');
             var episodeStatus = ep.status.toLowerCase();
             var episodeSearchStatus = ep.searchstatus.toLowerCase();

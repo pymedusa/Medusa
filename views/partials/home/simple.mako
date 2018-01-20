@@ -63,7 +63,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                        <a href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</a>
                         % endif
                         </td>
                         <td></td>
@@ -86,19 +86,20 @@
                 cur_total = 0
                 show_size = 0
                 download_stat_tip = ''
-                if cur_show.indexerid in show_stat:
-                    cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
-                    cur_airs_prev = show_stat[cur_show.indexerid]['ep_airs_prev']
-                    cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
+                if (cur_show.indexer, cur_show.series_id) in show_stat:
+                    series = (cur_show.indexer, cur_show.series_id)
+                    cur_airs_next = show_stat[series]['ep_airs_next']
+                    cur_airs_prev = show_stat[series]['ep_airs_prev']
+                    cur_snatched = show_stat[series]['ep_snatched']
                     if not cur_snatched:
                         cur_snatched = 0
-                    cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
+                    cur_downloaded = show_stat[series]['ep_downloaded']
                     if not cur_downloaded:
                         cur_downloaded = 0
-                    cur_total = show_stat[cur_show.indexerid]['ep_total']
+                    cur_total = show_stat[series]['ep_total']
                     if not cur_total:
                         cur_total = 0
-                    show_size = show_stat[cur_show.indexerid]['show_size']
+                    show_size = show_stat[series]['show_size']
                 download_stat = str(cur_downloaded)
                 download_stat_tip = "Downloaded: " + str(cur_downloaded)
                 if cur_snatched:
@@ -139,7 +140,7 @@
                 % else:
                     <td align="center" class="nowrap triggerhighlight"></td>
                 % endif
-                    <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+                    <td class="tvShow triggerhighlight"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</a></td>
                     <td class="triggerhighlight">
                         <span title="${cur_show.network}">${cur_show.network}</span>
                     </td>
@@ -154,7 +155,7 @@
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                             </a>
                         % endif
-                        <a data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
+                        <a data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.series_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
                             <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                         </a>
                     </td>
@@ -162,7 +163,7 @@
                     <td class="triggerhighlight" align="center">
                         ## This first span is used for sorting and is never displayed to user
                         <span style="display: none;">${download_stat}</span>
-                        <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
+                        <div class="progressbar hidden-print" style="position:relative;" data-indexer-name="${cur_show.indexer_name}" data-show-id="${cur_show.series_id}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
                         <span class="visible-print-inline">${download_stat}</span>
                     </td>
                     <td class="triggerhighlight" align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
@@ -174,7 +175,7 @@
                     ${cur_show.status}
                     </td>
                     <td align="center" class="triggerhighlight">
-                        <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
+                        <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
                         <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" />
                     </td>
                 </tr>
