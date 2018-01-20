@@ -79,7 +79,8 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
-            'imdbId': 'imdb_id'
+            'imdbId': 'imdb_id',
+            'site_rating': 'rating'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
