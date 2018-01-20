@@ -1,15 +1,15 @@
 # coding=utf-8
 
-"""Provider code for HDSpace."""
+"""Provider code for PrivateHD."""
 
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
+from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -39,6 +39,7 @@ class PrivateHDProvider(TorrentProvider):
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
@@ -64,8 +65,6 @@ class PrivateHDProvider(TorrentProvider):
             log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
-                print("Search string:" + search_string)
-
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
@@ -138,8 +137,7 @@ class PrivateHDProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -176,7 +174,8 @@ class PrivateHDProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.username or not self.password:
-            log.warning('Invalid username or password. Check your settings')
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
