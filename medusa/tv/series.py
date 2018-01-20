@@ -69,17 +69,20 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
-    indexerConfig,
-    indexer_id_to_slug,
-    mappings,
-    reverse_mappings,
-    slug_to_indexer_id)
+    indexerConfig
+)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
 from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.utils import (
+    indexer_id_to_slug,
+    mappings,
+    reverse_mappings,
+    slug_to_indexer_id
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt

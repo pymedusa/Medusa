@@ -3,7 +3,7 @@
     from medusa import app
     from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import mappings, indexer_id_to_name
+    from medusa.indexers.utils import indexer_id_to_name, mappings
     from medusa import sbdatetime
     from random import choice
     import datetime

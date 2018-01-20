@@ -24,7 +24,7 @@ from medusa import (
     app,
     helpers,
 )
-from medusa.indexers.indexer_config import indexer_id_to_name
+from medusa.indexers.utils import indexer_id_to_name
 from medusa.session.core import MedusaSession
 
 session = MedusaSession()
