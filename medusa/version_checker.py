@@ -30,7 +30,7 @@ from logging import DEBUG, WARNING
 from medusa import app, db, helpers, notifiers, ui
 from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
+from medusa.session.core import MedusaSafeSession
 
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
@@ -53,7 +53,7 @@ class CheckVersion(object):
         elif self.install_type == 'source':
             self.updater = SourceUpdateManager()
 
-        self.session = MedusaSession()
+        self.session = MedusaSafeSession()
 
     def run(self, force=False):
 
