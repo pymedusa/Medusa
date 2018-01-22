@@ -772,7 +772,7 @@ class SourceUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
-        self.session = MedusaSession()
+        self.session = MedusaSafeSession()
 
     @staticmethod
     def _find_installed_branch():
