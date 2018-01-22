@@ -17,7 +17,7 @@ from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, I
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
-from six import string_types, text_type
+from six import integer_types, string_types, text_type
 
 import tmdbsimple as tmdb
 
@@ -110,7 +110,7 @@ class Tmdb(BaseIndexer):
 
                     # Do some value sanitizing
                     if isinstance(value, list) and key not in ['episode_run_time']:
-                        if all(isinstance(x, (string_types, int)) for x in value):
+                        if all(isinstance(x, (string_types, integer_types)) for x in value):
                             value = list_separator.join(text_type(v) for v in value)
 
                     # Process genres

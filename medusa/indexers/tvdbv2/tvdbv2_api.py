@@ -101,7 +101,7 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (string_types)) for x in value):
+                            if list_separator and all(isinstance(x, string_types) for x in value):
                                 value = list_separator.join(value)
                             else:
                                 value = [self._object_to_dict(x, key_mapping) for x in value]

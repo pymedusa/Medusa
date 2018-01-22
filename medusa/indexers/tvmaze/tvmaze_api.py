@@ -16,7 +16,7 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from pytvmaze import TVMaze
 from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
-from six import string_types, text_type
+from six import integer_types, string_types, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -127,7 +127,7 @@ class TVmaze(BaseIndexer):
                     else:
                         # Do some value sanitizing
                         if isinstance(value, list):
-                            if all(isinstance(x, (string_types, int)) for x in value):
+                            if all(isinstance(x, (string_types, integer_types)) for x in value):
                                 value = list_separator.join(text_type(v) for v in value)
 
                         # Try to map the key
@@ -135,7 +135,7 @@ class TVmaze(BaseIndexer):
                             key = key_mappings[key]
 
                         # Set value to key
-                        return_dict[key] = text_type(value) if isinstance(value, (float, int)) else value
+                        return_dict[key] = text_type(value) if isinstance(value, (float, integer_types)) else value
 
                 # For episodes
                 if hasattr(item, 'season_number') and getattr(item, 'episode_number') is None:
