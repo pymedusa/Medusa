@@ -1669,6 +1669,7 @@ def get_image_size(image_path):
             f.seek(1, 1)  # Skip `precision' byte.
             return struct.unpack('>HH', f.read(4))
 
+
 def remove_folder(folder_path, level=logging.WARNING):
     """Recursively delete a directory tree.
 
