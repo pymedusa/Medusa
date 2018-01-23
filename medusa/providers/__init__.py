@@ -53,7 +53,6 @@ from medusa.providers.torrent import (
     torrentday,
     torrenting,
     torrentleech,
-    torrentproject,
     torrentz2,
     tvchaosuk,
     xthor,
@@ -65,7 +64,7 @@ __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
     'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'nebulance', 'tvchaosuk', 'torrentproject', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
+    'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
     'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd'
