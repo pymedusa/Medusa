@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
-from medusa.bs4_parser import BS4Parser, BeautifulSoup
+from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
