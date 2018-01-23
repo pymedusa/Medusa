@@ -115,7 +115,13 @@ class TorrentDayProvider(TorrentProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(data, mode)
+                try:
+                    index = data.index('<form method="get"')
+                except ValueError:
+                    log.debug('Could not find main torrent table')
+                    continue
+
+                results += self.parse(data[index:], mode)
 
         return results
 
@@ -130,15 +136,7 @@ class TorrentDayProvider(TorrentProvider):
         """
         items = []
 
-        def process_column_header(td):
-            result = ''
-            if td.a:
-                result = td.a.get('title')
-            if not result:
-                result = td.get_text(strip=True) or 'Size'
-            return result
-
-        with BS4Parser(data, 'html.parser') as html:
+        with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', {'id': 'torrentTable'})
             torrent_rows = torrent_table('tr') if torrent_table else []
 
@@ -147,21 +145,23 @@ class TorrentDayProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            labels = [process_column_header(label) for label in torrent_rows[0]('th')]
+            # Adding the table column titles manually, as some are not titled. They can be used for easy referencing.
+            labels = ['category', 'name', 'download', 'bookmark', 'comments', 'size', 'seeders', 'leechers']
 
             items = []
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
-                    name = row.find('td')[labels.index('Name')]
+                    name = row('td')[labels.index('name')]
                     title = name.find('a').get_text(strip=True)
                     # details = name.find('a')['href']
-                    download_url = row.find('td')[labels.index('Download')]
+                    download_url_raw = row('td')[labels.index('download')].find('a')['href']
+                    download_url = urljoin(self.url, download_url_raw)
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(row.find('td')[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(row.find('td')[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(row('td')[labels.index('seeders')].get_text(strip=True))
+                    leechers = try_int(row('td')[labels.index('leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -171,11 +171,11 @@ class TorrentDayProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = row('td')[labels.index('Size')].get_text()
+                    torrent_size = row('td')[labels.index('size')].get_text()
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = name.find('div').get_text(strip=True).split('|')[1].strip()
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,
