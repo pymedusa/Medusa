@@ -1642,6 +1642,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 # http://stackoverflow.com/a/20380514
 def get_image_size(image_path):
     """Determine the image type of image_path and return its size.."""
+    img_ext = os.path.splitext(image_path)[1].lower().strip('.')
     with open(image_path, 'rb') as f:
         head = f.read(24)
         if len(head) != 24:
@@ -1653,7 +1654,7 @@ def get_image_size(image_path):
             return struct.unpack('>ii', head[16:24])
         elif imghdr.what(image_path) == 'gif':
             return struct.unpack('<HH', head[6:10])
-        elif imghdr.what(image_path) == 'jpeg':
+        elif imghdr.what(image_path) == 'jpeg' or img_ext in ('jpg', 'jpeg'):
             f.seek(0)  # Read 0xff next
             size = 2
             ftype = 0
