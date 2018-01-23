@@ -28,9 +28,7 @@ class TorrentDayProvider(TorrentProvider):
         # URLs
         self.url = 'https://www.torrentday.com'
         self.urls = {
-            'login': urljoin(self.url, '/torrents/'),
             'search': urljoin(self.url, '/t'),
-            'download': urljoin(self.url, '/download.php/')
         }
 
         # Proper Strings
