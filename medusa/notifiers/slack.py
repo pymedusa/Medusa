@@ -92,7 +92,7 @@ class Notifier(object):
 
         headers = {b'Content-Type': b'application/json'}
         try:
-            r = requests.post(webhook, data=json.dumps(dict(text=message, username='MedusaBot')), headers=headers)
+            r = requests.post(webhook, data=json.dumps(dict(text=message, username='MedusaBot', icon_url='https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/ico/favicon-310.png')), headers=headers)
             r.raise_for_status()
         except Exception:
             log.exception('Error Sending Slack message')
