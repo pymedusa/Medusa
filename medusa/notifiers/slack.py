@@ -91,10 +91,11 @@ class Notifier(object):
             message = message.encode('utf-8')
 
         headers = {b'Content-Type': b'application/json'}
-        data=json.dumps(dict(
-            text=message,
-            username='MedusaBot',
-            icon_url='https://cdn.pymedusa.com/images/ico/favicon-310.png'))
+        data={
+            'text': message,
+            'username': 'MedusaBot',
+            'icon_url': 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+        }
 
         try:
             r = requests.post(webhook, data, headers=headers)
