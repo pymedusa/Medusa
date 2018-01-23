@@ -5,11 +5,10 @@
 from __future__ import unicode_literals
 
 import logging
-import re
-import traceback
 
 from medusa import tv
-from medusa.helper.common import convert_size
+from medusa.bs4_parser import BS4Parser, BeautifulSoup
+from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -30,7 +29,7 @@ class TorrentDayProvider(TorrentProvider):
         self.url = 'https://www.torrentday.com'
         self.urls = {
             'login': urljoin(self.url, '/torrents/'),
-            'search': urljoin(self.url, '/V3/API/API.php'),
+            'search': urljoin(self.url, '/t'),
             'download': urljoin(self.url, '/download.php/')
         }
 
@@ -52,6 +51,7 @@ class TorrentDayProvider(TorrentProvider):
         # TV/x264 - 7
         # TV/x265 - 34
         # TV/XviD - 2
+        # TV-all `-8`
 
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c7': 1, 'c24': 1, 'c26': 1, 'c31': 1, 'c32': 1, 'c33': 1, 'c34': 1, 'c46': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
@@ -84,26 +84,38 @@ class TorrentDayProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_string = '+'.join(search_string.split())
+                    search_string = '+'.join(search_string.split())
 
-                post_data = dict({'/browse.php?': None, 'cata': 'yes', 'jxt': 8, 'jxw': 'b', 'search': search_string},
-                                 **self.categories[mode])
+                params = {
+                    '24': '',
+                    '32': '',
+                    '31': '',
+                    '33': '',
+                    '46': '',
+                    '26': '',
+                    '7': '',
+                    '34': '',
+                    '2': ''
+                }
 
                 if self.freeleech:
-                    post_data.update({'free': 'on'})
+                    params.update({'free': 'on'})
 
-                response = self.session.post(self.urls['search'], data=post_data)
-                if not response or not response.content:
+                if search_string:
+                    params.update({'q': search_string})
+
+                response = self.session.get(self.urls['search'], params=params)
+                if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
 
                 try:
-                    jdata = response.json()
+                    data = response.text
                 except ValueError:
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(jdata, mode)
+                results += self.parse(data, mode)
 
         return results
 
@@ -118,60 +130,68 @@ class TorrentDayProvider(TorrentProvider):
         """
         items = []
 
-        try:
-            initial_data = data.get('Fs', [dict()])[0].get('Cn', {})
-            torrent_rows = initial_data.get('torrents', []) if initial_data else None
-        except (AttributeError, TypeError, KeyError, ValueError, IndexError) as error:
-            # If TorrentDay changes their website issue will be opened so we can fix fast
-            # and not wait user notice it's not downloading torrents from there
-            log.error('TorrentDay response: {0}. Error: {1!r}', data, error)
-            torrent_rows = None
+        def process_column_header(td):
+            result = ''
+            if td.a:
+                result = td.a.get('title')
+            if not result:
+                result = td.get_text(strip=True) or 'Size'
+            return result
 
-        if not torrent_rows:
-            log.debug('Data returned from provider does not contain any torrents')
-            return items
+        with BS4Parser(data, 'html.parser') as html:
+            torrent_table = html.find('table', {'id': 'torrentTable'})
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
-        for row in torrent_rows:
-            try:
-                title = re.sub(r'\[.*=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
-                download_url = urljoin(self.urls['download'], '{}/{}'
-                                       .format(row['id'], row['fname'])) if row['id'] and row['fname'] else None
-                if not all([title, download_url]):
-                    continue
+            # Continue only if at least one release is found
+            if len(torrent_rows) < 2:
+                log.debug('Data returned from provider does not contain any torrents')
+                return items
 
-                seeders = int(row['seed']) if row['seed'] else 1
-                leechers = int(row['leech']) if row['leech'] else 0
+            labels = [process_column_header(label) for label in torrent_rows[0]('th')]
 
-                # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+            items = []
+            # Skip column headers
+            for row in torrent_rows[1:]:
+                try:
+                    name = row.find('td')[labels.index('Name')]
+                    title = name.find('a').get_text(strip=True)
+                    # details = name.find('a')['href']
+                    download_url = row.find('td')[labels.index('Download')]
+                    if not all([title, download_url]):
+                        continue
+
+                    seeders = try_int(row.find('td')[labels.index('Seeders')].get_text(strip=True))
+                    leechers = try_int(row.find('td')[labels.index('Leechers')].get_text(strip=True))
+
+                    # Filter unseeded torrent
+                    if seeders < min(self.minseed, 1):
+                        if mode != 'RSS':
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
+                        continue
+
+                    torrent_size = row('td')[labels.index('Size')].get_text()
+                    size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = name.find('div').get_text(strip=True).split('|')[1].strip()
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
+                    item = {
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'pubdate': pubdate,
+                    }
                     if mode != 'RSS':
-                        log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
-                                  title, seeders)
-                    continue
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
-                torrent_size = row['size']
-                size = convert_size(torrent_size) or -1
-
-                pubdate_raw = row['added']
-                pubdate = self.parse_pubdate(pubdate_raw)
-
-                item = {
-                    'title': title,
-                    'link': download_url,
-                    'size': size,
-                    'seeders': seeders,
-                    'leechers': leechers,
-                    'pubdate': pubdate,
-                }
-                if mode != 'RSS':
-                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                              title, seeders, leechers)
-
-                items.append(item)
-            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                    items.append(item)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    log.exception('Failed parsing provider.')
 
         return items
 
