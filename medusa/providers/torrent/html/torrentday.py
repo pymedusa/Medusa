@@ -154,9 +154,11 @@ class TorrentDayProvider(TorrentProvider):
                     title = name.find('a').get_text(strip=True)
                     # details = name.find('a')['href']
                     download_url_raw = row('td')[labels.index('download')].find('a')['href']
-                    download_url = urljoin(self.url, download_url_raw)
-                    if not all([title, download_url]):
+
+                    if not all([title, download_url_raw]):
                         continue
+
+                    download_url = urljoin(self.url, download_url_raw)
 
                     seeders = try_int(row('td')[labels.index('seeders')].get_text(strip=True))
                     leechers = try_int(row('td')[labels.index('leechers')].get_text(strip=True))
