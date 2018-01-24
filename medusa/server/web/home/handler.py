@@ -1048,7 +1048,7 @@ class Home(WebRoot):
             for episode in cached_result[b'episodes'].strip('|').split('|'):
                 ep_objs.append(series_obj.get_episode(int(cached_result[b'season']), int(episode)))
         elif manual_search_type == 'season':
-            ep_objs.extend(series_obj.get_all_episodes(int(cached_result[b'season'])))
+            ep_objs.extend(series_obj.get_all_episodes([int(cached_result[b'season'])]))
 
         # Create the queue item
         snatch_queue_item = ManualSnatchQueueItem(series_obj, ep_objs, provider, cached_result)
