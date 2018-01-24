@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
@@ -97,7 +98,7 @@ class Notifier(object):
         }
 
         try:
-            r = requests.post(webhook, data, headers=headers)
+            r = requests.post(webhook, data=json.dumps(data), headers=headers)
             r.raise_for_status()
         except Exception:
             log.exception('Error Sending Slack message')
