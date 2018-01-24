@@ -153,7 +153,7 @@ class TorrentDayProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
-                
+
                 try:
                     name = cells[labels.index('name')]
                     title = name.find('a').get_text(strip=True)
