@@ -152,19 +152,21 @@ class TorrentDayProvider(TorrentProvider):
             items = []
             # Skip column headers
             for row in torrent_rows[1:]:
+                cells = row('td')
+                
                 try:
-                    name = row('td')[labels.index('name')]
+                    name = cells[labels.index('name')]
                     title = name.find('a').get_text(strip=True)
                     # details = name.find('a')['href']
-                    download_url_raw = row('td')[labels.index('download')].find('a')['href']
+                    download_url_raw = cells[labels.index('download')].find('a')['href']
 
                     if not all([title, download_url_raw]):
                         continue
 
                     download_url = urljoin(self.url, download_url_raw)
 
-                    seeders = try_int(row('td')[labels.index('seeders')].get_text(strip=True))
-                    leechers = try_int(row('td')[labels.index('leechers')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('seeders')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -174,7 +176,7 @@ class TorrentDayProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = row('td')[labels.index('size')].get_text()
+                    torrent_size = cells[labels.index('size')].get_text()
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = name.find('div').get_text(strip=True).split('|')[1].strip()
