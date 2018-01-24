@@ -585,7 +585,7 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: int
+        :type season: list
         :param has_location:
         :type has_location: bool
         :return:
