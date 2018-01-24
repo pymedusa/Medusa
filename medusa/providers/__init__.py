@@ -111,7 +111,7 @@ def get_provider_module(name):
         if name in __all__ and prefix + name in sys.modules:
             return sys.modules[prefix + name]
 
-    raise Exception("Can't find " + prefix + name + " in " + "Providers")
+    raise Exception("Can't find {prefix}{name} in Providers".format(prefix=prefix, name=name))
 
 
 def get_provider_class(provider_id):
