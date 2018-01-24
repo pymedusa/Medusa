@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Statistics module."""
 
 from __future__ import division
 from math import sqrt
@@ -15,12 +16,12 @@ def differences(it, population_mean):
 
 
 def squares(it):
-    """Calculate the squares for a population"""
+    """Calculate the squares for a population."""
     return (x**2 for x in it)
 
 
 def variance(it, dof=None):
-    """Calculate the variance of a population"""
+    """Calculate the variance of a population."""
     if dof is None:
         dof = len(it) - 1
 
@@ -34,7 +35,7 @@ def variance(it, dof=None):
 
 
 def standard_deviation(it, population=False):
-    """Calculates the standard deviation of a sample."""
+    """Calculate the standard deviation of a sample."""
     num_items = len(it)
     degrees_of_freedom = num_items if population else num_items - 1
     sample_variance = variance(it, degrees_of_freedom)
