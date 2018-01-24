@@ -20,9 +20,7 @@ from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
 from medusa import app, image_cache
-from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
-from medusa.show.show import Show
 
 
 class GenericMedia(object):
@@ -31,20 +29,29 @@ class GenericMedia(object):
     img_type = None
     default_media_name = ''
 
-    def __init__(self, indexer_id, media_format='normal'):
+    def __init__(self, series_obj, media_format='normal'):
         """
         Initialize media for a series.
 
-        :param indexer_id: The indexer id of the show
+        :param series_obj: The series object.
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
         """
 
-        self.indexer_id = try_int(indexer_id, 0)
+        self.series_obj = series_obj
+        self.series_id = series_obj.series_id
 
         if media_format in ('normal', 'thumb'):
             self.media_format = media_format
         else:
             self.media_format = 'normal'
+
+    @property
+    def indexerid(self):
+        return self.series_id
+
+    @indexerid.setter
+    def indexerid(self, value):
+        self.series_id = value
 
     @property
     def media(self):
@@ -62,7 +69,7 @@ class GenericMedia(object):
     def media_path(self):
         """Get the relative path to the media."""
         if self.series:
-            return image_cache.get_path(self.img_type, self.indexer_id)
+            return image_cache.get_path(self.img_type, self.series_obj)
         else:
             return ''
 
@@ -85,7 +92,7 @@ class GenericMedia(object):
     def series(self):
         """Find the series by indexer id."""
         try:
-            return Show.find(app.showList, self.indexer_id)
+            return self.series_obj
         except MultipleShowObjectsException:
             return None
 

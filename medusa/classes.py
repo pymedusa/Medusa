@@ -44,8 +44,8 @@ class SearchResult(object):
         # the search provider
         self.provider = provider
 
-        # release show object
-        self.show = None
+        # release series object
+        self.series = None
 
         # URL to the NZB/torrent file
         self.url = u''
@@ -150,6 +150,22 @@ class SearchResult(object):
         if len(value) == 1:
             self._actual_episode = value[0]
 
+    @property
+    def show(self):
+        log.warning(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        return self.series
+
+    @show.setter
+    def show(self, value):
+        log.warning(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        self.series = value
+
     def __str__(self):
 
         if self.provider is None:
@@ -186,8 +202,8 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.actual_episodes and self.show:
-            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        if self.actual_season and self.actual_episodes and self.series:
+            self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
         return self.episodes
 
     def finish_search_result(self, provider):

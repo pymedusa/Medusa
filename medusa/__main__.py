@@ -134,6 +134,41 @@ class Application(object):
 
         return help_msg
 
+    @staticmethod
+    def migrate_images():
+        """Migrate pre-multi-indexer images to their correct place."""
+        if hasattr(app, 'MIGRATE_IMAGES'):
+            for series_obj in app.showList:
+                try:
+                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                    images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
+
+                    # Create the cache/images/tvdb folder if not exists
+                    if not os.path.isdir(images_root_indexer):
+                        os.makedirs(images_root_indexer)
+
+                    if not os.path.isdir(images_root_indexer_thumbnails):
+                        os.makedirs(images_root_indexer_thumbnails)
+
+                    # Check for the different possible images and move them.
+                    for image_type in ('poster', 'fanart', 'banner'):
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        src = os.path.join(app.CACHE_DIR, 'images', image_name)
+                        dst = os.path.join(images_root_indexer, image_name)
+                        if os.path.isfile(src) and not os.path.isfile(dst):
+                            # image found, let's try to move it
+                            os.rename(src, dst)
+
+                        src_thumb = os.path.join(app.CACHE_DIR, 'images', 'thumbnails', image_name)
+                        dst_thumb = os.path.join(images_root_indexer_thumbnails, image_name)
+                        if os.path.isfile(src_thumb) and not os.path.isfile(dst_thumb):
+                            # image found, let's try to move it
+                            os.rename(src_thumb, dst_thumb)
+                except Exception as error:
+                    logger.warning('Error while trying to move the images for series {series}. '
+                                   'Try to refresh the show, or move the images manually if you know '
+                                   'what you are doing. Error: {error}', series=series_obj.name, error=error)
+
     def start(self, args):
         """Start Application."""
         app.instance = self
@@ -308,6 +343,7 @@ class Application(object):
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
+        self.migrate_images()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)

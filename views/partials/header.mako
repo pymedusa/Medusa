@@ -33,7 +33,7 @@
                         % if app.SHOWS_RECENT:
                             <li role="separator" class="divider"></li>
                             % for recentShow in app.SHOWS_RECENT:
-                                <li><a href="home/displayShow?show=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
+                                <li><a data-indexer-to-name="${recentShow['indexer']}" href="home/displayShow?indexername=indexer-to-name&seriesid=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
                             % endfor
                         % endif
                     </ul>

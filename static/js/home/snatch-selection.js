@@ -99,23 +99,34 @@ MEDUSA.home.snatchSelection = function() {
     $('.imdbstars').generateStars();
 
     function checkCacheUpdates(repeat) {
-        var self = this;
-        var pollInterval = 5000;
+        const self = this;
+        let pollInterval = 5000;
         repeat = repeat || true;
 
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        var urlParams = show + '&season=' + season + '&episode=' + episode;
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+            return checkIsTrue;
+        });
+
+        if (!checkParams) {
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            return;
+        }
+
+        let urlParams = '?indexername=' + indexerName + '&seriesid=' + seriesId + '&season=' + season + '&episode=' + episode;
 
         if (manualSearchType === 'season') {
             urlParams += '&manual_search_type=' + manualSearchType;
         }
 
-        if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+        if (!$.isNumeric(seriesId) || !$.isNumeric(season) || !$.isNumeric(episode)) {
             setTimeout(function() {
                 checkCacheUpdates(true);
             }, 200);
@@ -123,7 +134,7 @@ MEDUSA.home.snatchSelection = function() {
 
         self.refreshResults = function() {
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection?show=' + urlParams,
+                    'home/snatchSelection' + urlParams,
                     'Loading new search results...',
                     'Time out, refresh page to try again',
                     toggleHistoryTable // This is a callback function
@@ -131,7 +142,7 @@ MEDUSA.home.snatchSelection = function() {
         };
 
         $.ajax({
-            url: 'home/manualSearchCheckCache?show=' + urlParams,
+            url: 'home/manualSearchCheckCache' + urlParams,
             type: 'GET',
             data: data,
             contentType: 'application/json',
@@ -148,6 +159,12 @@ MEDUSA.home.snatchSelection = function() {
             timeout: 15000 // timeout after 15s
         }).done(function(data) {
             // @TODO: Combine the lower if statements
+            if (data === '') {
+                updateSpinner('Search finished', false);
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = false;
+            }
+
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
@@ -187,16 +204,28 @@ MEDUSA.home.snatchSelection = function() {
     $('body').on('click', '.manualSearchButton', function(event) {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        var forceSearch = $(this).attr('data-force-search');
+        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const forceSearch = $(this).attr('data-force-search');
 
-        if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+            return checkIsTrue;
+        });
+
+        if (!checkParams) {
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            return;
+        }
+
+        if ($.isNumeric(seriesId) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
-                show: show,
+                indexername: indexerName,
+                seriesid: seriesId,
                 season: season,
                 episode: episode,
                 manual_search_type: manualSearchType, // eslint-disable-line camelcase

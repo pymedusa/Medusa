@@ -584,10 +584,10 @@ class PostProcessor(object):
         return show, season, episodes, quality, version, airdate
 
     def _find_info(self):
-        show, season, episodes, quality, version, airdate = self._parse_info()
+        series_obj, season, episodes, quality, version, airdate = self._parse_info()
         # TODO: Move logic below to a single place -> NameParser
 
-        if airdate and show:
+        if airdate and series_obj:
             # Ignore season 0 when searching for episode
             # (conflict between special and regular episode, same air date)
             main_db_con = db.DBConnection()
@@ -598,7 +598,7 @@ class PostProcessor(object):
                 'AND indexer = ? '
                 'AND airdate = ? '
                 'AND season != 0',
-                [show.indexerid, show.indexer, airdate])
+                [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
                 season = int(sql_result[0]['season'])
@@ -611,20 +611,20 @@ class PostProcessor(object):
                     'WHERE showid = ? '
                     'AND indexer = ? '
                     'AND airdate = ?',
-                    [show.indexerid, show.indexer, airdate])
+                    [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
                     season = int(sql_result[0]['season'])
                     episodes = [int(sql_result[0]['episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
-                             (episodes[0], show.indexerid), logger.DEBUG)
+                             (episodes[0], series_obj.indexerid), logger.DEBUG)
                     # we don't want to leave dates in the episode list
                     # if we couldn't convert them to real episode numbers
                     episodes = []
 
         # If there's no season, we assume it's the first season
-        elif season is None and show:
+        elif season is None and series_obj:
             main_db_con = db.DBConnection()
             numseasons_result = main_db_con.select(
                 'SELECT COUNT(DISTINCT season) '
@@ -632,14 +632,14 @@ class PostProcessor(object):
                 'WHERE showid = ? '
                 'AND indexer = ? '
                 'AND season != 0',
-                [show.indexerid, show.indexer])
+                [series_obj.series_id, series_obj.indexer])
 
             if int(numseasons_result[0][0]) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
                          u"to have only 1 season, setting season number to 1...", logger.DEBUG)
                 season = 1
 
-        return show, season, episodes, quality, version
+        return series_obj, season, episodes, quality, version
 
     def _analyze_name(self, name):
         """
@@ -662,14 +662,14 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
-        if parse_result.show and all([parse_result.show.air_by_date, parse_result.is_air_by_date]):
+        if parse_result.series and all([parse_result.series.air_by_date, parse_result.is_air_by_date]):
             season = -1
             episodes = [parse_result.air_date]
         else:
             season = parse_result.season_number
             episodes = parse_result.episode_numbers
 
-        to_return = (parse_result.show, season, episodes, parse_result.quality, parse_result.version)
+        to_return = (parse_result.series, season, episodes, parse_result.quality, parse_result.version)
 
         self._finalize(parse_result)
         return to_return
@@ -702,7 +702,7 @@ class PostProcessor(object):
             logger.log(u'Parse result (air_date): {0}'.format(parse_result.air_date), logger.DEBUG)
             logger.log(u'Parse result (release_group): {0}'.format(parse_result.release_group), logger.DEBUG)
 
-    def _get_ep_obj(self, show, season, episodes):
+    def _get_ep_obj(self, series_obj, season, episodes):
         """
         Retrieve the Episode object requested.
 
@@ -715,11 +715,11 @@ class PostProcessor(object):
         root_ep = None
         for cur_episode in episodes:
             self.log(u'Retrieving episode object for {0} {1}'.format
-                     (show.name, episode_num(season, cur_episode)), logger.DEBUG)
+                     (series_obj.name, episode_num(season, cur_episode)), logger.DEBUG)
 
             # now that we've figured out which episode this file is just load it manually
             try:
-                cur_ep = show.get_episode(season, cur_episode)
+                cur_ep = series_obj.get_episode(season, cur_episode)
                 if not cur_ep:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
@@ -784,7 +784,7 @@ class PostProcessor(object):
 
         return ep_quality
 
-    def _priority_from_history(self, show_id, season, episodes, quality):
+    def _priority_from_history(self, series_obj, season, episodes, quality):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
         for episode in episodes:
@@ -792,13 +792,15 @@ class PostProcessor(object):
             tv_episodes_result = main_db_con.select(
                 'SELECT status '
                 'FROM tv_episodes '
-                'WHERE showid = ? '
+                'WHERE indexer = ? '
+                'AND showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
                 "AND (status LIKE '%02' "
                 "OR status LIKE '%09' "
                 "OR status LIKE '%12')",
-                [show_id, season, episode])
+                [series_obj.indexer, series_obj.series_id, season, episode]
+            )
 
             if tv_episodes_result:
                 # Second: get the quality of the last snatched epsiode
@@ -806,14 +808,15 @@ class PostProcessor(object):
                 history_result = main_db_con.select(
                     'SELECT quality, manually_searched, info_hash '
                     'FROM history '
-                    'WHERE showid = ? '
+                    'WHERE indexer_id = ? '
+                    'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
                     "AND (action LIKE '%02' "
                     "OR action LIKE '%09' "
                     "OR action LIKE '%12') "
                     'ORDER BY date DESC',
-                    [show_id, season, episode])
+                    [series_obj.indexer, series_obj.series_id, season, episode])
 
                 if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
@@ -828,13 +831,14 @@ class PostProcessor(object):
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
-                        'WHERE showid = ? '
+                        'WHERE indexer_id = ? '
+                        'AND showid = ? '
                         'AND season = ? '
                         'AND episode = ? '
                         'AND quality = ? '
                         "AND action LIKE '%04' "
                         'ORDER BY date DESC',
-                        [show_id, season, episode, quality])
+                        [series_obj.indexer, series_obj.series_id, season, episode, quality])
 
                     if download_result:
                         download_name = os.path.basename(download_result[0]['resource'])
@@ -1001,15 +1005,15 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         # try to find the file info
-        (show, season, episodes, quality, version) = self._find_info()
-        if not show:
+        (series_obj, season, episodes, quality, version) = self._find_info()
+        if not series_obj:
             raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
                                                        u"before post-processing an episode")
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
         # retrieve/create the corresponding Episode objects
-        ep_obj = self._get_ep_obj(show, season, episodes)
+        ep_obj = self._get_ep_obj(series_obj, season, episodes)
         _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
         # get the quality of the episode we're processing
@@ -1021,7 +1025,7 @@ class PostProcessor(object):
             new_ep_quality = self._quality_from_status(ep_obj.status)
 
         # check snatched history to see if we should set the download as priority
-        self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
+        self._priority_from_history(series_obj, season, episodes, new_ep_quality)
         if self.in_history:
             self.log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
@@ -1053,7 +1057,7 @@ class PostProcessor(object):
                     self.log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed_qualities, preferred_qualities = show.current_qualities
+                    allowed_qualities, preferred_qualities = series_obj.current_qualities
                     self.log(u'Checking if new quality {0} should replace current quality: {1}'.format
                              (common.Quality.qualityStrings[new_ep_quality],
                               common.Quality.qualityStrings[old_ep_quality]))
@@ -1073,7 +1077,7 @@ class PostProcessor(object):
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
                     "SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?",
-                    [show.indexerid, show.indexer])
+                    [series_obj.series_id, series_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0][0]), skip the file

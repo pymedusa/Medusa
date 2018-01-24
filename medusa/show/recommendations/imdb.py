@@ -70,8 +70,8 @@ class ImdbPopular(object):
                                       'image_href': show_obj.get('imdb_url')}
                                    )
 
-        if show_obj.get('image_url_large'):
-            rec_show.cache_image(show_obj.get('image_url_large'))
+        if show_obj.get('image_url'):
+            rec_show.cache_image(show_obj.get('image_url'))
 
         return rec_show
 
@@ -84,31 +84,32 @@ class ImdbPopular(object):
         tvdb_mapping_cache.clean()
 
         imdb_api = imdbpie.Imdb()
-        imdb_result = imdb_api.popular_shows()
+        imdb_result = imdb_api.get_popular_shows()
 
-        for imdb_show in imdb_result:
+        for imdb_show in imdb_result['ranks']:
             show = dict()
-            imdb_tt = imdb_show['tconst']
+            imdb_tt = imdb_show['id'].strip('/').split('/')[-1]
 
             if imdb_tt:
-                show['imdb_tt'] = imdb_show['tconst']
+                show['imdb_tt'] = imdb_tt
                 cached_show_details = imdb_show_details_cache.get(imdb_tt)
                 if not cached_show_details:
-                    show_details = imdb_api.get_title_by_id(imdb_tt)
+                    show_details = imdb_api.get_title(imdb_tt)
                     imdb_show_details_cache.append(imdb_tt, show_details)
                 else:
                     show_details = cached_show_details.value
 
                 if show_details:
-                    show['year'] = getattr(show_details, 'year')
-                    show['name'] = getattr(show_details, 'title')
-                    show['image_url_large'] = getattr(show_details, 'cover_url')
+                    show['year'] = imdb_show['year']
+                    show['name'] = imdb_show['title']
+                    show['image_url_large'] = imdb_show['image']['url']
                     show['image_path'] = posixpath.join('images', 'imdb_popular',
                                                         os.path.basename(show['image_url_large']))
-                    show['imdb_url'] = 'http://www.imdb.com/title/{imdb_tt}'.format(imdb_tt=imdb_tt)
-                    show['votes'] = getattr(show_details, 'votes', 0)
-                    show['outline'] = getattr(show_details, 'plot_outline', 'Not available')
-                    show['rating'] = getattr(show_details, 'rating', 0)
+                    show['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
+                    show['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
+                    show['votes'] = show_details['ratings']['ratingCount']
+                    show['outline'] = show_details['plot'].get('outline', {}).get('text')
+                    show['rating'] = show_details['ratings']['rating']
                 else:
                     continue
 

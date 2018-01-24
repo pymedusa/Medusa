@@ -26,6 +26,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.statistics import weights
 
 import requests
+from six import integer_types
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -389,7 +391,7 @@ class BaseIndexer(object):
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
-        if isinstance(key, (int, long)):
+        if isinstance(key, (integer_types, long)):
             # Item is integer, treat as show id
             if key not in self.shows:
                 self._get_show_data(key, self.config['language'])
@@ -483,7 +485,7 @@ class Show(dict):
             return dict.__getitem__(self.data, key)
 
         # Data wasn't found, raise appropriate error
-        if isinstance(key, int) or key.isdigit():
+        if isinstance(key, integer_types) or key.isdigit():
             # Episode number x was not found
             raise IndexerSeasonNotFound('Could not find season {0!r}'.format(key))
         else:

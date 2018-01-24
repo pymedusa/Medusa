@@ -20,6 +20,8 @@ from medusa.show.show import Show
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
+from six import string_types, text_type
+
 from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
@@ -40,8 +42,6 @@ class TVDBv2(BaseIndexer):
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         """Init object."""
         super(TVDBv2, self).__init__(*args, **kwargs)
-
-        self.indexer = 1
 
         self.config['api_base_url'] = API_BASE_TVDB
 
@@ -77,7 +77,8 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
-            'imdbId': 'imdb_id'
+            'imdbId': 'imdb_id',
+            'site_rating': 'rating'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
@@ -98,7 +99,7 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
+                            if list_separator and all(isinstance(x, string_types) for x in value):
                                 value = list_separator.join(value)
                             else:
                                 value = [self._object_to_dict(x, key_mapping) for x in value]
@@ -213,13 +214,13 @@ class TVDBv2(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, tvdb_id, specials=False, aired_season=None, full_info=False):
+    def _get_episodes(self, tvdb_id, specials=False, aired_season=None):
         """Get all the episodes for a show by tvdbv id.
 
         :param tvdb_id: tvdb series id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
-        episodes = self._query_series(tvdb_id, specials=specials, aired_season=aired_season, full_info=full_info)
+        episodes = self._query_series(tvdb_id, specials=specials, aired_season=aired_season, full_info=True)
 
         return self._parse_episodes(tvdb_id, episodes)
 
@@ -236,8 +237,8 @@ class TVDBv2(BaseIndexer):
         for i, ep in enumerate(episodes):
             # Try to be as conservative as possible. Only query if the episode
             # exists on disk and it needs episode metadata.
-            if any(eep.indexerid == ep.id and needs_metadata(eep)
-                   for eep in existing_episodes):
+            if any(ep_obj.indexerid == ep.id and needs_metadata(ep_obj)
+                   for ep_obj in existing_episodes):
                 episode = self.config['session'].episodes_api.episodes_id_get(
                     ep.id, accept_language=self.config['language']
                 )
@@ -569,11 +570,11 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
+        self._set_show_data(sid, 'externals', {'imdb_id': text_type(getattr(self[sid], 'imdb_id', ''))})
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(sid, specials=False, aired_season=None, full_info=True)
+            self._get_episodes(sid, specials=False, aired_season=None)
 
         # Parse banners
         if self.config['banners_enabled']:

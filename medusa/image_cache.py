@@ -66,49 +66,49 @@ ASPECT_RATIOS = {
 }
 
 
-def _cache_dir():
+def _cache_dir(series_obj):
     """Build path to the image cache directory."""
-    return os.path.abspath(os.path.join(app.CACHE_DIR, 'images'))
+    return os.path.abspath(os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name))
 
 
-def _thumbnails_dir():
+def _thumbnails_dir(series_obj):
     """Build path to the thumbnail image cache directory."""
-    return os.path.abspath(os.path.join(_cache_dir(), 'thumbnails'))
+    return os.path.abspath(os.path.join(_cache_dir(series_obj), 'thumbnails'))
 
 
-def get_path(img_type, series_id):
+def get_path(img_type, series_obj):
     """
     Build path to a series cached artwork.
 
     :param img_type: integer constant representing an image type
-    :param series_id: the series id
+    :param series_obj: the series object
 
     :return: full path and filename for artwork
     """
     image = IMAGE_TYPES[img_type]
     thumbnail = image.endswith('_thumb')
     if thumbnail:
-        location = _thumbnails_dir()
+        location = _thumbnails_dir(series_obj)
         image = image[:-len('_thumb')]  # strip `_thumb` from the end
     else:
-        location = _cache_dir()
-    filename = '{series_id}.{image}.jpg'.format(
-        series_id=series_id,
+        location = _cache_dir(series_obj)
+    filename = '{series_obj.series_id}.{image}.jpg'.format(
+        series_obj=series_obj,
         image=image,
     )
     return os.path.join(location, filename)
 
 
-def get_artwork(img_type, series_id):
+def get_artwork(img_type, series_obj):
     """
     Get path to cached artwork for a series.
 
     :param img_type: integer constant representing an image type
-    :param series_id: the series id
+    :param series_obj: the series object
 
     :return: full path and filename for artwork if it exists
     """
-    location = get_path(img_type, series_id)
+    location = get_path(img_type, series_obj)
     if os.path.isfile(location):
         return location
 
@@ -155,30 +155,29 @@ def which_type(path):
         return
 
 
-def replace_images(series):
+def replace_images(series_obj):
     """
     Replace cached images for a series based on image type.
 
-    :param series: Series object
+    :param series_obj: Series object
     """
-    remove_images(series)
-    fill_cache(series)
+    remove_images(series_obj)
+    fill_cache(series_obj)
 
 
-def remove_images(series, image_types=None):
+def remove_images(series_obj, image_types=None):
     """
     Remove cached images for a series based on image type.
 
-    :param series: Series object
+    :param series_obj: Series object
     :param image_types: iterable of integers for image types to remove
         if no image types passed, remove all images
     """
     image_types = image_types or IMAGE_TYPES
-    series_id = series.indexerid
-    series_name = series.name
+    series_name = series_obj.name
 
     for image_type in image_types:
-        cur_path = get_path(image_type, series_id)
+        cur_path = get_path(image_type, series_obj)
 
         # see if image exists
         if not os.path.isfile(cur_path):
@@ -202,26 +201,26 @@ def remove_images(series, image_types=None):
                      {'img': IMAGE_TYPES[image_type], 'name': series_name})
 
 
-def _cache_image_from_file(image_path, img_type, series_id):
+def _cache_image_from_file(image_path, img_type, series_obj):
     """
     Take the image provided and copy it to the cache folder.
 
     :param image_path: path to the image we're caching
     :param img_type: BANNER or POSTER or FANART
-    :param series_id: id of the show this image belongs to
+    :param series_obj: Series object
     :return: bool representing success
     """
     # generate the path based on the type and the indexer_id
     if img_type in (POSTER, BANNER, FANART):
-        location = get_path(img_type, series_id)
+        location = get_path(img_type, series_obj)
     else:
         type_name = IMAGE_TYPES.get(img_type, img_type)
         log.error('Invalid cache image type: {0}', type_name)
         return
 
     directories = {
-        'image': _cache_dir(),
-        'thumbnail': _thumbnails_dir(),
+        'image': _cache_dir(series_obj),
+        'thumbnail': _thumbnails_dir(series_obj),
     }
 
     for cache in directories:
@@ -238,11 +237,11 @@ def _cache_image_from_file(image_path, img_type, series_id):
     return True
 
 
-def _cache_image_from_indexer(series, img_type):
+def _cache_image_from_indexer(series_obj, img_type):
     """
     Retrieve specified artwork from the indexer and save to the cache folder.
 
-    :param series: Series object that we want to cache an image for
+    :param series_obj: Series object that we want to cache an image for
     :param img_type: BANNER or POSTER or FANART
     :return: bool representing success
     """
@@ -253,30 +252,28 @@ def _cache_image_from_indexer(series, img_type):
         log.error('Invalid cache image type: {0}', img_type)
         return
 
-    series_id = series.indexerid
-    location = get_path(img_type, series_id)
+    location = get_path(img_type, series_obj)
 
     # retrieve the image from the indexer using the generic metadata class
     # TODO: refactor
     metadata_generator = GenericMetadata()
-    img_data = metadata_generator._retrieve_show_image(img_type_name, series)
+    img_data = metadata_generator._retrieve_show_image(img_type_name, series_obj)
     result = metadata_generator._write_image(img_data, location)
 
     return result
 
 
-def fill_cache(series):
+def fill_cache(series_obj):
     """
     Cache artwork for the given show.
 
     Copy artwork from series directory if possible, or download from indexer.
 
-    :param series: Series object to cache images for
+    :param series_obj: Series object to cache images for
     """
-    series_id = series.name
     # get expected paths for artwork
     images = {
-        img_type: get_path(img_type, series_id)
+        img_type: get_path(img_type, series_obj)
         for img_type in IMAGE_TYPES
     }
     # check if artwork is cached
@@ -291,7 +288,7 @@ def fill_cache(series):
         log.info('Cache check completed')
         return
 
-    log.debug('Searching for images for series id {0}', series_id)
+    log.debug('Searching for images for series id {0}', series_obj.series_id)
 
     # check the show for poster, banner or fanart
     for img_type in BANNER, POSTER, FANART:
@@ -299,11 +296,11 @@ def fill_cache(series):
             continue
         try:
             for provider in app.metadata_provider_dict.values():
-                log.debug('Checking {provider} metadata for {img}',
+                log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
-                if os.path.isfile(provider.get_poster_path(series)):
-                    path = provider.get_poster_path(series)
+                if os.path.isfile(provider.get_poster_path(series_obj)):
+                    path = provider.get_poster_path(series_obj)
                     filename = os.path.abspath(path)
                     file_type = which_type(filename)
 
@@ -324,7 +321,7 @@ def fill_cache(series):
 
                     if desired:
                         # cache the image
-                        _cache_image_from_file(filename, file_type, series_id)
+                        _cache_image_from_file(filename, file_type, series_obj)
                         log.debug('Cached {img} from series folder: {path}',
                                   {'img': type_name, 'path': filename})
                         # remove it from the needed image types
@@ -335,9 +332,9 @@ def fill_cache(series):
 
     # download missing images from indexer
     for img_type in needed:
-        log.debug('Searching for {img} for series_id {x}',
-                  {'img': IMAGE_TYPES[img_type], 'x': series_id})
-        _cache_image_from_indexer(series, img_type)
+        log.debug('Searching for {img} for series {x}',
+                  {'img': IMAGE_TYPES[img_type], 'x': series_obj})
+        _cache_image_from_indexer(series_obj, img_type)
 
     log.info('Cache check completed')
 

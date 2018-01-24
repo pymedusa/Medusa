@@ -25,6 +25,7 @@ from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.show import Show
 from medusa.tv import Series
+
 from six import iteritems
 
 
@@ -79,34 +80,27 @@ class ShowTests(unittest.TestCase):
 
         app.showList = []
 
-        show123 = TestTVShow(0, 123)
-        show456 = TestTVShow(0, 456)
-        show789 = TestTVShow(0, 789)
+        show123 = TestTVShow(1, 123)
+        show789 = TestTVShow(1, 789)
         app.showList = [
             show123,
-            show456,
             show789,
         ]
 
-        invalid_show_id = ('Invalid show ID', None)
-
-        indexer_id_list = [
-            None, '', u'', '123', u'123', '456', u'456', '789', u'789', 123, 456, 789, ['123', '456'], [u'123', u'456'],
-            [123, 456]
+        series_id_list = [
+            None, '', u'789', 123,
         ]
         results_list = [
-            invalid_show_id, invalid_show_id, invalid_show_id, (None, show123), (None, show123), (None, show456),
-            (None, show456), (None, show789), (None, show789), (None, show123), (None, show456), (None, show789),
-            invalid_show_id, invalid_show_id, invalid_show_id
+            (None, None), (None, None), (None, show789), (None, show123),
         ]
 
         self.assertEqual(
-            len(indexer_id_list), len(results_list),
-            'Number of parameters (%d) and results (%d) does not match' % (len(indexer_id_list), len(results_list))
+            len(series_id_list), len(results_list),
+            'Number of parameters (%d) and results (%d) does not match' % (len(series_id_list), len(results_list))
         )
 
-        for (index, indexer_id) in enumerate(indexer_id_list):
-            self.assertEqual(Show._validate_indexer_id(indexer_id), results_list[index])  # pylint: disable=protected-access
+        for (index, series_id) in enumerate(series_id_list):
+            self.assertEqual(Show._validate_indexer_id(1, series_id), results_list[index])
 
 
 class TestTVShow(Series):

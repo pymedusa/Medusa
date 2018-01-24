@@ -1021,6 +1021,7 @@ div.recommended-image {
     overflow: hidden;
     margin: 0;
     text-decoration: none;
+    color: rgb(255, 255, 255);
 }
 
 .recommended-container {

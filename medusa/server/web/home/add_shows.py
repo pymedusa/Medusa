@@ -153,7 +153,7 @@ class HomeAddShows(Home):
 
                 # see if the folder is in KODI already
                 dir_results = main_db_con.select(
-                    b'SELECT indexer_id '
+                    b'SELECT indexer, indexer_id '
                     b'FROM tv_shows '
                     b'WHERE location = ? LIMIT 1',
                     [cur_path]
@@ -172,7 +172,7 @@ class HomeAddShows(Home):
 
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
-                if indexer_id and Show.find(app.showList, indexer_id):
+                if indexer_id and indexer and Show.find_by_id(app.showList, indexer, indexer_id):
                     cur_dir['added_already'] = True
         return t.render(dirList=dir_list)
 
@@ -335,16 +335,16 @@ class HomeAddShows(Home):
                         topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
                         controller="addShows", action="recommendedShows", realpage="popularAnime")
 
-    def addShowToBlacklist(self, indexer_id):
+    def addShowToBlacklist(self, seriesid):
         # URL parameters
-        data = {'shows': [{'ids': {'tvdb': indexer_id}}]}
+        data = {'shows': [{'ids': {'tvdb': seriesid}}]}
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
                           'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
                           'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
-        show_name = get_showname_from_indexer(1, indexer_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, seriesid)
         try:
             trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
             trakt_api.request('users/{0}/lists/{1}/items'.format
@@ -366,7 +366,7 @@ class HomeAddShows(Home):
                         title='Existing Show', header='Existing Show', topmenu='home',
                         controller='addShows', action='addExistingShow')
 
-    def addShowByID(self, indexer_id, show_name=None, indexer="TVDB", which_series=None,
+    def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     flatten_folders=None, subtitles=None, full_show_path=None,
@@ -378,9 +378,10 @@ class HomeAddShows(Home):
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
         """
-        if indexer != 'TVDB':
-            tvdb_id = helpers.get_tvdb_from_id(indexer_id, indexer.upper())
-            if not tvdb_id:
+        series_id = seriesid
+        if indexername != 'tvdb':
+            series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
+            if not series_id:
                 logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
                     'Unable to add %s' % show_name,
@@ -388,9 +389,7 @@ class HomeAddShows(Home):
                 )
                 return
 
-            indexer_id = try_int(tvdb_id, None)
-
-        if Show.find(app.showList, int(indexer_id)):
+        if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
             return
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
@@ -455,11 +454,11 @@ class HomeAddShows(Home):
                        u'no root directory setting found', logger.WARNING)
             return 'No root directories setup, please go back and add one.'
 
-        show_name = get_showname_from_indexer(1, indexer_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, series_id)
         show_dir = None
 
         # add the show
-        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality,
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
                                                 flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 
