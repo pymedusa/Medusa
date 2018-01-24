@@ -91,7 +91,7 @@ class Notifier(object):
             message = message.encode('utf-8')
 
         headers = {b'Content-Type': b'application/json'}
-        data={
+        data = {
             'text': message,
             'username': 'MedusaBot',
             'icon_url': 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
