@@ -51,8 +51,11 @@ class TorrentDayProvider(TorrentProvider):
         # TV/XviD - 2
         # TV-all `-8`
 
-        self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c7': 1, 'c24': 1, 'c26': 1, 'c31': 1, 'c32': 1, 'c33': 1, 'c34': 1, 'c46': 1},
-                           'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
+        self.categories = {
+            'Season': {'c14': 1},
+            'Episode': {'c2': 1, 'c7': 1, 'c24': 1, 'c26': 1, 'c31': 1, 'c32': 1, 'c33': 1, 'c34': 1, 'c46': 1},
+            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}
+        }
 
         # Torrent Stats
         self.minseed = None
