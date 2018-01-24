@@ -230,8 +230,8 @@ class BaseIndexer(object):
                 threshold = 1  # Prevent division by zero
             value = item['rating']
             weight = item['ratingcount']
-            res = item['resolution']
-            score = weights.bayesian(weight, value, threshold, mean)
+            res = int(item['resolution'].split('x')[0]) * int(item['resolution'].split('x')[1])
+            score = weights.bayesian(weight * res, value, threshold, mean)
             return score, value, weight, res, item
 
         def format_result(item):
