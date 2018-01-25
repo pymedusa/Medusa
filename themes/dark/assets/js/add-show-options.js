@@ -34,7 +34,7 @@ $(document).ready(function() {
     });
 
     $('#qualityPreset').on('change', function() {
-        // Fix issue #181 - force re-render to correct the height of the outer div
+        // fix issue #181 - force re-render to correct the height of the outer div
         $('span.prev').click();
         $('span.next').click();
     });

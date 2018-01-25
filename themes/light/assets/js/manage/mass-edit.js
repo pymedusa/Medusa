@@ -1,4 +1,4 @@
-MEDUSA.manage.massEdit = function() { // eslint-disable-line no-undef
+MEDUSA.manage.massEdit = function() {
     $('#location').fileBrowser({
         title: 'Select Show Location'
     });

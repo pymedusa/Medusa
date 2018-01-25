@@ -37,6 +37,7 @@ $(document).ready(function() {
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/doRename?show=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+        window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
+            '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
     });
 });

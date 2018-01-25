@@ -1,11 +1,12 @@
-MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
+MEDUSA.manage.backlogOverview = function() {
     checkForcedSearch();
 
     function checkForcedSearch() {
         var pollInterval = 5000;
         var searchStatusUrl = 'home/getManualSearchStatus';
-        var showId = $('#series-id').val();
-        var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
+        var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
         $.ajax({
             url: url,
             error: function() {
@@ -16,7 +17,7 @@ MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
             complete: function() {
                 setTimeout(checkForcedSearch, pollInterval);
             },
-            timeout: 15000 // Timeout every 15 secs
+            timeout: 15000 // timeout every 15 secs
         }).done(function(data) {
             if (data.episodes) {
                 pollInterval = 5000;
@@ -29,16 +30,16 @@ MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
 
     function updateForcedSearch(data) {
         $.each(data.episodes, function(name, ep) {
-            var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+            var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
             var img = el.children('img[data-ep-search]');
             var episodeStatus = ep.status.toLowerCase();
             var episodeSearchStatus = ep.searchstatus.toLowerCase();
             if (el) {
                 if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
-                    // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                    // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.prop('src', 'images/loading16.gif');
                 } else if (episodeSearchStatus === 'finished') {
-                    // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                    // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     if (episodeStatus.indexOf('snatched') >= 0) {
                         img.prop('src', 'images/yes16.png');
                         setTimeout(function() {
@@ -55,7 +56,7 @@ MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
     $('#pickShow').on('change', function() {
         var id = $(this).val();
         if (id) {
-            $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
+            $('html,body').animate({scrollTop: $('#show-' + id).offset().top - 25}, 'slow');
         }
     });
 
@@ -99,7 +100,7 @@ MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
         img.prop('src', 'images/loading16.gif');
         var url = $(this).prop('href');
         $.getJSON(url, function(data) {
-            // If they failed then just put the red X
+            // if they failed then just put the red X
             if (data.result.toLowerCase() === 'success') {
                 img.prop('src', 'images/yes16.png');
                 setTimeout(function() {
@@ -120,7 +121,7 @@ MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
         img.prop('src', 'images/loading16.gif');
         var url = $(this).prop('href');
         $.getJSON(url, function(data) {
-            // If they failed then just put the red X
+            // if they failed then just put the red X
             if (data.result.toLowerCase() === 'failed') {
                 img.prop('src', 'images/no16.png');
             }

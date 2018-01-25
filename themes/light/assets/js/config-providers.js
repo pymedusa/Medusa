@@ -40,7 +40,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             return;
         }
 
-        var params = { url: url, name: name, api_key: key }; // eslint-disable-line camelcase
+        var params = {url: url, name: name, api_key: key}; // eslint-disable-line camelcase
 
         $('.updating_categories').wrapInner('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Updating Categories ...</span>'); // eslint-disable-line no-undef
         var jqxhr = $.getJSON('config/providers/getNewznabCategories', params, function(data) {
@@ -152,10 +152,12 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
             $('#newznab_cat option').each(function() {
                 $(this).remove();
+                return;
             });
 
             $('#newznab_cap option').each(function() {
                 $(this).remove();
+                return;
             });
         } else {
             data = newznabProviders[selectedProvider][1];
@@ -235,7 +237,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $('#newznab_cap').empty();
         if (selectedProvider[0]) {
             $.fn.newznabProvidersCapabilities.forEach(function(newzNabCap) {
-                if (newzNabCap.name && newzNabCap.name === selectedProvider[0] && Array.isArray(newzNabCap.categories)) {
+                if (newzNabCap.name && newzNabCap.name === selectedProvider[0] && newzNabCap.categories instanceof Array) {
                     var newCapOptions = [];
                     newzNabCap.categories.forEach(function(categorySet) {
                         if (categorySet.id && categorySet.name) {
@@ -443,7 +445,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var name = $.trim($('#newznab_name').val());
         var url = $.trim($('#newznab_url').val());
         var key = $.trim($('#newznab_api_key').val());
-        // Var cat = $.trim($('#newznab_cat').val());
+        // var cat = $.trim($('#newznab_cat').val());
 
         var cat = $.trim($('#newznab_cat option').map(function(i, opt) {
             return $(opt).text();
@@ -453,9 +455,9 @@ $(document).ready(function() { // eslint-disable-line max-lines
             return;
         }
 
-        var params = { name: name };
+        var params = {name: name};
 
-        // Send to the form with ajax, get a return value
+        // send to the form with ajax, get a return value
         $.getJSON('config/providers/canAddNewznabProvider', params, function(data) {
             if (data.error !== undefined) {
                 alert(data.error); // eslint-disable-line no-alert
@@ -563,7 +565,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         });
     };
 
-    // Initialization stuff
+    // initialization stuff
     $.fn.newznabProvidersCapabilities = [];
 
     $(this).showHideProviders();

@@ -254,9 +254,8 @@
                                 <span class="component-title">Display theme:</span>
                                 <span class="component-desc">
                                     <select id="theme_name" name="theme_name" class="form-control input-sm">
-                                        % for theme in app.AVAILABLE_THEMES:
-                                            <option value="${theme.name}" ${('', 'selected="selected"')[theme == app.THEME_NAME]}>${theme.name} (v${theme.version})</option>
-                                        % endfor
+                                        <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
+                                        <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
                                     </select>
                                 </span>
                             </label>

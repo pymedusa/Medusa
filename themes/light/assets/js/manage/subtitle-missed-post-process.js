@@ -1,4 +1,4 @@
-MEDUSA.manage.subtitleMissedPP = function() { // eslint-disable-line no-undef
+MEDUSA.manage.subtitleMissedPP = function() {
     startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
     $.ajaxEpSubtitlesSearch();
 
@@ -12,11 +12,11 @@ MEDUSA.manage.subtitleMissedPP = function() { // eslint-disable-line no-undef
         },
         widgets: ['saveSort', 'filter'],
         headers: {
-            0: { sorter: 'show' },
-            1: { sorter: 'episode' },
-            2: { sorter: 'release' },
-            3: { sorter: 'realISODate' },
-            4: { sorter: false, filter: false }
+            0: {sorter: 'show'},
+            1: {sorter: 'episode'},
+            2: {sorter: 'release'},
+            3: {sorter: 'realISODate'},
+            4: {sorter: false, filter: false}
         },
         widgetOptions: {
             filter_columnFilters: true, // eslint-disable-line camelcase

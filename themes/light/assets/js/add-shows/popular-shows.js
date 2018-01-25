@@ -1,4 +1,4 @@
-MEDUSA.addShows.popularShows = function() {  // eslint-disable-line no-undef
+MEDUSA.addShows.popularShows = function() {
     $.initRemoteShowGrid();
     $.rootDirCheck();
 };

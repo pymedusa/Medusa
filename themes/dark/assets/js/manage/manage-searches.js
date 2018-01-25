@@ -1,4 +1,4 @@
-MEDUSA.manage.manageSearches = function() { // eslint-disable-line no-undef
+MEDUSA.manage.manageSearches = function() {
     /**
      * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
      * @param exceptions - A list of exception types with their last_updates.
@@ -24,14 +24,14 @@ MEDUSA.manage.manageSearches = function() { // eslint-disable-line no-undef
         var table = $('<ul class="simpleList"></ul>')
             .append(
                 '<li>' +
-                '<a href="' + MEDUSA.config.anonRedirect + // eslint-disable-line no-undef
+                '<a href="' + MEDUSA.config.anonRedirect +
                 'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
                 'Last updated medusa\'s exceptions</a> ' +
                     cusExceptionDate
             )
             .append(
                 '<li>' +
-                '<a href="' + MEDUSA.config.anonRedirect + // eslint-disable-line no-undef
+                '<a href="' + MEDUSA.config.anonRedirect +
                 'http://thexem.de">' +
                 'Last updated xem exceptions</a> ' +
                     xemExceptionDate
@@ -54,7 +54,7 @@ MEDUSA.manage.manageSearches = function() { // eslint-disable-line no-undef
     var updateSpinner = function(spinnerContainer, message, showSpinner) {
         if (showSpinner) {
             message = '<img id="searchingAnim" src="images/loading32' +
-                MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message; // eslint-disable-line no-undef
+                MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
         $(spinnerContainer).empty().append(message);
     };
@@ -67,7 +67,7 @@ MEDUSA.manage.manageSearches = function() { // eslint-disable-line no-undef
         // Start a spinner.
         updateSpinner(status, 'Retrieving scene exceptions...', true);
 
-        api.post('alias-source/all/operation', { type: 'REFRESH' }, {
+        api.post('alias-source/all/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';

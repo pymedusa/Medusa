@@ -63,7 +63,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
+                        <a href="displayShow?indexername=${cur_loading_show.show.indexer_name}&seriesid=${cur_loading_show.show.series_id}">${cur_loading_show.show.name}</a>
                         % endif
                         </td>
                         <td></td>
@@ -85,19 +85,20 @@
                 cur_total = 0
                 show_size = 0
                 download_stat_tip = ''
-                if cur_show.indexerid in show_stat:
-                    cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
-                    cur_airs_prev = show_stat[cur_show.indexerid]['ep_airs_prev']
-                    cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
+                if (cur_show.indexer, cur_show.series_id) in show_stat:
+                    series = (cur_show.indexer, cur_show.series_id)
+                    cur_airs_next = show_stat[series]['ep_airs_next']
+                    cur_airs_prev = show_stat[series]['ep_airs_prev']
+                    cur_snatched = show_stat[series]['ep_snatched']
                     if not cur_snatched:
                         cur_snatched = 0
-                    cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
+                    cur_downloaded = show_stat[series]['ep_downloaded']
                     if not cur_downloaded:
                         cur_downloaded = 0
-                    cur_total = show_stat[cur_show.indexerid]['ep_total']
+                    cur_total = show_stat[series]['ep_total']
                     if not cur_total:
                         cur_total = 0
-                    show_size = show_stat[cur_show.indexerid]['show_size']
+                    show_size = show_stat[series]['show_size']
                 download_stat = str(cur_downloaded)
                 download_stat_tip = "Downloaded: " + str(cur_downloaded)
                 if cur_snatched:
@@ -140,10 +141,10 @@
                 % endif
                     <td class="tvShow">
                         <div class="imgsmallposter small">
-                            <a href="home/displayShow?show=${cur_show.indexerid}" title="${cur_show.name}">
+                            <a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name}">
                                 <img src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
                             </a>
-                            <a href="home/displayShow?show=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
+                            <a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name}</a>
                         </div>
                     </td>
                     <td align="center">
@@ -186,7 +187,7 @@
                     ${cur_show.status}
                     </td>
                     <td align="center" class="min-cell-width">
-                        <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
+                        <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
                         <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" />
                     </td>
                 </tr>

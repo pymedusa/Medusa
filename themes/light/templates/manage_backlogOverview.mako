@@ -26,15 +26,15 @@
     <div class="col-md-12">
 <%
     totalWanted = totalQual = 0
-    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[(x.indexer, x.series_id)][Overview.QUAL] + showCounts[(x.indexer, x.series_id)][Overview.WANTED]], key=lambda x: x.name)
     for cur_show in backLogShows:
-        totalWanted += showCounts[cur_show.indexerid][Overview.WANTED]
-        totalQual += showCounts[cur_show.indexerid][Overview.QUAL]
+        totalWanted += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED]
+        totalQual += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]
 %>
         <div class="show-option pull-left">Jump to Show:
             <select id="pickShow" class="form-control-inline input-sm-custom">
             % for cur_show in backLogShows:
-                <option value="${cur_show.indexerid}">${cur_show.name}</option>
+                <option value="${cur_show.indexer_name}${cur_show.series_id}">${cur_show.name}</option>
             % endfor
             </select>
         </div>
@@ -72,28 +72,28 @@
         <div class="col-md-12 horizontal-scroll">
             <table class="defaultTable" cellspacing="0" border="0" cellpadding="0">
             % for cur_show in backLogShows:
-                % if not showCounts[cur_show.indexerid][Overview.WANTED] + showCounts[cur_show.indexerid][Overview.QUAL]:
+                % if not showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED] + showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]:
                     <% continue %>
                 % endif
-                <tr class="seasonheader" id="show-${cur_show.indexerid}">
+                <tr class="seasonheader" id="show-${cur_show.indexer_name}${cur_show.series_id}">
                     <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                         <div class="col-md-12">
                             <div class="col-md-6 left-30">
-                                <h3 style="display: inline;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h3>
+                                <h3 style="display: inline;"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</a></h3>
                                  % if cur_show.quality in qualityPresets:
                                     &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
                                  % endif
                             </div>
                             <div class="col-md-6 pull-right right-30">
                                 <div class="top-5 bottom-5 pull-right">
-                                    % if showCounts[cur_show.indexerid][Overview.WANTED] > 0:
-                                    <span class="listing-key wanted">Wanted: <b>${showCounts[cur_show.indexerid][Overview.WANTED]}</b></span>
+                                    % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED] > 0:
+                                    <span class="listing-key wanted">Wanted: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED]}</b></span>
                                     % endif
-                                    % if showCounts[cur_show.indexerid][Overview.QUAL] > 0:
-                                    <span class="listing-key qual">Quality: <b>${showCounts[cur_show.indexerid][Overview.QUAL]}</b></span>
+                                    % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
+                                    <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
-                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexer_id=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
-                                    <a class="btn btn-inline editShow" href="manage/editShow?show=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
+                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
+                                    <a class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.series_id}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
                                 </div>
                             </div>
                         </div>
@@ -125,12 +125,12 @@
                     <th class="nowrap">Airdate</th>
                     <th>Actions</th>
                 </tr>
-                % for cur_result in showSQLResults[cur_show.indexerid]:
+                % for cur_result in showSQLResults[(cur_show.indexer, cur_show.series_id)]:
                     <%
                         old_status, old_quality = Quality.split_composite_status(cur_result['status'])
                         archived_status = Quality.composite_status(ARCHIVED, old_quality)
                     %>
-                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][cur_result["episode_string"]]]}">
+                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result["episode_string"]]]}">
                         <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
                         <td class="col-status">
                             % if old_quality != Quality.NONE:
@@ -151,10 +151,10 @@
                             % endif
                         </td>
                         <td class="col-search">
-                            <a class="epSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-                            <a class="epManualSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                            <a class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
+                            <a class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                             % if old_status == DOWNLOADED:
-                                <a class="epArchive" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
+                                <a class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
                             % endif
                         </td>
                     </tr>

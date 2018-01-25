@@ -1,4 +1,4 @@
-MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
+MEDUSA.home.snatchSelection = function() {
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
         if ($(this).html() === '..show less') {
@@ -9,12 +9,12 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
         moveSummaryBackground();
     });
 
-    // Adjust the summary background position and size on page load and resize
+    // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $('#summary').height() + 10;
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({ top: top, left: 0 });
+        $('#summaryBackground').offset({top: top, left: 0});
         $('#summaryBackground').show();
     }
 
@@ -23,10 +23,10 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
     });
 
     var updateSpinner = function(message, showSpinner) {
-        // Get spinner object as needed
+        // get spinner object as needed
         var spinner = $('#searchNotification');
         if (showSpinner) {
-            message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message; // eslint-disable-line no-undef
+            message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
         $(spinner).empty().append(message);
     };
@@ -99,23 +99,34 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
     $('.imdbstars').generateStars();
 
     function checkCacheUpdates(repeat) {
-        var self = this;
-        var pollInterval = 5000;
+        const self = this;
+        let pollInterval = 5000;
         repeat = repeat || true;
 
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        var urlParams = show + '&season=' + season + '&episode=' + episode;
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+            return checkIsTrue;
+        });
+
+        if (!checkParams) {
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            return;
+        }
+
+        let urlParams = '?indexername=' + indexerName + '&seriesid=' + seriesId + '&season=' + season + '&episode=' + episode;
 
         if (manualSearchType === 'season') {
             urlParams += '&manual_search_type=' + manualSearchType;
         }
 
-        if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+        if (!$.isNumeric(seriesId) || !$.isNumeric(season) || !$.isNumeric(episode)) {
             setTimeout(function() {
                 checkCacheUpdates(true);
             }, 200);
@@ -123,7 +134,7 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
 
         self.refreshResults = function() {
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection?show=' + urlParams,
+                    'home/snatchSelection' + urlParams,
                     'Loading new search results...',
                     'Time out, refresh page to try again',
                     toggleHistoryTable // This is a callback function
@@ -131,12 +142,12 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
         };
 
         $.ajax({
-            url: 'home/manualSearchCheckCache?show=' + urlParams,
+            url: 'home/manualSearchCheckCache' + urlParams,
             type: 'GET',
             data: data,
             contentType: 'application/json',
             error: function() {
-                // Repeat = false;
+                // repeat = false;
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
@@ -145,27 +156,33 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
             },
-            timeout: 15000 // Timeout after 15s
+            timeout: 15000 // timeout after 15s
         }).done(function(data) {
             // @TODO: Combine the lower if statements
+            if (data === '') {
+                updateSpinner('Search finished', false);
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = false;
+            }
+
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
             }
             if (data.result === 'searching') {
-                // Ep is searched, you will get a results any minute now
+                // ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode is being searched, please wait......', true);
             }
             if (data.result === 'queued') {
-                // Ep is queued, this might take some time to get results
+                // ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
             }
             if (data.result === 'finished') {
-                // Ep search is finished
+                // ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
@@ -173,7 +190,7 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
-                // Ep search is finished but with an error
+                // ep search is finished but with an error
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
@@ -187,16 +204,28 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
     $('body').on('click', '.manualSearchButton', function(event) {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
-        var show = $('meta[data-last-prov-updates]').attr('data-show');
-        var season = $('meta[data-last-prov-updates]').attr('data-season');
-        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        var forceSearch = $(this).attr('data-force-search');
+        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const season = $('meta[data-last-prov-updates]').attr('data-season');
+        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        const forceSearch = $(this).attr('data-force-search');
 
-        if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
+        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+            return checkIsTrue;
+        });
+
+        if (!checkParams) {
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            return;
+        }
+
+        if ($.isNumeric(seriesId) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
-                show: show,
+                indexername: indexerName,
+                seriesid: seriesId,
                 season: season,
                 episode: episode,
                 manual_search_type: manualSearchType, // eslint-disable-line camelcase
@@ -214,16 +243,16 @@ MEDUSA.home.snatchSelection = function() { // eslint-disable-line no-undef
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // Required if content has HTML
+        html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
     $('#btnReset').click(function() {
         $('#showTable')
-        .trigger('saveSortReset') // Clear saved sort
-        .trigger('sortReset');    // Reset current table sort
+        .trigger('saveSortReset') // clear saved sort
+        .trigger('sortReset');    // reset current table sort
         return false;
     });
 

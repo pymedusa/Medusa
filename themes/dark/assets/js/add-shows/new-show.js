@@ -1,13 +1,13 @@
-MEDUSA.addShows.newShow = function() { // eslint-disable-line no-undef
+MEDUSA.addShows.newShow = function() {
     function updateSampleText() {
-        // If something's selected then we have some behavior to figure out
+        // if something's selected then we have some behavior to figure out
 
         var showName;
         var sepChar;
-        // If they've picked a radio button then use that
+        // if they've picked a radio button then use that
         if ($('input:radio[name=whichSeries]:checked').length !== 0) {
             showName = $('input:radio[name=whichSeries]:checked').val().split('|')[4];
-        } else if ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0) { // If we provided a show in the hidden field, use that
+        } else if ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0) { // if we provided a show in the hidden field, use that
             showName = $('#providedName').val();
         } else {
             showName = '';
@@ -15,7 +15,7 @@ MEDUSA.addShows.newShow = function() { // eslint-disable-line no-undef
         $.updateBlackWhiteList(showName);
         var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
-        // If we have a root dir selected, figure out the path
+        // if we have a root dir selected, figure out the path
         if ($('#rootDirs option:selected').length !== 0) {
             var rootDirectoryText = $('#rootDirs option:selected').val();
             if (rootDirectoryText.indexOf('/') >= 0) {
@@ -40,19 +40,19 @@ MEDUSA.addShows.newShow = function() { // eslint-disable-line no-undef
 
         sampleText += '</b>';
 
-        // If we have a show name then sanitize and use it for the dir name
+        // if we have a show name then sanitize and use it for the dir name
         if (showName.length > 0) {
             $.get('addShows/sanitizeFileName', {
                 name: showName
             }, function(data) {
                 $('#displayText').html(sampleText.replace('||', data));
             });
-        // If not then it's unknown
+        // if not then it's unknown
         } else {
             $('#displayText').html(sampleText.replace('||', '??'));
         }
 
-        // Also toggle the add show button
+        // also toggle the add show button
         if (
             ($('#rootDirs option:selected').length !== 0 ||
             ($('#fullShowPath').length !== 0 && $('#fullShowPath').val().length !== 0)) && // eslint-disable-line no-mixed-operators
@@ -149,8 +149,8 @@ MEDUSA.addShows.newShow = function() { // eslint-disable-line no-undef
     }
 
     $('#addShowButton').click(function() {
-        // If they haven't picked a show don't let them submit
-        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length !== 0) {
+        // if they haven't picked a show don't let them submit
+        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length === 0) {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }
@@ -167,7 +167,7 @@ MEDUSA.addShows.newShow = function() { // eslint-disable-line no-undef
         myform.loadsection(2); // eslint-disable-line no-use-before-define
     });
 
-    /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
+    /* jQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
     *  This notice MUST stay intact for legal use
     *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
 

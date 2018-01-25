@@ -26,27 +26,27 @@ function updateImages(data) {
         var searchImage = 'search16.png';
         var htmlContent = '';
         // Try to get the <a> Element
-        var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
         var img = el.children('img[data-ep-search]');
         var parent = el.parent();
         if (el) {
             var rSearchTerm = '';
             if (ep.searchstatus.toLowerCase() === 'searching') {
-                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
-                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Queued');
                 img.prop('alt', 'queued');
                 img.prop('src', 'images/' + queuedImage);
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
-                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'searching');
                 img.parent().prop('class', 'epRetry');
@@ -58,10 +58,10 @@ function updateImages(data) {
                 htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
-            // Update the status column if it exists
+            // update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
         var imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
@@ -89,8 +89,12 @@ function updateImages(data) {
 
 function checkManualSearches() {
     var pollInterval = 5000;
-    var showId = $('#series-id').val();
-    var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+
+    // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
+    var indexerName = $('#indexer-name').val();
+    var seriesId = $('#series-id').val();
+
+    var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
     $.ajax({
         url: url,
         error: function() {
@@ -101,7 +105,7 @@ function checkManualSearches() {
         complete: function() {
             setTimeout(checkManualSearches, pollInterval);
         },
-        timeout: 15000 // Timeout every 15 secs
+        timeout: 15000 // timeout every 15 secs
     }).done(function(data) {
         if (data.episodes) {
             pollInterval = 5000;
@@ -109,7 +113,7 @@ function checkManualSearches() {
             pollInterval = 15000;
         }
         updateImages(data);
-        // CleanupManualSearches(data);
+        // cleanupManualSearches(data);
     });
 }
 
@@ -169,36 +173,36 @@ $.ajaxEpSearch = function(options) {
 
         // @TODO: Move to the API
         $.getJSON(url, function(data) {
-            // If they failed then just put the red X
+            // if they failed then just put the red X
             if (data.result.toLowerCase() === 'failure') {
                 imageName = options.noImage;
                 imageResult = 'failed';
             } else {
-                // If the snatch was successful then apply the
+                // if the snatch was successful then apply the
                 // corresponding class and fill in the row appropriately
                 imageName = options.loadingImage;
                 imageResult = 'success';
-                // Color the row
+                // color the row
                 if (options.colorRow) {
                     parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
                 }
-                // Applying the quality class
+                // applying the quality class
                 var rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
-                // Update the status column if it exists
+                // update the status column if it exists
                 parent.siblings('.col-status').html(htmlContent);
                 // Only if the queuing was successful, disable the onClick event of the loading image
                 disableLink(link);
             }
 
-            // Put the corresponding image as the result of queuing of the manual search
+            // put the corresponding image as the result of queuing of the manual search
             img.prop('title', imageResult);
             img.prop('alt', imageResult);
             img.prop('height', options.size);
             img.prop('src', 'images/' + imageName);
         });
 
-        // Don't follow the link
+        // don't follow the link
         return false;
     }
 
