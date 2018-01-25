@@ -1,11 +1,11 @@
 let baseUrl = $('body').attr('api-root');
 let idToken = $('body').attr('api-key');
 
-const api = axios.create({
+const api = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: baseUrl,
     timeout: 10000,
     headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
         'X-Api-Key': idToken
     }

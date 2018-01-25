@@ -15,7 +15,7 @@ MEDUSA.home.index = function() {
     }, 500));
 
     var imgLazyLoad = new LazyLoad({
-        // example of options object -> see options section
+        // Example of options object -> see options section
         threshold: 500
     });
 
@@ -24,15 +24,15 @@ MEDUSA.home.index = function() {
         var logoWidth;
         var borderRadius;
         var borderWidth;
-        if (newSize < 125) { // small
+        if (newSize < 125) { // Small
             borderRadius = 3;
             borderWidth = 4;
-        } else if (newSize < 175) { // medium
+        } else if (newSize < 175) { // Medium
             fontSize = 9;
             logoWidth = 40;
             borderRadius = 4;
             borderWidth = 5;
-        } else { // large
+        } else { // Large
             fontSize = 11;
             logoWidth = 50;
             borderRadius = 6;
@@ -115,15 +115,15 @@ MEDUSA.home.index = function() {
         })(),
         widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
         headers: {
-            0: {sorter: 'realISODate'},
-            1: {sorter: 'realISODate'},
-            2: {sorter: 'loadingNames'},
-            4: {sorter: 'text'},
-            5: {sorter: 'quality'},
-            6: {sorter: 'eps'},
-            7: {sorter: 'digit'},
-            8: {filter: 'parsed'},
-            10: {filter: 'parsed'}
+            0: { sorter: 'realISODate' },
+            1: { sorter: 'realISODate' },
+            2: { sorter: 'loadingNames' },
+            4: { sorter: 'text' },
+            5: { sorter: 'quality' },
+            6: { sorter: 'eps' },
+            7: { sorter: 'digit' },
+            8: { filter: 'parsed' },
+            10: { filter: 'parsed' }
         },
         widgetOptions: {
             filter_columnFilters: true, // eslint-disable-line camelcase
@@ -257,7 +257,7 @@ MEDUSA.home.index = function() {
                 popup.on('mouseleave', function() {
                     $(this).remove();
                 });
-                popup.css({zIndex: '9999'});
+                popup.css({ zIndex: '9999' });
                 popup.appendTo('body');
 
                 var height = 438;
@@ -301,20 +301,20 @@ MEDUSA.home.index = function() {
     });
 
     $('#postersort').on('change', function() {
-        $('.show-grid').isotope({sortBy: $(this).val()});
+        $('.show-grid').isotope({ sortBy: $(this).val() });
         $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
     });
 
     $('#postersortdirection').on('change', function() {
-        $('.show-grid').isotope({sortAscending: ($(this).val() === 'true')});
+        $('.show-grid').isotope({ sortAscending: ($(this).val() === 'true') });
         $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
     });
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableSeries'), '#popover-target');
         if (MEDUSA.config.animeSplitHome) {

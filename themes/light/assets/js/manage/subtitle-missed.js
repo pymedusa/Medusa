@@ -37,7 +37,7 @@ MEDUSA.manage.subtitleMissed = function() {
         }
     });
 
-    // selects all visible episode checkboxes.
+    // Selects all visible episode checkboxes.
     $('.selectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = true;
@@ -47,7 +47,7 @@ MEDUSA.manage.subtitleMissed = function() {
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
+    // Clears all visible episode checkboxes and the season selectors
     $('.unselectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = false;
