@@ -1,0 +1,459 @@
+
+  vue\src\log.js:1:17
+  ×    1:17   Unable to resolve path to module loglevel.                                                                   import/no-unresolved
+
+  static\js\config\subtitles.js:50:5
+  ×   50:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  vue\src\store\index.js:2:18
+  ×    2:18   Unable to resolve path to module vuex.                                                                       import/no-unresolved
+
+  vue\src\router\index.js:2:23
+  ×    2:23   Unable to resolve path to module vue-router.                                                                 import/no-unresolved
+
+  static\js\plot-tooltip.js:8:21
+  ×    8:21   api is not defined.                                                                                          no-undef
+
+  static\js\add-show-options.js:37:9
+  ×   37:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\config\index.js:8:9
+  ×    8:9    api is not defined.                                                                                          no-undef
+
+  vue\src\i18n\index.js:1:18
+  ×    1:18   Unable to resolve path to module vuex.                                                                       import/no-unresolved
+
+  static\js\home\restart.js:8:17
+  ×    8:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\home\edit-show.js:3:20
+  ×    3:20   apiRoot is not defined.                                                                                      no-undef
+  ×    3:101  apiKey is not defined.                                                                                       no-undef
+
+  static\js\config\init.js:37:5
+  ×   37:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  141:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\manage\episode-statuses.js:38:5
+  ×   38:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   48:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  vue\src\main.js:2:22
+  ×    2:22   Unable to resolve path to module vuex-i18n.                                                                  import/no-unresolved
+  ×    3:25   Unable to resolve path to module vue-resource.                                                               import/no-unresolved
+
+  vue\src\store\actions.js:3:20
+  ×    3:20   A space is required after {.                                                                                 object-curly-spacing
+  ×    3:27   A space is required before }.                                                                                object-curly-spacing
+
+  vue\src\errors.js:1:8
+  ×    1:8    A space is required after {.                                                                                 object-curly-spacing
+  ×    1:18   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\manage\subtitle-missed.js:38:5
+  ×   38:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   48:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\core.js:87:42
+  ×   87:42   A space is required after {.                                                                                 object-curly-spacing
+  ×   87:73   A space is required before }.                                                                                object-curly-spacing
+  ×   94:5    api is not defined.                                                                                          no-undef
+
+  static\js\api.js:4:7
+  ×    4:7    api is assigned a value but never used.                                                                      no-unused-vars
+  ×    4:13   axios is not defined.                                                                                        no-undef
+  ×    8:9    Unnecessarily quoted property Accept found.                                                                  quote-props
+
+  static\js\config\notifications.js:1:1
+  ×    1:1    MEDUSA is not defined.                                                                                       no-undef
+  ×  624:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  704:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\trending-shows.js:2:5
+  ×    2:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   30:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   33:41   A space is required after {.                                                                                 object-curly-spacing
+  ×   33:58   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\manage\failed-downloads.js:5:18
+  ×    5:18   A space is required after {.                                                                                 object-curly-spacing
+  ×    5:22   A space is required after {.                                                                                 object-curly-spacing
+  ×    5:36   A space is required before }.                                                                                object-curly-spacing
+  ×    5:37   A space is required before }.                                                                                object-curly-spacing
+
+  vue\test\helpers\setup.js:4:9
+  ×    4:9    Unable to resolve path to module browser-env.                                                                import/no-unresolved
+  ×    5:23   Unable to resolve path to module require-extension-hooks.                                                    import/no-unresolved
+  ×    7:27   Unable to resolve path to module vue-router.                                                                 import/no-unresolved
+  ×    8:29   Unable to resolve path to module vue-resource.                                                               import/no-unresolved
+
+  static\js\ajax-notifications.js:9:37
+  ×    9:37   A space is required after {.                                                                                 object-curly-spacing
+  ×    9:64   A space is required before }.                                                                                object-curly-spacing
+  ×   13:35   A space is required after {.                                                                                 object-curly-spacing
+  ×   13:90   A space is required before }.                                                                                object-curly-spacing
+
+  vue\test\app.spec.js:1:1
+  ×    1:1    Test file is ignored because it is not in test.js test-*.js test/**/*.js **/__tests__/**/*.js **/*.test.js.  ava/no-ignored-test-files
+  ×    2:23   Unable to resolve path to module vue-router.                                                                 import/no-unresolved
+  ×    3:22   Unable to resolve path to module vuex-i18n.                                                                  import/no-unresolved
+  ×   38:18   A space is required after {.                                                                                 object-curly-spacing
+  ×   38:40   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\add-shows\add-existing-show.js:48:17
+  ×   48:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   51:24   A space is required after {.                                                                                 object-curly-spacing
+  ×   51:38   A space is required before }.                                                                                object-curly-spacing
+  ×   81:32   A space is required after {.                                                                                 object-curly-spacing
+  ×   81:45   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\quality-chooser.js:28:9
+  ×   28:9    Unnecessary return statement.                                                                                no-useless-return
+  ×   44:9    api is not defined.                                                                                          no-undef
+  ×   73:9    api is not defined.                                                                                          no-undef
+  ×   73:23   A space is required after {.                                                                                 object-curly-spacing
+  ×   73:48   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\manage\manage-searches.js:70:9
+  ×   70:9    api is not defined.                                                                                          no-undef
+  ×   70:48   A space is required after {.                                                                                 object-curly-spacing
+  ×   70:64   A space is required before }.                                                                                object-curly-spacing
+  ×   78:13   api is not defined.                                                                                          no-undef
+  ×   93:5    api is not defined.                                                                                          no-undef
+
+  vue\src\api\series.js:1:8
+  ×    1:8    A space is required after {.                                                                                 object-curly-spacing
+  ×    1:28   A space is required before }.                                                                                object-curly-spacing
+  ×    2:8    A space is required after {.                                                                                 object-curly-spacing
+  ×    2:17   A space is required before }.                                                                                object-curly-spacing
+  ×    8:33   A space is required after {.                                                                                 object-curly-spacing
+  ×    8:38   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\config\post-processing.js:1:1
+  ×    1:1    MEDUSA is not defined.                                                                                       no-undef
+  ×  243:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  254:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  265:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  276:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  410:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  gulpfile.js:27:1
+  ×   27:1    Expected empty line after require statement not followed by another require.                                 import/newline-after-import
+  ×   59:2    Missing semicolon.                                                                                           semi
+  ×   61:4    Trailing spaces not allowed.                                                                                 no-trailing-spaces
+  ×   62:67   Trailing spaces not allowed.                                                                                 no-trailing-spaces
+  ×   75:21   Strings must use singlequote.                                                                                quotes
+  ×   75:99   Missing semicolon.                                                                                           semi
+  ×   76:9    Only use process.exit() in CLI apps. Throw an error instead.                                                 unicorn/no-process-exit
+
+  static\js\ajax-episode-subtitles.js:6:26
+  ×    6:26   MEDUSA is not defined.                                                                                       no-undef
+  ×    7:47   MEDUSA is not defined.                                                                                       no-undef
+  ×   88:25   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  126:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  156:25   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  205:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  231:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  234:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\config\search.js:3:31
+  ×    3:31   A space is required after {.                                                                                 object-curly-spacing
+  ×    3:78   A space is required before }.                                                                                object-curly-spacing
+  ×    4:35   A space is required after {.                                                                                 object-curly-spacing
+  ×    4:86   A space is required before }.                                                                                object-curly-spacing
+  ×    5:36   A space is required after {.                                                                                 object-curly-spacing
+  ×    5:79   A space is required before }.                                                                                object-curly-spacing
+  ×    6:45   A space is required after {.                                                                                 object-curly-spacing
+  ×    6:102  A space is required before }.                                                                                object-curly-spacing
+
+  static\js\add-shows\init.js:4:20
+  ×    4:20   MEDUSA is not defined.                                                                                       no-undef
+  ×    8:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   26:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   29:45   A space is required after {.                                                                                 object-curly-spacing
+  ×   29:62   A space is required before }.                                                                                object-curly-spacing
+  ×   63:29   MEDUSA is not defined.                                                                                       no-undef
+  ×   75:72   MEDUSA is not defined.                                                                                       no-undef
+  ×  186:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\manage\backlog-overview.js:19:28
+  ×   19:28   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   38:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   41:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   58:36   A space is required after {.                                                                                 object-curly-spacing
+  ×   58:82   A space is required before }.                                                                                object-curly-spacing
+  ×   63:9    api is not defined.                                                                                          no-undef
+  ×   76:9    api is not defined.                                                                                          no-undef
+  ×  102:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  123:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\config-providers.js:43:22
+  ×   43:22   A space is required after {.                                                                                 object-curly-spacing
+  ×   43:57   A space is required before }.                                                                                object-curly-spacing
+  ×  155:17   Unnecessary return statement.                                                                                no-useless-return
+  ×  160:17   Unnecessary return statement.                                                                                no-useless-return
+  ×  240:83   Use Array.isArray() instead of instanceof Array.                                                             unicorn/no-array-instanceof
+  ×  448:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  458:22   A space is required after {.                                                                                 object-curly-spacing
+  ×  458:33   A space is required before }.                                                                                object-curly-spacing
+  ×  460:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  568:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\manage\subtitle-missed-post-process.js:15:16
+  ×   15:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   15:31   A space is required before }.                                                                                object-curly-spacing
+  ×   16:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   16:34   A space is required before }.                                                                                object-curly-spacing
+  ×   17:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   17:34   A space is required before }.                                                                                object-curly-spacing
+  ×   18:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   18:38   A space is required before }.                                                                                object-curly-spacing
+  ×   19:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   19:45   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\history\index.js:6:26
+  ×    6:26   A space is required after {.                                                                                 object-curly-spacing
+  ×    6:44   A space is required before }.                                                                                object-curly-spacing
+  ×   34:26   A space is required after {.                                                                                 object-curly-spacing
+  ×   34:44   A space is required before }.                                                                                object-curly-spacing
+  ×   36:24   A space is required after {.                                                                                 object-curly-spacing
+  ×   36:46   A space is required before }.                                                                                object-curly-spacing
+  ×   40:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   40:42   A space is required before }.                                                                                object-curly-spacing
+  ×   41:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   41:35   A space is required before }.                                                                                object-curly-spacing
+  ×   51:9    api is not defined.                                                                                          no-undef
+
+  static\js\add-shows\new-show.js:3:9
+  ×    3:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×    7:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   10:130  Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   18:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   43:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   50:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   55:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   79:92   MEDUSA is not defined.                                                                                       no-undef
+  ×  113:52   MEDUSA is not defined.                                                                                       no-undef
+  ×  115:52   MEDUSA is not defined.                                                                                       no-undef
+  ×  152:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  170:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\common\init.js:13:9
+  ×   13:9    MEDUSA is not defined.                                                                                       no-undef
+  ×   16:24   apiRoot is not defined.                                                                                      no-undef
+  ×   16:107  apiKey is not defined.                                                                                       no-undef
+  ×   19:46   MEDUSA is not defined.                                                                                       no-undef
+  ×   67:33   A space is required after {.                                                                                 object-curly-spacing
+  ×   67:65   A space is required before }.                                                                                object-curly-spacing
+  ×  109:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  127:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  136:32   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  138:84   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  139:123  Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  141:100  Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  254:9    MEDUSA is not defined.                                                                                       no-undef
+
+  static\js\ajax-episode-search.js:35:17
+  ×   35:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   42:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   49:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   61:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  104:24   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  112:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  172:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  177:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  181:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  185:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  188:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  194:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  201:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\home\snatch-selection.js:12:5
+  ×   12:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   17:40   A space is required after {.                                                                                 object-curly-spacing
+  ×   17:58   A space is required before }.                                                                                object-curly-spacing
+  ×   26:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  139:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  148:28   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  156:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  162:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  168:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  176:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  217:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  219:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  225:35   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  226:35   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\root-dirs.js:13:20
+  ×   13:20   Unexpected chained assignment.                                                                               no-multi-assign
+  ×   35:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   40:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   50:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   67:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   70:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   75:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   80:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  105:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  130:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  132:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  168:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  171:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  199:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  static\js\browser.js:54:30
+  ×   54:30   A space is required after {.                                                                                 object-curly-spacing
+  ×   54:54   A space is required before }.                                                                                object-curly-spacing
+  ×   92:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  115:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  127:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  141:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  153:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  160:25   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  172:17   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  188:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  202:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  205:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  213:13   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  217:71   A space is required after {.                                                                                 object-curly-spacing
+  ×  217:94   A space is required before }.                                                                                object-curly-spacing
+  ×  225:4    jQuery is not defined.                                                                                       no-undef
+
+  vue\src\store\modules\series.js:3:8
+  ×    3:8    A space is required after {.                                                                                 object-curly-spacing
+  ×    3:28   A space is required before }.                                                                                object-curly-spacing
+  ×   31:18   A space is required after {.                                                                                 object-curly-spacing
+  ×   31:25   A space is required before }.                                                                                object-curly-spacing
+  ×   34:42   A space is required after {.                                                                                 object-curly-spacing
+  ×   34:47   A space is required before }.                                                                                object-curly-spacing
+  ×   38:15   A space is required after {.                                                                                 object-curly-spacing
+  ×   38:22   A space is required before }.                                                                                object-curly-spacing
+  ×   38:25   A space is required after {.                                                                                 object-curly-spacing
+  ×   38:34   A space is required before }.                                                                                object-curly-spacing
+  ×   40:26   A space is required after {.                                                                                 object-curly-spacing
+  ×   40:35   A space is required before }.                                                                                object-curly-spacing
+  ×   44:42   A space is required after {.                                                                                 object-curly-spacing
+  ×   44:47   A space is required before }.                                                                                object-curly-spacing
+  ×   51:35   A space is required after {.                                                                                 object-curly-spacing
+  ×   51:42   A space is required before }.                                                                                object-curly-spacing
+  ×   55:35   A space is required after {.                                                                                 object-curly-spacing
+  ×   55:42   A space is required before }.                                                                                object-curly-spacing
+
+  static\js\home\display-show.js:1:1
+  ×    1:1    MEDUSA is not defined.                                                                                       no-undef
+  ×   13:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   18:40   A space is required after {.                                                                                 object-curly-spacing
+  ×   18:58   A space is required before }.                                                                                object-curly-spacing
+  ×   26:49   A space is required after {.                                                                                 object-curly-spacing
+  ×   26:67   A space is required before }.                                                                                object-curly-spacing
+  ×   52:36   A space is required after {.                                                                                 object-curly-spacing
+  ×   52:104  A space is required before }.                                                                                object-curly-spacing
+  ×  123:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  133:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  143:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  152:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  158:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  180:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  266:48   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  273:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  349:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  351:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  418:5    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  420:9    api is not defined.                                                                                          no-undef
+
+  static\js\schedule\index.js:2:18
+  ×    2:18   A space is required after {.                                                                                 object-curly-spacing
+  ×    2:37   A space is required before }.                                                                                object-curly-spacing
+  ×   21:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   21:42   A space is required before }.                                                                                object-curly-spacing
+  ×   22:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   22:42   A space is required before }.                                                                                object-curly-spacing
+  ×   23:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   23:43   A space is required before }.                                                                                object-curly-spacing
+  ×   24:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   24:43   A space is required before }.                                                                                object-curly-spacing
+  ×   25:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   25:38   A space is required before }.                                                                                object-curly-spacing
+  ×   26:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   26:35   A space is required before }.                                                                                object-curly-spacing
+  ×   27:20   A space is required after {.                                                                                 object-curly-spacing
+  ×   27:34   A space is required before }.                                                                                object-curly-spacing
+  ×   40:18   A space is required after {.                                                                                 object-curly-spacing
+  ×   40:37   A space is required before }.                                                                                object-curly-spacing
+  ×   57:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   59:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   65:9    api is not defined.                                                                                          no-undef
+
+  static\js\home\index.js:18:9
+  ×   18:9    Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   27:30   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   30:37   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   35:18   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  118:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  118:38   A space is required before }.                                                                                object-curly-spacing
+  ×  119:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  119:38   A space is required before }.                                                                                object-curly-spacing
+  ×  120:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  120:39   A space is required before }.                                                                                object-curly-spacing
+  ×  121:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  121:31   A space is required before }.                                                                                object-curly-spacing
+  ×  122:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  122:34   A space is required before }.                                                                                object-curly-spacing
+  ×  123:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  123:30   A space is required before }.                                                                                object-curly-spacing
+  ×  124:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  124:32   A space is required before }.                                                                                object-curly-spacing
+  ×  125:16   A space is required after {.                                                                                 object-curly-spacing
+  ×  125:33   A space is required before }.                                                                                object-curly-spacing
+  ×  126:17   A space is required after {.                                                                                 object-curly-spacing
+  ×  126:34   A space is required before }.                                                                                object-curly-spacing
+  ×  260:27   A space is required after {.                                                                                 object-curly-spacing
+  ×  260:42   A space is required before }.                                                                                object-curly-spacing
+  ×  304:33   A space is required after {.                                                                                 object-curly-spacing
+  ×  304:55   A space is required before }.                                                                                object-curly-spacing
+  ×  309:33   A space is required after {.                                                                                 object-curly-spacing
+  ×  309:75   A space is required before }.                                                                                object-curly-spacing
+  ×  315:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  317:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×  326:9    api is not defined.                                                                                          no-undef
+  ×  339:9    api is not defined.                                                                                          no-undef
+  ×  403:13   api is not defined.                                                                                          no-undef
+
+  static\js\manage\index.js:20:16
+  ×   20:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   20:45   A space is required before }.                                                                                object-curly-spacing
+  ×   21:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   21:36   A space is required before }.                                                                                object-curly-spacing
+  ×   22:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   22:34   A space is required before }.                                                                                object-curly-spacing
+  ×   23:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   23:33   A space is required before }.                                                                                object-curly-spacing
+  ×   24:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   24:32   A space is required before }.                                                                                object-curly-spacing
+  ×   25:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   25:32   A space is required before }.                                                                                object-curly-spacing
+  ×   26:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   26:35   A space is required before }.                                                                                object-curly-spacing
+  ×   27:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   27:33   A space is required before }.                                                                                object-curly-spacing
+  ×   28:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   28:35   A space is required before }.                                                                                object-curly-spacing
+  ×   29:16   A space is required after {.                                                                                 object-curly-spacing
+  ×   29:44   A space is required before }.                                                                                object-curly-spacing
+  ×   30:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   30:34   A space is required before }.                                                                                object-curly-spacing
+  ×   31:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   31:31   A space is required before }.                                                                                object-curly-spacing
+  ×   32:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   32:31   A space is required before }.                                                                                object-curly-spacing
+  ×   33:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   33:31   A space is required before }.                                                                                object-curly-spacing
+  ×   34:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   34:31   A space is required before }.                                                                                object-curly-spacing
+  ×   35:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   35:31   A space is required before }.                                                                                object-curly-spacing
+  ×   36:17   A space is required after {.                                                                                 object-curly-spacing
+  ×   36:31   A space is required before }.                                                                                object-curly-spacing
+  ×   44:21   Comments should not begin with a lowercase character                                                         capitalized-comments
+  ×   46:44   Comments should not begin with a lowercase character                                                         capitalized-comments
+
+  361 errors
