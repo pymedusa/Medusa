@@ -18,7 +18,7 @@ const pngquant = require('imagemin-pngquant');
 const argv = require('yargs').argv;
 const rename = require('gulp-rename');
 
-// const postcss = require('gulp-postcss');
+// Const postcss = require('gulp-postcss');
 // const sass = require('gulp-sass');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
@@ -52,7 +52,7 @@ const staticAssets = [
 const rootFiles = [
     'index.html',
     'package.json'
-]
+];
 
 /**
  * Get theme object.
@@ -87,7 +87,7 @@ gulp.task('build', done => {
 });
 
 gulp.task('watch', ['build'], () => {
-    livereload.listen({port: 35729 });
+    livereload.listen({ port: 35729 });
     gulp.watch('static/img/**/*', ['img']);
     gulp.watch('static/css/**/*.scss', ['css']);
     gulp.watch([
@@ -126,7 +126,7 @@ gulp.task('css', () => {
     // .pipe(sourcemaps.write('./'))
     // .pipe(gulp.dest('build'))
     // .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    .pipe(gulp.dest(`${buildDest}/assets`));    
+    .pipe(gulp.dest(`${buildDest}/assets`));
 });
 
 gulp.task('cssTheme', () => {
@@ -140,10 +140,9 @@ gulp.task('cssTheme', () => {
     // .pipe(gulpif(!PROD, livereload({ port: 35729 })))
     .pipe(rename(`themed.css`))
     .pipe(gulp.dest(`${buildDest}/assets/css`));
-})
+});
 
 gulp.task('lint', () => {
-    return;
     return gulp
     .src([
         'static/js/**/*.js',
@@ -217,17 +216,17 @@ gulp.task('templates', () => {
     .src('./views/**/*', {
         base: 'views'
     })
-    .pipe(gulp.dest(`${buildDest}/templates`)); 
-})
+    .pipe(gulp.dest(`${buildDest}/templates`));
+});
 
 gulp.task('vue', () => {
     return gulp
     .src('./vue/**/*')
-    .pipe(gulp.dest(`${buildDest}/vue`)); 
-})
+    .pipe(gulp.dest(`${buildDest}/vue`));
+});
 
 gulp.task('root', () => {
     return gulp
     .src(rootFiles)
-    .pipe(gulp.dest(buildDest)); 
-})
+    .pipe(gulp.dest(buildDest));
+});

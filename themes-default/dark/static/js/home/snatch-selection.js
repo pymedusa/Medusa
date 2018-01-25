@@ -9,12 +9,12 @@ MEDUSA.home.snatchSelection = function() {
         moveSummaryBackground();
     });
 
-    // adjust the summary background position and size on page load and resize
+    // Adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $('#summary').height() + 10;
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').offset({ top: top, left: 0 });
         $('#summaryBackground').show();
     }
 
@@ -23,7 +23,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     var updateSpinner = function(message, showSpinner) {
-        // get spinner object as needed
+        // Get spinner object as needed
         var spinner = $('#searchNotification');
         if (showSpinner) {
             message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
@@ -147,7 +147,7 @@ MEDUSA.home.snatchSelection = function() {
             data: data,
             contentType: 'application/json',
             error: function() {
-                // repeat = false;
+                // Repeat = false;
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
@@ -156,7 +156,7 @@ MEDUSA.home.snatchSelection = function() {
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
             },
-            timeout: 15000 // timeout after 15s
+            timeout: 15000 // Timeout after 15s
         }).done(function(data) {
             // @TODO: Combine the lower if statements
             if (data === '') {
@@ -170,19 +170,19 @@ MEDUSA.home.snatchSelection = function() {
                 updateSpinner('Refreshed results...', true);
             }
             if (data.result === 'searching') {
-                // ep is searched, you will get a results any minute now
+                // Ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode is being searched, please wait......', true);
             }
             if (data.result === 'queued') {
-                // ep is queued, this might take some time to get results
+                // Ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
             }
             if (data.result === 'finished') {
-                // ep search is finished
+                // Ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
@@ -190,7 +190,7 @@ MEDUSA.home.snatchSelection = function() {
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
-                // ep search is finished but with an error
+                // Ep search is finished but with an error
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
@@ -243,16 +243,16 @@ MEDUSA.home.snatchSelection = function() {
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
     $('#btnReset').click(function() {
         $('#showTable')
-        .trigger('saveSortReset') // clear saved sort
-        .trigger('sortReset');    // reset current table sort
+        .trigger('saveSortReset') // Clear saved sort
+        .trigger('sortReset');    // Reset current table sort
         return false;
     });
 

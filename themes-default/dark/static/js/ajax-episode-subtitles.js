@@ -85,7 +85,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
                         // Only applied to manage_subtitleMissedPP.mako
                         selectedEpisode.parent().parent().remove();
                     } else {
-                        // update the subtitles column with new informations
+                        // Update the subtitles column with new informations
                         if (subtitlesMulti === true) { // eslint-disable-line no-lonely-if
                             var hasLang = false;
                             var lang = language;
@@ -123,7 +123,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
             disableAllSearches();
             changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
             var url = selectedEpisode.prop('href');
-            // if manual search, replace handler
+            // If manual search, replace handler
             url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
             $.getJSON(url, function(data) {
                 // Delete existing rows in the modal
@@ -153,7 +153,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
                         }
                         var subtitleScore = subtitle.score;
                         var subtitleName = subtitle.filename.substring(0, 99);
-                        // if hash match, don't show missingGuess
+                        // If hash match, don't show missingGuess
                         if (subtitle.sub_score >= subtitle.max_score) {
                             missingGuess = '';
                         }
@@ -202,7 +202,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
             var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() === 'success') {
-                    // clear and update the subtitles column with new informations
+                    // Clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
                     subtitlesTd.empty();
                     $.each(subtitles, function(index, language) {
@@ -228,10 +228,10 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
             var subtitlesMergeLink = $(this);
             changeImage(subtitlesMergeLink, loadingSpinner, 'loading', 'loading', 16, true);
             $.getJSON($(this).attr('href'), function() {
-                // don't allow other merges
+                // Don't allow other merges
                 subtitlesMergeLink.remove();
             });
-            // don't follow the link
+            // Don't follow the link
             return false;
         });
     };

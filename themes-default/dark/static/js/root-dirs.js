@@ -10,7 +10,8 @@
         'timeStamp', 'trace', 'warn'
     ];
     var length = methods.length;
-    var console = (window.console = window.console || {});
+    window.console = window.console || {};
+    var console = window.console;
 
     while (length--) {
         method = methods[length];
@@ -32,12 +33,12 @@ $(document).ready(function() {
             return;
         }
 
-        // put an asterisk on the text
+        // Put an asterisk on the text
         if ($('#' + which).text().charAt(0) !== '*') {
             $('#' + which).text('*' + $('#' + which).text());
         }
 
-        // if there's an existing one then take the asterisk off
+        // If there's an existing one then take the asterisk off
         if ($('#whichDefaultRootDir').val() && force !== true) {
             var oldDefault = $('#' + $('#whichDefaultRootDir').val());
             oldDefault.text(oldDefault.text().substring(1));
@@ -47,7 +48,7 @@ $(document).ready(function() {
     }
 
     function syncOptionIDs() {
-        // re-sync option ids
+        // Re-sync option ids
         var i = 0;
         $('#rootDirs option').each(function() {
             $(this).prop('id', 'rd-' + (i++));
@@ -64,20 +65,20 @@ $(document).ready(function() {
 
         var doDisable = 'true';
 
-        // re-sync option ids
+        // Re-sync option ids
         syncOptionIDs();
 
-        // if nothing's selected then select the default
+        // If nothing's selected then select the default
         if ($('#rootDirs option:selected').length === 0 && $('#whichDefaultRootDir').val().length !== 0) {
             $('#' + $('#whichDefaultRootDir').val()).prop('selected', true);
         }
 
-        // if something's selected then we have some behavior to figure out
+        // If something's selected then we have some behavior to figure out
         if ($('#rootDirs option:selected').length !== 0) {
             doDisable = '';
         }
 
-        // update the elements
+        // Update the elements
         $('#deleteRootDir').prop('disabled', doDisable);
         $('#defaultRootDir').prop('disabled', doDisable);
         $('#editRootDir').prop('disabled', doDisable);
@@ -102,7 +103,7 @@ $(document).ready(function() {
             return;
         }
 
-        // check if it's the first one
+        // Check if it's the first one
         var isDefault = false;
         if ($('#whichDefaultRootDir').val().length === 0) {
             isDefault = true;
@@ -127,9 +128,9 @@ $(document).ready(function() {
             return;
         }
 
-        // as long as something is selected
+        // As long as something is selected
         if ($('#rootDirs option:selected').length !== 0) {
-            // update the selected one with the provided path
+            // Update the selected one with the provided path
             if ($('#rootDirs option:selected').attr('id') === $('#whichDefaultRootDir').val()) {
                 $('#rootDirs option:selected').text('*' + path);
             } else {
@@ -165,10 +166,10 @@ $(document).ready(function() {
             if (newDefault) {
                 console.log('new default when deleting');
 
-                // we deleted the default so this isn't valid anymore
+                // We deleted the default so this isn't valid anymore
                 $('#whichDefaultRootDir').val('');
 
-                // if we're deleting the default and there are options left then pick a new default
+                // If we're deleting the default and there are options left then pick a new default
                 if ($('#rootDirs option').length !== 0) {
                     setDefault($('#rootDirs option').attr('id'));
                 }
@@ -196,7 +197,7 @@ $(document).ready(function() {
     });
     $('#rootDirs').click(refreshRootDirs);
 
-    // set up buttons on page load
+    // Set up buttons on page load
     syncOptionIDs();
     setDefault($('#whichDefaultRootDir').val(), true);
     refreshRootDirs();

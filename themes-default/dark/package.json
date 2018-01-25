@@ -125,7 +125,7 @@
   },
   "ava": {
     "files": [
-      "vue/test/**/*.spec.js"
+      "vue/test/**/*.js"
     ],
     "source": [
       "vue/src/**/*.{js,jsx}",

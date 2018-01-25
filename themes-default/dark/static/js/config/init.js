@@ -34,7 +34,7 @@ MEDUSA.config.init = function() {
         }
     });
 
-    // bind 'myForm' and provide a simple callback function
+    // Bind 'myForm' and provide a simple callback function
     $('#configForm').ajaxForm({
         beforeSubmit: function() {
             $('.config_submitter .config_submitter_refresh').each(function() {
@@ -138,7 +138,7 @@ MEDUSA.config.init = function() {
 
     $('#create_access_token').popover({
         placement: 'left',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         title: 'Github Token',
         content: '<p>Copy the generated token and paste it in the token input box.</p>' +
             '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
