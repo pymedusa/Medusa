@@ -5,7 +5,7 @@ import unittest
 
 from medusa import common, db, name_cache, scene_exceptions
 from medusa.show import naming
-from medusa.tv import Series as Show
+from medusa.tv import Series
 from tests.legacy import test_lib as test
 
 
@@ -21,7 +21,7 @@ class SceneTests(test.AppTestDBCase):
         :return:
         """
         expected = [] if expected is None else expected
-        show = Show(1, indexerid)
+        show = Series(1, indexerid)
         show.name = name
 
         result = show.get_all_possible_names(show)
@@ -73,23 +73,25 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         scene_exceptions.refresh_exceptions_cache()
 
     def test_scene_ex_empty(self):
-        self.assertEqual(scene_exceptions.get_scene_exceptions(0, 0), set())
+        series_obj = Series(1, 70725)
+        self.assertEqual(scene_exceptions.get_scene_exceptions(series_obj, 0), set())
 
     @unittest.expectedFailure
     def test_scene_ex_babylon_5(self):
+        series_obj = Series(1, 70726)
         self.assertEqual(
-            sorted(scene_exceptions.get_scene_exceptions(70726, 1)),
+            sorted(scene_exceptions.get_scene_exceptions(series_obj, 1)),
             sorted({'Babylon 5', 'Babylon5'})
         )
 
     @unittest.expectedFailure
     def test_scene_ex_by_name(self):
-        self.assertEqual(scene_exceptions.get_scene_exception_by_name('Babylon5'), (70726, -1))
-        self.assertEqual(scene_exceptions.get_scene_exception_by_name('babylon 5'), (70726, -1))
-        self.assertEqual(scene_exceptions.get_scene_exception_by_name('Carlos 2010'), (164451, -1))
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Babylon5'), (70726, -1))
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('babylon 5'), (70726, -1))
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Carlos 2010'), (164451, -1))
 
     def test_scene_ex_by_name_empty(self):
-        self.assertEqual(scene_exceptions.get_scene_exception_by_name('nothing useful'), (None, None))
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('nothing useful'), [(None, None, None)])
 
     def test_scene_ex_reset_name_cache(self):
         # clear the exceptions
@@ -101,4 +103,4 @@ class SceneExceptionTestCase(test.AppTestDBCase):
 
         # updating should not clear the cache this time since our exceptions didn't change
         scene_exceptions.retrieve_exceptions()
-        self.assertEqual(name_cache.retrieveNameFromCache('Cached Name'), 0)
+        self.assertEqual(name_cache.retrieveNameFromCache('Cached Name'), (0, 0))

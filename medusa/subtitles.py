@@ -42,6 +42,7 @@ from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
 from six import iteritems, string_types, text_type
+
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
@@ -488,7 +489,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         if app.SUBTITLES_HISTORY:
             logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
                          subtitle.provider_name, subtitle.language.opensubtitles)
-            history.logSubtitle(show_indexerid, season, episode, status, subtitle)
+            history.logSubtitle(tv_episode, status, subtitle)
 
     # Refresh the subtitles property
     if tv_episode.location:
@@ -593,7 +594,7 @@ def get_current_subtitles(tv_episode):
         return get_subtitles(video)
 
 
-def _encode(value, encoding='utf-8', fallback=None):
+def _encode(value, fallback=None):
     """Encode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -607,6 +608,8 @@ def _encode(value, encoding='utf-8', fallback=None):
     :return: the encoded value
     :rtype: str
     """
+    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+
     try:
         return value.encode(encoding)
     except UnicodeEncodeError:
@@ -615,7 +618,7 @@ def _encode(value, encoding='utf-8', fallback=None):
         return value.encode(fallback or app.SYS_ENCODING)
 
 
-def _decode(value, encoding='utf-8', fallback=None):
+def _decode(value, fallback=None):
     """Decode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -629,12 +632,14 @@ def _decode(value, encoding='utf-8', fallback=None):
     :return: the decoded value
     :rtype: unicode
     """
+    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+
     try:
-        return value.decode(encoding)
+        return text_type(value, encoding)
     except UnicodeDecodeError:
         logger.debug(u'Failed to decode to %s, falling back to %s: %r',
                      encoding, fallback or app.SYS_ENCODING, value)
-        return value.decode(fallback or app.SYS_ENCODING)
+        return text_type(value, fallback or app.SYS_ENCODING)
 
 
 def get_subtitle_description(subtitle):
@@ -961,6 +966,7 @@ class SubtitlesFinder(object):
             sql_results += database.select(
                 "SELECT "
                 "s.show_name, "
+                "e.indexer,"
                 "e.showid, "
                 "e.season, "
                 "e.episode,"
@@ -973,7 +979,7 @@ class SubtitlesFinder(object):
                 "FROM "
                 "tv_episodes AS e "
                 "INNER JOIN tv_shows AS s "
-                "ON (e.showid = s.indexer_id) "
+                "ON (e.showid = s.indexer_id AND e.indexer = s.indexer) "
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
@@ -1000,7 +1006,7 @@ class SubtitlesFinder(object):
 
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
-            subtitle_path = _encode(ep_to_sub['location'], encoding=app.SYS_ENCODING, fallback='utf-8')
+            subtitle_path = _encode(ep_to_sub['location'], fallback='utf-8')
             if not os.path.isfile(subtitle_path):
                 logger.debug(u'Episode file does not exist, cannot download subtitles for %s %s',
                              ep_to_sub['show_name'], ep_num)
@@ -1036,7 +1042,7 @@ class SubtitlesFinder(object):
                                  ep_to_sub['show_name'], ep_num, dhm(delay))
                     continue
 
-            show_object = Show.find(app.showList, int(ep_to_sub['showid']))
+            show_object = Show.find_by_id(app.showList, ep_to_sub['indexer'], ep_to_sub['showid'])
             if not show_object:
                 logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
                 continue
