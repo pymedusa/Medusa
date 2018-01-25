@@ -21,6 +21,7 @@
 </div>
     % endif
 <input type="hidden" id="series-id" value="${show.indexerid}" />
+<input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -52,13 +53,13 @@
     </table>
     </div>
     <div class="col-md-10">
-        <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+        <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</a>
     </div>
 </div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
-    curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]
+    curLoc = cur_ep_obj.location[len(cur_ep_obj.series.location)+1:]
     curExt = curLoc.split('.')[-1]
     newLoc = cur_ep_obj.proper_path() + '.' + curExt
 %>
@@ -100,5 +101,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</a>
 </%block>

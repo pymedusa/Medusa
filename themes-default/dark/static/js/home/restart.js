@@ -1,11 +1,11 @@
-MEDUSA.home.restart = function() { // eslint-disable-line no-undef
+MEDUSA.home.restart = function() {
     var currentPid = $('.messages').attr('current-pid');
     var defaultPage = $('.messages').attr('default-page');
     var checkIsAlive = setInterval(function() {
         // @TODO: Move to API
         $.get('home/is_alive/', function(data) {
             if (data.msg.toLowerCase() === 'nope') {
-                // If it's still initializing then just wait and try again
+                // if it's still initializing then just wait and try again
                 $('#restart_message').show();
             } else if (currentPid === '' || data.msg === currentPid) {
                 $('#shut_down_loading').hide();

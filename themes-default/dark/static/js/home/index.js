@@ -1,4 +1,4 @@
-MEDUSA.home.index = function() { // eslint-disable-line no-undef
+MEDUSA.home.index = function() {
     // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
     $('.resetsorting').on('click', function() {
         $('table').trigger('filterReset');
@@ -15,7 +15,7 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
     }, 500));
 
     var imgLazyLoad = new LazyLoad({
-        // Example of options object -> see options section
+        // example of options object -> see options section
         threshold: 500
     });
 
@@ -24,15 +24,15 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
         var logoWidth;
         var borderRadius;
         var borderWidth;
-        if (newSize < 125) { // Small
+        if (newSize < 125) { // small
             borderRadius = 3;
             borderWidth = 4;
-        } else if (newSize < 175) { // Medium
+        } else if (newSize < 175) { // medium
             fontSize = 9;
             logoWidth = 40;
             borderRadius = 4;
             borderWidth = 5;
-        } else { // Large
+        } else { // large
             fontSize = 11;
             logoWidth = 50;
             borderRadius = 6;
@@ -115,15 +115,15 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
         })(),
         widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
         headers: {
-            0: { sorter: 'realISODate' },
-            1: { sorter: 'realISODate' },
-            2: { sorter: 'loadingNames' },
-            4: { sorter: 'text' },
-            5: { sorter: 'quality' },
-            6: { sorter: 'eps' },
-            7: { sorter: 'digit' },
-            8: { filter: 'parsed' },
-            10: { filter: 'parsed' }
+            0: {sorter: 'realISODate'},
+            1: {sorter: 'realISODate'},
+            2: {sorter: 'loadingNames'},
+            4: {sorter: 'text'},
+            5: {sorter: 'quality'},
+            6: {sorter: 'eps'},
+            7: {sorter: 'digit'},
+            8: {filter: 'parsed'},
+            10: {filter: 'parsed'}
         },
         widgetOptions: {
             filter_columnFilters: true, // eslint-disable-line camelcase
@@ -198,8 +198,8 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
             itemSelector: '.show-container',
-            sortBy: MEDUSA.config.posterSortby, // eslint-disable-line no-undef
-            sortAscending: MEDUSA.config.posterSortdir, // eslint-disable-line no-undef
+            sortBy: MEDUSA.config.posterSortby,
+            sortAscending: MEDUSA.config.posterSortdir,
             layoutMode: 'masonry',
             masonry: {
                 isFitWidth: true
@@ -207,7 +207,7 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase(); // eslint-disable-line no-undef
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 network: '[data-network]',
                 date: function(itemElem) {
@@ -257,7 +257,7 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
                 popup.on('mouseleave', function() {
                     $(this).remove();
                 });
-                popup.css({ zIndex: '9999' });
+                popup.css({zIndex: '9999'});
                 popup.appendTo('body');
 
                 var height = 438;
@@ -301,23 +301,23 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
     });
 
     $('#postersort').on('change', function() {
-        $('.show-grid').isotope({ sortBy: $(this).val() });
+        $('.show-grid').isotope({sortBy: $(this).val()});
         $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
     });
 
     $('#postersortdirection').on('change', function() {
-        $('.show-grid').isotope({ sortAscending: ($(this).val() === 'true') });
+        $('.show-grid').isotope({sortAscending: ($(this).val() === 'true')});
         $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
     });
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // Required if content has HTML
+        html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableSeries'), '#popover-target');
-        if (MEDUSA.config.animeSplitHome) { // eslint-disable-line no-undef
+        if (MEDUSA.config.animeSplitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });
@@ -346,8 +346,8 @@ MEDUSA.home.index = function() { // eslint-disable-line no-undef
         });
     });
 
-    var rootDir = MEDUSA.config.rootDirs; // eslint-disable-line no-undef
-    var rootDirIndex = MEDUSA.config.selectedRootIndex; // eslint-disable-line no-undef
+    var rootDir = MEDUSA.config.rootDirs;
+    var rootDirIndex = MEDUSA.config.selectedRootIndex;
     if (rootDir) {
         var backendDirs = rootDir.slice(1);
         if (backendDirs.length >= 2) {

@@ -6,7 +6,7 @@
     from medusa.common import statusStrings
     from medusa.helper import exceptions
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import mappings
+    from medusa.indexers.utils import mappings
     from medusa import scene_exceptions
 %>
 <%block name="metas">
@@ -20,6 +20,7 @@
 % endif
 </%block>
 <%block name="content">
+<input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
 % if not header is UNDEFINED:
@@ -45,7 +46,8 @@
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="show" id="show" value="${show.indexerid}" />
+                                    <input type="hidden" name="indexername" id="form-indexername" value="${show.indexer_name}" />
+                                    <input type="hidden" name="seriesid" id="form-seriesid" value="${show.series_id}" />
                                     <input type="text" name="location" id="location" value="${show._location}" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>

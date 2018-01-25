@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    // Initialise combos for dirty page refreshes
+    // initialise combos for dirty page refreshes
     $('#showsort').val('original');
     $('#showsortdirection').val('asc');
 
@@ -27,10 +27,10 @@ $(document).ready(function() {
                 sortCriteria = 'original-order';
                 break;
             case 'rating':
-                /* Randomise, else the rating_votes can already
+                /* randomise, else the rating_votes can already
                  * have sorted leaving this with nothing to do.
                  */
-                $('#container').isotope({ sortBy: 'random' });
+                $('#container').isotope({sortBy: 'random'});
                 sortCriteria = 'rating';
                 break;
             case 'rating_votes':

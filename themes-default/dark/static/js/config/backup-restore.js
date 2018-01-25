@@ -1,7 +1,7 @@
-MEDUSA.config.backupRestore = function() { // eslint-disable-line no-undef
+MEDUSA.config.backupRestore = function() {
     $('#Backup').on('click', function() {
         $('#Backup').prop('disabled', true);
-        $('#Backup-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
+        $('#Backup-result').html(MEDUSA.config.loading);
         var backupDir = $('#backupDir').val();
         $.get('config/backuprestore/backup', {
             backupDir: backupDir
@@ -12,7 +12,7 @@ MEDUSA.config.backupRestore = function() { // eslint-disable-line no-undef
     });
     $('#Restore').on('click', function() {
         $('#Restore').prop('disabled', true);
-        $('#Restore-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
+        $('#Restore-result').html(MEDUSA.config.loading);
         var backupFile = $('#backupFile').val();
         $.get('config/backuprestore/restore', {
             backupFile: backupFile
