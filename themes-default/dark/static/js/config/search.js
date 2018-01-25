@@ -1,9 +1,9 @@
-MEDUSA.config.search = function() {
+MEDUSA.config.search = function() { // eslint-disable-line no-undef
     $('#config-components').tabs();
-    $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});
-    $('#torrent_dir').fileBrowser({title: 'Select .torrent black hole/watch location'});
-    $('#torrent_path').fileBrowser({title: 'Select .torrent download location'});
-    $('#torrent_seed_location').fileBrowser({title: 'Select Post-Processed seeding torrents location'});
+    $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
+    $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
+    $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
+    $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
 
     $.fn.nzbMethodHandler = function() {
         var selectedProvider = $('#nzb_method :selected').val();
@@ -188,7 +188,7 @@ MEDUSA.config.search = function() {
 
     $('#testSABnzbd').on('click', function() {
         var sab = {};
-        $('#testSABnzbd_result').html(MEDUSA.config.loading);
+        $('#testSABnzbd_result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         sab.host = $('#sab_host').val();
         sab.username = $('#sab_username').val();
         sab.password = $('#sab_password').val();
@@ -206,7 +206,7 @@ MEDUSA.config.search = function() {
 
     $('#testNZBget').on('click', function() {
         var nzbget = {};
-        $('#testNZBget_result').html(MEDUSA.config.loading);
+        $('#testNZBget_result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
         nzbget.password = $('#nzbget_password').val();
@@ -228,7 +228,7 @@ MEDUSA.config.search = function() {
 
     $('#test_torrent').on('click', function() {
         var torrent = {};
-        $('#test_torrent_result').html(MEDUSA.config.loading);
+        $('#test_torrent_result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         torrent.method = $('#torrent_method :selected').val();
         torrent.host = $('#torrent_host').val();
         torrent.username = $('#torrent_username').val();

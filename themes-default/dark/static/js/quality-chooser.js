@@ -24,8 +24,6 @@ $(document).ready(function() {
                 $(this).prop('selected', false);
             }
         });
-
-        return;
     }
 
     function backloggedEpisodes() {
@@ -70,7 +68,7 @@ $(document).ready(function() {
 
     function archiveEpisodes() {
         var url = 'series/' + $('#series-slug').attr('value') + '/operation';
-        api.post(url, {type: 'ARCHIVE_EPISODES'}).then(function(response) {
+        api.post(url, { type: 'ARCHIVE_EPISODES' }).then(function(response) {
             var html = '';
             if (response.status === 201) {
                 html = 'Successfully archived episodes';

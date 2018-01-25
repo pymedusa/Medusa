@@ -1,4 +1,4 @@
-MEDUSA.manage.subtitleMissed = function() {
+MEDUSA.manage.subtitleMissed = function() { // eslint-disable-line no-undef
     $('.allCheck').on('click', function() {
         var indexerId = $(this).attr('id').split('-')[1];
         $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));
@@ -35,7 +35,7 @@ MEDUSA.manage.subtitleMissed = function() {
         }
     });
 
-    // selects all visible episode checkboxes.
+    // Selects all visible episode checkboxes.
     $('.selectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = true;
@@ -45,7 +45,7 @@ MEDUSA.manage.subtitleMissed = function() {
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
+    // Clears all visible episode checkboxes and the season selectors
     $('.unselectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = false;

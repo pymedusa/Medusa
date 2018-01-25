@@ -1,4 +1,4 @@
-MEDUSA.addShows.recommendedShows = function() {
+MEDUSA.addShows.recommendedShows = function() { // eslint-disable-line no-undef
     // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
     $.updateBlackWhiteList(undefined);
     $('#recommendedShows').loadRemoteShows(

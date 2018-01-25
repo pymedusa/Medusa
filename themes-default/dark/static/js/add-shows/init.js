@@ -1,11 +1,11 @@
-MEDUSA.addShows.init = function() {
+MEDUSA.addShows.init = function() { // eslint-disable-line no-undef
     $('#tabs').tabs({
         collapsible: true,
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
     var imgLazyLoad = new LazyLoad({
-        // example of options object -> see options section
+        // Example of options object -> see options section
         threshold: 500
     });
 
@@ -23,10 +23,10 @@ MEDUSA.addShows.init = function() {
                     sortCriteria = 'original-order';
                     break;
                 case 'rating':
-                    /* randomise, else the rating_votes can already
+                    /* Randomise, else the rating_votes can already
                      * have sorted leaving this with nothing to do.
                      */
-                    $('#container').isotope({sortBy: 'random'});
+                    $('#container').isotope({ sortBy: 'random' });
                     sortCriteria = 'rating';
                     break;
                 case 'rating_votes':
@@ -183,7 +183,7 @@ MEDUSA.addShows.init = function() {
         });
 
         $('#qualityPreset').on('change', function() {
-            // fix issue #181 - force re-render to correct the height of the outer div
+            // Fix issue #181 - force re-render to correct the height of the outer div
             $('span.prev').click();
             $('span.next').click();
         });

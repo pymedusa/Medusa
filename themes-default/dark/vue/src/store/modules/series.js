@@ -1,6 +1,6 @@
 import series from '../../api/series';
 import * as types from '../mutation-types';
-import {seriesLogger as log} from '../../log';
+import { seriesLogger as log } from '../../log';
 
 const state = {
     all: []
@@ -28,31 +28,31 @@ const getters = {
 
 const actions = {
     // Gets all the series from Medusa
-    getAllSeries({commit}) {
+    getAllSeries({ commit }) {
         series.getSeries(data => {
             log.info(data);
-            commit(types.RECEIVE_SERIES, {data});
+            commit(types.RECEIVE_SERIES, { data });
         });
     },
     // Add a new series to Medusa
-    addSeries({commit}, {id, name}) {
+    addSeries({ commit }, { id, name }) {
         // @TODO: This actually needs to hit the API instead of just returning the series object
-        series.addSeries({id, name}, (err, data) => {
+        series.addSeries({ id, name }, (err, data) => {
             if (err) {
                 return err;
             }
-            commit(types.RECEIVE_SERIES, {data});
+            commit(types.RECEIVE_SERIES, { data });
         });
     }
 };
 
 const mutations = {
     // Add multiple series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
+    [types.RECEIVE_SERIES](state, { series }) {
         state.all = series;
     },
     // Add a single series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
+    [types.RECEIVE_SERIES](state, { series }) {
         let foundSeries = state.all.find(x => x.id === series.id);
         if (foundSeries) {
             // Replace current store's version of the series with the new one

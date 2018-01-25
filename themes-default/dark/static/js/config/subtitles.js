@@ -1,4 +1,4 @@
-MEDUSA.config.subtitlesPage = function() {
+MEDUSA.config.subtitlesPage = function() { // eslint-disable-line no-undef
     $.fn.showHideServices = function() {
         $('.serviceDiv').each(function() {
             var serviceName = $(this).attr('id');
@@ -18,7 +18,7 @@ MEDUSA.config.subtitlesPage = function() {
         }
 
         if ($('#service_order_list > #' + id).length === 0 && showService !== false) {
-            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + MEDUSA.config.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + MEDUSA.config.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'; // eslint-disable-line no-undef
 
             $('#service_order_list').append(toAdd);
             $('#service_order_list').sortable('refresh');
@@ -47,7 +47,7 @@ MEDUSA.config.subtitlesPage = function() {
         $.refreshServiceList();
     });
 
-    // initialization stuff
+    // Initialization stuff
     $(this).showHideServices();
 
     $('#service_order_list').sortable({

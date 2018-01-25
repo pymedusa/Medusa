@@ -1,4 +1,4 @@
-MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
+MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines no-undef
     $('#config-components').tabs();
     $('#tv_download_dir').fileBrowser({
         title: 'Select TV Download Directory'
@@ -240,7 +240,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     // @TODO all of these setup funcitons should be able to be rolled into a generic function
 
     function setupNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_custom').show();
         } else {
@@ -251,7 +251,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupAbdNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_abd_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_abd_custom').show();
         } else {
@@ -262,7 +262,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupSportsNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_sports_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_sports_custom').show();
         } else {
@@ -273,7 +273,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupAnimeNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_anime_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_anime_custom').show();
         } else {
@@ -407,7 +407,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             }
         });
     };
-    // initialize to show the div
+    // Initialize to show the div
     $(this).showHideMetadata();
     // -- end of metadata options div toggle code --
 

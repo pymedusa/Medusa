@@ -5,7 +5,7 @@ var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump t
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
 
-var MEDUSA = {
+var MEDUSA = { // eslint-disable-line no-undef
     common: {},
     config: {},
     home: {},
@@ -18,7 +18,7 @@ var MEDUSA = {
 
 var UTIL = {
     exec: function(controller, action) {
-        var ns = MEDUSA;
+        var ns = MEDUSA; // eslint-disable-line no-undef
         action = (action === undefined) ? 'init' : action;
 
         if (controller !== '' && ns[controller] && typeof ns[controller][action] === 'function') {
@@ -62,14 +62,14 @@ $.extend({
         var reg = new RegExp(result.length > 1 ? result.join('|') : result);
 
         if (typeof (pyVar) === 'object' && Object.keys(pyVar).length === 1) {
-            return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
+            return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]); // eslint-disable-line no-undef
         }
         if (pyVar.match('medusa')) {
             pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
                 return m[1].toUpperCase();
             });
         }
-        return (reg).test(MEDUSA.config[pyVar]);
+        return (reg).test(MEDUSA.config[pyVar]); // eslint-disable-line no-undef
     }
 });
 
@@ -84,7 +84,7 @@ $.fn.extend({
 
 var triggerConfigLoaded = function() {
     // Create the event.
-    var event = new CustomEvent('build', {detail: 'medusa config loaded'});
+    var event = new CustomEvent('build', { detail: 'medusa config loaded' });
     event.initEvent('build', true, true);
     // Trigger the event.
     document.dispatchEvent(event);
@@ -93,9 +93,9 @@ var triggerConfigLoaded = function() {
 if (!document.location.pathname.endsWith('/login/')) {
     api.get('config/main').then(function(response) {
         log.setDefaultLevel('trace');
-        $.extend(MEDUSA.config, response.data);
-        MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
-        MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
+        $.extend(MEDUSA.config, response.data); // eslint-disable-line no-undef
+        MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : ''; // eslint-disable-line no-undef
+        MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />'; // eslint-disable-line no-undef
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);

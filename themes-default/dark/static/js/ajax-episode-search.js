@@ -32,21 +32,21 @@ function updateImages(data) {
         if (el) {
             var rSearchTerm = '';
             if (ep.searchstatus.toLowerCase() === 'searching') {
-                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
-                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Queued');
                 img.prop('alt', 'queued');
                 img.prop('src', 'images/' + queuedImage);
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
-                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'searching');
                 img.parent().prop('class', 'epRetry');
@@ -58,7 +58,7 @@ function updateImages(data) {
                 htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
-            // update the status column if it exists
+            // Update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
         var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
@@ -101,7 +101,7 @@ function checkManualSearches() {
         complete: function() {
             setTimeout(checkManualSearches, pollInterval);
         },
-        timeout: 15000 // timeout every 15 secs
+        timeout: 15000 // Timeout every 15 secs
     }).done(function(data) {
         if (data.episodes) {
             pollInterval = 5000;
@@ -109,7 +109,7 @@ function checkManualSearches() {
             pollInterval = 15000;
         }
         updateImages(data);
-        // cleanupManualSearches(data);
+        // CleanupManualSearches(data);
     });
 }
 
@@ -169,36 +169,36 @@ $.ajaxEpSearch = function(options) {
 
         // @TODO: Move to the API
         $.getJSON(url, function(data) {
-            // if they failed then just put the red X
+            // If they failed then just put the red X
             if (data.result.toLowerCase() === 'failure') {
                 imageName = options.noImage;
                 imageResult = 'failed';
             } else {
-                // if the snatch was successful then apply the
+                // If the snatch was successful then apply the
                 // corresponding class and fill in the row appropriately
                 imageName = options.loadingImage;
                 imageResult = 'success';
-                // color the row
+                // Color the row
                 if (options.colorRow) {
                     parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
                 }
-                // applying the quality class
+                // Applying the quality class
                 var rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
-                // update the status column if it exists
+                // Update the status column if it exists
                 parent.siblings('.col-status').html(htmlContent);
                 // Only if the queuing was successful, disable the onClick event of the loading image
                 disableLink(link);
             }
 
-            // put the corresponding image as the result of queuing of the manual search
+            // Put the corresponding image as the result of queuing of the manual search
             img.prop('title', imageResult);
             img.prop('alt', imageResult);
             img.prop('height', options.size);
             img.prop('src', 'images/' + imageName);
         });
 
-        // don't follow the link
+        // Don't follow the link
         return false;
     }
 

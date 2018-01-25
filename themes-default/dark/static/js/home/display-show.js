@@ -1,4 +1,4 @@
-MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
+MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines no-undef
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
         if ($(this).html() === '..show less') {
@@ -10,12 +10,12 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         movecheckboxControlsBackground();
     });
 
-    // adjust the summary background position and size on page load and resize
+    // Adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $('#summary').height() + 10;
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').offset({ top: top, left: 0 });
         $('#summaryBackground').show();
     }
 
@@ -23,7 +23,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var height = $('#checkboxControls').height() + 10;
         var top = $('#checkboxControls').offset().top - 3;
         $('#checkboxControlsBackground').height(height);
-        $('#checkboxControlsBackground').offset({top: top, left: 0});
+        $('#checkboxControlsBackground').offset({ top: top, left: 0 });
         $('#checkboxControlsBackground').show();
     }
 
@@ -49,7 +49,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var id = $('#seasonJump option:selected').val();
         if (id && id !== 'jump') {
             var season = $('#seasonJump option:selected').data('season');
-            $('html,body').animate({scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50}, 'slow');
+            $('html,body').animate({ scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50 }, 'slow');
             $('#collapseSeason-' + season).collapse('show');
             location.hash = id;
         }
@@ -120,7 +120,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // selects all visible episode checkboxes.
+    // Selects all visible episode checkboxes.
     $('.seriesCheck').on('click', function() {
         $('.epCheck:visible').each(function() {
             this.checked = true;
@@ -130,7 +130,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
+    // Clears all visible episode checkboxes and the season selectors
     $('.clearAll').on('click', function() {
         $('.epCheck:visible').each(function() {
             this.checked = false;
@@ -140,7 +140,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // handle the show selection dropbox
+    // Handle the show selection dropbox
     $('#select-show').on('change', function() {
         var val = $(this).val();
         if (val === 0) {
@@ -149,13 +149,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
     });
 
-    // show/hide different types of rows when the checkboxes are changed
+    // Show/hide different types of rows when the checkboxes are changed
     $('#checkboxControls input').on('change', function() {
         var whichClass = $(this).attr('id');
         $(this).showHideRows(whichClass);
     });
 
-    // initially show/hide all the rows according to the checkboxes
+    // Initially show/hide all the rows according to the checkboxes
     $('#checkboxControls input').each(function() {
         var status = $(this).prop('checked');
         $('tr.' + $(this).attr('id')).each(function() {
@@ -177,7 +177,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             }
         });
 
-        // hide season headers with no episodes under them
+        // Hide season headers with no episodes under them
         $('tr.seasonheader').each(function() {
             var numRows = 0;
             var seasonNo = $(this).attr('id');
@@ -263,14 +263,14 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     function setInputValidInvalid(valid, el) {
         if (valid) {
             $(el).css({
-                'background-color': '#90EE90', // green
+                'background-color': '#90EE90', // Green
                 'color': '#FFF', // eslint-disable-line quote-props
                 'font-weight': 'bold'
             });
             return true;
         }
         $(el).css({
-            'background-color': '#FF0000', // red
+            'background-color': '#FF0000', // Red
             'color': '#FFF!important', // eslint-disable-line quote-props
             'font-weight': 'bold'
         });
@@ -346,9 +346,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
     });
 
@@ -415,7 +415,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setSeasonSceneException(data);
     });
 
-    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
+    // Href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
     $('.display-specials a').on('click', function() {
         api.patch('config/main', {
             layout: {

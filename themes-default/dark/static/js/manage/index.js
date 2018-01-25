@@ -1,4 +1,4 @@
-MEDUSA.manage.index = function() {
+MEDUSA.manage.index = function() { // eslint-disable-line no-undef
     $('.resetsorting').on('click', function() {
         $('table').trigger('filterReset');
     });
@@ -17,23 +17,23 @@ MEDUSA.manage.index = function() {
         },
         widgets: ['zebra', 'filter', 'columnSelector'],
         headers: {
-            0: {sorter: false, filter: false},
-            1: {sorter: 'showNames'},
-            2: {sorter: 'quality'},
-            3: {sorter: 'sports'},
-            4: {sorter: 'scene'},
-            5: {sorter: 'anime'},
-            6: {sorter: 'flatfold'},
-            7: {sorter: 'paused'},
-            8: {sorter: 'subtitle'},
-            9: {sorter: 'default_ep_status'},
-            10: {sorter: 'status'},
-            11: {sorter: false},
-            12: {sorter: false},
-            13: {sorter: false},
-            14: {sorter: false},
-            15: {sorter: false},
-            16: {sorter: false}
+            0: { sorter: false, filter: false },
+            1: { sorter: 'showNames' },
+            2: { sorter: 'quality' },
+            3: { sorter: 'sports' },
+            4: { sorter: 'scene' },
+            5: { sorter: 'anime' },
+            6: { sorter: 'flatfold' },
+            7: { sorter: 'paused' },
+            8: { sorter: 'subtitle' },
+            9: { sorter: 'default_ep_status' },
+            10: { sorter: 'status' },
+            11: { sorter: false },
+            12: { sorter: false },
+            13: { sorter: false },
+            14: { sorter: false },
+            15: { sorter: false },
+            16: { sorter: false }
         },
         widgetOptions: {
             columnSelector_mediaquery: false // eslint-disable-line camelcase
@@ -41,9 +41,9 @@ MEDUSA.manage.index = function() {
     });
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#massUpdateTable'), '#popover-target');
     });

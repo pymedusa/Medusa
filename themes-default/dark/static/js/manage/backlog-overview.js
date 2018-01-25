@@ -1,4 +1,4 @@
-MEDUSA.manage.backlogOverview = function() {
+MEDUSA.manage.backlogOverview = function() { // eslint-disable-line no-undef
     checkForcedSearch();
 
     function checkForcedSearch() {
@@ -16,7 +16,7 @@ MEDUSA.manage.backlogOverview = function() {
             complete: function() {
                 setTimeout(checkForcedSearch, pollInterval);
             },
-            timeout: 15000 // timeout every 15 secs
+            timeout: 15000 // Timeout every 15 secs
         }).done(function(data) {
             if (data.episodes) {
                 pollInterval = 5000;
@@ -35,10 +35,10 @@ MEDUSA.manage.backlogOverview = function() {
             var episodeSearchStatus = ep.searchstatus.toLowerCase();
             if (el) {
                 if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
-                    // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                    // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.prop('src', 'images/loading16.gif');
                 } else if (episodeSearchStatus === 'finished') {
-                    // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                    // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     if (episodeStatus.indexOf('snatched') >= 0) {
                         img.prop('src', 'images/yes16.png');
                         setTimeout(function() {
@@ -55,7 +55,7 @@ MEDUSA.manage.backlogOverview = function() {
     $('#pickShow').on('change', function() {
         var id = $(this).val();
         if (id) {
-            $('html,body').animate({scrollTop: $('#show-' + id).offset().top - 25}, 'slow');
+            $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
         }
     });
 
@@ -99,7 +99,7 @@ MEDUSA.manage.backlogOverview = function() {
         img.prop('src', 'images/loading16.gif');
         var url = $(this).prop('href');
         $.getJSON(url, function(data) {
-            // if they failed then just put the red X
+            // If they failed then just put the red X
             if (data.result.toLowerCase() === 'success') {
                 img.prop('src', 'images/yes16.png');
                 setTimeout(function() {
@@ -120,7 +120,7 @@ MEDUSA.manage.backlogOverview = function() {
         img.prop('src', 'images/loading16.gif');
         var url = $(this).prop('href');
         $.getJSON(url, function(data) {
-            // if they failed then just put the red X
+            // If they failed then just put the red X
             if (data.result.toLowerCase() === 'failed') {
                 img.prop('src', 'images/no16.png');
             }

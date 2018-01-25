@@ -1,4 +1,4 @@
-MEDUSA.errorlogs.viewlogs = function() {
+MEDUSA.errorlogs.viewlogs = function() { // eslint-disable-line no-undef
     function getParams() {
         return $.param({
             min_level: $('select[name=min_level]').val(), // eslint-disable-line camelcase

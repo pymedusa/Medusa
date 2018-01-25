@@ -1,4 +1,4 @@
-MEDUSA.home.status = function() {
+MEDUSA.home.status = function() { // eslint-disable-line no-undef
     $('#schedulerStatusTable').tablesorter({
         widgets: ['saveSort', 'zebra'],
         textExtraction: {

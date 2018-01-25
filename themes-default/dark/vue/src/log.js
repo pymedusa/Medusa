@@ -1,4 +1,5 @@
-import log from 'loglevel';
+// Imported from vender.js
+import log from 'loglevel'; // eslint-disable-line import/no-unresolved
 
 // Please only use testLogger when testing
 const testLogger = log.getLogger('test').setLevel(log.levels.TRACE);

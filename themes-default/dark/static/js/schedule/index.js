@@ -1,11 +1,11 @@
-MEDUSA.schedule.index = function() {
-    if ($.isMeta({layout: 'schedule'}, ['list'])) {
+MEDUSA.schedule.index = function() { // eslint-disable-line no-undef
+    if ($.isMeta({ layout: 'schedule' }, ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
             network: 5
         };
-        var sort = MEDUSA.config.comingEpsSort;
+        var sort = MEDUSA.config.comingEpsSort; // eslint-disable-line no-undef
         var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
         $('#showListTable:has(tbody tr)').tablesorter({
@@ -18,13 +18,13 @@ MEDUSA.schedule.index = function() {
                 8: function(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
             },
             headers: {
-                0: {sorter: 'realISODate'},
-                1: {sorter: 'realISODate'},
-                2: {sorter: 'loadingNames'},
-                4: {sorter: 'loadingNames'},
-                7: {sorter: 'quality'},
-                8: {sorter: 'text'},
-                9: {sorter: false}
+                0: { sorter: 'realISODate' },
+                1: { sorter: 'realISODate' },
+                2: { sorter: 'loadingNames' },
+                4: { sorter: 'loadingNames' },
+                7: { sorter: 'quality' },
+                8: { sorter: 'text' },
+                9: { sorter: false }
             },
             widgetOptions: {
                 filter_columnFilters: true, // eslint-disable-line camelcase
@@ -37,10 +37,10 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta({layout: 'schedule'}, ['banner', 'poster'])) {
+    if ($.isMeta({ layout: 'schedule' }, ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
-            loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
+            loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif' // eslint-disable-line no-undef
         });
         $('.ep_summary').hide();
         $('.ep_summaryTrigger').on('click', function() {
@@ -54,9 +54,9 @@ MEDUSA.schedule.index = function() {
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });

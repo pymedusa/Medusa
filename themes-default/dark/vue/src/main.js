@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import vuexI18n from 'vuex-i18n';
-import VueResource from 'vue-resource';
+import vuexI18n from 'vuex-i18n'; // eslint-disable-line import/no-unresolved
+import VueResource from 'vue-resource'; // eslint-disable-line import/no-unresolved
 import router from './router';
 import store from './store';
 import App from './components/app.vue';

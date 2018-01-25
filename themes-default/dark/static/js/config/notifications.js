@@ -1,4 +1,4 @@
-MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
+MEDUSA.config.notifications = function() { // eslint-disable-line max-lines no-undef
     $('#testGrowl').on('click', function() {
         var growl = {};
         growl.host = $.trim($('#growl_host').val());
@@ -10,7 +10,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#growl_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testGrowl-result').html(MEDUSA.config.loading);
+        $('#testGrowl-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testGrowl', {
             host: growl.host,
             password: growl.password
@@ -31,7 +31,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#prowl_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testProwl-result').html(MEDUSA.config.loading);
+        $('#testProwl-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testProwl', {
             prowl_api: prowl.api, // eslint-disable-line camelcase
             prowl_priority: prowl.priority // eslint-disable-line camelcase
@@ -53,7 +53,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#kodi_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testKODI-result').html(MEDUSA.config.loading);
+        $('#testKODI-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testKODI', {
             host: kodi.host,
             username: kodi.username,
@@ -77,7 +77,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#plex_client_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPHT-result').html(MEDUSA.config.loading);
+        $('#testPHT-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testPHT', {
             host: plex.client.host,
             username: plex.client.username,
@@ -102,7 +102,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#plex_server_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPMS-result').html(MEDUSA.config.loading);
+        $('#testPMS-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testPMS', {
             host: plex.server.host,
             username: plex.server.username,
@@ -126,7 +126,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#emby_host,#emby_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testEMBY-result').html(MEDUSA.config.loading);
+        $('#testEMBY-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testEMBY', {
             host: emby.host,
             emby_apikey: emby.apikey // eslint-disable-line camelcase
@@ -146,7 +146,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#boxcar2_accesstoken').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testBoxcar2-result').html(MEDUSA.config.loading);
+        $('#testBoxcar2-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testBoxcar2', {
             accesstoken: boxcar2.accesstoken
         }).done(function(data) {
@@ -167,7 +167,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushover_userkey,#pushover_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushover-result').html(MEDUSA.config.loading);
+        $('#testPushover-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testPushover', {
             userKey: pushover.userkey,
             apiKey: pushover.apikey
@@ -178,14 +178,14 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     });
 
     $('#testLibnotify').on('click', function() {
-        $('#testLibnotify-result').html(MEDUSA.config.loading);
+        $('#testLibnotify-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testLibnotify', function(data) {
             $('#testLibnotify-result').html(data);
         });
     });
 
     $('#twitterStep1').on('click', function() {
-        $('#testTwitter-result').html(MEDUSA.config.loading);
+        $('#testTwitter-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/twitterStep1', function(data) {
             window.open(data);
         }).done(function() {
@@ -198,7 +198,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         twitter.key = $.trim($('#twitter_key').val());
         $('#twitter_key').addRemoveWarningClass(twitter.key);
         if (twitter.key) {
-            $('#testTwitter-result').html(MEDUSA.config.loading);
+            $('#testTwitter-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
             $.get('home/twitterStep2', {
                 key: twitter.key
             }, function(data) {
@@ -217,7 +217,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     $('#settingsNMJ').on('click', function() {
         var nmj = {};
         if ($('#nmj_host').val()) {
-            $('#testNMJ-result').html(MEDUSA.config.loading);
+            $('#testNMJ-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
             nmj.host = $('#nmj_host').val();
 
             $.get('home/settingsNMJ', {
@@ -256,7 +256,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         if (nmj.host) {
             $('#nmj_host').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testNMJ-result').html(MEDUSA.config.loading);
+            $('#testNMJ-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
             $.get('home/testNMJ', {
                 host: nmj.host,
                 database: nmj.database,
@@ -273,7 +273,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     $('#settingsNMJv2').on('click', function() {
         var nmjv2 = {};
         if ($('#nmjv2_host').val()) {
-            $('#testNMJv2-result').html(MEDUSA.config.loading);
+            $('#testNMJv2-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
             nmjv2.host = $('#nmjv2_host').val();
             nmjv2.dbloc = '';
             var radios = document.getElementsByName('nmjv2_dbloc');
@@ -314,7 +314,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         if (nmjv2.host) {
             $('#nmjv2_host').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testNMJv2-result').html(MEDUSA.config.loading);
+            $('#testNMJv2-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
             $.get('home/testNMJv2', {
                 host: nmjv2.host
             }).done(function(data) {
@@ -346,7 +346,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#freemobile_id,#freemobile_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testFreeMobile-result').html(MEDUSA.config.loading);
+        $('#testFreeMobile-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testFreeMobile', {
             freemobile_id: freemobile.id, // eslint-disable-line camelcase
             freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
@@ -368,7 +368,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#telegram_id,#telegram_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testTelegram-result').html(MEDUSA.config.loading);
+        $('#testTelegram-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testTelegram', {
             telegram_id: telegram.id, // eslint-disable-line camelcase
             telegram_apikey: telegram.apikey // eslint-disable-line camelcase
@@ -389,7 +389,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#slack_webhook').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testSlack-result').html(MEDUSA.config.loading);
+        $('#testSlack-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testslack', {
             slack_webhook: slack.webhook // eslint-disable-line camelcase
         }).done(function(data) {
@@ -447,7 +447,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#trakt_username').removeClass('warning');
         $('#trakt_blacklist_name').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testTrakt-result').html(MEDUSA.config.loading);
+        $('#testTrakt-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testTrakt', {
             username: trakt.username,
             blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
@@ -458,7 +458,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     });
 
     $('#forceSync').on('click', function() {
-        $('#testTrakt-result').html(MEDUSA.config.loading);
+        $('#testTrakt-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.getJSON('home/forceTraktSync', function(data) {
             $('#testTrakt-result').html(data.result);
         });
@@ -475,7 +475,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         var err;
         var to;
         status = $('#testEmail-result');
-        status.html(MEDUSA.config.loading);
+        status.html(MEDUSA.config.loading); // eslint-disable-line no-undef
         host = $('#email_host').val();
         host = host.length > 0 ? host : null;
         port = $('#email_port').val();
@@ -528,7 +528,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#nma_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testNMA-result').html(MEDUSA.config.loading);
+        $('#testNMA-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testNMA', {
             nma_api: nma.api, // eslint-disable-line camelcase
             nma_priority: nma.priority // eslint-disable-line camelcase
@@ -548,7 +548,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushalot_authorizationtoken').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushalot-result').html(MEDUSA.config.loading);
+        $('#testPushalot-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testPushalot', {
             authorizationToken: pushalot.authToken
         }).done(function(data) {
@@ -567,7 +567,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushbullet_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushbullet-result').html(MEDUSA.config.loading);
+        $('#testPushbullet-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         $.get('home/testPushbullet', {
             api: pushbullet.api
         }).done(function(data) {
@@ -581,7 +581,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         pushbullet.api = $('#pushbullet_api').val();
 
         if (msg) {
-            $('#testPushbullet-result').html(MEDUSA.config.loading);
+            $('#testPushbullet-result').html(MEDUSA.config.loading); // eslint-disable-line no-undef
         }
 
         if (!pushbullet.api) {
@@ -621,7 +621,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         getPushbulletDevices('Device list updated. Please choose a device to push to.');
     });
 
-    // we have to call this function on dom ready to create the devices select
+    // We have to call this function on dom ready to create the devices select
     getPushbulletDevices();
 
     $('#email_show').on('change', function() {
@@ -701,7 +701,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         });
     });
 
-    // show instructions for plex when enabled
+    // Show instructions for plex when enabled
     $('#use_plex_server').on('click', function() {
         if ($(this).is(':checked')) {
             $('.plexinfo').removeClass('hide');

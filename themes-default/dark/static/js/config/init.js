@@ -1,4 +1,4 @@
-MEDUSA.config.init = function() {
+MEDUSA.config.init = function() { // eslint-disable-line no-undef
     $('#config-components').tabs();
 
     $('.viewIf').on('click', function() {
@@ -34,12 +34,12 @@ MEDUSA.config.init = function() {
         }
     });
 
-    // bind 'myForm' and provide a simple callback function
+    // Bind 'myForm' and provide a simple callback function
     $('#configForm').ajaxForm({
         beforeSubmit: function() {
             $('.config_submitter .config_submitter_refresh').each(function() {
                 $(this).prop('disabled', 'disabled');
-                $(this).after('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Saving...</span>');
+                $(this).after('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Saving...</span>'); // eslint-disable-line no-undef
                 $(this).hide();
             });
         },
@@ -138,14 +138,14 @@ MEDUSA.config.init = function() {
 
     $('#create_access_token').popover({
         placement: 'left',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         title: 'Github Token',
         content: '<p>Copy the generated token and paste it in the token input box.</p>' +
-            '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
+            '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +  // eslint-disable-line no-undef
             '<input class="btn" type="button" value="Continue to Github..."></a></p><br/>'
     });
 
     $('#manage_tokens').on('click', function() {
-        window.open(MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens', '_blank');
+        window.open(MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens', '_blank'); // eslint-disable-line no-undef
     });
 };

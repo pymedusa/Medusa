@@ -1,8 +1,8 @@
-MEDUSA.manage.failedDownloads = function() {
+MEDUSA.manage.failedDownloads = function() { // eslint-disable-line no-undef
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],
         sortList: [],
-        headers: {3: {sorter: false}}
+        headers: { 3: { sorter: false } }
     });
     $('#limit').on('change', function() {
         window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(this).val();

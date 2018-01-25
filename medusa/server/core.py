@@ -237,8 +237,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
              RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
             # Webui login/logout handlers
-            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
-            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
+            (r'{base}/login(/?)'.format(base=self.options['theme_path']), LoginHandler),
+            (r'{base}/logout(/?)'.format(base=self.options['theme_path']), LogoutHandler),
 
             (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
 

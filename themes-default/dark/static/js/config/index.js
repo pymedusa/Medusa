@@ -1,4 +1,4 @@
-MEDUSA.config.index = function() {
+MEDUSA.config.index = function() { // eslint-disable-line no-undef
     if ($('input[name="proxy_setting"]').val().length === 0) {
         $('input[id="proxy_indexers"]').prop('checked', false);
         $('label[for="proxy_indexers"]').hide();
