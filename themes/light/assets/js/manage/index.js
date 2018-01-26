@@ -1,19 +1,19 @@
 MEDUSA.manage.index = function() {
-    $('.resetsorting').on('click', function() {
+    $('.resetsorting').on('click', () => {
         $('table').trigger('filterReset');
     });
 
     $('#massUpdateTable:has(tbody tr)').tablesorter({
         sortList: [[1, 0]],
         textExtraction: {
-            2: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-            3: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            4: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            5: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            6: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            7: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            8: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            9: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
+            2(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
+            3(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            4(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            5(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            6(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            7(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            8(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+            9(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
         },
         widgets: ['zebra', 'filter', 'columnSelector'],
         headers: {
@@ -43,7 +43,7 @@ MEDUSA.manage.index = function() {
         placement: 'bottom',
         html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#massUpdateTable'), '#popover-target');
     });

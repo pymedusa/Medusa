@@ -11,9 +11,9 @@
         }
     };
 
-    var fileBrowserDialog;
-    var currentBrowserPath;
-    var currentRequest = null;
+    let fileBrowserDialog;
+    let currentBrowserPath;
+    let currentRequest = null;
 
     function browse(path, endpoint, includeFiles) {
         if (currentBrowserPath === path) {
@@ -30,35 +30,33 @@
         fileBrowserDialog.dialog('option', 'closeText', ''); // This removes the "Close" text
 
         currentRequest = $.getJSON(endpoint, {
-            path: path,
-            includeFiles:
+            path,
             includeFiles
-        }, function(data) {
+        }, data => {
             fileBrowserDialog.empty();
-            var firstVal = data[0];
-            var i = 0;
-            var list;
-            var link = null;
-            data = $.grep(data, function() {
+            const firstVal = data[0];
+            let i = 0;
+            let link = null;
+            data = $.grep(data, () => {
                 return i++ !== 0;
             });
 
             $('<input type="text" class="form-control input-sm">')
                 .val(firstVal.currentPath)
-                .on('keypress', function(e) {
+                .on('keypress', e => {
                     if (e.which === 13) {
                         browse(e.target.value, endpoint, includeFiles);
                     }
                 })
                 .appendTo(fileBrowserDialog)
                 .fileBrowser({ showBrowseButton: false })
-                .on('autocompleteselect', function(e, ui) {
+                .on('autocompleteselect', (e, ui) => {
                     browse(ui.item.value, endpoint, includeFiles);
                 });
 
-            list = $('<ul>').appendTo(fileBrowserDialog);
-            $.each(data, function(i, entry) {
-                link = $('<a href="javascript:void(0)">').on('click', function() {
+            const list = $('<ul>').appendTo(fileBrowserDialog);
+            $.each(data, (i, entry) => {
+                link = $('<a href="javascript:void(0)">').on('click', () => {
                     if (entry.isFile) {
                         currentBrowserPath = entry.path;
                         $('.browserDialog .ui-button:contains("Ok")').click();
@@ -111,7 +109,7 @@
         fileBrowserDialog.dialog('option', 'buttons', [{
             text: 'Ok',
             class: 'btn',
-            click: function() {
+            click() {
                 // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
                 $(this).dialog('close');
@@ -119,13 +117,13 @@
         }, {
             text: 'Cancel',
             class: 'btn',
-            click: function() {
+            click() {
                 $(this).dialog('close');
             }
         }]);
 
         // Set up the browser and launch the dialog
-        var initialDir = '';
+        let initialDir = '';
         if (options.initialDir) {
             initialDir = options.initialDir;
         }
@@ -142,37 +140,37 @@
         options.field = $(this);
 
         if (options.field.autocomplete && options.autocompleteURL) {
-            var query = '';
+            let query = '';
             options.field.autocomplete({
                 position: {
                     my: 'top',
                     at: 'bottom',
                     collision: 'flipfit'
                 },
-                source: function(request, response) {
+                source(request, response) {
                     // Keep track of user submitted search term
                     query = $.ui.autocomplete.escapeRegex(request.term, options.includeFiles);
                     $.ajax({
                         url: options.autocompleteURL,
                         data: request,
                         dataType: 'json'
-                    }).done(function(data) {
+                    }).done(data => {
                         // Implement a startsWith filter for the results
-                        var matcher = new RegExp('^' + query, 'i');
-                        var a = $.grep(data, function(item) {
+                        const matcher = new RegExp('^' + query, 'i');
+                        const a = $.grep(data, item => {
                             return matcher.test(item);
                         });
                         response(a);
                     });
                 },
-                open: function() {
+                open() {
                     $('.ui-autocomplete li.ui-menu-item a').removeClass('ui-corner-all');
                 }
             }).data('ui-autocomplete')._renderItem = function(ul, item) {
                 // Highlight the matched search term from the item -- note that this is global and will match anywhere
-                var resultItem = item.label;
-                var x = new RegExp('(?![^&;]+;)(?!<[^<>]*)(' + query + ')(?![^<>]*>)(?![^&;]+;)', 'gi');
-                resultItem = resultItem.replace(x, function(fullMatch) {
+                let resultItem = item.label;
+                const x = new RegExp('(?![^&;]+;)(?!<[^<>]*)(' + query + ')(?![^<>]*>)(?![^&;]+;)', 'gi');
+                resultItem = resultItem.replace(x, fullMatch => {
                     return '<b>' + fullMatch + '</b>';
                 });
                 return $('<li></li>')
@@ -182,9 +180,8 @@
             };
         }
 
-        var path;
-        var callback;
-        var ls = false;
+        let path;
+        let ls = false;
         // If the text field is empty and we're given a key then populate it with the last browsed value from localStorage
         try {
             ls = Boolean(localStorage.getItem);
@@ -198,7 +195,7 @@
             options.field.val(path);
         }
 
-        callback = function(path, options) {
+        const callback = (path, options) => {
             // Store the browsed path to the associated text field
             options.field.val(path);
 
@@ -213,8 +210,8 @@
             // Append the browse button and give it a click behaviour
             options.field.after(
                 $('<input type="button" value="Browse&hellip;" class="btn btn-inline fileBrowser">').on('click', function() {
-                    var initialDir = options.field.val() || (options.key && path) || '';
-                    var optionsWithInitialDir = $.extend({}, options, { initialDir: initialDir });
+                    const initialDir = options.field.val() || (options.key && path) || '';
+                    const optionsWithInitialDir = $.extend({}, options, { initialDir });
                     $(this).nFileBrowser(callback, optionsWithInitialDir);
                     return false;
                 })

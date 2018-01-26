@@ -6,26 +6,26 @@ MEDUSA.history.index = function() {
             if ($.isMeta({ layout: 'history' }, ['detailed'])) {
                 return {
                     // 0: Time 1: Episode 2: Action 3: Provider 4: Quality
-                    0: function(node) {
+                    0(node) {
                         return $(node).find('time').attr('datetime');
                     },
-                    1: function(node) {
+                    1(node) {
                         return $(node).find('a').text();
                     }
                 };
             }
             return {
                 // 0: Time 1: Episode 2: Snatched 3: Downloaded 4: Quality
-                0: function(node) {
+                0(node) {
                     return $(node).find('time').attr('datetime');
                 },
-                1: function(node) {
+                1(node) {
                     return $(node).find('a').text();
                 }, // Episode
-                2: function(node) {
+                2(node) {
                     return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
                 },
-                3: function(node) {
+                3(node) {
                     return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
                 }
             };
@@ -52,10 +52,10 @@ MEDUSA.history.index = function() {
             layout: {
                 history: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.info(err);
         });
     });

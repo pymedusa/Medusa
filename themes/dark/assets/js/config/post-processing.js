@@ -5,8 +5,8 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     });
 
     // http://stackoverflow.com/questions/2219924/idiomatic-jquery-delayed-event-only-after-a-short-pause-in-typing-e-g-timew
-    var typewatch = (function() {
-        var timer = 0;
+    const typewatch = (function() {
+        let timer = 0;
         return function(callback, ms) {
             clearTimeout(timer);
             timer = setTimeout(callback, ms);
@@ -14,7 +14,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     })();
 
     function isRarSupported() {
-        $.get('config/postProcessing/isRarSupported', function(data) {
+        $.get('config/postProcessing/isRarSupported', data => {
             if (data !== 'supported') {
                 $('#unpack').qtip('option', {
                     'content.text': 'Unrar Executable not found.',
@@ -27,7 +27,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function fillExamples() {
-        var example = {};
+        const example = {};
 
         example.pattern = $('#naming_pattern').val();
         example.multi = $('#naming_multi_ep :selected').val();
@@ -36,7 +36,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: example.pattern,
             anime_type: 3 // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_example').text(data + '.ext');
                 $('#naming_example_div').show();
@@ -49,7 +49,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: 3 // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_example_multi').text(data + '.ext');
                 $('#naming_example_multi_div').show();
@@ -62,7 +62,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data === 'invalid') {
                 $('#naming_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -89,12 +89,12 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function fillAbdExamples() {
-        var pattern = $('#naming_abd_pattern').val();
+        const pattern = $('#naming_abd_pattern').val();
 
         $.get('config/postProcessing/testNaming', {
-            pattern: pattern,
+            pattern,
             abd: 'True'
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_abd_example').text(data + '.ext');
                 $('#naming_abd_example_div').show();
@@ -104,9 +104,9 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         });
 
         $.get('config/postProcessing/isNamingValid', {
-            pattern: pattern,
+            pattern,
             abd: 'True'
-        }, function(data) {
+        }, data => {
             if (data === 'invalid') {
                 $('#naming_abd_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -133,12 +133,12 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function fillSportsExamples() {
-        var pattern = $('#naming_sports_pattern').val();
+        const pattern = $('#naming_sports_pattern').val();
 
         $.get('config/postProcessing/testNaming', {
-            pattern: pattern,
+            pattern,
             sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_sports_example').text(data + '.ext');
                 $('#naming_sports_example_div').show();
@@ -148,9 +148,9 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         });
 
         $.get('config/postProcessing/isNamingValid', {
-            pattern: pattern,
+            pattern,
             sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
-        }, function(data) {
+        }, data => {
             if (data === 'invalid') {
                 $('#naming_sports_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -177,7 +177,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function fillAnimeExamples() {
-        var example = {};
+        const example = {};
         example.pattern = $('#naming_anime_pattern').val();
         example.multi = $('#naming_anime_multi_ep :selected').val();
         example.animeType = $('input[name="naming_anime"]:checked').val();
@@ -185,7 +185,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: example.pattern,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_example_anime').text(data + '.ext');
                 $('#naming_example_anime_div').show();
@@ -198,7 +198,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data) {
                 $('#naming_example_multi_anime').text(data + '.ext');
                 $('#naming_example_multi_anime_div').show();
@@ -211,7 +211,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             if (data === 'invalid') {
                 $('#naming_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -240,7 +240,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     // @TODO all of these setup funcitons should be able to be rolled into a generic function
 
     function setupNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_custom').show();
         } else {
@@ -251,7 +251,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupAbdNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_abd_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_abd_custom').show();
         } else {
@@ -262,7 +262,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupSportsNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_sports_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_sports_custom').show();
         } else {
@@ -273,7 +273,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     }
 
     function setupAnimeNaming() {
-        // if it is a custom selection then show the text box
+        // If it is a custom selection then show the text box
         if ($('#name_anime_presets :selected').val().toLowerCase() === 'custom...') {
             $('#naming_anime_custom').show();
         } else {
@@ -294,35 +294,35 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     // @TODO all of these on change funcitons should be able to be rolled into a generic jQuery function or maybe we could
     //       move all of the setup functions into these handlers?
 
-    $('#name_presets').on('change', function() {
+    $('#name_presets').on('change', () => {
         setupNaming();
     });
 
-    $('#name_abd_presets').on('change', function() {
+    $('#name_abd_presets').on('change', () => {
         setupAbdNaming();
     });
 
-    $('#naming_custom_abd').on('change', function() {
+    $('#naming_custom_abd').on('change', () => {
         setupAbdNaming();
     });
 
-    $('#name_sports_presets').on('change', function() {
+    $('#name_sports_presets').on('change', () => {
         setupSportsNaming();
     });
 
-    $('#naming_custom_sports').on('change', function() {
+    $('#naming_custom_sports').on('change', () => {
         setupSportsNaming();
     });
 
-    $('#name_anime_presets').on('change', function() {
+    $('#name_anime_presets').on('change', () => {
         setupAnimeNaming();
     });
 
-    $('#naming_custom_anime').on('change', function() {
+    $('#naming_custom_anime').on('change', () => {
         setupAnimeNaming();
     });
 
-    $('input[name="naming_anime"]').on('click', function() {
+    $('input[name="naming_anime"]').on('click', () => {
         setupAnimeNaming();
     });
 
@@ -331,54 +331,54 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
 
     $('#naming_multi_ep').on('change', fillExamples);
     $('#naming_pattern').on('focusout', fillExamples);
-    $('#naming_pattern').on('keyup', function() {
-        typewatch(function() {
+    $('#naming_pattern').on('keyup', () => {
+        typewatch(() => {
             fillExamples();
         }, 500);
     });
 
     $('#naming_anime_multi_ep').on('change', fillAnimeExamples);
     $('#naming_anime_pattern').on('focusout', fillAnimeExamples);
-    $('#naming_anime_pattern').on('keyup', function() {
-        typewatch(function() {
+    $('#naming_anime_pattern').on('keyup', () => {
+        typewatch(() => {
             fillAnimeExamples();
         }, 500);
     });
 
     $('#naming_abd_pattern').on('focusout', fillExamples);
-    $('#naming_abd_pattern').on('keyup', function() {
-        typewatch(function() {
+    $('#naming_abd_pattern').on('keyup', () => {
+        typewatch(() => {
             fillAbdExamples();
         }, 500);
     });
 
     $('#naming_sports_pattern').on('focusout', fillExamples);
-    $('#naming_sports_pattern').on('keyup', function() {
-        typewatch(function() {
+    $('#naming_sports_pattern').on('keyup', () => {
+        typewatch(() => {
             fillSportsExamples();
         }, 500);
     });
 
     $('#naming_anime_pattern').on('focusout', fillExamples);
-    $('#naming_anime_pattern').on('keyup', function() {
-        typewatch(function() {
+    $('#naming_anime_pattern').on('keyup', () => {
+        typewatch(() => {
             fillAnimeExamples();
         }, 500);
     });
 
-    $('#show_naming_key').on('click', function() {
+    $('#show_naming_key').on('click', () => {
         $('#naming_key').toggle();
     });
-    $('#show_naming_abd_key').on('click', function() {
+    $('#show_naming_abd_key').on('click', () => {
         $('#naming_abd_key').toggle();
     });
-    $('#show_naming_sports_key').on('click', function() {
+    $('#show_naming_sports_key').on('click', () => {
         $('#naming_sports_key').toggle();
     });
-    $('#show_naming_anime_key').on('click', function() {
+    $('#show_naming_anime_key').on('click', () => {
         $('#naming_anime_key').toggle();
     });
-    $('#do_custom').on('click', function() {
+    $('#do_custom').on('click', () => {
         $('#naming_pattern').val($('#name_presets :selected').attr('id'));
         $('#naming_custom').show();
         $('#naming_pattern').focus();
@@ -397,8 +397,8 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
 
     $.fn.showHideMetadata = function() {
         $('.metadataDiv').each(function() {
-            var targetName = $(this).attr('id');
-            var selectedTarget = $('#metadataType :selected').val();
+            const targetName = $(this).attr('id');
+            const selectedTarget = $('#metadataType :selected').val();
 
             if (selectedTarget === targetName) {
                 $(this).show();
@@ -407,7 +407,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             }
         });
     };
-    // initialize to show the div
+    // Initialize to show the div
     $(this).showHideMetadata();
     // -- end of metadata options div toggle code --
 
@@ -416,23 +416,23 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     });
 
     $.fn.refreshMetadataConfig = function(first) {
-        var curMost = 0;
-        var curMostProvider = '';
+        let curMost = 0;
+        let curMostProvider = '';
 
         $('.metadataDiv').each(function() { // eslint-disable-line complexity
-            var generatorName = $(this).attr('id');
+            const generatorName = $(this).attr('id');
 
-            var configArray = [];
-            var showMetadata = $('#' + generatorName + '_show_metadata').prop('checked');
-            var episodeMetadata = $('#' + generatorName + '_episode_metadata').prop('checked');
-            var fanart = $('#' + generatorName + '_fanart').prop('checked');
-            var poster = $('#' + generatorName + '_poster').prop('checked');
-            var banner = $('#' + generatorName + '_banner').prop('checked');
-            var episodeThumbnails = $('#' + generatorName + '_episode_thumbnails').prop('checked');
-            var seasonPosters = $('#' + generatorName + '_season_posters').prop('checked');
-            var seasonBanners = $('#' + generatorName + '_season_banners').prop('checked');
-            var seasonAllPoster = $('#' + generatorName + '_season_all_poster').prop('checked');
-            var seasonAllBanner = $('#' + generatorName + '_season_all_banner').prop('checked');
+            const configArray = [];
+            const showMetadata = $('#' + generatorName + '_show_metadata').prop('checked');
+            const episodeMetadata = $('#' + generatorName + '_episode_metadata').prop('checked');
+            const fanart = $('#' + generatorName + '_fanart').prop('checked');
+            const poster = $('#' + generatorName + '_poster').prop('checked');
+            const banner = $('#' + generatorName + '_banner').prop('checked');
+            const episodeThumbnails = $('#' + generatorName + '_episode_thumbnails').prop('checked');
+            const seasonPosters = $('#' + generatorName + '_season_posters').prop('checked');
+            const seasonBanners = $('#' + generatorName + '_season_banners').prop('checked');
+            const seasonAllPoster = $('#' + generatorName + '_season_all_poster').prop('checked');
+            const seasonAllBanner = $('#' + generatorName + '_season_all_banner').prop('checked');
 
             configArray.push(showMetadata ? '1' : '0');
             configArray.push(episodeMetadata ? '1' : '0');
@@ -445,8 +445,8 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             configArray.push(seasonAllPoster ? '1' : '0');
             configArray.push(seasonAllBanner ? '1' : '0');
 
-            var curNumber = 0;
-            for (var i = 0, len = configArray.length; i < len; i++) {
+            let curNumber = 0;
+            for (let i = 0, len = configArray.length; i < len; i++) {
                 curNumber += parseInt(configArray[i], 10);
             }
             if (curNumber > curMost) {

@@ -9,11 +9,10 @@ MEDUSA.config.index = function() {
             theme: {
                 name: $(this).val()
             }
-        }).then(function(response) {
-            alert('To properly finalize the switch to the new theme, please restart Medusa.');
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.error(err);
         });
     });

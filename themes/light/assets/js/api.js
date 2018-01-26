@@ -1,5 +1,5 @@
-let baseUrl = $('body').attr('api-root');
-let idToken = $('body').attr('api-key');
+const baseUrl = $('body').attr('api-root');
+const idToken = $('body').attr('api-key');
 
 const api = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: baseUrl,

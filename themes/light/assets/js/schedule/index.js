@@ -1,21 +1,21 @@
 MEDUSA.schedule.index = function() {
     if ($.isMeta({ layout: 'schedule' }, ['list'])) {
-        var sortCodes = {
+        const sortCodes = {
             date: 0,
             show: 2,
             network: 5
         };
-        var sort = MEDUSA.config.comingEpsSort;
-        var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
+        const sort = MEDUSA.config.comingEpsSort;
+        const sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
         $('#showListTable:has(tbody tr)').tablesorter({
             widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
-            sortList: sortList,
+            sortList,
             textExtraction: {
-                0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                1: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                7: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                8: function(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
+                0(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                1(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                7(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
+                8(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
             },
             headers: {
                 0: { sorter: 'realISODate' },
@@ -56,7 +56,7 @@ MEDUSA.schedule.index = function() {
         placement: 'bottom',
         html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
@@ -66,10 +66,10 @@ MEDUSA.schedule.index = function() {
             layout: {
                 schedule: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.info(err);
         });
     });

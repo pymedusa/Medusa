@@ -1,4 +1,4 @@
-$(function() {
+$(() => {
     $('.title a').each(function() {
         const indexerName = $(this).parent().attr('data-indexer-name');
         const seriesId = $(this).parent().attr('data-series-id');
@@ -12,7 +12,7 @@ $(function() {
                         indexername: indexerName,
                         seriesid: seriesId
                     },
-                    success: function(data) {
+                    success(data) {
                         this.set('content.text', data);
                     }
                 }

@@ -1,6 +1,6 @@
-$(document).ready(function() {
-    $('.submitMassEdit').on('click', function() {
-        let editArr = [];
+$(document).ready(() => {
+    $('.submitMassEdit').on('click', () => {
+        const editArr = [];
 
         $('.editCheck').each(function() {
             if (this.checked === true) {
@@ -23,14 +23,14 @@ $(document).ready(function() {
     });
 
     $('.submitMassUpdate').on('click', function() {
-        var updateArr = [];
-        var refreshArr = [];
-        var renameArr = [];
-        var subtitleArr = [];
-        var deleteArr = [];
-        var removeArr = [];
-        var metadataArr = [];
-        var imageUpdateArr = [];
+        const updateArr = [];
+        const refreshArr = [];
+        const renameArr = [];
+        const subtitleArr = [];
+        const deleteArr = [];
+        const removeArr = [];
+        const metadataArr = [];
+        const imageUpdateArr = [];
 
         const indexerName = $(this).attr('data-indexer-name');
         const seriesId = $(this).attr('data-series-id');
@@ -71,7 +71,7 @@ $(document).ready(function() {
             }
         });
 
-        var deleteCount = 0;
+        let deleteCount = 0;
 
         $('.deleteCheck').each(function() {
             if (this.checked === true) {
@@ -79,7 +79,7 @@ $(document).ready(function() {
             }
         });
 
-        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
+        const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
 
         if (deleteCount >= 1) {
             $.confirm({
@@ -89,7 +89,7 @@ $(document).ready(function() {
                 cancelButton: 'Cancel',
                 dialogClass: 'modal-dialog',
                 post: false,
-                confirm: function() {
+                confirm() {
                     $('.deleteCheck').each(function() {
                         if (this.checked === true) {
                             deleteArr.push(`${indexerName}${seriesId}`);
@@ -98,7 +98,7 @@ $(document).ready(function() {
                     if (totalCount === 0) {
                         return false;
                     }
-                    var params = $.param({
+                    const params = $.param({
                         toUpdate: updateArr.join('|'),
                         toRefresh: refreshArr.join('|'),
                         toRename: renameArr.join('|'),
@@ -122,13 +122,13 @@ $(document).ready(function() {
         }
         const url = $('base').attr('href') + 'manage/massUpdate';
         const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
-        $.post(url, params, function() {
+        $.post(url, params, () => {
             location.reload(true);
         });
     });
 
-    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(function(name) {
-        var lastCheck = null;
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(name => {
+        let lastCheck = null;
 
         $(name).on('click', function(event) {
             if (!lastCheck || !event.shiftKey) {
@@ -136,8 +136,8 @@ $(document).ready(function() {
                 return;
             }
 
-            var check = this;
-            var found = 0;
+            const check = this;
+            let found = 0;
 
             $(name).each(function() {
                 if (found === 1) {

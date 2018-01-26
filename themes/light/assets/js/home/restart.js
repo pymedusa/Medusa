@@ -1,9 +1,9 @@
 MEDUSA.home.restart = function() {
-    var currentPid = $('.messages').attr('current-pid');
-    var defaultPage = $('.messages').attr('default-page');
-    var checkIsAlive = setInterval(function() {
+    let currentPid = $('.messages').attr('current-pid');
+    const defaultPage = $('.messages').attr('default-page');
+    const checkIsAlive = setInterval(() => {
         // @TODO: Move to API
-        $.get('home/is_alive/', function(data) {
+        $.get('home/is_alive/', data => {
             if (data.msg.toLowerCase() === 'nope') {
                 // If it's still initializing then just wait and try again
                 $('#restart_message').show();
@@ -16,7 +16,7 @@ MEDUSA.home.restart = function() {
                 $('#restart_loading').hide();
                 $('#restart_success').show();
                 $('#refresh_message').show();
-                setTimeout(function() {
+                setTimeout(() => {
                     window.location = defaultPage + '/';
                 }, 5000);
             }

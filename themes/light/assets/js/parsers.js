@@ -1,9 +1,9 @@
 $.tablesorter.addParser({
     id: 'loadingNames',
-    is: function() {
+    is() {
         return false;
     },
-    format: function(s) {
+    format(s) {
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
@@ -13,11 +13,11 @@ $.tablesorter.addParser({
 });
 $.tablesorter.addParser({
     id: 'quality',
-    is: function() {
+    is() {
         return false;
     },
-    format: function(s) {
-        var replacements = {
+    format(s) {
+        const replacements = {
             custom: 11,
             bluray: 10, // Custom: Only bluray
             hd1080p: 9,
@@ -37,10 +37,10 @@ $.tablesorter.addParser({
 });
 $.tablesorter.addParser({
     id: 'realISODate',
-    is: function() {
+    is() {
         return false;
     },
-    format: function(s) {
+    format(s) {
         return new Date(s).getTime();
     },
     type: 'numeric'
@@ -48,29 +48,29 @@ $.tablesorter.addParser({
 
 $.tablesorter.addParser({
     id: 'cDate',
-    is: function() {
+    is() {
         return false;
     },
-    format: function(s) {
+    format(s) {
         return s;
     },
     type: 'numeric'
 });
 $.tablesorter.addParser({
     id: 'eps',
-    is: function() {
+    is() {
         return false;
     },
-    format: function(s) {
-        var match = s.match(/^(.*)/);
+    format(s) {
+        const match = s.match(/^(.*)/);
 
         if (match === null || match[1] === '?') {
             return -10;
         }
 
-        var nums = match[1].split(' / ');
+        const nums = match[1].split(' / ');
         if (nums[0].indexOf('+') !== -1) {
-            var numParts = nums[0].split('+');
+            const numParts = nums[0].split('+');
             nums[0] = numParts[0];
         }
 
@@ -80,8 +80,8 @@ $.tablesorter.addParser({
         if (nums[0] === 0) {
             return nums[1];
         }
-        var finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
-        var pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
+        let finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
+        const pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
         if (finalNum > 0) {
             finalNum += nums[0];
         }

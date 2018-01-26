@@ -1,17 +1,17 @@
 // @TODO: Remove this when we fully drop support for IE > 8
 // Avoid `console` errors in browsers that lack a console.
 (function() { // eslint-disable-line wrap-iife
-    var method;
-    var noop = function noop() {}; // eslint-disable-line func-names
-    var methods = [
+    let method;
+    const noop = function noop() {}; // eslint-disable-line func-names
+    const methods = [
         'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
         'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
         'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
         'timeStamp', 'trace', 'warn'
     ];
-    var length = methods.length;
+    let length = methods.length;
     window.console = window.console || {};
-    var console = window.console;
+    const console = window.console;
 
     while (length--) {
         method = methods[length];
@@ -23,7 +23,7 @@
     }
 }());
 
-$(document).ready(function() {
+$(document).ready(() => {
     function setDefault(which, force) {
         if (which !== undefined && which.length === 0) {
             return;
@@ -40,7 +40,7 @@ $(document).ready(function() {
 
         // If there's an existing one then take the asterisk off
         if ($('#whichDefaultRootDir').val() && force !== true) {
-            var oldDefault = $('#' + $('#whichDefaultRootDir').val());
+            const oldDefault = $('#' + $('#whichDefaultRootDir').val());
             oldDefault.text(oldDefault.text().substring(1));
         }
 
@@ -49,7 +49,7 @@ $(document).ready(function() {
 
     function syncOptionIDs() {
         // Re-sync option ids
-        var i = 0;
+        let i = 0;
         $('#rootDirs option').each(function() {
             $(this).prop('id', 'rd-' + (i++));
         });
@@ -63,7 +63,7 @@ $(document).ready(function() {
             return;
         }
 
-        var doDisable = 'true';
+        let doDisable = 'true';
 
         // Re-sync option ids
         syncOptionIDs();
@@ -83,7 +83,7 @@ $(document).ready(function() {
         $('#defaultRootDir').prop('disabled', doDisable);
         $('#editRootDir').prop('disabled', doDisable);
 
-        var dirString = '';
+        let dirString = '';
         if ($('#whichDefaultRootDir').val().length >= 4) {
             dirString = $('#whichDefaultRootDir').val().substr(3);
         }
@@ -104,7 +104,7 @@ $(document).ready(function() {
         }
 
         // Check if it's the first one
-        var isDefault = false;
+        let isDefault = false;
         if ($('#whichDefaultRootDir').val().length === 0) {
             isDefault = true;
         }
@@ -154,11 +154,11 @@ $(document).ready(function() {
         });
     });
 
-    $('#deleteRootDir').on('click', function() {
+    $('#deleteRootDir').on('click', () => {
         if ($('#rootDirs option:selected').length !== 0) {
-            var toDelete = $('#rootDirs option:selected');
-            var newDefault = (toDelete.attr('id') === $('#whichDefaultRootDir').val());
-            var deletedNum = $('#rootDirs option:selected').attr('id').substr(3);
+            const toDelete = $('#rootDirs option:selected');
+            const newDefault = (toDelete.attr('id') === $('#whichDefaultRootDir').val());
+            const deletedNum = $('#rootDirs option:selected').attr('id').substr(3);
 
             toDelete.remove();
             syncOptionIDs();
@@ -174,7 +174,7 @@ $(document).ready(function() {
                     setDefault($('#rootDirs option').attr('id'));
                 }
             } else if ($('#whichDefaultRootDir').val().length !== 0) {
-                var oldDefaultNum = $('#whichDefaultRootDir').val().substr(3);
+                const oldDefaultNum = $('#whichDefaultRootDir').val().substr(3);
                 if (oldDefaultNum > deletedNum) {
                     $('#whichDefaultRootDir').val('rd-' + (oldDefaultNum - 1));
                 }
@@ -186,7 +186,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#defaultRootDir').on('click', function() {
+    $('#defaultRootDir').on('click', () => {
         if ($('#rootDirs option:selected').length !== 0) {
             setDefault($('#rootDirs option:selected').attr('id'));
         }

@@ -2,23 +2,23 @@ MEDUSA.manage.backlogOverview = function() {
     checkForcedSearch();
 
     function checkForcedSearch() {
-        var pollInterval = 5000;
-        var searchStatusUrl = 'home/getManualSearchStatus';
-        var indexerName = $('#indexer-name').val();
-        var seriesId = $('#series-id').val();
-        var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+        let pollInterval = 5000;
+        const searchStatusUrl = 'home/getManualSearchStatus';
+        const indexerName = $('#indexer-name').val();
+        const seriesId = $('#series-id').val();
+        const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
         $.ajax({
-            url: url,
-            error: function() {
+            url,
+            error() {
                 pollInterval = 30000;
             },
             type: 'GET',
             dataType: 'JSON',
-            complete: function() {
+            complete() {
                 setTimeout(checkForcedSearch, pollInterval);
             },
             timeout: 15000 // Timeout every 15 secs
-        }).done(function(data) {
+        }).done(data => {
             if (data.episodes) {
                 pollInterval = 5000;
             } else {
@@ -29,11 +29,11 @@ MEDUSA.manage.backlogOverview = function() {
     }
 
     function updateForcedSearch(data) {
-        $.each(data.episodes, function(name, ep) {
-            var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
-            var img = el.children('img[data-ep-search]');
-            var episodeStatus = ep.status.toLowerCase();
-            var episodeSearchStatus = ep.searchstatus.toLowerCase();
+        $.each(data.episodes, (name, ep) => {
+            const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+            const img = el.children('img[data-ep-search]');
+            const episodeStatus = ep.status.toLowerCase();
+            const episodeSearchStatus = ep.searchstatus.toLowerCase();
             if (el) {
                 if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
@@ -42,7 +42,7 @@ MEDUSA.manage.backlogOverview = function() {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     if (episodeStatus.indexOf('snatched') >= 0) {
                         img.prop('src', 'images/yes16.png');
-                        setTimeout(function() {
+                        setTimeout(() => {
                             img.parent().parent().parent().remove();
                         }, 3000);
                     } else {
@@ -54,7 +54,7 @@ MEDUSA.manage.backlogOverview = function() {
     }
 
     $('#pickShow').on('change', function() {
-        var id = $(this).val();
+        const id = $(this).val();
         if (id) {
             $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
         }
@@ -65,10 +65,10 @@ MEDUSA.manage.backlogOverview = function() {
             backlogOverview: {
                 period: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.error(err);
         });
     });
@@ -78,10 +78,10 @@ MEDUSA.manage.backlogOverview = function() {
             backlogOverview: {
                 status: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.error(err);
         });
     });
@@ -94,16 +94,16 @@ MEDUSA.manage.backlogOverview = function() {
 
     $('.epArchive').on('click', function(event) {
         event.preventDefault();
-        var img = $(this).children('img[data-ep-archive]');
+        const img = $(this).children('img[data-ep-archive]');
         img.prop('title', 'Archiving');
         img.prop('alt', 'Archiving');
         img.prop('src', 'images/loading16.gif');
-        var url = $(this).prop('href');
-        $.getJSON(url, function(data) {
+        const url = $(this).prop('href');
+        $.getJSON(url, data => {
             // If they failed then just put the red X
             if (data.result.toLowerCase() === 'success') {
                 img.prop('src', 'images/yes16.png');
-                setTimeout(function() {
+                setTimeout(() => {
                     img.parent().parent().parent().remove();
                 }, 3000);
             } else {
@@ -115,12 +115,12 @@ MEDUSA.manage.backlogOverview = function() {
 
     $('.epSearch').on('click', function(event) {
         event.preventDefault();
-        var img = $(this).children('img[data-ep-search]');
+        const img = $(this).children('img[data-ep-search]');
         img.prop('title', 'Searching');
         img.prop('alt', 'Searching');
         img.prop('src', 'images/loading16.gif');
-        var url = $(this).prop('href');
-        $.getJSON(url, function(data) {
+        const url = $(this).prop('href');
+        $.getJSON(url, data => {
             // If they failed then just put the red X
             if (data.result.toLowerCase() === 'failed') {
                 img.prop('src', 'images/no16.png');

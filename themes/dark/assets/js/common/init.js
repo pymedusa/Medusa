@@ -4,17 +4,17 @@ MEDUSA.common.init = function() {
 
     // Reset the layout for the activated tab (when using ui tabs)
     $('#showTabs').tabs({
-        activate: function() {
+        activate() {
             $('.show-grid').isotope('layout');
         }
     });
 
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
-        var seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
+        const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
 
         if (seriesSlug) {
-            let path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
+            const path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
@@ -22,7 +22,7 @@ MEDUSA.common.init = function() {
     }
 
     function backstretchOffset() {
-        var offset = '90px';
+        let offset = '90px';
         if ($('#sub-menu-container').length === 0) {
             offset = '50px';
         }
@@ -43,7 +43,7 @@ MEDUSA.common.init = function() {
             return;
         }
 
-        let scrollbarVisible = scrollDiv.map(function(el) {
+        const scrollbarVisible = scrollDiv.map(el => {
             return (el.scrollWidth > el.clientWidth);
         }).indexOf(true);
 
@@ -58,31 +58,31 @@ MEDUSA.common.init = function() {
 
     initHorizontalScroll();
 
-    $(window).on('resize', function() {
+    $(window).on('resize', () => {
         $('.backstretch').css('top', backstretchOffset());
         initHorizontalScroll();
     });
 
     // Scroll Functions
     function scrollTo(dest) {
-        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
+        $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
     }
 
-    $('#scroll-left').on('click', function(e) {
+    $('#scroll-left').on('click', e => {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '-=153'
         }, 1000, 'easeOutQuad');
     });
 
-    $('#scroll-right').on('click', function(e) {
+    $('#scroll-right').on('click', e => {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '+=153'
         }, 1000, 'easeOutQuad');
     });
 
-    $(document).on('scroll', function() {
+    $(document).on('scroll', () => {
         if ($(window).scrollTop() > 100) {
             $('.scroll-wrapper.top').addClass('show');
         } else {
@@ -90,7 +90,7 @@ MEDUSA.common.init = function() {
         }
     });
 
-    $('.scroll-wrapper.top').on('click', function() {
+    $('.scroll-wrapper.top').on('click', () => {
         scrollTo($('body'));
     });
 
@@ -107,16 +107,16 @@ MEDUSA.common.init = function() {
         $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
-    // function to change luminance of #000000 color - used in triggerhighlighting
+    // Function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
             hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
         }
         lum = lum || 0;
-        var rgb = '#';
-        var c;
-        var i;
+        let rgb = '#';
+        let c;
+        let i;
         for (i = 0; i < 3; i++) {
             c = parseInt(hex.substr(i * 2, 2), 16);
             c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
@@ -125,7 +125,7 @@ MEDUSA.common.init = function() {
         return rgb;
     }
 
-    // function to convert rgb(0,0,0) into #000000
+    // Function to convert rgb(0,0,0) into #000000
     function rgb2hex(rgb) {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         function hex(x) {
@@ -134,12 +134,12 @@ MEDUSA.common.init = function() {
         return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }
 
-    var revertBackgroundColor; // used to revert back to original background-color after highlight
+    let revertBackgroundColor; // Used to revert back to original background-color after highlight
     $('.triggerhighlight').on('mouseover', function() {
-        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
-        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // setting highlight background-color
+        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // Fetch the original background-color to revert back to
+        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // Setting highlight background-color
     }).on('mouseout', function() {
-        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
+        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
     });
 
     $.rootDirCheck = function() {
@@ -168,7 +168,7 @@ MEDUSA.common.init = function() {
         cancelButton: 'Cancel',
         dialogClass: 'modal-dialog',
         post: false,
-        confirm: function(e) {
+        confirm(e) {
             location.href = e[0].href;
         }
     };
@@ -186,7 +186,7 @@ MEDUSA.common.init = function() {
     $('a.removeshow').confirm({
         title: 'Remove Show',
         text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
-        confirm: function(e) {
+        confirm(e) {
             location.href = e[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
         }
     });
@@ -207,8 +207,8 @@ MEDUSA.common.init = function() {
     });
 
     $('#config-components').tabs({
-        activate: function(event, ui) {
-            var lastOpenedPanel = $(this).data('lastOpenedPanel');
+        activate(event, ui) {
+            let lastOpenedPanel = $(this).data('lastOpenedPanel');
 
             if (!lastOpenedPanel) {
                 lastOpenedPanel = $(ui.oldPanel);
@@ -245,7 +245,7 @@ MEDUSA.common.init = function() {
     // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
     if ((navigator.maxTouchPoints || 0) < 2) {
         $('.dropdown-toggle').on('click', function() {
-            var $this = $(this);
+            const $this = $(this);
             if ($this.attr('aria-expanded') === 'true') {
                 window.location.href = $('base').attr('href') + $this.attr('href');
             }
@@ -283,8 +283,8 @@ MEDUSA.common.init = function() {
     });
 
     $(document.body).on('click', '.bulkCheck', function() {
-        var bulkCheck = this;
-        var whichBulkCheck = $(bulkCheck).attr('id');
+        const bulkCheck = this;
+        const whichBulkCheck = $(bulkCheck).attr('id');
 
         $('.' + whichBulkCheck + ':visible').each(function() {
             $(this).prop('checked', $(bulkCheck).prop('checked'));
@@ -311,16 +311,16 @@ MEDUSA.common.init = function() {
             'text-shadow': '0px 0px 0.5px #666'
         });
 
-        var my = $(this).data('qtip-my') || 'left center';
-        var at = $(this).data('qtip-at') || 'middle right';
+        const my = $(this).data('qtip-my') || 'left center';
+        const at = $(this).data('qtip-at') || 'middle right';
 
         $(this).qtip({
             show: {
                 solo: true
             },
             position: {
-                my: my,
-                at: at
+                my,
+                at
             },
             style: {
                 tip: {

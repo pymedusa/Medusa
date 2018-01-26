@@ -1,7 +1,7 @@
 MEDUSA.manage.init = function() {
     $.makeEpisodeRow = function(indexerId, seriesId, season, episode, name, checked) { // eslint-disable-line max-params
-        var row = '';
-        var series = indexerId + '-' + seriesId;
+        let row = '';
+        const series = indexerId + '-' + seriesId;
 
         row += ' <tr class="' + $('#row_class').val() + ' show-' + series + '">';
         row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
@@ -13,8 +13,8 @@ MEDUSA.manage.init = function() {
     };
 
     $.makeSubtitleRow = function(indexerId, seriesId, season, episode, name, subtitles, checked) { // eslint-disable-line max-params
-        var row = '';
-        var series = indexerId + '-' + seriesId;
+        let row = '';
+        const series = indexerId + '-' + seriesId;
 
         row += '<tr class="good show-' + series + '">';
         row += '<td align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
@@ -22,7 +22,7 @@ MEDUSA.manage.init = function() {
         if (subtitles.length > 0) {
             row += '<td style="width: 8%;">';
             subtitles = subtitles.split(',');
-            for (var i in subtitles) {
+            for (const i in subtitles) {
                 if ({}.hasOwnProperty.call(subtitles, i)) {
                     row += '<img src="images/subtitles/flags/' + subtitles[i] + '.png" width="16" height="11" alt="' + subtitles[i] + '" />&nbsp;';
                 }

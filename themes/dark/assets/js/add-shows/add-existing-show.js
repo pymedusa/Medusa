@@ -3,22 +3,22 @@ MEDUSA.addShows.addExistingShow = function() {
     $.updateBlackWhiteList(undefined);
 
     $('#tableDiv').on('click', '#checkAll', function() {
-        var seasonCheck = this;
+        const seasonCheck = this;
         $('.dirCheck').each(function() {
             this.checked = seasonCheck.checked;
         });
     });
 
-    $('#submitShowDirs').on('click', function() {
-        var dirArr = [];
+    $('#submitShowDirs').on('click', () => {
+        const dirArr = [];
         $('.dirCheck').each(function() {
             if (this.checked === true) {
-                var originalIndexer = $(this).attr('data-indexer');
-                var indexerId = '|' + $(this).attr('data-indexer-id');
-                var showName = $(this).attr('data-show-name');
-                var showDir = $(this).attr('data-show-dir');
+                const originalIndexer = $(this).attr('data-indexer');
+                let indexerId = '|' + $(this).attr('data-indexer-id');
+                const showName = $(this).attr('data-show-name');
+                const showDir = $(this).attr('data-show-dir');
 
-                var indexer = $(this).closest('tr').find('select').val();
+                const indexer = $(this).closest('tr').find('select').val();
                 if (originalIndexer !== indexer || originalIndexer === '0') {
                     indexerId = '';
                 }
@@ -34,8 +34,8 @@ MEDUSA.addShows.addExistingShow = function() {
     });
 
     function loadContent() {
-        var url = '';
-        $('.dir_check').each(function(i, w) {
+        let url = '';
+        $('.dir_check').each((i, w) => {
             if ($(w).is(':checked')) {
                 if (url.length !== 0) {
                     url += '&';
@@ -45,28 +45,28 @@ MEDUSA.addShows.addExistingShow = function() {
         });
 
         $('#tableDiv').html('<img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...');
-        $.get('addShows/massAddTable/', url, function(data) {
+        $.get('addShows/massAddTable/', url, data => {
             $('#tableDiv').html(data);
             $('#addRootDirTable').tablesorter({
-                // sortList: [[1,0]],
+                // SortList: [[1,0]],
                 widgets: ['zebra'],
                 headers: {
-                    0: {sorter: false}
+                    0: { sorter: false }
                 }
             });
         });
     }
 
-    var lastTxt = '';
+    let lastTxt = '';
     // @TODO this needs a real name, for now this fixes the issue of the page not loading at all,
     //       before I added this I couldn't get the directories to show in the table
-    var a = function() {
+    const a = function() {
         if (lastTxt === $('#rootDirText').val()) {
             return false;
         }
         lastTxt = $('#rootDirText').val();
         $('#rootDirStaticList').html('');
-        $('#rootDirs option').each(function(i, w) {
+        $('#rootDirs option').each((i, w) => {
             $('#rootDirStaticList').append('<li class="ui-state-default ui-corner-all"><input type="checkbox" class="cb dir_check" id="' + $(w).val() + '" checked=checked> <label for="' + $(w).val() + '"><b>' + $(w).val() + '</b></label></li>');
         });
         loadContent();
@@ -78,9 +78,9 @@ MEDUSA.addShows.addExistingShow = function() {
 
     $('#rootDirStaticList').on('click', '.dir_check', loadContent);
 
-    $('#tableDiv').on('click', '.showManage', function(event) {
+    $('#tableDiv').on('click', '.showManage', event => {
         event.preventDefault();
         $('#tabs').tabs('option', 'active', 0);
-        $('html,body').animate({scrollTop: 0}, 1000);
+        $('html,body').animate({ scrollTop: 0 }, 1000);
     });
 };

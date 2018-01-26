@@ -98,7 +98,7 @@
       "/**/*.spec.js",
       "build/**"
     ],
-    "esnext": false
+    "esnext": true
   },
   "stylelint": {
     "extends": "stylelint-config-standard",

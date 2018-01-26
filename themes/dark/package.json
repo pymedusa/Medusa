@@ -98,7 +98,7 @@
       "/**/*.spec.js",
       "build/**"
     ],
-    "esnext": false
+    "esnext": true
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
@@ -125,7 +125,7 @@
   },
   "ava": {
     "files": [
-      "vue/test/**/*.spec.js"
+      "vue/test/**/*.js"
     ],
     "source": [
       "vue/src/**/*.{js,jsx}",

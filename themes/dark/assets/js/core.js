@@ -1,11 +1,11 @@
 // eslint-disable-line max-lines
 // @TODO Move these into common.ini when possible,
 //       currently we can't do that as browser.js and a few others need it before this is loaded
-var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
-var apiRoot = $('body').attr('api-root');
-var apiKey = $('body').attr('api-key');
+const topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
+const apiRoot = $('body').attr('api-root');
+const apiKey = $('body').attr('api-key');
 
-var MEDUSA = {
+const MEDUSA = {
     common: {},
     config: {},
     home: {},
@@ -16,27 +16,27 @@ var MEDUSA = {
     addShows: {}
 };
 
-var UTIL = {
-    exec: function(controller, action) {
-        var ns = MEDUSA;
+const UTIL = {
+    exec(controller, action) {
+        const ns = MEDUSA;
         action = (action === undefined) ? 'init' : action;
 
         if (controller !== '' && ns[controller] && typeof ns[controller][action] === 'function') {
             ns[controller][action]();
         }
     },
-    init: function() {
+    init() {
         if (typeof startVue === 'function') { // eslint-disable-line no-undef
             startVue(); // eslint-disable-line no-undef
         } else {
             $('[v-cloak]').removeAttr('v-cloak');
         }
 
-        var body = document.body;
+        const body = document.body;
         $('[asset]').each(function() {
-            let asset = $(this).attr('asset');
-            let series = $(this).attr('series');
-            let path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
+            const asset = $(this).attr('asset');
+            const series = $(this).attr('series');
+            const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
@@ -48,8 +48,8 @@ var UTIL = {
                 $(this).attr('href', path);
             }
         });
-        var controller = body.getAttribute('data-controller');
-        var action = body.getAttribute('data-action');
+        const controller = body.getAttribute('data-controller');
+        const action = body.getAttribute('data-action');
 
         UTIL.exec('common');
         UTIL.exec(controller);
@@ -58,14 +58,14 @@ var UTIL = {
 };
 
 $.extend({
-    isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
-        var reg = new RegExp(result.length > 1 ? result.join('|') : result);
+    isMeta(pyVar, result) { // eslint-disable-line no-unused-vars
+        const reg = new RegExp(result.length > 1 ? result.join('|') : result);
 
         if (typeof (pyVar) === 'object' && Object.keys(pyVar).length === 1) {
             return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
         }
         if (pyVar.match('medusa')) {
-            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
+            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, m => {
                 return m[1].toUpperCase();
             });
         }
@@ -74,7 +74,7 @@ $.extend({
 });
 
 $.fn.extend({
-    addRemoveWarningClass: function(_) {
+    addRemoveWarningClass(_) {
         if (_) {
             return $(this).removeClass('warning');
         }
@@ -82,16 +82,16 @@ $.fn.extend({
     }
 });
 
-var triggerConfigLoaded = function() {
+const triggerConfigLoaded = function() {
     // Create the event.
-    var event = new CustomEvent('build', {detail: 'medusa config loaded'});
+    const event = new CustomEvent('build', { detail: 'medusa config loaded' });
     event.initEvent('build', true, true);
     // Trigger the event.
     document.dispatchEvent(event);
 };
 
 if (!document.location.pathname.endsWith('/login/')) {
-    api.get('config/main').then(function(response) {
+    api.get('config/main').then(response => {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
@@ -112,7 +112,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map(function(key) {  // eslint-disable-line array-callback-return
+            return Object.keys(MEDUSA.config.indexers.config).map(key => {  // eslint-disable-line array-callback-return
                 if (MEDUSA.config.indexers.config[key] === name) {
                     return key;
                 }
@@ -120,33 +120,33 @@ if (!document.location.pathname.endsWith('/login/')) {
         };
 
         triggerConfigLoaded();
-    }).catch(function(err) {
+    }).catch(err => {
         log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
 
 // Notifications
-var WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
-var test = !1;
-var iconUrl = 'images/ico/favicon-120.png';
+const WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
+const test = !1;
+const iconUrl = 'images/ico/favicon-120.png';
 
 PNotify.prototype.options.addclass = 'stack-bottomright';
 PNotify.prototype.options.buttons.closer_hover = !1; // eslint-disable-line camelcase
 PNotify.prototype.options.delay = 5000;
-PNotify.prototype.options.desktop = {desktop: !0, icon: iconUrl};
+PNotify.prototype.options.desktop = { desktop: !0, icon: iconUrl };
 PNotify.prototype.options.hide = !0;
 PNotify.prototype.options.history = !1;
 PNotify.prototype.options.shadow = !1;
-PNotify.prototype.options.stack = {dir1: 'up', dir2: 'left', firstpos1: 25, firstpos2: 25};
+PNotify.prototype.options.stack = { dir1: 'up', dir2: 'left', firstpos1: 25, firstpos2: 25 };
 PNotify.prototype.options.styling = 'jqueryui';
 PNotify.prototype.options.width = '340px';
 PNotify.desktop.permission();
 
 function displayPNotify(type, title, message, id) {
     new PNotify({ // eslint-disable-line no-new
-        type: type,
-        title: title,
+        type,
+        title,
         desktop: {
             tag: id
         },
@@ -162,7 +162,7 @@ function wsCheckNotifications() {
     const webRoot = MEDUSA.config.webRoot || '';
     const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
-        var msg;
+        let msg;
         try {
             msg = JSON.parse(evt.data);
         } catch (e) { // eslint-disable-line unicorn/catch-error-name
@@ -188,7 +188,7 @@ function wsCheckNotifications() {
 
 // Run functions that depend on loading of the config.
 // Listen for the config loaded event.
-window.addEventListener('build', function(e) {
+window.addEventListener('build', e => {
     if (e.detail === 'medusa config loaded') {
         /**
          * Search for anchors with the attribute indexer-to-name and translate the indexer id to a name using the helper
@@ -196,13 +196,13 @@ window.addEventListener('build', function(e) {
          *
          * The anchor is rebuild using the indexer name.
          */
-        $('[data-indexer-to-name]').each(function(index, target) {
+        $('[data-indexer-to-name]').each((index, target) => {
             const indexerId = $(target).attr('data-indexer-to-name');
             const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
 
             const re = /indexer-to-name/gi;
 
-            $.each(target.attributes, function(index, attr) {
+            $.each(target.attributes, (index, attr) => {
                 if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {
                     target[attr.name] = target[attr.name].replace(re, indexerName);
                 }
