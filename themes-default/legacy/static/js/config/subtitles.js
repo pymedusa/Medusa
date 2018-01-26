@@ -47,7 +47,7 @@ MEDUSA.config.subtitlesPage = function() {
         $.refreshServiceList();
     });
 
-    // initialization stuff
+    // Initialization stuff
     $(this).showHideServices();
 
     $('#service_order_list').sortable({

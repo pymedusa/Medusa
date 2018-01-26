@@ -1,4 +1,4 @@
-import {apiLogger} from './log';
+import { apiLogger } from './log';
 
 // @TODO: Add more stuff in here for HTTP errors and such
 const apiError = err => apiLogger.error(err);

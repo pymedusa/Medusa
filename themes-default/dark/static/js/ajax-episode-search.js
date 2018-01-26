@@ -1,7 +1,7 @@
-var searchStatusUrl = 'home/getManualSearchStatus';
-var failedDownload = false;
-var qualityDownload = false;
-var selectedEpisode = '';
+const searchStatusUrl = 'home/getManualSearchStatus';
+let failedDownload = false;
+let qualityDownload = false;
+let selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
 $.fn.forcedSearches = [];
@@ -19,18 +19,18 @@ function disableLink(el) {
 }
 
 function updateImages(data) {
-    $.each(data.episodes, function(name, ep) {
+    $.each(data.episodes, (name, ep) => {
         // Get td element for current ep
-        var loadingImage = 'loading16.gif';
-        var queuedImage = 'queued.png';
-        var searchImage = 'search16.png';
-        var htmlContent = '';
+        const loadingImage = 'loading16.gif';
+        const queuedImage = 'queued.png';
+        const searchImage = 'search16.png';
+        let htmlContent = '';
         // Try to get the <a> Element
-        var el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
-        var img = el.children('img[data-ep-search]');
-        var parent = el.parent();
+        const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const img = el.children('img[data-ep-search]');
+        const parent = el.parent();
         if (el) {
-            var rSearchTerm = '';
+            let rSearchTerm = '';
             if (ep.searchstatus.toLowerCase() === 'searching') {
                 // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
@@ -61,8 +61,8 @@ function updateImages(data) {
             // Update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
-        var imageCompleteEpisodes = elementCompleteEpisodes.children('img');
+        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
                 imageCompleteEpisodes.prop('title', 'Searching');
@@ -88,25 +88,25 @@ function updateImages(data) {
 }
 
 function checkManualSearches() {
-    var pollInterval = 5000;
+    let pollInterval = 5000;
 
     // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
-    var indexerName = $('#indexer-name').val();
-    var seriesId = $('#series-id').val();
+    const indexerName = $('#indexer-name').val();
+    const seriesId = $('#series-id').val();
 
-    var url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+    const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
     $.ajax({
-        url: url,
-        error: function() {
+        url,
+        error() {
             pollInterval = 30000;
         },
         type: 'GET',
         dataType: 'JSON',
-        complete: function() {
+        complete() {
             setTimeout(checkManualSearches, pollInterval);
         },
         timeout: 15000 // Timeout every 15 secs
-    }).done(function(data) {
+    }).done(data => {
         if (data.episodes) {
             pollInterval = 5000;
         } else {
@@ -117,7 +117,7 @@ function checkManualSearches() {
     });
 }
 
-$(document).ready(function() {
+$(document).ready(() => {
     checkManualSearches();
 });
 
@@ -145,22 +145,22 @@ $.ajaxEpSearch = function(options) {
     });
 
     function forcedSearch() {
-        var imageName;
-        var imageResult;
-        var htmlContent;
+        let imageName;
+        let imageResult;
+        let htmlContent;
 
-        var parent = selectedEpisode.parent();
+        const parent = selectedEpisode.parent();
 
         // Create var for anchor
-        var link = selectedEpisode;
+        const link = selectedEpisode;
 
         // Create var for img under anchor and set options for the loading gif
-        var img = selectedEpisode.children('img');
+        const img = selectedEpisode.children('img');
         img.prop('title', 'loading');
         img.prop('alt', '');
         img.prop('src', 'images/' + options.loadingImage);
 
-        var url = selectedEpisode.prop('href');
+        let url = selectedEpisode.prop('href');
 
         if (!failedDownload) {
             url = url.replace('retryEpisode', 'searchEpisode');
@@ -172,7 +172,7 @@ $.ajaxEpSearch = function(options) {
         }
 
         // @TODO: Move to the API
-        $.getJSON(url, function(data) {
+        $.getJSON(url, data => {
             // If they failed then just put the red X
             if (data.result.toLowerCase() === 'failure') {
                 imageName = options.noImage;
@@ -187,7 +187,7 @@ $.ajaxEpSearch = function(options) {
                     parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
                 }
                 // Applying the quality class
-                var rSearchTerm = /(\w+)\s\((.+?)\)/;
+                const rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
                 // Update the status column if it exists
                 parent.siblings('.col-status').html(htmlContent);
@@ -235,7 +235,7 @@ $.ajaxEpSearch = function(options) {
         $('.epManualSearch').addClass('disabled');
         $('.epManualSearch').fadeTo(1, 0.1);
 
-        var url = this.href;
+        const url = this.href;
         if (event.shiftKey || event.ctrlKey || event.which === 2) {
             window.open(url, '_blank');
         } else {

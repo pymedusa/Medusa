@@ -9,10 +9,10 @@ MEDUSA.config.index = function() {
             theme: {
                 name: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.error(err);
         });
     });

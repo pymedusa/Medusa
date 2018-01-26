@@ -11,20 +11,20 @@ MEDUSA.home.snatchSelection = function() {
 
     // Adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
-        var height = $('#summary').height() + 10;
-        var top = $('#summary').offset().top + 5;
+        const height = $('#summary').height() + 10;
+        const top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({ top: top, left: 0 });
+        $('#summaryBackground').offset({ top, left: 0 });
         $('#summaryBackground').show();
     }
 
-    $(window).resize(function() {
+    $(window).resize(() => {
         moveSummaryBackground();
     });
 
-    var updateSpinner = function(message, showSpinner) {
+    const updateSpinner = function(message, showSpinner) {
         // Get spinner object as needed
-        var spinner = $('#searchNotification');
+        const spinner = $('#searchNotification');
         if (showSpinner) {
             message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
@@ -35,14 +35,14 @@ MEDUSA.home.snatchSelection = function() {
     // data-history-toggle-hidden
     function toggleHistoryTable() {
         // Get previous state which was saved on the wrapper
-        var showOrHide = $('#wrapper').attr('data-history-toggle');
+        const showOrHide = $('#wrapper').attr('data-history-toggle');
         $('#historydata').collapse(showOrHide);
     }
 
     $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
         updateSpinner(loadingTxt);
         $('#manualSearchMeta').load(path + ' #manualSearchMeta meta');
-        $(this).load(path + ' #manualSearchTbody tr', function(response, status) {
+        $(this).load(path + ' #manualSearchTbody tr', (response, status) => {
             if (status === 'error') {
                 updateSpinner(errorTxt, false);
             }
@@ -55,9 +55,9 @@ MEDUSA.home.snatchSelection = function() {
     // Click event for the download button for snatching a result
     $('body').on('click', '.epManualSearch', function(event) {
         event.preventDefault();
-        var link = this;
+        const link = this;
         $(link).children('img').prop('src', 'images/loading16.gif');
-        $.getJSON(this.href, function(data) {
+        $.getJSON(this.href, data => {
             if (data.result === 'success') {
                 $(link).children('img').prop('src', 'images/save.png');
             } else {
@@ -67,7 +67,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $.fn.generateStars = function() {
-        return this.each(function(i, e) {
+        return this.each((i, e) => {
             $(e).html($('<span/>').width($(e).text() * 12));
         });
     };
@@ -88,7 +88,7 @@ MEDUSA.home.snatchSelection = function() {
             textExtraction: (function() {
                 return {
                     // 6: The size column needs an explicit field for the filtering on raw size.
-                    6: function(node) {
+                    6(node) {
                         return node.getAttribute('data-size');
                     }
                 };
@@ -127,7 +127,7 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         if (!$.isNumeric(seriesId) || !$.isNumeric(season) || !$.isNumeric(episode)) {
-            setTimeout(function() {
+            setTimeout(() => {
                 checkCacheUpdates(true);
             }, 200);
         }
@@ -144,20 +144,20 @@ MEDUSA.home.snatchSelection = function() {
         $.ajax({
             url: 'home/manualSearchCheckCache' + urlParams,
             type: 'GET',
-            data: data,
+            data,
             contentType: 'application/json',
-            error: function() {
+            error() {
                 // Repeat = false;
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
-            complete: function() {
+            complete() {
                 if (repeat) {
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
             },
             timeout: 15000 // Timeout after 15s
-        }).done(function(data) {
+        }).done(data => {
             // @TODO: Combine the lower if statements
             if (data === '') {
                 updateSpinner('Search finished', false);
@@ -226,13 +226,13 @@ MEDUSA.home.snatchSelection = function() {
             $.getJSON('home/snatchSelection', {
                 indexername: indexerName,
                 seriesid: seriesId,
-                season: season,
-                episode: episode,
+                season,
+                episode,
                 manual_search_type: manualSearchType, // eslint-disable-line camelcase
                 perform_search: forceSearch // eslint-disable-line camelcase
             });
             // Force the search, but give the checkCacheUpdates the time to start up a search thread
-            setTimeout(function() {
+            setTimeout(() => {
                 checkCacheUpdates(true);
             }, 2000);
         }
@@ -245,31 +245,31 @@ MEDUSA.home.snatchSelection = function() {
         placement: 'bottom',
         html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
-    $('#btnReset').click(function() {
+    $('#btnReset').click(() => {
         $('#showTable')
         .trigger('saveSortReset') // Clear saved sort
         .trigger('sortReset');    // Reset current table sort
         return false;
     });
 
-    $(function() {
+    $(() => {
         initTableSorter('#srchresults');
         moveSummaryBackground();
-        $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
+        $('body').on('hide.bs.collapse', '.collapse.toggle', () => {
             $('#showhistory').text('Show History');
             $('#wrapper').prop('data-history-toggle', 'hide');
         });
-        $('body').on('show.bs.collapse', '.collapse.toggle', function() {
+        $('body').on('show.bs.collapse', '.collapse.toggle', () => {
             $('#showhistory').text('Hide History');
             $('#wrapper').prop('data-history-toggle', 'show');
         });
     });
 
-    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', function(el) {
+    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', el => {
         const target = $(el.currentTarget);
 
         if (target.hasClass('release-name-ellipses')) {

@@ -1,22 +1,22 @@
 MEDUSA.config.backupRestore = function() {
-    $('#Backup').on('click', function() {
+    $('#Backup').on('click', () => {
         $('#Backup').prop('disabled', true);
         $('#Backup-result').html(MEDUSA.config.loading);
-        var backupDir = $('#backupDir').val();
+        const backupDir = $('#backupDir').val();
         $.get('config/backuprestore/backup', {
-            backupDir: backupDir
-        }).done(function(data) {
+            backupDir
+        }).done(data => {
             $('#Backup-result').html(data);
             $('#Backup').prop('disabled', false);
         });
     });
-    $('#Restore').on('click', function() {
+    $('#Restore').on('click', () => {
         $('#Restore').prop('disabled', true);
         $('#Restore-result').html(MEDUSA.config.loading);
-        var backupFile = $('#backupFile').val();
+        const backupFile = $('#backupFile').val();
         $.get('config/backuprestore/restore', {
-            backupFile: backupFile
-        }).done(function(data) {
+            backupFile
+        }).done(data => {
             $('#Restore-result').html(data);
             $('#Restore').prop('disabled', false);
         });

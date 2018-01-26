@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import Vuex from 'vuex'; // eslint-disable-line import/no-unresolved
 
 // Import translations
 import enUs from './translations/en-us';

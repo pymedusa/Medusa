@@ -16,8 +16,7 @@
     # pick a random series to show as background
     random_show = choice(app.showList) if app.showList else None
 %>
-<input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
-<input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+<input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
 
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
@@ -94,7 +93,23 @@
 
 <div class="row">
     <div class="col-md-12">
-       <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+        % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
+        <!-- Split in tabs -->
+        <div id="showTabs">
+            <!-- Nav tabs -->
+            <ul>
+                % for cur_show_list in show_lists:
+                    <li><a href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</a></li>
+                % endfor
+            </ul>
+            <!-- Tab panes -->
+            <div id="showTabPanes">
+                <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+            </div><!-- #showTabPanes -->
+        </div> <!-- #showTabs -->
+        % else:
+        <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+        % endif
     </div>
 </div>
 </%block>

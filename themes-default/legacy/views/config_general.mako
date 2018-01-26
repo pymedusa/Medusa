@@ -255,7 +255,7 @@
                                 <span class="component-desc">
                                     <select id="theme_name" name="theme_name" class="form-control input-sm">
                                         % for theme in app.AVAILABLE_THEMES:
-                                            <option value="${theme.name}" ${('', 'selected="selected"')[theme == app.THEME_NAME]}>${theme.name} (v${theme.version})</option>
+                                            <option value="${theme.name}" ${('', 'selected="selected"')[theme.name == app.THEME_NAME]}>${theme.name} (v${theme.version})</option>
                                         % endfor
                                     </select>
                                 </span>

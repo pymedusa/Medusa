@@ -1,10 +1,10 @@
 $(document).ready(function() {
     $('.submitMassEdit').on('click', function() {
-        var editArr = [];
+        let editArr = [];
 
         $('.editCheck').each(function() {
             if (this.checked === true) {
-                editArr.push($(this).attr('id').split('-')[1]);
+                editArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
@@ -30,34 +30,44 @@ $(document).ready(function() {
         var deleteArr = [];
         var removeArr = [];
         var metadataArr = [];
+        var imageUpdateArr = [];
+
+        const indexerName = $(this).attr('data-indexer-name');
+        const seriesId = $(this).attr('data-series-id');
 
         $('.updateCheck').each(function() {
             if (this.checked === true) {
-                updateArr.push($(this).attr('id').split('-')[1]);
+                updateArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
         $('.refreshCheck').each(function() {
             if (this.checked === true) {
-                refreshArr.push($(this).attr('id').split('-')[1]);
+                refreshArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
         $('.renameCheck').each(function() {
             if (this.checked === true) {
-                renameArr.push($(this).attr('id').split('-')[1]);
+                renameArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
         $('.subtitleCheck').each(function() {
             if (this.checked === true) {
-                subtitleArr.push($(this).attr('id').split('-')[1]);
+                subtitleArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
         $('.removeCheck').each(function() {
             if (this.checked === true) {
-                removeArr.push($(this).attr('id').split('-')[1]);
+                removeArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+            }
+        });
+
+        $('.imageCheck').each(function() {
+            if (this.checked === true) {
+                imageUpdateArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
             }
         });
 
@@ -69,7 +79,7 @@ $(document).ready(function() {
             }
         });
 
-        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
+        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr, imageUpdateArr]).length; // eslint-disable-line no-useless-call
 
         if (deleteCount >= 1) {
             $.confirm({
@@ -82,7 +92,7 @@ $(document).ready(function() {
                 confirm: function() {
                     $('.deleteCheck').each(function() {
                         if (this.checked === true) {
-                            deleteArr.push($(this).attr('id').split('-')[1]);
+                            deleteArr.push(`${indexerName}${seriesId}`);
                         }
                     });
                     if (totalCount === 0) {
@@ -95,7 +105,8 @@ $(document).ready(function() {
                         toSubtitle: subtitleArr.join('|'),
                         toDelete: deleteArr.join('|'),
                         toRemove: removeArr.join('|'),
-                        toMetadata: metadataArr.join('|')
+                        toMetadata: metadataArr.join('|'),
+                        toImageUpdate: imageUpdateArr.join('|')
                     });
 
                     window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
@@ -106,17 +117,17 @@ $(document).ready(function() {
         if (totalCount === 0) {
             return false;
         }
-        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length + imageUpdateArr.length === 0) {
             return false;
         }
         const url = $('base').attr('href') + 'manage/massUpdate';
-        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|');
+        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
         $.post(url, params, function() {
             location.reload(true);
         });
     });
 
-    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(function(name) {
         var lastCheck = null;
 
         $(name).on('click', function(event) {

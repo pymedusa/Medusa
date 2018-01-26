@@ -1,14 +1,14 @@
-var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-vars
-    var subtitlesTd;
-    var selectedEpisode;
-    var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
-    var subtitlesResultModal = $('#manualSubtitleSearchModal');
-    var subtitlesMulti = MEDUSA.config.subtitlesMulti;
-    var loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
+const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-vars
+    let subtitlesTd;
+    let selectedEpisode;
+    const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
+    const subtitlesResultModal = $('#manualSubtitleSearchModal');
+    const subtitlesMulti = MEDUSA.config.subtitlesMulti;
+    const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
-        $.each(searchTypesList, function(index, searchTypes) {
+        $.each(searchTypesList, (index, searchTypes) => {
             $(searchTypes).css({
                 'pointer-events': 'none'
             });
@@ -17,7 +17,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
 
     function enableAllSearches() {
         // Enabled all other searches while manual searching for subtitles
-        $.each(searchTypesList, function(index, searchTypes) {
+        $.each(searchTypesList, (index, searchTypes) => {
             $(searchTypes).css({
                 'pointer-events': 'auto'
             });
@@ -37,7 +37,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
         }));
     }
 
-    subtitlesResultModal.on('hidden.bs.modal', function() {
+    subtitlesResultModal.on('hidden.bs.modal', () => {
         // If user close manual subtitle search modal, enable again all searches
         enableAllSearches();
     });
@@ -63,22 +63,22 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
         // @TODO: move this to a more specific selector
         $(document).on('click', '#pickSub', function(e) {
             e.preventDefault();
-            var subtitlePicked = $(this);
+            const subtitlePicked = $(this);
             changeImage(subtitlePicked, loadingSpinner, 'loading', 'loading', 16, true);
-            var subtitleID = subtitlePicked.attr('subtitleID');
+            let subtitleID = subtitlePicked.attr('subtitleID');
             // Remove 'subtitleid-' so we know the actual ID
             subtitleID = subtitleID.replace('subtitleid-', '');
-            var url = selectedEpisode.prop('href');
+            let url = selectedEpisode.prop('href');
             url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
             // Append the ID param that 'manual_search_subtitles' expect when picking subtitles
             url += '&picked_id=' + encodeURIComponent(subtitleID);
-            $.getJSON(url, function(data) {
+            $.getJSON(url, data => {
                 // If user click to close the window before subtitle download finishes, show again the modal
                 if ((subtitlesResultModal.is(':visible')) === false) {
                     subtitlesResultModal.modal('show');
                 }
                 if (data.result === 'success') {
-                    var language = data.subtitles;
+                    const language = data.subtitles;
                     changeImage(subtitlePicked, 'images/yes16.png', 'subtitle saved', 'subtitle saved', 16, true);
                     if ($('table#releasesPP').length > 0) {
                         // Removes the release as we downloaded the subtitle
@@ -87,8 +87,8 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
                     } else {
                         // Update the subtitles column with new informations
                         if (subtitlesMulti === true) { // eslint-disable-line no-lonely-if
-                            var hasLang = false;
-                            var lang = language;
+                            let hasLang = false;
+                            const lang = language;
                             subtitlesTd.children().children().each(function() {
                                 // Check if user already have this subtitle language
                                 if ($(this).attr('alt').indexOf(lang) !== -1) {
@@ -122,54 +122,54 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
         function searchSubtitles() {
             disableAllSearches();
             changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
-            var url = selectedEpisode.prop('href');
+            let url = selectedEpisode.prop('href');
             // If manual search, replace handler
             url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
-            $.getJSON(url, function(data) {
+            $.getJSON(url, data => {
                 // Delete existing rows in the modal
-                var existingRows = $('#subtitle_results tr').length;
+                const existingRows = $('#subtitle_results tr').length;
                 if (existingRows > 1) {
-                    for (var x = existingRows - 1; x > 0; x--) {
+                    for (let x = existingRows - 1; x > 0; x--) {
                         $('#subtitle_results tr').eq(x).remove();
                     }
                 }
                 // Add the release to the modal title
                 $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
                 if (data.result === 'success') {
-                    $.each(data.subtitles, function(index, subtitle) {
+                    $.each(data.subtitles, (index, subtitle) => {
                         // For each subtitle found create the row string and append to the modal
-                        var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
-                        var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-                        var missingGuess = '';
-                        for (var i = 0; i < subtitle.missing_guess.length; i++) {
-                            var value = subtitle.missing_guess[i];
+                        const provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
+                        const flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
+                        let missingGuess = '';
+                        for (let i = 0; i < subtitle.missing_guess.length; i++) {
+                            let value = subtitle.missing_guess[i];
                             if (missingGuess) {
                                 missingGuess += ', ';
                             }
                             value = value.charAt(0).toUpperCase() + value.slice(1);
-                            missingGuess += value.replace(/(_[a-z])/g, function($1) {
+                            missingGuess += value.replace(/(_[a-z])/g, $1 => {
                                 return $1.toUpperCase().replace('_', ' ');
                             });
                         }
-                        var subtitleScore = subtitle.score;
-                        var subtitleName = subtitle.filename.substring(0, 99);
+                        let subtitleScore = subtitle.score;
+                        const subtitleName = subtitle.filename.substring(0, 99);
                         // If hash match, don't show missingGuess
                         if (subtitle.sub_score >= subtitle.max_score) {
                             missingGuess = '';
                         }
                         // If perfect match, add a checkmark next to subtitle filename
-                        var checkmark = '';
+                        let checkmark = '';
                         if (subtitle.sub_score >= subtitle.min_score) {
                             checkmark = '<img src="images/save.png" width="16" height="16"/>';
                         }
-                        var subtitleLink = '<a href="#" id="pickSub" title="Download subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
+                        const subtitleLink = '<a href="#" id="pickSub" title="Download subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
                         // Make subtitle score always between 0 and 10
                         if (subtitleScore > 10) {
                             subtitleScore = 10;
                         } else if (subtitleScore < 0) {
                             subtitleScore = 0;
                         }
-                        var row = '<tr style="font-size: 95%;">' +
+                        const row = '<tr style="font-size: 95%;">' +
                                   '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
                                   '<td>' + flag + '</td>' +
                                   '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitleScore + '</td>' +
@@ -199,13 +199,13 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
         function forcedSearch() {
             disableAllSearches();
             changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
-            var url = selectedEpisode.prop('href');
-            $.getJSON(url, function(data) {
+            const url = selectedEpisode.prop('href');
+            $.getJSON(url, data => {
                 if (data.result.toLowerCase() === 'success') {
                     // Clear and update the subtitles column with new informations
-                    var subtitles = data.subtitles.split(',');
+                    const subtitles = data.subtitles.split(',');
                     subtitlesTd.empty();
-                    $.each(subtitles, function(index, language) {
+                    $.each(subtitles, (index, language) => {
                         if (language !== '') {
                             if (index !== subtitles.length - 1) { // eslint-disable-line no-negated-condition
                                 changeImage(subtitlesTd, '', language, language, 11, true);
@@ -225,9 +225,9 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
 
     $.fn.ajaxEpMergeSubtitles = function() {
         $('.epMergeSubtitles').on('click', function() {
-            var subtitlesMergeLink = $(this);
+            const subtitlesMergeLink = $(this);
             changeImage(subtitlesMergeLink, loadingSpinner, 'loading', 'loading', 16, true);
-            $.getJSON($(this).attr('href'), function() {
+            $.getJSON($(this).attr('href'), () => {
                 // Don't allow other merges
                 subtitlesMergeLink.remove();
             });
@@ -243,18 +243,18 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
             $('#confirmSubtitleReDownloadModal').modal('show');
         });
 
-        $('#confirmSubtitleReDownloadModal .btn.btn-success').on('click', function() {
+        $('#confirmSubtitleReDownloadModal .btn.btn-success').on('click', () => {
             redownloadSubtitles();
         });
 
         function redownloadSubtitles() {
             disableAllSearches();
-            var url = selectedEpisode.prop('href');
-            var downloading = 'Re-downloading subtitle';
-            var failed = 'Re-downloaded subtitle failed';
-            var downloaded = 'Re-downloaded subtitle succeeded';
+            const url = selectedEpisode.prop('href');
+            const downloading = 'Re-downloading subtitle';
+            const failed = 'Re-downloaded subtitle failed';
+            const downloaded = 'Re-downloaded subtitle succeeded';
             changeImage(selectedEpisode, loadingSpinner, downloading, downloading, 16, true);
-            $.getJSON(url, function(data) {
+            $.getJSON(url, data => {
                 if (data.result.toLowerCase() === 'success' && data.new_subtitles.length > 0) {
                     changeImage(selectedEpisode, 'images/save.png', downloaded, downloaded, 16, true);
                 } else {

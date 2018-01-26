@@ -84,7 +84,7 @@ $.fn.extend({
 
 var triggerConfigLoaded = function() {
     // Create the event.
-    var event = new CustomEvent('build', {detail: 'medusa config loaded'});
+    var event = new CustomEvent('build', { detail: 'medusa config loaded' });
     event.initEvent('build', true, true);
     // Trigger the event.
     document.dispatchEvent(event);
@@ -134,11 +134,11 @@ var iconUrl = 'images/ico/favicon-120.png';
 PNotify.prototype.options.addclass = 'stack-bottomright';
 PNotify.prototype.options.buttons.closer_hover = !1; // eslint-disable-line camelcase
 PNotify.prototype.options.delay = 5000;
-PNotify.prototype.options.desktop = {desktop: !0, icon: iconUrl};
+PNotify.prototype.options.desktop = { desktop: !0, icon: iconUrl };
 PNotify.prototype.options.hide = !0;
 PNotify.prototype.options.history = !1;
 PNotify.prototype.options.shadow = !1;
-PNotify.prototype.options.stack = {dir1: 'up', dir2: 'left', firstpos1: 25, firstpos2: 25};
+PNotify.prototype.options.stack = { dir1: 'up', dir2: 'left', firstpos1: 25, firstpos2: 25 };
 PNotify.prototype.options.styling = 'jqueryui';
 PNotify.prototype.options.width = '340px';
 PNotify.desktop.permission();

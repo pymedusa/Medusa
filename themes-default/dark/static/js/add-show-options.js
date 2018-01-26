@@ -1,11 +1,11 @@
-$(document).ready(function() {
+$(document).ready(() => {
     $('#saveDefaultsButton').on('click', function() {
-        var anyQualArray = [];
-        var bestQualArray = [];
-        $('#allowed_qualities option:selected').each(function(i, d) {
+        const anyQualArray = [];
+        const bestQualArray = [];
+        $('#allowed_qualities option:selected').each((i, d) => {
             anyQualArray.push($(d).val());
         });
-        $('#preferred_qualities option:selected').each(function(i, d) {
+        $('#preferred_qualities option:selected').each((i, d) => {
             bestQualArray.push($(d).val());
         });
 
@@ -29,11 +29,11 @@ $(document).ready(function() {
         });
     });
 
-    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
+    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 
-    $('#qualityPreset').on('change', function() {
+    $('#qualityPreset').on('change', () => {
         // Fix issue #181 - force re-render to correct the height of the outer div
         $('span.prev').click();
         $('span.next').click();

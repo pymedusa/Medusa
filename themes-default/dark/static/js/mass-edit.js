@@ -1,6 +1,6 @@
-$(document).ready(function() {
+$(document).ready(() => {
     function findDirIndex(which) {
-        var dirParts = which.split('_');
+        const dirParts = which.split('_');
         return dirParts[dirParts.length - 1];
     }
 
@@ -10,22 +10,22 @@ $(document).ready(function() {
     }
 
     $('.new_root_dir').on('change', function() {
-        var curIndex = findDirIndex($(this).attr('id'));
+        const curIndex = findDirIndex($(this).attr('id'));
         $('#display_new_root_dir_' + curIndex).html('<b>' + $(this).val() + '</b>');
     });
 
     $('.edit_root_dir').on('click', function(event) {
         event.preventDefault();
-        var curIndex = findDirIndex($(this).attr('id'));
-        var initialDir = $('#new_root_dir_' + curIndex).val();
+        const curIndex = findDirIndex($(this).attr('id'));
+        const initialDir = $('#new_root_dir_' + curIndex).val();
         $(this).nFileBrowser(editRootDir, {
-            initialDir: initialDir,
+            initialDir,
             whichId: curIndex
         });
     });
 
     $('.delete_root_dir').on('click', function() {
-        var curIndex = findDirIndex($(this).attr('id'));
+        const curIndex = findDirIndex($(this).attr('id'));
         $('#new_root_dir_' + curIndex).val(null);
         $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
     });

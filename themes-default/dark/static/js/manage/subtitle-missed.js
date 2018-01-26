@@ -1,16 +1,16 @@
 MEDUSA.manage.subtitleMissed = function() {
     $('.allCheck').on('click', function() {
-        var seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
+        const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
         $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        var indexerId = $(this).attr('data-indexer-id');
-        var seriesId = $(this).attr('data-series-id');
-        var checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
-        var lastRow = $('tr#' + indexerId + '-' + seriesId);
-        var clicked = $(this).data('clicked');
-        var action = $(this).attr('value');
+        const indexerId = $(this).attr('data-indexer-id');
+        const seriesId = $(this).attr('data-series-id');
+        const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
+        const lastRow = $('tr#' + indexerId + '-' + seriesId);
+        const clicked = $(this).data('clicked');
+        const action = $(this).attr('value');
 
         if (clicked) {
             if (action === 'Collapse') {
@@ -25,9 +25,9 @@ MEDUSA.manage.subtitleMissed = function() {
                 indexer: indexerId, // eslint-disable-line camelcase
                 seriesid: seriesId, // eslint-disable-line camelcase
                 whichSubs: $('#selectSubLang').val()
-            }, function(data) {
-                $.each(data, function(season, eps) {
-                    $.each(eps, function(episode, data) {
+            }, data => {
+                $.each(data, (season, eps) => {
+                    $.each(eps, (episode, data) => {
                         lastRow.after($.makeSubtitleRow(indexerId, seriesId, season, episode, data.name, data.subtitles, checked));
                     });
                 });
@@ -38,7 +38,7 @@ MEDUSA.manage.subtitleMissed = function() {
     });
 
     // Selects all visible episode checkboxes.
-    $('.selectAllShows').on('click', function() {
+    $('.selectAllShows').on('click', () => {
         $('.allCheck').each(function() {
             this.checked = true;
         });
@@ -48,7 +48,7 @@ MEDUSA.manage.subtitleMissed = function() {
     });
 
     // Clears all visible episode checkboxes and the season selectors
-    $('.unselectAllShows').on('click', function() {
+    $('.unselectAllShows').on('click', () => {
         $('.allCheck').each(function() {
             this.checked = false;
         });
