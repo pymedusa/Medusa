@@ -80,6 +80,8 @@ lib/unrar2/UnRAR.exe
 .coverage*
 .cache
 htmlcov
+xo-errors.log
+yarn-error.log
 
 # Contrib #
 ######################
