@@ -131,10 +131,10 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # web root
         if self.options['web_root']:
-            app.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
+            app.WEB_ROOT = self.options['web_root'] = clean_url_path(self.options['web_root'])
 
         # Configure root to selected theme.
-        app.THEME_PATH = self.options['theme_path'] = clean_url_path(app.WEB_ROOT, app.THEME_NAME)
+        app.WEB_ROOT = self.options['theme_path'] = clean_url_path(app.WEB_ROOT)
 
         # Configure the directory to the theme's data root.
         app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME_NAME)

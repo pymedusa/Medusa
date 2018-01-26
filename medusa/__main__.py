@@ -405,7 +405,7 @@ class Application(object):
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
-            Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.THEME_PATH)
+            Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
 
         # main loop
         while app.started:

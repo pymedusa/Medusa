@@ -10,6 +10,7 @@ MEDUSA.config.index = function() {
                 name: $(this).val()
             }
         }).then(function(response) {
+            alert('To properly finalize the switch to the new theme, please restart Medusa.');
             log.info(response);
             window.location.reload();
         }).catch(function(err) {

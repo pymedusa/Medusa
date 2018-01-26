@@ -105,7 +105,7 @@ class PageTemplate(MakoTemplate):
             'toolsBadge': '',
             'toolsBadgeClass': '',
             'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.THEME_PATH + '/',
+            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
             'realpage': '',
         }
 
@@ -176,8 +176,8 @@ class BaseHandler(RequestHandler):
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
-            if app.THEME_PATH and self.request.uri.startswith(app.THEME_PATH):
-                url = url[len(app.THEME_PATH) + 1:]
+            if app.WEB_ROOT and self.request.uri.startswith(app.WEB_ROOT):
+                url = url[len(app.WEB_ROOT) + 1:]
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
@@ -207,7 +207,7 @@ class BaseHandler(RequestHandler):
                         <button onclick="window.location='{root}/errorlogs/';">View Log(Errors)</button>
                      </body>
                 </html>
-                """.format(title=error, error=error, trace=trace_info, request=request_info, root=app.THEME_PATH)
+                """.format(title=error, error=error, trace=trace_info, request=request_info, root=app.WEB_ROOT)
             )
 
     def redirect(self, url, permanent=False, status=None):
@@ -221,8 +221,8 @@ class BaseHandler(RequestHandler):
         (temporary) is chosen based on the ``permanent`` argument.
         The default is 302 (temporary).
         """
-        if not url.startswith(app.THEME_PATH):
-            url = app.THEME_PATH + url
+        if not url.startswith(app.WEB_ROOT):
+            url = app.WEB_ROOT + url
 
         if self._headers_written:
             raise Exception('Cannot redirect after headers have been written')
