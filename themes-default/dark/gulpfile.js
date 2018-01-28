@@ -59,6 +59,17 @@ const rootFiles = [
  * @param {*} theme name passed by yargs.
  */
 const getCssTheme = theme => {
+    // Using the --csstheme is mandatory.
+    if (argv.csstheme === undefined) {
+        console.log('You need to pass a csstheme to build with the param --csstheme');
+        process.exit(1);
+    }
+
+    // Check if the theme provided is available in the package.json config.
+    if (!config.cssThemes[theme]) {
+        console.log(`Please provide a valid theme with the --cssTheme parameter, theme ${theme} is not available in the package.json config section.`);
+        process.exit(1);
+    }
     return config.cssThemes[theme];
 };
 
@@ -75,10 +86,7 @@ gulp.task('default', ['build']);
 gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
-    if (argv.csstheme === undefined) {
-        console.log('You need to pass a csstheme to build with the param --csstheme \'theme name\'');
-        process.exit(1);
-    }
+    
     runSequence('lint', ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'vue', 'root'], async () => {
         if (!PROD) {
             done();
