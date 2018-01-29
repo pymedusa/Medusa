@@ -1224,7 +1224,7 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
 def request_defaults(**kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
-    verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
+    verify = certifi.where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
     # request session proxies
     if app.PROXY_SETTING:
