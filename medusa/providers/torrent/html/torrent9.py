@@ -32,7 +32,7 @@ class Torrent9Provider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.torrents9.pe'
+        self.url = 'http://www.torrent9.bz'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
