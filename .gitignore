@@ -51,6 +51,7 @@ Session.vim
 *.ipr
 .settings/*
 **/.vscode/*
+launch.json
 
 # OS generated files #
 ######################
