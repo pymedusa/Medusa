@@ -99,28 +99,28 @@ MEDUSA.home.snatchSelection = function() {
     $('.imdbstars').generateStars();
 
     function checkCacheUpdates(repeat) {
-        const self = this;
-        let pollInterval = 5000;
+        var self = this;
+        var pollInterval = 5000;
         repeat = repeat || true;
 
-        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
-        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
-        const season = $('meta[data-last-prov-updates]').attr('data-season');
-        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
-        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        var indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        var seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        var season = $('meta[data-last-prov-updates]').attr('data-season');
+        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+        var checkParams = [indexerName, seriesId, season, episode].every(function checkIsTrue() {
             return checkIsTrue;
         });
 
         if (!checkParams) {
-            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
-                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            console.log('Something went wrong in getthing the paramaters from dom. indexerName: ' + indexerName + ', seriesId: ' +
+                seriesId + ', season: ' + season + ', episode: ' + episode);
             return;
         }
 
-        let urlParams = '?indexername=' + indexerName + '&seriesid=' + seriesId + '&season=' + season + '&episode=' + episode;
+        var urlParams = '?indexername=' + indexerName + '&seriesid=' + seriesId + '&season=' + season + '&episode=' + episode;
 
         if (manualSearchType === 'season') {
             urlParams += '&manual_search_type=' + manualSearchType;
@@ -134,10 +134,10 @@ MEDUSA.home.snatchSelection = function() {
 
         self.refreshResults = function() {
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection' + urlParams,
-                    'Loading new search results...',
-                    'Time out, refresh page to try again',
-                    toggleHistoryTable // This is a callback function
+                'home/snatchSelection' + urlParams,
+                'Loading new search results...',
+                'Time out, refresh page to try again',
+                toggleHistoryTable // This is a callback function
             );
         };
 
@@ -204,20 +204,20 @@ MEDUSA.home.snatchSelection = function() {
     $('body').on('click', '.manualSearchButton', function(event) {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
-        const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
-        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
-        const season = $('meta[data-last-prov-updates]').attr('data-season');
-        const episode = $('meta[data-last-prov-updates]').attr('data-episode');
-        const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        const forceSearch = $(this).attr('data-force-search');
+        var indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
+        var seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        var season = $('meta[data-last-prov-updates]').attr('data-season');
+        var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+        var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+        var forceSearch = $(this).attr('data-force-search');
 
-        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+        var checkParams = [indexerName, seriesId, season, episode].every(function(checkIsTrue) {
             return checkIsTrue;
         });
 
         if (!checkParams) {
-            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
-                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+            console.log('Something went wrong in getthing the paramaters from dom. indexerName: ' + indexerName + ',seriesId: ' +
+                seriesId + ', season: ' + season + ', episode: ' + episode);
             return;
         }
 
@@ -270,7 +270,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', function(el) {
-        const target = $(el.currentTarget);
+        var target = $(el.currentTarget);
 
         if (target.hasClass('release-name-ellipses')) {
             target.switchClass('release-name-ellipses', 'release-name-ellipses-toggled', 100);

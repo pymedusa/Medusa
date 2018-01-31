@@ -14,7 +14,7 @@ MEDUSA.common.init = function() {
         var seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
 
         if (seriesSlug) {
-            let path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
+            var path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
@@ -37,13 +37,13 @@ MEDUSA.common.init = function() {
      *
      * If scroll bars are visible the fixed left and right buttons become visible on that page.
      */
-    const initHorizontalScroll = function() {
-        const scrollDiv = $('div.horizontal-scroll').get();
+    var initHorizontalScroll = function() {
+        var scrollDiv = $('div.horizontal-scroll').get();
         if (scrollDiv.length === 0) {
             return;
         }
 
-        let scrollbarVisible = scrollDiv.map(function(el) {
+        var scrollbarVisible = scrollDiv.map(function(el) {
             return (el.scrollWidth > el.clientWidth);
         }).indexOf(true);
 

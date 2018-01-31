@@ -34,9 +34,9 @@ var UTIL = {
 
         var body = document.body;
         $('[asset]').each(function() {
-            let asset = $(this).attr('asset');
-            let series = $(this).attr('series');
-            let path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
+            var asset = $(this).attr('asset');
+            var series = $(this).attr('series');
+            var path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
@@ -84,8 +84,11 @@ $.fn.extend({
 
 var triggerConfigLoaded = function() {
     // Create the event.
-    var event = new CustomEvent('build', { detail: 'medusa config loaded' });
-    event.initEvent('build', true, true);
+    var event = document.createEvent('CustomEvent');
+    event.initCustomEvent('build', false, false, {
+        detail: 'medusa config loaded'
+    });
+
     // Trigger the event.
     document.dispatchEvent(event);
 };
@@ -112,7 +115,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map(function(key) {  // eslint-disable-line array-callback-return
+            return Object.keys(MEDUSA.config.indexers.config).map(function(key) { // eslint-disable-line array-callback-return
                 if (MEDUSA.config.indexers.config[key] === name) {
                     return key;
                 }
@@ -158,9 +161,9 @@ function displayPNotify(type, title, message, id) {
 }
 
 function wsCheckNotifications() {
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const webRoot = MEDUSA.config.webRoot || '';
-    const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
+    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var webRoot = MEDUSA.config.webRoot || '';
+    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
@@ -197,10 +200,10 @@ window.addEventListener('build', function(e) {
          * The anchor is rebuild using the indexer name.
          */
         $('[data-indexer-to-name]').each(function(index, target) {
-            const indexerId = $(target).attr('data-indexer-to-name');
-            const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
+            var indexerId = $(target).attr('data-indexer-to-name');
+            var indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
 
-            const re = /indexer-to-name/gi;
+            var re = /indexer-to-name/gi;
 
             $.each(target.attributes, function(index, attr) {
                 if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {

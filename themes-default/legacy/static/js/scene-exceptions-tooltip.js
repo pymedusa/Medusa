@@ -1,7 +1,7 @@
 $(function() {
     $('.title a').each(function() {
-        const indexerName = $(this).parent().attr('data-indexer-name');
-        const seriesId = $(this).parent().attr('data-series-id');
+        var indexerName = $(this).parent().attr('data-indexer-name');
+        var seriesId = $(this).parent().attr('data-series-id');
         $(this).qtip({
             content: {
                 text: 'Loading...',

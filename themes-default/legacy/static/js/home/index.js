@@ -376,8 +376,8 @@ MEDUSA.home.index = function() {
         handle: 'button.move-show-list',
         cancel: '',
         sort: function(event, ui) {
-            const draggedItem = $(ui.item);
-            const margin = 1.5;
+            var draggedItem = $(ui.item);
+            var margin = 1.5;
 
             if (ui.position.top !== ui.originalPosition.top) {
                 if (ui.position.top > ui.originalPosition.top * margin) {
@@ -397,7 +397,7 @@ MEDUSA.home.index = function() {
             }
         },
         update: function(event) {
-            const showListOrder = $(event.target.children).map(function(index, el) {
+            var showListOrder = $(event.target.children).map(function(index, el) {
                 return $(el).data('list');
             });
             api.patch('config/main', {

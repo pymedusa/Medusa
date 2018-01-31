@@ -1,3 +1,4 @@
+/* global alert */
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
@@ -146,9 +147,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     // Handle the show selection dropbox
     $('#select-show').on('change', function(evt) {
-        const selectedOption = evt.currentTarget.selectedOptions[0];
-        const indexerName = $(selectedOption).attr('data-indexer-name');
-        const seriesId = $(selectedOption).attr('data-series-id');
+        var selectedOption = evt.currentTarget.selectedOptions[0];
+        var indexerName = $(selectedOption).attr('data-indexer-name');
+        var seriesId = $(selectedOption).attr('data-series-id');
         if (seriesId === 0 || !indexerName) {
             return;
         }

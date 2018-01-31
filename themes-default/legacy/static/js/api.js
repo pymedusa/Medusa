@@ -1,9 +1,8 @@
-let baseUrl = $('body').attr('api-root');
-let idToken = $('body').attr('api-key');
+var baseUrl = $('body').attr('api-root');
+var idToken = $('body').attr('api-key');
 
-const api = axios.create({ // eslint-disable-line no-unused-vars
+var api = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: baseUrl,
-    timeout: 10000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
