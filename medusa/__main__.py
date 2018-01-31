@@ -84,6 +84,7 @@ from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
+from medusa.themes import read_themes
 from medusa.tv import Series
 
 from six import text_type
@@ -384,7 +385,6 @@ class Application(object):
         self.web_server.start()
 
         # Initialize all available themes
-        from medusa.themes import read_themes
         app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads

@@ -37,7 +37,7 @@ from medusa.server.web import (
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws import MedusaWebSocketHandler
-
+from posixpath import join
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import (
@@ -50,7 +50,7 @@ from tornroutes import route
 
 
 def clean_url_path(*args, **kwargs):
-    from posixpath import join
+    """Make sure we end with a clean route."""
     end_with_slash = kwargs.pop('end_with_slash', False)
     build_path = ''
     for arg in args:

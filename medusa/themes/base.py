@@ -1,5 +1,6 @@
-import logging
+"""Base theme module."""
 import json
+import logging
 import os
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
