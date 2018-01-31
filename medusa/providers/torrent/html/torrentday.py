@@ -142,7 +142,7 @@ class TorrentDayProvider(TorrentProvider):
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if len(torrent_rows) < 3 and 'no torrents found' in torrent_rows[-1].find('td').get_text().lower():
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
@@ -179,7 +179,7 @@ class TorrentDayProvider(TorrentProvider):
                     torrent_size = cells[labels.index('size')].get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = name.find('div').get_text(strip=True).split('|')[1].strip()
+                    pubdate_raw = name.find('div').get_text(strip=True).split('|')[-1].strip()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
