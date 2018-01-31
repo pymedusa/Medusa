@@ -4,7 +4,10 @@
   "name": "dark",
   "author": "p0psicles",
   "scripts": {
-    "build": "cross-env NODE_ENV=production gulp build"
+    "gulp": "gulp",
+    "lint": "gulp lint",
+    "build": "cross-env NODE_ENV=production gulp build",
+    "install": "yarn run lint"
   },
   "config": {
     "cssThemes": {

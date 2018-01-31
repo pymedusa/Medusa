@@ -3,8 +3,6 @@
 const fs = require('fs');
 const path = require('path');
 const gulp = require('gulp');
-const run = require('gulp-run');
-const folders = require('gulp-folders');
 const workDir = process.cwd();
 const pathToFolder = path.join(workDir, 'themes-default');
 const exec = require('child_process').execSync;
@@ -26,7 +24,7 @@ const lintTheme = theme => {
     console.log(`Working dir: ${process.cwd()}`);
     let result;
     try {
-        result = exec('gulp lint', {cwd: theme});
+        result = exec('yarn', {cwd: theme});
         console.log(`Lint errored with: ${result}`);
     } catch (err) {
         console.log(`Lint errored for theme ${theme} with error:\n${err.stdout.toString()}`);
