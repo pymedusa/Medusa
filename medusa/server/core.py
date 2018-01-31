@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import threading
+from posixpath import join
 
 from medusa import (
     app,
@@ -37,7 +38,6 @@ from medusa.server.web import (
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws import MedusaWebSocketHandler
-from posixpath import join
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import (
