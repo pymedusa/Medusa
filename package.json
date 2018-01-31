@@ -10,15 +10,15 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "yarn lint",
+    "test": "yarn run test-css",
     "gulp": "gulp",
     "lint": "gulp lintthemes",
     "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
+    "test-css": "node node_modules/stylelint/bin/stylelint.js ./themes-default/**/static/css/*.css",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "install": "yarn run test"
+    "install": "yarn run lint"
   },
   "devDependencies": {
     "ava": "^0.24.0",
