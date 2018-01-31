@@ -46,7 +46,6 @@
     "gulp-xo": "^0.16.1",
     "imagemin-pngquant": "^5.0.1",
     "jquery": "^3.2.1",
-    "medusa-lib": "0.0.16",
     "nyc": "^11.3.0",
     "postcss-reporter": "^5.0.0",
     "run-sequence": "^2.2.0",
@@ -124,7 +123,6 @@
   },
   "dependencies": {
     "es6-promise": "^4.2.4",
-    "frisbee": "^1.6.4",
     "stylelint": "^7.9.0"
   },
   "ava": {

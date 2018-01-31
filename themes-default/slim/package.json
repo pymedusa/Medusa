@@ -52,7 +52,6 @@
     "gulp-xo": "^0.16.1",
     "imagemin-pngquant": "^5.0.1",
     "jquery": "^3.2.1",
-    "medusa-lib": "0.0.16",
     "nyc": "^11.3.0",
     "postcss-reporter": "^5.0.0",
     "run-sequence": "^2.2.0",
