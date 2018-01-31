@@ -50,6 +50,7 @@ Session.vim
 .idea
 *.ipr
 .settings/*
+**/.vscode/*
 
 # OS generated files #
 ######################
@@ -67,12 +68,13 @@ Thumbs.db
 ######################
 lib/unrar2/UnRAR.exe
 
-# Grunt #
+# Grunt/Gulp/Node build related #
 ######################
 **/bower_components
 **/node_modules
 .build/dist
 .build/package.json
+**/package-lock.json
 
 # Unit test/Coverage #
 ######################

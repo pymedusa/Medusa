@@ -11,13 +11,13 @@
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
     "test": "yarn lint",
-    "lint": "xo --verbose",
+    "gulp": "gulp",
+    "lint": "gulp lintthemes",
     "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt",
     "install": "yarn run test"
   },
   "devDependencies": {
@@ -34,8 +34,12 @@
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-cssmin": "^0.14.0",
     "grunt-contrib-uglify": "^0.11.1",
+    "gulp": "^3.9.1",
+    "gulp-folders": "^1.1.0",
+    "gulp-run": "^1.7.1",
     "load-grunt-tasks": "^3.3.0",
     "nyc": "^11.3.0",
+    "path": "^0.12.7",
     "snyk": "^1.9.1",
     "stylelint-config-standard": "^16.0.0",
     "xo": "^0.17.1"
