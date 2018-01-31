@@ -551,7 +551,7 @@ div.xem {
 
 .show-grid {
     display: none;
-    margin-bottom: 60px!important;
+    margin-bottom: 60px !important;
 }
 
 .nav-show-list {
@@ -946,7 +946,7 @@ ul#rootDirStaticList {
     margin-right: auto;
     margin-left: auto;
     text-align: left;
-    padding-left: 0px;
+    padding-left: 0;
 }
 
 ul#rootDirStaticList li {
@@ -1101,7 +1101,7 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#col-show-summary, container-display-show{
+div#col-show-summary {
     display: table;
 }
 
@@ -2494,6 +2494,7 @@ div.metadataDiv .disabled {
 .icon-notifiers-telegram {
     background-position: -587px 0;
 }
+
 .icon-notifiers-twitter {
     background-position: -624px 0;
 }
@@ -2795,7 +2796,7 @@ div.blackwhitelist.manual {
 }
 
 ul.simpleList {
-    padding-left: 0px;
+    padding-left: 0;
 }
 
 ul.simpleList li {
