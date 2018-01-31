@@ -1,32 +1,35 @@
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
-        var indexerId = $(this).attr('id').split('-')[1];
-        $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));
+        var seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
+        $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        var curIndexerId = $(this).attr('id');
-        var checked = $('#allCheck-' + curIndexerId).prop('checked');
-        var lastRow = $('tr#' + curIndexerId);
+        var indexerId = $(this).attr('data-indexer-id');
+        var indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
+        var seriesId = $(this).attr('data-series-id');
+        var checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
+        var lastRow = $('tr#' + indexerId + '-' + seriesId);
         var clicked = $(this).data('clicked');
         var action = $(this).attr('value');
 
         if (clicked) {
             if (action.toLowerCase() === 'collapse') {
-                $('table tr').filter('.show-' + curIndexerId).hide();
+                $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
                 $(this).prop('value', 'Expand');
             } else if (action.toLowerCase() === 'expand') {
-                $('table tr').filter('.show-' + curIndexerId).show();
+                $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
                 $(this).prop('value', 'Collapse');
             }
         } else {
             $.getJSON('manage/showEpisodeStatuses', {
-                indexer_id: curIndexerId, // eslint-disable-line camelcase
+                indexername: indexerName,
+                seriesid: seriesId, // eslint-disable-line camelcase
                 whichStatus: $('#oldStatus').val()
             }, function(data) {
                 $.each(data, function(season, eps) {
                     $.each(eps, function(episode, name) {
-                        lastRow.after($.makeEpisodeRow(curIndexerId, season, episode, name, checked));
+                        lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
                     });
                 });
             });
@@ -35,7 +38,7 @@ MEDUSA.manage.episodeStatuses = function() {
         }
     });
 
-    // selects all visible episode checkboxes.
+    // Selects all visible episode checkboxes.
     $('.selectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = true;
@@ -45,7 +48,7 @@ MEDUSA.manage.episodeStatuses = function() {
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
+    // Clears all visible episode checkboxes and the season selectors
     $('.unselectAllShows').on('click', function() {
         $('.allCheck').each(function() {
             this.checked = false;

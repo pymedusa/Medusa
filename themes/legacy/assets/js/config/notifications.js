@@ -621,7 +621,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         getPushbulletDevices('Device list updated. Please choose a device to push to.');
     });
 
-    // we have to call this function on dom ready to create the devices select
+    // We have to call this function on dom ready to create the devices select
     getPushbulletDevices();
 
     $('#email_show').on('change', function() {
@@ -701,7 +701,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         });
     });
 
-    // show instructions for plex when enabled
+    // Show instructions for plex when enabled
     $('#use_plex_server').on('click', function() {
         if ($(this).is(':checked')) {
             $('.plexinfo').removeClass('hide');

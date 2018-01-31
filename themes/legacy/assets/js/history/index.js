@@ -3,7 +3,7 @@ MEDUSA.history.index = function() {
         widgets: ['saveSort', 'zebra', 'filter'],
         sortList: [[0, 1]],
         textExtraction: (function() {
-            if ($.isMeta({layout: 'history'}, ['detailed'])) {
+            if ($.isMeta({ layout: 'history' }, ['detailed'])) {
                 return {
                     // 0: Time 1: Episode 2: Action 3: Provider 4: Quality
                     0: function(node) {
@@ -31,14 +31,14 @@ MEDUSA.history.index = function() {
             };
         })(),
         headers: (function() {
-            if ($.isMeta({layout: 'history'}, ['detailed'])) {
+            if ($.isMeta({ layout: 'history' }, ['detailed'])) {
                 return {
-                    0: {sorter: 'realISODate'}
+                    0: { sorter: 'realISODate' }
                 };
             }
             return {
-                0: {sorter: 'realISODate'},
-                2: {sorter: 'text'}
+                0: { sorter: 'realISODate' },
+                2: { sorter: 'text' }
             };
         })()
     });

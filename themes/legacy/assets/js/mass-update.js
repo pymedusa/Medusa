@@ -4,7 +4,7 @@ $(document).ready(function() {
 
         $('.editCheck').each(function() {
             if (this.checked === true) {
-                editArr.push($(this).attr('id').split('-')[1]);
+                editArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
@@ -12,7 +12,7 @@ $(document).ready(function() {
             return;
         }
 
-        const submitForm = $(
+        var submitForm = $(
             '<form method=\'post\' action=\'' + $('base').attr('href') + 'manage/massEdit\'>' +
             '<input type=\'hidden\' name=\'toEdit\' value=\'' + editArr.join('|') + '\'/>' +
             '</form>'
@@ -32,39 +32,42 @@ $(document).ready(function() {
         var metadataArr = [];
         var imageUpdateArr = [];
 
+        var indexerName = $(this).attr('data-indexer-name');
+        var seriesId = $(this).attr('data-series-id');
+
         $('.updateCheck').each(function() {
             if (this.checked === true) {
-                updateArr.push($(this).attr('id').split('-')[1]);
+                updateArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
         $('.refreshCheck').each(function() {
             if (this.checked === true) {
-                refreshArr.push($(this).attr('id').split('-')[1]);
+                refreshArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
         $('.renameCheck').each(function() {
             if (this.checked === true) {
-                renameArr.push($(this).attr('id').split('-')[1]);
+                renameArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
         $('.subtitleCheck').each(function() {
             if (this.checked === true) {
-                subtitleArr.push($(this).attr('id').split('-')[1]);
+                subtitleArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
         $('.removeCheck').each(function() {
             if (this.checked === true) {
-                removeArr.push($(this).attr('id').split('-')[1]);
+                removeArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
         $('.imageCheck').each(function() {
             if (this.checked === true) {
-                imageUpdateArr.push($(this).attr('id').split('-')[1]);
+                imageUpdateArr.push($(this).attr('data-indexer-name') + $(this).attr('data-series-id'));
             }
         });
 
@@ -89,7 +92,7 @@ $(document).ready(function() {
                 confirm: function() {
                     $('.deleteCheck').each(function() {
                         if (this.checked === true) {
-                            deleteArr.push($(this).attr('id').split('-')[1]);
+                            deleteArr.push(indexerName + seriesId);
                         }
                     });
                     if (totalCount === 0) {
@@ -117,8 +120,8 @@ $(document).ready(function() {
         if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length + imageUpdateArr.length === 0) {
             return false;
         }
-        const url = $('base').attr('href') + 'manage/massUpdate';
-        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
+        var url = $('base').attr('href') + 'manage/massUpdate';
+        var params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|') + '&toImageUpdate=' + imageUpdateArr.join('|');
         $.post(url, params, function() {
             location.reload(true);
         });

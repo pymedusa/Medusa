@@ -1,3 +1,4 @@
+/* global alert */
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
@@ -10,12 +11,12 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         movecheckboxControlsBackground();
     });
 
-    // adjust the summary background position and size on page load and resize
+    // Adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $('#summary').height() + 10;
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
-        $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').offset({ top: top, left: 0 });
         $('#summaryBackground').show();
     }
 
@@ -23,7 +24,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var height = $('#checkboxControls').height() + 10;
         var top = $('#checkboxControls').offset().top - 3;
         $('#checkboxControlsBackground').height(height);
-        $('#checkboxControlsBackground').offset({top: top, left: 0});
+        $('#checkboxControlsBackground').offset({ top: top, left: 0 });
         $('#checkboxControlsBackground').show();
     }
 
@@ -49,7 +50,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var id = $('#seasonJump option:selected').val();
         if (id && id !== 'jump') {
             var season = $('#seasonJump option:selected').data('season');
-            $('html,body').animate({scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50}, 'slow');
+            $('html,body').animate({ scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50 }, 'slow');
             $('#collapseSeason-' + season).collapse('show');
             location.hash = id;
         }
@@ -79,7 +80,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?' +
+            'indexername=' + $('#indexer-name').attr('value') +
+            '&seriesid=' + $('#series-id').attr('value') +
+            '&eps=' + epArr.join('|') +
+            '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -120,7 +125,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // selects all visible episode checkboxes.
+    // Selects all visible episode checkboxes.
     $('.seriesCheck').on('click', function() {
         $('.epCheck:visible').each(function() {
             this.checked = true;
@@ -130,7 +135,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
+    // Clears all visible episode checkboxes and the season selectors
     $('.clearAll').on('click', function() {
         $('.epCheck:visible').each(function() {
             this.checked = false;
@@ -140,22 +145,24 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
     });
 
-    // handle the show selection dropbox
-    $('#select-show').on('change', function() {
-        var val = $(this).val();
-        if (val === 0) {
+    // Handle the show selection dropbox
+    $('#select-show').on('change', function(evt) {
+        var selectedOption = evt.currentTarget.selectedOptions[0];
+        var indexerName = $(selectedOption).attr('data-indexer-name');
+        var seriesId = $(selectedOption).attr('data-series-id');
+        if (seriesId === 0 || !indexerName) {
             return;
         }
-        window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
+        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + indexerName + '&seriesid=' + seriesId;
     });
 
-    // show/hide different types of rows when the checkboxes are changed
+    // Show/hide different types of rows when the checkboxes are changed
     $('#checkboxControls input').on('change', function() {
         var whichClass = $(this).attr('id');
         $(this).showHideRows(whichClass);
     });
 
-    // initially show/hide all the rows according to the checkboxes
+    // Initially show/hide all the rows according to the checkboxes
     $('#checkboxControls input').each(function() {
         var status = $(this).prop('checked');
         $('tr.' + $(this).attr('id')).each(function() {
@@ -177,7 +184,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             }
         });
 
-        // hide season headers with no episodes under them
+        // Hide season headers with no episodes under them
         $('tr.seasonheader').each(function() {
             var numRows = 0;
             var seasonNo = $(this).attr('id');
@@ -195,8 +202,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     };
 
     function setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-        var showId = $('#series-id').val();
-        var indexer = $('#indexer').val();
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
 
         if (sceneSeason === '') {
             sceneSeason = null;
@@ -206,8 +213,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }
 
         $.getJSON('home/setSceneNumbering', {
-            show: showId,
-            indexer: indexer,
+            indexername: indexerName,
+            seriesid: seriesId,
             forSeason: forSeason,
             forEpisode: forEpisode,
             sceneSeason: sceneSeason,
@@ -215,9 +222,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }, function(data) {
             // Set the values we get back
             if (data.sceneSeason === null || data.sceneEpisode === null) {
-                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val('');
+                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val('');
             } else {
-                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
             }
             if (!data.success) {
                 if (data.errorMessage) {
@@ -230,24 +237,24 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }
 
     function setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-        var showId = $('#series-id').val();
-        var indexer = $('#indexer').val();
+        var indexerName = $('#indexer-name').val();
+        var seriesId = $('#series-id').val();
 
         if (sceneAbsolute === '') {
             sceneAbsolute = null;
         }
 
         $.getJSON('home/setSceneNumbering', {
-            show: showId,
-            indexer: indexer,
+            indexername: indexerName,
+            seriesid: seriesId,
             forAbsolute: forAbsolute,
             sceneAbsolute: sceneAbsolute
         }, function(data) {
             // Set the values we get back
             if (data.sceneAbsolute === null) {
-                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val('');
+                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val('');
             } else {
-                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val(data.sceneAbsolute);
+                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val(data.sceneAbsolute);
             }
 
             if (!data.success) {
@@ -263,14 +270,14 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     function setInputValidInvalid(valid, el) {
         if (valid) {
             $(el).css({
-                'background-color': '#90EE90', // green
+                'background-color': '#90EE90', // Green
                 'color': '#FFF', // eslint-disable-line quote-props
                 'font-weight': 'bold'
             });
             return true;
         }
         $(el).css({
-            'background-color': '#FF0000', // red
+            'background-color': '#FF0000', // Red
             'color': '#FFF!important', // eslint-disable-line quote-props
             'font-weight': 'bold'
         });
@@ -346,9 +353,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     $('#popover').popover({
         placement: 'bottom',
-        html: true, // required if content has HTML
+        html: true, // Required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // Bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
     });
 
@@ -409,13 +416,12 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
-        indexer: $('input#indexer').val(),
-        indexer_id: $('input#series-id').val() // eslint-disable-line camelcase
+        indexername: $('#indexer-name').val(),
+        seriesid: $('#series-id').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
     });
 
-    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
     $('.display-specials a').on('click', function() {
         api.patch('config/main', {
             layout: {

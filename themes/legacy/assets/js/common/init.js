@@ -14,7 +14,7 @@ MEDUSA.common.init = function() {
         var seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
 
         if (seriesSlug) {
-            let path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
+            var path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
@@ -37,13 +37,13 @@ MEDUSA.common.init = function() {
      *
      * If scroll bars are visible the fixed left and right buttons become visible on that page.
      */
-    const initHorizontalScroll = function() {
-        const scrollDiv = $('div.horizontal-scroll').get();
+    var initHorizontalScroll = function() {
+        var scrollDiv = $('div.horizontal-scroll').get();
         if (scrollDiv.length === 0) {
             return;
         }
 
-        let scrollbarVisible = scrollDiv.map(function(el) {
+        var scrollbarVisible = scrollDiv.map(function(el) {
             return (el.scrollWidth > el.clientWidth);
         }).indexOf(true);
 
@@ -65,7 +65,7 @@ MEDUSA.common.init = function() {
 
     // Scroll Functions
     function scrollTo(dest) {
-        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
+        $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
     }
 
     $('#scroll-left').on('click', function(e) {
@@ -107,7 +107,7 @@ MEDUSA.common.init = function() {
         $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
-    // function to change luminance of #000000 color - used in triggerhighlighting
+    // Function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
@@ -125,7 +125,7 @@ MEDUSA.common.init = function() {
         return rgb;
     }
 
-    // function to convert rgb(0,0,0) into #000000
+    // Function to convert rgb(0,0,0) into #000000
     function rgb2hex(rgb) {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         function hex(x) {
@@ -134,12 +134,12 @@ MEDUSA.common.init = function() {
         return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }
 
-    var revertBackgroundColor; // used to revert back to original background-color after highlight
+    var revertBackgroundColor; // Used to revert back to original background-color after highlight
     $('.triggerhighlight').on('mouseover', function() {
-        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
-        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // setting highlight background-color
+        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // Fetch the original background-color to revert back to
+        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // Setting highlight background-color
     }).on('mouseout', function() {
-        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
+        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
     });
 
     $.rootDirCheck = function() {

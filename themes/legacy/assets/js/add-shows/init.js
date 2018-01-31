@@ -5,7 +5,7 @@ MEDUSA.addShows.init = function() {
     });
 
     var imgLazyLoad = new LazyLoad({
-        // example of options object -> see options section
+        // Example of options object -> see options section
         threshold: 500
     });
 
@@ -23,10 +23,10 @@ MEDUSA.addShows.init = function() {
                     sortCriteria = 'original-order';
                     break;
                 case 'rating':
-                    /* randomise, else the rating_votes can already
+                    /* Randomise, else the rating_votes can already
                      * have sorted leaving this with nothing to do.
                      */
-                    $('#container').isotope({sortBy: 'random'});
+                    $('#container').isotope({ sortBy: 'random' });
                     sortCriteria = 'rating';
                     break;
                 case 'rating_votes':
@@ -85,7 +85,7 @@ MEDUSA.addShows.init = function() {
     };
 
     /*
-     * Blacklist a show by indexer and indexer_id
+     * Blacklist a show by series id.
      */
     $.initBlackListShowById = function() {
         $(document.body).on('click', 'button[data-blacklist-show]', function(e) {
@@ -98,7 +98,7 @@ MEDUSA.addShows.init = function() {
             $(this).html('Blacklisted').prop('disabled', true);
             $(this).parent().find('button[data-add-show]').prop('disabled', true);
 
-            $.get('addShows/addShowToBlacklist?indexer_id=' + $(this).attr('data-indexer-id'));
+            $.get('addShows/addShowToBlacklist?seriesid=' + $(this).attr('data-indexer-id'));
             return false;
         });
     };
@@ -131,10 +131,9 @@ MEDUSA.addShows.init = function() {
             var anime = $('#anime').prop('checked');
             var configureShowOptions = $('#configure_show_options').prop('checked');
 
-            $.get('addShows/addShowByID?indexer_id=' + $(this).attr('data-indexer-id'), {
+            $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
                 root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
                 configure_show_options: configureShowOptions, // eslint-disable-line camelcase
-                indexer: $(this).attr('data-indexer'),
                 show_name: $(this).attr('data-show-name'), // eslint-disable-line camelcase
                 quality_preset: $('#qualityPreset').val(), // eslint-disable-line camelcase
                 default_status: $('#statusSelect').val(), // eslint-disable-line camelcase
@@ -183,7 +182,7 @@ MEDUSA.addShows.init = function() {
         });
 
         $('#qualityPreset').on('change', function() {
-            // fix issue #181 - force re-render to correct the height of the outer div
+            // Fix issue #181 - force re-render to correct the height of the outer div
             $('span.prev').click();
             $('span.next').click();
         });

@@ -51,7 +51,7 @@
                     }
                 })
                 .appendTo(fileBrowserDialog)
-                .fileBrowser({showBrowseButton: false})
+                .fileBrowser({ showBrowseButton: false })
                 .on('autocompleteselect', function(e, ui) {
                     browse(ui.item.value, endpoint, includeFiles);
                 });
@@ -89,7 +89,7 @@
             // The title may change, even if fileBrowserDialog already exists
             fileBrowserDialog.dialog('option', 'title', options.title);
         } else {
-            // make a fileBrowserDialog object if one doesn't exist already
+            // Make a fileBrowserDialog object if one doesn't exist already
             // set up the jquery dialog
             fileBrowserDialog = $('<div class="fileBrowserDialog" style="display:hidden"></div>').appendTo('body').dialog({
                 dialogClass: 'browserDialog',
@@ -112,7 +112,7 @@
             text: 'Ok',
             class: 'btn',
             click: function() {
-                // store the browsed path to the associated text field
+                // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
                 $(this).dialog('close');
             }
@@ -124,7 +124,7 @@
             }
         }]);
 
-        // set up the browser and launch the dialog
+        // Set up the browser and launch the dialog
         var initialDir = '';
         if (options.initialDir) {
             initialDir = options.initialDir;
@@ -138,7 +138,7 @@
 
     $.fn.fileBrowser = function(options) {
         options = $.extend({}, $.Browser.defaults, options);
-        // text field used for the result
+        // Text field used for the result
         options.field = $(this);
 
         if (options.field.autocomplete && options.autocompleteURL) {
@@ -150,14 +150,14 @@
                     collision: 'flipfit'
                 },
                 source: function(request, response) {
-                    // keep track of user submitted search term
+                    // Keep track of user submitted search term
                     query = $.ui.autocomplete.escapeRegex(request.term, options.includeFiles);
                     $.ajax({
                         url: options.autocompleteURL,
                         data: request,
                         dataType: 'json'
                     }).done(function(data) {
-                        // implement a startsWith filter for the results
+                        // Implement a startsWith filter for the results
                         var matcher = new RegExp('^' + query, 'i');
                         var a = $.grep(data, function(item) {
                             return matcher.test(item);
@@ -169,7 +169,7 @@
                     $('.ui-autocomplete li.ui-menu-item a').removeClass('ui-corner-all');
                 }
             }).data('ui-autocomplete')._renderItem = function(ul, item) {
-                // highlight the matched search term from the item -- note that this is global and will match anywhere
+                // Highlight the matched search term from the item -- note that this is global and will match anywhere
                 var resultItem = item.label;
                 var x = new RegExp('(?![^&;]+;)(?!<[^<>]*)(' + query + ')(?![^<>]*>)(?![^&;]+;)', 'gi');
                 resultItem = resultItem.replace(x, function(fullMatch) {
@@ -185,7 +185,7 @@
         var path;
         var callback;
         var ls = false;
-        // if the text field is empty and we're given a key then populate it with the last browsed value from localStorage
+        // If the text field is empty and we're given a key then populate it with the last browsed value from localStorage
         try {
             ls = Boolean(localStorage.getItem);
         } catch (err) {
@@ -199,10 +199,10 @@
         }
 
         callback = function(path, options) {
-            // store the browsed path to the associated text field
+            // Store the browsed path to the associated text field
             options.field.val(path);
 
-            // use a localStorage to remember for next time -- no ie6/7
+            // Use a localStorage to remember for next time -- no ie6/7
             if (ls && options.key) {
                 localStorage['fileBrowser-' + options.key] = path;
             }
@@ -210,11 +210,11 @@
 
         options.field.addClass('fileBrowserField');
         if (options.showBrowseButton) {
-            // append the browse button and give it a click behaviour
+            // Append the browse button and give it a click behaviour
             options.field.after(
                 $('<input type="button" value="Browse&hellip;" class="btn btn-inline fileBrowser">').on('click', function() {
                     var initialDir = options.field.val() || (options.key && path) || '';
-                    var optionsWithInitialDir = $.extend({}, options, {initialDir: initialDir});
+                    var optionsWithInitialDir = $.extend({}, options, { initialDir: initialDir });
                     $(this).nFileBrowser(callback, optionsWithInitialDir);
                     return false;
                 })
