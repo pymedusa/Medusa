@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "yarn lint",
+    "test": "yarn lint && yarn test-api",
     "lint": "xo --verbose",
     "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
