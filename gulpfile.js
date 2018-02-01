@@ -8,7 +8,6 @@ const pathToFolder = path.join(workDir, 'themes-default');
 const execa = require('execa');
 const getStream = require('get-stream');
 const xo = require('gulp-xo');
-const debug = require('gulp-debug');
 
 const build = done => {
     // Place code for your default task here
@@ -50,7 +49,6 @@ const lint = () => {
             '!themes-default/*/static/js/vender.js',
             '!node_modules/**'
         ])
-        .pipe(debug({title: 'linting:'}))
         .pipe(xo())
         .pipe(xo.format())
         .pipe(xo.failAfterError());
