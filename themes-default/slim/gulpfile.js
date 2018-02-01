@@ -17,6 +17,7 @@ const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
 const argv = require('yargs').argv;
 const rename = require('gulp-rename');
+const changed = require('gulp-changed');
 
 // Const postcss = require('gulp-postcss');
 // const sass = require('gulp-sass');
@@ -78,18 +79,20 @@ const setCsstheme = () => {
     }
 };
 
-const watch = () => {
-    livereload.listen({ port: 35729 });
-    gulp.watch('static/img/**/*', ['img']);
-    gulp.watch('static/css/**/*.scss', ['css']);
-    gulp.watch([
-        'static/js/**/*.js',
-        '!static/js/lib/**',
-        '!static/js/*.min.js',
-        '!static/js/vender.js'
-    ], ['js']);
+/**
+ * Run a single js file through the xo linter. The lintFile function is triggered by a gulp.onChange event.
+ * @param {*} file object that has been changed.
+ */
+const lintFile = file => {
+    return gulp
+        .src(file.path)
+        .pipe(xo())
+        .pipe(xo.format());
 };
 
+/**
+ * Run all js files through the xo (eslint) linter.
+ */
 const lint = () => {
     return gulp
         .src([
@@ -99,11 +102,55 @@ const lint = () => {
             '!static/js/vender.js'
         ])
         .pipe(xo())
-        .pipe(xo.format())
+        .pipe(xo.result(result => {
+            // Called for each xo result.
+            console.log(`xo linting: ${result.filePath}`);
+        }))
+        .pipe(xo.format(err => {
+            // This somehow prints the full path, instead of the relative.
+            console.log(err);
+        }))
         .pipe(xo.failAfterError());
 };
 
+const watch = () => {
+    livereload.listen({ port: 35729 });
+    // Image changes
+    gulp.watch([
+        'static/images/**/*.gif',
+        'static/images/**/*.png',
+        'static/images/**/*.jpg'
+    ], ['img']);
+
+    // Css changes
+    gulp.watch([
+        'static/css/**/*.scss',
+        'static/css/**/*.css'
+    ], ['css']);
+
+    // Js Changes
+    gulp.watch([
+        'static/js/**/*.js',
+        '!static/js/lib/**',
+        '!static/js/*.min.js',
+        '!static/js/vender.js'
+    ], ['js'])
+        .on('change', lintFile);
+
+    // Template changes
+    gulp.watch('views/**/*.mako', ['templates']);
+
+    // Vue changes
+    gulp.watch([
+        'vue/**/*.js',
+        'vue/**/*.vue',
+        '!vue/locales',
+        '!vue/test'
+    ], ['vue']);
+};
+
 const bundleJs = done => {
+    const dest = `${buildDest}/assets`;
     glob('js/**/*.js', {
         cwd: 'static',
         ignore: [
@@ -137,7 +184,7 @@ const bundleJs = done => {
                 .pipe(gulpif(PROD, uglify()))
                 .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
                 .pipe(sourcemaps.write('./'))
-                .pipe(gulp.dest(`${buildDest}/assets`))
+                .pipe(gulp.dest(dest))
                 .pipe(gulpif(!PROD, livereload({ port: 35729 })));
         });
 
@@ -148,19 +195,23 @@ const bundleJs = done => {
 };
 
 const moveStatic = () => {
+    const dest = `${buildDest}/assets`;
     return gulp
         .src(staticAssets, {
             base: 'static'
         })
-        .pipe(gulp.dest(`${buildDest}/assets`));
+        .pipe(changed(buildDest))
+        .pipe(gulp.dest(dest));
 };
 
 const moveTemplates = () => {
+    const dest = `${buildDest}/templates`;
     return gulp
         .src('./views/**/*', {
             base: 'views'
         })
-        .pipe(gulp.dest(`${buildDest}/templates`));
+        .pipe(changed(buildDest))
+        .pipe(gulp.dest(dest));
 };
 
 /**
@@ -174,49 +225,57 @@ const rootFiles = [
 const moveRoot = () => {
     return gulp
         .src(rootFiles)
+        .pipe(changed(buildDest))
         .pipe(gulp.dest(buildDest));
 };
 
 const moveImages = () => {
+    const dest = `${buildDest}/assets/img`;
     return gulp
         .src('static/images/**/*', {
             base: 'static/images/'
         })
+        .pipe(changed(dest))
         .pipe(imagemin({
             progressive: true,
             svgoPlugins: [{ removeViewBox: false }, { cleanupIDs: false }],
             use: [pngquant()]
         }))
-        .pipe(gulp.dest(`${buildDest}/assets/img`))
+        .pipe(gulp.dest(dest))
         .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-        .pipe(gulpif(PROD, gulp.dest(`${buildDest}/assets/img`)));
+        .pipe(gulpif(PROD, gulp.dest(dest)));
 };
 
 const moveVue = () => {
+    const dest = `${buildDest}/vue`;
     return gulp
         .src('./vue/**/*')
-        .pipe(gulp.dest(`${buildDest}/vue`));
+        .pipe(changed(dest))
+        .pipe(gulp.dest(dest));
 };
 
 /**
  * Move and rename css.
  */
 const moveCss = () => {
+    const dest = `${buildDest}/assets`;
     return gulp
         .src(['!static/css/light.css', '!static/css/dark.css', 'static/css/**/*.css'], {
             base: 'static'
         })
-        .pipe(gulp.dest(`${buildDest}/assets`));
+        .pipe(changed(dest))
+        .pipe(gulp.dest(dest));
 };
 
 /**
  * Move and rename themed css.
  */
 const moveAndRenameCss = () => {
+    const dest = `${buildDest}/assets/css`;
     return gulp
         .src(`static/css/${cssTheme.css}`)
         .pipe(rename(`themed.css`))
-        .pipe(gulp.dest(`${buildDest}/assets/css`));
+        .pipe(gulp.dest(dest));
 };
 
 /** Gulp tasks */
@@ -249,7 +308,7 @@ gulp.task('build', done => {
 gulp.task('watch', ['build'], watch);
 
 /**
- * Task for compressing and copying images to it's destination. 
+ * Task for compressing and copying images to it's destination.
  * Should save up to 50% of total filesize.
  */
 gulp.task('img', moveImages);

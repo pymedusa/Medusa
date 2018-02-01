@@ -38,6 +38,8 @@
     "event-stream": "^3.3.4",
     "glob": "^7.1.2",
     "gulp": "^3.9.1",
+    "gulp-changed": "^3.2.0",
+    "gulp-changed-in-place": "^2.3.0",
     "gulp-if": "^2.0.2",
     "gulp-imagemin": "^3.4.0",
     "gulp-livereload": "^3.8.1",
