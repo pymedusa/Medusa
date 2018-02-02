@@ -34,6 +34,6 @@ class ShowNetworkLogo(GenericMedia):
         """Get the relative path to the media."""
         series = self.series
         if series:
-            return join(self.get_media_root(), 'images', 'network', series.network_logo_name + '.png')
+            return join(self.get_media_root(), 'img', 'network', series.network_logo_name + '.png')
         else:
             return ''
