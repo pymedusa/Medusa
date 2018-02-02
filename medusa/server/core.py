@@ -56,7 +56,7 @@ def clean_url_path(*args, **kwargs):
     for arg in args:
         build_path = join(build_path.strip('/'), arg.strip('/'))
 
-    build_path = '/' + build_path
+    build_path = '/' + build_path if build_path else ''
 
     if end_with_slash:
         build_path += '/'
