@@ -109,6 +109,7 @@ from requests.compat import (
     quote_plus,
     unquote_plus,
 )
+
 from six import iteritems
 
 from tornroutes import route
@@ -164,7 +165,8 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
+        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
+                        max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
     def show_statistics():
@@ -754,7 +756,8 @@ class Home(WebRoot):
         return {
             'currentBranch': app.BRANCH,
             'resetBranches': app.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches() if branch not in app.GIT_RESET_BRANCHES]
+            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()
+                         if branch not in app.GIT_RESET_BRANCHES]
         }
 
     @staticmethod
@@ -1740,8 +1743,8 @@ class Home(WebRoot):
                 try:
                     main_db_con.action(
                         b'DELETE FROM \'{provider}\' '
-                        b'WHERE indexer = ? AND indexerid = ?'.format(provider=cur_provider.get_id()),
-                        [series_obj.indexer, series_obj.series_id]
+                        b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [series_obj.series_id]
                     )
                 except Exception:
                     logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
