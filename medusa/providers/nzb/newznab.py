@@ -598,7 +598,7 @@ class NewznabProvider(NZBProvider):
             },
             {
                 'name': 'Usenet-Crawler',
-                'url': 'https://www.usenet-crawler.com/',
+                'url': 'https://api.usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,
