@@ -8,14 +8,18 @@ Works with iCloud, Google Calendar and Outlook.
 from __future__ import unicode_literals
 
 import datetime
+import logging
 
 from dateutil import tz
 
-from medusa import app, db, logger, network_timezones
+from medusa import app, db, network_timezones
 from medusa.helper.common import try_int
 from medusa.server.web.core.base import BaseHandler
 
 from tornado.web import authenticated
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class CalendarHandler(BaseHandler):
@@ -43,7 +47,7 @@ class CalendarHandler(BaseHandler):
         """
         Provides a subscribable URL for iCal subscriptions
         """
-        logger.log('Receiving iCal request from {ip}'.format(ip=self.request.remote_ip))
+        log.info('Receiving iCal request from {ip}'.format(ip=self.request.remote_ip))
 
         # Create a iCal string
         ical = 'BEGIN:VCALENDAR\r\n'

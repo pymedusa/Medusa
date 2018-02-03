@@ -2,17 +2,16 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import threading
 
-from medusa import (
-    app,
-    logger,
-)
+from medusa import app
 from medusa.helpers import (
     create_https_certificates,
     generate_api_key,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v1.core import ApiHandler
 from medusa.server.api.v2.alias import AliasHandler
 from medusa.server.api.v2.alias_source import (
@@ -23,7 +22,6 @@ from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
-from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
@@ -48,6 +46,10 @@ from tornado.web import (
 )
 from tornroutes import route
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
+
 
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
@@ -67,9 +69,6 @@ def get_apiv2_handlers(base):
 
         # /api/v2/config
         ConfigHandler.create_app_handler(base),
-
-        # /api/v2/log
-        LogHandler.create_app_handler(base),
 
         # /api/v2/alias-source/xem/operation
         AliasSourceOperationHandler.create_app_handler(base),
@@ -137,12 +136,12 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             if not (self.https_cert and os.path.exists(self.https_cert)) or not (
                     self.https_key and os.path.exists(self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
-                    logger.log('Unable to create CERT/KEY files, disabling HTTPS')
+                    log.info('Unable to create CERT/KEY files, disabling HTTPS')
                     app.ENABLE_HTTPS = False
                     self.enable_https = False
 
             if not (os.path.exists(self.https_cert) and os.path.exists(self.https_key)):
-                logger.log('Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
+                log.warning('Disabled HTTPS because of missing CERT and KEY files')
                 app.ENABLE_HTTPS = False
                 self.enable_https = False
 
@@ -240,19 +239,20 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
-                   (scheme=protocol,
-                    host=self.options['host'],
-                    port=self.options['port'],
-                    web_root=self.options['web_root']))
+        log.info('Starting Medusa {scheme}://{host}:{port}{web_root}/'.format(
+            scheme=protocol,
+            host=self.options['host'],
+            port=self.options['port'],
+            web_root=self.options['web_root'])
+        )
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
             if app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
-                logger.log('Launching browser and exiting')
-            logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
+                log.info('Launching browser and exiting')
+            log.warning('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
             os._exit(1)  # pylint: disable=protected-access
 
         try:

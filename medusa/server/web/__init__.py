@@ -14,7 +14,6 @@ from medusa.server.web.config import (
 from medusa.server.web.core import (
     BaseHandler,
     CalendarHandler,
-    ErrorLogs,
     History,
     KeyHandler,
     LoginHandler,

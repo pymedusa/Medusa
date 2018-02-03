@@ -5,9 +5,10 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import os
 
-from medusa import app, config, logger, providers, ui
+from medusa import app, config, providers, ui
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.providers.generic_provider import GenericProvider
@@ -16,6 +17,9 @@ from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 from tornroutes import route
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/config/providers(/?.*)')
@@ -588,7 +592,7 @@ class ConfigProviders(Config):
 
         if results:
             for x in results:
-                logger.log(x, logger.ERROR)
+                log.error(x)
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:

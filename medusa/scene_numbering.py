@@ -22,13 +22,18 @@
 #
 
 import datetime
+import logging
 import time
 import traceback
 
-from medusa import db, logger
+from medusa import db
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.scene_exceptions import safe_session
+
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
@@ -433,8 +438,8 @@ def xem_refresh(series_obj, force=False):
         refresh = True
 
     if refresh or force:
-        logger.log(
-            u'Looking up XEM scene mapping for show ID {0} on {1}'.format(series_id, series_obj.indexer_name), logger.DEBUG)
+        log.debug(
+            u'Looking up XEM scene mapping for show ID {0} on {1}'.format(series_id, series_obj.indexer_name))
 
         # mark refreshed
         main_db_con.upsert(
@@ -445,20 +450,20 @@ def xem_refresh(series_obj, force=False):
 
         try:
             if not indexerApi(indexer_id).config.get('xem_origin'):
-                logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer_id).name), logger.DEBUG)
+                log.debug(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer_id).name))
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(indexer_id) not in parsed_json['data']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(series_id, series_obj.indexer_name), logger.DEBUG)
+                log.debug(u'No XEM data for show ID {0} on {1}'.format(series_id, series_obj.indexer_name))
                 return
 
             # XEM API URL
             url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, series_obj.indexer_name), logger.DEBUG)
+                log.debug(u'No XEM data for show ID {0} on {1}'.format(indexer_id, series_obj.indexer_name))
                 return
 
             cl = []
@@ -491,9 +496,9 @@ def xem_refresh(series_obj, force=False):
                 main_db_con.mass_action(cl)
 
         except Exception as e:
-            logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
-                       (series_id, series_obj.indexer_name, ex(e)), logger.WARNING)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            log.warning(u"Exception while refreshing XEM data for show ID {0}"
+                        u" on {1}: {2}".format(series_id, series_obj.indexer_name, ex(e)))
+            log.debug(traceback.format_exc())
 
 
 def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
@@ -520,9 +525,7 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
     update_scene_episode = False
     update_scene_absolute_number = False
 
-    logger.log(
-        u'Fixing any XEM scene mapping issues for show ID {0} on {1}'.format(series_obj.series_id, series_obj.indexer_name),
-        logger.DEBUG)
+    log.debug(u'Fixing any XEM scene mapping issues for show ID {0} on {1}'.format(series_obj.series_id, series_obj.indexer_name))
 
     cl = []
     for row in rows:

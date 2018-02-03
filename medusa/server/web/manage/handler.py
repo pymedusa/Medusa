@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import datetime
 import json
+import logging
 import os
 import re
 
@@ -12,7 +13,6 @@ from medusa import (
     db,
     helpers,
     image_cache,
-    logger,
     network_timezones,
     sbdatetime,
     subtitles,
@@ -42,6 +42,9 @@ from medusa.tv import Episode, Series
 from medusa.tv.series import SeriesIdentifier
 
 from tornroutes import route
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/manage(/?.*)')
@@ -320,7 +323,7 @@ class Manage(Home, WebRoot):
                 tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
-                    logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
+                    log.debug(u"Filename '{0}' cannot be parsed to an episode".format(filename))
                     continue
 
                 ep_status = Quality.split_composite_status(tv_episode.status).status
@@ -615,8 +618,7 @@ class Manage(Home, WebRoot):
             cur_show_dir = os.path.basename(series_obj._location)
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
-                logger.log(u'For show {show.name} changing dir from {show._location} to {location}'.format
-                           (show=series_obj, location=new_show_dir))
+                log.info(u'For show {show.name} changing dir from {show._location} to {location}'.format(show=series_obj, location=new_show_dir))
             else:
                 new_show_dir = series_obj._location
 

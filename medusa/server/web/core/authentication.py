@@ -7,12 +7,12 @@ Login, Logout and API key
 
 from __future__ import unicode_literals
 
+import logging
 import traceback
 
 from medusa import (
     app,
     helpers,
-    logger,
     notifiers,
 )
 from medusa.server.web.core.base import (
@@ -21,6 +21,9 @@ from medusa.server.web.core.base import (
 )
 
 from tornado.web import RequestHandler
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class KeyHandler(RequestHandler):
@@ -46,7 +49,7 @@ class KeyHandler(RequestHandler):
 
             self.finish({'success': api_key is not None, 'api_key': api_key})
         except Exception:
-            logger.log('Failed doing key request: {error}'.format(error=traceback.format_exc()), logger.ERROR)
+            log.error('Failed doing key request: {error}'.format(error=traceback.format_exc()))
             self.finish({'success': False, 'error': 'Failed returning results'})
 
 
@@ -84,10 +87,9 @@ class LoginHandler(BaseHandler):
         if api_key:
             remember_me = int(self.get_argument('remember_me', default=0) or 0)
             self.set_secure_cookie(app.SECURE_TOKEN, api_key, expires_days=30 if remember_me else None)
-            logger.log('User logged into the Medusa web interface', logger.INFO)
+            log.info('User logged into the Medusa web interface')
         else:
-            logger.log('User attempted a failed login to the Medusa web interface from IP: {ip}'.format
-                       (ip=self.request.remote_ip), logger.WARNING)
+            log.warning('User attempted a failed login to the Medusa web interface from IP: {ip}'.format(ip=self.request.remote_ip))
 
         redirect_page = self.get_argument('next', None)
         if redirect_page:

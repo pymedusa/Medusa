@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import datetime
 import json
+import logging
 import os
 import re
 import time
@@ -21,7 +22,6 @@ from medusa import (
     db,
     exception_handler,
     helpers,
-    logger,
     network_timezones,
     ui,
 )
@@ -49,6 +49,8 @@ from tornado.web import (
 )
 from tornroutes import route
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 mako_lookup = None
 mako_cache = None
@@ -151,10 +153,8 @@ class PageTemplate(MakoTemplate):
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
-                logger.log(u'File {name}, line {line}, in {func}'.format
-                           (name=filename, line=lineno, func=function), logger.DEBUG)
-            logger.log(u'{name}: {error}'.format
-                       (name=kwargs['backtrace'].error.__class__.__name__, error=kwargs['backtrace'].error))
+                log.debug(u'File {name}, line {line}, in {func}'.format(name=filename, line=lineno, func=function))
+            log.info(u'{name}: {error}'.format(name=kwargs['backtrace'].error.__class__.__name__, error=kwargs['backtrace'].error))
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
 
 
@@ -263,8 +263,7 @@ class WebHandler(BaseHandler):
             self.finish(results)
 
         except Exception:
-            logger.log(u'Failed doing web ui request {route!r}: {error}'.format
-                       (route=route, error=traceback.format_exc()), logger.DEBUG)
+            log.debug(u'Failed doing web ui request {route!r}: {error}'.format(route=route, error=traceback.format_exc()))
             raise HTTPError(404)
 
     @run_on_executor

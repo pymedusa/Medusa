@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import logging
     from medusa import app
     from medusa import classes
-    from medusa.logger import LOGGING_LEVELS
     from random import choice
 %>
 <%block name="css">
@@ -34,23 +34,6 @@ pre {
         <div class="col-md-12 pull-right ">
             <div class="logging-filter-controll pull-right">
                 <!-- Select Loglevel -->
-                <div class="show-option">
-                    <span>Logging level:
-                        <select name="min_level" id="min_level" class="form-control form-control-inline input-sm">
-                            <%
-                                levels = LOGGING_LEVELS.keys()
-                                levels.sort(lambda x, y: cmp(LOGGING_LEVELS[x], LOGGING_LEVELS[y]))
-                                if not app.DEBUG:
-                                    levels.remove('DEBUG')
-                                if not app.DBDEBUG:
-                                    levels.remove('DB')
-                            %>
-                        % for level in levels:
-                            <option value="${LOGGING_LEVELS[level]}" ${('', 'selected="selected"')[min_level == LOGGING_LEVELS[level]]}>${level.title()}</option>
-                        % endfor
-                        </select>
-                    </span>
-                </div>
                 <div class="show-option">
                     <!-- Filter log -->
                     <span>Filter log by:

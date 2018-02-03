@@ -44,7 +44,6 @@ from medusa.helpers.quality import get_quality_string
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
-from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -1180,68 +1179,6 @@ class CMD_Backlog(ApiCall):
                 })
 
         return _responds(RESULT_SUCCESS, shows)
-
-
-class CMD_Logs(ApiCall):
-    _help = {
-        'desc': 'Get the logs',
-        'optionalParameters': {
-            'min_level': {
-                'desc':
-                    'The minimum level classification of log entries to return. '
-                    'Each level inherits its above levels: debug < info < warning < error'
-            },
-        }
-    }
-
-    def __init__(self, args, kwargs):
-        # required
-        # optional
-        self.min_level, args = self.check_params(args, kwargs, 'min_level', 'info', False, 'string',
-                                                 ['error', 'warning', 'info', 'debug'])
-        # super, missing, help
-        ApiCall.__init__(self, args, kwargs)
-
-    def run(self):
-        """ Get the logs """
-        # 10 = Debug / 20 = Info / 30 = Warning / 40 = Error
-        min_level = LOGGING_LEVELS[str(self.min_level).upper()]
-        data = [line for line in read_loglines(formatter=text_type, max_lines=50,
-                                               predicate=lambda l: filter_logline(l, min_level=min_level,
-                                                                                  thread_name=lambda
-                                                                                  name: name != 'TORNADO'))]
-        return _responds(RESULT_SUCCESS, data)
-
-
-class CMD_LogsClear(ApiCall):
-    _help = {
-        'desc': 'Clear the logs',
-        'optionalParameters': {
-            'level': {'desc': 'The level of logs to clear'},
-        },
-    }
-
-    def __init__(self, args, kwargs):
-        # required
-        # optional
-        self.level, args = self.check_params(args, kwargs, 'level', 'warning', False, 'string', ['warning', 'error'])
-        # super, missing, help
-        ApiCall.__init__(self, args, kwargs)
-
-    def run(self):
-        """ Clear the logs """
-        if self.level == 'error':
-            msg = 'Error logs cleared'
-
-            classes.ErrorViewer.clear()
-        elif self.level == 'warning':
-            msg = 'Warning logs cleared'
-
-            classes.WarningViewer.clear()
-        else:
-            return _responds(RESULT_FAILURE, msg='Unknown log level: {0}'.format(self.level))
-
-        return _responds(RESULT_SUCCESS, msg=msg)
 
 
 class CMD_PostProcess(ApiCall):
@@ -2831,8 +2768,6 @@ function_mapper = {
     'history.trim': CMD_HistoryTrim,
     'failed': CMD_Failed,
     'backlog': CMD_Backlog,
-    'logs': CMD_Logs,
-    'logs.clear': CMD_LogsClear,
     'sb': CMD_,
     'postprocess': CMD_PostProcess,
     'sb.addrootdir': CMD_AddRootDir,

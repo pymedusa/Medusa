@@ -12,7 +12,7 @@ __version__ = '1.0'
 
 
 log = logging.getLogger(__name__)
-log.logger.addHandler(logging.NullHandler())
+log.addHandler(logging.NullHandler())
 
 
 class BaseUI(object):

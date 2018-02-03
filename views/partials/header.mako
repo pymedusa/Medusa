@@ -1,7 +1,7 @@
 <%!
     import datetime
     import re
-    from medusa import app, logger
+    from medusa import app
     from medusa.helper.common import pretty_file_size
     from medusa.show.show import Show
     from time import time
@@ -106,12 +106,6 @@
                         <li><a href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</a></li>
                         <li><a href="${app.DONATIONS_URL}" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
                         <li role="separator" class="divider"></li>
-                        %if numErrors:
-                            <li><a href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
-                        %endif
-                        %if numWarnings:
-                            <li><a href="errorlogs/?level=${logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
-                        %endif
                         <li><a href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="home/updateCheck?pid=${sbPID}"><i class="menu-icon-update"></i>&nbsp;Check For Updates</a></li>

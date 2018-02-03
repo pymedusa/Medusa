@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 
 from github import GithubException
@@ -11,7 +12,6 @@ from medusa import (
     config,
     github_client,
     helpers,
-    logger,
     ui,
 )
 from medusa.common import (
@@ -23,6 +23,9 @@ from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
 from tornroutes import route
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/config/general(/?.*)')
@@ -148,9 +151,6 @@ class ConfigGeneral(Config):
             results += ['Unable to create directory {dir}, '
                         'log directory not changed.'.format(dir=os.path.normpath(log_dir))]
 
-        # Reconfigure the logger
-        logger.reconfigure()
-
         # Validate github credentials
         try:
             if app.GIT_AUTH_TYPE == 0:
@@ -160,7 +160,7 @@ class ConfigGeneral(Config):
                 if app.GIT_USERNAME and app.GIT_USERNAME != github_client.get_user(gh=github):
                     app.GIT_USERNAME = github_client.get_user(gh=github)
         except (GithubException, IOError):
-            logger.log('Error while validating your Github credentials.', logger.WARNING)
+            log.warning('Error while validating your Github credentials.')
 
         app.PRIVACY_LEVEL = privacy_level.lower()
 
@@ -207,7 +207,7 @@ class ConfigGeneral(Config):
 
         if results:
             for x in results:
-                logger.log(x, logger.ERROR)
+                log.error(x)
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:

@@ -1,8 +1,6 @@
 # coding=utf-8
 """Configuration for pytest."""
-import logging
 import os
-from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
 from github.AuthenticatedUser import AuthenticatedUser
@@ -13,10 +11,7 @@ from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
-from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
-from medusa.logger import read_loglines as logger_read_loglines
 from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
@@ -195,38 +190,6 @@ def commit_hash(monkeypatch):
     target = 'abcdef0'
     monkeypatch.setattr(app, 'CUR_COMMIT_HASH', target)
     return target
-
-
-@pytest.fixture
-def logfile(tmpdir):
-    target = str(tmpdir.ensure('logfile.log'))
-    instance.log_file = target
-    return target
-
-
-@pytest.fixture
-def rotating_file_handler(logfile):
-    handler = RotatingFileHandler(logfile, maxBytes=512 * 1024, backupCount=10, encoding='utf-8')
-    handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
-    handler.setLevel(logging.DEBUG)
-    return handler
-
-
-@pytest.fixture
-def logger(rotating_file_handler, commit_hash):
-    print('Using commit_hash {}'.format(commit_hash))
-    target = logging.getLogger('testing_logger')
-    target.addFilter(ContextFilter())
-    target.addHandler(rotating_file_handler)
-    target.propagate = False
-    target.setLevel(logging.DEBUG)
-
-    return target
-
-
-@pytest.fixture
-def read_loglines(logfile):
-    return logger_read_loglines(logfile)
 
 
 @pytest.fixture

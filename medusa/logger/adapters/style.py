@@ -23,6 +23,7 @@ class BraceMessage(object):
         self.msg = msg
         self.args = args
         self.kwargs = kwargs
+        log.debug(repr(self))
 
     def __str__(self):
         """Convert to string."""
@@ -66,7 +67,7 @@ class BraceMessage(object):
 
     def format(self, *args, **kwargs):
         """Format a BraceMessage string."""
-        return str(self).format(*args, **kwargs)
+        return self.msg.format(*args, **kwargs)
 
 
 class BraceAdapter(logging.LoggerAdapter):

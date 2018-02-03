@@ -17,17 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os.path
 import re
 import sqlite3
+import sys
 import threading
 import time
 import warnings
 
-from medusa import app, logger
+from medusa import app
 from medusa.helper.exceptions import ex
 
 from six import text_type
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 db_cons = {}
 db_locks = {}
@@ -75,9 +80,9 @@ class DBConnection(object):
                 self._set_row_factory()
 
         except sqlite3.OperationalError:
-            logger.log(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)), logger.WARNING)
+            log.warning(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)))
         except Exception as e:
-            logger.log(u"DB error: " + ex(e), logger.ERROR)
+            log.debug(u"DB error: " + ex(e))
             raise
 
     def _set_row_factory(self):
@@ -116,13 +121,13 @@ class DBConnection(object):
             if 'unable to open database file' in e.args[0] or \
                'database is locked' in e.args[0] or \
                'database or disk is full' in e.args[0]:
-                logger.log(u'DB error: {0!r}'.format(e), logger.WARNING)
+                log.warning(u'DB error: {0!r}'.format(e))
             else:
-                logger.log(u"Query: '{0}'. Arguments: '{1}'".format(query, args))
-                logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
+                log.info(u"Query: '{0}'. Arguments: '{1}'".format(query, args))
+                log.debug(u'DB error: {0!r}'.format(e))
                 raise
         except Exception as e:
-            logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
+            log.debug(u'DB error: {0!r}'.format(e))
             raise
 
     def checkDBVersion(self):
@@ -207,14 +212,14 @@ class DBConnection(object):
                     for qu in querylist:
                         if len(qu) == 1:
                             if logTransaction:
-                                logger.log(qu[0], logger.DEBUG)
+                                log.debug(qu[0])
                             sql_results.append(self._execute(qu[0], fetchall=fetchall))
                         elif len(qu) > 1:
                             if logTransaction:
-                                logger.log(qu[0] + " with args " + str(qu[1]), logger.DEBUG)
+                                log.debug(qu[0] + " with args " + str(qu[1]))
                             sql_results.append(self._execute(qu[0], qu[1], fetchall=fetchall))
                     self.connection.commit()
-                    logger.log(u"Transaction with " + str(len(querylist)) + u" queries executed", logger.DEBUG)
+                    log.debug(u"Transaction with " + str(len(querylist)) + u" queries executed")
 
                     # finished
                     break
@@ -223,17 +228,17 @@ class DBConnection(object):
                     if self.connection:
                         self.connection.rollback()
                     if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
-                        logger.log(u"DB error: " + ex(e), logger.WARNING)
+                        log.warning(u"DB error: " + ex(e))
                         attempt += 1
                         time.sleep(1)
                     else:
-                        logger.log(u"DB error: " + ex(e), logger.ERROR)
+                        log.debug(u"DB error: " + ex(e))
                         raise
                 except sqlite3.DatabaseError as e:
                     sql_results = []
                     if self.connection:
                         self.connection.rollback()
-                    logger.log(u"Fatal error executing query: " + ex(e), logger.ERROR)
+                    log.debug(u"Fatal error executing query: " + ex(e))
                     raise
 
             # time.sleep(0.02)
@@ -261,9 +266,9 @@ class DBConnection(object):
             while attempt < 5:
                 try:
                     if args is None:
-                        logger.log(self.filename + ": " + query, logger.DB)
+                        log.debug(self.filename + ": " + query)
                     else:
-                        logger.log(self.filename + ": " + query + " with args " + str(args), logger.DB)
+                        log.debug(self.filename + ": " + query + " with args " + str(args))
 
                     sql_results = self._execute(query, args, fetchall=fetchall, fetchone=fetchone)
                     self.connection.commit()
@@ -272,14 +277,14 @@ class DBConnection(object):
                     break
                 except sqlite3.OperationalError as e:
                     if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
-                        logger.log(u"DB error: " + ex(e), logger.WARNING)
+                        log.warning(u"DB error: " + ex(e))
                         attempt += 1
                         time.sleep(1)
                     else:
-                        logger.log(u"DB error: " + ex(e), logger.ERROR)
+                        log.debug(u"DB error: " + ex(e))
                         raise
                 except sqlite3.DatabaseError as e:
-                    logger.log(u"Fatal error executing query: " + ex(e), logger.ERROR)
+                    log.debug(u"Fatal error executing query: " + ex(e))
                     raise
 
             # time.sleep(0.02)
@@ -431,7 +436,7 @@ def upgradeDatabase(connection, schema):
     :param connection: Existing DB Connection to use
     :param schema: New schema to upgrade to
     """
-    logger.log(u"Checking database structure..." + connection.filename, logger.DEBUG)
+    log.debug(u"Checking database structure..." + connection.filename)
     _processUpgrade(connection, schema)
 
 
@@ -447,9 +452,10 @@ def restoreDatabase(version):
     :return: True if restore succeeds, False if it fails
     """
     from medusa import helpers
-    logger.log(u"Restoring database before trying upgrade again")
+    log.info(u"Restoring database before trying upgrade again")
     if not helpers.restore_versioned_file(dbFilename(suffix='v' + str(version)), version):
-        logger.log_error_and_exit(u"Database restore failed, abort upgrading database")
+        log.error(u"Database restore failed, abort upgrading database")
+        sys.exit()
         return False
     else:
         return True
@@ -457,18 +463,18 @@ def restoreDatabase(version):
 
 def _processUpgrade(connection, upgradeClass):
     instance = upgradeClass(connection)
-    logger.log(u"Checking " + prettyName(upgradeClass.__name__) + " database upgrade", logger.DEBUG)
+    log.debug(u"Checking " + prettyName(upgradeClass.__name__) + " database upgrade")
     if not instance.test():
-        logger.log(u"Database upgrade required: " + prettyName(upgradeClass.__name__), logger.DEBUG)
+        log.debug(u"Database upgrade required: " + prettyName(upgradeClass.__name__))
         try:
             instance.execute()
         except Exception as e:
-            logger.log("Error in " + str(upgradeClass.__name__) + ": " + ex(e), logger.ERROR)
+            log.debug("Error in " + str(upgradeClass.__name__) + ": " + ex(e))
             raise
 
-        logger.log(upgradeClass.__name__ + " upgrade completed", logger.DEBUG)
+        log.debug(upgradeClass.__name__ + " upgrade completed")
     else:
-        logger.log(upgradeClass.__name__ + " upgrade not required", logger.DEBUG)
+        log.debug(upgradeClass.__name__ + " upgrade not required")
 
     for upgradeSubClass in upgradeClass.__subclasses__():
         _processUpgrade(connection, upgradeSubClass)
