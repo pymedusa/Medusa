@@ -402,7 +402,7 @@ class NewznabProvider(NZBProvider):
 
         Returns found image or the default newznab image
         """
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
 

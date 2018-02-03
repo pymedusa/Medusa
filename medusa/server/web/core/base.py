@@ -61,7 +61,7 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = os.path.join(app.PROG_DIR, 'views/')
+        mako_path = os.path.join(app.THEME_DATA_ROOT, 'templates/')
     if mako_cache is None:
         mako_cache = os.path.join(app.CACHE_DIR, 'mako')
     if mako_lookup is None:
