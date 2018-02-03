@@ -150,7 +150,7 @@ MEDUSA.addShows.newShow = function() {
 
     $('#addShowButton').click(function() {
         // if they haven't picked a show don't let them submit
-        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length !== 0) {
+        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length === 0) {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }

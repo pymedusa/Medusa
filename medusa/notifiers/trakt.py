@@ -7,7 +7,7 @@ import logging
 
 from medusa import app
 from medusa.helpers import get_title_without_year
-from medusa.indexers.indexer_config import get_trakt_indexer
+from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
 from traktor import AuthException, TokenExpiredException, TraktApi, TraktException

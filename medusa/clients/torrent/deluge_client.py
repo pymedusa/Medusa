@@ -11,12 +11,14 @@ from base64 import b64encode
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
+    get_extension,
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
     is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
+
 from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -36,10 +38,11 @@ def read_torrent_status(torrent_data):
 
         to_remove = False
         for i in details['files']:
+            # Need to check only the media file or the .rar file to avoid checking all .r0* files in history
+            if not (is_media_file(i['path']) or get_extension(i['path']) == 'rar'):
+                continue
             # Check if media was processed
             # OR check hash in case of RARed torrents
-            if not is_media_file(i['path']):
-                continue
             if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
                 to_remove = True
 
@@ -290,7 +293,7 @@ class DelugeAPI(GenericClient):
     def _set_torrent_label(self, result):
 
         label = app.TORRENT_LABEL.lower()
-        if result.show.is_anime:
+        if result.series.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
             log.error('{name}: Invalid label. Label must not contain a space',

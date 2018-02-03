@@ -71,7 +71,7 @@ class NewpctProvider(TorrentProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            if self.show and (self.show.air_by_date or self.show.is_sports):
+            if self.series and (self.series.air_by_date or self.series.is_sports):
                 log.debug("Provider doesn't support air by date or sports search")
                 continue
 
@@ -184,7 +184,7 @@ class NewpctProvider(TorrentProvider):
         return items
 
     def _parse_title(self, search_string):
-        if self.show and self.show.is_anime:
+        if self.series and self.series.is_anime:
             search_matches = NewpctProvider.anime_search_regex.match(search_string)
             name = search_matches.group(1)
             chapter = '1{0}'.format(search_matches.group(2))

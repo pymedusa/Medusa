@@ -1194,7 +1194,7 @@ class ConfigMigrator(object):
         app.REQUIRE_WORDS = convert_csv_string_to_list(self.config_obj['General']['require_words'])
         app.IGNORED_SUBS_LIST = convert_csv_string_to_list(self.config_obj['General']['ignored_subs_list'])
         app.BROKEN_PROVIDERS = convert_csv_string_to_list(self.config_obj['General']['broken_providers'])
-        app.EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['General']['extra_scripts'])
+        app.EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['General']['extra_scripts'], '|')
 
         # Metadata
         app.METADATA_KODI = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi'], '|')
@@ -1209,6 +1209,8 @@ class ConfigMigrator(object):
         app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
         app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
         app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'], '|')
+        app.SUBTITLES_EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_extra_scripts'], '|')
+        app.SUBTITLES_PRE_SCRIPTS = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_pre_scripts'], '|')
 
         # Notifications
         app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])

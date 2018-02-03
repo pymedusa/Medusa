@@ -30,7 +30,6 @@ from medusa.providers.torrent import (
     hdtorrents,
     hebits,
     horriblesubs,
-    hounddawgs,
     iptorrents,
     limetorrents,
     morethantv,
@@ -39,6 +38,7 @@ from medusa.providers.torrent import (
     norbits,
     nyaa,
     pretome,
+    privatehd,
     rarbg,
     scenetime,
     sdbits,
@@ -62,13 +62,13 @@ from medusa.providers.torrent import (
 )
 
 __all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs',
+    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
     'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'torrentproject', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd'
 ]
 
 

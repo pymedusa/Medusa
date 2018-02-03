@@ -2,9 +2,10 @@
 
 from __future__ import unicode_literals
 
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+
 from tornroutes import route
-from .handler import Home
-from ..core import PageTemplate
 
 
 @route('/IRC(/?.*)')

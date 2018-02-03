@@ -1,7 +1,7 @@
 # coding=utf-8
 """Indexer class."""
 
-from medusa.indexers.indexer_config import indexer_id_to_name, indexer_name_to_id
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.tv.base import Identifier
 
 

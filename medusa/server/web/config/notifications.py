@@ -6,11 +6,12 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import app, config, logger, ui
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, ui
-from ....helper.common import try_int
 
 
 @route('/config/notifications(/?.*)')

@@ -19,8 +19,8 @@
 import datetime
 import json
 
-from . import app
-from .ws.MedusaWebSocketHandler import push_to_web_socket
+from medusa import app
+from medusa.ws.MedusaWebSocketHandler import push_to_web_socket
 
 MESSAGE = 'notice'
 ERROR = 'error'
@@ -192,4 +192,4 @@ class QueueProgressIndicator(object):
 class LoadingTVShow(object):
     def __init__(self, show_dir):
         self.show_dir = show_dir
-        self.show = None
+        self.series = None

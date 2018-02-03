@@ -5,9 +5,10 @@ from __future__ import unicode_literals
 import json
 import os
 
+from medusa.browser import list_folders
+from medusa.server.web.core.base import WebRoot
+
 from tornroutes import route
-from .base import WebRoot
-from ....browser import list_folders
 
 
 @route('/browser(/?.*)')

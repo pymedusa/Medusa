@@ -26,8 +26,8 @@ from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
-    mappings,
 )
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
@@ -418,7 +418,7 @@ class NewznabProvider(NZBProvider):
 
         return_mapping = {}
 
-        if not self.show:
+        if not self.series:
             # If we don't have show, can't get tvdbid
             return return_mapping
 
@@ -436,13 +436,13 @@ class NewznabProvider(NZBProvider):
                 # Move to the configured capability / indexer mappings. To see if we can get a match.
                 for map_indexer in map_caps:
                     if map_caps[map_indexer] == search_type:
-                        if self.show.indexer == map_indexer:
+                        if self.series.indexer == map_indexer:
                             # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.show.indexerid
+                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
                             return return_mapping
-                        elif self.show.externals.get(mappings[map_indexer]):
+                        elif self.series.externals.get(mappings[map_indexer]):
                             # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
                             if mapped_external_indexer:
                                 return_mapping[map_caps[map_indexer]] = mapped_external_indexer
 

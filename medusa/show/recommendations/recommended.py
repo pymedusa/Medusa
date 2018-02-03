@@ -20,8 +20,14 @@ from __future__ import unicode_literals
 import os
 import posixpath
 
-from ... import app, helpers
-from ...session.core import MedusaSession
+from medusa import (
+    app,
+    helpers,
+)
+from medusa.indexers.utils import indexer_id_to_name
+from medusa.session.core import MedusaSession
+
+session = MedusaSession()
 
 
 class MissingTvdbMapping(Exception):
@@ -30,12 +36,12 @@ class MissingTvdbMapping(Exception):
 
 class RecommendedShow(object):
     """Base class for show recommendations."""
-    def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, **show_attr):
+    def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
         """Create a show recommendation
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
                               which facilitated the recommended shows list.
-        :param show_id: as provided by the list provider
+        :param series_id: as provided by the list provider
         :param title: of the show as displayed in the recommended show page
         :param indexer: used to map the show to
         :param indexer_id: a mapped indexer_id for indexer
@@ -49,13 +55,14 @@ class RecommendedShow(object):
         self.cache_subfolder = rec_show_prov.cache_subfolder or 'recommended'
         self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
 
-        self.show_id = show_id
+        self.series_id = series_id
         self.title = title
-        self.indexer = int(indexer)
+        self.mapped_indexer = int(mapped_indexer)
+        self.mapped_indexer_name = indexer_id_to_name(mapped_indexer)
         try:
-            self.indexer_id = int(indexer_id)
+            self.mapped_series_id = int(mapped_series_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % indexer_id)
+            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
 
         self.rating = show_attr.get('rating') or 0
 
@@ -70,8 +77,10 @@ class RecommendedShow(object):
         self.is_anime = False
 
         # Check if the show is currently already in the db
-        self.show_in_list = self.indexer_id in {show.indexerid for show in app.showList if show.indexerid}
-        self.session = MedusaSession()
+        self.show_in_list = bool([show.indexerid for show in app.showList
+                                 if show.series_id == self.mapped_series_id
+                                 and show.indexer == self.mapped_indexer])
+        self.session = session
 
     def cache_image(self, image_url, default=None):
         """Store cache of image in cache dir

@@ -2,11 +2,19 @@ MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
 
+    // Reset the layout for the activated tab (when using ui tabs)
+    $('#showTabs').tabs({
+        activate: function() {
+            $('.show-grid').isotope('layout');
+        }
+    });
+
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
-        var seriesId = $('#series-id').attr('value');
-        if (seriesId) {
-            let path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
+        var seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
+
+        if (seriesSlug) {
+            let path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);

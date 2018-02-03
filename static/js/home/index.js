@@ -97,7 +97,7 @@ MEDUSA.home.index = function() {
         $(this).remove();
     });
 
-    $('#showListTableShows:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
+    $('#showListTableSeries:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
         debug: false,
         sortList: [[7, 1], [2, 0]],
         textExtraction: (function() {
@@ -316,7 +316,7 @@ MEDUSA.home.index = function() {
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
-        $.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
+        $.tablesorter.columnSelector.attachTo($('#showListTableSeries'), '#popover-target');
         if (MEDUSA.config.animeSplitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
@@ -365,4 +365,52 @@ MEDUSA.home.index = function() {
             $('#showRoot').hide();
         }
     }
+
+    $('#poster-container').sortable({
+        appendTo: document.body,
+        axis: 'y',
+        items: '> .show-grid',
+        scroll: false,
+        tolerance: 'pointer',
+        helper: 'clone',
+        handle: 'button.move-show-list',
+        cancel: '',
+        sort: function(event, ui) {
+            const draggedItem = $(ui.item);
+            const margin = 1.5;
+
+            if (ui.position.top !== ui.originalPosition.top) {
+                if (ui.position.top > ui.originalPosition.top * margin) {
+                    // Move to bottom
+                    setTimeout(function() {
+                        $(draggedItem).appendTo('#poster-container');
+                        return false;
+                    }, 400);
+                }
+                if (ui.position.top < ui.originalPosition.top / margin) {
+                    // Move to top
+                    setTimeout(function() {
+                        $(draggedItem).prependTo('#poster-container');
+                        return false;
+                    }, 400);
+                }
+            }
+        },
+        update: function(event) {
+            const showListOrder = $(event.target.children).map(function(index, el) {
+                return $(el).data('list');
+            });
+            api.patch('config/main', {
+                layout: {
+                    show: {
+                        showListOrder: showListOrder.toArray()
+                    }
+                }
+            }).then(function(response) {
+                log.info(response);
+            }).catch(function(err) {
+                log.error(err);
+            });
+        }
+    });
 };

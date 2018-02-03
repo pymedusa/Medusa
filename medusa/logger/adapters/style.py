@@ -37,9 +37,11 @@ class BraceMessage(object):
             return self.msg.format(*args, **kwargs)
         except IndexError:
             try:
-                return self.msg.format(kwargs)
-            except IndexError:
+                return self.msg.format(**kwargs)
+            except KeyError:
                 return self.msg
+        except KeyError:
+            return self.msg.format(*args)
         except Exception:
             log.error(
                 'BraceMessage string formatting failed. '
@@ -62,6 +64,10 @@ class BraceMessage(object):
             args=sep.join([repr(self.msg), args, kwargs])
         )
 
+    def format(self, *args, **kwargs):
+        """Format a BraceMessage string."""
+        return str(self).format(*args, **kwargs)
+
 
 class BraceAdapter(logging.LoggerAdapter):
     """Adapt logger to use Brace-formatted messages."""
@@ -79,8 +85,9 @@ class BraceAdapter(logging.LoggerAdapter):
         """Log a message at the specified level using Brace-formatting."""
         if self.isEnabledFor(level):
             msg, kwargs = self.process(msg, kwargs)
-            brace_msg = BraceMessage(msg, *args, **kwargs)
-            self.logger.log(level, brace_msg, **kwargs)
+            if not isinstance(msg, BraceMessage):
+                msg = BraceMessage(msg, *args, **kwargs)
+            self.logger.log(level, msg, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         """Add exception information before delegating to self.log."""
