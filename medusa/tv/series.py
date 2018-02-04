@@ -76,7 +76,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerSeasonNotFound,
 )
-from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
     mappings,
