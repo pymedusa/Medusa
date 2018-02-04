@@ -20,6 +20,8 @@ from medusa.show.show import Show
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
+from six import string_types, text_type
+
 from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
@@ -75,7 +77,8 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
-            'imdbId': 'imdb_id'
+            'imdbId': 'imdb_id',
+            'site_rating': 'rating'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
@@ -96,7 +99,7 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
+                            if list_separator and all(isinstance(x, string_types) for x in value):
                                 value = list_separator.join(value)
                             else:
                                 value = [self._object_to_dict(x, key_mapping) for x in value]
@@ -334,15 +337,15 @@ class TVDBv2(BaseIndexer):
                 if self.config['dvdorder']:
                     log.warning('No DVD order available for episode (season: {0}, episode: {1}). '
                                 'Falling back to non-DVD order. '
-                                'Please consider disabling DVD order for the show with TVDB ID: {2}',
-                                seasnum, epno, tvdb_id)
+                                'Please consider disabling DVD order for the show: {2}({3})',
+                                seasnum, epno, self.shows[tvdb_id]['seriesname'], tvdb_id)
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                log.warning('Invalid episode numbering (series: {0}, season: {1!r}, episode: {2!r}) '
+                log.warning('Invalid episode numbering (series: {0}({1}), season: {2!r}, episode: {3!r}) '
                             'Contact TVDB forums to have it fixed',
-                            tvdb_id, seasnum, epno)
+                            self.shows[tvdb_id]['seriesname'], tvdb_id, seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -567,7 +570,7 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
+        self._set_show_data(sid, 'externals', {'imdb_id': text_type(getattr(self[sid], 'imdb_id', ''))})
 
         # get episode data
         if self.config['episodes_enabled']:

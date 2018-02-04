@@ -17,6 +17,7 @@ from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, I
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
+from six import integer_types, string_types, text_type
 
 import tmdbsimple as tmdb
 
@@ -108,8 +109,8 @@ class Tmdb(BaseIndexer):
 
                     # Do some value sanitizing
                     if isinstance(value, list) and key not in ['episode_run_time']:
-                        if all(isinstance(x, (str, unicode, int)) for x in value):
-                            value = list_separator.join(str(v) for v in value)
+                        if all(isinstance(x, (string_types, integer_types)) for x in value):
+                            value = list_separator.join(text_type(v) for v in value)
 
                     # Process genres
                     if key == 'genres':
@@ -128,9 +129,6 @@ class Tmdb(BaseIndexer):
                     # Try to map the key
                     if key in key_mappings:
                         key = key_mappings[key]
-
-                    # Finally sanitize and set value.
-                    value = str(value) if isinstance(value, (float, int)) else value
 
                     # Set value to key
                     return_dict[key] = value
@@ -303,6 +301,7 @@ class Tmdb(BaseIndexer):
         """
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
+        typecasts = {'rating': float, 'ratingcount': int}
 
         log.debug('Getting show banners for {0}', sid)
         _images = {}
@@ -339,6 +338,13 @@ class Tmdb(BaseIndexer):
                         for k, v in image_mapped.items():
                             if k is None or v is None:
                                 continue
+
+                            try:
+                                typecast = typecasts[k]
+                            except KeyError:
+                                pass
+                            else:
+                                v = typecast(v)
 
                             _images[image_type][resolution][bid][k] = v
                             if k.endswith('path'):

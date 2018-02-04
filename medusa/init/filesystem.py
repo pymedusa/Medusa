@@ -7,9 +7,11 @@ import os
 import shutil
 import sys
 import tarfile
-
 import tempfile # noqa # pylint: disable=unused-import
+
 import certifi
+
+import rarfile
 
 from six import binary_type, text_type
 
@@ -126,6 +128,7 @@ def initialize():
                   'split', 'splitext'],
         shutil: ['copyfile', 'copymode', 'move', 'rmtree'],
         tarfile: ['is_tarfile'],
+        rarfile: ['is_rarfile'],
     }
 
     # pyOpenSSL 0.14-1 bug: it can't handle unicode input.

@@ -402,7 +402,7 @@ class NewznabProvider(NZBProvider):
 
         Returns found image or the default newznab image
         """
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
 
@@ -598,7 +598,7 @@ class NewznabProvider(NZBProvider):
             },
             {
                 'name': 'Usenet-Crawler',
-                'url': 'https://www.usenet-crawler.com/',
+                'url': 'https://api.usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,

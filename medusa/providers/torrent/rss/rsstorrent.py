@@ -100,7 +100,7 @@ class TorrentRssProvider(TorrentProvider):
 
     def image_name(self):
         """Return RSS torrent image."""
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
 

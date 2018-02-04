@@ -76,7 +76,7 @@ class GenericMedia(object):
     @staticmethod
     def get_media_root():
         """Get the root folder containing the media."""
-        return join(app.PROG_DIR, 'static')
+        return join(app.THEME_DATA_ROOT, 'assets')
 
     @property
     def media_type(self):
@@ -105,6 +105,6 @@ class GenericMedia(object):
             if isfile(media_path):
                 return normpath(media_path)
 
-        image_path = join(self.get_media_root(), 'images', self.default_media_name)
+        image_path = join(self.get_media_root(), 'img', self.default_media_name)
 
         return image_path.replace('\\', '/')
