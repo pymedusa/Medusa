@@ -13,7 +13,7 @@ from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError,
                                                 IndexerShowIncomplete, IndexerShowNotFound,
                                                 IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
-from medusa.indexers.tvdbv2.fallback import PlexFallback
+from medusa.indexers.tvdb.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
@@ -34,7 +34,7 @@ API_BASE_TVDB = 'https://api.thetvdb.com'
 class TVDBv2(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    >>> indexer_api = tvdbv2()
+    >>> indexer_api = tvdb()
     >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
@@ -155,7 +155,7 @@ class TVDBv2(BaseIndexer):
     # Tvdb implementation
     @PlexFallback
     def search(self, series):
-        """Search tvdbv2.com for the series name.
+        """Search tvdb.com for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -179,9 +179,9 @@ class TVDBv2(BaseIndexer):
 
     @PlexFallback
     def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
-        """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
+        """Retrieve tvdb show information by tvdb id, or if no tvdb id provided by passed external id.
 
-        :param tvdbv2_id: The shows tvdbv2 id
+        :param tvdbv2_id: The shows tvdb id
         :return: An ordered dict with the show searched for.
         """
         results = None

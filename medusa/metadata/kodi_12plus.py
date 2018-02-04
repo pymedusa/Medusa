@@ -12,7 +12,7 @@ from medusa.helper.common import dateFormat, episode_num
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
-from medusa.indexers.tvdbv2.tvdbv2_api import API_BASE_TVDB
+from medusa.indexers.tvdb.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 
