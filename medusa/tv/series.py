@@ -19,6 +19,7 @@ from collections import (
 from itertools import groupby
 
 from imdbpie import imdbpie
+from six import text_type
 
 from medusa import (
     app,
@@ -27,7 +28,6 @@ from medusa import (
     image_cache,
     network_timezones,
     notifiers,
-    post_processor,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
@@ -93,6 +93,7 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
+from medusa.processing import post
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
@@ -103,8 +104,6 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
-
-from six import text_type
 
 try:
     from send2trash import send2trash
@@ -1834,7 +1833,7 @@ class Series(TV):
                             'location': cur_loc,
                         }
                     )
-                    related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
+                    related_files = post.PostProcessor(cur_loc).list_associated_files(
                         cur_loc, subfolders=True)
 
                     if related_files:

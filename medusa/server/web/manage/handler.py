@@ -8,6 +8,8 @@ import logging
 import os
 import re
 
+from tornroutes import route
+
 from medusa import (
     app,
     db,
@@ -34,14 +36,12 @@ from medusa.helper.exceptions import (
 from medusa.helpers import is_media_file
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.network_timezones import app_timezone
-from medusa.post_processor import PostProcessor
+from medusa.processing.post import PostProcessor
 from medusa.server.web.core import PageTemplate, WebRoot
 from medusa.server.web.home import Home
 from medusa.show.show import Show
 from medusa.tv import Episode, Series
 from medusa.tv.series import SeriesIdentifier
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

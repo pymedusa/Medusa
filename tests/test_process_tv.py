@@ -2,11 +2,11 @@
 """Tests for medusa/process_tv.py."""
 import os
 
-from medusa import app
-from medusa.post_processor import PostProcessor
-from medusa.process_tv import ProcessResult
-
 import pytest
+
+from medusa import app
+from medusa.process_tv import ProcessResult
+from medusa.processing.post import PostProcessor
 
 
 @pytest.mark.parametrize('p', [
