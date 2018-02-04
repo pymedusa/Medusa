@@ -11,14 +11,14 @@ import warnings
 from itertools import chain
 from operator import itemgetter
 
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
     IndexerSeasonNotFound,
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
 )
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests

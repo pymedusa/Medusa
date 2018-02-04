@@ -5,7 +5,7 @@ import functools
 import logging
 
 from medusa import app, ui
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )

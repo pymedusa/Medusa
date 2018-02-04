@@ -28,7 +28,7 @@ import traceback
 
 from medusa import db
 from medusa.helper.exceptions import ex
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.scene_exceptions import safe_session
 
 

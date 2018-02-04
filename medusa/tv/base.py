@@ -3,7 +3,7 @@
 
 import threading
 
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 
 
 class Identifier(object):

@@ -11,7 +11,7 @@ from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock

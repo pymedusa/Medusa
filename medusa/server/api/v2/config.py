@@ -9,7 +9,7 @@ from medusa import (
     db,
 )
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.config import indexerConfig
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,

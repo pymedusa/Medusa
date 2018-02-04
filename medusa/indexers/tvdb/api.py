@@ -8,11 +8,11 @@ from collections import OrderedDict
 from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
-                                                IndexerShowIncomplete, IndexerShowNotFound,
-                                                IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
+                                        IndexerShowIncomplete, IndexerShowNotFound,
+                                        IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdb.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show

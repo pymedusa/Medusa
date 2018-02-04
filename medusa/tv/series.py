@@ -65,13 +65,13 @@ from medusa.helper.exceptions import (
 from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
 )
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
