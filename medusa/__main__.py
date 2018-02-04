@@ -1069,7 +1069,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
-                log.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
+                log.debug(u'Unable to find {config!r}, all settings will be default!'.format(config=app.CONFIG_FILE))
                 self.save_config()
 
             if app.SUBTITLES_ERASE_CACHE:
@@ -1077,10 +1077,10 @@ class Application(object):
                     for cache_file in ['application.dbm', 'subliminal.dbm']:
                         file_path = os.path.join(app.CACHE_DIR, cache_file)
                         if os.path.isfile(file_path):
-                            log.info(u'Removing subtitles cache file: {cache_file}', cache_file=file_path)
+                            log.info(u'Removing subtitles cache file: {cache_file}'.format(cache_file=file_path))
                             os.remove(file_path)
                 except OSError as e:
-                    log.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
+                    log.warning(u'Unable to remove subtitles cache files. Error: {error}'.format(error=e))
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
@@ -1238,7 +1238,8 @@ class Application(object):
                     shutil.move(src_folder, dest_folder)
                     log.info(u'Restore: restoring cache successful')
                 except OSError as error:
-                    log.error(u'Restore: restoring cache failed: {error!r}', error=error)
+                    log.error(u'Restore: restoring cache failed:'
+                              u' {error!r}'.format(error=error))
 
             restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
         finally:
@@ -1363,7 +1364,7 @@ class Application(object):
                 t.stop.set()
 
             for t in threads:
-                log.info(u'Waiting for the {thread} thread to exit', thread=t.name)
+                log.info(u'Waiting for the {thread} thread to exit'.format(thread=t.name))
                 try:
                     t.join(10)
                 except Exception:
@@ -1944,7 +1945,7 @@ class Application(object):
     def sig_handler(signum=None, frame=None):
         """Signal handler function."""
         if not isinstance(signum, type(None)):
-            log.info(u'Signal {number} caught, saving and exiting...', number=signum)
+            log.info(u'Signal {number} caught, saving and exiting...'.format(number=signum))
             Shutdown.stop(app.PID)
 
     @staticmethod
@@ -1997,21 +1998,30 @@ class Application(object):
             if pid != 0:
                 os._exit(0)
         except OSError as error:
-            sys.stderr.write('fork #2 failed: Error {error_num}: {error_message}\n'.format
-                             (error_num=error.errno, error_message=error.strerror))
+            sys.stderr.write(
+                'fork #2 failed: Error {error_num}: {error_message}\n'.format(
+                    error_num=error.errno,
+                    error_message=error.strerror,
+                )
+            )
             sys.exit(1)
 
         # Write pid
         if self.create_pid:
             pid = os.getpid()
-            log.info('Writing PID: {pid} to {filename}', pid=pid, filename=self.pid_file)
+            log.info('Writing PID: {pid} to {filename}'.format(pid=pid, filename=self.pid_file))
 
             try:
                 with io.open(self.pid_file, 'w') as f_pid:
                     f_pid.write('%s\n' % pid)
             except EnvironmentError as error:
-                log.error('Unable to write PID file: {filename} Error {error_num}: {error_message}',
-                          filename=self.pid_file, error_num=error.errno, error_message=error.strerror)
+                log.error(
+                    'Unable to write PID file: {filename}'
+                    ' Error {error_num}: {error_message}'.format(
+                        filename=self.pid_file, error_num=error.errno,
+                        error_message=error.strerror
+                    )
+                )
                 sys.exit('Unable to write PID file')
 
         # Redirect all output
@@ -2055,7 +2065,7 @@ class Application(object):
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
-            log.info('Restarting Medusa with {options}', options=popen_list)
+            log.info('Restarting Medusa with {options}'.format(options=popen_list))
             # shutdown the logger to make sure it's released the logfile BEFORE it restarts Medusa.
             logging.shutdown()
             print(popen_list)
