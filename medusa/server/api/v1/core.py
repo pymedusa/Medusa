@@ -30,7 +30,7 @@ from datetime import date, datetime
 
 from medusa import (
     app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    process_tv, sbdatetime, subtitles, system, ui,
 )
 from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
     UNAIRED, UNKNOWN, WANTED, \
@@ -53,8 +53,6 @@ from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
@@ -1529,10 +1527,10 @@ class CMD_Restart(ApiCall):
 
     def run(self):
         """ Restart Medusa """
-        if not Restart.restart(app.PID):
+        if system.restart(app, app.events, app.PID):
+            return _responds(RESULT_SUCCESS, msg='Medusa is restarting...')
+        else:
             return _responds(RESULT_FAILURE, msg='Medusa can not be restarted')
-
-        return _responds(RESULT_SUCCESS, msg='Medusa is restarting...')
 
 
 class CMD_SearchIndexers(ApiCall):
@@ -1739,7 +1737,7 @@ class CMD_Shutdown(ApiCall):
 
     def run(self):
         """ Shutdown Medusa """
-        if not Shutdown.stop(app.PID):
+        if not system.shutdown(app, app.events, app.PID):
             return _responds(RESULT_FAILURE, msg='Medusa can not be shut down')
 
         return _responds(RESULT_SUCCESS, msg='Medusa is shutting down...')

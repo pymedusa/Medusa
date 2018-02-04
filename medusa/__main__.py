@@ -66,7 +66,7 @@ from six import text_type
 from medusa import (
     app, cache, db, event_queue, exception_handler,
     helpers, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker,
+    scheduler, show_queue, show_updater, subtitles, system, torrent_checker,
     trakt_checker, version_checker
 )
 from medusa.common import SD, SKIPPED, WANTED
@@ -88,7 +88,6 @@ from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
-from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
 
@@ -1949,7 +1948,7 @@ class Application(object):
         """Signal handler function."""
         if not isinstance(signum, type(None)):
             log.info(u'Signal {number} caught, saving and exiting...'.format(number=signum))
-            Shutdown.stop(app.PID)
+            system.shutdown(app, app.events, app.PID)
 
     @staticmethod
     def backwards_compatibility():
@@ -2151,7 +2150,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == event_queue.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case
