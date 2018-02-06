@@ -41,7 +41,7 @@ from medusa.helpers import is_media_file, is_rar_file
 from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
-from six import iteritems, binary_type, string_types, text_type
+from six import binary_type, iteritems, string_types, text_type
 
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
