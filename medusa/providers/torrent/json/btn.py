@@ -17,7 +17,7 @@ from medusa import (
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import episode_num
-from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -214,7 +214,7 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.series.indexer == INDEXER_TVDBV2:
+        if ep_obj.series.indexer == INDEXER_TVDB:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:

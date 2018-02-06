@@ -309,7 +309,7 @@ class CheckVersion(object):
         log.debug(u'Checking GitHub for latest news.')
         response = self.session.get(app.NEWS_URL)
         if not response or not response.text:
-            log.debug(u'Could not load news from URL: %s', app.NEWS_URL)
+            log.debug(u'Could not load news from URL: {0}', app.NEWS_URL)
             return
 
         try:

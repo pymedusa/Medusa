@@ -1769,7 +1769,7 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
 
 
 def get_broken_providers():
-    """Get broken providers from cdn.pymedusa.com."""
+    """Get broken providers."""
     # Check if last broken providers update happened less than 60 minutes ago
     if app.BROKEN_PROVIDERS_UPDATE and isinstance(app.BROKEN_PROVIDERS_UPDATE, datetime.datetime) and \
             (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).seconds < 3600:

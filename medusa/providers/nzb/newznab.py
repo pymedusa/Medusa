@@ -24,7 +24,7 @@ from medusa.helper.encoding import ss
 from medusa.helpers.utils import split_and_strip
 from medusa.indexers.config import (
     INDEXER_TMDB,
-    INDEXER_TVDBV2,
+    INDEXER_TVDB,
     INDEXER_TVMAZE,
 )
 from medusa.indexers.utils import mappings
@@ -414,7 +414,7 @@ class NewznabProvider(NZBProvider):
         and supported by this newznab provider.
         """
         # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
-        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
+        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDB: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
 
         return_mapping = {}
 

@@ -31,7 +31,7 @@ log.logger.addHandler(logging.NullHandler())
 API_BASE_TVDB = 'https://api.thetvdb.com'
 
 
-class TVDBv2(BaseIndexer):
+class TVDB(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
     >>> indexer_api = tvdb()
@@ -41,7 +41,7 @@ class TVDBv2(BaseIndexer):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         """Init object."""
-        super(TVDBv2, self).__init__(*args, **kwargs)
+        super(TVDB, self).__init__(*args, **kwargs)
 
         self.config['api_base_url'] = API_BASE_TVDB
 
@@ -127,7 +127,7 @@ class TVDBv2(BaseIndexer):
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
     def _show_search(self, show, request_language='en'):
-        """Use the pytvdbv2 API to search for a show.
+        """Use the pytvdb API to search for a show.
 
         @param show: The show name that's searched for as a string
         @return: A list of Show objects.
@@ -178,17 +178,17 @@ class TVDBv2(BaseIndexer):
         return OrderedDict({'series': cleaned_results})['series']
 
     @PlexFallback
-    def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
+    def _get_show_by_id(self, tvdb_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tvdb show information by tvdb id, or if no tvdb id provided by passed external id.
 
-        :param tvdbv2_id: The shows tvdb id
+        :param tvdb_id: The shows tvdb id
         :return: An ordered dict with the show searched for.
         """
         results = None
-        if tvdbv2_id:
-            log.debug('Getting all show data for {0}', tvdbv2_id)
+        if tvdb_id:
+            log.debug('Getting all show data for {0}', tvdb_id)
             try:
-                results = self.config['session'].series_api.series_id_get(tvdbv2_id, accept_language=request_language)
+                results = self.config['session'].series_api.series_id_get(tvdb_id, accept_language=request_language)
             except ApiException as error:
                 if error.status == 401:
                     raise IndexerAuthFailed(
