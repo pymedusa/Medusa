@@ -33,6 +33,4 @@ class SeriesAssetHandler(BaseRequestHandler):
         if not asset:
             return self._not_found('Asset not found')
 
-        self.set_header('Cache-control', 'public, max-age=86400')
-
         self._ok(stream=asset.media, content_type=asset.media_type)
