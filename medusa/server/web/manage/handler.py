@@ -8,8 +8,6 @@ import logging
 import os
 import re
 
-from tornroutes import route
-
 from medusa import (
     app,
     db,
@@ -42,6 +40,8 @@ from medusa.server.web.home import Home
 from medusa.show.show import Show
 from medusa.tv import Episode, Series
 from medusa.tv.series import SeriesIdentifier
+
+from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

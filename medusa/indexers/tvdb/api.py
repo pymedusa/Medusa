@@ -9,20 +9,30 @@ from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
-                                        IndexerShowIncomplete, IndexerShowNotFound,
-                                        IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.ui import BaseUI, ConsoleUI
+from medusa.indexers.exceptions import (
+    IndexerAuthFailed,
+    IndexerError,
+    IndexerException,
+    IndexerShowIncomplete,
+    IndexerShowNotFound,
+    IndexerShowNotFoundInLanguage,
+    IndexerUnavailable,
+)
 from medusa.indexers.tvdb.fallback import PlexFallback
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-
 from six import string_types, text_type
-
-from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
+from tvdbapiv2 import (
+    ApiClient,
+    EpisodesApi,
+    SearchApi,
+    SeriesApi,
+    UpdatesApi,
+)
 from tvdbapiv2.exceptions import ApiException
 
 log = BraceAdapter(logging.getLogger(__name__))

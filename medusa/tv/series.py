@@ -19,7 +19,6 @@ from collections import (
 from itertools import groupby
 
 from imdbpie import imdbpie
-from six import text_type
 
 from medusa import (
     app,
@@ -104,6 +103,8 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
+
+from six import text_type
 
 try:
     from send2trash import send2trash

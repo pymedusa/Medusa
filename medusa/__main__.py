@@ -61,7 +61,6 @@ import threading
 import time
 
 from configobj import ConfigObj
-from six import text_type
 
 from medusa import (
     app, cache, db, event_queue, exception_handler,
@@ -90,6 +89,8 @@ from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.themes import read_themes
 from medusa.tv import Series
+
+from six import text_type
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
