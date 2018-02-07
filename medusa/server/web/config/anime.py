@@ -4,17 +4,20 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 
 from medusa import (
     app,
     config,
-    logger,
     ui,
 )
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 from tornroutes import route
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/config/anime(/?.*)')
@@ -55,7 +58,7 @@ class ConfigAnime(Config):
 
         if results:
             for x in results:
-                logger.log(x, logger.ERROR)
+                log.error(x)
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:

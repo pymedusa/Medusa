@@ -17,13 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """failed history code."""
+
+import logging
 import re
 from datetime import datetime, timedelta
-from medusa import db, logger
+
+from medusa import db
 from medusa.common import FAILED, Quality, WANTED, statusStrings
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import EpisodeNotFoundException
 from medusa.show.history import History
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def prepare_failed_name(release):
@@ -53,23 +59,22 @@ def log_failed(release):
     )
 
     if not sql_results:
-        logger.log(u'Release not found in snatch history: {0}'.format(release), logger.WARNING)
+        log.warning(u'Release not found in snatch history: {0}'.format(release))
     elif len(sql_results) == 1:
         size = sql_results[0]['size']
         provider = sql_results[0]['provider']
     else:
-        logger.log(u'Multiple logged snatches found for release',
-                   logger.WARNING)
+        log.warning(u'Multiple logged snatches found for release')
         sizes = len(set(x['size'] for x in sql_results))
         providers = len(set(x['provider'] for x in sql_results))
         if sizes == 1:
-            logger.log(u'However, they are all the same size. '
-                       u'Continuing with found size.', logger.WARNING)
+            log.warning(u'However, they are all the same size.'
+                        u' Continuing with found size.')
             size = sql_results[0]['size']
         else:
-            logger.log(u'They also vary in size. '
-                       u'Deleting the logged snatches and recording this '
-                       u'release with no size/provider', logger.WARNING)
+            log.warning(u'They also vary in size. Deleting the logged'
+                        u' snatches and recording this release with'
+                        u' no size/provider')
             for result in sql_results:
                 delete_logged_snatch(
                     result['release'],
@@ -78,8 +83,8 @@ def log_failed(release):
                 )
 
         if providers == 1:
-            logger.log(u'They are also from the same provider. '
-                       u'Using it as well.')
+            log.info(u'They are also from the same provider.'
+                     u' Using it as well.')
             provider = sql_results[0]['provider']
 
     if not has_failed(release, size, provider):
@@ -152,24 +157,22 @@ def revert_episode(ep_obj):
     history_eps = {res['episode']: res for res in sql_results}
 
     try:
-        logger.log(u'Reverting episode status for {show} {ep}. Checking if we have previous status'.format
-                   (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
+        msg = u'Reverting episode status for {show} {ep}. Checking if we have previous status'
+        log.info(
+            msg.format(show=ep_obj.series.name,
+                       ep=episode_num(ep_obj.season, ep_obj.episode))
+        )
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
                 ep_obj.status = history_eps[ep_obj.episode]['old_status']
-                logger.log(u'Episode have a previous status to revert. Setting it back to {0}'.format
-                           (statusStrings[ep_obj.status]), logger.DEBUG)
+                log.debug(u'Episode have a previous status to revert. Setting it back to {0}'.format(statusStrings[ep_obj.status]))
             else:
-                logger.log(u'Episode does not have a previous snatched status '
-                           u'to revert. Setting it back to WANTED',
-                           logger.DEBUG)
+                log.debug(u'Episode does not have a previous snatched status to revert. Setting it back to WANTED')
                 ep_obj.status = WANTED
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
-        logger.log(u'Unable to create episode, please set its status '
-                   u'manually: {error}'.format(error=error),
-                   logger.WARNING)
+        log.warning(u'Unable to create episode, please set its status manually: {error}'.format(error=error))
 
 
 def mark_failed(ep_obj):
@@ -188,9 +191,7 @@ def mark_failed(ep_obj):
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
-        logger.log(u'Unable to get episode, please set its status '
-                   u'manually: {error}'.format(error=error),
-                   logger.WARNING)
+        log.warning(u'Unable to get episode, please set its status manually: {error}'.format(error=error))
 
     return log_str
 
@@ -311,12 +312,14 @@ def find_release(ep_obj):
         )
 
         # Found a previously failed release
-        logger.log(u'Failed release found for {show} {ep}: {release}'.format
-                   (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode),
-                    release=result['release']), logger.DEBUG)
+        msg = u'Failed release found for {show} {ep}: {release}'
+        log.debug(
+            msg.format(show=ep_obj.series.name,
+                       ep=episode_num(ep_obj.season, ep_obj.episode),
+                       release=result['release'])
+        )
         return release, provider
 
     # Release was not found
-    logger.log(u'No releases found for {show} {ep}'.format
-               (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
+    log.debug(u'No releases found for {show} {ep}'.format(show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
     return release, provider

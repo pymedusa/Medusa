@@ -1,11 +1,11 @@
 # coding=utf-8
-"""Tests for medusa/post_processor.py."""
+"""Tests for medusa/post.py."""
 import os
 
-from medusa import app
-from medusa.post_processor import PostProcessor as Sut
-
 import pytest
+
+from medusa import app
+from medusa.processing.post import PostProcessor as Sut
 
 
 @pytest.mark.parametrize('p', [

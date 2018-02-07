@@ -37,7 +37,7 @@ from medusa.helper.common import (
 from medusa.helpers import (
     download_file,
 )
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -675,7 +675,7 @@ class GenericProvider(object):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
         if not self.series:
             return None
-        return self.series.indexerid if self.series.indexer == INDEXER_TVDBV2 else self.series.externals.get('tvdb_id')
+        return self.series.indexerid if self.series.indexer == INDEXER_TVDB else self.series.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
         search_string = {

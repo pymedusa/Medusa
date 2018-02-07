@@ -5,14 +5,14 @@
 import logging
 import warnings
 
-from indexer_exceptions import IndexerUserAbort
+from exceptions import IndexerUserAbort
 
 __author__ = 'p0psicles'
 __version__ = '1.0'
 
 
 log = logging.getLogger(__name__)
-log.logger.addHandler(logging.NullHandler())
+log.addHandler(logging.NullHandler())
 
 
 class BaseUI(object):

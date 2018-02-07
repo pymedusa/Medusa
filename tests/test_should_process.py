@@ -1,8 +1,9 @@
 # coding=utf-8
 """Tests for medusa/test_should_process.py."""
-from medusa.common import Quality
-from medusa.post_processor import PostProcessor
 import pytest
+
+from medusa.common import Quality
+from medusa.processing.post import PostProcessor
 
 
 @pytest.mark.parametrize('p', [

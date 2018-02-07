@@ -9,9 +9,9 @@ from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
-                                                IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDB, INDEXER_TVMAZE
+from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
+                                        IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -926,7 +926,7 @@ class GenericMetadata(object):
                 epg_url = showXML.findtext(u'episodeguide/url').lower()
                 if str(indexer_id) in epg_url:
                     if u'thetvdb.com' in epg_url:
-                        indexer = INDEXER_TVDBV2
+                        indexer = INDEXER_TVDB
                     elif u'tvmaze.com' in epg_url:
                         indexer = INDEXER_TVMAZE
                     elif u'themoviedb.org' in epg_url:

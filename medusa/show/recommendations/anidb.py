@@ -6,7 +6,7 @@ import logging
 import traceback
 
 from medusa import app
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
@@ -47,7 +47,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(self,
                                    show_obj.aid,
                                    show_obj.title,
-                                   INDEXER_TVDBV2,
+                                   INDEXER_TVDB,
                                    tvdb_id,
                                    **{'rating': show_obj.rating_permanent,
                                       'votes': show_obj.count_permanent,

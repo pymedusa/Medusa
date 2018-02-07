@@ -382,12 +382,10 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 self.success = True
 
                 if self.manual_search_type == 'season':
-                    ui.notifications.message('We have found season packs for {show_name}'
-                                             .format(show_name=self.show.name),
+                    ui.notifications.message('We have found season packs for {show_name}'.format(show_name=self.show.name),
                                              'These should become visible in the manual select page.')
                 else:
-                    ui.notifications.message('We have found results for {ep}'
-                                             .format(ep=self.segment[0].pretty_name()),
+                    ui.notifications.message('We have found results for {ep}'.format(ep=self.segment[0].pretty_name()),
                                              'These should become visible in the manual select page.')
 
             else:
@@ -399,7 +397,6 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                         'ep': self.segment[0].pretty_name()
                     }
                 )
-
         # TODO: Remove catch all exception.
         except Exception:
             self.success = False

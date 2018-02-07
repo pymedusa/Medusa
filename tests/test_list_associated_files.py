@@ -2,10 +2,10 @@
 """Tests for medusa/test_list_associated_files.py."""
 import os
 
-from medusa import app
-from medusa.post_processor import PostProcessor
-
 import pytest
+
+from medusa import app
+from medusa.processing.post import PostProcessor
 
 
 def _rar_basename(filepath, files):

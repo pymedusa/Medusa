@@ -1,5 +1,10 @@
 <%!
+    import logging
     from medusa import app
+
+    log = logging.getLogger(__name__)
+    log.addHandler(logging.NullHandler())
+    log.debug('Loading {0}'.format(__file__))
 %>
 <!DOCTYPE html>
 <html>

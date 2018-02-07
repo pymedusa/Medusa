@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""Custom exceptions used or raised by tvdbv2_api."""
+"""Custom exceptions used or raised by tvdb_api."""
 
 __author__ = "p0psicles"
 __version__ = "1.0"

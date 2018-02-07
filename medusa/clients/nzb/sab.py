@@ -81,8 +81,10 @@ def send_nzb_get(params, nzb):
         data = response.json()
     except ValueError:
         log.info('Error connecting to sab, no data returned')
+    except AttributeError:
+        log.warning('No response received.')
     else:
-        log.debug('Result text from SAB: {0}', data)
+        log.debug('Result text from SAB: {info}', {'info': data})
         result, text = _check_sab_response(data)
         del text
         return result
@@ -118,7 +120,7 @@ def send_nzb_post(params, nzb):
     except ValueError:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}', data)
+        log.debug('Result text from SAB: {info}', {'info': data})
         result, text = _check_sab_response(data)
         del text
         return result

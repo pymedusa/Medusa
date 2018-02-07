@@ -20,7 +20,7 @@ from medusa.helper.exceptions import ex
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 log = logging.getLogger(__name__)
-log.logger.addHandler(logging.NullHandler())
+log.addHandler(logging.NullHandler())
 
 
 class TorrentRssProvider(TorrentProvider):

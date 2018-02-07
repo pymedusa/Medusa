@@ -4,12 +4,12 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 
 from medusa import (
     app,
     config,
-    logger,
     naming,
     ui,
 )
@@ -19,6 +19,9 @@ from medusa.server.web.core import PageTemplate
 
 from tornroutes import route
 from unrar2 import RarFile
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/config/postProcessing(/?.*)')
@@ -155,7 +158,7 @@ class ConfigPostProcessing(Config):
 
         if results:
             for x in results:
-                logger.log(x, logger.WARNING)
+                log.error(x)
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
@@ -231,8 +234,8 @@ class ConfigPostProcessing(Config):
             testing = RarFile(rar_path).read_files('*test.txt')
             if testing[0][1] == 'This is only a test.':
                 return 'supported'
-            logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
+            log.error('Rar Not Supported: Can not read the content of test file')
             return 'not supported'
         except Exception as msg:
-            logger.log('Rar Not Supported: {error}'.format(error=ex(msg)), logger.ERROR)
+            log.error('Rar Not Supported: {error}'.format(error=ex(msg)))
             return 'not supported'

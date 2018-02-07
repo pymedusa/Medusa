@@ -14,7 +14,6 @@ def initialize():
     _check_python_version()
     _configure_syspath()
     _monkey_patch_fs_functions()
-    _monkey_patch_logging_functions()
     _early_basic_logging()
     _register_utf8_codec()
     _ssl_configuration()
@@ -55,11 +54,6 @@ def _register_utf8_codec():
 def _monkey_patch_fs_functions():
     from medusa.init import filesystem
     filesystem.initialize()
-
-
-def _monkey_patch_logging_functions():
-    from medusa.init import logconfig
-    logconfig.initialize()
 
 
 def _early_basic_logging():

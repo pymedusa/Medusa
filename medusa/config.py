@@ -21,15 +21,16 @@ import datetime
 import logging
 import os.path
 import re
+import sys
 
 from contextlib2 import suppress
-from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa import app, db, helpers, naming, scheduler
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.version_checker import CheckVersion
 from requests.compat import urlsplit
-from six import iteritems, string_types, text_type
+from six import string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -641,14 +642,11 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 # Check_setting_str                                                            #
 ################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
+def check_setting_str(config, cfg_name, item_name, def_val, silent=True, valid_values=None, **kwargs):
+    if kwargs:
+        raise ValueError(kwargs)
     # For passwords you must include the word `password` in the item_name
     # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
-    if not censor_log:
-        censor_level = common.privacy_levels['stupid']
-    else:
-        censor_level = common.privacy_levels[censor_log]
-    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
     if bool(item_name.find('password') + 1):
         encryption_version = app.ENCRYPTION_VERSION
     else:
@@ -666,10 +664,6 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             config[cfg_name] = {}
             config[cfg_name][item_name] = helpers.encrypt(my_val, encryption_version)
 
-    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
-        if not item_name.endswith('custom_url'):
-            logger.censored_items[cfg_name, item_name] = my_val
-
     if not silent:
         log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
@@ -682,15 +676,12 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 ################################################################################
 # Check_setting_list                                                           #
 ################################################################################
-def check_setting_list(config, cfg_name, item_name, default=None, silent=True, censor_log=False, transform=None, transform_default=0, split_value=False):
+def check_setting_list(config, cfg_name, item_name, default=None, silent=True, transform=None, transform_default=0, split_value=False, **kwargs):
     """Check a setting, using the settings section and item name. Expect to return a list."""
-    default = default or []
+    if kwargs:
+        raise ValueError(kwargs)
 
-    if not censor_log:
-        censor_level = common.privacy_levels['stupid']
-    else:
-        censor_level = common.privacy_levels[censor_log]
-    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+    default = default or []
 
     try:
         my_val = config[cfg_name][item_name]
@@ -701,10 +692,6 @@ def check_setting_list(config, cfg_name, item_name, default=None, silent=True, c
         except Exception:
             config[cfg_name] = {}
             config[cfg_name][item_name] = my_val
-
-    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
-        if not item_name.endswith('custom_url'):
-            logger.censored_items[cfg_name, item_name] = my_val
 
     if split_value:
         if isinstance(my_val, string_types):
@@ -807,11 +794,14 @@ class ConfigMigrator(object):
         """
 
         if self.config_version > self.expected_config_version:
-            logger.log_error_and_exit(
-                u"""Your config version (%i) has been incremented past what this version of the application supports (%i).
-                If you have used other forks or a newer version of the application, your config file may be unusable due to their modifications.""" %
-                (self.config_version, self.expected_config_version)
-            )
+            msg = u"""
+            Your config version (%i) has been incremented past what this
+            version of the application supports (%i).
+
+            If you have used other forks or a newer version of the application,
+            your config file may be unusable due to their modifications.
+            """
+            sys.exit(msg % (self.config_version, self.expected_config_version))
 
         app.CONFIG_VERSION = self.config_version
 
@@ -825,7 +815,7 @@ class ConfigMigrator(object):
 
             log.info(u'Backing up config before upgrade')
             if not helpers.backup_versioned_file(app.CONFIG_FILE, self.config_version):
-                logger.log_error_and_exit(u'Config backup failed, abort upgrading config')
+                sys.exit(u'Config backup failed, abort upgrading config')
             else:
                 log.info(u'Proceeding with upgrade')
 
@@ -1087,8 +1077,8 @@ class ConfigMigrator(object):
         app.KODI_UPDATE_FULL = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_full', 0))
         app.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_onlyfirst', 0))
         app.KODI_HOST = check_setting_str(self.config_obj, 'XBMC', 'xbmc_host', '')
-        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log=True)
-        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log=True)
+        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '')
+        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '')
         app.METADATA_KODI = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0|0|0|0|0')
         app.METADATA_KODI_12PLUS = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0|0|0|0|0')
 
@@ -1098,8 +1088,8 @@ class ConfigMigrator(object):
 
     def _migrate_v8(self):
         app.PLEX_CLIENT_HOST = check_setting_str(self.config_obj, 'Plex', 'plex_host', '')
-        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
-        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
+        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '')
+        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '')
         app.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
 
     def _migrate_v9(self):

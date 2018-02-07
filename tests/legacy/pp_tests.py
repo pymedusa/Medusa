@@ -23,7 +23,7 @@ import unittest
 
 from medusa import app
 from medusa.name_cache import addNameToCache
-from medusa.post_processor import PostProcessor
+from medusa.processing.post import PostProcessor
 from medusa.tv import Episode, Series
 from tests.legacy import test_lib as test
 

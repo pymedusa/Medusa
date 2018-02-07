@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import ast
 import json
+import logging
 import os
 import time
 from datetime import date, datetime
@@ -15,11 +16,11 @@ from medusa import (
     config,
     db,
     helpers,
-    logger,
     name_cache,
     notifiers,
     providers,
     subtitles,
+    system,
     ui,
 )
 from medusa.black_and_white_list import (
@@ -58,8 +59,8 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
@@ -101,8 +102,6 @@ from medusa.server.web.core import (
 )
 from medusa.show.history import History
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
 from requests.compat import (
@@ -120,6 +119,9 @@ from traktor import (
     TraktApi,
     TraktException,
 )
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/home(/?.*)')
@@ -390,7 +392,7 @@ class Home(WebRoot):
     @staticmethod
     def twitterStep2(key):
         result = notifiers.twitter_notifier._get_credentials(key)  # pylint: disable=protected-access
-        logger.log(u'result: {result}'.format(result=result))
+        log.info(u'result: {result}'.format(result=result))
 
         return 'Key verification successful' if result else 'Unable to verify key'
 
@@ -693,7 +695,7 @@ class Home(WebRoot):
                         controller='home', action='status')
 
     def shutdown(self, pid=None):
-        if not Shutdown.stop(pid):
+        if not system.shutdown(app, app.events, pid):
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         title = 'Shutting down'
@@ -702,7 +704,7 @@ class Home(WebRoot):
         return self._genericMessage(title, message)
 
     def restart(self, pid=None):
-        if not Restart.restart(pid):
+        if not system.restart(app, app.events, pid):
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         t = PageTemplate(rh=self, filename='restart.mako')
@@ -766,25 +768,25 @@ class Home(WebRoot):
         db_status = checkversion.getDBcompare()
 
         if db_status == 'upgrade':
-            logger.log(u'Checkout branch has a new DB version - Upgrade', logger.DEBUG)
+            log.debug(u'Checkout branch has a new DB version - Upgrade')
             return json.dumps({
                 'status': 'success',
                 'message': 'upgrade',
             })
         elif db_status == 'equal':
-            logger.log(u'Checkout branch has the same DB version - Equal', logger.DEBUG)
+            log.debug(u'Checkout branch has the same DB version - Equal')
             return json.dumps({
                 'status': 'success',
                 'message': 'equal',
             })
         elif db_status == 'downgrade':
-            logger.log(u'Checkout branch has an old DB version - Downgrade', logger.DEBUG)
+            log.debug(u'Checkout branch has an old DB version - Downgrade')
             return json.dumps({
                 'status': 'success',
                 'message': 'downgrade',
             })
         else:
-            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.WARNING)
+            log.warning(u'Checkout branch couldn\'t compare DB version.')
             return json.dumps({
                 'status': 'error',
                 'message': 'General exception',
@@ -1021,7 +1023,7 @@ class Home(WebRoot):
             )
         except Exception as msg:
             error_message = 'Couldn\'t read cached results. Error: {error}'.format(error=msg)
-            logger.log(error_message)
+            log.info(error_message)
             return self._genericMessage('Error', error_message)
 
         if not cached_result or not all([cached_result[b'url'],
@@ -1337,7 +1339,7 @@ class Home(WebRoot):
 
         # TODO: Remove the catchall, make sure we only catch expected exceptions!
         except Exception as msg:
-            logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
+            log.info("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
         # There is some logic for this in the partials/showheader.mako page.
         main_db_con = db.DBConnection()
@@ -1492,8 +1494,10 @@ class Home(WebRoot):
                         groups = anime.get_groups()
                     except Exception as e:
                         errors += 1
-                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
-                                   (error=e.message), logger.WARNING)
+                        log.warning(
+                            u'Unable to retreive Fansub Groups from AniDB.'
+                            u' Error:{error}'.format(error=e.message)
+                        )
 
             with series_obj.lock:
                 show = series_obj
@@ -1527,7 +1531,7 @@ class Home(WebRoot):
                 )
             )
             status = 'Unexpected result when changing language to'
-            log_level = logger.WARNING
+            log_level = logging.WARNING
             language = series_obj.lang
             try:
                 do_update = self.check_show_for_language(
@@ -1546,11 +1550,11 @@ class Home(WebRoot):
             else:
                 language = indexer_lang
                 status = 'Changing language to'
-                log_level = logger.INFO
+                log_level = logging.INFO
             finally:
                 indexer_lang = language
                 msg = msg.format(status=status)
-                logger.log(msg, log_level)
+                log.info(msg, log_level)
 
         if scene == series_obj.scene and anime == series_obj.anime:
             do_update_scene_numbering = False
@@ -1607,8 +1611,11 @@ class Home(WebRoot):
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                 except CantRefreshShowException as e:
                     errors += 1
-                    logger.log("Unable to refresh show '{show}': {error}".format
-                               (show=series_obj.name, error=e.message), logger.WARNING)
+                    log.warning(
+                        "Unable to refresh show '{show}': {error}".format(
+                            show=series_obj.name, error=e.message
+                        )
+                    )
 
             # Check if we should erase parsed cached results for that show
             do_erase_parsed_cache = False
@@ -1638,24 +1645,32 @@ class Home(WebRoot):
             new_location = os.path.normpath(location)
             if old_location != new_location:
                 changed_location = True
-                logger.log('Changing show location to: {new}'.format(new=new_location), logger.INFO)
+                log.info('Changing show location to: {new}'.format(new=new_location))
                 if not os.path.isdir(new_location):
                     if app.CREATE_MISSING_SHOW_DIRS:
-                        logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
+                        log.info(u"Show directory doesn't exist, creating it")
                         try:
                             os.mkdir(new_location)
                         except OSError as error:
                             errors += 1
                             changed_location = False
-                            logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
-                                       (location=new_location, msg=error), logger.WARNING)
+                            log.warning(
+                                u"Unable to create the show directory"
+                                u" '{location}'. Error: {msg}".format(
+                                    location=new_location, msg=error
+                                )
+                            )
                         else:
-                            logger.log(u"New show directory created", logger.INFO)
+                            log.info(u"New show directory created")
                             helpers.chmod_as_parent(new_location)
                     else:
-                        logger.log("New location '{location}' does not exist. "
-                                   "Enable setting 'Create missing show dirs'".format
-                                   (location=location), logger.WARNING)
+                        log.warning(
+                            "New location '{location}' does not exist."
+                            " Enable setting"
+                            " 'Create missing show dirs'".format(
+                                location=location
+                            )
+                        )
 
                 # Save new location to DB only if we changed it
                 if changed_location:
@@ -1666,8 +1681,12 @@ class Home(WebRoot):
                         app.show_queue_scheduler.action.refreshShow(series_obj)
                     except CantRefreshShowException as e:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
-                                   (show=series_obj.name, error=e.message), logger.WARNING)
+                        log.warning(
+                            "Unable to refresh show '{show}'."
+                            " Error: {error}".format(
+                                show=series_obj.name, error=e.message
+                            )
+                        )
 
             # Save all settings changed while in series_obj.lock
             series_obj.save_to_db()
@@ -1679,8 +1698,11 @@ class Home(WebRoot):
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as e:
                 errors += 1
-                logger.log("Unable to update show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                log.warning(
+                    "Unable to update show '{show}': {error}".format(
+                        show=series_obj.name, error=e.message
+                    )
+                )
 
         if do_update_exceptions:
             try:
@@ -1689,8 +1711,12 @@ class Home(WebRoot):
                 name_cache.build_name_cache(series_obj)
             except CantUpdateShowException:
                 errors += 1
-                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                log.warning(
+                    "Unable to force an update on scene exceptions for show"
+                    " '{show}': {error}".format(
+                        show=series_obj.name, error=e.message
+                    )
+                )
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
@@ -1698,8 +1724,12 @@ class Home(WebRoot):
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                log.warning(
+                    "Unable to force an update on scene numbering for show"
+                    " '{show}': {error}".format(
+                        show=series_obj.name, error=e.message
+                    )
+                )
 
             # Must erase cached DB results when toggling scene numbering
             self.erase_cache(series_obj)
@@ -1713,8 +1743,12 @@ class Home(WebRoot):
                 app.show_queue_scheduler.action.refreshShow(series_obj)
             except CantRefreshShowException as e:
                 errors += 1
-                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           "Error: {error}".format(show=series_obj.name, error=e.message), logger.WARNING)
+                log.warning(
+                    "Unable to refresh show '{show}'. Please manually trigger"
+                    " a full show refresh. Error: {error}".format(
+                        show=series_obj.name, error=e.message
+                    )
+                )
 
         if directCall:
             return errors
@@ -1723,7 +1757,7 @@ class Home(WebRoot):
             ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
                                    (num=errors, s='s' if errors > 1 else ''))
 
-        logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
+        log.debug(u"Finished editing show: {show}".format(show=series_obj.name))
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     @staticmethod
@@ -1747,12 +1781,10 @@ class Home(WebRoot):
                         [series_obj.series_id]
                     )
                 except Exception:
-                    logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
-                               (provider=cur_provider, show=series_obj.name), logger.DEBUG)
+                    log.debug(u'Unable to delete cached results for provider {provider} for show: {show}'.format(provider=cur_provider, show=series_obj.name))
 
         except Exception:
-            logger.log(u'Unable to delete cached results for show: {show}'.format
-                       (show=series_obj.name), logger.DEBUG)
+            log.debug(u'Unable to delete cached results for show: {show}'.format(show=series_obj.name))
 
     def togglePause(self, indexername=None, seriesid=None):
         # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
@@ -1942,16 +1974,14 @@ class Home(WebRoot):
             for cur_ep in eps.split('|'):
 
                 if not cur_ep:
-                    logger.log(u'Current episode was empty when trying to set status', logger.DEBUG)
+                    log.debug(u'Current episode was empty when trying to set status')
 
-                logger.log(u'Attempting to set status on episode {episode} to {status}'.format
-                           (episode=cur_ep, status=status), logger.DEBUG)
+                log.debug(u'Attempting to set status on episode {episode} to {status}'.format(episode=cur_ep, status=status))
 
                 ep_info = cur_ep.split('x')
 
                 if not all(ep_info):
-                    logger.log(u'Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
-                               (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
+                    log.debug(u'Something went wrong when trying to set status, season: {season}, episode: {episode}'.format(season=ep_info[0], episode=ep_info[1]))
                     continue
 
                 ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
@@ -1970,32 +2000,39 @@ class Home(WebRoot):
                 with ep_obj.lock:
                     # don't let them mess up UNAIRED episodes
                     if ep_obj.status == UNAIRED:
-                        logger.log(u'Refusing to change status of {episode} because it is UNAIRED'.format
-                                   (episode=cur_ep), logger.WARNING)
+                        log.warning(
+                            u'Refusing to change status of {episode}'
+                            u' because it is UNAIRED'.format(episode=cur_ep)
+                        )
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
                     if all([status in Quality.DOWNLOADED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
                             not os.path.isfile(ep_obj.location)]):
-                        logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format
-                                   (episode=cur_ep), logger.WARNING)
+                        log.warning(
+                            u'Refusing to change status of {episode} to'
+                            u' DOWNLOADED because it\'s not'
+                            u' SNATCHED/DOWNLOADED'.format(episode=cur_ep)
+                        )
                         continue
 
                     if all([status == FAILED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Refusing to change status of {episode} to FAILED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
+                        log.warning(
+                            u'Refusing to change status of {episode} to'
+                            u' FAILED because it\'s not'
+                            u' SNATCHED/DOWNLOADED'.format(episode=cur_ep)
+                        )
                         continue
 
                     if all([status == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
+                        log.info(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
 
                     if ep_obj.manually_searched and status == WANTED:
-                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
+                        log.debug(u"Resetting 'manually searched' flag as episode was changed to WANTED")
                         ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
@@ -2016,8 +2053,7 @@ class Home(WebRoot):
                 elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
                     upd = 'Remove'
 
-                logger.log(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format
-                           (action=upd, show=series_obj), logger.DEBUG)
+                log.debug(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(action=upd, show=series_obj))
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
@@ -2035,18 +2071,24 @@ class Home(WebRoot):
                 app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
-                logger.log(u'Sending backlog for {show} season {season} '
-                           u'because some eps were set to wanted'.format
-                           (show=series_obj.name, season=season))
+                log.info(
+                    u'Sending backlog for {show} season {season}'
+                    u' because some eps were set to wanted'.format(
+                        show=series_obj.name, season=season
+                    )
+                )
 
             msg += '</ul>'
 
             if segments:
                 ui.notifications.message('Backlog started', msg)
         elif status == WANTED and series_obj.paused:
-            logger.log(u'Some episodes were set to wanted, but {show} is paused. '
-                       u'Not adding to Backlog until show is unpaused'.format
-                       (show=series_obj.name))
+            log.info(
+                u'Some episodes were set to wanted, but {show} is paused.'
+                u' Not adding to Backlog until show is unpaused'.format(
+                    show=series_obj.name
+                )
+            )
 
         if status == FAILED:
             msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=series_obj.name)
@@ -2057,9 +2099,12 @@ class Home(WebRoot):
                 app.search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
-                logger.log(u'Retrying Search for {show} season {season} '
-                           u'because some eps were set to failed'.format
-                           (show=series_obj.name, season=season))
+                log.info(
+                    u'Retrying Search for {show} season {season} because'
+                    u' some eps were set to failed'.format(
+                        show=series_obj.name, season=season
+                    )
+                )
 
             msg += '</ul>'
 
@@ -2145,8 +2190,8 @@ class Home(WebRoot):
                 b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
                 [indexer_name_to_id(indexername), seriesid, ep_info[0], ep_info[1]])
             if not ep_result:
-                logger.log(u'Unable to find an episode for {episode}, skipping'.format
-                           (episode=cur_ep), logger.WARNING)
+                log.warning(u'Unable to find an episode for {episode},'
+                            u' skipping'.format(episode=cur_ep))
                 continue
             related_eps_result = main_db_con.select(
                 b'SELECT season, episode '
@@ -2224,8 +2269,12 @@ class Home(WebRoot):
 
         try:
             if lang:
-                logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
-                           (show=ep_obj.series.name, lang=lang))
+                log.info(
+                    'Manual re-downloading subtitles for {show}'
+                    ' with language {lang}'.format(
+                        show=ep_obj.series.name, lang=lang
+                    )
+                )
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
@@ -2250,7 +2299,7 @@ class Home(WebRoot):
 
     def manual_search_subtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
         mode = 'downloading' if picked_id else 'searching'
-        logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
+        log.info('Starting to manual {mode} subtitles'.format(mode=mode))
         try:
             if release_id:
                 # Release ID is sent when using postpone
@@ -2269,21 +2318,21 @@ class Home(WebRoot):
             release_name = ep_obj.release_name or os.path.basename(video_path)
         except IndexError:
             ui.notifications.message('Outdated list', 'Please refresh page and try again')
-            logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
+            log.warning('Outdated list. Please refresh page and try again')
             return json.dumps({'result': 'failure'})
         except (ValueError, TypeError) as e:
             ui.notifications.message('Error', "Please check logs")
-            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
-                       (mode=mode, error_msg=e), logger.ERROR)
+            log.error('Error while manual {mode} subtitles.'
+                      ' Error: {error_msg}'.format(mode=mode, error_msg=e))
             return json.dumps({'result': 'failure'})
 
         if not os.path.isfile(video_path):
             ui.notifications.message(ep_obj.series.name, "Video file no longer exists. Can't search for subtitles")
-            logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
+            log.debug('Video file no longer exists: {video_file}'.format(video_file=video_path))
             return json.dumps({'result': 'failure'})
 
         if mode == 'searching':
-            logger.log("Manual searching subtitles for: {0}".format(release_name))
+            log.info("Manual searching subtitles for: {0}".format(release_name))
             found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
             if found_subtitles:
                 ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
@@ -2292,7 +2341,7 @@ class Home(WebRoot):
             result = 'success' if found_subtitles else 'failure'
             subtitles_result = found_subtitles
         else:
-            logger.log("Manual downloading subtitles for: {0}".format(release_name))
+            log.info("Manual downloading subtitles for: {0}".format(release_name))
             new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id,
                                                           video_path=video_path)
             if new_manual_subtitle:
@@ -2364,8 +2413,13 @@ class Home(WebRoot):
                 'errorMessage': ep_obj,
             })
         elif series_obj.is_anime:
-            logger.log(u'Set absolute scene numbering for {show} from {absolute} to {scene_absolute}'.format
-                       (show=seriesid, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
+            log.debug(
+                u'Set absolute scene numbering for {show} from {absolute} to'
+                u' {scene_absolute}'.format(
+                    show=seriesid, absolute=forAbsolute,
+                    scene_absolute=sceneAbsolute
+                )
+            )
 
             forAbsolute = int(forAbsolute)
             if sceneAbsolute is not None:
@@ -2373,9 +2427,14 @@ class Home(WebRoot):
 
             set_scene_numbering(series_obj, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
         else:
-            logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
-                       (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
-                        scene_season=sceneSeason, scene_episode=sceneEpisode), logger.DEBUG)
+            log.debug(
+                u'setEpisodeSceneNumbering for {show} from {season}x{episode}'
+                u' to {scene_season}x{scene_episode}'.format(
+                    show=series_obj.indexerid, season=forSeason,
+                    episode=forEpisode, scene_season=sceneSeason,
+                    scene_episode=sceneEpisode
+                )
+            )
 
             forSeason = int(forSeason)
             forEpisode = int(forEpisode)
@@ -2432,18 +2491,18 @@ class Home(WebRoot):
 
     @staticmethod
     def fetch_releasegroups(show_name):
-        logger.log(u'ReleaseGroups: {show}'.format(show=show_name), logger.INFO)
+        log.info(u'ReleaseGroups: {show}'.format(show=show_name))
         if helpers.set_up_anidb_connection():
             try:
                 anime = adba.Anime(app.ADBA_CONNECTION, name=show_name)
                 groups = anime.get_groups()
-                logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
+                log.info(u'ReleaseGroups: {groups}'.format(groups=groups))
                 return json.dumps({
                     'result': 'success',
                     'groups': groups,
                 })
             except AttributeError as msg:
-                logger.log(u'Unable to get ReleaseGroups: {error}'.format(error=msg), logger.DEBUG)
+                log.debug(u'Unable to get ReleaseGroups: {error}'.format(error=msg))
 
         return json.dumps({
             'result': 'failure',

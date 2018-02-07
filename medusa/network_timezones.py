@@ -18,12 +18,13 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import logging
 import re
 
-from app import BASE_PYMEDUSA_URL
 from dateutil import tz
 
-from medusa import db, logger
+from medusa import db
+from medusa.app import BASE_PYMEDUSA_URL
 from medusa.helper.common import try_int
 from medusa.session.core import MedusaSafeSession
 
@@ -33,6 +34,10 @@ try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
 except Exception:
     app_timezone = tz.tzlocal()
+
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 # regex to parse time (12/24 hour format)
 time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meridiem>[PA]\.? ?M?)?\b', re.I)
@@ -47,11 +52,11 @@ session = MedusaSafeSession()
 def update_network_dict():
     """Update timezone information from Medusa repositories."""
 
-    logger.log(u'Started updating network timezones', logger.DEBUG)
+    log.debug(u'Started updating network timezones')
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
     if not response or not response.text:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.INFO)
+        log.info(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url)
         load_network_dict()
         return
 
@@ -63,13 +68,12 @@ def update_network_dict():
                 continue
             remote_networks[key] = val
     except (IOError, OSError) as error:
-        logger.log('Unable to build the network dictionary. Aborting update. Error: {error}'.format
-                   (error=error), logger.WARNING)
+        log.warning('Unable to build the network dictionary. Aborting update. Error: {error}'.format(error=error))
         return
 
     # Don't continue because if empty dict, var `existing` be false for all networks, thus deleting all
     if not remote_networks:
-        logger.log(u'Unable to update network timezones as fetched network dict is empty', logger.WARNING)
+        log.warning(u'Unable to update network timezones as fetched network dict is empty')
         return
 
     cache_db_con = db.DBConnection('cache.db')
@@ -97,7 +101,7 @@ def update_network_dict():
         cache_db_con.mass_action(queries)
         load_network_dict()
 
-    logger.log(u'Finished updating network timezones', logger.DEBUG)
+    log.debug(u'Finished updating network timezones')
 
 
 # load network timezones from db into dict
@@ -135,7 +139,7 @@ def get_network_timezone(network, _network_dict):
     if not network_tz_name and network and network not in missing_network_timezones:
         missing_network_timezones.add(network)
         if network is not None:
-            logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
+            log.error(u'Missing time zone for network: %s' % network)
 
     return tz.gettz(network_tz_name) if network_tz_name else app_timezone
 

@@ -2,11 +2,16 @@
 
 from __future__ import unicode_literals
 
-from medusa import app, logger, ui
+import logging
+
+from medusa import app, ui
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.manage.handler import Manage
 
 from tornroutes import route
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 @route('/manage/manageSearches(/?.*)')
@@ -16,7 +21,6 @@ class ManageSearches(Manage):
 
     def index(self):
         t = PageTemplate(rh=self, filename='manage_manageSearches.mako')
-        # t.backlogPI = api.backlog_search_scheduler.action.get_progress_indicator()
 
         return t.render(backlogPaused=app.search_queue_scheduler.action.is_backlog_paused(),
                         backlogRunning=app.search_queue_scheduler.action.is_backlog_in_progress(),
@@ -32,7 +36,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = app.backlog_search_scheduler.forceRun()
         if result:
-            logger.log('Backlog search forced')
+            log.info('Backlog search forced')
             ui.notifications.message('Backlog search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -42,7 +46,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = app.daily_search_scheduler.forceRun()
         if result:
-            logger.log('Daily search forced')
+            log.info('Daily search forced')
             ui.notifications.message('Daily search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -51,7 +55,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = app.proper_finder_scheduler.forceRun()
         if result:
-            logger.log('Find propers search forced')
+            log.info('Find propers search forced')
             ui.notifications.message('Find propers search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -60,7 +64,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = app.subtitles_finder_scheduler.forceRun()
         if result:
-            logger.log('Subtitle search forced')
+            log.info('Subtitle search forced')
             ui.notifications.message('Subtitle search started')
 
         return self.redirect('/manage/manageSearches/')

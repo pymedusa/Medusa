@@ -12,13 +12,16 @@ from collections import defaultdict
 import adba
 
 from medusa import app, db, helpers
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDB
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
 from six import iteritems
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
@@ -29,7 +32,7 @@ safe_session = MedusaSafeSession()
 
 def refresh_exceptions_cache():
     """Query the db for show exceptions and update the exceptions_cache."""
-    logger.info('Updating exception_cache and exception_season_cache')
+    log.info('Updating exception_cache and exception_season_cache')
 
     # Empty the module level variables
     exceptions_cache.clear()
@@ -54,7 +57,7 @@ def refresh_exceptions_cache():
         if show not in exceptions_cache[series][season]:
             exceptions_cache[series][season].add(show)
 
-    logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
+    log.info('Finished processing {0} scene exceptions.', len(exceptions))
 
 
 def get_last_refresh(ex_list):
@@ -169,9 +172,9 @@ def get_scene_exceptions_by_name(show_name):
         )
 
         if show_name.lower() in show_names:
-            logger.debug(
+            log.debug(
                 'Scene exception lookup got indexer ID {cur_indexer},'
-                ' using that', cur_indexer=indexer_id
+                ' using that', {'cur_indexer': indexer_id}
             )
             result.append((indexer_id, season, indexer))
 
@@ -180,7 +183,7 @@ def get_scene_exceptions_by_name(show_name):
 
 def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
     """Update database with all show scene exceptions by indexer_id."""
-    logger.info('Updating scene exceptions...')
+    log.info('Updating scene exceptions...')
 
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
@@ -264,7 +267,7 @@ def retrieve_exceptions(force=False, exception_type=None):
                         ])
     if queries:
         cache_db_con.mass_action(queries)
-        logger.info('Updated scene exceptions.')
+        log.info('Updated scene exceptions.')
 
 
 def combine_exceptions(*scene_exceptions):
@@ -285,19 +288,18 @@ def _get_custom_exceptions(force):
     if force or should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
             location = indexerApi(indexer).config['scene_loc']
-            logger.info(
-                'Checking for scene exception updates from {location}',
-                location=location
-            )
+            log.info('Checking for scene exception updates from {location}',
+                     {'location': location})
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
                 jdata = safe_session.get(location, timeout=60).json()
             except (ValueError, AttributeError) as error:
-                logger.debug(
+                log.debug(
                     'Check scene exceptions update failed. Unable to '
-                    'update from {location}. Error: {error}'.format(
-                        location=location, error=error
-                    )
+                    'update from {location}. Error: {error}', {
+                        'location': location,
+                        'error': error,
+                    }
                 )
                 # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
                 return custom_exceptions
@@ -338,7 +340,7 @@ def _get_xem_exceptions(force):
                 continue
             except ValueError as error:
                 # XEM origin for indexer is invalid
-                logger.error(
+                log.error(
                     'Error getting XEM scene exceptions for {indexer}:'
                     ' {error}'.format(indexer=indexer_api.name, error=error)
                 )
@@ -347,7 +349,7 @@ def _get_xem_exceptions(force):
                 # XEM origin for indexer is valid
                 params['origin'] = origin
 
-            logger.info(
+            log.info(
                 'Checking for XEM scene exceptions updates for'
                 ' {indexer_name}'.format(
                     indexer_name=indexer_api.name
@@ -358,7 +360,7 @@ def _get_xem_exceptions(force):
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
-                logger.debug(
+                log.debug(
                     'Check scene exceptions update failed for {indexer}.'
                     ' Unable to get URL: {url} Error: {error}'.format(
                         indexer=indexer_api.name, url=url, error=error,
@@ -367,7 +369,7 @@ def _get_xem_exceptions(force):
                 continue
 
             if not jdata['data'] or jdata['result'] == 'failure':
-                logger.debug(
+                log.debug(
                     'No data returned from XEM while checking for scene'
                     ' exceptions. Update failed for {indexer}'.format(
                         indexer=indexer_api.name
@@ -379,14 +381,14 @@ def _get_xem_exceptions(force):
                 try:
                     xem_exceptions[indexer][indexer_id] = exceptions
                 except Exception as error:
-                    logger.warning(
+                    log.warning(
                         'XEM: Rejected entry: Indexer ID: {indexer_id},'
                         ' Exceptions: {e}'.format(
                             indexer_id=indexer_id, e=exceptions
                         )
                     )
-                    logger.warning('XEM: Rejected entry error message:'
-                                   ' {error}'.format(error=error))
+                    log.warning('XEM: Rejected entry error message:'
+                                ' {error}'.format(error=error))
 
         set_last_refresh('xem')
 
@@ -396,13 +398,13 @@ def _get_xem_exceptions(force):
 def _get_anidb_exceptions(force):
     anidb_exceptions = defaultdict(dict)
     # AniDB exceptions use TVDB as indexer
-    exceptions = anidb_exceptions[INDEXER_TVDBV2]
+    exceptions = anidb_exceptions[INDEXER_TVDB]
 
     if force or should_refresh('anidb'):
-        logger.info('Checking for scene exceptions updates from AniDB')
+        log.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:
-            if all([show.name, show.is_anime, show.indexer == INDEXER_TVDBV2]):
+            if all([show.name, show.is_anime, show.indexer == INDEXER_TVDB]):
                 try:
                     anime = adba.Anime(
                         None,
@@ -411,7 +413,7 @@ def _get_anidb_exceptions(force):
                         autoCorrectName=True
                     )
                 except ValueError as error:
-                    logger.debug(
+                    log.debug(
                         "Couldn't update scene exceptions for {show},"
                         " AniDB doesn't have this show. Error: {msg}".format(
                             show=show.name, msg=error,
@@ -419,7 +421,7 @@ def _get_anidb_exceptions(force):
                     )
                     continue
                 except Exception as error:
-                    logger.error(
+                    log.error(
                         'Checking AniDB scene exceptions update failed'
                         ' for {show}. Error: {msg}'.format(
                             show=show.name, msg=error,

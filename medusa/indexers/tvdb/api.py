@@ -8,12 +8,12 @@ from collections import OrderedDict
 from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
-                                                IndexerShowIncomplete, IndexerShowNotFound,
-                                                IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
-from medusa.indexers.tvdbv2.fallback import PlexFallback
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
+                                        IndexerShowIncomplete, IndexerShowNotFound,
+                                        IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from medusa.indexers.ui import BaseUI, ConsoleUI
+from medusa.indexers.tvdb.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
@@ -31,17 +31,17 @@ log.logger.addHandler(logging.NullHandler())
 API_BASE_TVDB = 'https://api.thetvdb.com'
 
 
-class TVDBv2(BaseIndexer):
+class TVDB(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    >>> indexer_api = tvdbv2()
+    >>> indexer_api = tvdb()
     >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         """Init object."""
-        super(TVDBv2, self).__init__(*args, **kwargs)
+        super(TVDB, self).__init__(*args, **kwargs)
 
         self.config['api_base_url'] = API_BASE_TVDB
 
@@ -127,7 +127,7 @@ class TVDBv2(BaseIndexer):
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
     def _show_search(self, show, request_language='en'):
-        """Use the pytvdbv2 API to search for a show.
+        """Use the pytvdb API to search for a show.
 
         @param show: The show name that's searched for as a string
         @return: A list of Show objects.
@@ -155,7 +155,7 @@ class TVDBv2(BaseIndexer):
     # Tvdb implementation
     @PlexFallback
     def search(self, series):
-        """Search tvdbv2.com for the series name.
+        """Search tvdb.com for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -178,17 +178,17 @@ class TVDBv2(BaseIndexer):
         return OrderedDict({'series': cleaned_results})['series']
 
     @PlexFallback
-    def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
-        """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
+    def _get_show_by_id(self, tvdb_id, request_language='en'):  # pylint: disable=unused-argument
+        """Retrieve tvdb show information by tvdb id, or if no tvdb id provided by passed external id.
 
-        :param tvdbv2_id: The shows tvdbv2 id
+        :param tvdb_id: The shows tvdb id
         :return: An ordered dict with the show searched for.
         """
         results = None
-        if tvdbv2_id:
-            log.debug('Getting all show data for {0}', tvdbv2_id)
+        if tvdb_id:
+            log.debug('Getting all show data for {0}', tvdb_id)
             try:
-                results = self.config['session'].series_api.series_id_get(tvdbv2_id, accept_language=request_language)
+                results = self.config['session'].series_api.series_id_get(tvdb_id, accept_language=request_language)
             except ApiException as error:
                 if error.status == 401:
                     raise IndexerAuthFailed(

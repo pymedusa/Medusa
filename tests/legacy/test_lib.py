@@ -28,7 +28,7 @@ import unittest
 
 from configobj import ConfigObj
 
-from medusa import app, config, db, logger, providers
+from medusa import app, config, db, providers
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.tv import Episode, cache
@@ -98,17 +98,13 @@ app.CFG = ConfigObj(app.CONFIG_FILE)
 app.BRANCH = config.check_setting_str(app.CFG, 'General', 'branch', '')
 app.CUR_COMMIT_HASH = config.check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
 app.GIT_USERNAME = config.check_setting_str(app.CFG, 'General', 'git_username', '')
-app.GIT_PASSWORD = config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
+app.GIT_PASSWORD = config.check_setting_str(app.CFG, 'General', 'git_password', '')
 
 app.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
-logger.log_file = os.path.join(app.LOG_DIR, 'test_application.log')
 create_test_log_folder()
 
 app.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
 create_test_cache_folder()
-
-# pylint: disable=no-member
-logger.init_logging(False)
 
 
 def _fake_specify_ep(self, season, episode):

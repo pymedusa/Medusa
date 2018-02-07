@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 
 import logging
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def handle(err, message='', *args, **kwargs):
@@ -17,10 +18,10 @@ def handle(err, message='', *args, **kwargs):
     m = message.format(*args, **kwargs) + ': ' if message else ''
     if isinstance(err, EnvironmentError):
         if err.errno == 28:
-            logger.warning('{m}Out of disk space: {error_msg}', m=m, error_msg=err)
+            log.warning('{m}Out of disk space: {error_msg}', {'m': m, 'error_msg': err})
         elif err.errno == 13:
-            logger.warning('{m}Permission denied: {error_msg}', m=m, error_msg=err)
+            log.warning('{m}Permission denied: {error_msg}', {'m': m, 'error_msg': err})
         else:
-            logger.exception('{m}Environment error: {error_msg}', m=m, error_msg=err)
+            log.exception('{m}Environment error: {error_msg}', {'m': m, 'error_msg': err})
     else:
-        logger.exception('{m}Exception generated: {error_msg}', m=m, error_msg=err)
+        log.exception('{m}Exception generated: {error_msg}', {'m': m, 'error_msg': err})

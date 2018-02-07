@@ -3,7 +3,7 @@
 
 import re
 
-from medusa.indexers.indexer_config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
+from medusa.indexers.config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
 
 
 # For example: {1: 'tvdb_id', 3: 'tvmaze_id', 4: 'tmdb_id'}
