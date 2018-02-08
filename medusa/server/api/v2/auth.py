@@ -10,6 +10,7 @@ import jwt
 from medusa import app, helpers, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
+from six import text_type
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -60,7 +61,7 @@ class AuthHandler(BaseRequestHandler):
         time_now = int(time.time())
         self._ok(data={
             'token': jwt.encode({
-                'iss': 'Medusa ' + str(app.APP_VERSION),
+                'iss': 'Medusa ' + text_type(app.APP_VERSION),
                 'iat': time_now,
                 # @TODO: The jti should be saved so we can revoke tokens
                 'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
