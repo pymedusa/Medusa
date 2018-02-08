@@ -1211,7 +1211,7 @@ class PostProcessor(object):
         if len(os.path.basename(proper_path)) + calc_extension_length > 255:
             new_base_name = os.path.basename(proper_path)[:255 - calc_extension_length]
             orig_extension = self.file_name.rpartition('.')[-1]
-            new_file_name = new_base_name + '.' + orig_extension
+            new_file_name = new_base_name.rstrip('., -+?[]{}&*@#$%^<>') + '.' + orig_extension
             self.log(u'Shortened the new file name, because it is exceeding the allowed length of: 255 chars ({0})'.format(
                 len(os.path.basename(proper_path)) + calc_extension_length
             ), logger.INFO)
