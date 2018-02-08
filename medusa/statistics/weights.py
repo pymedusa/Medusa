@@ -1,5 +1,5 @@
 # coding=utf-8
-
+"""Statistics module."""
 from __future__ import division
 
 
