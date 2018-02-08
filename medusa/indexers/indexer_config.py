@@ -3,7 +3,7 @@
 """Indexer config module."""
 
 from medusa.app import BASE_PYMEDUSA_URL
-from medusa.indexers.imdb.imdb_api import Imdb
+from medusa.indexers.imdb.api import Imdb
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
 from medusa.indexers.tvmaze.tvmaze_api import TVmaze

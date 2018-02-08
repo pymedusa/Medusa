@@ -113,7 +113,7 @@ class Imdb(BaseIndexer):
         :param imdb_response: imdb response obect, or a list of response objects.
         :type imdb_response: list(object)
         :param key_mappings: Dict of imdb attributes, that are mapped to normalized keys.
-        :type key_mappings: dictionary
+        :type key_mappings: list
         :param list_separator: A list separator used to transform lists to a character separator string.
         :type list_separator: string.
         """
@@ -162,7 +162,7 @@ class Imdb(BaseIndexer):
     def _show_search(self, series, request_language='en'):
         """
         Uses the TVMaze API to search for a show
-        :param show: The show name that's searched for as a string
+        :param series: The series name that's searched for as a string
         :param request_language: Language in two letter code. TVMaze fallsback to en itself.
         :return: A list of Show objects.
         """
@@ -174,7 +174,6 @@ class Imdb(BaseIndexer):
         else:
             return None
 
-    # Tvdb implementation
     def search(self, series):
         """This searches imdb.com for the series name
 
@@ -221,14 +220,11 @@ class Imdb(BaseIndexer):
             mapped_results['firstaired'] = first_released['date']
 
         companies = self.imdb_api.get_title_companies(imdb_id)
-        if companies:
-            distribution = [x['company'] for x in companies['distribution']
-                            if x['company'].get('region') and first_released['region'] in x['company']['region']]
-            if distribution:
-                match_short = re.compile(r'.*\((.+)\)$').search(distribution[0]['name'])
-                if match_short:
-                    distribution = match_short.group(1)
-                mapped_results['network'] = distribution
+        origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
+        first_release = sorted([dist for dist in companies['distribution'] if origins in dist['regions']], key=lambda x: x['startYear'])
+
+        if first_release:
+            mapped_results['network'] = first_release[0]['company']['name']
 
         return OrderedDict({'series': mapped_results})
 
@@ -388,16 +384,9 @@ class Imdb(BaseIndexer):
             highest_rated = sort_images[0]
             img_url = highest_rated['_bannerpath']
             log.debug(
-                u'Selecting highest rated {image} (rating={img[rating]}):'
-                u' {img[_bannerpath]}', {
+                u'Selecting image with the highest resolution {image} (resolution={resolution}):', {
                     'image': img_type,
-                    'img': highest_rated,
-                }
-            )
-            log.debug(
-                u'{image} details: {img}', {
-                    'image': img_type.capitalize(),
-                    'img': highest_rated,
+                    'resolution': highest_rated['bannertype2'],
                 }
             )
 
@@ -479,10 +468,9 @@ class Imdb(BaseIndexer):
             get_show_in_language = language
         else:
             log.debug(
-                'Configured language {0} override show language of {1}', (
-                    self.config['language'],
-                    language
-                )
+                'Configured language {0} override show language of {1}',
+                self.config['language'],
+                language
             )
             get_show_in_language = self.config['language']
 
