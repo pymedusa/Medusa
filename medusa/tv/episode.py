@@ -1704,10 +1704,15 @@ class Episode(TV):
 
         parsed_result_name = self.__format_string(result_name, replace_map)
 
+        # With the episode name filenames tend to grow very large. Worst case scenario we even need to add `-thumb.jpg`
+        # to the filename. To make sure we stay under the 255 character limit, we're working with 244 chars, taking into
+        # account the thumbnail.
         if len(parsed_result_name) > 244 and any(['%E.N' in result_name, '%EN' in result_name, '%E_N' in result_name]):
             for remove_pattern in ('%E.N', '%EN', '%E_N'):
                 result_name = result_name.replace(remove_pattern, '')
-            result_name = result_name.strip('- ')
+            # The Episode name can be appended with a - or . in between. Therefor we're removing it.
+            # Creating a clean filename.
+            result_name = result_name.strip('-. ')
             parsed_result_name = self.__format_string(result_name, replace_map)
             log.debug('{id}: Cutting off the episode name, as the total filename is too long. > 255 chars.',
                       {'id': self.series.series_id})
