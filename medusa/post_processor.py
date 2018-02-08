@@ -1205,8 +1205,8 @@ class PostProcessor(object):
 
         # If the new filename is too long, we'll have to shorten it. I'm using the max filename as for example used on
         # ext4 filesystems of 255 characters.
-        if len(os.path.basename(proper_path)) > 200:
-            new_base_name = os.path.basename(proper_path)[:200]
+        if len(os.path.basename(proper_path)) > 244:
+            new_base_name = os.path.basename(proper_path)[:244]
             orig_extension = self.file_name.rpartition('.')[-1]
             new_file_name = new_base_name + '.' + orig_extension
 
