@@ -355,6 +355,9 @@ class Tmdb(BaseIndexer):
                                     image_size=size,
                                     file_path=v)
 
+                        if size != 'original':
+                            _images[image_type][resolution][bid]['rating'] = 0
+
             except Exception as error:
                 log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', sid, error)
                 return False
