@@ -232,9 +232,14 @@ class BaseIndexer(object):
                 threshold = 1  # Prevent division by zero
             value = item['rating']
             weight = item['ratingcount']
-            res = int(item['resolution'].split('x')[0]) * int(item['resolution'].split('x')[1])
-            score = weights.bayesian(weight * res, value, threshold, mean)
-            return score, value, weight, res, item
+            res_index = item['res_index']
+            score_rated = weights.bayesian(weight, value, threshold, mean)
+            weight_score = .5
+            weight_res = .5
+            score_weighted = weight_score * score_rated + weight_res * res_index
+            item['score_rated'] = score_rated
+            item['score_weighted'] = score_weighted
+            return score_weighted, value, weight, item
 
         def format_result(item):
             """Format result row for logging output."""
@@ -243,13 +248,15 @@ class BaseIndexer(object):
                 score=item[0],
                 rating=item[1],
                 votes=item[2],
-                res=item[3],
-                url=item[4]['_bannerpath'],
+                res=item[3]['resolution'],
+                url=item[3]['_bannerpath'],
             )
         # Header for display of format results
         column_header = '{:>10} {:>10} {:>6} {:>15}\t{}'.format(
             'Score', 'Rating', 'Votes', 'Resolution', 'URL'
         )
+
+        available_res = sorted(images.keys(), key=lambda x: int(x.split('x')[0]) * int(x.split('x')[1]))
 
         # add resolution information to each image and flatten dict
         merged_images = []
@@ -257,13 +264,15 @@ class BaseIndexer(object):
             images_by_resolution = images[resolution]
             for image in images_by_resolution.values():
                 image['resolution'] = resolution
+                image['res_index'] = available_res.index(resolution) + 1
             # add all current resolution images to the merged list
             merged_images.extend(images_by_resolution.values())
             log.debug(
-                u'Found {x} {image}s at {this} resolution for series {id}', {
+                u'Found {x} {image}s at {res}({res_index}) resolution for series {id}', {
                     'x': len(images_by_resolution),
                     'image': image_type,
-                    'this': resolution,
+                    'res': image['resolution'],
+                    'res_index': image['res_index'],
                     'id': series_id,
                 }
             )
@@ -280,21 +289,9 @@ class BaseIndexer(object):
 
         # Get population rating statistics
         rating_mean, rating_dev, ratings = pop_stats(merged_images, 'rating')
-        log.debug(u'{image} rating mean: {x}',
-                  {'image': image_type.capitalize(), 'x': rating_mean})
-        log.debug(u'{image} rating standard deviation: {x}',
-                  {'image': image_type.capitalize(), 'x': rating_dev})
-        log.debug(u'{image} ratings: {x}',
-                  {'image': image_type.capitalize(), 'x': ratings})
 
         # Get population rating statistics
         vote_mean, vote_dev, votes = pop_stats(merged_images, 'ratingcount')
-        log.debug(u'{image} vote mean: {x}',
-                  {'image': image_type.capitalize(), 'x': vote_mean})
-        log.debug(u'{image} vote standard deviation: {x}',
-                  {'image': image_type.capitalize(), 'x': vote_dev})
-        log.debug(u'{image} votes: {x}',
-                  {'image': image_type.capitalize(), 'x': votes})
 
         # Set vote threshold to one standard deviation above the mean
         # This would be the 84th percentile in a normal distribution
@@ -342,14 +339,17 @@ class BaseIndexer(object):
                     )
                 }
             )
-        img_score, img_rating, img_votes, img_res, img = best_result
+        img_score, img_rating, img_votes, img = best_result
         img_url = img['_bannerpath']
+        img_res = img['resolution']
+        img_bay_score = img['score_rated']
         log.info(
             u'Selected {image} for series {id}'
-            u' (score={x}, rating={y}, votes={z}, res={r}): {url}', {
+            u' (score={x}, score_bay={b}, rating={y}, votes={z}, res={r}): {url}', {
                 'image': image_type,
                 'id': series_id,
                 'x': img_score,
+                'b': img_bay_score,
                 'y': img_rating,
                 'z': img_votes,
                 'r': img_res,

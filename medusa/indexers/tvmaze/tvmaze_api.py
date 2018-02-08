@@ -391,10 +391,9 @@ class TVmaze(BaseIndexer):
             get_show_in_language = language
         else:
             log.debug(
-                'Configured language {0} override show language of {1}', (
-                    self.config['language'],
-                    language
-                )
+                'Configured language {0} override show language of {1}',
+                self.config['language'],
+                language
             )
             get_show_in_language = self.config['language']
 
