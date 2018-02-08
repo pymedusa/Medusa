@@ -1705,15 +1705,15 @@ class Episode(TV):
         parsed_result_name = self.__format_string(result_name, replace_map)
 
         if len(parsed_result_name) > 244 and any(['%E.N' in result_name, '%EN' in result_name, '%E_N' in result_name]):
-            for pattern in ('%E.N', '%EN', '%E_N'):
-                result_name = result_name.replace(pattern, '')
+            for remove_pattern in ('%E.N', '%EN', '%E_N'):
+                result_name = result_name.replace(remove_pattern, '')
             result_name = result_name.strip('- ')
             parsed_result_name = self.__format_string(result_name, replace_map)
             log.debug('{id}: Cutting off the episode name, as the total filename is too long. > 255 chars.',
                       {'id': self.series.series_id})
 
         log.debug('{id}: Formatting pattern: {pattern} -> {result}',
-                  {'id': self.series.series_id, 'pattern': pattern, 'result': result_name})
+                  {'id': self.series.series_id, 'pattern': result_name, 'result': parsed_result_name})
 
         return parsed_result_name
 
