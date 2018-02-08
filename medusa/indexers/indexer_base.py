@@ -251,6 +251,7 @@ class BaseIndexer(object):
                 res=item[3]['resolution'],
                 url=item[3]['_bannerpath'],
             )
+
         # Header for display of format results
         column_header = '{:>10} {:>10} {:>6} {:>15}\t{}'.format(
             'Score', 'Rating', 'Votes', 'Resolution', 'URL'
@@ -268,7 +269,7 @@ class BaseIndexer(object):
             # add all current resolution images to the merged list
             merged_images.extend(images_by_resolution.values())
             log.debug(
-                u'Found {x} {image}s at {res}({res_index}) resolution for series {id}', {
+                u'Found {x} {image}s at {res} ({res_index}) resolution for series {id}', {
                     'x': len(images_by_resolution),
                     'image': image_type,
                     'res': image['resolution'],
