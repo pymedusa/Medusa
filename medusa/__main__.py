@@ -84,6 +84,7 @@ from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
+from medusa.themes import read_themes
 from medusa.tv import Series
 
 from six import text_type
@@ -133,6 +134,41 @@ class Application(object):
         help_msg = help_msg.replace('Medusa directory', app.PROG_DIR)
 
         return help_msg
+
+    @staticmethod
+    def migrate_images():
+        """Migrate pre-multi-indexer images to their correct place."""
+        if hasattr(app, 'MIGRATE_IMAGES'):
+            for series_obj in app.showList:
+                try:
+                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                    images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
+
+                    # Create the cache/images/tvdb folder if not exists
+                    if not os.path.isdir(images_root_indexer):
+                        os.makedirs(images_root_indexer)
+
+                    if not os.path.isdir(images_root_indexer_thumbnails):
+                        os.makedirs(images_root_indexer_thumbnails)
+
+                    # Check for the different possible images and move them.
+                    for image_type in ('poster', 'fanart', 'banner'):
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        src = os.path.join(app.CACHE_DIR, 'images', image_name)
+                        dst = os.path.join(images_root_indexer, image_name)
+                        if os.path.isfile(src) and not os.path.isfile(dst):
+                            # image found, let's try to move it
+                            os.rename(src, dst)
+
+                        src_thumb = os.path.join(app.CACHE_DIR, 'images', 'thumbnails', image_name)
+                        dst_thumb = os.path.join(images_root_indexer_thumbnails, image_name)
+                        if os.path.isfile(src_thumb) and not os.path.isfile(dst_thumb):
+                            # image found, let's try to move it
+                            os.rename(src_thumb, dst_thumb)
+                except Exception as error:
+                    logger.warning('Error while trying to move the images for series {series}. '
+                                   'Try to refresh the show, or move the images manually if you know '
+                                   'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
     def start(self, args):
         """Start Application."""
@@ -308,6 +344,7 @@ class Application(object):
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
+        self.migrate_images()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -331,7 +368,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'static'),
+            'data_root': os.path.join(app.PROG_DIR, 'themes'),
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -346,6 +383,9 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
+
+        # Initialize all available themes
+        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()

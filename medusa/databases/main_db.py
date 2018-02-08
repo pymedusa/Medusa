@@ -21,13 +21,12 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 8
+CURRENT_MINOR_DB_VERSION = 9
 
 
 class MainSanityCheck(db.DBSanityCheck):
     def check(self):
         self.fix_missing_table_indexes()
-        self.fix_duplicate_shows()
         self.fix_duplicate_episodes()
         self.fix_orphan_episodes()
         self.fix_unaired_episodes()
@@ -117,30 +116,10 @@ class MainSanityCheck(db.DBSanityCheck):
 
             self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" % (fixedStatus, archivedEp['episode_id']))
 
-    def fix_duplicate_shows(self, column='indexer_id'):
-        sql_results = self.connection.select(
-            "SELECT show_id, " + column + ", COUNT(" + column + ") as count FROM tv_shows GROUP BY " + column + " HAVING count > 1")
-
-        for cur_duplicate in sql_results:
-
-            log.info(u'Duplicate show detected! {0}: {1!s} count: {2!s}',
-                     column, cur_duplicate[column], cur_duplicate["count"])
-
-            cur_dupe_results = self.connection.select(
-                "SELECT show_id, " + column + " FROM tv_shows WHERE " + column + " = ? LIMIT ?",
-                [cur_duplicate[column], int(cur_duplicate["count"]) - 1]
-            )
-
-            for cur_dupe_id in cur_dupe_results:
-                log.info(u'Deleting duplicate show with {0}: {1!s}'
-                         u' show_id: {2!s}', column, cur_dupe_id[column],
-                         cur_dupe_id["show_id"])
-                self.connection.action("DELETE FROM tv_shows WHERE show_id = ?", [cur_dupe_id["show_id"]])
-
     def fix_duplicate_episodes(self):
 
         sql_results = self.connection.select(
-            "SELECT showid, season, episode, COUNT(showid) as count FROM tv_episodes GROUP BY showid, season, episode HAVING count > 1")
+            "SELECT indexer, showid, season, episode, COUNT(showid) as count FROM tv_episodes GROUP BY indexer, showid, season, episode HAVING count > 1")
 
         for cur_duplicate in sql_results:
 
@@ -149,8 +128,8 @@ class MainSanityCheck(db.DBSanityCheck):
                       cur_duplicate["showid"], cur_duplicate["season"],
                       cur_duplicate["episode"], cur_duplicate["count"])
             cur_dupe_results = self.connection.select(
-                "SELECT episode_id FROM tv_episodes WHERE showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?",
-                [cur_duplicate["showid"], cur_duplicate["season"], cur_duplicate["episode"],
+                "SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?",
+                [cur_duplicate["indexer"], cur_duplicate["showid"], cur_duplicate["season"], cur_duplicate["episode"],
                  int(cur_duplicate["count"]) - 1]
             )
 
@@ -173,11 +152,6 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("DELETE FROM tv_episodes WHERE episode_id = ?", [cur_orphan["episode_id"]])
 
     def fix_missing_table_indexes(self):
-        if not self.connection.select("PRAGMA index_info('idx_indexer_id')"):
-            log.info(u'Missing idx_indexer_id for TV Shows table detected!,'
-                     u' fixing...')
-            self.connection.action("CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);")
-
         if not self.connection.select("PRAGMA index_info('idx_tv_episodes_showid_airdate')"):
             log.info(u'Missing idx_tv_episodes_showid_airdate for TV Episodes'
                      u' table detected!, fixing...')
@@ -611,3 +585,118 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
         self.inc_minor_version()
+
+
+class AddIndexerIds(AddIndexerInteger):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    """
+
+    def test(self):
+        """
+        Test if the version is at least 44.9
+        """
+        return self.connection.version >= (44, 9)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Adding column indexer_id in history')
+        if not self.hasColumn('history', 'indexer_id'):
+            self.addColumn('history', 'indexer_id', 'NUMERIC', None)
+
+        log.info(u'Adding column indexer_id in blacklist')
+        if not self.hasColumn('blacklist', 'indexer_id'):
+            self.addColumn('blacklist', 'indexer_id', 'NUMERIC', None)
+
+        log.info(u'Adding column indexer_id in whitelist')
+        if not self.hasColumn('whitelist', 'indexer_id'):
+            self.addColumn('whitelist', 'indexer_id', 'NUMERIC', None)
+
+        log.info(u'Adding column indexer in imdb_info')
+        if not self.hasColumn('imdb_info', 'indexer'):
+            self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
+
+        log.info(u'Dropping the unique index on idx_indexer_id')
+        self.connection.action('DROP INDEX IF EXISTS idx_indexer_id')
+
+        # Add the column imdb_info_id with PK
+        self.connection.action('DROP TABLE IF EXISTS tmp_imdb_info')
+        self.connection.action('ALTER TABLE imdb_info RENAME TO tmp_imdb_info')
+        self.connection.action(
+            'CREATE TABLE imdb_info(imdb_info_id INTEGER PRIMARY KEY, indexer NUMERIC, indexer_id INTEGER, imdb_id TEXT, '
+            'title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, '
+            'certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC, plot TEXT)'
+        )
+        self.connection.action('INSERT INTO imdb_info (indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot) '
+                               'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
+        self.connection.action('DROP TABLE tmp_imdb_info')
+
+        # recreate the xem_refresh table, without the primary key on indexer_id. Add the column xem_refresh_id.
+        log.info(u'Dropping the primary key on the table xem_refresh')
+
+        self.connection.action('DROP TABLE IF EXISTS tmp_xem_refresh')
+        self.connection.action('ALTER TABLE xem_refresh RENAME TO tmp_xem_refresh')
+        self.connection.action(
+            'CREATE TABLE xem_refresh (xem_refresh_id INTEGER PRIMARY KEY, indexer INTEGER, indexer_id INTEGER, last_refreshed INTEGER)'
+        )
+        self.connection.action('INSERT INTO xem_refresh (indexer, indexer_id, last_refreshed) '
+                               'SELECT CAST(indexer AS INTEGER), indexer_id, last_refreshed FROM tmp_xem_refresh')
+        self.connection.action('DROP TABLE tmp_xem_refresh')
+
+        series_dict = {}
+
+        def create_series_dict():
+            """Create a dict with series[indexer]: series_id."""
+            if not series_dict:
+
+                # get all the shows. Might need them.
+                all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
+
+                # check for double
+                for series in all_series:
+                    if series['indexer_id'] not in series_dict:
+                        series_dict[series['indexer_id']] = series['indexer']
+                    else:
+                        log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
+                                    series['indexer_id'], series['indexer'])
+
+        # Check if it's required for the main.db tables.
+        for migration_config in (('blacklist', 'show_id', 'indexer_id'),
+                                 ('whitelist', 'show_id', 'indexer_id'),
+                                 ('history', 'showid', 'indexer_id'),
+                                 ('imdb_info', 'indexer_id', 'indexer')):
+
+            log.info(
+                u'Updating indexer field on table {0}. Using the series id to match with field {1}',
+                migration_config[0], migration_config[1]
+            )
+
+            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} is null'.format(config=migration_config)
+            results = self.connection.select(query)
+            if not results:
+                continue
+
+            create_series_dict()
+
+            # Updating all rows, using the series id.
+            for series_id in series_dict:
+                # Update the value in the db.
+                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
+                indexer_id = series_dict.get(series_id)
+                if not indexer_id:
+                    continue
+
+                self.connection.action(
+                    'UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
+                    [indexer_id, series_id])
+
+        self.inc_minor_version()
+        # Flag the image migration.
+        from medusa import app
+        app.MIGRATE_IMAGES = True

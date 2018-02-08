@@ -56,7 +56,7 @@ class PPBasicTests(test.AppTestDBCase):
         episode.name = "some episode name"
         episode.save_to_db()
 
-        addNameToCache('show name', 3)
+        addNameToCache('show name', 1, 3)
         app.PROCESS_METHOD = 'move'
 
         post_processor = PostProcessor(test.FILE_PATH)
