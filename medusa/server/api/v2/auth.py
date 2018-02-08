@@ -52,22 +52,23 @@ class AuthHandler(BaseRequestHandler):
         self._login(submitted_exp)
 
     def _login(self, exp=86400):
-        self.set_header('Content-Type', 'application/jwt')
+        self.set_header('Content-Type', 'application/json')
         if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
             notifiers.notify_login(self.request.remote_ip)
 
         log.info('{user} logged into the API v2', {'user': app.WEB_USERNAME})
         time_now = int(time.time())
-        self._ok(data=jwt.encode({
-            'iss': 'Medusa ' + app.APP_VERSION,
-            'iat': time_now,
-            # @TODO: The jti should be saved so we can revoke tokens
-            'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
-            'exp': time_now + int(exp),
-            'scopes': ['show:read', 'show:write'],  # @TODO: This should be replaced with scopes or roles/groups
-            'username': app.WEB_USERNAME,
-            'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
-        }, app.ENCRYPTION_SECRET, algorithm='HS256'))
+        self._ok(data={
+            'token': jwt.encode({
+                'iss': 'Medusa ' + str(app.APP_VERSION),
+                'iat': time_now,
+                # @TODO: The jti should be saved so we can revoke tokens
+                'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
+                'exp': time_now + int(exp),
+                'username': app.WEB_USERNAME,
+                'apiKey': app.API_KEY
+            }, app.ENCRYPTION_SECRET, algorithm='HS256')
+        })
 
     def _failed_login(self, error=None):
         self._unauthorized(error=error)
