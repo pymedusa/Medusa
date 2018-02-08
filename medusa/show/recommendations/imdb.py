@@ -9,7 +9,7 @@ import re
 from datetime import date
 from imdbpie import imdbpie
 from medusa import app, helpers
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations import ExpiringKeyValue
@@ -63,7 +63,7 @@ class ImdbPopular(object):
         rec_show = RecommendedShow(self,
                                    show_obj.get('imdb_tt'),
                                    show_obj.get('name'),
-                                   INDEXER_TVDBV2,
+                                   INDEXER_TVDB,
                                    int(tvdb_id),
                                    **{'rating': show_obj.get('rating'),
                                       'votes': show_obj.get('votes'),

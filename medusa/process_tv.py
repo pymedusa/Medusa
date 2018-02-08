@@ -9,18 +9,29 @@ import os
 import shutil
 import stat
 
-from medusa import app, db, failed_processor, helpers, notifiers, post_processor
+from medusa import app, db, helpers, notifiers
 from medusa.clients import torrent
 from medusa.helper.common import is_sync_file
-from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.helper.exceptions import (
+    EpisodePostProcessingFailedException,
+    FailedPostProcessingFailedException, ex,
+)
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
+from medusa.processing import failed, post
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 import shutil_custom
-
 from unrar2 import RarFile
-from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
-                                   InvalidRARArchiveUsage)
+from unrar2.rar_exceptions import (
+    ArchiveHeaderBroken,
+    FileOpenError,
+    IncorrectRARPassword,
+    InvalidRARArchive,
+    InvalidRARArchiveUsage,
+)
 
 shutil.copyfile = shutil_custom.copyfile_custom
 log = logging.getLogger(__name__)
@@ -527,8 +538,8 @@ class ProcessResult(object):
                 continue
 
             try:
-                processor = post_processor.PostProcessor(file_path, self.resource_name,
-                                                         self.process_method, is_priority)
+                processor = post.PostProcessor(file_path, self.resource_name,
+                                               self.process_method, is_priority)
 
                 if app.POSTPONE_IF_NO_SUBS:
                     if not self._process_postponed(processor, file_path, video, ignore_subs):
@@ -585,7 +596,7 @@ class ProcessResult(object):
         """Process a download that did not complete correctly."""
         if app.USE_FAILED_DOWNLOADS:
             try:
-                processor = failed_processor.FailedProcessor(path, self.resource_name)
+                processor = failed.FailedProcessor(path, self.resource_name)
                 self.result = processor.process()
                 process_fail_message = ''
             except FailedPostProcessingFailedException as error:

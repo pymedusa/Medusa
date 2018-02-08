@@ -13,9 +13,9 @@ from medusa.black_and_white_list import short_group_names
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDB
+from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
@@ -346,7 +346,7 @@ class HomeAddShows(Home):
                           'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
                           'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
-        show_name = get_showname_from_indexer(INDEXER_TVDBV2, seriesid)
+        show_name = get_showname_from_indexer(INDEXER_TVDB, seriesid)
         try:
             trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
             trakt_api.request('users/{0}/lists/{1}/items'.format
@@ -390,7 +390,7 @@ class HomeAddShows(Home):
                 )
                 return
 
-        if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
+        if Show.find_by_id(app.showList, INDEXER_TVDB, series_id):
             return
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
@@ -454,11 +454,11 @@ class HomeAddShows(Home):
             log.warning(u'There was an error creating the show, no root directory setting found')
             return 'No root directories setup, please go back and add one.'
 
-        show_name = get_showname_from_indexer(INDEXER_TVDBV2, series_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDB, series_id)
         show_dir = None
 
         # add the show
-        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDB, int(series_id), show_dir, int(default_status), quality,
                                                 flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 

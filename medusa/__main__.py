@@ -63,19 +63,22 @@ import time
 from configobj import ConfigObj
 
 from medusa import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler,
+    app, cache, db, event_queue, exception_handler,
     helpers, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
+    scheduler, show_queue, show_updater, subtitles, system, torrent_checker,
+    trakt_checker, version_checker
 )
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
+    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float,
+    check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDB, INDEXER_TVMAZE
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.processing import auto
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -84,7 +87,6 @@ from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
-from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
 
@@ -829,10 +831,10 @@ class Application(object):
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
             app.TRAKT_SYNC = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync', 0))
             app.TRAKT_SYNC_REMOVE = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_remove', 0))
-            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', INDEXER_TVDBV2)
+            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', INDEXER_TVDB)
             if app.TRAKT_DEFAULT_INDEXER == INDEXER_TVMAZE:
                 # Trakt doesn't support TVMAZE. Default to TVDB
-                app.TRAKT_DEFAULT_INDEXER = INDEXER_TVDBV2
+                app.TRAKT_DEFAULT_INDEXER = INDEXER_TVDB
             app.TRAKT_TIMEOUT = check_setting_int(app.CFG, 'Trakt', 'trakt_timeout', 30)
             app.TRAKT_BLACKLIST_NAME = check_setting_str(app.CFG, 'Trakt', 'trakt_blacklist_name', '')
 
@@ -1069,7 +1071,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
-                log.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
+                log.debug(u'Unable to find {config!r}, all settings will be default!'.format(config=app.CONFIG_FILE))
                 self.save_config()
 
             if app.SUBTITLES_ERASE_CACHE:
@@ -1077,10 +1079,10 @@ class Application(object):
                     for cache_file in ['application.dbm', 'subliminal.dbm']:
                         file_path = os.path.join(app.CACHE_DIR, cache_file)
                         if os.path.isfile(file_path):
-                            log.info(u'Removing subtitles cache file: {cache_file}', cache_file=file_path)
+                            log.info(u'Removing subtitles cache file: {cache_file}'.format(cache_file=file_path))
                             os.remove(file_path)
                 except OSError as e:
-                    log.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
+                    log.warning(u'Unable to remove subtitles cache files. Error: {error}'.format(error=e))
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
@@ -1179,11 +1181,12 @@ class Application(object):
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
-                                                                    cycleTime=update_interval,
-                                                                    threadName='POSTPROCESSOR',
-                                                                    silent=not app.PROCESS_AUTOMATICALLY,
-                                                                    run_delay=update_interval)
+            app.auto_post_processor_scheduler = scheduler.Scheduler(
+                auto.PostProcessor(),
+                cycleTime=update_interval,
+                threadName='POSTPROCESSOR',
+                silent=not app.PROCESS_AUTOMATICALLY,
+                run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
@@ -1238,7 +1241,8 @@ class Application(object):
                     shutil.move(src_folder, dest_folder)
                     log.info(u'Restore: restoring cache successful')
                 except OSError as error:
-                    log.error(u'Restore: restoring cache failed: {error!r}', error=error)
+                    log.error(u'Restore: restoring cache failed:'
+                              u' {error!r}'.format(error=error))
 
             restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
         finally:
@@ -1363,7 +1367,7 @@ class Application(object):
                 t.stop.set()
 
             for t in threads:
-                log.info(u'Waiting for the {thread} thread to exit', thread=t.name)
+                log.info(u'Waiting for the {thread} thread to exit'.format(thread=t.name))
                 try:
                     t.join(10)
                 except Exception:
@@ -1944,8 +1948,8 @@ class Application(object):
     def sig_handler(signum=None, frame=None):
         """Signal handler function."""
         if not isinstance(signum, type(None)):
-            log.info(u'Signal {number} caught, saving and exiting...', number=signum)
-            Shutdown.stop(app.PID)
+            log.info(u'Signal {number} caught, saving and exiting...'.format(number=signum))
+            system.shutdown(app, app.events, app.PID)
 
     @staticmethod
     def backwards_compatibility():
@@ -1997,21 +2001,30 @@ class Application(object):
             if pid != 0:
                 os._exit(0)
         except OSError as error:
-            sys.stderr.write('fork #2 failed: Error {error_num}: {error_message}\n'.format
-                             (error_num=error.errno, error_message=error.strerror))
+            sys.stderr.write(
+                'fork #2 failed: Error {error_num}: {error_message}\n'.format(
+                    error_num=error.errno,
+                    error_message=error.strerror,
+                )
+            )
             sys.exit(1)
 
         # Write pid
         if self.create_pid:
             pid = os.getpid()
-            log.info('Writing PID: {pid} to {filename}', pid=pid, filename=self.pid_file)
+            log.info('Writing PID: {pid} to {filename}'.format(pid=pid, filename=self.pid_file))
 
             try:
                 with io.open(self.pid_file, 'w') as f_pid:
                     f_pid.write('%s\n' % pid)
             except EnvironmentError as error:
-                log.error('Unable to write PID file: {filename} Error {error_num}: {error_message}',
-                          filename=self.pid_file, error_num=error.errno, error_message=error.strerror)
+                log.error(
+                    'Unable to write PID file: {filename}'
+                    ' Error {error_num}: {error_message}'.format(
+                        filename=self.pid_file, error_num=error.errno,
+                        error_message=error.strerror
+                    )
+                )
                 sys.exit('Unable to write PID file')
 
         # Redirect all output
@@ -2055,7 +2068,7 @@ class Application(object):
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
-            log.info('Restarting Medusa with {options}', options=popen_list)
+            log.info('Restarting Medusa with {options}'.format(options=popen_list))
             # shutdown the logger to make sure it's released the logfile BEFORE it restarts Medusa.
             logging.shutdown()
             print(popen_list)
@@ -2138,7 +2151,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == event_queue.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case

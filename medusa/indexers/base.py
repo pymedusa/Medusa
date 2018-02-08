@@ -11,14 +11,14 @@ import warnings
 from itertools import chain
 from operator import itemgetter
 
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
     IndexerSeasonNotFound,
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
 )
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
@@ -91,14 +91,14 @@ class BaseIndexer(object):
         self.config['actors_enabled'] = actors
 
         if self.config['debug_enabled']:
-            warnings.warn('The debug argument to tvdbv2_api.__init__ will be removed in the next version. '
+            warnings.warn('The debug argument to tvdb_api.__init__ will be removed in the next version. '
                           'To enable debug messages, use the following code before importing: '
                           'import logging; logging.basicConfig(level=logging.DEBUG)')
             logging.basicConfig(level=logging.DEBUG)
 
-        # List of language from http://thetvdbv2.com/api/0629B785CE550C8D/languages.xml
+        # List of language from http://thetvdb.com/api/0629B785CE550C8D/languages.xml
         # Hard-coded here as it is realtively static, and saves another HTTP request, as
-        # recommended on http://thetvdbv2.com/wiki/index.php/API:languages.xml
+        # recommended on http://thetvdb.com/wiki/index.php/API:languages.xml
         self.config['valid_languages'] = [
             'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
             'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
@@ -132,9 +132,9 @@ class BaseIndexer(object):
             try:
                 uid = getpass.getuser()
             except ImportError:
-                return os.path.join(tempfile.gettempdir(), 'tvdbv2_api')
+                return os.path.join(tempfile.gettempdir(), 'tvdb_api')
 
-        return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-{0}'.format(uid))
+        return os.path.join(tempfile.gettempdir(), 'tvdb_api-{0}'.format(uid))
 
     def _get_show_data(self, sid, language):
         """Return dummy _get_show_data method."""
@@ -283,7 +283,7 @@ class BaseIndexer(object):
             self._set_show_data(series_id, img_type, img_url)
 
     def __getitem__(self, key):
-        """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
+        """Handle tvdb_instance['seriesname'] calls. The dict index should be the show id."""
         if isinstance(key, (integer_types, long)):
             # Item is integer, treat as show id
             if key not in self.shows:

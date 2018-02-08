@@ -20,9 +20,8 @@ from __future__ import print_function
 
 import unittest
 
-from medusa import app
+from medusa import app, system
 from medusa.event_queue import Events
-from medusa.system.shutdown import Shutdown
 from six import iteritems
 
 
@@ -50,4 +49,4 @@ class ShutdownTests(unittest.TestCase):
 
         for tests in test_cases, unicode_test_cases:
             for (pid, result) in iteritems(tests):
-                self.assertEqual(Shutdown.stop(pid), result)
+                self.assertEqual(system.shutdown(app, app.events, pid), result)

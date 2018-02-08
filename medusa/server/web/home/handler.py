@@ -20,6 +20,7 @@ from medusa import (
     notifiers,
     providers,
     subtitles,
+    system,
     ui,
 )
 from medusa.black_and_white_list import (
@@ -58,8 +59,8 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
@@ -101,8 +102,6 @@ from medusa.server.web.core import (
 )
 from medusa.show.history import History
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
 from requests.compat import (
@@ -696,7 +695,7 @@ class Home(WebRoot):
                         controller='home', action='status')
 
     def shutdown(self, pid=None):
-        if not Shutdown.stop(pid):
+        if not system.shutdown(app, app.events, pid):
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         title = 'Shutting down'
@@ -705,7 +704,7 @@ class Home(WebRoot):
         return self._genericMessage(title, message)
 
     def restart(self, pid=None):
-        if not Restart.restart(pid):
+        if not system.restart(app, app.events, pid):
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         t = PageTemplate(rh=self, filename='restart.mako')

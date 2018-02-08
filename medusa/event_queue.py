@@ -62,7 +62,8 @@ class Events(threading.Thread):
                       self.name, ex(error))
             log.debug(repr(traceback.format_exc()))
 
-    # System Events
-    class SystemEvent(Event):
-        RESTART = "RESTART"
-        SHUTDOWN = "SHUTDOWN"
+
+# System Events
+class SystemEvent(Event):
+    RESTART = "RESTART"
+    SHUTDOWN = "SHUTDOWN"

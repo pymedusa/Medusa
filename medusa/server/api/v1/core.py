@@ -30,7 +30,7 @@ from datetime import date, datetime
 
 from medusa import (
     app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    process_tv, sbdatetime, subtitles, system, ui,
 )
 from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
     UNAIRED, UNKNOWN, WANTED, \
@@ -41,9 +41,9 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDB
+from medusa.indexers.exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -53,8 +53,6 @@ from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
@@ -701,7 +699,7 @@ class CMD_Episode(ApiCall):
 
     def run(self):
         """Get detailed information about an episode."""
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -709,7 +707,7 @@ class CMD_Episode(ApiCall):
         sql_results = main_db_con.select(
             'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
             'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
-            [INDEXER_TVDBV2, self.indexerid, self.e, self.s])
+            [INDEXER_TVDB, self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
             raise ApiError('Episode not found')
         episode = sql_results[0]
@@ -768,7 +766,7 @@ class CMD_EpisodeSearch(ApiCall):
 
     def run(self):
         """ Search for an episode """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -824,7 +822,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
     def run(self):
         """ Set the status of an episode or a season (when no episode is provided) """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -938,7 +936,7 @@ class CMD_SubtitleSearch(ApiCall):
 
     def run(self):
         """ Search for an episode subtitles """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -996,7 +994,7 @@ class CMD_Exceptions(ApiCall):
                 scene_exceptions[indexerid].append(row['show_name'])
 
         else:
-            show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+            show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
             if not show_obj:
                 return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -1529,10 +1527,10 @@ class CMD_Restart(ApiCall):
 
     def run(self):
         """ Restart Medusa """
-        if not Restart.restart(app.PID):
+        if system.restart(app, app.events, app.PID):
+            return _responds(RESULT_SUCCESS, msg='Medusa is restarting...')
+        else:
             return _responds(RESULT_FAILURE, msg='Medusa can not be restarted')
-
-        return _responds(RESULT_SUCCESS, msg='Medusa is restarting...')
 
 
 class CMD_SearchIndexers(ApiCall):
@@ -1739,7 +1737,7 @@ class CMD_Shutdown(ApiCall):
 
     def run(self):
         """ Shutdown Medusa """
-        if not Shutdown.stop(app.PID):
+        if not system.shutdown(app, app.events, app.PID):
             return _responds(RESULT_FAILURE, msg='Medusa can not be shut down')
 
         return _responds(RESULT_SUCCESS, msg='Medusa is shutting down...')
@@ -1788,7 +1786,7 @@ class CMD_Show(ApiCall):
 
     def run(self):
         """ Get detailed information about a show """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -1842,7 +1840,7 @@ class CMD_Show(ApiCall):
         show_dict['archive_firstmatch'] = 1
 
         show_dict['indexerid'] = show_obj.indexerid
-        show_dict['tvdbid'] = show_obj.indexerid if show_obj.indexer == INDEXER_TVDBV2 else \
+        show_dict['tvdbid'] = show_obj.indexerid if show_obj.indexer == INDEXER_TVDB else \
             show_obj.externals.get('tvdb_id', '')
         show_dict['imdbid'] = show_obj.externals.get('imdb_id', '')
 
@@ -1896,7 +1894,7 @@ class CMD_ShowAddExisting(ApiCall):
 
     def run(self):
         """ Add an existing show in Medusa """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if show_obj:
             return _responds(RESULT_FAILURE, msg='An existing indexerid already exists in the database')
 
@@ -1993,7 +1991,7 @@ class CMD_ShowAddNew(ApiCall):
 
     def run(self):
         """ Add a new show to Medusa """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if show_obj:
             return _responds(RESULT_FAILURE, msg='An existing indexerid already exists in database')
 
@@ -2120,7 +2118,7 @@ class CMD_ShowCache(ApiCall):
     def run(self):
         """Check cache to see if the images for a show are valid."""
         # TODO: Add support for additional types
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        series_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not series_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2161,7 +2159,7 @@ class CMD_ShowDelete(ApiCall):
 
     def run(self):
         """ Delete a show in Medusa """
-        error, show = Show.delete(INDEXER_TVDBV2, self.indexerid, self.remove_files)
+        error, show = Show.delete(INDEXER_TVDB, self.indexerid, self.remove_files)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2189,7 +2187,7 @@ class CMD_ShowGetQuality(ApiCall):
 
     def run(self):
         """ Get the quality setting of a show """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2220,7 +2218,7 @@ class CMD_ShowGetPoster(ApiCall):
         """ Get the poster a show """
         return {
             'outputType': 'image',
-            'image': ShowPoster(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowPoster(Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)),
         }
 
 
@@ -2246,7 +2244,7 @@ class CMD_ShowGetBanner(ApiCall):
         """ Get the banner of a show """
         return {
             'outputType': 'image',
-            'image': ShowBanner(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowBanner(Show.find_by_id(INDEXER_TVDB, self.indexerid)),
         }
 
 
@@ -2274,7 +2272,7 @@ class CMD_ShowGetNetworkLogo(ApiCall):
         """
         return {
             'outputType': 'image',
-            'image': ShowNetworkLogo(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowNetworkLogo(Show.find_by_id(INDEXER_TVDB, self.indexerid)),
         }
 
 
@@ -2300,7 +2298,7 @@ class CMD_ShowGetFanArt(ApiCall):
         """ Get the fan art of a show """
         return {
             'outputType': 'image',
-            'image': ShowFanArt(Show.find_by_id(INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowFanArt(Show.find_by_id(INDEXER_TVDB, self.indexerid)),
         }
 
 
@@ -2326,7 +2324,7 @@ class CMD_ShowPause(ApiCall):
 
     def run(self):
         """ Pause or un-pause a show """
-        error, show = Show.pause(INDEXER_TVDBV2, self.indexerid, self.pause)
+        error, show = Show.pause(INDEXER_TVDB, self.indexerid, self.pause)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2354,7 +2352,7 @@ class CMD_ShowRefresh(ApiCall):
 
     def run(self):
         """ Refresh a show in Medusa """
-        error, show = Show.refresh(INDEXER_TVDBV2, self.indexerid)
+        error, show = Show.refresh(INDEXER_TVDB, self.indexerid)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2384,7 +2382,7 @@ class CMD_ShowSeasonList(ApiCall):
 
     def run(self):
         """ Get the list of seasons of a show """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2392,11 +2390,11 @@ class CMD_ShowSeasonList(ApiCall):
         if self.sort == 'asc':
             sql_results = main_db_con.select(
                 'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season ASC',
-                [INDEXER_TVDBV2, self.indexerid])
+                [INDEXER_TVDB, self.indexerid])
         else:
             sql_results = main_db_con.select(
                 'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season DESC',
-                [INDEXER_TVDBV2, self.indexerid])
+                [INDEXER_TVDB, self.indexerid])
         season_list = []  # a list with all season numbers
         for row in sql_results:
             season_list.append(int(row['season']))
@@ -2426,7 +2424,7 @@ class CMD_ShowSeasons(ApiCall):
 
     def run(self):
         """ Get the list of episodes for one or all seasons of a show """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2436,7 +2434,7 @@ class CMD_ShowSeasons(ApiCall):
             sql_results = main_db_con.select(
                 'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles '
                 'FROM tv_episodes WHERE indexer = ? AND showid = ?',
-                [INDEXER_TVDBV2, self.indexerid])
+                [INDEXER_TVDB, self.indexerid])
             seasons = {}
             for row in sql_results:
                 status, quality = Quality.split_composite_status(int(row['status']))
@@ -2460,7 +2458,7 @@ class CMD_ShowSeasons(ApiCall):
             sql_results = main_db_con.select(
                 'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
                 ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? ',
-                [INDEXER_TVDBV2, self.indexerid, self.season])
+                [INDEXER_TVDB, self.indexerid, self.season])
             if not sql_results:
                 return _responds(RESULT_FAILURE, msg='Season not found')
             seasons = {}
@@ -2508,7 +2506,7 @@ class CMD_ShowSetQuality(ApiCall):
 
     def run(self):
         """ Set the quality setting of a show. If no quality is provided, the default user setting is used. """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2552,7 +2550,7 @@ class CMD_ShowStats(ApiCall):
 
     def run(self):
         """ Get episode statistics for a given show """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2582,7 +2580,7 @@ class CMD_ShowStats(ApiCall):
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select('SELECT status, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
-                                         [INDEXER_TVDBV2, self.indexerid])
+                                         [INDEXER_TVDB, self.indexerid])
         # the main loop that goes through all episodes
         for row in sql_results:
             status, quality = Quality.split_composite_status(int(row['status']))
@@ -2657,7 +2655,7 @@ class CMD_ShowUpdate(ApiCall):
 
     def run(self):
         """ Update a show in Medusa """
-        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDB, self.indexerid)
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
@@ -2702,7 +2700,7 @@ class CMD_Shows(ApiCall):
                 'sports': (0, 1)[cur_show.sports],
                 'anime': (0, 1)[cur_show.anime],
                 'indexerid': cur_show.indexerid,
-                'tvdbid': cur_show.indexerid if cur_show.indexer == INDEXER_TVDBV2
+                'tvdbid': cur_show.indexerid if cur_show.indexer == INDEXER_TVDB
                 else cur_show.externals.get('tvdb_id', ''),
                 'network': cur_show.network,
                 'show_name': cur_show.name,

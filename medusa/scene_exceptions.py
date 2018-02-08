@@ -12,8 +12,8 @@ from collections import defaultdict
 import adba
 
 from medusa import app, db, helpers
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
@@ -398,13 +398,13 @@ def _get_xem_exceptions(force):
 def _get_anidb_exceptions(force):
     anidb_exceptions = defaultdict(dict)
     # AniDB exceptions use TVDB as indexer
-    exceptions = anidb_exceptions[INDEXER_TVDBV2]
+    exceptions = anidb_exceptions[INDEXER_TVDB]
 
     if force or should_refresh('anidb'):
         log.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:
-            if all([show.name, show.is_anime, show.indexer == INDEXER_TVDBV2]):
+            if all([show.name, show.is_anime, show.indexer == INDEXER_TVDB]):
                 try:
                     anime = adba.Anime(
                         None,

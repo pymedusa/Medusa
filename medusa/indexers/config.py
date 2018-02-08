@@ -2,10 +2,10 @@
 
 """Indexer config module."""
 
-from medusa.app import BASE_PYMEDUSA_URL
-from medusa.indexers.tmdb.tmdb import Tmdb
-from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
-from medusa.indexers.tvmaze.tvmaze_api import TVmaze
+from medusa import app
+from medusa.indexers.tmdb.api import Tmdb
+from medusa.indexers.tvdb.api import TVDB
+from medusa.indexers.tvmaze.api import TVmaze
 from medusa.session.core import MedusaSession
 
 
@@ -22,7 +22,7 @@ initConfig = {
     }
 }
 
-INDEXER_TVDBV2 = 1
+INDEXER_TVDB = 1
 INDEXER_TVRAGE = 2  # Must keep
 INDEXER_TVMAZE = 3
 INDEXER_TMDB = 4
@@ -30,11 +30,20 @@ EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
 EXTERNAL_TRAKT = 12
 
-EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
-                     INDEXER_TVRAGE: 'tvrage_id', EXTERNAL_TRAKT: 'trakt_id'}
+EXTERNAL_MAPPINGS = {
+    EXTERNAL_IMDB: 'imdb_id',
+    EXTERNAL_ANIDB: 'anidb_id',
+    INDEXER_TVRAGE: 'tvrage_id',
+    EXTERNAL_TRAKT: 'trakt_id'
+}
 
 # trakt indexer name vs Medusa indexer
-TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
+TRAKT_INDEXERS = {
+    'tvdb': INDEXER_TVDB,
+    'tmdb': INDEXER_TMDB,
+    'imdb': EXTERNAL_IMDB,
+    'trakt': EXTERNAL_TRAKT
+}
 
 STATUS_MAP = {
     'returning series': 'Continuing',
@@ -59,11 +68,11 @@ STATUS_MAP = {
 }
 
 indexerConfig = {
-    INDEXER_TVDBV2: {
+    INDEXER_TVDB: {
         'enabled': True,
-        'id': INDEXER_TVDBV2,
-        'name': 'TVDBv2',
-        'module': TVDBv2,
+        'id': INDEXER_TVDB,
+        'name': 'TVDB',
+        'module': TVDB,
         'api_params': {
             'language': 'en',
             'use_zip': True,
@@ -71,7 +80,7 @@ indexerConfig = {
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=app.GITHUB_IO_URL),
         'base_url': 'https://api.thetvdb.com/',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
@@ -87,9 +96,9 @@ indexerConfig = {
             'use_zip': True,
             'session': MedusaSession(cache_control={'cache_etags': False}),
         },
-        'xem_mapped_to': INDEXER_TVDBV2,
+        'xem_mapped_to': INDEXER_TVDB,
         'icon': 'tvmaze16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=app.GITHUB_IO_URL),
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
@@ -106,7 +115,7 @@ indexerConfig = {
             'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=app.GITHUB_IO_URL),
         'base_url': 'https://www.themoviedb.org/',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to

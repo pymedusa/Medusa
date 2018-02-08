@@ -3,7 +3,7 @@
 
 import threading
 
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 
 
 class Identifier(object):
@@ -72,7 +72,7 @@ class TV(object):
     @property
     def tvdb_id(self):
         """Get the item's tvdb_id."""
-        if self.indexerid and self.indexer == INDEXER_TVDBV2:
+        if self.indexerid and self.indexer == INDEXER_TVDB:
             return self.indexerid
 
     def __getstate__(self):

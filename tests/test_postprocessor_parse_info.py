@@ -1,10 +1,10 @@
 # coding=utf-8
-"""Tests for medusa/post_processor.py."""
+"""Tests for medusa/post.py."""
+import pytest
+
 from medusa.common import Quality
 from medusa.name_parser.parser import NameParser
-from medusa.post_processor import PostProcessor
-
-import pytest
+from medusa.processing.post import PostProcessor
 
 
 @pytest.mark.parametrize('p', [

@@ -25,12 +25,14 @@ LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
-BASE_PYMEDUSA_URL = 'https://cdn.pymedusa.com'
-CHANGES_URL = '{base_url}/news/CHANGES.md'.format(base_url=BASE_PYMEDUSA_URL)
-APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
+GITHUB_IO_URL = 'https://raw.githubusercontent.com/pymedusa/medusa.github.io/master'
+BASE_PYMEDUSA_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
+APPLICATION_URL = BASE_PYMEDUSA_URL
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
-GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
+NEWS_URL = '{base_url}/news/news.md'.format(base_url=GITHUB_IO_URL)
+CHANGES_URL = '{base_url}/news/CHANGES.md'.format(base_url=GITHUB_IO_URL)
+LOGO_URL = '{base_url}/images/ico/favicon-64.png'.format(base_url=GITHUB_IO_URL)
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
 RARBG_APPID = 'medusa'
@@ -112,9 +114,6 @@ GIT_PASSWORD = None
 GIT_TOKEN = None
 GIT_PATH = None
 DEVELOPER = False
-
-NEWS_URL = '{base_url}/news/news.md'.format(base_url=BASE_PYMEDUSA_URL)
-LOGO_URL = '{base_url}/images/ico/favicon-64.png'.format(base_url=BASE_PYMEDUSA_URL)
 
 NEWS_LAST_READ = None
 NEWS_LATEST = None

@@ -11,7 +11,7 @@ from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDB
 from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
@@ -87,7 +87,7 @@ def app_config(monkeypatch):
 
 @pytest.fixture
 def tvshow(create_tvshow):
-    return create_tvshow(indexer=INDEXER_TVDBV2, indexerid=12, name='Show Name', imdbid='tt0000000')
+    return create_tvshow(indexer=INDEXER_TVDB, indexerid=12, name='Show Name', imdbid='tt0000000')
 
 
 @pytest.fixture
@@ -123,7 +123,7 @@ def create_sub(monkeypatch):
 
 @pytest.fixture
 def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
+    def create(indexer=INDEXER_TVDB, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
         target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,

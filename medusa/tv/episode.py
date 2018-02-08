@@ -20,7 +20,6 @@ from medusa import (
     helpers,
     network_timezones,
     notifiers,
-    post_processor,
     subtitles,
 )
 from medusa.common import (
@@ -53,9 +52,9 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import indexerConfig
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,
     IndexerSeasonNotFound,
@@ -66,6 +65,7 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
+from medusa.processing import post
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
@@ -1826,12 +1826,12 @@ class Episode(TV):
             )
             return
 
-        related_files = post_processor.PostProcessor(self.location).list_associated_files(
+        related_files = post.PostProcessor(self.location).list_associated_files(
             self.location, subfolders=True)
 
         # This is wrong. Cause of pp not moving subs.
         if self.series.subtitles and app.SUBTITLES_DIR != '':
-            related_subs = post_processor.PostProcessor(
+            related_subs = post.PostProcessor(
                 self.location).list_associated_files(app.SUBTITLES_DIR, subfolders=True, subtitles_only=True)
 
         log.debug(

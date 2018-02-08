@@ -6,7 +6,7 @@ import sys
 
 from medusa import app, db
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.config import indexerConfig
 
 import pytest
 
