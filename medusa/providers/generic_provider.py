@@ -669,6 +669,14 @@ class GenericProvider(object):
             if episode_string_fallback:
                 search_string['Episode'].append(episode_string_fallback.strip())
 
+            if episode.series.episode_search_template:
+                anime_type = app.NAMING_ANIME
+                if not self.series.is_anime:
+                    anime_type = 3
+                search_string['Episode'].append(
+                    episode.formatted_search_string(episode.series.episode_search_template, anime_type=anime_type)
+                )
+
         return [search_string]
 
     def _get_tvdb_id(self):

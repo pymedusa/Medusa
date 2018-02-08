@@ -226,6 +226,8 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self.episode_search_template = None
+        self.season_search_template = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -1469,6 +1471,10 @@ class Series(TV):
 
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
+
+            # Load the episode and season search templates
+            self.episode_search_template = sql_results[0][b'episode_search_template']
+            self.season_search_template = sql_results[0][b'season_search_template']
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()

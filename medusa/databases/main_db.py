@@ -700,3 +700,24 @@ class AddIndexerIds(AddIndexerInteger):
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
+
+
+class AddSearchTemplates(AddIndexerIds):
+    """Adds column size to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.10
+        """
+        return self.connection.version >= (44, 10)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u"Adding column episode_search_template to the tv_shows table")
+        if not self.hasColumn("tv_shows", "episode_search_template"):
+            self.addColumn("tv_shows", "episode_search_template", 'TEXT', None)
+        if not self.hasColumn("tv_shows", "season_search_template"):
+            self.addColumn("tv_shows", "season_search_template", 'TEXT', None)
+
+        self.inc_minor_version()

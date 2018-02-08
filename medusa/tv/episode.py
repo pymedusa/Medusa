@@ -1788,6 +1788,23 @@ class Episode(TV):
 
         return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type))
 
+    def formatted_search_string(self, pattern=None, multi=None, anime_type=None):
+        """The search template, formatted based on the tv_show's episode_search_template setting.
+
+        :param pattern:
+        :type pattern: str
+        :param multi:
+        :type multi: bool
+        :param anime_type:
+        :type anime_type: int
+        :return:
+        :rtype: str
+        """
+        # split off the dirs only, if they exist
+        name_groups = re.split(r'[\\/]', pattern)
+
+        return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type))
+
     def rename(self):
         """Rename an episode file and all related files to the location and filename as specified in naming settings."""
         if not self.is_location_valid():
