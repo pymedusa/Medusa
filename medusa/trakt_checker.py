@@ -11,7 +11,8 @@ from medusa import app, db, ui
 from medusa.common import Quality, SKIPPED, WANTED
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
-from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, get_trakt_indexer, indexerConfig
+from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
+from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 from medusa.show.show import Show
@@ -222,11 +223,12 @@ class TraktChecker(object):
             selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
                             b'e.season, e.episode, e.status ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid and e.location = "" ' \
+                            b'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
+                            b's.indexer_id = e.showid and e.location = "" ' \
                             b'AND e.status in ({0})'.format(','.join(selection_status))
             if filter_show:
                 sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
-                params = [filter_show.indexerid, filter_show.indexer]
+                params = [filter_show.series_id, filter_show.indexer]
 
             sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED + params)
             episodes = [dict(e) for e in sql_result]
@@ -271,7 +273,8 @@ class TraktChecker(object):
             main_db_con = db.DBConnection()
             selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid ' \
+                            b'FROM tv_episodes AS e, tv_shows AS s ' \
+                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
                             b"AND e.status in ({0}) AND e.location <> ''".format(','.join(selection_status))
 
             sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED)
@@ -335,7 +338,8 @@ class TraktChecker(object):
             selection_status = [b'?' for _ in status]
             sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE s.indexer_id = e.showid AND e.status in ({0})'.format(b','.join(selection_status))
+                            b'WHERE e.indexer = s.indexer ' \
+                            b'AND s.indexer_id = e.showid AND e.status in ({0})'.format(b','.join(selection_status))
             sql_result = main_db_con.select(sql_selection, status)
             episodes = [dict(i) for i in sql_result]
 
@@ -379,7 +383,7 @@ class TraktChecker(object):
             selection_status = [b'?' for _ in status]
             sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE s.indexer_id = e.showid AND s.paused = 0 ' \
+                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
                             b'AND e.status in ({0})'.format(b','.join(selection_status))
             sql_result = main_db_con.select(sql_selection, status)
             episodes = [dict(i) for i in sql_result]
@@ -486,19 +490,19 @@ class TraktChecker(object):
                     trakt_indexer = get_trakt_indexer(i)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
                     indexer = indexerConfig[i]['id']
-                    show = Show.find(app.showList, indexer_id, indexer)
+                    show = Show.find_by_id(app.showList, indexer, indexer_id)
                     if show:
                         break
                 if not show:
                     # If can't find with available indexers try IMDB
                     trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
-                    show = Show.find(app.showList, indexer_id, EXTERNAL_IMDB)
+                    show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
                 if not show:
                     # If can't find with available indexers try TRAKT
                     trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
-                    show = Show.find(app.showList, indexer_id, EXTERNAL_TRAKT)
+                    show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
                 if show:
                     continue
@@ -510,7 +514,8 @@ class TraktChecker(object):
                     self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
                 if int(app.TRAKT_METHOD_ADD) == 1:
-                    new_show = Show.find(app.showList, indexer_id, indexer)
+                    # FIXME: Referenced before assigment
+                    new_show = Show.find_by_id(app.showList, indexer, indexer_id)
 
                     if new_show:
                         set_episode_to_wanted(new_show, 1, 1)
@@ -539,7 +544,7 @@ class TraktChecker(object):
                 trakt_indexer = get_trakt_indexer(i)
                 indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
                 indexer = indexerConfig[i]['id']
-                show = Show.find(app.showList, indexer_id, indexer)
+                show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
                     break
 
@@ -547,12 +552,12 @@ class TraktChecker(object):
                 # If can't find with available indexers try IMDB
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
                 indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
-                show = Show.find(app.showList, indexer_id, EXTERNAL_IMDB)
+                show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
             if not show:
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
                 indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
-                show = Show.find(app.showList, indexer_id, EXTERNAL_TRAKT)
+                show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             # If can't find show add with default trakt indexer
             if not show:
@@ -570,7 +575,7 @@ class TraktChecker(object):
     @staticmethod
     def add_show(indexer, indexer_id, show_name, status):
         """Add a new show with default settings."""
-        if not Show.find(app.showList, int(indexer_id), indexer):
+        if not Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id):
             root_dirs = app.ROOT_DIRS
 
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
@@ -590,7 +595,7 @@ class TraktChecker(object):
                                                         default_status_after=status, root_dir=location)
                 tries = 0
                 while tries < 3:
-                    if Show.find(app.showList, indexer_id, indexer):
+                    if Show.find_by_id(app.showList, indexer, indexer_id):
                         return
                     # Wait before show get's added and refreshed
                     time.sleep(60)

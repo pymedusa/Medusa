@@ -39,6 +39,11 @@ class TV(object):
         self.indexerid = int(indexerid)
         self.lock = threading.Lock()
 
+    @property
+    def series_id(self):
+        """To make a clear distinction between an indexer and the id for the series. You can now also use series_id."""
+        return self.indexerid
+
     def __setattr__(self, key, value):
         """Set the corresponding attribute and use the dirty flag if the new value is different from the old value.
 

@@ -59,7 +59,7 @@ class MedusaSession(BaseSession):
         We need to overwrite this in the request method. As it's not available in the session init.
         :param verify: SSL verification on or off.
         """
-        return certifi.old_where() if all([app.SSL_VERIFY, verify]) else False
+        return certifi.where() if all([app.SSL_VERIFY, verify]) else False
 
     def __init__(self, proxies=None, **kwargs):
         """Create base Medusa session instance."""

@@ -1,0 +1,37 @@
+.fileBrowserDialog {
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.fileBrowserDialog ul {
+    margin: 0;
+    padding: 0;
+}
+
+.fileBrowserDialog ul li {
+    margin: 2px 0;
+    cursor: pointer;
+    list-style-type: none;
+}
+
+.fileBrowserDialog ul li a {
+    display: block;
+    padding: 4px 0;
+}
+
+.fileBrowserDialog ul li a:hover {
+    color: rgb(0, 0, 255);
+    background: none;
+}
+
+.fileBrowserDialog ul li a .ui-icon {
+    margin: 0 4px;
+    float: left;
+}
+
+.ui-autocomplete {
+    max-height: 180px;
+    overflow-y: auto;
+    overflow-x: hidden; /* prevent horizontal scrollbar */
+    padding-right: 20px; /* add padding to account for vertical scrollbar */
+}

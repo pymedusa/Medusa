@@ -79,6 +79,7 @@ class ComingEpisodes(object):
             'WHERE season != 0 '
             'AND airdate >= ? '
             'AND airdate < ? '
+            'AND s.indexer = e.indexer '
             'AND s.indexer_id = e.showid '
             'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
             [today, next_week] + qualities_list
@@ -88,6 +89,7 @@ class ComingEpisodes(object):
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER))
 
+        # FIXME: This inner join is not multi indexer friendly.
         results += db.select(
             'SELECT %s ' % fields_to_select +
             'FROM tv_episodes e, tv_shows s '
@@ -98,6 +100,7 @@ class ComingEpisodes(object):
                                                   'FROM tv_episodes inner_e '
                                                   'WHERE inner_e.season != 0 '
                                                   'AND inner_e.showid = e.showid '
+                                                  'AND inner_e.indexer = e.indexer '
                                                   'AND inner_e.airdate >= ? '
                                                   'ORDER BY inner_e.airdate ASC LIMIT 1) '
                                                   'AND e.status NOT IN (' + placeholder2 + ')',
