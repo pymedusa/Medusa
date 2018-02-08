@@ -1203,19 +1203,6 @@ class PostProcessor(object):
             new_base_name = None
             new_file_name = self.file_name
 
-        # If the new filename is too long, we'll have to shorten it. I'm using the max filename as for example used on
-        # ext4 filesystems of 255 characters.
-
-        orig_extension = self.file_name.rpartition('.')[-1]
-        calc_extension_length = max(len(orig_extension) + 1, 10)
-        if len(os.path.basename(proper_path)) + calc_extension_length > 255:
-            new_base_name = os.path.basename(proper_path)[:255 - calc_extension_length]
-            orig_extension = self.file_name.rpartition('.')[-1]
-            new_file_name = new_base_name.rstrip('., -+?[]{}&*@#$%^<>') + '.' + orig_extension
-            self.log(u'Shortened the new file name, because it is exceeding the allowed length of: 255 chars ({0})'.format(
-                len(os.path.basename(proper_path)) + calc_extension_length
-            ), logger.INFO)
-
         # add to anidb
         if ep_obj.series.is_anime and app.ANIDB_USE_MYLIST:
             self._add_to_anidb_mylist(self.file_path)
