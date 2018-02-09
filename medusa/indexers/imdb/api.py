@@ -2,14 +2,14 @@
 
 from __future__ import unicode_literals
 
-import re
+from datetime import datetime
 from itertools import chain
 import logging
 from collections import OrderedDict
 from imdbpie import imdbpie
-from time import time
-from six import text_type
-
+import locale
+from six import string_types, text_type
+from medusa.bs4_parser import BS4Parser
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (
     IndexerError,
@@ -30,6 +30,10 @@ class ImdbIdentifier(object):
         self._series_id = None
         self.imdb_id = imdb_id
 
+    def _clean(self, imdb_id):
+        if isinstance(imdb_id, string_types):
+            return imdb_id.strip('/').split('/')[-1]
+
     @property
     def series_id(self):
         return self._series_id
@@ -44,9 +48,9 @@ class ImdbIdentifier(object):
 
     @imdb_id.setter
     def imdb_id(self, value):
-        if isinstance(value, text_type) and 'tt' in value:
-            self._imdb_id = value
-            self.series_id = int(value.split('tt')[-1])
+        if isinstance(value, string_types) and 'tt' in value:
+            self._imdb_id = self._clean(value)
+            self.series_id = int(self._imdb_id.split('tt')[-1])
         else:
             self._imdb_id = 'tt{0}'.format(text_type(value).zfill(7))
             self.series_id = int(value)
@@ -137,6 +141,8 @@ class Imdb(BaseIndexer):
                 # return_dict['id'] = ImdbIdentifier(item.pop('imdb_id')).series_id
                 for key, config in self.series_map:
                     value = self.get_nested_value(item, config)
+                    if not value:
+                        continue
                     if key == 'id' and value:
                         value = ImdbIdentifier(value.rstrip('/')).series_id
                     if key == 'contentrating':
@@ -239,7 +245,7 @@ class Imdb(BaseIndexer):
         log.debug('Getting all episodes of {0}', imdb_id)
 
         series_id = imdb_id
-        imdb_id = 'tt{0}'.format(text_type(imdb_id).zfill(7))
+        imdb_id = ImdbIdentifier(imdb_id).imdb_id
         results = self.imdb_api.get_title_episodes(imdb_id)
 
         if not results or not results.get('seasons'):
@@ -250,18 +256,74 @@ class Imdb(BaseIndexer):
                 season_no, episode_no = episode.get('season'), episode.get('episode')
 
                 if season_no is None or episode_no is None:
-                    log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})', seasnum, epno)
+                    log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})',
+                                season_no, episode_no)
                     continue  # Skip to next episode
 
                 for k, config in self.episode_map:
                     v = self.get_nested_value(episode, config)
                     if v is not None:
                         if k == 'id':
-                            v = ImdbIdentifier(v.rstrip('/')).series_id
+                            v = ImdbIdentifier(v).series_id
                         if k == 'firstaired':
                             v = '{year}-01-01'.format(year=v)
 
                         self._set_item(series_id, season_no, episode_no, k, v)
+
+            if season.get('season'):
+                # Enrich episode for the current season.
+                self._enrich_episodes(imdb_id, season['season'])
+
+    def _enrich_episodes(self, imdb_id, season):
+        """Enrich the episodes with additional information for a specific season."""
+        episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
+        series_id = ImdbIdentifier(imdb_id).series_id
+        try:
+            response = self.config['session'].get(episodes_url.format(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season))
+            with BS4Parser(response.text, 'html5lib') as html:
+                for episode in html.find_all('div', class_='list_item'):
+                    try:
+                        episode_no = int(episode.find('meta')['content'])
+                    except AttributeError:
+                        pass
+                    try:
+                        first_aired_raw = episode.find('div', class_='airdate').get_text(strip=True)
+                    except AttributeError:
+                        pass
+
+                    lc = locale.setlocale(locale.LC_TIME)
+                    try:
+                        locale.setlocale(locale.LC_ALL, 'C')
+                        first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%d %b %Y').strftime('%Y-%m-%d')
+                    except (AttributeError, ValueError):
+                        first_aired = None
+                    finally:
+                        locale.setlocale(locale.LC_TIME, lc)
+
+                    try:
+                        episode_rating = float(episode.find('span', class_='ipl-rating-star__rating').get_text(strip=True))
+                    except AttributeError:
+                        episode_rating = None
+
+                    try:
+                        episode_votes = int(episode.find('span', class_='ipl-rating-star__total-votes').get_text(strip=True).strip('()').replace(',', ''))
+                    except AttributeError:
+                        episode_votes = None
+
+                    try:
+                        synopsis = episode.find('div', class_='item_description').get_text(strip=True)
+                        if 'Know what this is about?' in synopsis:
+                            synopsis = ''
+                    except AttributeError:
+                        synopsis = ''
+
+                    self._set_item(series_id, season, episode_no, 'firstaired', first_aired)
+                    self._set_item(series_id, season, episode_no, 'rating', episode_rating)
+                    self._set_item(series_id, season, episode_no, 'votes', episode_votes)
+                    self._set_item(series_id, season, episode_no, 'overview', synopsis)
+
+        except Exception as error:
+            log.exception('Error while trying to enrich imdb series {0}, {1}', series_id, error)
 
     def _parse_images(self, imdb_id):
         """Parse Show and Season posters.
@@ -393,28 +455,6 @@ class Imdb(BaseIndexer):
             # Save the image
             self._set_show_data(series_id, img_type, img_url)
 
-    def _parse_season_images(self, imdb_id):
-        """Parse Show and Season posters."""
-        seasons = {}
-        if imdb_id:
-            log.debug('Getting all show data for {0}', imdb_id)
-            try:
-                seasons = self.imdb_api.show_seasons(maze_id=imdb_id)
-            except BaseError as e:
-                log.warning('Getting show seasons for the season images failed. Cause: {0}', e)
-
-        _images = {'season': {'original': {}}}
-        # Get the season posters
-        for season in seasons.keys():
-            if not getattr(seasons[season], 'image', None):
-                continue
-            if season not in _images['season']['original']:
-                _images['season']['original'][season] = {seasons[season].id: {}}
-            _images['season']['original'][season][seasons[season].id]['_bannerpath'] = seasons[season].image['original']
-            _images['season']['original'][season][seasons[season].id]['rating'] = 1
-
-        return _images
-
     def _parse_actors(self, imdb_id):
         """Parsers actors XML, from
         http://theimdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
@@ -509,71 +549,3 @@ class Imdb(BaseIndexer):
             self._parse_actors(imdb_id)
 
         return True
-
-    # def _get_all_updates(self, start_date=None, end_date=None):
-    #     """Retrieve all updates (show,season,episode) from TVMaze."""
-    #     results = []
-    #     try:
-    #         updates = self.imdb_api.show_updates()
-    #     except (ShowIndexError, UpdateNotFound):
-    #         return results
-    #     except BaseError as e:
-    #         log.warning('Getting show updates failed. Cause: {0}', e)
-    #         return results
-    #
-    #     if getattr(updates, 'updates', None):
-    #         for show_id, update_ts in updates.updates.items():
-    #             if start_date < update_ts.seconds_since_epoch < (end_date or int(time())):
-    #                 results.append(int(show_id))
-    #
-    #     return results
-    #
-    # # Public methods, usable separate from the default api's interface api['show_id']
-    # def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-    #     """Retrieve a list with updated shows
-    #
-    #     :param from_time: epoch timestamp, with the start date/time
-    #     :param weeks: number of weeks to get updates for.
-    #     :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
-    #     """
-    #     total_updates = []
-    #     updates = self._get_all_updates(from_time, from_time + (weeks * 604800))  # + seconds in a week
-    #
-    #     if updates and filter_show_list:
-    #         new_list = []
-    #         for show in filter_show_list:
-    #             if show.indexerid in total_updates:
-    #                 new_list.append(show.indexerid)
-    #         updates = new_list
-    #
-    #     return updates
-
-    # def get_id_by_external(self, **kwargs):
-    #     """Search imdb for a show, using an external id.
-    #
-    #     Accepts as kwargs, so you'l need to add the externals as key/values.
-    #     :param tvrage: The tvrage id.
-    #     :param thetvdb: The tvdb id.
-    #     :param imdb: An imdb id (inc. tt).
-    #     :returns: A dict with externals, including the imdb id.
-    #     """
-    #     mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-    #     for external_id in mapping.values():
-    #         if kwargs.get(external_id):
-    #             try:
-    #                 result = self.imdb_api.get_show(**{external_id: kwargs.get(external_id)})
-    #                 if result:
-    #                     externals = {mapping[imdb_external_id]: external_value
-    #                                  for imdb_external_id, external_value
-    #                                  in result.externals.items()
-    #                                  if external_value and mapping.get(imdb_external_id)}
-    #                     externals['imdb_id'] = result.maze_id
-    #                     return externals
-    #             except ShowNotFound:
-    #                 log.debug('Could not get imdb externals using external key {0} and id {1}',
-    #                           external_id, kwargs.get(external_id))
-    #                 continue
-    #             except BaseError as e:
-    #                 log.warning('Could not get imdb externals. Cause: {0}', e)
-    #                 continue
-    #     return {}
