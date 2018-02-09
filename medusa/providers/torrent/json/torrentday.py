@@ -117,6 +117,10 @@ class TorrentDayProvider(TorrentProvider):
         for row in data:
 
             try:
+                # Check if this is a freeleech torrent and if we've configured to only allow freeleech.
+                if self.freeleech and row['download-multiplier'] != 0:
+                    continue
+
                 title = re.sub(r'\[.*\=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
                 download_url = urljoin(self.urls['download'], '{0}/{1}.torrent'.format(
                     row['t'], row['name']
@@ -133,10 +137,6 @@ class TorrentDayProvider(TorrentProvider):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   " minimum seeders: {0}. Seeders: {1}", title, seeders)
-                    continue
-
-                # Check if this is a freeleech torrent and if we've configured to only allow freeleech.
-                if self.freeleech and row['download-multiplier'] != 0:
                     continue
 
                 torrent_size = row['size']
