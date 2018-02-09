@@ -33,7 +33,6 @@ from medusa.providers.torrent.html import (
     tokyotoshokan,
     torrent9,
     torrentbytes,
-    torrentday,
     torrenting,
     torrentleech,
     tvchaosuk,
@@ -48,6 +47,7 @@ from medusa.providers.torrent.json import (
     hdbits,
     norbits,
     rarbg,
+    torrentday,
     xthor,
 )
 from medusa.providers.torrent.rss import (
