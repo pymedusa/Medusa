@@ -88,9 +88,6 @@ class TorrentDayProvider(TorrentProvider):
 
                 params = dict({'q': search_string}, **self.categories[mode])
 
-                if self.freeleech:
-                    params.update({'free': 'on'})
-
                 response = self.session.get(self.urls['search'], params=params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
@@ -136,6 +133,10 @@ class TorrentDayProvider(TorrentProvider):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   " minimum seeders: {0}. Seeders: {1}", title, seeders)
+                    continue
+
+                # Check if this is a freeleech torrent and if we've configured to only allow freeleech.
+                if self.freeleech and row['download-multiplier'] != 0:
                     continue
 
                 torrent_size = row['size']
