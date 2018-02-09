@@ -143,7 +143,9 @@ class BaseIndexer(object):
         if check_key.endswith(']'):
             list_index = int(check_key.split('[')[-1].rstrip(']'))
             check_key = check_key.split('[')[0]
-            check_value = value.get(check_key)[list_index]
+            check_value = value.get(check_key)
+            if check_value and list_index < len(check_value):
+                check_value = check_value[list_index]
         else:
             check_value = value.get(check_key)
         next_keys = '.'.join(split_config[1:])
