@@ -149,8 +149,8 @@ class Imdb(BaseIndexer):
                         value = text_type(value)
                     if key == 'poster':
                         return_dict['poster_thumb'] = value.split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format('1000').split('/')[-1]
-                    if value is not None:
-                        return_dict[key] = value
+
+                    return_dict[key] = value
 
                 # Check if the show is continuing
                 return_dict['status'] = 'Continuing' if item.get('base', {}).get('nextEpisode') else 'Ended'
@@ -296,7 +296,10 @@ class Imdb(BaseIndexer):
                         locale.setlocale(locale.LC_ALL, 'C')
                         first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%d %b %Y').strftime('%Y-%m-%d')
                     except (AttributeError, ValueError):
-                        first_aired = None
+                        try:
+                            first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%b %Y').strftime('%Y-%m-01')
+                        except AttributeError:
+                            first_aired = None
                     finally:
                         locale.setlocale(locale.LC_TIME, lc)
 
@@ -456,41 +459,25 @@ class Imdb(BaseIndexer):
             self._set_show_data(series_id, img_type, img_url)
 
     def _parse_actors(self, imdb_id):
-        """Parsers actors XML, from
-        http://theimdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Get and parse actors using the get_title_credits route.
 
-        Actors are retrieved using t['show name]['_actors'], for example:
-
-        >>> indexer_api = TVMaze(actors = True)
-        >>> actors = indexer_api['scrubs']['_actors']
-        >>> type(actors)
-        <class 'imdb_api.Actors'>
-        >>> type(actors[0])
-        <class 'imdb_api.Actor'>
-        >>> actors[0]
-        <Actor "Zach Braff">
-        >>> sorted(actors[0].keys())
-        ['id', 'image', 'name', 'role', 'sortorder']
-        >>> actors[0]['name']
-        u'Zach Braff'
-        >>> actors[0]['image']
-        u'http://theimdb.com/banners/actors/43640.jpg'
+        Actors are retrieved using t['show name]['_actors'].
 
         Any key starting with an underscore has been processed (not the raw
         data from the indexer)
         """
         log.debug('Getting actors for {0}', imdb_id)
-        return
+
         # FIXME: implement cast
-        actors = self.imdb_api.show_cast(imdb_id)
+        actors = self.imdb_api.get_title_credits(ImdbIdentifier(imdb_id).imdb_id)
 
         cur_actors = Actors()
-        for order, cur_actor in enumerate(actors.people):
+        for order, cur_actor in enumerate(actors['credits']['cast'][:25]):
             save_actor = Actor()
-            save_actor['id'] = cur_actor.id
-            save_actor['image'] = cur_actor.image.get('original') if cur_actor.image else ''
-            save_actor['name'] = cur_actor.name
-            save_actor['role'] = cur_actor.character.name
+            save_actor['id'] = cur_actor['id'].split('/')[-2]
+            save_actor['image'] = cur_actor.get('image', {}).get('url', None)
+            save_actor['name'] = cur_actor['name']
+            save_actor['role'] = cur_actor['characters'][0]
             save_actor['sortorder'] = order
             cur_actors.append(save_actor)
         self._set_show_data(imdb_id, '_actors', cur_actors)

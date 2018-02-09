@@ -57,13 +57,16 @@ const staticAssets = [
 const getCssTheme = theme => {
     // Using the --csstheme is mandatory.
     if (argv.csstheme === undefined) {
-        console.log('You need to pass a csstheme to build with the param --csstheme');
+        console.log('You need to pass a csstheme to build with the param --csstheme. ' +
+            '\nMake sure your running with the command gulp and not yarn/npm, as those do not work nice with yargs.\n' +
+            'For example `gulp build --csstheme dark`');
         process.exit(1);
     }
 
     // Check if the theme provided is available in the package.json config.
     if (!config.cssThemes[theme]) {
-        console.log(`Please provide a valid theme with the --cssTheme parameter, theme ${theme} is not available in the package.json config section.`);
+        console.log(`Please provide a valid theme with the --cssTheme parameter, theme ${theme} is not available ` +
+            `in the package.json config section.`);
         process.exit(1);
     }
     return config.cssThemes[theme];
