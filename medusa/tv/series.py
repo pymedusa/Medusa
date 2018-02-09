@@ -524,13 +524,13 @@ class Series(TV):
     def poster(self):
         """Return poster path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def banner(self):
         """Return banner path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
