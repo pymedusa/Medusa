@@ -14,7 +14,7 @@ import stat
 import traceback
 import warnings
 from collections import (
-    Iterable, namedtuple,
+    namedtuple,
 )
 from itertools import groupby
 
@@ -608,10 +608,8 @@ class Series(TV):
                          )
         sql_args = [self.indexer, self.series_id]
 
-        if not isinstance(season, Iterable):
-            season = [season]
-
         if season is not None:
+            season = helpers.ensure_list(season)
             sql_selection += b' AND season IN (?)'
             sql_args.append(','.join(map(text_type, season)))
 
