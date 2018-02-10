@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-from collections import Iterable
 import copy
 import datetime
 import glob
@@ -15,7 +14,7 @@ import stat
 import traceback
 import warnings
 from collections import (
-    namedtuple,
+    Iterable, namedtuple,
 )
 from itertools import groupby
 
