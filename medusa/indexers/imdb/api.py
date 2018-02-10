@@ -68,23 +68,6 @@ class Imdb(BaseIndexer):
 
         self.indexer = 10
 
-        # List of language from http://theimdb.com/api/0629B785CE550C8D/languages.xml
-        # Hard-coded here as it is realtively static, and saves another HTTP request, as
-        # recommended on http://theimdb.com/wiki/index.php/API:languages.xml
-        self.config['valid_languages'] = [
-            'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
-            'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
-        ]
-
-        # thetvdb.com should be based around numeric language codes,
-        # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
-        # requires the language ID, thus this mapping is required (mainly
-        # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
-        self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
-                                         'it': 15, 'cs': 28, 'es': 16, 'ru': 22, 'nl': 13, 'pt': 26, 'no': 9,
-                                         'tr': 21, 'pl': 18, 'fr': 17, 'hr': 31, 'de': 14, 'da': 10, 'fi': 11,
-                                         'hu': 19, 'ja': 25, 'he': 24, 'ko': 32, 'sv': 8, 'sl': 30}
-
         # Initiate the imdbpie API
         self.imdb_api = imdbpie.Imdb(session=self.config['session'])
 
@@ -126,11 +109,6 @@ class Imdb(BaseIndexer):
         if not isinstance(imdb_response, list):
             imdb_response = [imdb_response]
 
-        # TVmaze does not number their special episodes. It does map it to a season. And that's something, medusa
-        # Doesn't support. So for now, we increment based on the order, we process the specials. And map it to
-        # season 0. We start with episode 1.
-        index_special_episodes = 1
-
         for item in imdb_response:
             return_dict = {}
             try:
@@ -138,7 +116,6 @@ class Imdb(BaseIndexer):
                 if title_type in ('feature', 'video game', 'TV short', None):
                     continue
 
-                # return_dict['id'] = ImdbIdentifier(item.pop('imdb_id')).series_id
                 for key, config in self.series_map:
                     value = self.get_nested_value(item, config)
                     if not value:
@@ -165,7 +142,7 @@ class Imdb(BaseIndexer):
 
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
-    def _show_search(self, series, request_language='en'):
+    def _show_search(self, series):
         """
         Uses the TVMaze API to search for a show
         :param series: The series name that's searched for as a string
@@ -189,7 +166,7 @@ class Imdb(BaseIndexer):
         series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
 
-        results = self._show_search(series, request_language=self.config['language'])
+        results = self._show_search(series)
 
         if not results:
             return
@@ -198,7 +175,7 @@ class Imdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})['series']
 
-    def _get_show_by_id(self, imdb_id, request_language='en'):  # pylint: disable=unused-argument
+    def _get_show_by_id(self, imdb_id):  # pylint: disable=unused-argument
         """
         Retrieve imdb show information by imdb id, or if no imdb id provided by passed external id.
 
@@ -234,7 +211,7 @@ class Imdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, imdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
+    def _get_episodes(self, imdb_id):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by imdb id
 
@@ -275,9 +252,16 @@ class Imdb(BaseIndexer):
                 self._enrich_episodes(imdb_id, season['season'])
 
     def _enrich_episodes(self, imdb_id, season):
-        """Enrich the episodes with additional information for a specific season."""
+        """
+        Enrich the episodes with additional information for a specific season.
+
+        For this we're making use of html scraping using beautiful soup.
+        :param imdb_id: imdb id including the `tt`.
+        :param season: season passed as integer.
+        """
         episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
         series_id = ImdbIdentifier(imdb_id).series_id
+        series_status = 'Ended'
         try:
             response = self.config['session'].get(episodes_url.format(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season))
             with BS4Parser(response.text, 'html5lib') as html:
@@ -286,6 +270,7 @@ class Imdb(BaseIndexer):
                         episode_no = int(episode.find('meta')['content'])
                     except AttributeError:
                         pass
+
                     try:
                         first_aired_raw = episode.find('div', class_='airdate').get_text(strip=True)
                     except AttributeError:
@@ -298,8 +283,14 @@ class Imdb(BaseIndexer):
                     except (AttributeError, ValueError):
                         try:
                             first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%b %Y').strftime('%Y-%m-01')
-                        except AttributeError:
-                            first_aired = None
+                            series_status = 'Continuing'
+                        except (AttributeError, ValueError):
+                            try:
+                                datetime.strptime(first_aired_raw.replace('.', ''), '%Y').strftime('%Y')
+                                first_aired = None
+                                series_status = 'Continuing'
+                            except (AttributeError, ValueError):
+                                first_aired = None
                     finally:
                         locale.setlocale(locale.LC_TIME, lc)
 
@@ -309,7 +300,9 @@ class Imdb(BaseIndexer):
                         episode_rating = None
 
                     try:
-                        episode_votes = int(episode.find('span', class_='ipl-rating-star__total-votes').get_text(strip=True).strip('()').replace(',', ''))
+                        episode_votes = int(episode.find('span', class_='ipl-rating-star__total-votes').get_text(
+                            strip=True
+                        ).strip('()').replace(',', ''))
                     except AttributeError:
                         episode_votes = None
 
@@ -324,6 +317,7 @@ class Imdb(BaseIndexer):
                     self._set_item(series_id, season, episode_no, 'rating', episode_rating)
                     self._set_item(series_id, season, episode_no, 'votes', episode_votes)
                     self._set_item(series_id, season, episode_no, 'overview', synopsis)
+                    self._set_show_data(series_id, 'status', series_status)
 
         except Exception as error:
             log.exception('Error while trying to enrich imdb series {0}, {1}', series_id, error)
@@ -339,15 +333,15 @@ class Imdb(BaseIndexer):
         log.debug('Getting show banners for {0}', imdb_id)
 
         images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
+        image_mapping = {'poster': 'poster', 'still_frame': 'fanart', 'production_art': 'fanart'}
         thumb_height = 640
 
         _images = {}
         try:
             for image in images.get('images', []):
-                if image.get('type') not in ('poster',):
+                image_type = image_mapping.get(image.get('type'))
+                if image_type not in ('poster', 'fanart'):
                     continue
-
-                image_type = image.get('type')
                 image_type_thumb = image_type + '_thumb'
                 if image_type not in _images:
                     _images[image_type] = {}
@@ -468,7 +462,6 @@ class Imdb(BaseIndexer):
         """
         log.debug('Getting actors for {0}', imdb_id)
 
-        # FIXME: implement cast
         actors = self.imdb_api.get_title_credits(ImdbIdentifier(imdb_id).imdb_id)
 
         cur_actors = Actors()
@@ -488,24 +481,11 @@ class Imdb(BaseIndexer):
         shows[series_id][season_number][episode_number]
         """
 
-        if self.config['language'] is None:
-            log.debug('Config language is none, using show language')
-            if language is None:
-                raise IndexerError("config['language'] was None, this should not happen")
-            get_show_in_language = language
-        else:
-            log.debug(
-                'Configured language {0} override show language of {1}',
-                self.config['language'],
-                language
-            )
-            get_show_in_language = self.config['language']
-
         # Parse show information
         log.debug('Getting all series data for {0}', imdb_id)
 
         # Parse show information
-        series_info = self._get_show_by_id(imdb_id, request_language=get_show_in_language)
+        series_info = self._get_show_by_id(imdb_id)
 
         if not series_info:
             log.debug('Series result returned zero')
@@ -525,7 +505,7 @@ class Imdb(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(imdb_id, specials=False, aired_season=None)
+            self._get_episodes(imdb_id)
 
         # Parse banners
         if self.config['banners_enabled']:
