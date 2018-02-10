@@ -21,35 +21,55 @@ DEFAULT_USER_AGENTS = [
 
 DEFAULT_USER_AGENT = random.choice(DEFAULT_USER_AGENTS)
 
+BUG_REPORT = """\
+Cloudflare may have changed their technique, or there may be a bug in the script.
+Please read https://github.com/Anorov/cloudflare-scrape#updates, then file a \
+bug report at https://github.com/Anorov/cloudflare-scrape/issues."\
+"""
+
+ANSWER_ACCEPT_ERROR = """\
+The challenge answer was not properly accepted by Cloudflare. This can occur if \
+the target website is under heavy load, or if Cloudflare is experiencing issues. You can
+potentially resolve this by increasing the challenge answer delay (default: 5 seconds). \
+For example: cfscrape.create_scraper(delay=10)
+If increasing the delay does not help, please open a GitHub issue at \
+https://github.com/Anorov/cloudflare-scrape/issues\
+"""
 
 class CloudflareScraper(Session):
     def __init__(self, *args, **kwargs):
+        self.delay = kwargs.pop("delay", 5)
         super(CloudflareScraper, self).__init__(*args, **kwargs)
 
         if "requests" in self.headers["User-Agent"]:
-            # Spoof Firefox on Linux if no custom User-Agent has been set
+            # Set a random User-Agent if no custom User-Agent has been set
             self.headers["User-Agent"] = DEFAULT_USER_AGENT
+
+    def is_cloudflare_challenge(self, resp):
+        return (
+            resp.status_code == 503
+            and resp.headers.get("Server", "").startswith("cloudflare")
+            and b"jschl_vc" in resp.content
+            and b"jschl_answer" in resp.content
+        )
 
     def request(self, method, url, *args, **kwargs):
         resp = super(CloudflareScraper, self).request(method, url, *args, **kwargs)
 
         # Check if Cloudflare anti-bot is on
-        if ( resp.status_code == 503
-             and resp.headers.get("Server") == "cloudflare-nginx"
-             and b"jschl_vc" in resp.content
-             and b"jschl_answer" in resp.content
-        ):
-            return self.solve_cf_challenge(resp, **kwargs)
+        if self.is_cloudflare_challenge(resp):
+            resp = self.solve_cf_challenge(resp, **kwargs)
+            if self.is_cloudflare_challenge(resp):
+                raise ValueError(ANSWER_ACCEPT_ERROR)
 
-        # Otherwise, no Cloudflare anti-bot detected
         return resp
 
     def solve_cf_challenge(self, resp, **original_kwargs):
-        sleep(5)  # Cloudflare requires a delay before solving the challenge
+        sleep(self.delay)  # Cloudflare requires a delay before solving the challenge
 
         body = resp.text
         parsed_url = urlparse(resp.url)
-        domain = urlparse(resp.url).netloc
+        domain = parsed_url.netloc
         submit_url = "%s://%s/cdn-cgi/l/chk_jschl" % (parsed_url.scheme, domain)
 
         cloudflare_kwargs = deepcopy(original_kwargs)
@@ -64,17 +84,12 @@ class CloudflareScraper(Session):
             # Extract the arithmetic operation
             js = self.extract_js(body)
 
-        except Exception:
+        except Exception as e:
             # Something is wrong with the page.
             # This may indicate Cloudflare has changed their anti-bot
             # technique. If you see this and are running the latest version,
             # please open a GitHub issue so I can update the code accordingly.
-            logging.error("[!] Unable to parse Cloudflare anti-bots page. "
-                          "Try upgrading cloudflare-scrape, or submit a bug report "
-                          "if you are running the latest version. Please read "
-                          "https://github.com/Anorov/cloudflare-scrape#updates "
-                          "before submitting a bug report.")
-            raise
+            raise ValueError("Unable to parse Cloudflare anti-bots page: %s %s" % (e.message, BUG_REPORT))
 
         # Safely evaluate the Javascript expression
         params["jschl_answer"] = str(int(js2py.eval_js(js)) + len(domain))
@@ -85,6 +100,11 @@ class CloudflareScraper(Session):
         method = resp.request.method
         cloudflare_kwargs["allow_redirects"] = False
         redirect = self.request(method, submit_url, **cloudflare_kwargs)
+
+        redirect_location = urlparse(redirect.headers["Location"])
+        if not redirect_location.netloc:
+            redirect_url = "%s://%s%s" % (parsed_url.scheme, domain, redirect_location.path)
+            return self.request(method, redirect_url, **original_kwargs)
         return self.request(method, redirect.headers["Location"], **original_kwargs)
 
     def extract_js(self, body):
@@ -97,14 +117,17 @@ class CloudflareScraper(Session):
         # These characters are not currently used in Cloudflare's arithmetic snippet
         js = re.sub(r"[\n\\']", "", js)
 
+        if "parseInt" not in js:
+            raise ValueError("Error parsing Cloudflare IUAM Javascript challenge. %s" % BUG_REPORT)
+
         return js
 
     @classmethod
     def create_scraper(cls, sess=None, **kwargs):
         """
-        Convenience function for creating a ready-to-go requests.Session (subclass) object.
+        Convenience function for creating a ready-to-go CloudflareScraper object.
         """
-        scraper = cls()
+        scraper = cls(**kwargs)
 
         if sess:
             attrs = ["auth", "cert", "cookies", "headers", "hooks", "params", "proxies", "data"]
