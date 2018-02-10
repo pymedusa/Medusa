@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+from collections import Iterable
 import copy
 import datetime
 import glob
@@ -585,7 +586,7 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: list
+        :type season: int or list of seasons
         :param has_location:
         :type has_location: bool
         :return:
@@ -607,6 +608,9 @@ class Series(TV):
                          b'FROM tv_episodes tve WHERE indexer = ? AND showid = ?'
                          )
         sql_args = [self.indexer, self.series_id]
+
+        if not isinstance(season, Iterable):
+            season = [season]
 
         if season is not None:
             sql_selection += b' AND season IN (?)'
