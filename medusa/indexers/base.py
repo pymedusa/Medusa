@@ -14,14 +14,14 @@ from operator import itemgetter
 
 from medusa import statistics as stats
 from medusa.helpers.utils import gen_values_by_key
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
     IndexerSeasonNotFound,
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
 )
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.statistics import weights
 
@@ -156,7 +156,14 @@ class BaseIndexer(object):
         if isinstance(check_value, dict):
             return self.get_nested_value(check_value, next_keys)
         else:
-            return check_value
+            try:
+                # Some object have a __dict__ attr. Let's try that.
+                # It shouldn't match basic types like strings, integers or floats.
+                parse_dict = check_value.__dict__
+            except AttributeError:
+                return check_value
+            else:
+                return self.get_nested_value(parse_dict, next_keys)
 
     @staticmethod
     def _get_temp_dir():  # pylint: disable=no-self-use

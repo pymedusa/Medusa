@@ -4,9 +4,9 @@
 
 from medusa.app import BASE_PYMEDUSA_URL
 from medusa.indexers.imdb.api import Imdb
-from medusa.indexers.tmdb.tmdb import Tmdb
-from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
-from medusa.indexers.tvmaze.tvmaze_api import TVmaze
+from medusa.indexers.tmdb.api import Tmdb
+from medusa.indexers.tvdbv2.api import TVDBv2
+from medusa.indexers.tvmaze.api import TVmaze
 from medusa.session.core import MedusaSafeSession, MedusaSession
 
 
@@ -125,7 +125,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSafeSession(cache_control={'cache_etags': False}),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'imdb16.png',

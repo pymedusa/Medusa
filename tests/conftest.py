@@ -14,7 +14,7 @@ from github.Repository import Repository
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.tv import Episode, Series

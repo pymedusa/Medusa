@@ -10,9 +10,9 @@ from imdbpie import imdbpie
 import locale
 from six import string_types, text_type
 from medusa.bs4_parser import BS4Parser
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
-    IndexerError,
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
+    IndexerError, IndexerShowIncomplete
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -225,7 +225,15 @@ class Imdb(BaseIndexer):
 
         series_id = imdb_id
         imdb_id = ImdbIdentifier(imdb_id).imdb_id
-        results = self.imdb_api.get_title_episodes(imdb_id)
+        try:
+            results = self.imdb_api.get_title_episodes(imdb_id)
+        except LookupError as error:
+            raise IndexerShowIncomplete(
+                'Show episode search exception, '
+                'could not get any episodes. Exception: {e!r}'.format(
+                    e=error
+                )
+            )
 
         if not results or not results.get('seasons'):
             return False

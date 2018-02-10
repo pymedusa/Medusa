@@ -6,8 +6,8 @@ import logging
 from collections import OrderedDict
 from time import time
 
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
@@ -55,23 +55,35 @@ class TVmaze(BaseIndexer):
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
         # An api to indexer series/episode object mapping
-        self.series_map = {
-            'id': 'id',
-            'maze_id': 'id',
-            'name': 'seriesname',
-            'summary': 'overview',
-            'premiered': 'firstaired',
-            'image': 'poster_thumb',
-            'url': 'show_url',
-            'genres': 'genre',
-            'epnum': 'absolute_number',
-            'title': 'episodename',
-            'airdate': 'firstaired',
-            'screencap': 'filename',
-            'episode_number': 'episodenumber',
-            'season_number': 'seasonnumber',
-            'rating': 'contentrating',
-        }
+        self.series_map = [
+            ('id', 'id'),
+            ('id', 'maze_id'),
+            ('seriesname', 'name'),
+            ('overview', 'summary'),
+            ('firstaired', 'premiered'),
+            ('poster_thumb', 'image'),
+            ('show_url', 'url'),
+            ('genre', 'genres'),
+            ('absolute_number', 'epnum'),
+            ('episodename', 'title'),
+            ('firstaired', 'airdate'),
+            ('filename', 'screencap'),
+            ('episodenumber', 'episode_number'),
+            ('seasonnumber', 'season_number'),
+            ('contentrating', 'rating'),
+            ('airs_time', 'schedule.time'),
+            ('airs_dayofweek', 'schedule.days[0]'),
+            ('network', 'network.name'),
+            ('code', 'network.code'),
+            ('timezone', 'network.timezone'),
+
+            ('tvrage_id', 'externals.tvrage'),
+            ('tvdb_id', 'externals.thetvdb'),
+            ('imdb_id', 'externals.imdb'),
+            ('contentrating', 'rating'),
+            ('contentrating', 'rating.average'),
+
+        ]
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
         """
@@ -97,44 +109,20 @@ class TVmaze(BaseIndexer):
         for item in tvmaze_response:
             return_dict = {}
             try:
-                for key, value in item.__dict__.iteritems():
-                    if value is None or value == []:
+
+                for key, config in self.series_map:
+                    value = self.get_nested_value(item.__dict__, config)
+                    if not value:
                         continue
 
-                    # These keys have more complex dictionaries, let's map these manually
-                    if key in ['schedule', 'network', 'image', 'externals', 'rating']:
-                        if key == 'schedule':
-                            return_dict['airs_time'] = value.get('time') or '0:00AM'
-                            return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
-                        if key == 'network':
-                            return_dict['network'] = value.name
-                            return_dict['code'] = value.code
-                            return_dict['timezone'] = value.timezone
-                        if key == 'image':
-                            if value.get('medium'):
-                                return_dict['poster_thumb'] = value.get('medium')
-                                return_dict['poster'] = value.get('original')
-                        if key == 'externals':
-                            return_dict['tvrage_id'] = value.get('tvrage')
-                            return_dict['tvdb_id'] = value.get('thetvdb')
-                            return_dict['imdb_id'] = value.get('imdb')
-                        if key == 'rating':
-                            return_dict['contentrating'] = value.get('average')\
-                                if isinstance(value, dict) else value
-                    else:
-                        # Do some value sanitizing
-                        if isinstance(value, list):
-                            if all(isinstance(x, (string_types, integer_types)) for x in value):
-                                value = list_separator.join(text_type(v) for v in value)
+                    # Do some value sanitizing
+                    if isinstance(value, list):
+                        if all(isinstance(x, (string_types, integer_types)) for x in value):
+                            value = list_separator.join(text_type(v) for v in value)
 
-                        # Try to map the key
-                        if key in key_mappings:
-                            key = key_mappings[key]
+                    return_dict[key] = value
 
-                        # Set value to key
-                        return_dict[key] = text_type(value) if isinstance(value, (float, integer_types)) else value
-
-                # For episodes
+                # For special episodes
                 if hasattr(item, 'season_number') and getattr(item, 'episode_number') is None:
                     return_dict['episodenumber'] = text_type(index_special_episodes)
                     return_dict['seasonnumber'] = 0
