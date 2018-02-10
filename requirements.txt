@@ -1,7 +1,6 @@
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.6.0
 CacheControl==0.12.3
-git+https://github.com/Anorov/cloudflare-scrape.git@85cf963f6eb81804227878df2ca74fe4a309db67#egg=cfscrape
 configobj==5.0.6
 contextlib2==0.5.5
 dogpile.cache==0.6.4
