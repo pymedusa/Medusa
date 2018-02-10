@@ -85,6 +85,7 @@ class Imdb(BaseIndexer):
             ('show_url', 'base.id'),
             ('firstaired', 'base.seriesStartYear'),
             ('contentrating', 'ratings.rating'),
+            ('nextepisode', 'base.nextEpisode'),
         ]
 
         self.episode_map = [
@@ -112,9 +113,11 @@ class Imdb(BaseIndexer):
         for item in imdb_response:
             return_dict = {}
             try:
-                title_type = item.get('type') or item.get('base',{}).get('titleType')
+                title_type = item.get('type') or item.get('base', {}).get('titleType')
                 if title_type in ('feature', 'video game', 'TV short', None):
                     continue
+
+                return_dict['status'] = 'Ended'
 
                 for key, config in self.series_map:
                     value = self.get_nested_value(item, config)
@@ -126,11 +129,10 @@ class Imdb(BaseIndexer):
                         value = text_type(value)
                     if key == 'poster':
                         return_dict['poster_thumb'] = value.split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format('1000').split('/')[-1]
+                    if key == 'nextepisode' and value:
+                        return_dict['status'] = 'Continuing'
 
                     return_dict[key] = value
-
-                # Check if the show is continuing
-                return_dict['status'] = 'Continuing' if item.get('base', {}).get('nextEpisode') else 'Ended'
 
                 # Add static value for airs time.
                 return_dict['airs_time'] = '0:00AM'
@@ -264,6 +266,10 @@ class Imdb(BaseIndexer):
         series_status = 'Ended'
         try:
             response = self.config['session'].get(episodes_url.format(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season))
+            if not response or not response.text:
+                log.warning('Problem requesting episode information for show {0}, and season {1}.', imdb_id, season)
+                return
+
             with BS4Parser(response.text, 'html5lib') as html:
                 for episode in html.find_all('div', class_='list_item'):
                     try:
@@ -329,11 +335,13 @@ class Imdb(BaseIndexer):
         data from the XML)
 
         This interface will be improved in future versions.
+        Available sources: amazon, custom, getty, paidcustomer, presskit, userupload.
+        Available types: behind_the_scenes, event, poster, product, production_art, publicity, still_frame
         """
         log.debug('Getting show banners for {0}', imdb_id)
 
         images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
-        image_mapping = {'poster': 'poster', 'still_frame': 'fanart', 'production_art': 'fanart'}
+        image_mapping = {'poster': 'poster', 'production_art': 'fanart'}  # Removed 'still_frame': 'fanart',
         thumb_height = 640
 
         _images = {}
@@ -449,8 +457,9 @@ class Imdb(BaseIndexer):
                 }
             )
 
-            # Save the image
-            self._set_show_data(series_id, img_type, img_url)
+            # Save the image, but not for the poster, as we're using the poster that comes with the series data.
+            if img_type != 'poster':
+                self._set_show_data(series_id, img_type, img_url)
 
     def _parse_actors(self, imdb_id):
         """Get and parse actors using the get_title_credits route.
