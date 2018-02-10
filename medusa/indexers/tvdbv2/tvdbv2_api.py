@@ -226,7 +226,7 @@ class TVDBv2(BaseIndexer):
 
     def _get_episodes_info(self, tvdb_id, episodes, season=None):
         """Add full episode information for existing episodes."""
-        series = Show.find_by_id(app.showList, 1, tvdb_id)
+        series = Show.find_by_id(app.showList, self.config['id'], tvdb_id)
         if not series:
             return episodes
 
