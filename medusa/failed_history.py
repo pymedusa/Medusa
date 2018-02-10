@@ -144,8 +144,9 @@ def revert_episode(ep_obj):
         'SELECT episode, old_status '
         'FROM history '
         'WHERE showid=?'
+        ' AND indexer_id=?'
         ' AND season=?',
-        [ep_obj.series.indexerid, ep_obj.season]
+        [ep_obj.series.indexerid, ep_obj.series.indexer, ep_obj.season]
     )
 
     history_eps = {res['episode']: res for res in sql_results}
@@ -216,10 +217,10 @@ def log_snatch(search_result):
         failed_db_con.action(
             'INSERT INTO history '
             '(date, size, release, provider, showid,'
-            ' season, episode, old_status)'
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            ' season, episode, old_status, indexer_id)'
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [log_date, search_result.size, release, provider, show_obj.indexerid,
-             episode.season, episode.episode, episode.status]
+             episode.season, episode.episode, episode.status, show_obj.indexer]
         )
 
 
@@ -274,13 +275,15 @@ def find_release(ep_obj):
         'WHERE showid = {0}'
         ' AND season = {1}'
         ' AND episode = {2}'
+        ' AND indexer_id = {3}'
         ' AND date < ( SELECT max(date)'
         '              FROM history'
         '              WHERE showid = {0}'
         '               AND season = {1}'
         '               AND episode = {2}'
+        '               AND indexer_id = {3}'
         '             )'.format
-        (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode)
+        (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer)
     )
 
     # Search for release in snatch history
@@ -289,8 +292,9 @@ def find_release(ep_obj):
         'FROM history '
         'WHERE showid=?'
         ' AND season=?'
-        ' AND episode=?',
-        [ep_obj.series.indexerid, ep_obj.season, ep_obj.episode]
+        ' AND episode=?'
+        ' AND indexer_id=?',
+        [ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer]
     )
 
     for result in results:

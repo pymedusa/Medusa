@@ -58,7 +58,6 @@ from medusa.helper.exceptions import (
     EpisodeDeletedException,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
-    MultipleShowsInDatabaseException,
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
     ex,
@@ -70,17 +69,20 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
-    indexerConfig,
-    indexer_id_to_slug,
-    mappings,
-    reverse_mappings,
-    slug_to_indexer_id)
+    indexerConfig
+)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
 from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.utils import (
+    indexer_id_to_slug,
+    mappings,
+    reverse_mappings,
+    slug_to_indexer_id
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -147,7 +149,7 @@ class SeriesIdentifier(Identifier):
     @property
     def slug(self):
         """Slug."""
-        return str(self)
+        return text_type(self)
 
     @property
     def api(self):
@@ -225,7 +227,7 @@ class Series(TV):
         self._cached_indexer_api = None
         self.plot = None
 
-        other_show = Show.find(app.showList, self.indexerid)
+        other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
@@ -247,7 +249,7 @@ class Series(TV):
         :return:
         :rtype:
         """
-        result = Show.find(app.showList, identifier.id, identifier.indexer.id)
+        result = Show.find_by_id(app.showList, identifier.indexer.id, identifier.id)
         if result and (not predicate or predicate(result)):
             return result
 
@@ -274,7 +276,7 @@ class Series(TV):
     @property
     def identifier(self):
         """Identifier."""
-        return SeriesIdentifier(self.indexer, self.indexerid)
+        return SeriesIdentifier(self.indexer, self.series_id)
 
     @property
     def slug(self):
@@ -293,7 +295,7 @@ class Series(TV):
         """Set an Indexer API instance."""
         self._cached_indexer_api = value
 
-    def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True, ):
+    def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True):
         """Force the creation of a new Indexer API."""
         api = indexerApi(self.indexer)
         params = api.api_params.copy()
@@ -301,7 +303,7 @@ class Series(TV):
         if self.lang:
             params[b'language'] = self.lang
             log.debug(u'{id}: Using language from show settings: {lang}',
-                      {'id': self.indexerid, 'lang': self.lang})
+                      {'id': self.series_id, 'lang': self.lang})
 
         if self.dvd_order != 0 or dvd_order:
             params[b'dvdorder'] = True
@@ -312,7 +314,7 @@ class Series(TV):
 
         params[b'episodes'] = episodes
 
-        self._cached_indexer_api = api.indexer(**params)
+        self.indexer_api = api.indexer(**params)
 
     @property
     def is_anime(self):
@@ -375,14 +377,14 @@ class Series(TV):
     @property
     def indexer_slug(self):
         """Return the slug name of the series. Example: tvdb1234."""
-        return indexer_id_to_slug(self.indexer, self.indexerid)
+        return indexer_id_to_slug(self.indexer, self.series_id)
 
     @location.setter
     def location(self, value):
         log.debug(
             u'{indexer} {id}: Setting location: {location}', {
                 'indexer': indexerApi(self.indexer).name,
-                'id': self.indexerid,
+                'id': self.series_id,
                 'location': value,
             }
         )
@@ -522,18 +524,18 @@ class Series(TV):
     def poster(self):
         """Return poster path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.indexerid)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def banner(self):
         """Return banner path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.indexerid)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)
+        return self.exceptions or get_scene_exceptions(self)
 
     @property
     def release_ignore_words(self):
@@ -561,7 +563,7 @@ class Series(TV):
 
     def erase_cached_parse(self):
         """Erase parsed cached results."""
-        NameParser().erase_cached_parse(self.indexer, self.indexerid)
+        NameParser().erase_cached_parse(self.indexer, self.series_id)
 
     def get_all_seasons(self, last_airdate=False):
         """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
@@ -575,7 +577,7 @@ class Series(TV):
         sql_selection = b'SELECT season, {0} AS number_of_episodes FROM tv_episodes ' \
                         b'WHERE showid = ? GROUP BY season'.format(b'count(*)' if not last_airdate else b'max(airdate)')
         main_db_con = db.DBConnection()
-        results = main_db_con.select(sql_selection, [self.indexerid])
+        results = main_db_con.select(sql_selection, [self.series_id])
 
         return {int(x[b'season']): int(x[b'number_of_episodes']) for x in results}
 
@@ -583,39 +585,42 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: int
+        :type season: int or list of int
         :param has_location:
         :type has_location: bool
         :return:
         :rtype: list of Episode
         """
-        sql_selection = b'SELECT season, episode, '
-
         # subselection to detect multi-episodes early, share_location > 0
-        sql_selection += (b'(SELECT '
-                          b'  COUNT (*) '
-                          b'FROM '
-                          b'  tv_episodes '
-                          b'WHERE '
-                          b'  showid = tve.showid '
-                          b'  AND season = tve.season '
-                          b"  AND location != '' "
-                          b'  AND location = tve.location '
-                          b'  AND episode != tve.episode) AS share_location ')
-
-        sql_selection = sql_selection + b' FROM tv_episodes tve WHERE showid = ' + str(self.indexerid)
+        # If a multi-episode release has been downloaded. For example my.show.S01E1E2.1080p.WEBDL.mkv, you'll find the same location
+        # in the database for those episodes (S01E01 and S01E02). The query is to mark that the location for each episode is shared with another episode.
+        sql_selection = (b'SELECT season, episode, (SELECT '
+                         b'  COUNT (*) '
+                         b'FROM '
+                         b'  tv_episodes '
+                         b'WHERE '
+                         b'  indexer = tve.indexer AND showid = tve.showid '
+                         b'  AND season = tve.season '
+                         b"  AND location != '' "
+                         b'  AND location = tve.location '
+                         b'  AND episode != tve.episode) AS share_location '
+                         b'FROM tv_episodes tve WHERE indexer = ? AND showid = ?'
+                         )
+        sql_args = [self.indexer, self.series_id]
 
         if season is not None:
-            sql_selection = sql_selection + b' AND season = ' + str(season)
+            season = helpers.ensure_list(season)
+            sql_selection += b' AND season IN (?)'
+            sql_args.append(','.join(map(text_type, season)))
 
         if has_location:
-            sql_selection += b" AND location != '' "
+            sql_selection += b" AND location != ''"
 
         # need ORDER episode ASC to rename multi-episodes in order S01E01-02
         sql_selection += b' ORDER BY season ASC, episode ASC'
 
         main_db_con = db.DBConnection()
-        results = main_db_con.select(sql_selection)
+        results = main_db_con.select(sql_selection, sql_args)
 
         ep_list = []
         for cur_result in results:
@@ -639,7 +644,7 @@ class Series(TV):
                         b'  AND location = ? '
                         b'  AND episode != ? '
                         b'ORDER BY episode ASC',
-                        [self.indexerid, cur_ep.season, cur_ep.location, cur_ep.episode])
+                        [self.series_id, cur_ep.season, cur_ep.location, cur_ep.episode])
                     for cur_related_ep in related_eps_result:
                         related_ep = self.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
                         if related_ep and related_ep not in cur_ep.related_episodes:
@@ -682,14 +687,14 @@ class Series(TV):
                 sql = b'SELECT season, episode ' \
                       b'FROM tv_episodes ' \
                       b'WHERE showid = ? AND absolute_number = ? AND season != 0'
-                sql_args = [self.indexerid, absolute_number]
+                sql_args = [self.series_id, absolute_number]
                 log.debug(u'{id}: Season and episode lookup for {show} using absolute number {absolute}',
-                          {'id': self.indexerid, 'absolute': absolute_number, 'show': self.name})
+                          {'id': self.series_id, 'absolute': absolute_number, 'show': self.name})
             elif air_date:
                 sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?'
-                sql_args = [self.indexerid, air_date.toordinal()]
+                sql_args = [self.series_id, air_date.toordinal()]
                 log.debug(u'{id}: Season and episode lookup for {show} using air date {air_date}',
-                          {'id': self.indexerid, 'air_date': air_date, 'show': self.name})
+                          {'id': self.series_id, 'air_date': air_date, 'show': self.name})
 
             sql_results = main_db_con.select(sql, sql_args) if sql else []
             if len(sql_results) == 1:
@@ -697,18 +702,18 @@ class Series(TV):
                 season = int(sql_results[0][b'season'])
                 log.debug(
                     u'{id}: Found season and episode which is {show} {ep}', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'show': self.name,
                         'ep': episode_num(season, episode)
                     }
                 )
             elif len(sql_results) > 1:
                 log.error(u'{id}: Multiple entries found in show: {show} ',
-                          {'id': self.indexerid, 'show': self.name})
+                          {'id': self.series_id, 'show': self.name})
                 return None
             else:
                 log.debug(u'{id}: No entries found in show: {show}',
-                          {'id': self.indexerid, 'show': self.name})
+                          {'id': self.series_id, 'show': self.name})
                 return None
 
         if season not in self.episodes:
@@ -740,7 +745,7 @@ class Series(TV):
         # if show is 'paused' do not update_date
         if self.paused:
             log.info(u'{id}: Show {show} is paused. Update skipped',
-                     {'id': self.indexerid, 'show': self.name})
+                     {'id': self.series_id, 'show': self.name})
             return False
 
         # if show is not 'Ended' always update (status 'Continuing')
@@ -766,7 +771,7 @@ class Series(TV):
             b'  AND season > 0 '
             b'  AND airdate > 1 '
             b'  AND status > 1',
-            [self.indexerid])
+            [self.series_id])
 
         if sql_result and sql_result[0][b'last_aired'] != 0:
             last_airdate = datetime.date.fromordinal(sql_result[0][b'last_aired'])
@@ -784,7 +789,7 @@ class Series(TV):
             b'  AND season > 0 '
             b'  AND airdate > 1 '
             b'  AND status = 1',
-            [self.indexerid])
+            [self.series_id])
 
         if sql_result and sql_result[0][b'airing_next'] != 0:
             next_airdate = datetime.date.fromordinal(sql_result[0][b'airing_next'])
@@ -839,7 +844,7 @@ class Series(TV):
         """
         if not self.is_location_valid():
             log.warning(u"{id}: Show directory doesn't exist, skipping NFO generation",
-                        {'id': self.indexerid})
+                        {'id': self.series_id})
             return
 
         for metadata_provider in app.metadata_provider_dict.values():
@@ -852,7 +857,7 @@ class Series(TV):
     def __write_episode_nfos(self):
 
         log.debug(u"{id}: Writing NFOs for all episodes",
-                  {'id': self.indexerid})
+                  {'id': self.series_id})
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -863,12 +868,12 @@ class Series(TV):
             b'  tv_episodes '
             b'WHERE '
             b'  showid = ? '
-            b"  AND location != ''", [self.indexerid])
+            b"  AND location != ''", [self.series_id])
 
         for ep_result in sql_results:
             log.debug(
                 u'{id}: Retrieving/creating episode {ep}', {
-                    'id': self.indexerid,
+                    'id': self.series_id,
                     'ep': episode_num(ep_result[b'season'], ep_result[b'episode'])
                 }
             )
@@ -882,7 +887,7 @@ class Series(TV):
         """Update show metadata files."""
         if not self.is_location_valid():
             log.warning(u"{id}: Show directory doesn't exist, skipping NFO generation",
-                        {'id': self.indexerid})
+                        {'id': self.series_id})
             return
 
         self.__update_show_nfo()
@@ -892,7 +897,7 @@ class Series(TV):
         result = False
 
         log.info(u"{id}: Updating NFOs for show with new indexer info",
-                 {'id': self.indexerid})
+                 {'id': self.series_id})
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
@@ -904,16 +909,16 @@ class Series(TV):
         """Find all media files in the show folder and create episodes for as many as possible."""
         if not self.is_location_valid():
             log.warning(u"{id}: Show directory doesn't exist, not loading episodes from disk",
-                        {'id': self.indexerid})
+                        {'id': self.series_id})
             return
 
         log.debug(u"{id}: Loading all episodes from the show directory: {location}",
-                  {'id': self.indexerid, 'location': self.location})
+                  {'id': self.series_id, 'location': self.location})
 
         # get file list
         media_files = helpers.list_media_files(self.location)
         log.debug(u'{id}: Found files: {media_files}',
-                  {'id': self.indexerid, 'media_files': media_files})
+                  {'id': self.series_id, 'media_files': media_files})
 
         # create TVEpisodes from each media file (if possible)
         sql_l = []
@@ -921,13 +926,13 @@ class Series(TV):
             cur_episode = None
 
             log.debug(u"{id}: Creating episode from: {location}",
-                      {'id': self.indexerid, 'location': media_file})
+                      {'id': self.series_id, 'location': media_file})
             try:
                 cur_episode = self.make_ep_from_file(os.path.join(self.location, media_file))
             except (ShowNotFoundException, EpisodeNotFoundException) as error:
                 log.warning(
                     u"{id}: Episode {location} returned an exception {error_msg}", {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'location': media_file,
                         'error_msg': ex(error),
                     }
@@ -935,7 +940,7 @@ class Series(TV):
                 continue
             except EpisodeDeletedException:
                 log.debug(u'{id}: The episode deleted itself when I tried making an object for it',
-                          {'id': self.indexerid})
+                          {'id': self.series_id})
             if cur_episode is None:
                 continue
 
@@ -944,14 +949,14 @@ class Series(TV):
             ep_file_name = os.path.splitext(ep_file_name)[0]
 
             try:
-                parse_result = NameParser(show=self, try_indexers=True).parse(ep_file_name)
+                parse_result = NameParser(series=self, try_indexers=True).parse(ep_file_name)
             except (InvalidNameException, InvalidShowException):
                 parse_result = None
 
             if ' ' not in ep_file_name and parse_result and parse_result.release_group:
                 log.debug(
                     u'{id}: Filename {file_name} gave release group of {rg}, seems valid', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'file_name': ep_file_name,
                         'rg': parse_result.release_group,
                     }
@@ -965,7 +970,7 @@ class Series(TV):
                         cur_episode.refresh_subtitles()
                     except OSError:
                         log.info(u'{id}: Could not refresh subtitles',
-                                 {'id': self.indexerid})
+                                 {'id': self.series_id})
                         log.debug(traceback.format_exc())
 
                 sql_l.append(cur_episode.get_sql())
@@ -986,28 +991,30 @@ class Series(TV):
         try:
             main_db_con = db.DBConnection()
             sql = (b'SELECT '
-                   b'  season, episode, showid, show_name '
+                   b'  season, episode, showid, show_name, tv_shows.show_id, tv_shows.indexer '
                    b'FROM '
                    b'  tv_episodes '
                    b'JOIN '
                    b'  tv_shows '
                    b'WHERE '
-                   b'  showid = indexer_id AND showid = ?')
+                   b'  tv_episodes.showid = tv_shows.indexer_id'
+                   b'  AND tv_episodes.indexer = tv_shows.indexer'
+                   b'  AND tv_shows.indexer = ? AND tv_shows.indexer_id = ?')
             if seasons:
                 sql += b' AND season IN (%s)' % ','.join('?' * len(seasons))
-                sql_results = main_db_con.select(sql, [self.indexerid] + seasons)
+                sql_results = main_db_con.select(sql, [self.indexer, self.series_id] + seasons)
                 log.debug(u'{id}: Loading all episodes of season(s) {seasons} from the DB',
-                          {'id': self.indexerid, 'seasons': seasons})
+                          {'id': self.series_id, 'seasons': seasons})
             else:
-                sql_results = main_db_con.select(sql, [self.indexerid])
+                sql_results = main_db_con.select(sql, [self.indexer, self.series_id])
                 log.debug(u'{id}: Loading all episodes of all seasons from the DB',
-                          {'id': self.indexerid})
+                          {'id': self.series_id})
         except Exception as error:
             log.error(u'{id}: Could not load episodes from the DB. Error: {error_msg}',
-                      {'id': self.indexerid, 'error_msg': error})
+                      {'id': self.series_id, 'error_msg': error})
             return scanned_eps
 
-        cached_show = self.indexer_api[self.indexerid]
+        cached_show = self.indexer_api[self.series_id]
 
         cached_seasons = {}
         cur_show_name = ''
@@ -1017,15 +1024,17 @@ class Series(TV):
 
             cur_season = int(cur_result[b'season'])
             cur_episode = int(cur_result[b'episode'])
+            cur_indexer = int(cur_result[b'indexer'])
             cur_show_id = int(cur_result[b'showid'])
             cur_show_name = text_type(cur_result[b'show_name'])
 
             delete_ep = False
 
             log.debug(
-                u'{id}: Loading {show} {ep} from the DB', {
+                u'{id}: Loading {show} with indexer {indexer} and ep {ep} from the DB', {
                     'id': cur_show_id,
                     'show': cur_show_name,
+                    'indexer': cur_indexer,
                     'ep': episode_num(cur_season, cur_episode),
                 }
             )
@@ -1098,12 +1107,12 @@ class Series(TV):
         """
         try:
             self.indexer_api = tvapi
-            indexed_show = self.indexer_api[self.indexerid]
+            indexed_show = self.indexer_api[self.series_id]
         except IndexerException as error:
             log.warning(
                 u'{id}: {indexer} error, unable to update episodes.'
                 u' Message: {ex}', {
-                    'id': self.indexerid,
+                    'id': self.series_id,
                     'indexer': indexerApi(self.indexer).name,
                     'ex': error,
                 }
@@ -1112,7 +1121,7 @@ class Series(TV):
 
         log.debug(
             u'{id}: Loading all episodes from {indexer}{season_update}', {
-                'id': self.indexerid,
+                'id': self.series_id,
                 'indexer': indexerApi(self.indexer).name,
                 'season_update': u' on seasons {seasons}'.format(seasons=seasons) if seasons else u''
             }
@@ -1138,7 +1147,7 @@ class Series(TV):
                 except EpisodeNotFoundException:
                     log.info(
                         u'{id}: {indexer} object for {ep} is incomplete, skipping this episode', {
-                            'id': self.indexerid,
+                            'id': self.series_id,
                             'indexer': indexerApi(self.indexer).name,
                             'ep': episode_num(season, episode),
                         }
@@ -1149,7 +1158,7 @@ class Series(TV):
                         ep.load_from_indexer(tvapi=self.indexer_api)
                     except EpisodeDeletedException:
                         log.debug(u'{id}: The episode {ep} was deleted, skipping the rest of the load',
-                                  {'id': self.indexerid, 'ep': episode_num(season, episode)})
+                                  {'id': self.series_id, 'ep': episode_num(season, episode)})
                         continue
 
                 with ep.lock:
@@ -1164,7 +1173,7 @@ class Series(TV):
         # Done updating save last update date
         self.last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
-                  {'id': self.indexerid})
+                  {'id': self.series_id})
         self.save_to_db()
 
         return scanned_eps
@@ -1178,7 +1187,7 @@ class Series(TV):
                 sql_l.append([b'INSERT OR IGNORE '
                               b'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                               b'VALUES (?,?,?,?)',
-                              [self.indexerid,
+                              [self.series_id,
                                self.indexer,
                                self.externals[external],
                                int(reverse_mappings[external])
@@ -1261,26 +1270,26 @@ class Series(TV):
         """
         if not os.path.isfile(filepath):
             log.info(u"{indexer_id}: That isn't even a real file dude... {filepath}",
-                     {'indexer_id': self.indexerid, 'filepath': filepath})
+                     {'indexer_id': self.series_id, 'filepath': filepath})
             return None
 
         log.debug(u'{indexer_id}: Creating episode object from {filepath}',
-                  {'indexer_id': self.indexerid, 'filepath': filepath})
+                  {'indexer_id': self.series_id, 'filepath': filepath})
 
         try:
-            parse_result = NameParser(show=self, try_indexers=True, parse_method=(
+            parse_result = NameParser(series=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
             log.debug(u'{indexerid}: {error}',
-                      {'indexer_id': self.indexerid, 'error': error})
+                      {'indexer_id': self.series_id, 'error': error})
             return None
 
         episodes = [ep for ep in parse_result.episode_numbers if ep is not None]
         if not episodes:
             log.debug(u'{indexerid}: parse_result: {parse_result}',
-                      {'indexerid': self.indexerid, 'parse_result': parse_result})
+                      {'indexerid': self.series_id, 'parse_result': parse_result})
             log.debug(u'{indexerid}: No episode number found in {filepath}, ignoring it',
-                      {'indexerid': self.indexerid, 'filepath': filepath})
+                      {'indexerid': self.series_id, 'filepath': filepath})
             return None
 
         # for now lets assume that any episode in the show directory belongs to that show
@@ -1291,7 +1300,7 @@ class Series(TV):
         for current_ep in episodes:
             log.debug(
                 u'{id}: {filepath} parsed to {series_name} {ep_num}', {
-                    'id': self.indexerid,
+                    'id': self.series_id,
                     'filepath': filepath,
                     'series_name': self.name,
                     'ep_num': episode_num(season, current_ep)
@@ -1309,7 +1318,7 @@ class Series(TV):
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
                     log.warning(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
-                                {'indexerid': self.indexerid, 'filepath': filepath})
+                                {'indexerid': self.series_id, 'filepath': filepath})
                     continue
 
             else:
@@ -1318,7 +1327,7 @@ class Series(TV):
                     log.debug(
                         u'{indexerid}: The old episode had a different file associated with it, '
                         u're-checking the quality using the new filename {filepath}',
-                        {'indexerid': self.indexerid, 'filepath': filepath}
+                        {'indexerid': self.series_id, 'filepath': filepath}
                     )
                     check_quality_again = True
 
@@ -1358,7 +1367,7 @@ class Series(TV):
                     log.debug(
                         u"{id}: Setting the status from '{status_old}' to '{status_cur}'"
                         u" based on file: {filepath}. Reason: {reason}", {
-                            'id': self.indexerid,
+                            'id': self.series_id,
                             'status_old': statusStrings[old_ep_status],
                             'status_cur': statusStrings[cur_ep.status],
                             'filepath': filepath,
@@ -1369,7 +1378,7 @@ class Series(TV):
                 log.debug(
                     u"{id}: Not changing current status '{status_string}' based on file: {filepath}."
                     u" Reason: {should_refresh}", {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'status_string': statusStrings[cur_ep.status],
                         'filepath': filepath,
                         'should_refresh': should_refresh_reason,
@@ -1392,21 +1401,20 @@ class Series(TV):
     def _load_from_db(self):
 
         log.debug(u'{id}: Loading show info from database',
-                  {'id': self.indexerid})
+                  {'id': self.series_id})
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_shows '
-            b'WHERE indexer_id = ?',
-            [self.indexerid]
+            b'SELECT *'
+            b' FROM tv_shows'
+            b' WHERE indexer = ?'
+            b' AND indexer_id = ?',
+            [self.indexer, self.series_id]
         )
 
-        if len(sql_results) > 1:
-            raise MultipleShowsInDatabaseException()
-        elif not sql_results:
+        if not sql_results:
             log.info(u'{id}: Unable to find the show in the database',
-                     {'id': self.indexerid})
+                     {'id': self.series_id})
             return
         else:
             self.indexer = int(sql_results[0][b'indexer'] or 0)
@@ -1456,25 +1464,26 @@ class Series(TV):
                 self.imdb_id = sql_results[0][b'imdb_id']
 
             if self.is_anime:
-                self.release_groups = BlackAndWhiteList(self.indexerid)
+                self.release_groups = BlackAndWhiteList(self)
 
             self.plot = sql_results[0][b'plot']
 
             # Load external id's from indexer_mappings table.
-            self.externals = load_externals_from_db(self.indexer, self.indexerid)
+            self.externals = load_externals_from_db(self.indexer, self.series_id)
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT * '
-            b'FROM imdb_info '
-            b'WHERE indexer_id = ?',
-            [self.indexerid]
+            b'FROM imdb_info'
+            b' WHERE indexer = ?'
+            b' AND indexer_id = ?',
+            [self.indexer, self.series_id]
         )
 
         if not sql_results:
             log.info(u'{id}: Unable to find IMDb info in the database: {show}',
-                     {'id': self.indexerid, 'show': self.name})
+                     {'id': self.series_id, 'show': self.name})
             return
         else:
             self.imdb_info = dict(zip(sql_results[0].keys(), sql_results[0]))
@@ -1492,19 +1501,19 @@ class Series(TV):
 
         log.debug(
             u'{id}: Loading show info from {indexer_name}', {
-                'id': self.indexerid,
+                'id': self.series_id,
                 'indexer_name': indexerApi(self.indexer).name,
             }
         )
 
         self.indexer_api = tvapi
-        indexed_show = self.indexer_api[self.indexerid]
+        indexed_show = self.indexer_api[self.series_id]
 
         try:
             self.name = indexed_show['seriesname'].strip()
         except AttributeError:
             raise IndexerAttributeNotFound(
-                "Found {id}, but attribute 'seriesname' was empty.".format(id=self.indexerid))
+                "Found {id}, but attribute 'seriesname' was empty.".format(id=self.series_id))
 
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
@@ -1515,7 +1524,7 @@ class Series(TV):
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
 
         # Add myself (indexer) as an external
-        self.externals[mappings[self.indexer]] = self.indexerid
+        self.externals[mappings[self.indexer]] = self.series_id
 
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
@@ -1544,7 +1553,7 @@ class Series(TV):
 
             if not self.imdb_id:
                 log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
-                         {'id': self.indexerid})
+                         {'id': self.series_id})
                 return
 
         # Make sure we only use the first ID
@@ -1554,7 +1563,7 @@ class Series(TV):
         self.externals['imdb_id'] = self.imdb_id
 
         log.debug(u'{id}: Loading show info from IMDb with ID: {imdb_id}',
-                  {'id': self.indexerid, 'imdb_id': self.imdb_id})
+                  {'id': self.series_id, 'imdb_id': self.imdb_id})
 
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
@@ -1572,7 +1581,7 @@ class Series(TV):
         imdb_info = imdb_api.get_title(self.imdb_id)
         if not imdb_info:
             log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
-                      {'id': self.indexerid, 'imdb_id': self.imdb_id})
+                      {'id': self.series_id, 'imdb_id': self.imdb_id})
             return
 
         # Additional query needed to get genres
@@ -1593,7 +1602,7 @@ class Series(TV):
         })
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
-                  {'id': self.indexerid, 'imdb_info': self.imdb_info})
+                  {'id': self.series_id, 'imdb_info': self.imdb_info})
 
     def next_episode(self):
         """Return the next episode air date.
@@ -1602,7 +1611,7 @@ class Series(TV):
         :rtype: datetime.date
         """
         log.debug(u'{id}: Finding the episode which airs next',
-                  {'id': self.indexerid})
+                  {'id': self.series_id})
 
         cur_date = datetime.date.today().toordinal()
         if not self.next_aired or self.next_aired and cur_date > self.next_aired:
@@ -1615,22 +1624,23 @@ class Series(TV):
                 b'FROM '
                 b'  tv_episodes '
                 b'WHERE '
-                b'  showid = ? '
+                b'  indexer = ?'
+                b'  AND showid = ? '
                 b'  AND airdate >= ? '
                 b'  AND status IN (?,?) '
                 b'ORDER BY'
                 b'  airdate '
                 b'ASC LIMIT 1',
-                [self.indexerid, datetime.date.today().toordinal(), UNAIRED, WANTED])
+                [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED, WANTED])
 
             if sql_results is None or len(sql_results) == 0:
                 log.debug(u'{id}: No episode found... need to implement a show status',
-                          {'id': self.indexerid})
+                          {'id': self.series_id})
                 self.next_aired = u''
             else:
                 log.debug(
                     u'{id}: Found episode {ep}', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'ep': episode_num(sql_results[0][b'season'],
                                           sql_results[0][b'episode']),
                     }
@@ -1645,11 +1655,11 @@ class Series(TV):
         :param full:
         :type full: bool
         """
-        sql_l = [[b'DELETE FROM tv_episodes WHERE showid = ?', [self.indexerid]],
-                 [b'DELETE FROM tv_shows WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM imdb_info WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM xem_refresh WHERE indexer_id = ?', [self.indexerid]],
-                 [b'DELETE FROM scene_numbering WHERE indexer_id = ?', [self.indexerid]]]
+        sql_l = [[b'DELETE FROM tv_episodes WHERE indexer = ? AND showid = ?', [self.indexer, self.series_id]],
+                 [b'DELETE FROM tv_shows WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.series_id]],
+                 [b'DELETE FROM imdb_info WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.series_id]],
+                 [b'DELETE FROM xem_refresh WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.series_id]],
+                 [b'DELETE FROM scene_numbering WHERE indexer = ? AND indexer_id = ?', [self.indexer, self.series_id]]]
 
         main_db_con = db.DBConnection()
         main_db_con.mass_action(sql_l)
@@ -1657,13 +1667,13 @@ class Series(TV):
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 
         # remove self from show list
-        app.showList = [x for x in app.showList if int(x.indexerid) != self.indexerid]
+        app.showList = [x for x in app.showList if x.identifier != self.identifier]
 
         # clear the cache
         image_cache_dir = os.path.join(app.CACHE_DIR, 'images')
-        for cache_file in glob.glob(os.path.join(image_cache_dir, str(self.indexerid) + '.*')):
+        for cache_file in glob.glob(os.path.join(image_cache_dir, str(self.series_id) + '.*')):
             log.info(u'{id}: Attempt to {action} cache file {cache_file}',
-                     {'id': self.indexerid, 'action': action, 'cache_file': cache_file})
+                     {'id': self.series_id, 'action': action, 'cache_file': cache_file})
             try:
                 if app.TRASH_REMOVE_SHOW:
                     send2trash(cache_file)
@@ -1673,7 +1683,7 @@ class Series(TV):
             except OSError as error:
                 log.warning(
                     u'{id}: Unable to {action} {cache_file}: {error_msg}', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'action': action,
                         'cache_file': cache_file,
                         'error_msg': ex(error),
@@ -1684,18 +1694,18 @@ class Series(TV):
         if full:
             try:
                 log.info(u'{id}: Attempt to {action} show folder {location}',
-                         {'id': self.indexerid, 'action': action, 'location': self.location})
+                         {'id': self.series_id, 'action': action, 'location': self.location})
                 # check first the read-only attribute
                 file_attribute = os.stat(self.location)[0]
                 if not file_attribute & stat.S_IWRITE:
                     # File is read-only, so make it writeable
                     log.debug(u'{id}: Attempting to make writeable the read only folder {location}',
-                              {'id': self.indexerid, 'location': self.location})
+                              {'id': self.series_id, 'location': self.location})
                     try:
                         os.chmod(self.location, stat.S_IWRITE)
                     except OSError:
                         log.warning(u'{id}: Unable to change permissions of {location}',
-                                    {'id': self.indexerid, 'location': self.location})
+                                    {'id': self.series_id, 'location': self.location})
 
                 if app.TRASH_REMOVE_SHOW:
                     send2trash(self.location)
@@ -1703,15 +1713,15 @@ class Series(TV):
                     shutil.rmtree(self.location)
 
                 log.info(u'{id}: {action} show folder {location}',
-                         {'id': self.indexerid, 'action': action, 'location': self.raw_location})
+                         {'id': self.series_id, 'action': action, 'location': self.raw_location})
 
             except ShowDirectoryNotFoundException:
                 log.warning(u'{id}: Show folder {location} does not exist. No need to {action}',
-                            {'id': self.indexerid, 'action': action, 'location': self.raw_location})
+                            {'id': self.series_id, 'action': action, 'location': self.raw_location})
             except OSError as error:
                 log.warning(
                     u'{id}: Unable to {action} {location}. Error: {error_msg}', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'action': action,
                         'location': self.raw_location,
                         'error_msg': ex(error),
@@ -1720,13 +1730,13 @@ class Series(TV):
 
         if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
             log.debug(u'{id}: Removing show {show} from Trakt watchlist',
-                      {'id': self.indexerid, 'show': self.name})
+                      {'id': self.series_id, 'show': self.name})
             notifiers.trakt_notifier.update_watchlist(self, update='remove')
 
     def populate_cache(self):
         """Populate image caching."""
         log.debug(u'{id}: Checking & filling cache for show {show}',
-                  {'id': self.indexerid, 'show': self.name})
+                  {'id': self.series_id, 'show': self.name})
         image_cache.fill_cache(self)
 
     def refresh_dir(self):
@@ -1744,7 +1754,7 @@ class Series(TV):
 
         # run through all locations from DB, check that they exist
         log.debug(u"{id}: Loading all episodes from '{show}' with a location from the database",
-                  {'id': self.indexerid, 'show': self.name})
+                  {'id': self.series_id, 'show': self.name})
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -1753,8 +1763,9 @@ class Series(TV):
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
-            b'  showid = ? '
-            b"  AND location != ''", [self.indexerid])
+            b'  indexer = ?'
+            b'  AND showid = ? '
+            b"  AND location != ''", [self.indexer, self.series_id])
 
         sql_l = []
         for ep in sql_results:
@@ -1770,7 +1781,7 @@ class Series(TV):
                 log.debug(
                     u"{id:} Episode '{show}' {ep} was deleted while we were refreshing it,"
                     u' moving on to the next one', {
-                        'id': self.indexerid,
+                        'id': self.series_id,
                         'show': self.name,
                         'ep': episode_num(season, episode)
                     }
@@ -1797,7 +1808,7 @@ class Series(TV):
                             log.debug(
                                 u"{id}: Location for '{show}' {ep} doesn't exist and current status is '{old_status}',"
                                 u" removing it and changing status to '{status}'", {
-                                    'id': self.indexerid,
+                                    'id': self.series_id,
                                     'show': self.name,
                                     'ep': episode_num(season, episode),
                                     'old_status': statusStrings[cur_ep.status].upper(),
@@ -1818,7 +1829,7 @@ class Series(TV):
 
                     log.info(
                         u"{id}: Looking for hanging associated files for: '{show}' {ep} in: {location}", {
-                            'id': self.indexerid,
+                            'id': self.series_id,
                             'show': self.name,
                             'ep': episode_num(season, episode),
                             'location': cur_loc,
@@ -1830,7 +1841,7 @@ class Series(TV):
                     if related_files:
                         log.info(
                             u"{id}: Found hanging associated files for '{show}' {ep}, deleting: '{files}'", {
-                                'id': self.indexerid, 'show': self.name,
+                                'id': self.series_id, 'show': self.name,
                                 'ep': episode_num(season, episode),
                                 'files': ', '.join(related_files)
                             }
@@ -1841,7 +1852,7 @@ class Series(TV):
                             except OSError as error:
                                 log.warning(
                                     u'id}: Could not delete associated file: {related_file}. Error: {error_msg}', {
-                                        'id': self.indexerid,
+                                        'id': self.series_id,
                                         'related_file': related_file,
                                         'error_msg': error,
                                     }
@@ -1859,16 +1870,16 @@ class Series(TV):
         if not self.is_location_valid():
             log.warning(
                 u"{id}: Show {show} location doesn't exist, can't download subtitles",
-                {'id': self.indexerid, 'show': self.name}
+                {'id': self.series_id, 'show': self.name}
             )
             return
 
-        log.debug(u'{id}: Downloading subtitles for {show}', id=self.indexerid, show=self.name)
+        log.debug(u'{id}: Downloading subtitles for {show}', id=self.series_id, show=self.name)
 
         episodes = self.get_all_episodes(has_location=True)
         if not episodes:
             log.debug(u'{id}: No episodes to download subtitles for {show}',
-                      {'id': self.indexerid, 'show': self.name})
+                      {'id': self.series_id, 'show': self.name})
             return
 
         for episode in episodes:
@@ -1880,11 +1891,10 @@ class Series(TV):
             return
 
         log.debug(u'{id}: Saving to database: {show}',
-                  {'id': self.indexerid, 'show': self.name})
+                  {'id': self.series_id, 'show': self.name})
 
-        control_value_dict = {'indexer_id': self.indexerid}
-        new_value_dict = {'indexer': self.indexer,
-                          'show_name': self.name,
+        control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
+        new_value_dict = {'show_name': self.name,
                           'location': self.raw_location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
@@ -1916,7 +1926,7 @@ class Series(TV):
         helpers.update_anime_support()
 
         if self.imdb_id and self.imdb_info.get('year'):
-            control_value_dict = {'indexer_id': self.indexerid}
+            control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
             new_value_dict = self.imdb_info
 
             main_db_con = db.DBConnection()
@@ -1931,7 +1941,7 @@ class Series(TV):
         :rtype: str
         """
         to_return = ''
-        to_return += 'indexerid: ' + str(self.indexerid) + '\n'
+        to_return += 'indexerid: ' + str(self.series_id) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
         to_return += 'name: ' + self.name + '\n'
         to_return += 'location: ' + self.raw_location + '\n'  # skip location validation
@@ -1958,7 +1968,7 @@ class Series(TV):
         :rtype: unicode
         """
         to_return = u''
-        to_return += u'indexerid: {0}\n'.format(self.indexerid)
+        to_return += u'indexerid: {0}\n'.format(self.series_id)
         to_return += u'indexer: {0}\n'.format(self.indexer)
         to_return += u'name: {0}\n'.format(self.name)
         to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
@@ -1980,11 +1990,11 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
+        bw_list = self.release_groups or BlackAndWhiteList(self)
 
         data = NonEmptyDict()
         data['id'] = NonEmptyDict()
-        data['id'][self.indexer_name] = self.indexerid
+        data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
@@ -2065,7 +2075,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self.indexerid, self.indexer, season)
+        show_names = get_scene_exceptions(self, season)
         show_names.add(self.name)
 
         new_show_names = set()
@@ -2123,7 +2133,7 @@ class Series(TV):
         allowed_qualities, preferred_qualities = self.current_qualities
         log.debug(
             u'{id}: Allowed, Preferred = [ {allowed} ] [ {preferred} ] Found = [ {found} ]', {
-                'id': self.indexerid,
+                'id': self.series_id,
                 'allowed': self.__qualities_to_string(allowed_qualities),
                 'preferred': self.__qualities_to_string(preferred_qualities),
                 'found': self.__qualities_to_string([quality]),
@@ -2133,7 +2143,7 @@ class Series(TV):
         if not Quality.wanted_quality(quality, allowed_qualities, preferred_qualities):
             log.debug(
                 u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'", {
-                    'id': self.indexerid,
+                    'id': self.series_id,
                     'show': self.name,
                     'ep': episode_num(season, episode),
                     'quality': Quality.qualityStrings[quality],
@@ -2149,15 +2159,16 @@ class Series(TV):
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
-            b'  showid = ? '
+            b'  indexer = ? '
+            b'  AND showid = ? '
             b'  AND season = ? '
-            b'  AND episode = ?', [self.indexerid, season, episode])
+            b'  AND episode = ?', [self.indexer, self.series_id, season, episode])
 
         if not sql_results or not len(sql_results):
             log.debug(
                 u'{id}: Unable to find a matching episode in database.'
                 u' Ignoring found result for {show} {ep} with quality {quality}', {
-                    'id': self.indexerid,
+                    'id': self.series_id,
                     'show': self.name,
                     'ep': episode_num(season, episode),
                     'quality': Quality.qualityStrings[quality],
@@ -2186,7 +2197,7 @@ class Series(TV):
             u"{id}: '{show}' {ep} status is: '{status}'."
             u" {action} result with quality '{new_quality}'."
             u" Reason: {reason}", {
-                'id': self.indexerid,
+                'id': self.series_id,
                 'show': self.name,
                 'ep': episode_num(season, episode),
                 'status': ep_status_text,
@@ -2323,10 +2334,10 @@ class Series(TV):
         media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
 
         if asset_type.startswith('banner'):
-            return ShowBanner(self.indexerid, media_format)
+            return ShowBanner(self, media_format)
         elif asset_type.startswith('fanart'):
-            return ShowFanArt(self.indexerid, media_format)
+            return ShowFanArt(self, media_format)
         elif asset_type.startswith('poster'):
-            return ShowPoster(self.indexerid, media_format)
+            return ShowPoster(self, media_format)
         elif asset_type.startswith('network'):
-            return ShowNetworkLogo(self.indexerid, media_format)
+            return ShowNetworkLogo(self, media_format)

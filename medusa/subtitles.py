@@ -41,7 +41,7 @@ from medusa.helpers import is_media_file, is_rar_file
 from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
-from six import iteritems, string_types, text_type
+from six import binary_type, iteritems, string_types, text_type
 
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
@@ -489,7 +489,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         if app.SUBTITLES_HISTORY:
             logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
                          subtitle.provider_name, subtitle.language.opensubtitles)
-            history.logSubtitle(show_indexerid, season, episode, status, subtitle)
+            history.logSubtitle(tv_episode, status, subtitle)
 
     # Refresh the subtitles property
     if tv_episode.location:
@@ -608,6 +608,9 @@ def _encode(value, fallback=None):
     :return: the encoded value
     :rtype: str
     """
+    if isinstance(value, binary_type):
+        return value
+
     encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
 
     try:
@@ -632,6 +635,9 @@ def _decode(value, fallback=None):
     :return: the decoded value
     :rtype: unicode
     """
+    if isinstance(value, text_type):
+        return value
+
     encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
 
     try:
@@ -966,6 +972,7 @@ class SubtitlesFinder(object):
             sql_results += database.select(
                 "SELECT "
                 "s.show_name, "
+                "e.indexer,"
                 "e.showid, "
                 "e.season, "
                 "e.episode,"
@@ -978,7 +985,7 @@ class SubtitlesFinder(object):
                 "FROM "
                 "tv_episodes AS e "
                 "INNER JOIN tv_shows AS s "
-                "ON (e.showid = s.indexer_id) "
+                "ON (e.showid = s.indexer_id AND e.indexer = s.indexer) "
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
@@ -1041,7 +1048,7 @@ class SubtitlesFinder(object):
                                  ep_to_sub['show_name'], ep_num, dhm(delay))
                     continue
 
-            show_object = Show.find(app.showList, int(ep_to_sub['showid']))
+            show_object = Show.find_by_id(app.showList, ep_to_sub['indexer'], ep_to_sub['showid'])
             if not show_object:
                 logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
                 continue

@@ -130,13 +130,16 @@ class BTNProvider(TorrentProvider):
 
             size = row.get('Size') or -1
 
+            pubdate_raw = row.get('Time')
+            pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
+
             item = {
                 'title': title,
                 'link': download_url,
                 'size': size,
                 'seeders': seeders,
                 'leechers': leechers,
-                'pubdate': None,
+                'pubdate': pubdate,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'
@@ -215,10 +218,7 @@ class BTNProvider(TorrentProvider):
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:
-            name_exceptions = scene_exceptions.get_scene_exceptions(
-                ep_obj.series.indexerid,
-                ep_obj.series.indexer
-            )
+            name_exceptions = scene_exceptions.get_scene_exceptions(ep_obj.series)
             name_exceptions.add(ep_obj.series.name)
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
