@@ -63,12 +63,12 @@ class ConfigPostProcessing(Config):
 
         results = []
 
-        if not config.change_TV_DOWNLOAD_DIR(tv_download_dir):
+        if not config.change_tv_download_dir(tv_download_dir):
             results += ['Unable to create directory {dir}, '
                         'dir not changed.'.format(dir=os.path.normpath(tv_download_dir))]
 
         config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
-        config.change_PROCESS_AUTOMATICALLY(process_automatically)
+        config.change_process_automatically(process_automatically)
 
         if unpack:
             if self.isRarSupported() != 'not supported':

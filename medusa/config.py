@@ -41,28 +41,43 @@ log.logger.addHandler(logging.NullHandler())
 # http://bugs.python.org/issue23636
 uses_netloc.append('scgi')
 
-naming_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
-                  's%(seasonnumber)02de%(episodenumber)02d',
-                  'S%(seasonnumber)02dE%(episodenumber)02d',
-                  '%(seasonnumber)02dx%(episodenumber)02d')
+naming_ep_type = (
+    '%(seasonnumber)dx%(episodenumber)02d',
+    's%(seasonnumber)02de%(episodenumber)02d',
+    'S%(seasonnumber)02dE%(episodenumber)02d',
+    '%(seasonnumber)02dx%(episodenumber)02d',
+)
 
-sports_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
-                  's%(seasonnumber)02de%(episodenumber)02d',
-                  'S%(seasonnumber)02dE%(episodenumber)02d',
-                  '%(seasonnumber)02dx%(episodenumber)02d')
+sports_ep_type = (
+    '%(seasonnumber)dx%(episodenumber)02d',
+    's%(seasonnumber)02de%(episodenumber)02d',
+    'S%(seasonnumber)02dE%(episodenumber)02d',
+    '%(seasonnumber)02dx%(episodenumber)02d',
+)
 
-naming_ep_type_text = ('1x02', 's01e02', 'S01E02', '01x02')
+naming_ep_type_text = (
+    '1x02',
+    's01e02',
+    'S01E02',
+    '01x02',
+)
 
-naming_multi_ep_type = {0: ['-%(episodenumber)02d'] * len(naming_ep_type),
-                        1: [' - ' + x for x in naming_ep_type],
-                        2: [x + '%(episodenumber)02d' for x in ('x', 'e', 'E', 'x')]}
-naming_multi_ep_type_text = ('extend', 'duplicate', 'repeat')
+naming_multi_ep_type = {
+    0: ['-%(episodenumber)02d'] * len(naming_ep_type),
+    1: [' - ' + x for x in naming_ep_type],
+    2: [x + '%(episodenumber)02d' for x in ('x', 'e', 'E', 'x')],
+}
+naming_multi_ep_type_text = (
+    'extend',
+    'duplicate',
+    'repeat',
+)
 
 naming_sep_type = (' - ', ' ')
 naming_sep_type_text = (' - ', 'space')
 
 
-def change_HTTPS_CERT(https_cert):
+def change_https_cert(https_cert):
     """
     Replace HTTPS Certificate file path
 
@@ -83,7 +98,7 @@ def change_HTTPS_CERT(https_cert):
     return True
 
 
-def change_HTTPS_KEY(https_key):
+def change_https_key(https_key):
     """
     Replace HTTPS Key file path
 
@@ -104,7 +119,7 @@ def change_HTTPS_KEY(https_key):
     return True
 
 
-def change_LOG_DIR(log_dir):
+def change_log_dir(log_dir):
     """
     Change logging directory for application and webserver
 
@@ -123,7 +138,7 @@ def change_LOG_DIR(log_dir):
     return True
 
 
-def change_NZB_DIR(nzb_dir):
+def change_nzb_dir(nzb_dir):
     """
     Change NZB Folder
 
@@ -144,7 +159,7 @@ def change_NZB_DIR(nzb_dir):
     return True
 
 
-def change_TORRENT_DIR(torrent_dir):
+def change_torrent_dir(torrent_dir):
     """
     Change torrent directory
 
@@ -165,7 +180,7 @@ def change_TORRENT_DIR(torrent_dir):
     return True
 
 
-def change_TV_DOWNLOAD_DIR(tv_download_dir):
+def change_tv_download_dir(tv_download_dir):
     """
     Change TV_DOWNLOAD directory (used by postprocessor)
 
@@ -294,7 +309,7 @@ def change_SHOWUPDATE_HOUR(freq):
     app.show_update_scheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
 
 
-def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
+def change_subtitles_finder_frequency(subtitles_finder_frequency):
     """
     Change frequency of subtitle thread
 
@@ -306,7 +321,7 @@ def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     app.SUBTITLES_FINDER_FREQUENCY = try_int(subtitles_finder_frequency, 1)
 
 
-def change_VERSION_NOTIFY(version_notify):
+def change_version_notify(version_notify):
     """
     Change frequency of versioncheck thread
 
@@ -324,7 +339,7 @@ def change_VERSION_NOTIFY(version_notify):
         app.version_check_scheduler.forceRun()
 
 
-def change_GIT_PATH():
+def change_git_path():
     """
     Recreate the version_check scheduler when GIT_PATH is changed.
     Force a run to clear or set any error messages.
@@ -337,7 +352,7 @@ def change_GIT_PATH():
     app.version_check_scheduler.forceRun()
 
 
-def change_DOWNLOAD_PROPERS(download_propers):
+def change_download_propers(download_propers):
     """
     Enable/Disable proper download thread
     TODO: Make this return True/False on success/failure
@@ -363,7 +378,7 @@ def change_DOWNLOAD_PROPERS(download_propers):
         log.info(u'Stopping PROPERFINDER thread')
 
 
-def change_USE_TRAKT(use_trakt):
+def change_use_trakt(use_trakt):
     """
     Enable/disable trakt thread
     TODO: Make this return true/false on success/failure
@@ -389,7 +404,7 @@ def change_USE_TRAKT(use_trakt):
         log.info(u'Stopping TRAKTCHECKER thread')
 
 
-def change_USE_SUBTITLES(use_subtitles):
+def change_use_subtitles(use_subtitles):
     """
     Enable/Disable subtitle searcher
     TODO: Make this return true/false on success/failure
@@ -415,7 +430,7 @@ def change_USE_SUBTITLES(use_subtitles):
         log.info(u'Stopping SUBTITLESFINDER thread')
 
 
-def change_PROCESS_AUTOMATICALLY(process_automatically):
+def change_process_automatically(process_automatically):
     """
     Enable/Disable postprocessor thread
     TODO: Make this return True/False on success/failure
@@ -441,7 +456,7 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
         app.auto_post_processor_scheduler.silent = True
 
 
-def CheckSection(CFG, sec):
+def check_section(CFG, sec):
     """ Check if INI section exists, if not create it """
 
     if sec in CFG:

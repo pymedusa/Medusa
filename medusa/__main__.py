@@ -70,7 +70,7 @@ from medusa import (
 )
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float,
+    check_section, ConfigMigrator, check_setting_bool, check_setting_float,
     check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
@@ -435,7 +435,7 @@ class Application(object):
             ]
 
             for section in sections:
-                CheckSection(app.CFG, section)
+                check_section(app.CFG, section)
 
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             # Need to be before any passwords

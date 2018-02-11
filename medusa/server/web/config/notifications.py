@@ -208,7 +208,7 @@ class ConfigNotifications(Config):
         app.SLACK_NOTIFY_SUBTITLEDOWNLOAD = config.checkbox_to_value(slack_notify_onsubtitledownload)
         app.SLACK_WEBHOOK = slack_webhook
 
-        config.change_USE_TRAKT(use_trakt)
+        config.change_use_trakt(use_trakt)
         app.TRAKT_USERNAME = trakt_username
         app.TRAKT_REMOVE_WATCHLIST = config.checkbox_to_value(trakt_remove_watchlist)
         app.TRAKT_REMOVE_SERIESLIST = config.checkbox_to_value(trakt_remove_serieslist)

@@ -92,10 +92,10 @@ class ConfigGeneral(Config):
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)
-        config.change_VERSION_NOTIFY(config.checkbox_to_value(version_notify))
+        config.change_version_notify(config.checkbox_to_value(version_notify))
         app.AUTO_UPDATE = config.checkbox_to_value(auto_update)
         app.NOTIFY_ON_UPDATE = config.checkbox_to_value(notify_on_update)
-        # app.LOG_DIR is set in config.change_LOG_DIR()
+        # app.LOG_DIR is set in config.change_log_dir()
         app.LOG_NR = log_nr
         app.LOG_SIZE = float(log_size)
 
@@ -116,14 +116,14 @@ class ConfigGeneral(Config):
         app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
         if app.GIT_PATH != git_path:
             app.GIT_PATH = git_path
-            config.change_GIT_PATH()
+            config.change_git_path()
         app.GIT_REMOTE = git_remote
         app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
         app.NO_RESTART = config.checkbox_to_value(no_restart)
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
-        # app.LOG_DIR is set in config.change_LOG_DIR()
+        # app.LOG_DIR is set in config.change_log_dir()
         app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
@@ -147,7 +147,7 @@ class ConfigGeneral(Config):
         app.FALLBACK_PLEX_NOTIFICATIONS = config.checkbox_to_value(fallback_plex_notifications)
         app.FALLBACK_PLEX_TIMEOUT = try_int(fallback_plex_timeout)
 
-        if not config.change_LOG_DIR(log_dir):
+        if not config.change_log_dir(log_dir):
             results += ['Unable to create directory {dir}, '
                         'log directory not changed.'.format(dir=os.path.normpath(log_dir))]
 
@@ -186,11 +186,11 @@ class ConfigGeneral(Config):
 
         app.ENABLE_HTTPS = config.checkbox_to_value(enable_https)
 
-        if not config.change_HTTPS_CERT(https_cert):
+        if not config.change_https_cert(https_cert):
             results += ['Unable to create directory {dir}, '
                         'https cert directory not changed.'.format(dir=os.path.normpath(https_cert))]
 
-        if not config.change_HTTPS_KEY(https_key):
+        if not config.change_https_key(https_key):
             results += ['Unable to create directory {dir}, '
                         'https key directory not changed.'.format(dir=os.path.normpath(https_key))]
 

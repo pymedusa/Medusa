@@ -62,10 +62,10 @@ class ConfigSearch(Config):
 
         results = []
 
-        if not config.change_NZB_DIR(nzb_dir):
+        if not config.change_nzb_dir(nzb_dir):
             results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(nzb_dir))]
 
-        if not config.change_TORRENT_DIR(torrent_dir):
+        if not config.change_torrent_dir(torrent_dir):
             results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(torrent_dir))]
 
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
@@ -93,7 +93,7 @@ class ConfigSearch(Config):
 
         app.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
 
-        config.change_DOWNLOAD_PROPERS(download_propers)
+        config.change_download_propers(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
         app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
         config.change_PROPERS_FREQUENCY(check_propers_interval)
