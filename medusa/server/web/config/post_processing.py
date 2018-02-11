@@ -67,7 +67,7 @@ class ConfigPostProcessing(Config):
             results += ['Unable to create directory {dir}, '
                         'dir not changed.'.format(dir=os.path.normpath(tv_download_dir))]
 
-        config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
+        config.change_auto_postprocessor_frequency(autopostprocessor_frequency)
         config.change_process_automatically(process_automatically)
 
         if unpack:

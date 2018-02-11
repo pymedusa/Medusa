@@ -201,7 +201,7 @@ def change_tv_download_dir(tv_download_dir):
     return True
 
 
-def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
+def change_auto_postprocessor_frequency(freq):
     """
     Change frequency of automatic postprocessing thread
     TODO: Make all thread frequency changers in config.py return True/False status
@@ -216,7 +216,7 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
-def change_TORRENT_CHECKER_FREQUENCY(freq):
+def change_torrent_checker_frequency(freq):
     """
     Change frequency of Torrent Checker thread
 
@@ -230,7 +230,7 @@ def change_TORRENT_CHECKER_FREQUENCY(freq):
     app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUECY)
 
 
-def change_DAILYSEARCH_FREQUENCY(freq):
+def change_daily_search_frequency(freq):
     """
     Change frequency of daily search thread
 
@@ -244,7 +244,7 @@ def change_DAILYSEARCH_FREQUENCY(freq):
     app.daily_search_scheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
 
 
-def change_BACKLOG_FREQUENCY(freq):
+def change_backlog_frequency(freq):
     """
     Change frequency of backlog thread
 
@@ -259,7 +259,7 @@ def change_BACKLOG_FREQUENCY(freq):
     app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
-def change_PROPERS_FREQUENCY(check_propers_interval):
+def change_propers_frequency(check_propers_interval):
     """
     Change frequency of backlog thread
 
@@ -279,7 +279,7 @@ def change_PROPERS_FREQUENCY(check_propers_interval):
     app.proper_finder_scheduler.cycleTime = update_interval
 
 
-def change_UPDATE_FREQUENCY(freq):
+def change_update_frequency(freq):
     """
     Change frequency of daily updater thread
 
@@ -293,7 +293,7 @@ def change_UPDATE_FREQUENCY(freq):
     app.version_check_scheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
 
 
-def change_SHOWUPDATE_HOUR(freq):
+def change_show_update_hour(freq):
     """
     Change frequency of show updater thread
 

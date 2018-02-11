@@ -91,7 +91,7 @@ class ConfigGeneral(Config):
         app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
-        config.change_SHOWUPDATE_HOUR(showupdate_hour)
+        config.change_show_update_hour(showupdate_hour)
         config.change_version_notify(config.checkbox_to_value(version_notify))
         app.AUTO_UPDATE = config.checkbox_to_value(auto_update)
         app.NOTIFY_ON_UPDATE = config.checkbox_to_value(notify_on_update)
@@ -101,7 +101,7 @@ class ConfigGeneral(Config):
 
         app.TRASH_REMOVE_SHOW = config.checkbox_to_value(trash_remove_show)
         app.TRASH_ROTATE_LOGS = config.checkbox_to_value(trash_rotate_logs)
-        config.change_UPDATE_FREQUENCY(update_frequency)
+        config.change_update_frequency(update_frequency)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         app.SORT_ARTICLE = config.checkbox_to_value(sort_article)
         app.CPU_PRESET = cpu_preset

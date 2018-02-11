@@ -68,9 +68,9 @@ class ConfigSearch(Config):
         if not config.change_torrent_dir(torrent_dir):
             results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(torrent_dir))]
 
-        config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
-        config.change_TORRENT_CHECKER_FREQUENCY(torrent_checker_frequency)
-        config.change_BACKLOG_FREQUENCY(backlog_frequency)
+        config.change_daily_search_frequency(dailysearch_frequency)
+        config.change_torrent_checker_frequency(torrent_checker_frequency)
+        config.change_backlog_frequency(backlog_frequency)
         app.BACKLOG_DAYS = try_int(backlog_days, 7)
 
         app.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
@@ -96,7 +96,7 @@ class ConfigSearch(Config):
         config.change_download_propers(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
         app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
-        config.change_PROPERS_FREQUENCY(check_propers_interval)
+        config.change_propers_frequency(check_propers_interval)
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)
 
