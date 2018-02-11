@@ -150,7 +150,7 @@ class BaseIndexer(object):
             check_value = value.get(check_key)
         next_keys = '.'.join(split_config[1:])
 
-        if not check_value:
+        if check_value is None:
             return None
 
         if isinstance(check_value, dict):

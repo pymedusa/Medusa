@@ -49,43 +49,43 @@ class Tmdb(BaseIndexer):
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
         # An api to indexer series/episode object mapping
-        self.series_map = {
-            'id': 'id',
-            'name': 'seriesname',
-            'original_name': 'aliasnames',
-            'overview': 'overview',
-            'air_date': 'firstaired',
-            'first_air_date': 'firstaired',
-            'backdrop_path': 'fanart',
-            'url': 'show_url',
-            'episode_number': 'episodenumber',
-            'season_number': 'seasonnumber',
-            'dvd_episode_number': 'dvd_episodenumber',
-            'last_air_date': 'airs_dayofweek',
-            'last_updated': 'lastupdated',
-            'network_id': 'networkid',
-            'vote_average': 'contentrating',
-            'poster_path': 'poster_thumb',
-            'genres': 'genre',
-            'type': 'classification',
-            'networks': 'network',
-            'episode_run_time': 'runtime'
-        }
+        self.series_map = [
+            ('id', 'id'),
+            ('seriesname', 'name'),
+            ('aliasnames', 'original_name'),
+            ('overview', 'overview'),
+            ('firstaired', 'air_date'),
+            ('firstaired', 'first_air_date'),
+            ('show_url', 'url'),
+            ('episodenumber', 'episode_number'),
+            ('seasonnumber', 'season_number'),
+            ('dvd_episodenumber', 'dvd_episode_number'),
+            ('airs_dayofweek', 'last_air_date'),
+            ('lastupdated', 'last_updated'),
+            ('networkid', 'network_id'),
+            ('contentrating', 'vote_average'),
+            ('genre', 'genres'),
+            ('classification', 'type'),
+            ('network', 'networks[0].name'),
+            ('runtime', 'episode_run_time'),
+            ('seasons', 'seasons'),
+            ('poster_thumb', 'poster_path'),
+            ('fanart', 'backdrop_path'),
+        ]
 
-        self.episodes_map = {
-            'id': 'id',
-            'name': 'episodename',
-            'overview': 'overview',
-            'air_date': 'firstaired',
-            'episode_run_time': 'runtime',
-            'episode_number': 'episodenumber',
-            'season_number': 'seasonnumber',
-            'vote_average': 'contentrating',
-            'still_path': 'filename'
-        }
+        self.episodes_map = [
+            ('id', 'id'),
+            ('episodename', 'name'),
+            ('overview', 'overview'),
+            ('firstaired', 'air_date'),
+            ('runtime', 'episode_run_time'),
+            ('episodenumber', 'episode_number'),
+            ('seasonnumber', 'season_number'),
+            ('contentrating', 'vote_average'),
+            ('filename', 'still_path'),
+        ]
 
-    @staticmethod
-    def _map_results(tmdb_response, key_mappings=None, list_separator='|'):
+    def _map_results(self, tmdb_response, key_mappings=None, list_separator='|'):
         """Map results to a a key_mapping dict.
 
         :type tmdb_response: object
@@ -103,7 +103,10 @@ class Tmdb(BaseIndexer):
         for item in tmdb_response:
             return_dict = {}
             try:
-                for key, value in item.items():
+
+                for key, config in key_mappings:
+                    value = self.get_nested_value(item, config)
+
                     if value is None or value == []:
                         continue
 
@@ -113,22 +116,15 @@ class Tmdb(BaseIndexer):
                             value = list_separator.join(text_type(v) for v in value)
 
                     # Process genres
-                    if key == 'genres':
+                    if key == 'genre':
                         value = list_separator.join(item['name'] for item in value)
 
-                    if key == 'networks':
-                        value = value[0].get('name') if value else ''
-
-                    if key == 'last_air_date':
+                    if key == 'airs_dayofweek':
                         value = week_day(value)
 
-                    if key == 'episode_run_time':
+                    if key == 'runtime':
                         # Using the longest episode runtime if there are multiple.
                         value = max(value) if isinstance(value, list) else ''
-
-                    # Try to map the key
-                    if key in key_mappings:
-                        key = key_mappings[key]
 
                     # Set value to key
                     return_dict[key] = value
@@ -444,16 +440,26 @@ class Tmdb(BaseIndexer):
         # Create a key/value dict, to map the image type to a default image width.
         # possitlbe widths can also be retrieved from self.configuration.images['poster_sizes'] and
         # self.configuration.images['still_sizes']
-        image_width = {'fanart': 'w1280', 'poster': 'w500'}
+        image_width = {'fanart': 'w1280', 'poster_thumb': 'w500'}
 
         for k, v in series_info['series'].items():
             if v is not None:
-                if k in ['fanart', 'banner', 'poster']:
+                if k in ['fanart', 'banner', 'poster_thumb']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
                                                              image_size=image_width[k],
                                                              file_path=v)
 
             self._set_show_data(sid, k, v)
+
+        # Let's also store the poster with its original size.
+        if series_info['series'].get('poster_thumb'):
+            self._set_show_data(sid, 'poster',
+                                self.config['artwork_prefix'].format(
+                                    base_url=self.tmdb_configuration.images['base_url'],
+                                    image_size='original',
+                                    file_path=series_info['series'].get('poster_thumb')
+                                )
+)
 
         # Get external ids.
         # As the external id's are not part of the shows default response, we need to make an additional call for it.
