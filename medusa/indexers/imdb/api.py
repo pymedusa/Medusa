@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 from itertools import chain
 import logging
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 from imdbpie import imdbpie
 import locale
 from six import string_types, text_type
@@ -269,19 +269,35 @@ class Imdb(BaseIndexer):
         :param imdb_id: imdb id including the `tt`.
         :param season: season passed as integer.
         """
+        def parse_date_with_local(date, template, use_locale, method='strptime'):
+            lc = locale.setlocale(locale.LC_TIME)
+            locale.setlocale(locale.LC_ALL, use_locale)
+            try:
+                if method == 'strptime':
+                    return datetime.strptime(date, template)
+                else:
+                    return date.strftime(template)
+            except (AttributeError, ValueError):
+                raise
+            finally:
+                locale.setlocale(locale.LC_TIME, lc)
+
         episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
         series_id = ImdbIdentifier(imdb_id).series_id
         series_status = 'Ended'
+        episodes = []
+
         try:
             response = self.config['session'].get(episodes_url.format(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season))
             if not response or not response.text:
                 log.warning('Problem requesting episode information for show {0}, and season {1}.', imdb_id, season)
                 return
 
+            Episode = namedtuple('Episode', ['episode_number', 'season_number', 'first_aired', 'episode_rating', 'episode_votes', 'synopsis'])
             with BS4Parser(response.text, 'html5lib') as html:
                 for episode in html.find_all('div', class_='list_item'):
                     try:
-                        episode_no = int(episode.find('meta')['content'])
+                        episode_number = int(episode.find('meta')['content'])
                     except AttributeError:
                         pass
 
@@ -290,23 +306,19 @@ class Imdb(BaseIndexer):
                     except AttributeError:
                         pass
 
-                    lc = locale.setlocale(locale.LC_TIME)
                     try:
-                        locale.setlocale(locale.LC_ALL, 'C')
-                        first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%d %b %Y').strftime('%Y-%m-%d')
+                        first_aired = parse_date_with_local(first_aired_raw.replace('.', ''), '%d %b %Y', 'C').strftime('%Y-%m-%d')
                     except (AttributeError, ValueError):
                         try:
-                            first_aired = datetime.strptime(first_aired_raw.replace('.', ''), '%b %Y').strftime('%Y-%m-01')
+                            first_aired = parse_date_with_local(first_aired_raw.replace('.', ''), '%b %Y', 'C').strftime('%Y-%m-01')
                             series_status = 'Continuing'
                         except (AttributeError, ValueError):
                             try:
-                                datetime.strptime(first_aired_raw.replace('.', ''), '%Y').strftime('%Y')
+                                parse_date_with_local(first_aired_raw.replace('.', ''), '%Y', 'C').strftime('%Y')
                                 first_aired = None
                                 series_status = 'Continuing'
                             except (AttributeError, ValueError):
                                 first_aired = None
-                    finally:
-                        locale.setlocale(locale.LC_TIME, lc)
 
                     try:
                         episode_rating = float(episode.find('span', class_='ipl-rating-star__rating').get_text(strip=True))
@@ -327,14 +339,28 @@ class Imdb(BaseIndexer):
                     except AttributeError:
                         synopsis = ''
 
-                    self._set_item(series_id, season, episode_no, 'firstaired', first_aired)
-                    self._set_item(series_id, season, episode_no, 'rating', episode_rating)
-                    self._set_item(series_id, season, episode_no, 'votes', episode_votes)
-                    self._set_item(series_id, season, episode_no, 'overview', synopsis)
+                    episodes.append(Episode(episode_number=episode_number, season_number=season, first_aired=first_aired,
+                                            episode_rating=episode_rating, episode_votes=episode_votes, synopsis=synopsis))
                     self._set_show_data(series_id, 'status', series_status)
 
         except Exception as error:
             log.exception('Error while trying to enrich imdb series {0}, {1}', series_id, error)
+
+        for episode in episodes:
+            self._set_item(series_id, episode.season_number, episode.episode_number, 'firstaired', episode.first_aired)
+            self._set_item(series_id, episode.season_number, episode.episode_number, 'rating', episode.episode_rating)
+            self._set_item(series_id, episode.season_number, episode.episode_number, 'votes', episode.episode_votes)
+            self._set_item(series_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
+
+        # Get the last (max 10 airdates) and try to calculate an airday + time.
+        last_airdates = sorted(episodes, key=lambda x: x.first_aired, reverse=True)[:10]
+        weekdays = {}
+        for aired in last_airdates:
+            day = parse_date_with_local(datetime.strptime(aired.first_aired, '%Y-%m-%d'), '%A', 'C', method='strftime')
+            weekdays[day] = 1 if day not in weekdays else weekdays[day] + 1
+
+        airs_day_of_week = sorted(weekdays.keys(), key=lambda x: weekdays[x])[0]
+        self._set_show_data(series_id, 'airs_dayofweek', airs_day_of_week)
 
     def _parse_images(self, imdb_id):
         """Parse Show and Season posters.
