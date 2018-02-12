@@ -3,7 +3,7 @@ hookfiles: dredd/dredd_hook.py
 language: python
 sandbox: false
 server: python dredd/dredd_hook.py
-server-wait: 30
+server-wait: 10
 init: false
 names: false
 only: []
