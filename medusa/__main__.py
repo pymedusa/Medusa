@@ -534,6 +534,7 @@ class Application(object):
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
+            app.SSL_CA_BUNDLE = check_setting_str(app.CFG, 'General', 'ssl_ca_bundle', '')
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
@@ -1428,6 +1429,7 @@ class Application(object):
         new_config['General']['subliminal_log'] = int(app.SUBLIMINAL_LOG)
         new_config['General']['privacy_level'] = app.PRIVACY_LEVEL
         new_config['General']['ssl_verify'] = int(app.SSL_VERIFY)
+        new_config['General']['ssl_ca_bundle'] = app.SSL_CA_BUNDLE
         new_config['General']['download_url'] = app.DOWNLOAD_URL
         new_config['General']['localhost_ip'] = app.LOCALHOST_IP
         new_config['General']['cpu_preset'] = app.CPU_PRESET
