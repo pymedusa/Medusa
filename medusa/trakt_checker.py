@@ -11,7 +11,8 @@ from medusa import app, db, ui
 from medusa.common import Quality, SKIPPED, WANTED
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
-from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, get_trakt_indexer, indexerConfig
+from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
+from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 from medusa.show.show import Show
@@ -117,7 +118,8 @@ class TraktChecker(object):
             log.info('No shows found in your Trakt library. Nothing to sync')
             return
         trakt_show = [x for x in trakt_library if
-                      int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
+                      get_trakt_indexer(indexer)
+                      and int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
 
         return trakt_show if trakt_show else None
 

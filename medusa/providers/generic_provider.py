@@ -44,7 +44,7 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
-from medusa.scene_exceptions import get_scene_exceptions
+from medusa.scene_exceptions import get_season_scene_exceptions
 from medusa.search import PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
 from medusa.session.hooks import cloudflare
@@ -576,6 +576,7 @@ class GenericProvider(object):
 
         df = kwargs.pop('dayfirst', False)
         yf = kwargs.pop('yearfirst', False)
+        fromtimestamp = kwargs.pop('fromtimestamp', False)
 
         # This can happen from time to time
         if pubdate is None:
@@ -591,21 +592,26 @@ class GenericProvider(object):
                     matched_time = match.group('time')
                     matched_granularity = match.group('granularity')
 
-                    # The parse method does not support decimals used with the month, months, year or years granularities.
+                    # The parse method does not support decimals used with the month,
+                    # months, year or years granularities.
                     if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
                         matched_time = int(round(float(matched_time.strip())))
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
-            dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+            if fromtimestamp:
+                dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
+            else:
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
                 dt = dt.replace(tzinfo=tz.gettz('UTC'))
             if timezone:
                 dt = dt.astimezone(tz.gettz(timezone))
-            return dt
 
+            return dt
         except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
@@ -624,7 +630,9 @@ class GenericProvider(object):
 
         all_possible_show_names = episode.series.get_all_possible_names()
         if episode.scene_season:
-            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+            all_possible_show_names = all_possible_show_names.union(
+                episode.series.get_all_possible_names(season=episode.scene_season)
+            )
 
         for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
@@ -639,7 +647,7 @@ class GenericProvider(object):
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.series, episode.scene_season)):
+                        show_name in get_season_scene_exceptions(episode.series, episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:

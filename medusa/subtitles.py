@@ -41,7 +41,7 @@ from medusa.helpers import is_media_file, is_rar_file
 from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
-from six import iteritems, string_types, text_type
+from six import binary_type, iteritems, string_types, text_type
 
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
@@ -608,6 +608,9 @@ def _encode(value, fallback=None):
     :return: the encoded value
     :rtype: str
     """
+    if isinstance(value, binary_type):
+        return value
+
     encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
 
     try:
@@ -632,6 +635,9 @@ def _decode(value, fallback=None):
     :return: the decoded value
     :rtype: unicode
     """
+    if isinstance(value, text_type):
+        return value
+
     encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
 
     try:

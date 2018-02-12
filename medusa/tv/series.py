@@ -69,17 +69,20 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
-    indexerConfig,
-    indexer_id_to_slug,
-    mappings,
-    reverse_mappings,
-    slug_to_indexer_id)
+    indexerConfig
+)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
 from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.utils import (
+    indexer_id_to_slug,
+    mappings,
+    reverse_mappings,
+    slug_to_indexer_id
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -521,13 +524,13 @@ class Series(TV):
     def poster(self):
         """Return poster path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def banner(self):
         """Return banner path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
@@ -582,7 +585,7 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: int
+        :type season: int or list of int
         :param has_location:
         :type has_location: bool
         :return:
@@ -606,6 +609,7 @@ class Series(TV):
         sql_args = [self.indexer, self.series_id]
 
         if season is not None:
+            season = helpers.ensure_list(season)
             sql_selection += b' AND season IN (?)'
             sql_args.append(','.join(map(text_type, season)))
 

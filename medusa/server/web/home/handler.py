@@ -59,11 +59,11 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexer_name_to_id
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
+from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
@@ -109,6 +109,7 @@ from requests.compat import (
     quote_plus,
     unquote_plus,
 )
+
 from six import iteritems
 
 from tornroutes import route
@@ -164,7 +165,8 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
+        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
+                        max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
     def show_statistics():
@@ -754,7 +756,8 @@ class Home(WebRoot):
         return {
             'currentBranch': app.BRANCH,
             'resetBranches': app.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches() if branch not in app.GIT_RESET_BRANCHES]
+            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()
+                         if branch not in app.GIT_RESET_BRANCHES]
         }
 
     @staticmethod
@@ -1048,7 +1051,7 @@ class Home(WebRoot):
             for episode in cached_result[b'episodes'].strip('|').split('|'):
                 ep_objs.append(series_obj.get_episode(int(cached_result[b'season']), int(episode)))
         elif manual_search_type == 'season':
-            ep_objs.extend(series_obj.get_all_episodes(int(cached_result[b'season'])))
+            ep_objs.extend(series_obj.get_all_episodes([int(cached_result[b'season'])]))
 
         # Create the queue item
         snatch_queue_item = ManualSnatchQueueItem(series_obj, ep_objs, provider, cached_result)
@@ -1740,8 +1743,8 @@ class Home(WebRoot):
                 try:
                     main_db_con.action(
                         b'DELETE FROM \'{provider}\' '
-                        b'WHERE indexer = ? AND indexerid = ?'.format(provider=cur_provider.get_id()),
-                        [series_obj.indexer, series_obj.series_id]
+                        b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [series_obj.series_id]
                     )
                 except Exception:
                     logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
@@ -1815,9 +1818,7 @@ class Home(WebRoot):
 
         # force the update
         try:
-            series_obj.remove_images()
             app.show_queue_scheduler.action.updateShow(series_obj)
-
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 

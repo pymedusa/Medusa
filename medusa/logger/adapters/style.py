@@ -40,8 +40,11 @@ class BraceMessage(object):
                 return self.msg.format(**kwargs)
             except KeyError:
                 return self.msg
-        except KeyError:
-            return self.msg.format(*args)
+        except KeyError as error:
+            try:
+                return self.msg.format(*args)
+            except KeyError:
+                raise error
         except Exception:
             log.error(
                 'BraceMessage string formatting failed. '

@@ -5,7 +5,8 @@ from __future__ import print_function
 import logging
 import socket
 
-from libgrowl import gntp
+import gntp
+
 from medusa import app, common
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter

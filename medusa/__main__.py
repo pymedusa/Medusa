@@ -85,6 +85,7 @@ from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
+from medusa.themes import read_themes
 from medusa.tv import Series
 
 from six import text_type
@@ -368,7 +369,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'static'),
+            'data_root': os.path.join(app.PROG_DIR, 'themes'),
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -383,6 +384,9 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
+
+        # Initialize all available themes
+        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()

@@ -32,11 +32,11 @@ class Torrent9Provider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.torrents9.pe'
+        self.url = 'http://www.torrent9.bz'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
-            'download': urljoin(self.url, '{link}.torrent'),
+            'download': urljoin(self.url, '/get_torrent/{name}.torrent'),
         }
 
         # Proper Strings
@@ -121,8 +121,8 @@ class Torrent9Provider(TorrentProvider):
 
                     title = '{name} {codec}'.format(name=title, codec='x264')
 
-                    download_link = download_url.replace('/torrent', 'get_torrent')
-                    download_url = self.urls['download'].format(link=download_link)
+                    download_name = download_url.rsplit('/', 1)[1]
+                    download_url = self.urls['download'].format(name=download_name)
 
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True))
