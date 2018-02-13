@@ -9,9 +9,9 @@ from medusa import app
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
+from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb)
 
-from simpleanidb import (Anidb, REQUEST_HOT)
+from simpleanidb import Anidb, REQUEST_HOT
 from simpleanidb.exceptions import GeneralError
 
 
@@ -30,12 +30,11 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
         self.default_img_src = 'poster.png'
-        self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
         try:
-            tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
+            tvdb_id = cached_aid_to_tvdb(show_obj.aid)
         except Exception:
             log.warning("Couldn't map AniDB id {0} to a TVDB id", show_obj.aid)
             return None
@@ -73,7 +72,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         result = []
 
         try:
-            shows = self.anidb.get_list(list_type)
+            shows = Anidb(cache_dir=app.CACHE_DIR).get_list(list_type)
         except GeneralError as error:
             log.warning('Could not connect to AniDB service: {0}', error)
 

@@ -24,10 +24,13 @@ from medusa import (
     app,
     helpers,
 )
+from medusa.cache import recommended_series_cache
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.session.core import MedusaSession
+from simpleanidb import Anidb
 
 session = MedusaSession()
+anidb = Anidb(cache_dir=app.CACHE_DIR)
 
 
 class MissingTvdbMapping(Exception):
@@ -107,7 +110,7 @@ class RecommendedShow(object):
         if not os.path.isfile(full_path):
             helpers.download_file(image_url, full_path, session=self.session)
 
-    def check_if_anime(self, anidb, tvdbid):
+    def _flag_as_anime(self, tvdbid):
         """Use the simpleanidb lib, to check the anime-lists.xml for an anime show mapping with this tvdbid.
 
         The show if flagged as anime, through the is_anime attribute.
@@ -116,7 +119,7 @@ class RecommendedShow(object):
         :return: Returns True, when the show can be mapped to anidb.net, False if not.
         """
         try:
-            anime = anidb.tvdb_id_to_aid(tvdbid=tvdbid)
+            anime = cached_tvdb_to_aid(tvdbid)
         except Exception:
             return False
         else:
@@ -131,3 +134,13 @@ class RecommendedShow(object):
     def __str__(self):
         """Return a string repr of the recommended list."""
         return 'Recommended show {0} from recommended list: {1}'.format(self.title, self.recommender)
+
+
+@recommended_series_cache.cache_on_arguments()
+def cached_tvdb_to_aid(tvdb_id):
+    return anidb.tvdb_id_to_aid(tvdbid=tvdb_id)
+
+
+@recommended_series_cache.cache_on_arguments()
+def cached_aid_to_tvdb(aid):
+    return anidb.aid_to_tvdb_id(aid=aid)

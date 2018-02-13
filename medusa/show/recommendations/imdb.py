@@ -9,10 +9,10 @@ import re
 from datetime import date
 from imdbpie import imdbpie
 from medusa import app, helpers
+from medusa.cache import recommended_series_cache
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations import ExpiringKeyValue
 from medusa.show.recommendations.recommended import RecommendedShow
 
 from requests import RequestException
@@ -21,9 +21,7 @@ from simpleanidb import Anidb
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-
-imdb_show_details_cache = ExpiringKeyValue(cache_timeout=3600 * 24 * 7)  # Cache 7 days
-tvdb_mapping_cache = ExpiringKeyValue(cache_timeout=3600 * 24 * 7)  # Cache 7 days
+imdb_api = imdbpie.Imdb()
 
 
 class ImdbPopular(object):
@@ -47,15 +45,10 @@ class ImdbPopular(object):
             'year': '%s,%s' % (date.today().year - 1, date.today().year + 1),
         }
 
+    @recommended_series_cache.cache_on_arguments()
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
-        cached_tvdb_id = tvdb_mapping_cache.get(show_obj.get('imdb_tt'))
-        if not cached_tvdb_id:
-            tvdb_id = helpers.get_tvdb_from_id(show_obj.get('imdb_tt'), 'IMDB')
-            if tvdb_id:
-                tvdb_mapping_cache.append(show_obj.get('imdb_tt'), tvdb_id)
-        else:
-            tvdb_id = cached_tvdb_id.value
+        tvdb_id = helpers.get_tvdb_from_id(show_obj.get('imdb_tt'), 'IMDB')
 
         if not tvdb_id:
             return None
@@ -75,41 +68,38 @@ class ImdbPopular(object):
 
         return rec_show
 
+    @staticmethod
+    @recommended_series_cache.cache_on_arguments()
+    def _get_imdb_series_details(imdb_id):
+        return imdb_api.get_title(imdb_id)
+
     def fetch_popular_shows(self):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        # Clean expired cache items.
-        imdb_show_details_cache.clean()
-        tvdb_mapping_cache.clean()
-
-        imdb_api = imdbpie.Imdb()
         imdb_result = imdb_api.get_popular_shows()
 
         for imdb_show in imdb_result['ranks']:
             show = dict()
-            imdb_tt = imdb_show['id'].strip('/').split('/')[-1]
+            imdb_id = show['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
 
-            if imdb_tt:
-                show['imdb_tt'] = imdb_tt
-                cached_show_details = imdb_show_details_cache.get(imdb_tt)
-                if not cached_show_details:
-                    show_details = imdb_api.get_title(imdb_tt)
-                    imdb_show_details_cache.append(imdb_tt, show_details)
-                else:
-                    show_details = cached_show_details.value
-
+            if imdb_id:
+                show_details = self._get_imdb_series_details(imdb_id)
                 if show_details:
-                    show['year'] = imdb_show['year']
-                    show['name'] = imdb_show['title']
-                    show['image_url_large'] = imdb_show['image']['url']
-                    show['image_path'] = posixpath.join('images', 'imdb_popular',
-                                                        os.path.basename(show['image_url_large']))
-                    show['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
-                    show['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
-                    show['votes'] = show_details['ratings']['ratingCount']
-                    show['outline'] = show_details['plot'].get('outline', {}).get('text')
-                    show['rating'] = show_details['ratings']['rating']
+                    try:
+                        show['year'] = imdb_show['year']
+                        show['name'] = imdb_show['title']
+                        show['image_url_large'] = imdb_show['image']['url']
+                        show['image_path'] = posixpath.join('images', 'imdb_popular',
+                                                            os.path.basename(show['image_url_large']))
+                        show['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
+                        show['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
+                        show['votes'] = show_details['ratings'].get('ratingCount', 0)
+                        show['outline'] = show_details['plot'].get('outline', {}).get('text')
+                        show['rating'] = show_details['ratings'].get('rating', 0)
+                    except Exception as error:
+                        log.warning('Could not parse show {imdb_id} with error: {error}',
+                                    {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue
 

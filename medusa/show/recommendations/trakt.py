@@ -6,6 +6,7 @@ import logging
 import os
 
 from medusa import app
+from medusa.cache import recommended_series_cache
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.indexers.indexer_api import indexerApi
@@ -14,7 +15,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import RecommendedShow
 
-from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.exceptions import ApiException
 
@@ -36,9 +36,9 @@ class TraktPopular(object):
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.recommender = "Trakt Popular"
         self.default_img_src = 'trakt-default.png'
-        self.anidb = Anidb(cache_dir=app.CACHE_DIR)
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
+    @recommended_series_cache.cache_on_arguments()
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
@@ -82,7 +82,7 @@ class TraktPopular(object):
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
         if 'jp' in [show_obj['show']['country'], show_obj['show']['language']]:
-            rec_show.check_if_anime(self.anidb, show_obj['show']['ids']['tvdb'])
+            rec_show._flag_as_anime(show_obj['show']['ids']['tvdb'])
 
         return rec_show
 
