@@ -8,28 +8,42 @@ import re
 import subprocess
 import time
 
-from babelfish import Country, Language, LanguageConvertError, LanguageReverseError, language_converters
-
-from dogpile.cache.api import NO_VALUE
-
 import knowit
+from babelfish import (
+    Country,
+    Language,
+    LanguageConvertError,
+    LanguageReverseError,
+    language_converters,
+)
+from dogpile.cache.api import NO_VALUE
+from six import iteritems, string_types, text_type
+from subliminal import (
+    ProviderPool,
+    compute_score,
+    provider_manager,
+    refine,
+    save_subtitles,
+    scan_video,
+)
+from subliminal.core import search_external_subtitles
+from subliminal.score import episode_scores
+from subliminal.subtitle import get_subtitle_path
 
 from medusa import app, db, helpers, history
 from medusa.cache import cache, memory_cache
 from medusa.common import Quality, cpu_presets
-from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
+from medusa.helper.common import (
+    dateTimeFormat,
+    episode_num,
+    remove_extension,
+    subtitle_extensions,
+)
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
-
-from six import iteritems, string_types, text_type
-
-from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
-from subliminal.core import search_external_subtitles
-from subliminal.score import episode_scores
-from subliminal.subtitle import get_subtitle_path
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
