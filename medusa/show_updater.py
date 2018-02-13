@@ -2,15 +2,18 @@ import logging
 import threading
 import time
 
+from requests.exceptions import HTTPError
+
 from medusa import app, db, network_timezones, ui
-from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+)
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
-
-from requests.exceptions import HTTPError
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -273,7 +276,7 @@ class ShowUpdater(object):
                 try:
                     app.show_queue_scheduler.action.refreshShow(show, True)
                 except CantRefreshShowException as e:
-                    log.warning(u'Show refresh on show {show_name} failed.''
+                    log.warning(u'Show refresh on show {show_name} failed.'
                                 u' Error: {error}',
                                 {'show_name': show.name, 'error': e})
                 except Exception as e:
