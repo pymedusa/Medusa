@@ -1,21 +1,3 @@
-# coding=utf-8
-# Based on Antoine Bertin's <diaoulael@gmail.com> work
-# and originally written by Nyaran <nyayukko@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Subtitles module."""
 
 import datetime
@@ -38,6 +20,7 @@ from medusa.common import Quality, cpu_presets
 from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 from medusa.subtitle_providers.utils import hash_itasa
 
@@ -48,7 +31,9 @@ from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
@@ -283,7 +268,8 @@ def get_embedded_subtitles(video_path):
     tracks = knowledge.get('subtitle', [])
     found_languages = {s['language'] for s in tracks if 'language' in s}
     if found_languages:
-        logger.info(u'Found embedded subtitles: {subs}', subs=found_languages)
+        log.info(u'Found embedded subtitles: {subs}',
+                 {'subs': found_languages})
     return found_languages
 
 
@@ -330,7 +316,8 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     for subtitle, _ in scored_subtitles:
         cache.set(subtitle_key.format(id=subtitle.id).encode('utf-8'), subtitle)
 
-    logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
+    log.debug("Scores computed for release: {release}",
+              {'release': os.path.basename(video_path)})
 
     max_score = episode_scores['hash']
     max_scores = set(episode_scores) - {'hearing_impaired', 'hash'}
@@ -361,7 +348,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """
     subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
-        logger.error('Unable to find cached subtitle ID: %s', subtitle_id)
+        log.error('Unable to find cached subtitle ID: {}', subtitle_id)
         return
 
     release_name = tv_episode.release_name
@@ -401,20 +388,20 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     subtitles_dir = get_subtitles_dir(video_path)
 
     if lang:
-        logger.debug(u'Force re-downloading subtitle language: %s', lang)
+        log.debug(u'Force re-downloading subtitle language: {}', lang)
         languages = {from_code(lang)}
     else:
         languages = get_needed_languages(tv_episode.subtitles)
 
     if not languages:
-        logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
+        log.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
         return []
 
-    logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
+    log.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
     video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
                       embedded_subtitles=embedded_subtitles, release_name=release_name)
     if not video:
-        logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
+        log.info(u'Exception caught in subliminal.scan_video for %s', video_path)
         return []
 
     if app.SUBTITLES_PRE_SCRIPTS:
@@ -424,25 +411,37 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     subtitles_list = pool.list_subtitles(video, languages)
     for provider in pool.providers:
         if provider in pool.discarded_providers:
-            logger.debug(u'Could not search in %s provider. Discarding for now', provider)
+            log.debug(u'Could not search in {} provider. Discarding for now', provider)
 
     if not subtitles_list:
-        logger.info(u'No subtitles found for %s', os.path.basename(video_path))
+        log.info(u'No subtitles found for {}', os.path.basename(video_path))
         return []
 
     min_score = get_min_score()
     scored_subtitles = score_subtitles(subtitles_list, video)
     for subtitle, score in scored_subtitles:
-        logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
-            subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
+        log.debug(
+            u'[{provider:>13s}:{language:<5s}]'
+            u' score = {score:3d}/{min:3d} for {description}', {
+                'provider': subtitle.provider_name,
+                'language': subtitle.language,
+                'score': score,
+                'min': min_score,
+                'description': get_subtitle_description(subtitle),
+            }
+        )
 
     found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                    hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
                                                    min_score=min_score, only_one=not app.SUBTITLES_MULTI)
 
     if not found_subtitles:
-        logger.info(u'No subtitles found for %s with a minimum score of %d',
-                    os.path.basename(video_path), min_score)
+        log.info(
+            u'No subtitles found for {path} with a minimum score of {x}', {
+                'path': os.path.basename(video_path),
+                'x': min_score,
+            }
+        )
         return []
 
     return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
@@ -474,8 +473,14 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
                                      single=not app.SUBTITLES_MULTI)
 
     for subtitle in saved_subtitles:
-        logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
-                    subtitle.provider_name, subtitle.language.opensubtitles)
+        log.info(
+            u'Found subtitle for {path} in {provider} provider'
+            u' with language {language}', {
+                'path': os.path.basename(video_path),
+                'provider': subtitle.provider_name,
+                'language': subtitle.language.opensubtitles,
+            }
+        )
         subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
         helpers.chmod_as_parent(subtitle_path)
         helpers.fix_set_group_id(subtitle_path)
@@ -487,8 +492,13 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
                                    episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
 
         if app.SUBTITLES_HISTORY:
-            logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
-                         subtitle.provider_name, subtitle.language.opensubtitles)
+            log.debug(
+                u'Logging to history downloaded subtitle from provider'
+                u' {provider} and language {language}', {
+                    'provider': subtitle.provider_name,
+                    'language': subtitle.language.opensubtitles,
+                }
+            )
             history.logSubtitle(tv_episode, status, subtitle)
 
     # Refresh the subtitles property
@@ -505,7 +515,7 @@ def get_provider_pool():
     :return: subliminal provider pool to be used
     :rtype: subliminal.ProviderPool
     """
-    logger.debug(u'Creating a new ProviderPool instance')
+    log.debug(u'Creating a new ProviderPool instance')
     provider_configs = {'addic7ed': {'username': app.ADDIC7ED_USER,
                                      'password': app.ADDIC7ED_PASS},
                         'itasa': {'username': app.ITASA_USER,
@@ -529,8 +539,14 @@ def compute_subtitle_path(subtitle, video_path, subtitles_dir):
     :return: the computed subtitles path
     :rtype: str
     """
-    subtitle_path = get_subtitle_path(video_path, subtitle.language if app.SUBTITLES_MULTI else None)
-    return os.path.join(subtitles_dir, os.path.split(subtitle_path)[1]) if subtitles_dir else subtitle_path
+    subtitle_path = get_subtitle_path(
+        video_path,
+        subtitle.language if app.SUBTITLES_MULTI else None
+    )
+    return os.path.join(
+        subtitles_dir,
+        os.path.split(subtitle_path)[1]
+    ) if subtitles_dir else subtitle_path
 
 
 def merge_subtitles(existing_subtitles, new_subtitles):
@@ -547,8 +563,10 @@ def merge_subtitles(existing_subtitles, new_subtitles):
     :return: list of opensubtitles codes of the resulting subtitles
     :rtype: list of str
     """
-    current_subtitles = sorted(
-        {subtitle for subtitle in new_subtitles + existing_subtitles}) if existing_subtitles else new_subtitles
+    current_subtitles = sorted({
+        subtitle
+        for subtitle in new_subtitles + existing_subtitles
+    }) if existing_subtitles else new_subtitles
 
     if not app.SUBTITLES_MULTI and len(new_subtitles) == 1:
         current_subtitles.remove(new_subtitles[0])
@@ -589,7 +607,8 @@ def get_current_subtitles(tv_episode):
     # get the latest video information
     video = get_video(tv_episode, video_path)
     if not video:
-        logger.info(u"Exception caught in subliminal.scan_video, subtitles couldn't be refreshed for %s", video_path)
+        log.info(u"Exception caught in subliminal.scan_video,"
+                 u" subtitles couldn't be refreshed for {}", video_path)
     else:
         return get_subtitles(video)
 
@@ -613,8 +632,14 @@ def _encode(value, fallback=None):
     try:
         return value.encode(encoding)
     except UnicodeEncodeError:
-        logger.debug(u'Failed to encode to %s, falling back to %s: %r',
-                     encoding, fallback or app.SYS_ENCODING, value)
+        log.debug(
+            u'Failed to encode to {encoding},'
+            u' falling back to {fallback}: {value!r}', {
+                'encoding': encoding,
+                'fallback': fallback or app.SYS_ENCODING,
+                'value': value,
+            }
+        )
         return value.encode(fallback or app.SYS_ENCODING)
 
 
@@ -637,8 +662,14 @@ def _decode(value, fallback=None):
     try:
         return text_type(value, encoding)
     except UnicodeDecodeError:
-        logger.debug(u'Failed to decode to %s, falling back to %s: %r',
-                     encoding, fallback or app.SYS_ENCODING, value)
+        log.debug(
+            u'Failed to decode to {encoding},'
+            u' falling back to {fallback}: {value!r}', {
+                'encoding': encoding,
+                'fallback': fallback or app.SYS_ENCODING,
+                'value': value,
+            }
+        )
         return text_type(value, fallback or app.SYS_ENCODING)
 
 
@@ -676,7 +707,7 @@ def invalidate_video_cache(video_path):
     """
     key = video_key.format(video_path=video_path)
     memory_cache.delete(key)
-    logger.debug(u'Cached video information under key %s was invalidated', key)
+    log.debug(u'Cached video information under key {} was invalidated', key)
 
 
 def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
@@ -705,18 +736,19 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
                'release_name': release_name}
     cached_payload = memory_cache.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
     if cached_payload != NO_VALUE and {k: v for k, v in iteritems(cached_payload) if k != 'video'} == payload:
-        logger.debug(u'Found cached video information under key %s', key)
+        log.debug(u'Found cached video information under key {}', key)
         return cached_payload['video']
 
     video_path = _encode(video_path)
     subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
 
-    logger.debug(u'Scanning video %s...', video_path)
+    log.debug(u'Scanning video {}...', video_path)
 
     try:
         video = scan_video(video_path)
     except ValueError as e:
-        logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
+        log.warning(u'Unable to scan video: {}. Error: {}',
+                    video_path, e.message)
     else:
 
         # Add hash of our custom provider Itasa
@@ -738,7 +770,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
 
         payload['video'] = video
         memory_cache.set(key, payload)
-        logger.debug(u'Video information cached under key %s', key)
+        log.debug(u'Video information cached under key {}', key)
 
         return video
 
@@ -763,7 +795,8 @@ def get_subtitles_dir(video_path):
     if helpers.make_dir(new_subtitles_path):
         helpers.chmod_as_parent(new_subtitles_path)
     else:
-        logger.warning(u'Unable to create subtitles folder %s', new_subtitles_path)
+        log.warning(u'Unable to create subtitles folder {}',
+                    new_subtitles_path)
 
     return new_subtitles_path
 
@@ -798,16 +831,24 @@ def delete_unwanted_subtitles(dirpath, filename):
     try:
         found_language = language.opensubtitles
     except LanguageConvertError:
-        logger.info(u"Unable to convert language code '%s' for: %s", code, filename)
+        log.info(u"Unable to convert language code {!r} for: {}",
+                 code, filename)
 
     if found_language and found_language not in app.SUBTITLES_LANGUAGES:
         try:
             os.remove(os.path.join(dirpath, filename))
         except OSError as error:
-            logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
+            log.info(u"Couldn't delete subtitle: {}. Error: {}",
+                     filename, ex(error))
         else:
-            logger.debug(u"Deleted '%s' because we don't want subtitle language '%s'. We only want '%s' language(s)",
-                         filename, language, ','.join(app.SUBTITLES_LANGUAGES))
+            log.debug(
+                u"Deleted {filename} because we don't want subtitle language"
+                u" {language}. We only want {languages!r} language(s)", {
+                    'filename': filename,
+                    'language': language,
+                    'languages': ','.join(app.SUBTITLES_LANGUAGES),
+                }
+            )
 
 
 class SubtitlesFinder(object):
@@ -826,11 +867,12 @@ class SubtitlesFinder(object):
         from medusa import process_tv
         from medusa.tv import Episode
 
-        logger.info(u'Checking for needed subtitles in Post-Process folder')
+        log.info(u'Checking for needed subtitles in Post-Process folder')
 
         # Check if PP folder is set
         if not app.TV_DOWNLOAD_DIR or not os.path.isdir(app.TV_DOWNLOAD_DIR):
-            logger.warning(u'You must set a valid post-process folder in "Post Processing" settings')
+            log.warning(u'You must set a valid post-process folder in'
+                        u' "Post Processing" settings')
             return
 
         # Search for all wanted languages
@@ -855,24 +897,35 @@ class SubtitlesFinder(object):
                 tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
-                    logger.debug(u'%s cannot be parsed to an episode', filename)
+                    log.debug(u'{} cannot be parsed to an episode', filename)
                     continue
 
                 if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
                 if not tv_episode.series.subtitles:
-                    logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
+                    log.debug(
+                        u'Subtitle disabled for show: {}.'
+                        u' Running post-process to PP it', filename
+                    )
                     run_post_process = True
                     continue
 
                 # Should not consider existing subtitles from db if it's a replacement
                 new_release_name = remove_extension(filename)
                 if tv_episode.release_name and new_release_name != tv_episode.release_name:
-                    logger.debug(u"As this is a release replacement I'm not going to consider existing "
-                                 u"subtitles or release name from database to refine the new release")
-                    logger.debug(u"Replacing old release name '%s' with new release name '%s'",
-                                 tv_episode.release_name, new_release_name)
+                    log.debug(
+                        u"As this is a release replacement I'm not going to"
+                        u" consider existing subtitles or release name from"
+                        u" database to refine the new release"
+                    )
+                    log.debug(
+                        u"Replacing old release name {old!r} with new release"
+                        u" name {new!r}", {
+                            'old': tv_episode.release_name,
+                            'new': new_release_name,
+                        }
+                    )
                     tv_episode.subtitles = []
                     tv_episode.release_name = new_release_name
                 embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
@@ -890,7 +943,8 @@ class SubtitlesFinder(object):
                         run_post_process = accept_unknown(embedded_subs) or accept_any(embedded_subs)
 
         if run_post_process:
-            logger.info(u'Starting post-process with default settings now that we found subtitles')
+            log.info(u'Starting post-process with default settings now that'
+                     u' we found subtitles')
             process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
 
     @staticmethod
@@ -909,10 +963,13 @@ class SubtitlesFinder(object):
             if rar_files and app.UNPACK:
                 video_files = [video_file for video_file in files if is_media_file(video_file)]
                 if not video_files or root == app.TV_DOWNLOAD_DIR:
-                    logger.debug(u'Found rar files in post-process folder: %s', rar_files)
+                    log.debug(
+                        u'Found rar files in post-process folder: {}',
+                        rar_files
+                    )
                     process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:
-                logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
+                log.warning(u'Unpack is disabled. Skipping: {}', rar_files)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """Check for needed subtitles for users' shows.
@@ -921,16 +978,17 @@ class SubtitlesFinder(object):
         :type force: bool
         """
         if self.amActive:
-            logger.debug(u'Subtitle finder is still running, not starting it again')
+            log.debug(u'Subtitle finder is still running,'
+                      u' not starting it again')
             return
 
         if not app.USE_SUBTITLES:
-            logger.warning(u'Subtitle search is disabled. Please enabled it')
+            log.warning(u'Subtitle search is disabled. Please enabled it')
             return
 
         if not enabled_service_list():
-            logger.warning(u'Not enough services selected. At least 1 service is required to search subtitles in the '
-                           u'background')
+            log.warning(u'Not enough services selected. At least 1 service is'
+                        u' required to search subtitles in the background')
             return
 
         self.amActive = True
@@ -954,7 +1012,7 @@ class SubtitlesFinder(object):
         if app.POSTPONE_IF_NO_SUBS:
             self.subtitles_download_in_pp()
 
-        logger.info(u'Checking for missed subtitles')
+        log.info(u'Checking for missed subtitles')
 
         database = db.DBConnection()
         # Shows with air date <= 30 days, have a limit of 100 results
@@ -995,7 +1053,7 @@ class SubtitlesFinder(object):
             )
 
         if not sql_results:
-            logger.info(u'No subtitles to download')
+            log.info(u'No subtitles to download')
             self.amActive = False
             return
 
@@ -1008,17 +1066,33 @@ class SubtitlesFinder(object):
                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
             subtitle_path = _encode(ep_to_sub['location'], fallback='utf-8')
             if not os.path.isfile(subtitle_path):
-                logger.debug(u'Episode file does not exist, cannot download subtitles for %s %s',
-                             ep_to_sub['show_name'], ep_num)
+                log.debug(
+                    u'Episode file does not exist,'
+                    u' cannot download subtitles for {name} {num}', {
+                        'name': ep_to_sub['show_name'],
+                        'num': ep_num,
+                    }
+                )
                 continue
 
             if app.SUBTITLES_STOP_AT_FIRST and ep_to_sub['subtitles']:
-                logger.debug(u'Episode already has one subtitle, skipping %s %s', ep_to_sub['show_name'], ep_num)
+                log.debug(
+                    u'Episode already has one subtitle,'
+                    u' skipping {name} {num}', {
+                        'name': ep_to_sub['show_name'],
+                        'num': ep_num,
+                    }
+                )
                 continue
 
             if not needs_subtitles(ep_to_sub['subtitles']):
-                logger.debug(u'Episode already has all needed subtitles, skipping %s %s',
-                             ep_to_sub['show_name'], ep_num)
+                log.debug(
+                    u'Episode already has all needed subtitles,'
+                    u' skipping {name} {num}', {
+                        'name': ep_to_sub['show_name'],
+                        'num': ep_num,
+                    }
+                )
                 continue
 
             try:
@@ -1038,23 +1112,37 @@ class SubtitlesFinder(object):
                 # The time resolution is minute
                 # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
                 if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
-                    logger.debug(u'Subtitle search for %s %s delayed for %s',
-                                 ep_to_sub['show_name'], ep_num, dhm(delay))
+                    log.debug(
+                        u'Subtitle search for {name} {num}'
+                        u' delayed for {time}', {
+                            'name': ep_to_sub['show_name'],
+                            'num': ep_num,
+                            'time': dhm(delay),
+                        }
+                    )
                     continue
 
             show_object = Show.find_by_id(app.showList, ep_to_sub['indexer'], ep_to_sub['showid'])
             if not show_object:
-                logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
+                log.debug(
+                    u'Show with ID {} not found in the database',
+                    ep_to_sub['showid']
+                )
                 continue
 
             episode_object = show_object.get_episode(ep_to_sub['season'], ep_to_sub['episode'])
             if isinstance(episode_object, str):
-                logger.debug(u'%s %s not found in the database', ep_to_sub['show_name'], ep_num)
+                log.debug(
+                    u'{name} {num} not found in the database', {
+                        'name': ep_to_sub['show_name'],
+                        'num': ep_num,
+                    }
+                )
                 continue
 
             episode_object.download_subtitles()
 
-        logger.info(u'Finished checking for missed subtitles')
+        log.info(u'Finished checking for missed subtitles')
         self.amActive = False
 
 
@@ -1106,17 +1194,22 @@ def run_subs_scripts(video_path, scripts, *args):
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
         script_cmd.extend(str(arg) for arg in args)
 
-        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
+        log.info(
+            u'Running subtitle {type}-script: {script}', {
+                'type': 'extra' if len(args) > 1 else 'pre',
+                'script': script_name,
+            }
+        )
 
         # use subprocess to run the command and capture output
-        logger.info(u'Executing command: %s', script_cmd)
+        log.info(u'Executing command: {}', script_cmd)
         try:
             process = subprocess.Popen(script_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, cwd=app.PROG_DIR)
             out, _ = process.communicate()  # @UnusedVariable
-            logger.debug(u'Script result: %s', out)
+            log.debug(u'Script result: {}', out)
 
         except Exception as error:
-            logger.info(u'Unable to run subtitles script: %s', ex(error))
+            log.info(u'Unable to run subtitles script: {}', ex(error))
 
     invalidate_video_cache(video_path)
