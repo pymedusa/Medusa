@@ -1,21 +1,3 @@
-# coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import logging
 import threading
 import time
@@ -24,12 +6,15 @@ from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
 from requests.exceptions import HTTPError
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 
 class ShowUpdater(object):
@@ -51,7 +36,7 @@ class ShowUpdater(object):
         # Refresh the exceptions_cache from db.
         refresh_exceptions_cache()
 
-        logger.info(u'Started periodic show updates')
+        log.info(u'Started periodic show updates')
 
         # Cache for the indexers list of updated show
         indexer_updated_shows = {}
@@ -61,23 +46,30 @@ class ShowUpdater(object):
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
         for show in app.showList:
             if show.paused:
-                logger.info(u'The show {show} is paused, not updating it.', show=show.name)
+                log.info(u'The show {show} is paused, not updating it.',
+                         {'show': show.name})
                 continue
-
-            indexer_api_params = indexerApi(show.indexer).api_params.copy()
+            show_indexer = indexerApi(show.indexer)
+            indexer_api_params = show_indexer.api_params.copy()
+            indexer_name = show_indexer.name
             try:
-                indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
+                indexer_api = show_indexer.indexer(**indexer_api_params)
             except IndexerUnavailable:
-                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                               u'connectivity issues. While trying to look for show updates on show: {show}',
-                               indexer_name=indexerApi(show.indexer).name, show=show.name)
+                log.warning(
+                    u'Problem running show_updater, Indexer {indexer_name}'
+                    u' seems to be having connectivity issues. While trying'
+                    u' to look for show updates on show: {show}', {
+                        'indexer_name': indexer_name,
+                        'show': show.name,
+                    }
+                )
                 continue
 
             # Get the lastUpdate timestamp for this indexer.
-            if indexerApi(show.indexer).name not in last_updates:
-                last_updates[indexerApi(show.indexer).name] = \
-                    self.update_cache.get_last_indexer_update(indexerApi(show.indexer).name)
-            last_update = last_updates[indexerApi(show.indexer).name]
+            if indexer_name not in last_updates:
+                last_updates[indexer_name] = \
+                    self.update_cache.get_last_indexer_update(indexer_name)
+            last_update = last_updates[indexer_name]
 
             # Get a list of updated shows from the indexer, since last update.
             # Use the list, to limit the shows for which are requested for the last updated seasons.
@@ -88,42 +80,81 @@ class ShowUpdater(object):
                             last_update, update_max_weeks
                         )
                     except IndexerUnavailable:
-                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'connectivity issues while trying to look for show updates on show: {show}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
+                        log.warning(
+                            u'Problem running show_updater,'
+                            u' Indexer {indexer_name} seems to be having'
+                            u' connectivity issues while trying to look for'
+                            u' show updates on show: {show}', {
+                                'indexer_name': indexer_name,
+                                'show': show.name,
+                            }
+                        )
                         continue
                     except IndexerException as e:
-                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
+                        log.warning(
+                            u'Problem running show_updater,'
+                            u' Indexer {indexer_name} seems to be having'
+                            u' issues while trying to get updates for'
+                            u' show {show}. Cause: {cause}', {
+                                'indexer_name': indexer_name,
+                                'show': show.name,
+                                'cause': e.message,
+                            }
+                        )
                         continue
                     except HTTPError as error:
                         if error.response.status_code == 503:
-                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: TMDB api Service offline: '
-                                           u'This service is temporarily offline, try again later.',
-                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
+                            log.warning(
+                                u'Problem running show_updater,'
+                                u' Indexer {indexer_name} seems to be having'
+                                u' issues while trying to get updates for'
+                                u' show {show}.'
+                                u' Cause: TMDB api Service offline: '
+                                u'This service is temporarily offline,'
+                                u' try again later.', {
+                                    'indexer_name': indexer_name,
+                                    'show': show.name,
+                                }
+                            )
                         if error.response.status_code == 429:
-                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: Your request count (#) is over the allowed limit of (40)..',
-                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
+                            log.warning(
+                                u'Problem running show_updater,'
+                                u' Indexer {indexer_name} seems to be having'
+                                u' issues while trying to get updates for'
+                                u' show {show}.'
+                                u' Cause: Your request count (#) is over the'
+                                u' allowed limit of (40)..', {
+                                    'indexer_name': indexer_name,
+                                    'show': show.name,
+                                }
+                            )
                         continue
                     except Exception as e:
-                        logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                         u'issues while trying to get updates for show {show}. Cause: {cause}.',
-                                         indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                        log.exception(
+                            u'Problem running show_updater,'
+                            u' Indexer {indexer_name} seems to be having'
+                            u' issues while trying to get updates for'
+                            u' show {show}. Cause: {cause}.', {
+                                'indexer_name': indexer_name,
+                                'show': show.name,
+                                'cause': e.message,
+                            }
+                        )
                         continue
 
                 # If the current show is not in the list, move on to the next.
                 # Only do this for shows, if the indexer has had a successful update run within the last 12 weeks.
                 if all([isinstance(indexer_updated_shows[show.indexer], list),
                         show.indexerid not in indexer_updated_shows.get(show.indexer)]):
-                    logger.debug(u'Skipping show update for {show}. As the show is not '
-                                 u'in the indexers {indexer_name} list with updated '
-                                 u'shows within the last {weeks} weeks.', show=show.name,
-                                 indexer_name=indexerApi(show.indexer).name, weeks=update_max_weeks)
+                    log.debug(
+                        u'Skipping show update for {show}. As the show is not'
+                        u' in the indexers {indexer_name} list with updated'
+                        u' shows within the last {weeks} weeks.', {
+                            'indexer_name': indexer_name,
+                            'show': show.name,
+                            'weeks': update_max_weeks,
+                        }
+                    )
                     continue
 
             # These are the criteria for performing a full show refresh.
@@ -132,10 +163,16 @@ class ShowUpdater(object):
                     last_update < time.time() - 604800 * update_max_weeks]):
                 # no entry in lastUpdate, or last update was too long ago,
                 # let's refresh the show for this indexer
-                logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
-                             u" or the indexer doesn't support per season updates. Doing a full update.",
-                             show=show.name, indexer_name=indexerApi(show.indexer).name,
-                             weeks=update_max_weeks)
+                log.debug(
+                    u'Trying to update {show}. Your lastUpdate for'
+                    u' {indexer_name} is older then {weeks} weeks,'
+                    u' or the indexer doesn\'t support per season updates.'
+                    u' Doing a full update.', {
+                        'indexer_name': indexer_name,
+                        'show': show.name,
+                        'weeks': update_max_weeks,
+                    }
+                )
                 refresh_shows.append(show)
 
             # Else fall back to per season updates.
@@ -144,24 +181,49 @@ class ShowUpdater(object):
                 try:
                     updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
                 except IndexerUnavailable:
-                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                   u'connectivity issues while trying to look for showupdates on show: {show}',
-                                   indexer_name=indexerApi(show.indexer).name, show=show.name)
+                    log.warning(
+                        u'Problem running show_updater,'
+                        u' Indexer {indexer_name} seems to be having'
+                        u' connectivity issues while trying to look for'
+                        u' showupdates on show: {show}', {
+                            'indexer_name': indexer_name,
+                            'show': show.name,
+                        }
+                    )
                     continue
                 except IndexerException as e:
-                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                   u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
+                    log.warning(
+                        u'Problem running show_updater,'
+                        u' Indexer {indexer_name} seems to be having'
+                        u' issues while trying to get updates for show {show}.'
+                        u' Cause: {cause}', {
+                            'indexer_name': indexer_name,
+                            'show': show.name,
+                            'cause': e.message,
+                        }
+                    )
                     continue
                 except Exception as e:
-                    logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                     u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                     indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                    log.exception(
+                        u'Problem running show_updater,'
+                        u' Indexer {indexer_name} seems to be having'
+                        u' issues while trying to get updates for show {show}.'
+                        u' Cause: {cause}', {
+                            'indexer_name': indexer_name,
+                            'show': show.name,
+                            'cause': e.message,
+                        }
+                    )
                     continue
 
                 if updated_seasons[show.indexerid]:
-                    logger.info(u'{show_name}: Adding the following seasons for update to queue: {seasons}',
-                                show_name=show.name, seasons=updated_seasons[show.indexerid])
+                    log.info(
+                        u'{show_name}: Adding the following seasons for update'
+                        u' to queue: {seasons}', {
+                            'show_name': show.name,
+                            'seasons': updated_seasons[show.indexerid],
+                        }
+                    )
                     for season in updated_seasons[show.indexerid]:
                         season_updates.append((show.indexer, show, season))
 
@@ -171,29 +233,36 @@ class ShowUpdater(object):
         for show in refresh_shows:
             # If the cur_show is not 'paused' then add to the show_queue_scheduler
             if not show.paused:
-                logger.info(u'Full update on show: {show}', show=show.name)
+                log.info(u'Full update on show: {show}', {'show': show.name})
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
-                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
+                    log.warning(u'Automatic update failed. Error: {error}',
+                                {'error': e})
                 except Exception as e:
-                    logger.error(u'Automatic update failed: Error: {error}', error=e)
+                    log.error(u'Automatic update failed: Error: {error}',
+                              {'error': e})
             else:
-                logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
+                log.info(u'Show update skipped, show: {show} is paused.',
+                         {'show': show.name})
 
         # Only update expired season
         for show in season_updates:
             # If the cur_show is not 'paused' then add to the show_queue_scheduler
             if not show[1].paused:
-                logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
+                log.info(u'Updating season {season} for show: {show}.',
+                         {'season': show[2], 'show': show[1].name})
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
                 except CantUpdateShowException as e:
-                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
+                    log.warning(u'Automatic update failed. Error: {error}',
+                                {'error': e})
                 except Exception as e:
-                    logger.error(u'Automatic update failed: Error: {error}', error=e)
+                    log.error(u'Automatic update failed: Error: {error}',
+                              {'error': e})
             else:
-                logger.info(u'Show update skipped, show: {show} is paused.', show=show[1].name)
+                log.info(u'Show update skipped, show: {show} is paused.',
+                         {'show': show[1].name})
 
         ui.ProgressIndicators.set_indicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
@@ -204,22 +273,26 @@ class ShowUpdater(object):
                 try:
                     app.show_queue_scheduler.action.refreshShow(show, True)
                 except CantRefreshShowException as e:
-                    logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
-                                   show_name=show.name, error=e)
+                    log.warning(u'Show refresh on show {show_name} failed.''
+                                u' Error: {error}',
+                                {'show_name': show.name, 'error': e})
                 except Exception as e:
-                    logger.error(u'Show refresh on show {show_name} failed: Unexpected Error: {error}',
-                                 show_name=show.name, error=e)
+                    log.error(u'Show refresh on show {show_name} failed:'
+                              u' Unexpected Error: {error}',
+                              {'show_name': show.name, 'error': e})
             else:
-                logger.info(u'Show refresh skipped, show: {show_name} is paused.', show_name=show.name)
+                log.info(u'Show refresh skipped, show: {show_name} is paused.',
+                         {'show_name': show.name})
 
         if refresh_shows or season_updates:
             for indexer in set([show.indexer for show in refresh_shows] + [s[1].indexer for s in season_updates]):
                 indexer_api = indexerApi(indexer)
                 self.update_cache.set_last_indexer_update(indexer_api.name)
-                logger.info(u'Updated lastUpdate timestamp for {indexer_name}', indexer_name=indexer_api.name)
-            logger.info(u'Completed scheduling updates on shows')
+                log.info(u'Updated lastUpdate timestamp for {indexer_name}',
+                         {'indexer_name': indexer_api.name})
+            log.info(u'Completed scheduling updates on shows')
         else:
-            logger.info(u'Completed but there was nothing to update')
+            log.info(u'Completed but there was nothing to update')
 
         self.amActive = False
 
