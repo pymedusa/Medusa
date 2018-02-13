@@ -52,7 +52,7 @@ def config(monkeypatch, app_config):
     config_data['localUser'] = os_user
     config_data['programDir'] = app.PROG_DIR
     config_data['configFile'] = app.CONFIG_FILE
-    config_data['dbFilename'] = db.dbFilename()
+    config_data['db_filename'] = db.db_filename()
     config_data['cacheDir'] = app.CACHE_DIR
     config_data['logDir'] = app.LOG_DIR
     config_data['appArgs'] = app.MY_ARGS
@@ -152,7 +152,7 @@ def test_config_get(http_client, create_url, auth_headers, config):
     'locale',
     'localUser',
     'githubUrl',
-    'dbFilename',
+    'db_filename',
 ])
 def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
     # given

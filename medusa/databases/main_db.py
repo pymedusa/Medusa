@@ -256,7 +256,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
 def backupDatabase(version):
     log.info(u'Backing up database before upgrade')
-    if not helpers.backup_versioned_file(db.dbFilename(), version):
+    if not helpers.backup_versioned_file(db.db_filename(), version):
         log.error(u'Database backup failed, abort upgrading database')
         sys.exit(1)
     else:
@@ -270,10 +270,10 @@ def backupDatabase(version):
 
 class InitialSchema(db.SchemaUpgrade):
     def test(self):
-        return self.hasTable("db_version")
+        return self.has_table("db_version")
 
     def execute(self):
-        if not self.hasTable("tv_shows") and not self.hasTable("db_version"):
+        if not self.has_table("tv_shows") and not self.has_table("db_version"):
             queries = [
                 "CREATE TABLE db_version(db_version INTEGER);",
                 "CREATE TABLE history(action NUMERIC, date NUMERIC, showid NUMERIC, season NUMERIC, episode NUMERIC, quality NUMERIC, resource TEXT, provider TEXT, version NUMERIC DEFAULT -1);",
@@ -298,7 +298,7 @@ class InitialSchema(db.SchemaUpgrade):
                 self.connection.action(query)
 
         else:
-            cur_db_version = self.checkDBVersion()
+            cur_db_version = self.check_db_version()
 
             if cur_db_version < MIN_DB_VERSION:
                 log.error(
@@ -324,38 +324,38 @@ class InitialSchema(db.SchemaUpgrade):
 
 class AddVersionToTvEpisodes(InitialSchema):
     def test(self):
-        return self.checkDBVersion() >= 40
+        return self.check_db_version() >= 40
 
     def execute(self):
-        backupDatabase(self.checkDBVersion())
+        backupDatabase(self.check_db_version())
 
         log.info(u'Adding column version to tv_episodes and history')
-        self.addColumn("tv_episodes", "version", "NUMERIC", "-1")
-        self.addColumn("tv_episodes", "release_group", "TEXT", "")
-        self.addColumn("history", "version", "NUMERIC", "-1")
+        self.add_column("tv_episodes", "version", "NUMERIC", "-1")
+        self.add_column("tv_episodes", "release_group", "TEXT", "")
+        self.add_column("history", "version", "NUMERIC", "-1")
 
-        self.incDBVersion()
+        self.inc_db_version()
 
 
 class AddDefaultEpStatusToTvShows(AddVersionToTvEpisodes):
     def test(self):
-        return self.checkDBVersion() >= 41
+        return self.check_db_version() >= 41
 
     def execute(self):
-        backupDatabase(self.checkDBVersion())
+        backupDatabase(self.check_db_version())
 
         log.info(u'Adding column default_ep_status to tv_shows')
-        self.addColumn("tv_shows", "default_ep_status", "NUMERIC", "-1")
+        self.add_column("tv_shows", "default_ep_status", "NUMERIC", "-1")
 
-        self.incDBVersion()
+        self.inc_db_version()
 
 
 class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
     def test(self):
-        return self.checkDBVersion() >= 42
+        return self.check_db_version() >= 42
 
     def execute(self):
-        backupDatabase(self.checkDBVersion())
+        backupDatabase(self.check_db_version())
 
         log.info(u'Converting column indexer and default_ep_status field types to numeric')
         self.connection.action("DROP TABLE IF EXISTS tmp_tv_shows")
@@ -364,14 +364,14 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
         self.connection.action("INSERT INTO tv_shows SELECT * FROM tmp_tv_shows")
         self.connection.action("DROP TABLE tmp_tv_shows")
 
-        self.incDBVersion()
+        self.inc_db_version()
 
 
 class AddMinorVersion(AlterTVShowsFieldTypes):
     def test(self):
-        return self.checkDBVersion() >= 42 and self.hasColumn(b'db_version', b'db_minor_version')
+        return self.check_db_version() >= 42 and self.has_column(b'db_version', b'db_minor_version')
 
-    def incDBVersion(self):
+    def inc_db_version(self):
         warnings.warn("Deprecated: Use inc_major_version or inc_minor_version instead", DeprecationWarning)
 
     def inc_major_version(self):
@@ -388,10 +388,10 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         return self.connection.version
 
     def execute(self):
-        backupDatabase(self.checkDBVersion())
+        backupDatabase(self.check_db_version())
 
         log.info(u'Add minor version numbers to database')
-        self.addColumn(b'db_version', b'db_minor_version')
+        self.add_column(b'db_version', b'db_minor_version')
 
         self.inc_minor_version()
 
@@ -439,9 +439,9 @@ class AddProperTags(TestIncreaseMajorVersion):
         """
         backupDatabase(self.connection.version)
 
-        if not self.hasColumn('history', 'proper_tags'):
+        if not self.has_column('history', 'proper_tags'):
             log.info(u'Adding column proper_tags to history')
-            self.addColumn('history', 'proper_tags', 'TEXT', u'')
+            self.add_column('history', 'proper_tags', 'TEXT', u'')
 
         # Call the update old propers once
         MainSanityCheck(self.connection).update_old_propers()
@@ -465,13 +465,13 @@ class AddManualSearched(AddProperTags):
         """
         backupDatabase(self.connection.version)
 
-        if not self.hasColumn('history', 'manually_searched'):
+        if not self.has_column('history', 'manually_searched'):
             log.info(u'Adding column manually_searched to history')
-            self.addColumn('history', 'manually_searched', 'NUMERIC', 0)
+            self.add_column('history', 'manually_searched', 'NUMERIC', 0)
 
-        if not self.hasColumn('tv_episodes', 'manually_searched'):
+        if not self.has_column('tv_episodes', 'manually_searched'):
             log.info(u'Adding column manually_searched to tv_episodes')
-            self.addColumn('tv_episodes', 'manually_searched', 'NUMERIC', 0)
+            self.add_column('tv_episodes', 'manually_searched', 'NUMERIC', 0)
 
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
@@ -492,8 +492,8 @@ class AddInfoHash(AddManualSearched):
         backupDatabase(self.connection.version)
 
         log.info(u'Adding column info_hash in history')
-        if not self.hasColumn("history", "info_hash"):
-            self.addColumn("history", "info_hash", 'TEXT', None)
+        if not self.has_column("history", "info_hash"):
+            self.add_column("history", "info_hash", 'TEXT', None)
         self.inc_minor_version()
 
 
@@ -510,12 +510,12 @@ class AddPlot(AddInfoHash):
         backupDatabase(self.connection.version)
 
         log.info(u'Adding column plot in imdb_info')
-        if not self.hasColumn('imdb_info', 'plot'):
-            self.addColumn('imdb_info', 'plot', 'TEXT', None)
+        if not self.has_column('imdb_info', 'plot'):
+            self.add_column('imdb_info', 'plot', 'TEXT', None)
 
         log.info(u'Adding column plot in tv_show')
-        if not self.hasColumn('tv_shows', 'plot'):
-            self.addColumn('tv_shows', 'plot', 'TEXT', None)
+        if not self.has_column('tv_shows', 'plot'):
+            self.add_column('tv_shows', 'plot', 'TEXT', None)
         self.inc_minor_version()
 
 
@@ -532,8 +532,8 @@ class AddResourceSize(AddPlot):
         backupDatabase(self.connection.version)
 
         log.info(u"Adding column size in history")
-        if not self.hasColumn("history", "size"):
-            self.addColumn("history", "size", 'NUMERIC', -1)
+        if not self.has_column("history", "size"):
+            self.add_column("history", "size", 'NUMERIC', -1)
 
         self.inc_minor_version()
 
@@ -605,20 +605,20 @@ class AddIndexerIds(AddIndexerInteger):
         backupDatabase(self.connection.version)
 
         log.info(u'Adding column indexer_id in history')
-        if not self.hasColumn('history', 'indexer_id'):
-            self.addColumn('history', 'indexer_id', 'NUMERIC', None)
+        if not self.has_column('history', 'indexer_id'):
+            self.add_column('history', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer_id in blacklist')
-        if not self.hasColumn('blacklist', 'indexer_id'):
-            self.addColumn('blacklist', 'indexer_id', 'NUMERIC', None)
+        if not self.has_column('blacklist', 'indexer_id'):
+            self.add_column('blacklist', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer_id in whitelist')
-        if not self.hasColumn('whitelist', 'indexer_id'):
-            self.addColumn('whitelist', 'indexer_id', 'NUMERIC', None)
+        if not self.has_column('whitelist', 'indexer_id'):
+            self.add_column('whitelist', 'indexer_id', 'NUMERIC', None)
 
         log.info(u'Adding column indexer in imdb_info')
-        if not self.hasColumn('imdb_info', 'indexer'):
-            self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
+        if not self.has_column('imdb_info', 'indexer'):
+            self.add_column('imdb_info', 'indexer', 'NUMERIC', None)
 
         log.info(u'Dropping the unique index on idx_indexer_id')
         self.connection.action('DROP INDEX IF EXISTS idx_indexer_id')

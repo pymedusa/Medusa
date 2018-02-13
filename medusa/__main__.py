@@ -1007,7 +1007,7 @@ class Application(object):
                 if updater:
                     app.APP_VERSION = updater.get_cur_version()
 
-            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
+            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().check_db_version()
 
             # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
@@ -1088,11 +1088,11 @@ class Application(object):
 
             # initialize the main SB database
             main_db_con = db.DBConnection()
-            db.upgradeDatabase(main_db_con, main_db.InitialSchema)
+            db.upgrade_database(main_db_con, main_db.InitialSchema)
 
             # initialize the cache database
             cache_db_con = db.DBConnection('cache.db')
-            db.upgradeDatabase(cache_db_con, cache_db.InitialSchema)
+            db.upgrade_database(cache_db_con, cache_db.InitialSchema)
 
             # Performs a vacuum on cache.db
             log.debug(u'Performing a vacuum on the CACHE database')
@@ -1100,11 +1100,11 @@ class Application(object):
 
             # initialize the failed downloads database
             failed_db_con = db.DBConnection('failed.db')
-            db.upgradeDatabase(failed_db_con, failed_db.InitialSchema)
+            db.upgrade_database(failed_db_con, failed_db.InitialSchema)
 
             # fix up any db problems
             main_db_con = db.DBConnection()
-            db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
+            db.sanity_check_database(main_db_con, main_db.MainSanityCheck)
 
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)

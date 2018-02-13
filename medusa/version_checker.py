@@ -229,7 +229,7 @@ class CheckVersion(object):
 
             # Check local DB version
             main_db_con = db.DBConnection()
-            cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+            cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.check_db_version()
 
             if any([cur_branch_major_db_version is None, cur_branch_minor_db_version is None,
                     new_branch_major_db_version is None, new_branch_min_db_version is None]):

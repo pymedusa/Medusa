@@ -1270,7 +1270,7 @@ definitions:
         properties:
           enabled:
             type: boolean
-      dbFilename:
+      db_filename:
         type: string
       pythonVersion:
         type: string

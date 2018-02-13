@@ -73,7 +73,7 @@ class IssueSubmitter(object):
 
         # Get current DB version
         main_db_con = db.DBConnection()
-        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.check_db_version()
 
         commit = app.CUR_COMMIT_HASH
         base_url = '../blob/{commit}'.format(commit=commit) if commit else None

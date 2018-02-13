@@ -40,7 +40,7 @@ class CacheDBConnection(db.DBConnection):
 
         # Create the table if it's not already there
         try:
-            if not self.hasTable(provider_id):
+            if not self.has_table(provider_id):
                 log.debug('Creating cache table for provider {0}', provider_id)
                 self.action(
                     b'CREATE TABLE [{name}]'
@@ -93,8 +93,8 @@ class CacheDBConnection(db.DBConnection):
             )
             for column, data_type, default in table:
                 # add columns to table if missing
-                if not self.hasColumn(provider_id, column):
-                    self.addColumn(provider_id, column, data_type, default)
+                if not self.has_column(provider_id, column):
+                    self.add_column(provider_id, column, data_type, default)
 
         except Exception as error:
             msg = 'table [{name}] already exists'.format(name=provider_id)
@@ -103,7 +103,7 @@ class CacheDBConnection(db.DBConnection):
 
         # Create the table if it's not already there
         try:
-            if not self.hasTable('last_update'):
+            if not self.has_table('last_update'):
                 self.action(
                     b'CREATE TABLE last_update'
                     b'   (provider TEXT, '

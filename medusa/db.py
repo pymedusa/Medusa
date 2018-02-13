@@ -38,7 +38,7 @@ db_cons = {}
 db_locks = {}
 
 
-def dbFilename(filename=None, suffix=None):
+def db_filename(filename=None, suffix=None):
     """
     @param filename: The sqlite database filename to use. If not specified,
                      will be made to be application db file
@@ -63,7 +63,7 @@ class DBConnection(object):
             if self.filename not in db_cons or not db_cons[self.filename]:
                 db_locks[self.filename] = threading.Lock()
 
-                self.connection = sqlite3.connect(dbFilename(self.filename, self.suffix), 20, check_same_thread=False)
+                self.connection = sqlite3.connect(db_filename(self.filename, self.suffix), 20, check_same_thread=False)
                 self.connection.text_factory = DBConnection._unicode_text_factory
 
                 db_cons[self.filename] = self.connection
@@ -80,7 +80,7 @@ class DBConnection(object):
                 self._set_row_factory()
 
         except sqlite3.OperationalError:
-            log.warning(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)))
+            log.warning(u'Please check your database owner/permissions: {}'.format(db_filename(self.filename, self.suffix)))
         except Exception as e:
             log.debug(u"DB error: " + ex(e))
             raise
@@ -130,13 +130,13 @@ class DBConnection(object):
             log.debug(u'DB error: {0!r}'.format(e))
             raise
 
-    def checkDBVersion(self):
+    def check_db_version(self):
         """
         Fetch major and minor database version
 
         :return: Integer indicating current DB major version
         """
-        if self.hasColumn('db_version', 'db_minor_version'):
+        if self.has_column('db_version', 'db_minor_version'):
             warnings.warn('Deprecated: Use the version property', DeprecationWarning)
         db_minor_version = self.check_db_minor_version()
         if db_minor_version is None:
@@ -152,7 +152,7 @@ class DBConnection(object):
         result = None
 
         try:
-            if self.hasTable('db_version'):
+            if self.has_table('db_version'):
                 result = self.select("SELECT db_version FROM db_version")
         except sqlite3.OperationalError:
             return None
@@ -171,7 +171,7 @@ class DBConnection(object):
         result = None
 
         try:
-            if self.hasColumn('db_version', 'db_minor_version'):
+            if self.has_column('db_version', 'db_minor_version'):
                 result = self.select("SELECT db_minor_version FROM db_version")
         except sqlite3.OperationalError:
             return None
@@ -307,7 +307,7 @@ class DBConnection(object):
 
         return sql_results
 
-    def selectOne(self, query, args=None):
+    def select_one(self, query, args=None):
         """
         Perform single select query on database, returning one result
 
@@ -346,7 +346,7 @@ class DBConnection(object):
                     " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
             self.action(query, valueDict.values() + keyDict.values())
 
-    def tableInfo(self, tableName):
+    def table_info(self, tableName):
         """
         Return information on a database table
 
@@ -380,7 +380,7 @@ class DBConnection(object):
             d[col[0]] = row[idx]
         return d
 
-    def hasTable(self, tableName):
+    def has_table(self, tableName):
         """
         Check if a table exists in database
 
@@ -389,7 +389,7 @@ class DBConnection(object):
         """
         return len(self.select("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName, ))) > 0
 
-    def hasColumn(self, tableName, column):
+    def has_column(self, tableName, column):
         """
         Check if a table has a column
 
@@ -397,9 +397,9 @@ class DBConnection(object):
         :param column: Column to check for
         :return: True if column exists, False if it does not
         """
-        return column in self.tableInfo(tableName)
+        return column in self.table_info(tableName)
 
-    def addColumn(self, table, column, column_type="NUMERIC", default=0):
+    def add_column(self, table, column, column_type="NUMERIC", default=0):
         """
         Adds a column to a table, default column type is NUMERIC
         TODO: Make this return true/false on success/failure
@@ -413,7 +413,7 @@ class DBConnection(object):
         self.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
 
 
-def sanityCheckDatabase(connection, sanity_check):
+def sanity_check_database(connection, sanity_check):
     sanity_check(connection).check()
 
 
@@ -429,7 +429,7 @@ class DBSanityCheck(object):
 # = Upgrade API =
 # ===============
 
-def upgradeDatabase(connection, schema):
+def upgrade_database(connection, schema):
     """
     Perform database upgrade and provide logging
 
@@ -437,14 +437,14 @@ def upgradeDatabase(connection, schema):
     :param schema: New schema to upgrade to
     """
     log.debug(u"Checking database structure..." + connection.filename)
-    _processUpgrade(connection, schema)
+    _process_upgrade(connection, schema)
 
 
-def prettyName(class_name):
+def pretty_name(class_name):
     return ' '.join([x.group() for x in re.finditer("([A-Z])([a-z0-9]+)", class_name)])
 
 
-def restoreDatabase(version):
+def restore_database(version):
     """
     Restores a database to a previous version (backup file of version must still exist)
 
@@ -453,7 +453,7 @@ def restoreDatabase(version):
     """
     from medusa import helpers
     log.info(u"Restoring database before trying upgrade again")
-    if not helpers.restore_versioned_file(dbFilename(suffix='v' + str(version)), version):
+    if not helpers.restore_versioned_file(db_filename(suffix='v' + str(version)), version):
         log.error(u"Database restore failed, abort upgrading database")
         sys.exit()
         return False
@@ -461,11 +461,11 @@ def restoreDatabase(version):
         return True
 
 
-def _processUpgrade(connection, upgradeClass):
+def _process_upgrade(connection, upgradeClass):
     instance = upgradeClass(connection)
-    log.debug(u"Checking " + prettyName(upgradeClass.__name__) + " database upgrade")
+    log.debug(u"Checking " + pretty_name(upgradeClass.__name__) + " database upgrade")
     if not instance.test():
-        log.debug(u"Database upgrade required: " + prettyName(upgradeClass.__name__))
+        log.debug(u"Database upgrade required: " + pretty_name(upgradeClass.__name__))
         try:
             instance.execute()
         except Exception as e:
@@ -477,7 +477,7 @@ def _processUpgrade(connection, upgradeClass):
         log.debug(upgradeClass.__name__ + " upgrade not required")
 
     for upgradeSubClass in upgradeClass.__subclasses__():
-        _processUpgrade(connection, upgradeSubClass)
+        _process_upgrade(connection, upgradeSubClass)
 
 
 # Base migration class. All future DB changes should be subclassed from this class
@@ -485,20 +485,20 @@ class SchemaUpgrade(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def hasTable(self, tableName):
+    def has_table(self, tableName):
         return len(self.connection.select("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName, ))) > 0
 
-    def hasColumn(self, tableName, column):
-        return column in self.connection.tableInfo(tableName)
+    def has_column(self, tableName, column):
+        return column in self.connection.table_info(tableName)
 
-    def addColumn(self, table, column, column_type="NUMERIC", default=0):
+    def add_column(self, table, column, column_type="NUMERIC", default=0):
         self.connection.action("ALTER TABLE [%s] ADD %s %s" % (table, column, column_type))
         self.connection.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
 
-    def checkDBVersion(self):
-        return self.connection.checkDBVersion()
+    def check_db_version(self):
+        return self.connection.check_db_version()
 
-    def incDBVersion(self):
-        new_version = self.checkDBVersion() + 1
+    def inc_db_version(self):
+        new_version = self.check_db_version() + 1
         self.connection.action("UPDATE db_version SET db_version = ?", [new_version])
         return new_version

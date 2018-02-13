@@ -7,7 +7,7 @@ from medusa import db
 # and subclass the previous migration.
 class InitialSchema(db.SchemaUpgrade):
     def test(self):
-        return self.hasTable("db_version")
+        return self.has_table("db_version")
 
     def execute(self):
         queries = [
@@ -29,7 +29,7 @@ class InitialSchema(db.SchemaUpgrade):
 
 class AddSceneExceptions(InitialSchema):
     def test(self):
-        return self.hasTable("scene_exceptions")
+        return self.has_table("scene_exceptions")
 
     def execute(self):
         self.connection.action(
@@ -38,7 +38,7 @@ class AddSceneExceptions(InitialSchema):
 
 class AddSceneNameCache(AddSceneExceptions):
     def test(self):
-        return self.hasTable("scene_names")
+        return self.has_table("scene_names")
 
     def execute(self):
         self.connection.action("CREATE TABLE scene_names (indexer_id INTEGER, name TEXT);")
@@ -46,7 +46,7 @@ class AddSceneNameCache(AddSceneExceptions):
 
 class AddNetworkTimezones(AddSceneNameCache):
     def test(self):
-        return self.hasTable("network_timezones")
+        return self.has_table("network_timezones")
 
     def execute(self):
         self.connection.action("CREATE TABLE network_timezones (network_name TEXT PRIMARY KEY, timezone TEXT);")
@@ -54,7 +54,7 @@ class AddNetworkTimezones(AddSceneNameCache):
 
 class AddLastSearch(AddNetworkTimezones):
     def test(self):
-        return self.hasTable("lastSearch")
+        return self.has_table("lastSearch")
 
     def execute(self):
         self.connection.action("CREATE TABLE lastSearch (provider TEXT, time NUMERIC);")
@@ -62,23 +62,23 @@ class AddLastSearch(AddNetworkTimezones):
 
 class AddSceneExceptionsSeasons(AddLastSearch):
     def test(self):
-        return self.hasColumn("scene_exceptions", "season")
+        return self.has_column("scene_exceptions", "season")
 
     def execute(self):
-        self.addColumn("scene_exceptions", "season", "NUMERIC", -1)
+        self.add_column("scene_exceptions", "season", "NUMERIC", -1)
 
 
 class AddSceneExceptionsCustom(AddSceneExceptionsSeasons):  # pylint:disable=too-many-ancestors
     def test(self):
-        return self.hasColumn("scene_exceptions", "custom")
+        return self.has_column("scene_exceptions", "custom")
 
     def execute(self):
-        self.addColumn("scene_exceptions", "custom", "NUMERIC", 0)
+        self.add_column("scene_exceptions", "custom", "NUMERIC", 0)
 
 
 class AddSceneExceptionsRefresh(AddSceneExceptionsCustom):  # pylint:disable=too-many-ancestors
     def test(self):
-        return self.hasTable("scene_exceptions_refresh")
+        return self.has_table("scene_exceptions_refresh")
 
     def execute(self):
         self.connection.action(
@@ -87,7 +87,7 @@ class AddSceneExceptionsRefresh(AddSceneExceptionsCustom):  # pylint:disable=too
 
 class ConvertSceneExeptionsToIndexerScheme(AddSceneExceptionsRefresh):  # pylint:disable=too-many-ancestors
     def test(self):
-        return self.hasColumn("scene_exceptions", "indexer_id")
+        return self.has_column("scene_exceptions", "indexer_id")
 
     def execute(self):
         self.connection.action("DROP TABLE IF EXISTS tmp_scene_exceptions;")
@@ -99,7 +99,7 @@ class ConvertSceneExeptionsToIndexerScheme(AddSceneExceptionsRefresh):  # pylint
 
 class ConvertSceneNamesToIndexerScheme(AddSceneExceptionsRefresh):  # pylint:disable=too-many-ancestors
     def test(self):
-        return self.hasColumn("scene_names", "indexer_id")
+        return self.has_column("scene_names", "indexer_id")
 
     def execute(self):
         self.connection.action("DROP TABLE IF EXISTS tmp_scene_names;")
@@ -111,7 +111,7 @@ class ConvertSceneNamesToIndexerScheme(AddSceneExceptionsRefresh):  # pylint:dis
 
 class RemoveIndexerUpdateSchema(ConvertSceneNamesToIndexerScheme):  # pylint:disable=too-many-ancestors
     def test(self):
-        return not self.hasTable("indexer_update")
+        return not self.has_table("indexer_update")
 
     def execute(self):
         self.connection.action("DROP TABLE indexer_update;")
@@ -119,7 +119,7 @@ class RemoveIndexerUpdateSchema(ConvertSceneNamesToIndexerScheme):  # pylint:dis
 
 class AddIndexerSceneExceptions(RemoveIndexerUpdateSchema):  # pylint:disable=too-many-ancestors
     def test(self):
-        return self.hasColumn("scene_exceptions", "indexer")
+        return self.has_column("scene_exceptions", "indexer")
 
     def execute(self):
         self.connection.action("DROP TABLE IF EXISTS tmp_scene_exceptions;")
@@ -146,11 +146,11 @@ class AddIndexerIds(AddIndexerSceneExceptions):
 
     def test(self):
         """Test if the table history already has the indexer_id."""
-        return self.hasColumn('scene_names', 'indexer')
+        return self.has_column('scene_names', 'indexer')
 
     def execute(self):
         # Add the indexer column to the scene_names table.
-        self.addColumn('scene_names', 'indexer', 'NUMERIC', -1)
+        self.add_column('scene_names', 'indexer', 'NUMERIC', -1)
 
         # clean up null values from the scene_exceptions_table
         self.connection.action("DELETE FROM scene_exceptions WHERE indexer = '' or indexer is null;")

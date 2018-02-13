@@ -77,7 +77,7 @@ class Config(WebRoot):
                 app_version = updater.get_cur_version()
 
         main_db_con = db.DBConnection()
-        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.check_db_version()
 
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
