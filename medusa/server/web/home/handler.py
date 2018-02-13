@@ -726,7 +726,7 @@ class Home(WebRoot):
             return self.redirect('/home/')
 
         checkversion = CheckVersion()
-        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
+        backup = checkversion.updater and checkversion._run_backup()  # pylint: disable=protected-access
 
         if backup is True:
             if branch:
@@ -765,7 +765,7 @@ class Home(WebRoot):
     @staticmethod
     def getDBcompare():
         checkversion = CheckVersion()  # @TODO: replace with settings var
-        db_status = checkversion.getDBcompare()
+        db_status = checkversion.get_db_compare()
 
         if db_status == 'upgrade':
             log.debug(u'Checkout branch has a new DB version - Upgrade')

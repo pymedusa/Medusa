@@ -84,9 +84,9 @@ class CheckVersion(object):
         self.amActive = False
 
     def run_backup_if_safe(self):
-        return self.safe_to_update() is True and self._runbackup() is True
+        return self.safe_to_update() is True and self._run_backup() is True
 
-    def _runbackup(self):
+    def _run_backup(self):
         # Do a system backup before update
         log.info(u'Config backup in progress...')
         ui.notifications.message('Backup', 'Config backup in progress...')
@@ -95,7 +95,7 @@ class CheckVersion(object):
             if not os.path.isdir(backupDir):
                 os.mkdir(backupDir)
 
-            if self._keeplatestbackup(backupDir) and self._backup(backupDir):
+            if self._keep_latest_backup(backupDir) and self._backup(backupDir):
                 log.info(u'Config backup successful, updating...')
                 ui.notifications.message('Backup', 'Config backup successful, updating...')
                 return True
@@ -109,7 +109,7 @@ class CheckVersion(object):
             return False
 
     @staticmethod
-    def _keeplatestbackup(backupDir=None):
+    def _keep_latest_backup(backupDir=None):
         if not backupDir:
             return False
 
@@ -168,7 +168,7 @@ class CheckVersion(object):
                     'text': u"We can't proceed with the update. New update has a old DB version. It's not possible to downgrade"},
             }
             try:
-                result = self.getDBcompare()
+                result = self.get_db_compare()
                 if result in message:
                     log.log(message[result]['type'], message[result]['text'])  # unpack the result message into a log entry
                 else:
@@ -205,7 +205,7 @@ class CheckVersion(object):
             log.debug(u'Auto update aborted')
             return False
 
-    def getDBcompare(self):
+    def get_db_compare(self):
         """
         Compare the current DB version with the new branch version.
 

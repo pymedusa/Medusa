@@ -78,7 +78,7 @@ MEDUSA.config.init = function() {
 
     $('#branchCheckout').on('click', () => {
         const url = 'home/branchCheckout?branch=' + $('#branchVersion').val();
-        $.getJSON('home/getDBcompare', data => {
+        $.getJSON('home/get_db_compare', data => {
             if (data.status === 'success') {
                 if (data.message === 'equal') {
                     // Checkout Branch
