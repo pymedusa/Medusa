@@ -1,21 +1,3 @@
-# coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import datetime
 import json
 
@@ -138,20 +120,20 @@ class ProgressIndicators(object):
            }
 
     @staticmethod
-    def getIndicator(name):
+    def get_indicator(name):
         if name not in ProgressIndicators._pi:
             return []
 
         # if any of the progress indicators are done take them off the list
         for curPI in ProgressIndicators._pi[name]:
-            if curPI is not None and curPI.percentComplete() == 100:
+            if curPI is not None and curPI.percent_complete() == 100:
                 ProgressIndicators._pi[name].remove(curPI)
 
         # return the list of progress indicators associated with this name
         return ProgressIndicators._pi[name]
 
     @staticmethod
-    def setIndicator(name, indicator):
+    def set_indicator(name, indicator):
         ProgressIndicators._pi[name].append(indicator)
 
 
@@ -163,25 +145,25 @@ class QueueProgressIndicator(object):
         self.queueItemList = queueItemList
         self.name = name
 
-    def numTotal(self):
+    def num_total(self):
         return len(self.queueItemList)
 
-    def numFinished(self):
+    def num_finished(self):
         return len([x for x in self.queueItemList if not x.isInQueue()])
 
-    def numRemaining(self):
+    def num_remaining(self):
         return len([x for x in self.queueItemList if x.isInQueue()])
 
-    def nextName(self):
+    def next_name(self):
         for curItem in [app.show_queue_scheduler.action.currentItem] + app.show_queue_scheduler.action.queue:  # @UndefinedVariable
             if curItem in self.queueItemList:
                 return curItem.name
 
         return "Unknown"
 
-    def percentComplete(self):
-        numFinished = self.numFinished()
-        numTotal = self.numTotal()
+    def percent_complete(self):
+        numFinished = self.num_finished()
+        numTotal = self.num_total()
 
         if numTotal == 0:
             return 0

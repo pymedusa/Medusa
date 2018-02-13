@@ -195,7 +195,7 @@ class ShowUpdater(object):
             else:
                 logger.info(u'Show update skipped, show: {show} is paused.', show=show[1].name)
 
-        ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
+        ui.ProgressIndicators.set_indicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
         # Only refresh updated shows that have been updated using the season updates.
         # The full refreshed shows, are updated from the queueItem.
