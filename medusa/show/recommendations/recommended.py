@@ -17,10 +17,9 @@
 
 from __future__ import unicode_literals
 
-from imdbpie import imdbpie
 import os
 import posixpath
-
+from imdbpie import imdbpie
 from medusa import (
     app,
     helpers,
