@@ -27,7 +27,6 @@ missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
 
 def create_key_from_series(namespace, fn, **kw):
     """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-
     def generate_key(*arg):
         """Generate the key."""
         trakt = arg[1]

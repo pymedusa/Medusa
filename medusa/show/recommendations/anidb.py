@@ -22,7 +22,6 @@ log.logger.addHandler(logging.NullHandler())
 
 def create_key_from_series(namespace, fn, **kw):
     """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-
     def generate_key(*arg):
         """Generate the key."""
         anime_obj = arg[1]

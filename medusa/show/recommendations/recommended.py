@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals
 
+from imdbpie import imdbpie
 import os
 import posixpath
 
@@ -24,7 +25,6 @@ from medusa import (
     app,
     helpers,
 )
-from imdbpie import imdbpie
 from medusa.cache import recommended_series_cache
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.session.core import MedusaSession
@@ -141,14 +141,29 @@ class RecommendedShow(object):
 
 @recommended_series_cache.cache_on_arguments()
 def cached_tvdb_to_aid(tvdb_id):
+    """
+    Try to match an anidb id with a tvdb id.
+
+    Use dogpile cache to return a cached id if available.
+    """
     return anidb_api.tvdb_id_to_aid(tvdbid=tvdb_id)
 
 
 @recommended_series_cache.cache_on_arguments()
 def cached_aid_to_tvdb(aid):
+    """
+    Try to match a tvdb id with an anidb id.
+
+    Use dogpile cache to return a cached id if available.
+    """
     return anidb_api.aid_to_tvdb_id(aid=aid)
 
 
 @recommended_series_cache.cache_on_arguments()
 def cached_get_imdb_series_details(imdb_id):
+    """
+    Request the series details from the imdbpie api.
+
+    Use dogpile cache to return a cached id if available.
+    """
     return imdb_api.get_title(imdb_id)
