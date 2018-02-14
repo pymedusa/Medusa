@@ -192,12 +192,6 @@ const moveImages = () => {
         .pipe(gulpif(PROD, gulp.dest(`${buildDest}/assets/img`)));
 };
 
-const moveVue = () => {
-    return gulp
-        .src('./vue/**/*')
-        .pipe(gulp.dest(`${buildDest}/vue`));
-};
-
 /**
  * Move and rename css.
  */
@@ -233,7 +227,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'vue', 'root'], async() => {
+    runSequence('lint', ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root'], async() => {
         if (!PROD) {
             done();
         }
@@ -282,11 +276,6 @@ gulp.task('static', moveStatic);
  * Task for moving the mako views to the destinations templates directory.
  */
 gulp.task('templates', moveTemplates);
-
-/**
- * Task for moving the vue directory to the destination directory.
- */
-gulp.task('vue', moveVue);
 
 /**
  * Task for moving the files out of the root folder (index.html and package.json) to the destinations
