@@ -14,6 +14,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import RecommendedShow, cached_get_imdb_series_details
 from requests import RequestException
+from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -29,7 +30,7 @@ def create_key_from_series(namespace, fn, **kw):
         """Generate the key."""
         return b'{namespace}_{arguments}'.format(
             namespace=namespace, arguments=b'_'.join(
-                str(k) for k in arg[1].keys() if k in allowed_keys
+                bytes(v) for k, v in iteritems(arg[1]) if k in allowed_keys
             )
         )
 
