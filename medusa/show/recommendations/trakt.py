@@ -25,6 +25,22 @@ log.logger.addHandler(logging.NullHandler())
 missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
 
 
+def create_key_from_series(namespace, fn, **kw):
+    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
+
+    def generate_key(*arg):
+        """Generate the key."""
+        trakt = arg[1]
+        return b'{namespace}_{trakt_id}_{title}_{title}_{year}'.format(
+            namespace=namespace,
+            trakt_id=trakt['show']['ids']['trakt'],
+            title=trakt['show']['title'],
+            year=trakt['show']['year']
+        )
+
+    return generate_key
+
+
 class TraktPopular(object):
     """This class retrieves a speficed recommended show list from Trakt.
 
@@ -38,37 +54,37 @@ class TraktPopular(object):
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
-    @recommended_series_cache.cache_on_arguments()
-    def _create_recommended_show(self, show_obj):
+    @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
+    def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
-                                   show_obj['show']['ids'], show_obj['show']['title'],
+                                   series['show']['ids'], series['show']['title'],
                                    INDEXER_TVDBV2,  # indexer
-                                   show_obj['show']['ids']['tvdb'],
-                                   **{'rating': show_obj['show']['rating'],
-                                      'votes': try_int(show_obj['show']['votes'], '0'),
-                                      'image_href': 'http://www.trakt.tv/shows/{0}'.format(show_obj['show']['ids']['slug']),
+                                   series['show']['ids']['tvdb'],
+                                   **{'rating': series['show']['rating'],
+                                      'votes': try_int(series['show']['votes'], '0'),
+                                      'image_href': 'http://www.trakt.tv/shows/{0}'.format(series['show']['ids']['slug']),
                                       # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                                       # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                                      'ids': show_obj['show']['ids']
+                                      'ids': series['show']['ids']
                                       }
                                    )
 
         use_default = None
         image = None
         try:
-            if not missing_posters.has(show_obj['show']['ids']['tvdb']):
-                image = self.check_cache_for_poster(show_obj['show']['ids']['tvdb']) or \
-                    self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'],
-                                                                                             key_type='poster').data[0].file_name
+            if not missing_posters.has(series['show']['ids']['tvdb']):
+                image = self.check_cache_for_poster(series['show']['ids']['tvdb']) or \
+                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(series['show']['ids']['tvdb'],
+                                                                                                 key_type='poster').data[0].file_name
             else:
-                log.info('CACHE: Missing poster on TVDB for show {0}', show_obj['show']['title'])
+                log.info('CACHE: Missing poster on TVDB for show {0}', series['show']['title'])
                 use_default = self.default_img_src
         except ApiException as error:
             use_default = self.default_img_src
             if getattr(error, 'status', None) == 404:
-                log.info('Missing poster on TheTVDB for show {0}', show_obj['show']['title'])
-                missing_posters.append(show_obj['show']['ids']['tvdb'])
+                log.info('Missing poster on TheTVDB for show {0}', series['show']['title'])
+                missing_posters.append(series['show']['ids']['tvdb'])
         except Exception as error:
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
@@ -81,8 +97,8 @@ class TraktPopular(object):
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
-        if 'jp' in [show_obj['show']['country'], show_obj['show']['language']]:
-            rec_show._flag_as_anime(show_obj['show']['ids']['tvdb'])
+        if 'jp' in [series['show']['country'], series['show']['language']]:
+            rec_show.flag_as_anime(series['show']['ids']['tvdb'])
 
         return rec_show
 
@@ -140,19 +156,19 @@ class TraktPopular(object):
             else:
                 limit_show = '?'
 
-            shows = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
+            series = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
 
             # Let's trigger a cache cleanup.
             missing_posters.clean()
 
-            for show in shows:
+            for show in series:
                 try:
                     if 'show' not in show:
                         show['show'] = show
 
                     if not_liked_show:
-                        if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb']
-                                                               for show in not_liked_show if show['type'] == 'show'):
+                        if show['show']['ids']['tvdb'] not in (s['show']['ids']['tvdb']
+                                                               for s in not_liked_show if s['type'] == 'show'):
                             trending_shows.append(self._create_recommended_show(show))
                     else:
                         trending_shows.append(self._create_recommended_show(show))
