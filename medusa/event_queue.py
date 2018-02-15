@@ -9,6 +9,7 @@ from medusa.helper.exceptions import ex
 from six.moves.queue import Empty, Queue
 
 log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class Event(object):
