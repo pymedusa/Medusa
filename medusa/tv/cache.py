@@ -21,7 +21,7 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
-from medusa.rss_feeds import getFeed
+from medusa.rss_feeds import get_feed
 from medusa.show import naming
 from medusa.show.show import Show
 
@@ -275,8 +275,8 @@ class Cache(object):
         """Get rss feed entries."""
         if self.provider.login():
             # TODO: Check the usage of get_url.
-            return getFeed(url, params=params,
-                           request_hook=self.provider.session.get)
+            return get_feed(url, params=params,
+                            request_hook=self.provider.session.get)
         return {'entries': []}
 
     @staticmethod

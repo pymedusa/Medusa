@@ -11,7 +11,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-def getFeed(url, params=None, request_hook=None):
+def get_feed(url, params=None, request_hook=None):
     try:
         response = request_hook(url, params=params, timeout=30)
         if not response:
