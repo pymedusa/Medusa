@@ -66,7 +66,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.processing import post
-from medusa.sbdatetime import sbdatetime
+from medusa.sbdatetime import DateTime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
@@ -392,7 +392,7 @@ class Episode(TV):
     @property
     def air_date(self):
         """Return air date from the episode."""
-        return sbdatetime.convert_to_setting(
+        return DateTime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
                 self.series.airs,

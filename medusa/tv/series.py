@@ -93,7 +93,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.processing import post
-from medusa.sbdatetime import sbdatetime
+from medusa.sbdatetime import DateTime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 from medusa.subtitles import (
@@ -495,7 +495,7 @@ class Series(TV):
     def next_airdate(self):
         """Return next airdate."""
         return (
-            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
+            DateTime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
             if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
         )
 

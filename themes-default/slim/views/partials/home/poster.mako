@@ -84,7 +84,7 @@
             progressbar_percent = nom * 100 / den
             data_date = '6000000000.0'
             if cur_airs_next:
-                data_date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)).timetuple())
+                data_date = calendar.timegm(sbdatetime.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)).timetuple())
             elif None is not display_status:
                 if 'nded' not in display_status and 1 == int(cur_show.paused):
                     data_date = '5000000500.0'
@@ -115,10 +115,10 @@
                         </div>
                         <div class="show-date">
                 % if cur_airs_next:
-                    <% ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
+                    <% ldatetime = sbdatetime.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
                     <%
                         try:
-                            out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
+                            out = str(sbdatetime.DateTime.display_date(ldatetime))
                         except ValueError:
                             out = 'Invalid date'
                             pass

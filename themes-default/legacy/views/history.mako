@@ -7,7 +7,7 @@
     import time
     from random import choice
     from medusa import providers
-    from medusa.sbdatetime import sbdatetime
+    from medusa.sbdatetime import DateTime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from medusa.common import Quality, statusStrings, Overview
     from medusa.show.history import History
@@ -79,7 +79,7 @@
                     <% composite = Quality.split_composite_status(int(hItem.action)) %>
                     <tr>
                         <td align="center" class="triggerhighlight">
-                            <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
+                            <% airDate = sbdatetime.display_datetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
@@ -147,7 +147,7 @@
                 % for hItem in compactResults:
                     <tr>
                         <td align="center" class="triggerhighlight">
-                            <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.actions[0].date), History.date_format), show_seconds=True) %>
+                            <% airDate = sbdatetime.display_datetime(datetime.strptime(str(hItem.actions[0].date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.actions[0].date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>

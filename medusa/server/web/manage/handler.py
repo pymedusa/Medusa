@@ -426,7 +426,7 @@ class Manage(Home, WebRoot):
                     if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
                         air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
                         if air_date.year >= 1970 or cur_show.network:
-                            air_date = sbdatetime.sbdatetime.convert_to_setting(
+                            air_date = sbdatetime.DateTime.convert_to_setting(
                                 network_timezones.parse_date_time(cur_result[b'airdate'],
                                                                   cur_show.airs,
                                                                   cur_show.network))

@@ -66,7 +66,7 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import sbdatetime
+from medusa.sbdatetime import DateTime
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
@@ -1297,7 +1297,7 @@ class Home(WebRoot):
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
-                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
+                i['action_date'] = DateTime.display_datetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]

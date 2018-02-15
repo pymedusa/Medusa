@@ -5,7 +5,7 @@
     from medusa import app, config, metadata
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
-    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
+    from medusa.sbdatetime import DateTime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
     from medusa.helpers import anon_url
     from medusa.indexers.api import indexerApi
@@ -355,7 +355,7 @@
                                 <span class="component-desc">
                                     <select id="time_presets" name="time_preset" class="form-control input-sm">
                                          % for cur_preset in time_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${sbdatetime.now().sbftime(show_seconds=True, t_preset=cur_preset)}</option>
+                                            <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${sbdatetime.now().display_time(show_seconds=True, t_preset=cur_preset)}</option>
                                          % endfor
                                     </select>
                                     <span><b>note:</b> seconds are only shown on the History page</span>
