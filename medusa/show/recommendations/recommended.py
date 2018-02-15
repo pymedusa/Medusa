@@ -28,6 +28,7 @@ from medusa.cache import recommended_series_cache
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.session.core import MedusaSession
 from simpleanidb import Anidb
+from six import binary_type, iteritems
 
 
 session = MedusaSession()
@@ -166,3 +167,23 @@ def cached_get_imdb_series_details(imdb_id):
     Use dogpile cache to return a cached id if available.
     """
     return imdb_api.get_title(imdb_id)
+
+
+def create_key_from_series(namespace, fn, **kw):
+    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
+
+    def generate_key(*arg):
+        """
+        Generate the key.
+        The dogpiled items should have the following format:
+            `dict(keys={'key1': 'value_for_key1', 'key2': 'value_for_key2}, item=to_be_cached_item)`.
+        Following this standard we can cache every object, using this key_generator.
+        """
+        keys = arg[1]['keys']
+        return b'{namespace}_{arguments}'.format(
+            namespace=namespace, arguments=b'_'.join(
+                binary_type(v) for v in keys
+            )
+        )
+
+    return generate_key

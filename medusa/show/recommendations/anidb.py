@@ -10,7 +10,9 @@ from medusa.cache import recommended_series_cache
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb)
+from medusa.show.recommendations.recommended import (
+    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series
+)
 
 from simpleanidb import Anidb, REQUEST_HOT
 from simpleanidb.exceptions import GeneralError
@@ -18,18 +20,6 @@ from simpleanidb.exceptions import GeneralError
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
-
-
-def create_key_from_series(namespace, fn, **kw):
-    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-    def generate_key(*arg):
-        """Generate the key."""
-        anime_obj = arg[1]
-        return b'{namespace}_{aid}_{title}_{poster}'.format(
-            namespace=namespace, aid=anime_obj.aid, title=anime_obj.title, poster=anime_obj.picture
-        )
-
-    return generate_key
 
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
@@ -45,8 +35,9 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.default_img_src = 'poster.png'
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series):
+    def _create_recommended_show(self, cache_series):
         """Create the RecommendedShow object from the returned showobj."""
+        series = cache_series['item']
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
         except Exception:
@@ -92,7 +83,8 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(show)
+                prepared_dogpile_item = {'keys': [show.aid], 'item': show}
+                recommended_show = self._create_recommended_show(prepared_dogpile_item)
                 if recommended_show:
                     result.append(recommended_show)
             except MissingTvdbMapping:

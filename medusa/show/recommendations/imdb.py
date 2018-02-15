@@ -12,29 +12,14 @@ from medusa.cache import recommended_series_cache
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations.recommended import RecommendedShow, cached_get_imdb_series_details
+from medusa.show.recommendations.recommended import RecommendedShow, cached_get_imdb_series_details, create_key_from_series
 from requests import RequestException
-from six import iteritems
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 imdb_api = imdbpie.Imdb()
-
-
-def create_key_from_series(namespace, fn, **kw):
-    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-    allowed_keys = ('imdb_tt', 'imdb_url', 'name', 'outline', 'year', 'image_path')
-
-    def generate_key(*arg):
-        """Generate the key."""
-        return b'{namespace}_{arguments}'.format(
-            namespace=namespace, arguments=b'_'.join(
-                bytes(v) for k, v in iteritems(arg[1]) if k in allowed_keys
-            )
-        )
-
-    return generate_key
 
 
 class ImdbPopular(object):
@@ -48,22 +33,24 @@ class ImdbPopular(object):
         self.default_img_src = 'poster.png'
 
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series):
+    def _create_recommended_show(self, cache_series):
         """Create the RecommendedShow object from the returned showobj."""
+        series = cache_series['item']
         tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
 
         if not tvdb_id:
             return None
 
-        rec_show = RecommendedShow(self,
-                                   series.get('imdb_tt'),
-                                   series.get('name'),
-                                   INDEXER_TVDBV2,
-                                   int(tvdb_id),
-                                   **{'rating': series.get('rating'),
-                                      'votes': series.get('votes'),
-                                      'image_href': series.get('imdb_url')}
-                                   )
+        rec_show = RecommendedShow(
+            self,
+            series.get('imdb_tt'),
+            series.get('name'),
+            INDEXER_TVDBV2,
+            int(tvdb_id),
+            **{'rating': series.get('rating'),
+               'votes': series.get('votes'),
+               'image_href': series.get('imdb_url')}
+        )
 
         if series.get('image_url'):
             rec_show.cache_image(series.get('image_url'))
@@ -106,7 +93,8 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                recommended_show = self._create_recommended_show(series)
+                prepared_dogpile_item = {'keys': [series['imdb_tt']], 'item': series}
+                recommended_show = self._create_recommended_show(prepared_dogpile_item)
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:

@@ -13,7 +13,7 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
-from medusa.show.recommendations.recommended import RecommendedShow
+from medusa.show.recommendations.recommended import RecommendedShow, create_key_from_series
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.exceptions import ApiException
@@ -23,21 +23,6 @@ log.logger.addHandler(logging.NullHandler())
 
 
 missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
-
-
-def create_key_from_series(namespace, fn, **kw):
-    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-    def generate_key(*arg):
-        """Generate the key."""
-        trakt = arg[1]
-        return b'{namespace}_{trakt_id}_{title}_{title}_{year}'.format(
-            namespace=namespace,
-            trakt_id=trakt['show']['ids']['trakt'],
-            title=trakt['show']['title'],
-            year=trakt['show']['year']
-        )
-
-    return generate_key
 
 
 class TraktPopular(object):
@@ -54,8 +39,9 @@ class TraktPopular(object):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series):
+    def _create_recommended_show(self, cache_series):
         """Create the RecommendedShow object from the returned showobj."""
+        series = cache_series['item']
         rec_show = RecommendedShow(self,
                                    series['show']['ids'], series['show']['title'],
                                    INDEXER_TVDBV2,  # indexer
@@ -166,11 +152,12 @@ class TraktPopular(object):
                         show['show'] = show
 
                     if not_liked_show:
-                        if show['show']['ids']['tvdb'] not in (s['show']['ids']['tvdb']
-                                                               for s in not_liked_show if s['type'] == 'show'):
-                            trending_shows.append(self._create_recommended_show(show))
+                        if show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
+                                                           for s in not_liked_show if s['type'] == 'show'):
+                            continue
                     else:
-                        trending_shows.append(self._create_recommended_show(show))
+                        prepared_dogpile_item = {'keys': [show['show']['ids']['trakt']], 'item': show}
+                        trending_shows.append(self._create_recommended_show(prepared_dogpile_item))
 
                 except MultipleShowObjectsException:
                     continue
