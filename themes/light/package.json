@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "version": "0.1.0",
-  "name": "dark",
+  "name": "light",
   "author": "p0psicles",
   "scripts": {
     "gulp": "gulp",
