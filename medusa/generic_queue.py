@@ -27,7 +27,7 @@ class GenericQueue(object):
         log.info(u"Pausing queue")
         self.min_priority = 999999999999
 
-    def unpause(self):
+    def resume(self):
         """Unpauses this queue."""
         log.info(u"Unpausing queue")
         self.min_priority = 0
