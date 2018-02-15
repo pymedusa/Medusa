@@ -25,10 +25,11 @@ from medusa import (
     helpers,
 )
 from medusa.cache import recommended_series_cache
+from medusa.helpers import ensure_list
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.session.core import MedusaSession
 from simpleanidb import Anidb
-from six import binary_type, iteritems
+from six import binary_type
 
 
 session = MedusaSession()
@@ -180,10 +181,46 @@ def create_key_from_series(namespace, fn, **kw):
         Following this standard we can cache every object, using this key_generator.
         """
         keys = arg[1]['keys']
-        return b'{namespace}_{arguments}'.format(
-            namespace=namespace, arguments=b'_'.join(
-                binary_type(v) for v in keys
-            )
+        return b'{arguments}'.format(
+            arguments=b'_'.join(binary_type(v) for v in keys)
         )
 
     return generate_key
+
+
+def update_recommended_series_cache_index(indexer, new_index):
+    """
+    Create a key that's used to store an index with all shows saved in cache for a specific indexer. For example 'imdb'.
+
+    :param indexer: Indexer in the form of a string. For example: 'imdb', 'trakt', 'anidb'.
+    :new_index: Iterable with series id's.
+    """
+    index = recommended_series_cache.get(binary_type(indexer)) or set()
+    index.update(set(new_index))
+    recommended_series_cache.set(binary_type(indexer), index)
+
+
+def get_all_recommended_series_from_cache(indexers):
+    """
+    Retrieve all recommended show objects from the dogpile cache for a specific indexer or a number of indexers.
+
+    For example: `get_all_recommended_series_from_cache(['imdb', 'anidb'])` will return all recommended show objects, for the
+    indexers imdb and anidb.
+
+    :param indexers: indexer or list of indexers. Indexers need to be passed as a string. For example: 'imdb', 'anidb' or 'trakt'.
+    :return: List of recommended show objects.
+    """
+    indexers = ensure_list(indexers)
+    all_series = []
+    for indexer in indexers:
+        index = recommended_series_cache.get(binary_type(indexer))
+        if not index:
+            continue
+
+        for index_item in index:
+            key = b'{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
+            series = recommended_series_cache.get(binary_type(key))
+            if series:
+                all_series.append(series)
+
+    return all_series

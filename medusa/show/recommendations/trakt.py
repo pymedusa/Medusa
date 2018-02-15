@@ -13,10 +13,13 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
-from medusa.show.recommendations.recommended import RecommendedShow, create_key_from_series
+from medusa.show.recommendations.recommended import (
+    RecommendedShow, create_key_from_series, update_recommended_series_cache_index
+)
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.exceptions import ApiException
+from six import binary_type, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -137,7 +140,7 @@ class TraktPopular(object):
                     log.debug('Trakt blacklist name is empty')
 
             if trakt_list not in ['recommended', 'newshow', 'newseason']:
-                limit_show = '?limit=' + str(100 + len(not_liked_show)) + '&'
+                limit_show = '?limit=' + text_type(100 + len(not_liked_show)) + '&'
             else:
                 limit_show = '?'
 
@@ -156,12 +159,14 @@ class TraktPopular(object):
                                                            for s in not_liked_show if s['type'] == 'show'):
                             continue
                     else:
-                        prepared_dogpile_item = {'keys': [show['show']['ids']['trakt']], 'item': show}
+                        prepared_dogpile_item = {'keys': ['trakt', show['show']['ids']['trakt']], 'item': show}
                         trending_shows.append(self._create_recommended_show(prepared_dogpile_item))
 
                 except MultipleShowObjectsException:
                     continue
 
+            # Update the dogpile index
+            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as error:
@@ -177,6 +182,6 @@ class TraktPopular(object):
 
         for image_file_name in os.listdir(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))):
             if os.path.isfile(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder, image_file_name))):
-                if str(tvdb_id) == image_file_name.split('-')[0]:
+                if text_type(tvdb_id) == image_file_name.split('-')[0]:
                     return image_file_name
         return False

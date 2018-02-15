@@ -12,9 +12,11 @@ from medusa.cache import recommended_series_cache
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations.recommended import RecommendedShow, cached_get_imdb_series_details, create_key_from_series
+from medusa.show.recommendations.recommended import (
+    RecommendedShow, cached_get_imdb_series_details, create_key_from_series, update_recommended_series_cache_index
+)
 from requests import RequestException
-
+from six import binary_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -32,7 +34,7 @@ class ImdbPopular(object):
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
 
-    @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
+    @recommended_series_cache.cache_on_arguments(function_key_generator=create_key_from_series)
     def _create_recommended_show(self, cache_series):
         """Create the RecommendedShow object from the returned showobj."""
         series = cache_series['item']
@@ -93,7 +95,7 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                prepared_dogpile_item = {'keys': [series['imdb_tt']], 'item': series}
+                prepared_dogpile_item = {'keys': ['imdb', series['imdb_tt']], 'item': series}
                 recommended_show = self._create_recommended_show(prepared_dogpile_item)
                 if recommended_show:
                     result.append(recommended_show)
@@ -103,6 +105,8 @@ class ImdbPopular(object):
                     u' this show in your library: {show} ({year})',
                     {'show': series['name'], 'year': series['name']}
                 )
+        # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
+        update_recommended_series_cache_index('imdb', [binary_type(s.series_id) for s in result])
 
         return result
 
