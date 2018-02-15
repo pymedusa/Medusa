@@ -23,7 +23,6 @@ class BraceMessage(object):
         self.msg = msg
         self.args = args
         self.kwargs = kwargs
-        log.debug(repr(self))
 
     def __str__(self):
         """Convert to string."""
