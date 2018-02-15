@@ -36,7 +36,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.default_img_src = 'poster.png'
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_keys=None):
+    def _create_recommended_show(self, series, storage_key=None):
         """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
@@ -83,7 +83,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(show, storage_keys=['anidb', show.aid])
+                recommended_show = self._create_recommended_show(show, storage_key=b'anidb_{0}'.format(show.aid))
                 if recommended_show:
                     result.append(recommended_show)
             except MissingTvdbMapping:

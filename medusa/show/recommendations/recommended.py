@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import posixpath
 from imdbpie import imdbpie
@@ -27,10 +28,14 @@ from medusa import (
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.indexers.utils import indexer_id_to_name
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from simpleanidb import Anidb
 from six import binary_type
 
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSession()
 anidb_api = Anidb(cache_dir=app.CACHE_DIR)
@@ -176,14 +181,13 @@ def create_key_from_series(namespace, fn, **kw):
     def generate_key(*arg, **kwargs):
         """
         Generate the key.
-        The dogpiled items should have the following format:
-            `dict(keys={'key1': 'value_for_key1', 'key2': 'value_for_key2}, item=to_be_cached_item)`.
+        The key is passed to the decorated function using the kwargs `storage_key`.
         Following this standard we can cache every object, using this key_generator.
         """
-        storage_keys = kwargs.pop('storage_keys')
-        return b'{arguments}'.format(
-            arguments=b'_'.join(binary_type(v) for v in ensure_list(storage_keys))
-        )
+        try:
+            return binary_type(kwargs['storage_key'])
+        except KeyError:
+            log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key, that is used in the dogpile cache.')
 
     return generate_key
 

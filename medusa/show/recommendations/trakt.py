@@ -159,8 +159,8 @@ class TraktPopular(object):
                             continue
                     else:
                         trending_shows.append(self._create_recommended_show(
-                            show, storage_keys=[['trakt', show['show']['ids']['trakt']]])
-                        )
+                            show, storage_key=b'trakt_{0}'.format(show['show']['ids']['trakt'])
+                        ))
 
                 except MultipleShowObjectsException:
                     continue
