@@ -355,7 +355,7 @@
                                 <span class="component-desc">
                                     <select id="time_presets" name="time_preset" class="form-control input-sm">
                                          % for cur_preset in time_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${date_time.now().display_time(show_seconds=True, t_preset=cur_preset)}</option>
+                                            <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${DateTime.(n)ow().display_time(show_seconds=True, t_preset=cur_preset)}</option>
                                          % endfor
                                     </select>
                                     <span><b>note:</b> seconds are only shown on the History page</span>
