@@ -22,7 +22,7 @@ from __future__ import print_function
 import unittest
 
 from medusa import app
-from medusa.name_cache import addNameToCache
+from medusa.name_cache import add_name_to_cache
 from medusa.processing.post import PostProcessor
 from medusa.tv import Episode, Series
 from tests.legacy import test_lib as test
@@ -56,7 +56,7 @@ class PPBasicTests(test.AppTestDBCase):
         episode.name = "some episode name"
         episode.save_to_db()
 
-        addNameToCache('show name', 1, 3)
+        add_name_to_cache('show name', 1, 3)
         app.PROCESS_METHOD = 'move'
 
         post_processor = PostProcessor(test.FILE_PATH)

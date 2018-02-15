@@ -99,8 +99,8 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         test_cache_db_con.action("DELETE FROM scene_exceptions")
 
         # put something in the cache
-        name_cache.addNameToCache('Cached Name', 0)
+        name_cache.add_name_to_cache('Cached Name', 0)
 
         # updating should not clear the cache this time since our exceptions didn't change
         scene_exceptions.retrieve_exceptions()
-        self.assertEqual(name_cache.retrieveNameFromCache('Cached Name'), (0, 0))
+        self.assertEqual(name_cache.retrieve_name_from_cache('Cached Name'), (0, 0))

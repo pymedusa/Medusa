@@ -23,7 +23,7 @@ name_cache = {}
 nameCacheLock = threading.Lock()
 
 
-def addNameToCache(name, indexer_id=1, series_id=0):
+def add_name_to_cache(name, indexer_id=1, series_id=0):
     """
     Add the show & tvdb id to the scene_names table in cache.db.
 
@@ -40,7 +40,7 @@ def addNameToCache(name, indexer_id=1, series_id=0):
         cache_db_con.action('INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)', [series_id, name, indexer_id])
 
 
-def retrieveNameFromCache(name):
+def retrieve_name_from_cache(name):
     """
     Look up the given name in the scene_names table in cache.db.
 
@@ -75,7 +75,7 @@ def clear_cache(indexer_id=0, series_id=0):
         del name_cache[key]
 
 
-def saveNameCacheToDb():
+def save_name_cache_to_db():
     """Commit cache to database file."""
     cache_db_con = db.DBConnection('cache.db')
 

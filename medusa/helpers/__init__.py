@@ -1017,7 +1017,7 @@ def get_show(name, try_indexers=False):
 
     for series_name in generate(name):
         # check cache for series
-        indexer_id, series_id = name_cache.retrieveNameFromCache(series_name)
+        indexer_id, series_id = name_cache.retrieve_name_from_cache(series_name)
         if series_id:
             from_cache = True
             series = Show.find_by_id(app.showList, indexer_id, series_id)
@@ -1044,7 +1044,7 @@ def get_show(name, try_indexers=False):
 
         # add show to cache
         if series and not from_cache:
-            name_cache.addNameToCache(series_name, series.indexer, series.indexerid)
+            name_cache.add_name_to_cache(series_name, series.indexer, series.indexerid)
 
         return series
 
