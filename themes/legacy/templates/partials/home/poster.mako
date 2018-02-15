@@ -32,7 +32,7 @@
             % endif
         % endif
         <div class="posterview">
-        % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
+        % for cur_loading_show in app.show_queue_scheduler.action.loading_show_list:
             % if cur_loading_show.show is None:
                 <div class="show-container" data-name="0" data-date="010101" data-network="0" data-progress="101">
                     <img alt="" title="${cur_loading_show.show_name}" class="show-image" style="border-bottom: 1px solid rgb(17, 17, 17);" src="images/poster.png" />
