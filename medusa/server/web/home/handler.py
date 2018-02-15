@@ -66,7 +66,7 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import DateTime
+from medusa.date_time import DateTime
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,

@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     import calendar
-    from medusa import sbdatetime
+    from medusa import date_time
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
     from random import choice

@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
-    from medusa import sbdatetime
+    from medusa import date_time
 %>
 <%block name="scripts">
 <script type="text/javascript">

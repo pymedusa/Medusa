@@ -5,7 +5,7 @@
     from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
-    from medusa.sbdatetime import DateTime, date_presets, time_presets
+    from medusa.date_time import DateTime, date_presets, time_presets
     from medusa import config
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata

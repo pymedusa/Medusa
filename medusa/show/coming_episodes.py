@@ -29,7 +29,7 @@ from medusa.db import DBConnection
 from medusa.helper.common import dateFormat, timeFormat
 from medusa.helpers.quality import get_quality_string
 from medusa.network_timezones import parse_date_time
-from medusa.sbdatetime import DateTime
+from medusa.date_time import DateTime
 from medusa.tv.series import SeriesIdentifier
 
 

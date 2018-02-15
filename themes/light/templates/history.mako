@@ -7,7 +7,7 @@
     import time
     from random import choice
     from medusa import providers
-    from medusa.sbdatetime import DateTime
+    from medusa.date_time import DateTime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from medusa.common import Quality, statusStrings, Overview
     from medusa.show.history import History

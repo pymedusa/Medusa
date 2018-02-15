@@ -1,7 +1,7 @@
 <%!
     from medusa import app
     import calendar
-    from medusa import sbdatetime
+    from medusa import date_time
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show

@@ -1,7 +1,7 @@
 <%!
     from medusa import app
     import calendar
-    from medusa import sbdatetime
+    from medusa import date_time
     from medusa import network_timezones
     from medusa.indexers.api import indexerApi
     from medusa.helpers import anon_url

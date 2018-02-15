@@ -3,7 +3,7 @@
     import datetime
     import urllib
     import ntpath
-    from medusa import app, helpers, subtitles, sbdatetime, network_timezones
+    from medusa import app, helpers, subtitles, date_time, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
