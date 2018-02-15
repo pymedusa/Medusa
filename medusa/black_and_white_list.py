@@ -7,9 +7,11 @@ import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
 from medusa import app, db, helpers
+from medusa.logger.adapters.style import BraceAdapter
 
-
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 
 class BlackAndWhiteList(object):
@@ -30,7 +32,8 @@ class BlackAndWhiteList(object):
 
     def load(self):
         """Build black and whitelist."""
-        logger.debug('Building black and white list for {id}', id=self.series_obj.name)
+        log.debug('Building black and white list for {id}',
+                  {'id': self.series_obj.name})
         self.blacklist = self._load_list(b'blacklist')
         self.whitelist = self._load_list(b'whitelist')
 
@@ -56,7 +59,8 @@ class BlackAndWhiteList(object):
         self._del_all_keywords(b'blacklist')
         self._add_keywords(b'blacklist', values)
         self.blacklist = values
-        logger.debug('Blacklist set to: {blacklist}', blacklist=self.blacklist)
+        log.debug('Blacklist set to: {blacklist}', 
+                  {'blacklist':self.blacklist})
 
     def set_white_keywords(self, values):
         """Set whitelist to new values.
@@ -66,7 +70,8 @@ class BlackAndWhiteList(object):
         self._del_all_keywords(b'whitelist')
         self._add_keywords(b'whitelist', values)
         self.whitelist = values
-        logger.debug('Whitelist set to: {whitelist}', whitelist=self.whitelist)
+        log.debug('Whitelist set to: {whitelist}',
+                  {'whitelist': self.whitelist})
 
     def _del_all_keywords(self, table):
         """Remove all keywords for current show.
@@ -100,8 +105,13 @@ class BlackAndWhiteList(object):
                   ] if sql_results else []
 
         if groups:
-            logger.debug('BWL: {id} loaded keywords from {table}: {groups}',
-                         id=self.series_obj.series_id, table=table, groups=groups)
+            log.debug(
+                'BWL: {id} loaded keywords from {table}: {groups}', {
+                    'id': self.series_obj.series_id,
+                    'table': table,
+                    'groups': groups,
+                }
+            )
 
         return groups
 
@@ -112,10 +122,10 @@ class BlackAndWhiteList(object):
         :return: False if result is not allowed in white/blacklist, True if it is
         """
         if not (self.whitelist or self.blacklist):
-            logger.debug(u'No Whitelist and Blacklist defined, check passed.')
+            log.debug(u'No Whitelist and Blacklist defined, check passed.')
             return True
         elif not result.release_group:
-            logger.debug('Invalid result, no release group detected')
+            log.debug('Invalid result, no release group detected')
             return False
 
         whitelist = [x.lower() for x in self.whitelist]
@@ -124,10 +134,12 @@ class BlackAndWhiteList(object):
         blacklist = [x.lower() for x in self.blacklist]
         black_result = result.release_group.lower() not in blacklist if self.blacklist else True
 
-        logger.debug('Whitelist check: {white}. Blacklist check: {black}',
-                     white='Passed' if white_result else 'Failed',
-                     black='Passed' if black_result else 'Failed')
-
+        log.debug(
+            'Whitelist check: {white}. Blacklist check: {black}', {
+                'white': 'Passed' if white_result else 'Failed',
+                'black': 'Passed' if black_result else 'Failed',
+            }
+        )
         return white_result and black_result
 
 
@@ -148,9 +160,11 @@ def short_group_names(groups):
             try:
                 group = app.ADBA_CONNECTION.group(gname=group_name)
             except AniDBCommandTimeoutError:
-                logger.debug('Timeout while loading group from AniDB. Trying next group')
+                log.debug('Timeout loading AniDB group.'
+                          ' Trying next group')
             except Exception:
-                logger.debug('Failed while loading group from AniDB. Trying next group')
+                log.debug('Failed while loading AniDB group.'
+                          ' Trying next group')
             else:
                 for line in group.datalines:
                     if line[b'shortname']:
