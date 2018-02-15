@@ -557,7 +557,7 @@ class Home(WebRoot):
     @staticmethod
     def forceTraktSync():
         """Force a trakt sync, depending on the notification settings, library is synced with watchlist and/or collection."""
-        return json.dumps({'result': ('Could not start sync', 'Sync Started')[app.trakt_checker_scheduler.forceRun()]})
+        return json.dumps({'result': ('Could not start sync', 'Sync Started')[app.trakt_checker_scheduler.force_run()]})
 
     @staticmethod
     def loadShowNotifyLists():

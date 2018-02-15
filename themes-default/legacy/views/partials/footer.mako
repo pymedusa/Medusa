@@ -40,8 +40,8 @@
             <span class="footerhighlight"><a href="manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
             % endif
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
-            | Daily Search: <span class="footerhighlight">${str(daily_search_scheduler.timeLeft()).split('.')[0]}</span>
-            | Backlog Search: <span class="footerhighlight">${str(backlog_search_scheduler.timeLeft()).split('.')[0]}</span>
+            | Daily Search: <span class="footerhighlight">${str(daily_search_scheduler.time_left()).split('.')[0]}</span>
+            | Backlog Search: <span class="footerhighlight">${str(backlog_search_scheduler.time_left()).split('.')[0]}</span>
             <div>
             % if mem_usage:
                 Memory used: <span class="footerhighlight">

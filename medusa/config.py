@@ -336,7 +336,7 @@ def change_version_notify(version_notify):
         app.NEWEST_VERSION_STRING = None
 
     if oldSetting is False and version_notify is True:
-        app.version_check_scheduler.forceRun()
+        app.version_check_scheduler.force_run()
 
 
 def change_git_path():
@@ -349,7 +349,7 @@ def change_git_path():
         CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
-    app.version_check_scheduler.forceRun()
+    app.version_check_scheduler.force_run()
 
 
 def change_download_propers(download_propers):

@@ -34,7 +34,7 @@ class Scheduler(threading.Thread):
         self.force = False
         self.enable = False
 
-    def timeLeft(self):
+    def time_left(self):
         """
         Check how long we have until we run again.
 
@@ -54,7 +54,7 @@ class Scheduler(threading.Thread):
         else:
             return datetime.timedelta(seconds=0)
 
-    def forceRun(self):
+    def force_run(self):
         if not self.action.amActive:
             self.force = True
             return True

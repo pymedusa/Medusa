@@ -412,7 +412,7 @@ class Application(object):
         #     failed_history.trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
-        # app.show_update_scheduler.forceRun()
+        # app.show_update_scheduler.force_run()
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):

@@ -34,7 +34,7 @@ class ManageSearches(Manage):
 
     def forceBacklog(self):
         # force it to run the next time it looks
-        result = app.backlog_search_scheduler.forceRun()
+        result = app.backlog_search_scheduler.force_run()
         if result:
             log.info('Backlog search forced')
             ui.notifications.message('Backlog search started')
@@ -44,7 +44,7 @@ class ManageSearches(Manage):
     def forceSearch(self):
 
         # force it to run the next time it looks
-        result = app.daily_search_scheduler.forceRun()
+        result = app.daily_search_scheduler.force_run()
         if result:
             log.info('Daily search forced')
             ui.notifications.message('Daily search started')
@@ -53,7 +53,7 @@ class ManageSearches(Manage):
 
     def forceFindPropers(self):
         # force it to run the next time it looks
-        result = app.proper_finder_scheduler.forceRun()
+        result = app.proper_finder_scheduler.force_run()
         if result:
             log.info('Find propers search forced')
             ui.notifications.message('Find propers search started')
@@ -62,7 +62,7 @@ class ManageSearches(Manage):
 
     def forceSubtitlesFinder(self):
         # force it to run the next time it looks
-        result = app.subtitles_finder_scheduler.forceRun()
+        result = app.subtitles_finder_scheduler.force_run()
         if result:
             log.info('Subtitle search forced')
             ui.notifications.message('Subtitle search started')
