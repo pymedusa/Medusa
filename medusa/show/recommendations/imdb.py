@@ -35,9 +35,8 @@ class ImdbPopular(object):
         self.default_img_src = 'poster.png'
 
     @recommended_series_cache.cache_on_arguments(function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, cache_series):
+    def _create_recommended_show(self, series, storage_keys=None):
         """Create the RecommendedShow object from the returned showobj."""
-        series = cache_series['item']
         tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
 
         if not tvdb_id:
@@ -95,8 +94,7 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                prepared_dogpile_item = {'keys': ['imdb', series['imdb_tt']], 'item': series}
-                recommended_show = self._create_recommended_show(prepared_dogpile_item)
+                recommended_show = self._create_recommended_show(series, storage_keys=['imdb', series['imdb_tt']])
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:

@@ -42,9 +42,8 @@ class TraktPopular(object):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, cache_series):
+    def _create_recommended_show(self, series, storage_keys=None):
         """Create the RecommendedShow object from the returned showobj."""
-        series = cache_series['item']
         rec_show = RecommendedShow(self,
                                    series['show']['ids'], series['show']['title'],
                                    INDEXER_TVDBV2,  # indexer
@@ -159,8 +158,9 @@ class TraktPopular(object):
                                                            for s in not_liked_show if s['type'] == 'show'):
                             continue
                     else:
-                        prepared_dogpile_item = {'keys': ['trakt', show['show']['ids']['trakt']], 'item': show}
-                        trending_shows.append(self._create_recommended_show(prepared_dogpile_item))
+                        trending_shows.append(self._create_recommended_show(
+                            show, storage_keys=[['trakt', show['show']['ids']['trakt']]])
+                        )
 
                 except MultipleShowObjectsException:
                     continue

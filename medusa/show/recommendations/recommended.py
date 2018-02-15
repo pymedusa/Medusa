@@ -173,16 +173,16 @@ def cached_get_imdb_series_details(imdb_id):
 def create_key_from_series(namespace, fn, **kw):
     """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
 
-    def generate_key(*arg):
+    def generate_key(*arg, **kwargs):
         """
         Generate the key.
         The dogpiled items should have the following format:
             `dict(keys={'key1': 'value_for_key1', 'key2': 'value_for_key2}, item=to_be_cached_item)`.
         Following this standard we can cache every object, using this key_generator.
         """
-        keys = arg[1]['keys']
+        storage_keys = kwargs.pop('storage_keys')
         return b'{arguments}'.format(
-            arguments=b'_'.join(binary_type(v) for v in keys)
+            arguments=b'_'.join(binary_type(v) for v in ensure_list(storage_keys))
         )
 
     return generate_key
