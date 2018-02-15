@@ -119,12 +119,12 @@
 %>
         <tr class="${show_div}">
             <td align="center" nowrap="nowrap" class="triggerhighlight">
-                <% airDate = sbdatetime.DateTime.convert_to_setting(cur_result['localtime']) %>
-                <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.DateTime.display_datetime(airDate)}</time>
+                <% airDate = date_time.DateTime.convert_to_setting(cur_result['localtime']) %>
+                <time datetime="${airDate.isoformat('T')}" class="date">${date_time.DateTime.display_datetime(airDate)}</time>
             </td>
             <td align="center" nowrap="nowrap" class="triggerhighlight">
-                <% ends = sbdatetime.DateTime.convert_to_setting(cur_ep_enddate) %>
-                <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.DateTime.display_datetime(ends)}</time>
+                <% ends = date_time.DateTime.convert_to_setting(cur_ep_enddate) %>
+                <time datetime="${ends.isoformat('T')}" class="date">${date_time.DateTime.display_datetime(ends)}</time>
             </td>
             <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</a>
 % if bool(cur_result['paused']):
@@ -301,7 +301,7 @@
                 </div>
                 <span class="title">Next Episode:</span> <span>${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))} - ${cur_result['name']}</span>
                 <div class="clearfix">
-                    <span class="title">Airs: </span><span class="airdate">${sbdatetime.DateTime.display_datetime(cur_result['localtime'])}</span>${('', '<span> on %s</span>' % cur_result['network'])[bool(cur_result['network'])]}
+                    <span class="title">Airs: </span><span class="airdate">${date_time.DateTime.display_datetime(cur_result['localtime'])}</span>${('', '<span> on %s</span>' % cur_result['network'])[bool(cur_result['network'])]}
                 </div>
                 <div class="clearfix">
                     <span class="title">Quality:</span>
@@ -350,7 +350,7 @@
             % if airday == day:
                 % try:
                     <% day_has_show = True %>
-                    <% airtime = sbdatetime.DateTime.fromtimestamp(time.mktime(cur_result['localtime'].timetuple())).sbftime().decode(app.SYS_ENCODING) %>
+                    <% airtime = date_time.DateTime.fromtimestamp(time.mktime(cur_result['localtime'].timetuple())).sbftime().decode(app.SYS_ENCODING) %>
                     % if app.TRIM_ZERO:
                         <% airtime = re.sub(r'0(\d:\d\d)', r'\1', airtime, 0, re.IGNORECASE | re.MULTILINE) %>
                     % endif

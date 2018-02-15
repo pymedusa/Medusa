@@ -117,10 +117,10 @@
             %>
                 <tr>
                 % if cur_airs_next:
-                    <% airDate = sbdatetime.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
+                    <% airDate = date_time.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
                     % try:
                         <td align="center" class="nowrap triggerhighlight">
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.DateTime.display_date(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" class="date">${date_time.DateTime.display_date(airDate)}</time>
                         </td>
                     % except ValueError:
                         <td align="center" class="nowrap triggerhighlight"></td>
@@ -129,10 +129,10 @@
                     <td align="center" class="nowrap triggerhighlight"></td>
                 % endif
                 % if cur_airs_prev:
-                    <% airDate = sbdatetime.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network)) %>
+                    <% airDate = date_time.DateTime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network)) %>
                     % try:
                         <td align="center" class="nowrap triggerhighlight">
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.DateTime.display_date(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" class="date">${date_time.DateTime.display_date(airDate)}</time>
                         </td>
                     % except ValueError:
                         <td align="center" class="nowrap triggerhighlight"></td>

@@ -242,9 +242,9 @@
                             ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
                             <% airDate = datetime.datetime.fromordinal(epResult['airdate']) %>
                             % if airDate.year >= 1970 or show.network:
-                                <% airDate = sbdatetime.DateTime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
+                                <% airDate = date_time.DateTime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
                             % endif
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.DateTime.display_datetime(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" class="date">${date_time.DateTime.display_datetime(airDate)}</time>
                         % else:
                             Never
                         % endif
