@@ -18,10 +18,10 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
+from six import text_type
+
 from medusa.common import Quality
 from medusa.helper.common import try_int
-
-from six import text_type
 
 
 class History(object):

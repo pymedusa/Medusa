@@ -39,7 +39,6 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
-
 log = logging.getLogger(__name__)
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')

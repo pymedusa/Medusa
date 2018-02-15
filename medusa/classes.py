@@ -2,12 +2,11 @@
 import logging
 
 from dateutil import parser
+from six.moves.urllib.request import FancyURLopener
 
 from medusa import app
 from medusa.common import Quality, USER_AGENT
 from medusa.logger.adapters.style import BraceAdapter
-
-from six.moves.urllib.request import FancyURLopener
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

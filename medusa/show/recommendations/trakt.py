@@ -5,6 +5,10 @@ from __future__ import unicode_literals
 import logging
 import os
 
+from simpleanidb import Anidb
+from traktor import (TokenExpiredException, TraktApi, TraktException)
+from tvdbapiv2.exceptions import ApiException
+
 from medusa import app
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
@@ -13,10 +17,6 @@ from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import RecommendedShow
-
-from simpleanidb import Anidb
-from traktor import (TokenExpiredException, TraktApi, TraktException)
-from tvdbapiv2.exceptions import ApiException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

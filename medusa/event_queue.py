@@ -4,9 +4,9 @@ import logging
 import threading
 import traceback
 
-from medusa.helper.exceptions import ex
-
 from six.moves.queue import Empty, Queue
+
+from medusa.helper.exceptions import ex
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

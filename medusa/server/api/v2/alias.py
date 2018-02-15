@@ -1,11 +1,12 @@
 # coding=utf-8
 """Request handler for alias (scene exceptions)."""
 
+from tornado.escape import json_decode
+
 from medusa import db
 from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
-from tornado.escape import json_decode
 
 
 class AliasHandler(BaseRequestHandler):

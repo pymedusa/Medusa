@@ -20,8 +20,9 @@ from __future__ import print_function
 
 import unittest
 
-from medusa.show.coming_episodes import ComingEpisodes
 from six import iteritems
+
+from medusa.show.coming_episodes import ComingEpisodes
 
 
 class ComingEpisodesTests(unittest.TestCase):

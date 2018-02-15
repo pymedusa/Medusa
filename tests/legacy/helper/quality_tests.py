@@ -20,10 +20,10 @@ from __future__ import print_function
 
 import unittest
 
+from six import iteritems
+
 from medusa.common import ANY, HD, HD1080p, HD720p, Quality, SD
 from medusa.helpers.quality import get_quality_string
-
-from six import iteritems
 
 
 class QualityTests(unittest.TestCase):

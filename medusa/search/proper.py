@@ -16,7 +16,10 @@ from medusa.common import Quality, cpu_presets
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
 from medusa.search.core import pick_best_result, snatch_episode
 from medusa.show.history import History
 

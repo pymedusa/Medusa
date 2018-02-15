@@ -7,6 +7,11 @@ import datetime
 import logging
 import time
 
+from traktor import (
+    AuthException, TokenExpiredException, TraktApi,
+    TraktException,
+)
+
 from medusa import app, db, ui
 from medusa.common import Quality, SKIPPED, WANTED
 from medusa.helper.common import episode_num
@@ -16,8 +21,6 @@ from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 from medusa.show.show import Show
-
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

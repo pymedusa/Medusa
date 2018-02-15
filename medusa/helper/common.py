@@ -8,9 +8,10 @@ import logging
 import re
 import traceback
 from fnmatch import fnmatch
-from medusa import app
+
 from six import PY3, text_type
 
+from medusa import app
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

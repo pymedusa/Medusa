@@ -20,9 +20,10 @@ from __future__ import print_function
 
 import unittest
 
+from six import iteritems
+
 from medusa import app, system
 from medusa.event_queue import Events
-from six import iteritems
 
 
 class RestartTests(unittest.TestCase):

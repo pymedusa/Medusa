@@ -6,14 +6,14 @@ from __future__ import unicode_literals
 
 import os
 
+from tornroutes import route
+
 from medusa import (
     app,
     db,
 )
 from medusa.server.web.core import PageTemplate, WebRoot
 from medusa.version_checker import CheckVersion
-
-from tornroutes import route
 
 
 @route('/config(/?.*)')

@@ -1,8 +1,9 @@
 # coding=utf-8
 """Title parse test code for Binsearch Provider."""
 
-from medusa.providers.nzb.binsearch import BinSearchProvider
 import pytest
+
+from medusa.providers.nzb.binsearch import BinSearchProvider
 
 
 @pytest.mark.parametrize('p', [

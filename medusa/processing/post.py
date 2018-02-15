@@ -26,6 +26,9 @@ import subprocess
 from collections import OrderedDict
 
 import adba
+import rarfile
+from rarfile import Error as RarError, NeedFirstVolume
+from six import text_type
 
 from medusa import (
     app,
@@ -55,11 +58,6 @@ from medusa.name_parser.parser import (
 )
 from medusa.show import naming
 from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
-
-import rarfile
-from rarfile import Error as RarError, NeedFirstVolume
-
-from six import text_type
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

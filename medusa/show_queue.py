@@ -3,6 +3,8 @@ import os
 import traceback
 
 from imdbpie.exceptions import ImdbAPIError
+from six import binary_type, text_type
+from traktor import TraktException
 
 from medusa import (
     app,
@@ -21,7 +23,7 @@ from medusa.helper.exceptions import (
     CantUpdateShowException,
     EpisodeDeletedException,
     MultipleShowObjectsException,
-    ShowDirectoryNotFoundException
+    ShowDirectoryNotFoundException,
 )
 from medusa.helpers import (
     chmod_as_parent,
@@ -41,10 +43,6 @@ from medusa.indexers.exceptions import (
     IndexerShowNotFoundInLanguage,
 )
 from medusa.tv import Series
-
-from six import binary_type, text_type
-
-from traktor import TraktException
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

@@ -9,16 +9,21 @@ import threading
 import time
 import traceback
 
-from medusa import app, common, failed_history, generic_queue, history, providers, ui
+from medusa import (
+    app, common, failed_history, generic_queue, history,
+    providers, ui,
+)
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
+from medusa.search import (
+    BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH,
+    FORCED_SEARCH, MANUAL_SEARCH,
+)
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
     snatch_episode,
 )
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

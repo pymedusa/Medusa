@@ -2,6 +2,8 @@
 """Configuration for pytest."""
 import os
 
+import pytest
+import yaml
 from babelfish.language import Language
 from github.AuthenticatedUser import AuthenticatedUser
 from github.Gist import Gist
@@ -9,19 +11,17 @@ from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
+from mock.mock import Mock
+from subliminal.subtitle import Subtitle
+from subliminal.video import Video
+from yaml.constructor import ConstructorError
+from yaml.nodes import MappingNode, SequenceNode
+
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.indexers.config import INDEXER_TVDB
 from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
-from mock.mock import Mock
-import pytest
-
-from subliminal.subtitle import Subtitle
-from subliminal.video import Video
-import yaml
-from yaml.constructor import ConstructorError
-from yaml.nodes import MappingNode, SequenceNode
 
 
 def pytest_collection_modifyitems(config, items):

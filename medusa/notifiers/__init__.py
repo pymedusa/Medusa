@@ -3,6 +3,8 @@
 import logging
 import socket
 
+from requests.exceptions import RequestException
+
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.notifiers import (
@@ -29,8 +31,6 @@ from medusa.notifiers import (
     trakt,
     tweet,
 )
-
-from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

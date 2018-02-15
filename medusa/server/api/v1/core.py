@@ -28,22 +28,35 @@ import time
 from collections import OrderedDict
 from datetime import date, datetime
 
+from requests.compat import unquote_plus
+from six import iteritems, text_type
+from tornado.web import RequestHandler
+
 from medusa import (
-    app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, date_time, subtitles, system, ui,
+    app, classes, date_time, db, helpers, image_cache,
+    network_timezones, process_tv, subtitles, system, ui,
 )
-from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
-    UNAIRED, UNKNOWN, WANTED, \
-    statusStrings
+from medusa.common import (
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview,
+    Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    UNAIRED, UNKNOWN, WANTED,
+    statusStrings,
+)
 from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
-from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
+from medusa.helper.exceptions import (
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+)
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDB
-from medusa.indexers.exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.exceptions import (
+    IndexerError, IndexerShowIncomplete,
+    IndexerShowNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -54,10 +67,6 @@ from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.version_checker import CheckVersion
-
-from requests.compat import unquote_plus
-from six import iteritems, text_type
-from tornado.web import RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

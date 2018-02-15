@@ -1,10 +1,11 @@
 # coding=utf-8
 """Request handler for series operations."""
 
+from tornado.escape import json_decode
+
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.series import Series, SeriesIdentifier
-from tornado.escape import json_decode
 
 
 class SeriesOperationHandler(BaseRequestHandler):

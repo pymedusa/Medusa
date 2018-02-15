@@ -7,12 +7,12 @@ from __future__ import unicode_literals
 import logging
 import os
 
+from tornroutes import route
+
 from medusa import app, config, ui
 from medusa.helper.common import try_int
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

@@ -6,6 +6,13 @@ import logging
 from collections import OrderedDict
 from time import time
 
+from pytvmaze import TVMaze
+from pytvmaze.exceptions import (
+    BaseError, CastNotFound, IDNotFound,
+    ShowIndexError, ShowNotFound, UpdateNotFound,
+)
+from six import integer_types, string_types, text_type
+
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
     IndexerError,
@@ -13,10 +20,6 @@ from medusa.indexers.exceptions import (
     IndexerShowNotFound,
 )
 from medusa.logger.adapters.style import BraceAdapter
-
-from pytvmaze import TVMaze
-from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
-from six import integer_types, string_types, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

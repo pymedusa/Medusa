@@ -20,7 +20,6 @@ from __future__ import print_function
 
 from medusa.media.poster import ShowPoster
 from medusa.tv import Series
-
 from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 

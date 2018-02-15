@@ -1,10 +1,11 @@
 # coding=utf-8
 """Tests for medusa.refiners.tv_episode.py."""
 
-from medusa.common import DOWNLOADED, Quality
-from medusa.refiners import tv_episode as sut
 import pytest
 from subliminal.video import Video
+
+from medusa.common import DOWNLOADED, Quality
+from medusa.refiners import tv_episode as sut
 
 
 @pytest.fixture

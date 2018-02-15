@@ -4,12 +4,10 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
+import pytest
 from dateutil import tz
 
 from medusa.providers.generic_provider import GenericProvider
-
-import pytest
-
 
 sut = GenericProvider('FakeProvider')
 

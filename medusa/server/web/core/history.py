@@ -2,12 +2,12 @@
 
 from __future__ import unicode_literals
 
+from tornroutes import route
+
 from medusa import app, ui
 from medusa.helper.common import try_int
 from medusa.server.web.core.base import PageTemplate, WebRoot
 from medusa.show.history import History as HistoryTool
-
-from tornroutes import route
 
 
 @route('/history(/?.*)')

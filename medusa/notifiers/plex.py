@@ -3,14 +3,14 @@
 import logging
 import re
 
+import requests
+from six import iteritems
+
 from medusa import app, common
 from medusa.helper.exceptions import ex
 from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-
-import requests
-from six import iteritems
 
 try:
     import xml.etree.cElementTree as etree

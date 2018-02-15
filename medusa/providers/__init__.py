@@ -57,7 +57,7 @@ from medusa.providers.torrent import (
     tvchaosuk,
     xthor,
     yggtorrent,
-    zooqle
+    zooqle,
 )
 
 __all__ = [

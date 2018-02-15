@@ -7,9 +7,10 @@ import locale
 import os.path
 import unittest
 
+from six import text_type
+
 from medusa import app
 from medusa.helper.common import sanitize_filename
-from six import text_type
 
 
 class EncodingTests(unittest.TestCase):

@@ -5,18 +5,20 @@ import logging
 import re
 
 from babelfish import Country
+from six import string_types, text_type
 
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
 from medusa.helper.common import dateFormat, episode_num
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDB
-from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.exceptions import (
+    IndexerEpisodeNotFound,
+    IndexerSeasonNotFound,
+)
 from medusa.indexers.tvdb.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
-
-from six import string_types, text_type
 
 try:
     import xml.etree.cElementTree as etree

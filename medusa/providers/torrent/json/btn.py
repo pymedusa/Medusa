@@ -9,6 +9,7 @@ import socket
 import time
 
 import jsonrpclib
+from six import itervalues
 
 from medusa import (
     app,
@@ -20,8 +21,6 @@ from medusa.helper.common import episode_num
 from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
-from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

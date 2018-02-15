@@ -3,10 +3,14 @@
 
 from datetime import datetime
 
-from medusa.tv.episode import AbsoluteNumber, AirByDateNumber, EpisodeNumber, RelativeNumber
+import pytest
+
+from medusa.tv.episode import (
+    AbsoluteNumber, AirByDateNumber, EpisodeNumber,
+    RelativeNumber,
+)
 from medusa.tv.indexer import Indexer
 from medusa.tv.series import SeriesIdentifier
-import pytest
 
 
 @pytest.mark.parametrize('p', [

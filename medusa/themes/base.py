@@ -2,9 +2,9 @@
 import json
 import logging
 import os
+
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

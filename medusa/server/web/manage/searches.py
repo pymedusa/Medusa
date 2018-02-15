@@ -4,11 +4,11 @@ from __future__ import unicode_literals
 
 import logging
 
+from tornroutes import route
+
 from medusa import app, ui
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.manage.handler import Manage
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

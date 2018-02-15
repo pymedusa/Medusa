@@ -10,6 +10,9 @@ import re
 import time
 import traceback
 
+import validators
+from requests.compat import urljoin
+
 from medusa import (
     app,
     tv,
@@ -30,9 +33,6 @@ from medusa.indexers.config import (
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
-
-from requests.compat import urljoin
-import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

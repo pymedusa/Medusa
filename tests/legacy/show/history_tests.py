@@ -20,9 +20,10 @@ from __future__ import print_function
 
 import unittest
 
+from six import iteritems
+
 from medusa.common import Quality
 from medusa.show.history import History
-from six import iteritems
 
 
 class HistoryTests(unittest.TestCase):

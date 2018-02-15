@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 
 import datetime
 import os
-import vcr
 
+import vcr
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 

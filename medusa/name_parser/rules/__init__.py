@@ -3,15 +3,15 @@
 
 """Guessit customization."""
 from guessit.api import default_api
+
 from medusa.name_parser.rules.properties import (
     blacklist,
     container,
     format_,
     other,
-    screen_size
+    screen_size,
 )
 from medusa.name_parser.rules.rules import rules
-
 
 default_api.rebulk.rebulk(blacklist())
 default_api.rebulk.rebulk(format_())

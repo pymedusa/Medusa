@@ -4,14 +4,14 @@ import os
 import subprocess
 import sys
 
-from babelfish.language import Language
-import medusa.subtitles as sut
-from medusa import app
-from mock.mock import Mock
 import pytest
-
+from babelfish.language import Language
+from mock.mock import Mock
 from subliminal.core import ProviderPool
 from subliminal.subtitle import Subtitle
+
+import medusa.subtitles as sut
+from medusa import app
 
 
 def test_sorted_service_list(monkeypatch):

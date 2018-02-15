@@ -9,27 +9,13 @@ import os
 import re
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 
+from concurrent.futures import ThreadPoolExecutor
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
-
-from medusa import (
-    app,
-    classes,
-    db,
-    exception_handler,
-    helpers,
-    network_timezones,
-    ui,
-)
-from medusa.server.api.v1.core import function_mapper
-from medusa.show.coming_episodes import ComingEpisodes
-
 from requests.compat import urljoin
-
 from six import (
     binary_type,
     iteritems,
@@ -48,6 +34,18 @@ from tornado.web import (
     authenticated,
 )
 from tornroutes import route
+
+from medusa import (
+    app,
+    classes,
+    db,
+    exception_handler,
+    helpers,
+    network_timezones,
+    ui,
+)
+from medusa.server.api.v1.core import function_mapper
+from medusa.show.coming_episodes import ComingEpisodes
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

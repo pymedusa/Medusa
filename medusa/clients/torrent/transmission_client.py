@@ -11,6 +11,8 @@ import re
 from base64 import b64encode
 from datetime import datetime, timedelta
 
+from requests.compat import urljoin
+
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
@@ -21,9 +23,6 @@ from medusa.helpers import (
     is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.compat import urljoin
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

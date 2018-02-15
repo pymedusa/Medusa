@@ -2,13 +2,12 @@
 
 import logging
 
+from pynma import pynma
+from six import text_type
+
 from medusa import app, common
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
-
-from pynma import pynma
-
-from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

@@ -6,12 +6,12 @@ import datetime
 import logging
 import threading
 
+from six import iteritems
+
 from medusa import app, common, db, scheduler, ui
 from medusa.helper.common import episode_num
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
-
-from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

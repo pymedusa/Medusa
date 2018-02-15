@@ -10,14 +10,13 @@ import time
 from collections import defaultdict
 
 import adba
+from six import iteritems
 
 from medusa import app, db, helpers
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
-
-from six import iteritems
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

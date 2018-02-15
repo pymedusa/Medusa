@@ -8,6 +8,8 @@ import json
 import logging
 import os
 
+from tornroutes import route
+
 from medusa import app, config, providers, ui
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
@@ -16,7 +18,6 @@ from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

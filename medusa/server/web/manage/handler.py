@@ -8,15 +8,11 @@ import logging
 import os
 import re
 
+from tornroutes import route
+
 from medusa import (
-    app,
-    db,
-    helpers,
-    image_cache,
-    network_timezones,
-    date_time,
-    subtitles,
-    ui,
+    app, date_time, db, helpers, image_cache, network_timezones,
+    subtitles, ui,
 )
 from medusa.common import (
     Overview,
@@ -40,8 +36,6 @@ from medusa.server.web.home import Home
 from medusa.show.show import Show
 from medusa.tv import Episode, Series
 from medusa.tv.series import SeriesIdentifier
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

@@ -4,14 +4,15 @@ import datetime
 import functools
 import logging
 
-from medusa import app, ui
-from medusa.indexers.exceptions import (
-    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound,
-    IndexerShowNotFoundInLanguage, IndexerUnavailable
-)
-
 from tvdbapiv2.auth.tvdb import TVDBAuth
 from tvdbapiv2.exceptions import ApiException
+
+from medusa import app, ui
+from medusa.indexers.exceptions import (
+    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete,
+    IndexerShowNotFound,
+    IndexerShowNotFoundInLanguage, IndexerUnavailable,
+)
 
 logger = logging.getLogger(__name__)
 

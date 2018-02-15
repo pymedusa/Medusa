@@ -7,6 +7,16 @@ import os
 import threading
 from posixpath import join
 
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.web import (
+    Application,
+    RedirectHandler,
+    StaticFileHandler,
+    url,
+)
+from tornroutes import route
+
 from medusa import app
 from medusa.helpers import (
     create_https_certificates,
@@ -36,16 +46,6 @@ from medusa.server.web import (
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws import MedusaWebSocketHandler
-
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.web import (
-    Application,
-    RedirectHandler,
-    StaticFileHandler,
-    url,
-)
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

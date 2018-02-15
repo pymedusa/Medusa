@@ -3,9 +3,9 @@
 """Test if a string contains specific words."""
 
 
-from medusa.show.naming import contains_words
-
 import pytest
+
+from medusa.show.naming import contains_words
 
 
 @pytest.mark.parametrize(

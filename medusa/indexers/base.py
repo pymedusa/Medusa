@@ -11,6 +11,9 @@ import warnings
 from itertools import chain
 from operator import itemgetter
 
+import requests
+from six import integer_types
+
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
@@ -20,10 +23,6 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
-
-import requests
-from six import integer_types
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

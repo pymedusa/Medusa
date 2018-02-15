@@ -2,8 +2,9 @@
 """Tests for medusa.helpers.py."""
 from collections import OrderedDict
 
-import medusa.helpers as sut
 import pytest
+
+import medusa.helpers as sut
 
 
 @pytest.mark.parametrize('p', [

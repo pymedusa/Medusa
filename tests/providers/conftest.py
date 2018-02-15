@@ -5,13 +5,13 @@ from __future__ import unicode_literals
 import os
 from collections import namedtuple
 
-from medusa.providers.torrent import (anidex, elitetorrent, horriblesubs, limetorrents, newpct, nyaa, rarbg,
-                                      shanaproject, thepiratebay, tokyotoshokan, torrent9, torrentz2, zooqle)
-
 import pytest
-
 import yaml
 
+from medusa.providers.torrent import (
+    anidex, elitetorrent, horriblesubs, limetorrents, newpct, nyaa, rarbg,
+    shanaproject, thepiratebay, tokyotoshokan, torrent9, torrentz2, zooqle,
+)
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 

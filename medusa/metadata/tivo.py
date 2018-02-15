@@ -7,14 +7,18 @@ import io
 import logging
 import os
 
+from six import text_type
+
 from medusa import helpers
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import ex
 from medusa.indexers.api import indexerApi
-from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.exceptions import (
+    IndexerEpisodeNotFound,
+    IndexerSeasonNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
-from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

@@ -12,12 +12,12 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
+from requests.compat import urljoin
+
 from medusa import app
 from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
-
-from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

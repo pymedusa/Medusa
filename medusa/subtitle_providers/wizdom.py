@@ -8,7 +8,6 @@ import zipfile
 from babelfish import Language
 from guessit import guessit
 from requests import Session
-
 from subliminal import Provider
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.exceptions import ProviderError

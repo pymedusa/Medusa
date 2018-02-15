@@ -4,10 +4,10 @@
 
 from __future__ import unicode_literals
 
+from requests.auth import HTTPDigestAuth
+
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
-
-from requests.auth import HTTPDigestAuth
 
 
 class QBittorrentAPI(GenericClient):

@@ -19,12 +19,15 @@ from __future__ import print_function
 
 import unittest
 
+from six import iteritems
+
 from medusa import app
 from medusa.helper.common import (
-    convert_size, episode_num, http_code_description, is_sync_file, is_torrent_or_nzb_file,
-    pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
+    convert_size, episode_num, http_code_description, is_sync_file,
+    is_torrent_or_nzb_file,
+    pretty_file_size, remove_extension, replace_extension, sanitize_filename,
+    try_int,
 )
-from six import iteritems
 
 
 class CommonTests(unittest.TestCase):

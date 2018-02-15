@@ -4,14 +4,14 @@
 
 import logging
 
-from medusa import app, common
-from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
-
 from requests.auth import HTTPBasicAuth
 from requests.compat import unquote_plus
 from requests.exceptions import HTTPError, RequestException
 from six import string_types, text_type
+
+from medusa import app, common
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

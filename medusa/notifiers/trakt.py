@@ -5,12 +5,15 @@ from __future__ import unicode_literals
 
 import logging
 
+from traktor import (
+    AuthException, TokenExpiredException, TraktApi,
+    TraktException,
+)
+
 from medusa import app
 from medusa.helpers import get_title_without_year
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
-
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

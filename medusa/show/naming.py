@@ -9,11 +9,14 @@ import logging
 import os
 import re
 
+from six import string_types
+
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-
-from six import string_types
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

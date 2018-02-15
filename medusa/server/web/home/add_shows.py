@@ -8,6 +8,13 @@ import logging
 import os
 import re
 
+from requests import RequestException
+from requests.compat import unquote_plus
+from simpleanidb import REQUEST_HOT
+from six import iteritems
+from tornroutes import route
+from traktor import TraktApi
+
 from medusa import app, classes, config, db, helpers, ui
 from medusa.black_and_white_list import short_group_names
 from medusa.common import Quality
@@ -22,13 +29,6 @@ from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
 from medusa.show.show import Show
-
-from requests import RequestException
-from requests.compat import unquote_plus
-from simpleanidb import REQUEST_HOT
-from six import iteritems
-from tornroutes import route
-from traktor import TraktApi
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

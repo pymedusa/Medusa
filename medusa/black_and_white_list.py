@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
+
 from medusa import app, db, helpers
 from medusa.logger.adapters.style import BraceAdapter
 

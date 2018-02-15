@@ -9,6 +9,8 @@ import re
 
 from requests.compat import urljoin
 
+from requests.compat import urljoin
+
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (

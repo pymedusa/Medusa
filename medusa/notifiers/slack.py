@@ -5,10 +5,12 @@ from __future__ import unicode_literals
 
 import json
 import logging
-from medusa import app, common
-from medusa.logger.adapters.style import BraceAdapter
+
 import requests
 import six
+
+from medusa import app, common
+from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

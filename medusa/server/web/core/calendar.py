@@ -11,12 +11,11 @@ import datetime
 import logging
 
 from dateutil import tz
+from tornado.web import authenticated
 
 from medusa import app, db, network_timezones
 from medusa.helper.common import try_int
 from medusa.server.web.core.base import BaseHandler
-
-from tornado.web import authenticated
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

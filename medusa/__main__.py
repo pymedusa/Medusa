@@ -41,18 +41,19 @@ import threading
 import time
 
 from configobj import ConfigObj
+from six import text_type
 
 from medusa import (
     app, cache, db, event_queue, exception_handler,
     helpers, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, system, torrent_checker,
-    trakt_checker, version_checker
+    trakt_checker, version_checker,
 )
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    check_section, ConfigMigrator, check_setting_bool, check_setting_float,
-    check_setting_int, check_setting_list,
-    check_setting_str, load_provider_setting, save_provider_setting
+    ConfigMigrator, check_section, check_setting_bool,
+    check_setting_float, check_setting_int, check_setting_list,
+    check_setting_str, load_provider_setting, save_provider_setting,
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
@@ -69,8 +70,6 @@ from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.themes import read_themes
 from medusa.tv import Series
-
-from six import text_type
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from medusa.helper.encoding import ss
-
 from six import text_type
+
+from medusa.helper.encoding import ss
 
 
 def ex(e):

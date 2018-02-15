@@ -21,9 +21,10 @@ from __future__ import print_function
 import unittest
 
 import certifi
+import requests
+
 import medusa.providers as providers
 from medusa.helper.exceptions import ex
-import requests
 
 
 def generator(_provider):

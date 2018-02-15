@@ -1,8 +1,9 @@
 # coding=utf-8
 """Tests for medusa.common.py."""
 
-from medusa.common import DOWNLOADED, Quality
 import pytest
+
+from medusa.common import DOWNLOADED, Quality
 
 
 class TestQuality(object):

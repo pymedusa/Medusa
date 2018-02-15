@@ -2,9 +2,10 @@
 """Request handler for alias source."""
 from datetime import datetime
 
+from tornado.escape import json_decode
+
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
 from medusa.server.api.v2.base import BaseRequestHandler
-from tornado.escape import json_decode
 
 
 def find_alias_sources(predicate=None):

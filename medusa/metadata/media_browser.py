@@ -5,14 +5,17 @@ import logging
 import os
 import re
 
+from six import iteritems, string_types, text_type
+
 from medusa import app, helpers
 from medusa.helper.common import dateFormat, episode_num, replace_extension
 from medusa.indexers.api import indexerApi
-from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.exceptions import (
+    IndexerEpisodeNotFound,
+    IndexerSeasonNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
-
-from six import iteritems, string_types, text_type
 
 try:
     import xml.etree.cElementTree as etree

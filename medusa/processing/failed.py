@@ -5,7 +5,10 @@ import logging
 from medusa import app
 from medusa.helper.exceptions import FailedPostProcessingFailedException
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
 from medusa.search.queue import FailedQueueItem
 from medusa.show import naming
 

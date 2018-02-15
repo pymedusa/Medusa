@@ -7,14 +7,10 @@ import os
 import shutil
 import sys
 import tarfile
-import tempfile # noqa # pylint: disable=unused-import
 
 import certifi
-
 import rarfile
-
 from six import binary_type, text_type
-
 
 fs_encoding = sys.getfilesystemencoding()
 

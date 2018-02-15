@@ -5,20 +5,20 @@ import logging
 import os
 import re
 
+import tmdbsimple as tmdb
+from requests.exceptions import RequestException
+from six import iterkeys
+
 from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
 from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDB, INDEXER_TVMAZE
-from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
-                                        IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.exceptions import (
+    IndexerEpisodeNotFound, IndexerException,
+    IndexerSeasonNotFound, IndexerShowNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.exceptions import RequestException
-
-from six import iterkeys
-
-import tmdbsimple as tmdb
 
 try:
     import xml.etree.cElementTree as etree

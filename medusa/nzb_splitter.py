@@ -4,7 +4,10 @@ import re
 from medusa import classes
 from medusa.helper.encoding import ss
 from medusa.helper.exceptions import ex
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
 from medusa.session.core import MedusaSession
 
 try:

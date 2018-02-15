@@ -3,14 +3,14 @@
 from __future__ import unicode_literals
 
 import logging
+
 import markdown2
+from tornroutes import route
 
 from medusa import app
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.session.core import MedusaSafeSession
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

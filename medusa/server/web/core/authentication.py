@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
+from tornado.web import RequestHandler
+
 from medusa import (
     app,
     helpers,
@@ -19,8 +21,6 @@ from medusa.server.web.core.base import (
     BaseHandler,
     PageTemplate,
 )
-
-from tornado.web import RequestHandler
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

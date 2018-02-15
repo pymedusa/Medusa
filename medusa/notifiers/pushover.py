@@ -3,6 +3,10 @@
 import logging
 import time
 
+from requests.compat import urlencode
+from six.moves.http_client import HTTPSConnection
+from six.moves.urllib.error import HTTPError
+
 from medusa import app
 from medusa.common import (
     NOTIFY_DOWNLOAD,
@@ -17,10 +21,6 @@ from medusa.common import (
 )
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.compat import urlencode
-from six.moves.http_client import HTTPSConnection
-from six.moves.urllib.error import HTTPError
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

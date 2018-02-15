@@ -17,10 +17,10 @@
 
 from __future__ import unicode_literals
 
+from tornroutes import route
+
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
-
-from tornroutes import route
 
 
 @route('/addRecommended(/?.*)')

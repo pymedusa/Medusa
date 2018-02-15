@@ -8,7 +8,6 @@ from medusa.helper.exceptions import ex
 from medusa.indexers.api import indexerApi
 from medusa.scene_exceptions import safe_session
 
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 

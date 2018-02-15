@@ -8,6 +8,10 @@ import logging
 import re
 import traceback
 
+from requests.compat import urljoin
+from requests.utils import dict_from_cookiejar
+from six.moves.urllib_parse import parse_qs
+
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
@@ -17,10 +21,6 @@ from medusa.helper.common import (
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
-from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
-from six.moves.urllib_parse import parse_qs
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

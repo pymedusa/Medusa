@@ -2,15 +2,16 @@
 """Request handler for series and episodes."""
 import logging
 
+from tornado.escape import json_decode
+
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
     StringField,
     iter_nested_items,
-    set_nested_value
+    set_nested_value,
 )
 from medusa.tv.series import Series, SeriesIdentifier
-from tornado.escape import json_decode
 
 log = logging.getLogger(__name__)
 

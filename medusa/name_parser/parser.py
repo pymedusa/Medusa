@@ -9,6 +9,7 @@ import time
 from collections import OrderedDict
 
 import guessit
+from six import iteritems
 
 from medusa import (
     common,
@@ -25,9 +26,6 @@ from medusa.indexers.exceptions import (
     IndexerException,
 )
 from medusa.logger.adapters.style import BraceAdapter
-
-from six import iteritems
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

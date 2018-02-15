@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 import logging
 
 import cfscrape
-
-from medusa.logger.adapters.style import BraceAdapter
 import requests
 from requests.utils import dict_from_cookiejar
+
+from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

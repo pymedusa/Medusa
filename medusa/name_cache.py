@@ -5,6 +5,8 @@
 import logging
 import threading
 
+from six import iteritems
+
 from medusa import app, db
 from medusa.helpers import full_sanitize_scene_name
 from medusa.logger.adapters.style import BraceAdapter
@@ -13,8 +15,6 @@ from medusa.scene_exceptions import (
     refresh_exceptions_cache,
     retrieve_exceptions,
 )
-
-from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

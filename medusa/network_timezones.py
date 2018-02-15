@@ -3,13 +3,12 @@ import logging
 import re
 
 from dateutil import tz
+from six import iteritems
 
 from medusa import db
 from medusa.app import BASE_PYMEDUSA_URL
 from medusa.helper.common import try_int
 from medusa.session.core import MedusaSafeSession
-
-from six import iteritems
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()

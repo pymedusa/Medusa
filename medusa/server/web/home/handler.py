@@ -10,6 +10,18 @@ import time
 from datetime import date, datetime
 
 import adba
+from requests.compat import (
+    quote_plus,
+    unquote_plus,
+)
+from six import iteritems
+from tornroutes import route
+from traktor import (
+    MissingTokenException,
+    TokenExpiredException,
+    TraktApi,
+    TraktException,
+)
 
 from medusa import (
     app,
@@ -47,6 +59,7 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
+from medusa.date_time import DateTime
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
@@ -66,7 +79,6 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
-from medusa.date_time import DateTime
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
@@ -103,22 +115,6 @@ from medusa.server.web.core import (
 from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.version_checker import CheckVersion
-
-from requests.compat import (
-    quote_plus,
-    unquote_plus,
-)
-
-from six import iteritems
-
-from tornroutes import route
-
-from traktor import (
-    MissingTokenException,
-    TokenExpiredException,
-    TraktApi,
-    TraktException,
-)
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

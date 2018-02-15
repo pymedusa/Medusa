@@ -3,9 +3,10 @@
 
 import os
 
+from six import text_type
+
 from medusa.helper.common import replace_extension
 from medusa.metadata import kodi_12plus
-from six import text_type
 
 
 class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):

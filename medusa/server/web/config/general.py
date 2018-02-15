@@ -6,6 +6,7 @@ import logging
 import os
 
 from github import GithubException
+from tornroutes import route
 
 from medusa import (
     app,
@@ -21,8 +22,6 @@ from medusa.common import (
 from medusa.helper.common import try_int
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
-
-from tornroutes import route
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

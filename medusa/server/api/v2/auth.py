@@ -7,10 +7,11 @@ import string
 import time
 
 import jwt
+from tornado.escape import json_decode
+
 from medusa import app, helpers, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
-from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 

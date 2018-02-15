@@ -4,15 +4,21 @@
 
 import logging
 
+from requests.exceptions import RequestException
+from traktor import (
+    AuthException, TokenExpiredException, TraktApi,
+    TraktException,
+)
+
 from medusa import app, db
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import indexerConfig
-from medusa.indexers.exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
+from medusa.indexers.exceptions import (
+    IndexerException,
+    IndexerShowAllreadyInLibrary, IndexerUnavailable,
+)
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.exceptions import RequestException
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

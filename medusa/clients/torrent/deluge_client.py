@@ -8,6 +8,8 @@ import json
 import logging
 from base64 import b64encode
 
+from requests.exceptions import RequestException
+
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
@@ -18,8 +20,6 @@ from medusa.helpers import (
     is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

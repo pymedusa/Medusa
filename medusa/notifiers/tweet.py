@@ -2,12 +2,12 @@
 
 import logging
 
-from medusa import app, common
-from medusa.logger.adapters.style import BraceAdapter
-
 import oauth2 as oauth
 import pythontwitter as twitter
 from six.moves.urllib.parse import parse_qsl
+
+from medusa import app, common
+from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

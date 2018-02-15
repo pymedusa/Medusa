@@ -7,10 +7,10 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from subliminal.video import Episode
+
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
-
-from subliminal.video import Episode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

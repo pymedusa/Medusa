@@ -17,9 +17,9 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
+from medusa.date_time import DateTime
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.date_time import DateTime
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show

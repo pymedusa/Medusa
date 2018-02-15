@@ -20,10 +20,11 @@ from __future__ import print_function
 
 import os
 
+from six import iteritems
+
 from medusa import app
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-from six import iteritems
 from tests.legacy.providers.generic_provider_tests import GenericProviderTests
 
 

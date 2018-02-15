@@ -22,10 +22,10 @@ from __future__ import print_function
 
 import unittest
 
+import test_lib as test
 from medusa import common, providers
 from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import Episode, Series
-import test_lib as test
 
 TESTS = {
     "Game of Thrones": {

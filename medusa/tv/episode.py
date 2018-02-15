@@ -35,6 +35,7 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
+from medusa.date_time import DateTime
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -66,7 +67,6 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.processing import post
-from medusa.date_time import DateTime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,

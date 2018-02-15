@@ -46,7 +46,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 

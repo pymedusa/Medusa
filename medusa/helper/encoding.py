@@ -1,10 +1,9 @@
 # coding=utf-8
 
 from chardet import detect
+from six import text_type
 
 from medusa import app
-
-from six import text_type
 
 
 def ss(var):

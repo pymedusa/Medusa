@@ -7,10 +7,10 @@ import threading
 import time
 import warnings
 
+from six import text_type
+
 from medusa import app
 from medusa.helper.exceptions import ex
-
-from six import text_type
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

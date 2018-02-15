@@ -28,33 +28,28 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
-
+import certifi
+import guessit
+import requests
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
-
-import certifi
-
 from contextlib2 import suppress
-
-import guessit
-
 from imdbpie import imdbpie
+from requests.compat import urlparse
+from six import binary_type, string_types, text_type
+from six.moves import http_client
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import (episode_num, http_code_description, media_extensions,
-                                  pretty_file_size, subtitle_extensions)
+from medusa.helper.common import (
+    episode_num, http_code_description, media_extensions,
+    pretty_file_size, subtitle_extensions,
+)
 from medusa.helpers.utils import generate
 from medusa.indexers.exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
-
-import requests
-from requests.compat import urlparse
-
-from six import binary_type, string_types, text_type
-from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

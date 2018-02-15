@@ -20,9 +20,10 @@ from __future__ import print_function
 
 import unittest
 
-from medusa.providers.generic_provider import GenericProvider
 from mock import MagicMock, patch
 from six import iteritems
+
+from medusa.providers.generic_provider import GenericProvider
 
 
 class GenericProviderTests(unittest.TestCase):

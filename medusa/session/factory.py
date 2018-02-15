@@ -1,6 +1,7 @@
 """Session class factory methods."""
 
 import logging
+
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 

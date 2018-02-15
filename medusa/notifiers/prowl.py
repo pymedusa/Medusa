@@ -5,12 +5,12 @@ import logging
 import socket
 import time
 
+from requests.compat import urlencode
+from six.moves.http_client import HTTPException, HTTPSConnection
+
 from medusa import app, common, db
 from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.compat import urlencode
-from six.moves.http_client import HTTPException, HTTPSConnection
 
 try:
     # this only exists in 2.6

@@ -22,7 +22,6 @@ import os
 
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.tv import Series
-
 from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 

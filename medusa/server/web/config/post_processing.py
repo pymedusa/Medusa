@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 import logging
 import os
 
+from tornroutes import route
+from unrar2 import RarFile
+
 from medusa import (
     app,
     config,
@@ -16,9 +19,6 @@ from medusa import (
 from medusa.helper.exceptions import ex
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
-
-from tornroutes import route
-from unrar2 import RarFile
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

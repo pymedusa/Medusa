@@ -14,6 +14,8 @@ from os.path import join
 from random import shuffle
 
 from dateutil import parser, tz
+from pytimeparse import parse
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 from medusa import (
     app,
@@ -49,10 +51,6 @@ from medusa.search import PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
 from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
-
-from pytimeparse import parse
-
-from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

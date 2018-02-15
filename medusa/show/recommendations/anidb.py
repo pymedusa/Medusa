@@ -5,15 +5,16 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
+from simpleanidb import (Anidb, REQUEST_HOT)
+from simpleanidb.exceptions import GeneralError
+
 from medusa import app
 from medusa.indexers.config import INDEXER_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
-
-from simpleanidb import (Anidb, REQUEST_HOT)
-from simpleanidb.exceptions import GeneralError
-
+from medusa.show.recommendations.recommended import (
+    MissingTvdbMapping, RecommendedShow,
+)
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

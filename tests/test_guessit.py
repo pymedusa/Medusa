@@ -6,11 +6,12 @@ import datetime
 import os
 
 import guessit
+import pytest
+import yaml
+from six import binary_type, text_type
+
 import medusa.name_parser.guessit_parser as sut
 from medusa import app
-import pytest
-from six import binary_type, text_type
-import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 

@@ -6,12 +6,11 @@ from __future__ import unicode_literals
 
 import logging
 
+from rtorrent import RTorrent
+
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
-
-from rtorrent import RTorrent
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

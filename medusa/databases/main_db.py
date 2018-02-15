@@ -6,13 +6,13 @@ import os.path
 import sys
 import warnings
 
+from six import iteritems
+
 from medusa import common, db, helpers, subtitles
 from medusa.helper.common import dateTimeFormat, episode_num
 from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
-
-from six import iteritems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

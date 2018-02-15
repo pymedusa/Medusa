@@ -20,13 +20,13 @@ from __future__ import print_function
 
 import unittest
 
+from six import iteritems
+
 from medusa import app
 from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.show import Show
 from medusa.tv import Series
-
-from six import iteritems
 
 
 class ShowTests(unittest.TestCase):

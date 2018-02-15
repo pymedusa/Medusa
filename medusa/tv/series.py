@@ -19,6 +19,7 @@ from collections import (
 from itertools import groupby
 
 from imdbpie import imdbpie
+from six import text_type
 
 from medusa import (
     app,
@@ -47,6 +48,7 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
+from medusa.date_time import DateTime
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
@@ -68,7 +70,7 @@ from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
-    indexerConfig
+    indexerConfig,
 )
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
@@ -80,7 +82,7 @@ from medusa.indexers.utils import (
     indexer_id_to_slug,
     mappings,
     reverse_mappings,
-    slug_to_indexer_id
+    slug_to_indexer_id,
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
@@ -93,7 +95,6 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.processing import post
-from medusa.date_time import DateTime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 from medusa.subtitles import (
@@ -103,8 +104,6 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
-
-from six import text_type
 
 try:
     from send2trash import send2trash

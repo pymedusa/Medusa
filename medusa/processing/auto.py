@@ -23,7 +23,6 @@ import os.path
 
 from medusa import app, process_tv
 
-
 logger = logging.getLogger(__name__)
 
 

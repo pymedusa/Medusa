@@ -7,16 +7,15 @@ import re
 import uuid
 from collections import namedtuple
 from os import path
-from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
+from fake_useragent import UserAgent, settings as ua_settings
+from six import PY3
+from six.moves import reduce
 
 from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
-
-from six import PY3
-from six.moves import reduce
 
 if PY3:
     long = int

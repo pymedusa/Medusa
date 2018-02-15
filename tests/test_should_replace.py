@@ -1,9 +1,12 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
-from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
-from medusa.search import DAILY_SEARCH, PROPER_SEARCH
-
 import pytest
+
+from medusa.common import (
+    ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED,
+    SNATCHED_BEST, SNATCHED_PROPER, WANTED,
+)
+from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
 
 @pytest.mark.parametrize('p', [

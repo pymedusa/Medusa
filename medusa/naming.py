@@ -4,7 +4,10 @@ import os
 
 from medusa import app, common, tv
 from medusa.common import DOWNLOADED, Quality
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException, NameParser,
+)
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

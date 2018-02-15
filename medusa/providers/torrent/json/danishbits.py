@@ -7,13 +7,13 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
+from requests.compat import urljoin
+
 from medusa import tv
 from medusa.common import USER_AGENT
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
-from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

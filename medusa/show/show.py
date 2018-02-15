@@ -34,7 +34,6 @@ from medusa.helper.exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 

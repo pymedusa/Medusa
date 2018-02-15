@@ -4,15 +4,13 @@ import json
 import platform
 import sys
 
+import pytest
+from six import iteritems, text_type
+from tornado.httpclient import HTTPError
+
 from medusa import app, db
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.config import indexerConfig
-
-import pytest
-
-from six import iteritems, text_type
-
-from tornado.httpclient import HTTPError
 
 
 @pytest.fixture

@@ -3,9 +3,10 @@
 
 import os
 
-from medusa.refiners import release as sut
 import pytest
 from subliminal.video import Video
+
+from medusa.refiners import release as sut
 
 
 @pytest.fixture

@@ -6,11 +6,11 @@ from __future__ import unicode_literals
 
 import logging
 
+from requests.compat import urljoin
+
 from medusa import tv
 from medusa.helper.exceptions import AuthException
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
-from requests.compat import urljoin
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

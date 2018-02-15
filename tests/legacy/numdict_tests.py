@@ -8,8 +8,9 @@ from __future__ import print_function
 
 import unittest
 
-from medusa.numdict import NumDict
 from six.moves import UserDict
+
+from medusa.numdict import NumDict
 
 
 class NumDictTest(unittest.TestCase):

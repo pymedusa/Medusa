@@ -9,7 +9,6 @@ import os
 
 import bencode
 from bencode.BTL import BTFailure
-
 from feedparser.util import FeedParserDict
 
 from medusa import app

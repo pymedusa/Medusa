@@ -1,6 +1,10 @@
 # coding=utf-8
 
 import logging
+
+from requests.compat import quote
+from six.moves.urllib.request import Request, urlopen
+
 from medusa import app
 from medusa.common import (
     NOTIFY_DOWNLOAD,
@@ -14,9 +18,6 @@ from medusa.common import (
     notifyStrings,
 )
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests.compat import quote
-from six.moves.urllib.request import Request, urlopen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

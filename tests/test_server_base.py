@@ -2,8 +2,10 @@
 """Tests for medusa.tv identifiers."""
 
 import re
-from medusa.server.api.v2.base import BaseRequestHandler
+
 import pytest
+
+from medusa.server.api.v2.base import BaseRequestHandler
 
 
 @pytest.mark.parametrize('p', [
