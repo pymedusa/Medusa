@@ -513,7 +513,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
                     'language': subtitle.language.opensubtitles,
                 }
             )
-            history.logSubtitle(tv_episode, status, subtitle)
+            history.log_subtitle(tv_episode, status, subtitle)
 
     # Refresh the subtitles property
     if tv_episode.location:

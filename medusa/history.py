@@ -1,22 +1,3 @@
-# coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import datetime
 
 import db
@@ -25,8 +6,8 @@ from medusa.helper.encoding import ss
 from medusa.show.history import History
 
 
-def _logHistoryItem(action, ep_obj, quality, resource,
-                    provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, size=-1):
+def _log_history_item(action, ep_obj, quality, resource,
+                      provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, size=-1):
     """
     Insert a history item in DB
 
@@ -77,8 +58,8 @@ def log_snatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, ep_obj, quality, resource,
-                        provider, version, proper_tags, manually_searched, info_hash, size)
+        _log_history_item(action, ep_obj, quality, resource,
+                          provider, version, proper_tags, manually_searched, info_hash, size)
 
 
 def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
@@ -103,10 +84,10 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
 
     action = ep_obj.status
 
-    _logHistoryItem(action, ep_obj, quality, filename, provider, version, size=size)
+    _log_history_item(action, ep_obj, quality, filename, provider, version, size=size)
 
 
-def logSubtitle(ep_obj, status, subtitle_result):
+def log_subtitle(ep_obj, status, subtitle_result):
     """
     Log download of subtitle
 
@@ -122,7 +103,7 @@ def logSubtitle(ep_obj, status, subtitle_result):
     status, quality = Quality.split_composite_status(status)
     action = Quality.composite_status(SUBTITLED, quality)
 
-    _logHistoryItem(action, ep_obj, quality, resource, provider)
+    _log_history_item(action, ep_obj, quality, resource, provider)
 
 
 def log_failed(ep_obj, release, provider=None):
@@ -136,4 +117,4 @@ def log_failed(ep_obj, release, provider=None):
     _, quality = Quality.split_composite_status(ep_obj.status)
     action = Quality.composite_status(FAILED, quality)
 
-    _logHistoryItem(action, ep_obj, quality, release, provider)
+    _log_history_item(action, ep_obj, quality, release, provider)
