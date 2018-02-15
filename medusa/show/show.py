@@ -62,7 +62,7 @@ class Show(object):
 
         if show:
             try:
-                app.show_queue_scheduler.action.removeShow(show, bool(remove_files))
+                app.show_queue_scheduler.action.remove_show(show, bool(remove_files))
             except CantRemoveShowException as exception:
                 return ex(exception), show
 
@@ -223,7 +223,7 @@ class Show(object):
             return error, series_obj
 
         try:
-            app.show_queue_scheduler.action.refreshShow(series_obj)
+            app.show_queue_scheduler.action.refresh_show(series_obj)
         except CantRefreshShowException as exception:
             return ex(exception), series_obj
 

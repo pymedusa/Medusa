@@ -1931,7 +1931,7 @@ class CMD_ShowAddExisting(ApiCall):
         if i_quality_id or a_quality_id:
             new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
-        app.show_queue_scheduler.action.addShow(
+        app.show_queue_scheduler.action.add_show(
             int(indexer), int(self.indexerid), self.location,
             default_status=app.STATUS_DEFAULT, quality=new_quality,
             flatten_folders=int(self.flatten_folders), subtitles=self.subtitles,
@@ -2087,7 +2087,7 @@ class CMD_ShowAddNew(ApiCall):
             else:
                 helpers.chmod_as_parent(show_path)
 
-        app.show_queue_scheduler.action.addShow(
+        app.show_queue_scheduler.action.add_show(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
             quality=new_quality, flatten_folders=int(self.flatten_folders),
             lang=self.lang, subtitles=self.subtitles, anime=self.anime,
@@ -2660,7 +2660,7 @@ class CMD_ShowUpdate(ApiCall):
             return _responds(RESULT_FAILURE, msg='Show not found')
 
         try:
-            app.show_queue_scheduler.action.updateShow(show_obj)
+            app.show_queue_scheduler.action.update_show(show_obj)
             return _responds(RESULT_SUCCESS, msg='{0} has queued to be updated'.format(show_obj.name))
         except CantUpdateShowException as error:
             log.debug(u'API::Unable to update show: {0}', error.message)

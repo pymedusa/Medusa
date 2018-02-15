@@ -724,26 +724,26 @@ class Manage(Home, WebRoot):
                 continue
 
             if slug in to_delete + to_remove:
-                app.show_queue_scheduler.action.removeShow(series_obj, slug in to_delete)
+                app.show_queue_scheduler.action.remove_show(series_obj, slug in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
             if slug in to_update:
                 try:
-                    app.show_queue_scheduler.action.updateShow(series_obj)
+                    app.show_queue_scheduler.action.update_show(series_obj)
                     updates.append(series_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif slug in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    app.show_queue_scheduler.action.refreshShow(series_obj)
+                    app.show_queue_scheduler.action.refresh_show(series_obj)
                     refreshes.append(series_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
                                   (show=series_obj, error=msg))
 
             if slug in to_rename:
-                app.show_queue_scheduler.action.renameShowEpisodes(series_obj)
+                app.show_queue_scheduler.action.rename_show_episodes(series_obj)
                 renames.append(series_obj.name)
 
             if slug in to_subtitle:

@@ -238,7 +238,7 @@ class ShowUpdater(object):
             if not show.paused:
                 log.info(u'Full update on show: {show}', {'show': show.name})
                 try:
-                    pi_list.append(app.show_queue_scheduler.action.updateShow(show))
+                    pi_list.append(app.show_queue_scheduler.action.update_show(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     log.warning(u'Automatic update failed. Error: {error}',
                                 {'error': e})
@@ -256,7 +256,7 @@ class ShowUpdater(object):
                 log.info(u'Updating season {season} for show: {show}.',
                          {'season': show[2], 'show': show[1].name})
                 try:
-                    pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
+                    pi_list.append(app.show_queue_scheduler.action.update_show(show[1], season=show[2]))
                 except CantUpdateShowException as e:
                     log.warning(u'Automatic update failed. Error: {error}',
                                 {'error': e})
@@ -274,7 +274,7 @@ class ShowUpdater(object):
         for show in set(show[1] for show in season_updates):
             if not show.paused:
                 try:
-                    app.show_queue_scheduler.action.refreshShow(show, True)
+                    app.show_queue_scheduler.action.refresh_show(show, True)
                 except CantRefreshShowException as e:
                     log.warning(u'Show refresh on show {show_name} failed.'
                                 u' Error: {error}',

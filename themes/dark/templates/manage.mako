@@ -82,17 +82,17 @@
                 % for cur_show in my_show_list:
                 <%
                     cur_ep = cur_show.next_aired
-                    disabled = app.show_queue_scheduler.action.isBeingUpdated(cur_show) or app.show_queue_scheduler.action.isInUpdateQueue(cur_show)
+                    disabled = app.show_queue_scheduler.action.is_being_updated(cur_show) or app.show_queue_scheduler.action.is_in_update_queue(cur_show)
                     curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    disabled = app.show_queue_scheduler.action.isBeingRefreshed(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
+                    disabled = app.show_queue_scheduler.action.is_being_refreshed(cur_show) or app.show_queue_scheduler.action.is_in_refresh_queue(cur_show)
                     curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show)
+                    disabled = app.show_queue_scheduler.action.is_being_renamed(cur_show) or app.show_queue_scheduler.action.is_in_rename_queue(cur_show)
                     curRename = "<input type=\"checkbox\" class=\"renameCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    disabled = not cur_show.subtitles or app.show_queue_scheduler.action.isBeingSubtitled(cur_show) or app.show_queue_scheduler.action.isInSubtitleQueue(cur_show)
+                    disabled = not cur_show.subtitles or app.show_queue_scheduler.action.is_being_subtitled(cur_show) or app.show_queue_scheduler.action.is_in_subtitle_queue(cur_show)
                     curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
+                    disabled = app.show_queue_scheduler.action.is_being_renamed(cur_show) or app.show_queue_scheduler.action.is_in_rename_queue(cur_show) or app.show_queue_scheduler.action.is_in_refresh_queue(cur_show)
                     curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
+                    disabled = app.show_queue_scheduler.action.is_being_renamed(cur_show) or app.show_queue_scheduler.action.is_in_rename_queue(cur_show) or app.show_queue_scheduler.action.is_in_refresh_queue(cur_show)
                     curRemove = "<input type=\"checkbox\" class=\"removeCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
                     curImage = "<input type=\"checkbox\" class=\"imageCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"image-" + str(cur_show.indexerid) + "\" " + "/>"
                 %>

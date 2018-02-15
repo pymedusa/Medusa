@@ -853,29 +853,29 @@ class Home(WebRoot):
 
         show_message = ''
 
-        if app.show_queue_scheduler.action.isBeingAdded(series_obj):
+        if app.show_queue_scheduler.action.is_being_added(series_obj):
             show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
 
-        elif app.show_queue_scheduler.action.isBeingUpdated(series_obj):
+        elif app.show_queue_scheduler.action.is_being_updated(series_obj):
             show_message = 'The information on this page is in the process of being updated.'
 
-        elif app.show_queue_scheduler.action.isBeingRefreshed(series_obj):
+        elif app.show_queue_scheduler.action.is_being_refreshed(series_obj):
             show_message = 'The episodes below are currently being refreshed from disk'
 
-        elif app.show_queue_scheduler.action.isBeingSubtitled(series_obj):
+        elif app.show_queue_scheduler.action.is_being_subtitled(series_obj):
             show_message = 'Currently downloading subtitles for this show'
 
-        elif app.show_queue_scheduler.action.isInRefreshQueue(series_obj):
+        elif app.show_queue_scheduler.action.is_in_refresh_queue(series_obj):
             show_message = 'This show is queued to be refreshed.'
 
-        elif app.show_queue_scheduler.action.isInUpdateQueue(series_obj):
+        elif app.show_queue_scheduler.action.is_in_update_queue(series_obj):
             show_message = 'This show is queued and awaiting an update.'
 
-        elif app.show_queue_scheduler.action.isInSubtitleQueue(series_obj):
+        elif app.show_queue_scheduler.action.is_in_subtitle_queue(series_obj):
             show_message = 'This show is queued and awaiting subtitles download.'
 
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
+        if not app.show_queue_scheduler.action.is_being_added(series_obj):
+            if not app.show_queue_scheduler.action.is_being_updated(series_obj):
                 submenu.append({
                     'title': 'Resume' if series_obj.paused else 'Pause',
                     'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
@@ -890,12 +890,12 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'path': 'home/refresh_show?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-refresh',
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'path': 'home/update_show?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -916,7 +916,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.is_being_subtitled(
                         series_obj) and series_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -1186,10 +1186,10 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             show_loc = (series_obj._location, False)  # pylint: disable=protected-access
 
-        show_message = app.show_queue_scheduler.action.getQueueActionMessage(series_obj)
+        show_message = app.show_queue_scheduler.action.get_queue_action_message(series_obj)
 
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
+        if not app.show_queue_scheduler.action.is_being_added(series_obj):
+            if not app.show_queue_scheduler.action.is_being_updated(series_obj):
                 submenu.append({
                     'title': 'Resume' if series_obj.paused else 'Pause',
                     'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
@@ -1204,12 +1204,12 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'path': 'home/refresh_show?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-refresh',
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'path': 'home/update_show?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -1230,7 +1230,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.is_being_subtitled(
                         series_obj) and series_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -1608,7 +1608,7 @@ class Home(WebRoot):
             if bool(series_obj.flatten_folders) != bool(flatten_folders):
                 series_obj.flatten_folders = flatten_folders
                 try:
-                    app.show_queue_scheduler.action.refreshShow(series_obj)
+                    app.show_queue_scheduler.action.refresh_show(series_obj)
                 except CantRefreshShowException as e:
                     errors += 1
                     log.warning(
@@ -1678,7 +1678,7 @@ class Home(WebRoot):
 
                 if (do_update or changed_location) and os.path.isdir(new_location):
                     try:
-                        app.show_queue_scheduler.action.refreshShow(series_obj)
+                        app.show_queue_scheduler.action.refresh_show(series_obj)
                     except CantRefreshShowException as e:
                         errors += 1
                         log.warning(
@@ -1694,7 +1694,7 @@ class Home(WebRoot):
         # force the update
         if do_update:
             try:
-                app.show_queue_scheduler.action.updateShow(series_obj)
+                app.show_queue_scheduler.action.update_show(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as e:
                 errors += 1
@@ -1740,7 +1740,7 @@ class Home(WebRoot):
 
             # Need to refresh show as we updated scene numbering or changed show format
             try:
-                app.show_queue_scheduler.action.refreshShow(series_obj)
+                app.show_queue_scheduler.action.refresh_show(series_obj)
             except CantRefreshShowException as e:
                 errors += 1
                 log.warning(
@@ -1850,7 +1850,7 @@ class Home(WebRoot):
 
         # force the update
         try:
-            app.show_queue_scheduler.action.updateShow(series_obj)
+            app.show_queue_scheduler.action.update_show(series_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 

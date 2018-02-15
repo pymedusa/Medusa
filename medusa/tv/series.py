@@ -2318,7 +2318,7 @@ class Series(TV):
     def delete(self, remove_files):
         """Delete the series."""
         try:
-            app.show_queue_scheduler.action.removeShow(self, bool(remove_files))
+            app.show_queue_scheduler.action.remove_show(self, bool(remove_files))
             return True
         except CantRemoveShowException:
             pass

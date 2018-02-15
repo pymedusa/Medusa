@@ -149,10 +149,10 @@ class QueueProgressIndicator(object):
         return len(self.queueItemList)
 
     def num_finished(self):
-        return len([x for x in self.queueItemList if not x.isInQueue()])
+        return len([x for x in self.queueItemList if not x.is_in_queue()])
 
     def num_remaining(self):
-        return len([x for x in self.queueItemList if x.isInQueue()])
+        return len([x for x in self.queueItemList if x.is_in_queue()])
 
     def next_name(self):
         for curItem in [app.show_queue_scheduler.action.currentItem] + app.show_queue_scheduler.action.queue:  # @UndefinedVariable
