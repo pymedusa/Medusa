@@ -28,7 +28,7 @@ class CheckVersion(object):
     def __init__(self):
         self.updater = None
         self.install_type = None
-        self.amActive = False
+        self.am_active = False
         self.install_type = self.find_install_type()
         if self.install_type == 'git':
             self.updater = GitUpdateManager()
@@ -39,7 +39,7 @@ class CheckVersion(object):
 
     def run(self, force=False):
 
-        self.amActive = True
+        self.am_active = True
 
         # Update remote branches and store in app.GIT_REMOTE_BRANCHES
         self.list_remote_branches()
@@ -63,7 +63,7 @@ class CheckVersion(object):
 
             self.check_for_new_news(force)
 
-        self.amActive = False
+        self.am_active = False
 
     def run_backup_if_safe(self):
         return self.safe_to_update() is True and self._run_backup() is True
@@ -73,11 +73,11 @@ class CheckVersion(object):
         log.info(u'Config backup in progress...')
         ui.notifications.message('Backup', 'Config backup in progress...')
         try:
-            backupDir = os.path.join(app.DATA_DIR, app.BACKUP_DIR)
-            if not os.path.isdir(backupDir):
-                os.mkdir(backupDir)
+            backup_dir = os.path.join(app.DATA_DIR, app.BACKUP_DIR)
+            if not os.path.isdir(backup_dir):
+                os.mkdir(backup_dir)
 
-            if self._keep_latest_backup(backupDir) and self._backup(backupDir):
+            if self._keep_latest_backup(backup_dir) and self._backup(backup_dir):
                 log.info(u'Config backup successful, updating...')
                 ui.notifications.message('Backup', 'Config backup successful, updating...')
                 return True
@@ -91,12 +91,12 @@ class CheckVersion(object):
             return False
 
     @staticmethod
-    def _keep_latest_backup(backupDir=None):
-        if not backupDir:
+    def _keep_latest_backup(backup_dir=None):
+        if not backup_dir:
             return False
 
         import glob
-        files = glob.glob(os.path.join(backupDir, '*.zip'))
+        files = glob.glob(os.path.join(backup_dir, '*.zip'))
         if not files:
             return True
 
@@ -115,8 +115,8 @@ class CheckVersion(object):
 
     # TODO: Merge with backup in helpers
     @staticmethod
-    def _backup(backupDir=None):
-        if not backupDir:
+    def _backup(backup_dir=None):
+        if not backup_dir:
             return False
         source = [
             os.path.join(app.DATA_DIR, app.APPLICATION_DB),
@@ -124,12 +124,12 @@ class CheckVersion(object):
             os.path.join(app.DATA_DIR, app.FAILED_DB),
             os.path.join(app.DATA_DIR, app.CACHE_DB)
         ]
-        target = os.path.join(backupDir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
+        target = os.path.join(backup_dir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
 
         for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
-            for dirname in dirs:
-                if path == app.CACHE_DIR and dirname not in ['images']:
-                    dirs.remove(dirname)
+            for directory in dirs:
+                if path == app.CACHE_DIR and directory not in ['images']:
+                    dirs.remove(directory)
             for filename in files:
                 source.append(os.path.join(path, filename))
 

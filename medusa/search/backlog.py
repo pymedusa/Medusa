@@ -64,7 +64,7 @@ class BacklogSearcher(object):
 
     def am_running(self):
         """Check if backlog is running."""
-        log.debug(u'amWaiting: {0}, amActive: {1}', self.amWaiting, self.amActive)
+        log.debug(u'amWaiting: {0}, am_active: {1}', self.amWaiting, self.amActive)
         return (not self.amWaiting) and self.amActive
 
     def search_backlog(self, which_shows=None):
