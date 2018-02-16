@@ -138,7 +138,7 @@ def snatch_episode(result):
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == u'nzbget':
-            result_downloaded = nzbget.sendNZB(result, is_proper)
+            result_downloaded = nzbget.send_nzb(result, is_proper)
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
