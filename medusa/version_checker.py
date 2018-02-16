@@ -161,7 +161,7 @@ class CheckVersion(object):
                 return False
 
         def postprocessor_safe():
-            if not app.auto_post_processor_scheduler.action.amActive:
+            if not app.auto_post_processor_scheduler.action.am_active:
                 log.debug(u'We can proceed with the update. Post-Processor is not running')
                 return True
             else:
@@ -169,7 +169,7 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.show_update_scheduler.action.amActive:
+            if not app.show_update_scheduler.action.am_active:
                 log.debug(u'We can proceed with the update. Shows are not being updated')
                 return True
             else:

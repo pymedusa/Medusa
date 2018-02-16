@@ -23,13 +23,13 @@ log = BraceAdapter(log)
 class ShowUpdater(object):
     def __init__(self):
         self.lock = threading.Lock()
-        self.amActive = False
+        self.am_active = False
         self.session = MedusaSession()
         self.update_cache = UpdateCache()
 
     def run(self, force=False):
 
-        self.amActive = True
+        self.am_active = True
         refresh_shows = []  # A list of shows, that need to be refreshed
         season_updates = []  # A list of show seasons that have passed their next_update timestamp
         update_max_weeks = 12
@@ -297,7 +297,7 @@ class ShowUpdater(object):
         else:
             log.info(u'Completed but there was nothing to update')
 
-        self.amActive = False
+        self.am_active = False
 
     def __del__(self):
         pass

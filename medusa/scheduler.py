@@ -55,7 +55,7 @@ class Scheduler(threading.Thread):
             return datetime.timedelta(seconds=0)
 
     def force_run(self):
-        if not self.action.amActive:
+        if not self.action.am_active:
             self.force = True
             return True
         return False
