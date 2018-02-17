@@ -559,6 +559,18 @@
                             </label>
                         </div>
                         <div class="field-pair">
+                            <label for="ssl_ca_bundle">
+                                <span class="component-title">SSL CA Bundle</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="ssl_ca_bundle" value="${app.SSL_CA_BUNDLE}" class="form-control input-sm input300"/>
+                                         <div class="clear-left">
+                                             <p>Path to a SSL CA Bundle. Will replace default bundle(certifi) with the one specified.<p>
+                                             <b>NOTE:</b> This only apply to call made using Medusa's Requests implementation.
+                                         </div>
+                                    </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
                             <label for="no_restart">
                                 <span class="component-title">No Restart</span>
                                 <span class="component-desc">
@@ -724,9 +736,9 @@
                                     <select id="branchVersion" class="form-control form-control-inline input-sm pull-left">
                                     % if gh_branch:
                                         % for cur_branch in gh_branch:
-                                            % if app.GIT_USERNAME and app.GIT_PASSWORD and app.DEVELOPER == 1:
+                                            % if ((app.GIT_USERNAME and app.GIT_PASSWORD) or app.GIT_TOKEN) and app.DEVELOPER == 1:
                                                 <option value="${cur_branch}" ${'selected="selected"' if app.BRANCH == cur_branch else ''}>${cur_branch}</option>
-                                            % elif app.GIT_USERNAME and app.GIT_PASSWORD and cur_branch in ['master', 'develop']:
+                                            % elif ((app.GIT_USERNAME and app.GIT_PASSWORD) or app.GIT_TOKEN) and cur_branch in ['master', 'develop']:
                                                 <option value="${cur_branch}" ${'selected="selected"' if app.BRANCH == cur_branch else ''}>${cur_branch}</option>
                                             % elif cur_branch == 'master':
                                                 <option value="${cur_branch}" ${'selected="selected"' if app.BRANCH == cur_branch else ''}>${cur_branch}</option>
