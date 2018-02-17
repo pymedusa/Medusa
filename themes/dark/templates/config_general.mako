@@ -559,6 +559,18 @@
                             </label>
                         </div>
                         <div class="field-pair">
+                            <label for="ssl_ca_bundle">
+                                <span class="component-title">SSL CA Bundle</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="ssl_ca_bundle" value="${app.SSL_CA_BUNDLE}" class="form-control input-sm input300"/>
+                                         <div class="clear-left">
+                                             <p>Path to a SSL CA Bundle. Will replace default bundle(certifi) with the one specified.<p>
+                                             <b>NOTE:</b> This only apply to call made using Medusa's Requests implementation.
+                                         </div>
+                                    </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
                             <label for="no_restart">
                                 <span class="component-title">No Restart</span>
                                 <span class="component-desc">
