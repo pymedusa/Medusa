@@ -9,8 +9,6 @@ import re
 
 from requests.compat import urljoin
 
-from requests.compat import urljoin
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
@@ -26,7 +24,7 @@ log.logger.addHandler(logging.NullHandler())
 # Torrent9 replaces non-word and underscore characters with a dash (-)
 # The dash is included in the regex to remove multiple dashes (e.g. ---)
 # in the string even though it does not affect the search
-re_clean = re.compile('[\W-_]+')
+re_clean = re.compile('[\W_-]+')
 
 
 class Torrent9Provider(TorrentProvider):
