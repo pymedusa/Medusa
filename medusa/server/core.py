@@ -214,14 +214,6 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
              {'path': self.video_root}),
-
-            # vue dist
-            (r'{base}/vue/dist/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'vue')}),
-
-            # vue index.html
-            (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
         # API v1 handlers

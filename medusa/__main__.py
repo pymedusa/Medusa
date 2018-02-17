@@ -359,7 +359,6 @@ class Application(object):
             'port': int(self.start_port),
             'host': self.web_host,
             'data_root': os.path.join(app.PROG_DIR, 'themes'),
-            'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
             'username': app.WEB_USERNAME,
