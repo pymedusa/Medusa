@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.clients import torrent
+    from medusa.downloaders import torrent
 %>
 <%block name="content">
 % if not header is UNDEFINED:

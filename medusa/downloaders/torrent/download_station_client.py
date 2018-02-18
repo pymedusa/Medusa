@@ -17,7 +17,7 @@ from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from medusa import app
-from medusa.clients.torrent.generic import GenericClient
+from medusa.downloaders.torrent.generic import GenericClient
 from medusa.helpers import handle_requests_exception
 from medusa.logger.adapters.style import BraceAdapter
 

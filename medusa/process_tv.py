@@ -20,7 +20,7 @@ from unrar2.rar_exceptions import (
 )
 
 from medusa import app, db, helpers, notifiers
-from medusa.clients import torrent
+from medusa.downloaders import torrent
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import (
     EpisodePostProcessingFailedException,

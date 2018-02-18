@@ -11,7 +11,7 @@ from base64 import b64encode
 from requests.exceptions import RequestException
 
 from medusa import app
-from medusa.clients.torrent.generic import GenericClient
+from medusa.downloaders.torrent.generic import GenericClient
 from medusa.helpers import (
     get_extension,
     is_already_processed_media,

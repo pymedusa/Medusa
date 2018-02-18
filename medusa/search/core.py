@@ -20,8 +20,8 @@ from medusa import (
     nzb_splitter,
     ui,
 )
-from medusa.clients import torrent
-from medusa.clients.nzb import (
+from medusa.downloaders import torrent
+from medusa.downloaders.nzb import (
     nzbget,
     sab,
 )
@@ -143,7 +143,7 @@ def snatch_episode(result):
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
 
-    # Torrents can be sent to clients or saved to disk
+    # Torrents can be sent to downloaders or saved to disk
     elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
         if app.TORRENT_METHOD == u'blackhole':

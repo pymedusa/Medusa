@@ -1,5 +1,13 @@
 # coding=utf-8
 
+"""
+NZB Client API for NZBGet.
+
+https://nzbget.net/
+https://nzbget.net/api/
+https://github.com/nzbget/nzbget
+"""
+
 from __future__ import unicode_literals
 
 import datetime

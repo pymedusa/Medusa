@@ -15,8 +15,8 @@ from base64 import b64encode
 from synchronousdeluge import DelugeClient
 
 from medusa import app
-from medusa.clients.torrent.deluge_client import read_torrent_status
-from medusa.clients.torrent.generic import GenericClient
+from medusa.downloaders.torrent.deluge_client import read_torrent_status
+from medusa.downloaders.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))

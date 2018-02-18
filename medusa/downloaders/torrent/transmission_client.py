@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from requests.compat import urljoin
 
 from medusa import app
-from medusa.clients.torrent.generic import GenericClient
+from medusa.downloaders.torrent.generic import GenericClient
 from medusa.helpers import (
     get_extension,
     is_already_processed_media,

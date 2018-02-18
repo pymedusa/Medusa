@@ -9,7 +9,7 @@ import logging
 from rtorrent import RTorrent
 
 from medusa import app
-from medusa.clients.torrent.generic import GenericClient
+from medusa.downloaders.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))

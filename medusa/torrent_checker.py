@@ -3,7 +3,7 @@
 import logging
 
 from medusa import app
-from medusa.clients import torrent
+from medusa.downloaders import torrent
 from medusa.logger.adapters.style import BraceAdapter
 
 log = logging.getLogger(__name__)

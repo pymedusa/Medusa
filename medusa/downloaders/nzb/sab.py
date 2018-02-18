@@ -4,6 +4,7 @@
 NZB Client API for SABnzbd.
 
 https://sabnzbd.org/
+https://sabnzbd.org/wiki/advanced/api
 https://github.com/sabnzbd/sabnzbd
 """
 
@@ -19,8 +20,9 @@ from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
-log = BraceAdapter(logging.getLogger(__name__))
-log.logger.addHandler(logging.NullHandler())
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 session = MedusaSafeSession()
 

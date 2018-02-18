@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Base module for all torrent clients."""
+"""Base module for all torrent downloaders."""
 
 from __future__ import unicode_literals
 
@@ -24,7 +24,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class GenericClient(object):
-    """Base class for all torrent clients."""
+    """Base class for all torrent downloaders."""
 
     def __init__(self, name, host=None, username=None, password=None):
         """Constructor.

@@ -39,8 +39,8 @@ from medusa.black_and_white_list import (
     BlackAndWhiteList,
     short_group_names,
 )
-from medusa.clients import torrent
-from medusa.clients.nzb import (
+from medusa.downloaders import torrent
+from medusa.downloaders.nzb import (
     nzbget,
     sab,
 )
