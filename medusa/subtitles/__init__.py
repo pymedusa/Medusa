@@ -8,7 +8,6 @@ import re
 import subprocess
 import time
 
-import knowit
 from babelfish import (
     Country,
     Language,
@@ -17,6 +16,7 @@ from babelfish import (
     language_converters,
 )
 from dogpile.cache.api import NO_VALUE
+import knowit
 from six import iteritems, string_types, text_type
 from subliminal import (
     ProviderPool,
@@ -878,7 +878,7 @@ class SubtitlesFinder(object):
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
-        from medusa import process_tv
+        from medusa.processing import tv
         from medusa.tv import Episode
 
         log.info(u'Checking for needed subtitles in Post-Process folder')
@@ -959,7 +959,7 @@ class SubtitlesFinder(object):
         if run_post_process:
             log.info(u'Starting post-process with default settings now that'
                      u' we found subtitles')
-            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
+            tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
 
     @staticmethod
     def unpack_rar_files(dirpath):
@@ -968,7 +968,7 @@ class SubtitlesFinder(object):
         :param dirpath: the directory path to be used
         :type dirpath: str
         """
-        from medusa import process_tv
+        from medusa.processing import tv
         for root, _, files in os.walk(dirpath, topdown=False):
             # Skip folders that are being used for unpacking
             if u'_UNPACK' in root.upper():
@@ -981,7 +981,7 @@ class SubtitlesFinder(object):
                         u'Found rar files in post-process folder: {}',
                         rar_files
                     )
-                    process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
+                    tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:
                 log.warning(u'Unpack is disabled. Skipping: {}', rar_files)
 

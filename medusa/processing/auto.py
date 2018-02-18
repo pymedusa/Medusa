@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 import logging
 import os.path
 
-from medusa import app, process_tv
+from medusa import app
+from medusa.processing import tv
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,6 @@ class PostProcessor(object):
                              folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process(force=force)
+            tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process(force=force)
         finally:
             self.am_active = False

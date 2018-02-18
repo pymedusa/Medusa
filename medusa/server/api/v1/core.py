@@ -21,12 +21,12 @@
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
+from collections import OrderedDict
+from datetime import date, datetime
 import json
 import logging
 import os
 import time
-from collections import OrderedDict
-from datetime import date, datetime
 
 from requests.compat import unquote_plus
 from six import iteritems, text_type
@@ -34,7 +34,7 @@ from tornado.web import RequestHandler
 
 from medusa import (
     app, classes, date_time, db, helpers, image_cache,
-    network_timezones, process_tv, subtitles, system, ui,
+    network_timezones, subtitles, system, ui,
 )
 from medusa.common import (
     ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview,
@@ -62,6 +62,7 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
+from medusa.processing import tv
 from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
@@ -1229,7 +1230,7 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = 'manual'
 
-        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
+        data = tv.ProcessResult(self.path, process_method=self.process_method).process(
             force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
             failed=self.failed, proc_type=self.type
         )

@@ -1,12 +1,12 @@
 # coding=utf-8
-"""Tests for medusa/process_tv.py."""
+"""Tests for medusa/tv.py."""
 import os
 
 import pytest
 
 from medusa import app
-from medusa.process_tv import ProcessResult
 from medusa.processing.post import PostProcessor
+from medusa.processing.tv import ProcessResult
 
 
 @pytest.mark.parametrize('p', [
