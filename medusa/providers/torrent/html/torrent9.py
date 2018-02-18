@@ -5,6 +5,9 @@
 from __future__ import unicode_literals
 
 import logging
+import re
+
+from requests.compat import urljoin
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -15,10 +18,13 @@ from medusa.helper.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import urljoin
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+# Torrent9 replaces non-word and underscore characters with a dash (-)
+# The dash is included in the regex to remove multiple dashes (e.g. ---)
+# in the string even though it does not affect the search
+re_clean = re.compile('[\W-_]+')
 
 
 class Torrent9Provider(TorrentProvider):
@@ -70,7 +76,7 @@ class Torrent9Provider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_query = search_string.replace('.', '-').replace(' ', '-')
+                    search_query = re_clean.sub('-', search_string)
                     search_url = self.urls['search'].format(query=search_query)
                 else:
                     search_url = self.urls['daily']
