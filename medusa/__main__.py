@@ -470,14 +470,16 @@ class Application(object):
             app.GIT_REMOTE = check_setting_str(app.CFG, 'General', 'git_remote', 'origin')
             app.GIT_REMOTE_URL = check_setting_str(app.CFG, 'General', 'git_remote_url', app.APPLICATION_URL)
 
-            repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
-            m = repo_url_re.match(app.GIT_REMOTE_URL)
-            if m:
-                groups = m.groupdict()
-                if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
-                    app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
-            else:
-                app.GIT_REMOTE_URL = app.APPLICATION_URL
+            if not app.DEVELOPER:
+                repo_url_re = re.compile(
+                    r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+                m = repo_url_re.match(app.GIT_REMOTE_URL)
+                if m:
+                    groups = m.groupdict()
+                    if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
+                        app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
+                else:
+                    app.GIT_REMOTE_URL = app.APPLICATION_URL
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
