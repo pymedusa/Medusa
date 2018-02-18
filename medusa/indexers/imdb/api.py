@@ -205,11 +205,17 @@ class Imdb(BaseIndexer):
             mapped_results['firstaired'] = first_released['date']
 
         companies = self.imdb_api.get_title_companies(imdb_id)
-        origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
-        first_release = sorted([dist for dist in companies['distribution'] if origins in dist['regions']], key=lambda x: x['startYear'])
 
-        if first_release:
-            mapped_results['network'] = first_release[0]['company']['name']
+        # If there was a release it had to be distributed.
+        if companies.get('distribution'):
+            origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
+            released_in_regions = [
+                dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
+            ]
+            first_release = sorted(released_in_regions, key=lambda x: x['startYear'])
+
+            if first_release:
+                mapped_results['network'] = first_release[0]['company']['name']
 
         return OrderedDict({'series': mapped_results})
 
@@ -363,10 +369,11 @@ class Imdb(BaseIndexer):
         last_airdates = sorted(episodes, key=lambda x: x.first_aired, reverse=True)[:10]
         weekdays = {}
         for aired in last_airdates:
-            day = parse_date_with_local(datetime.strptime(aired.first_aired, '%Y-%m-%d'), '%A', 'C', method='strftime')
-            weekdays[day] = 1 if day not in weekdays else weekdays[day] + 1
+            if aired.first_aired:
+                day = parse_date_with_local(datetime.strptime(aired.first_aired, '%Y-%m-%d'), '%A', 'C', method='strftime')
+                weekdays[day] = 1 if day not in weekdays else weekdays[day] + 1
 
-        airs_day_of_week = sorted(weekdays.keys(), key=lambda x: weekdays[x])[0]
+        airs_day_of_week = sorted(weekdays.keys(), key=lambda x: weekdays[x], reverse=True)[0] if weekdays else None
         self._set_show_data(series_id, 'airs_dayofweek', airs_day_of_week)
 
     def _parse_images(self, imdb_id):
