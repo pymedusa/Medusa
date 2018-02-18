@@ -70,7 +70,7 @@ class Torrent9Provider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_query = search_string.replace('.', '-').replace(' ', '-')
+                    search_query = search_string.replace('.', '-').replace(' ', '-').replace(':', '-')
                     search_url = self.urls['search'].format(query=search_query)
                 else:
                     search_url = self.urls['daily']
