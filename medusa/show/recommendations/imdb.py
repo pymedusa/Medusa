@@ -15,7 +15,8 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, cached_get_imdb_series_details, create_key_from_series, update_recommended_series_cache_index
+    RecommendedShow, cached_get_imdb_series_details, create_key_from_series,
+    update_recommended_series_cache_index
 )
 
 from requests import RequestException
@@ -107,6 +108,7 @@ class ImdbPopular(object):
                     u' this show in your library: {show} ({year})',
                     {'show': series['name'], 'year': series['name']}
                 )
+
         # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
         update_recommended_series_cache_index('imdb', [binary_type(s.series_id) for s in result])
 
