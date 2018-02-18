@@ -39,11 +39,6 @@ from medusa.black_and_white_list import (
     BlackAndWhiteList,
     short_group_names,
 )
-from medusa.downloaders import torrent
-from medusa.downloaders.nzb import (
-    nzbget,
-    sab,
-)
 from medusa.common import (
     DOWNLOADED,
     FAILED,
@@ -60,6 +55,11 @@ from medusa.common import (
     statusStrings,
 )
 from medusa.date_time import DateTime
+from medusa.downloaders import torrent
+from medusa.downloaders.nzb import (
+    nzbget,
+    sab,
+)
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,

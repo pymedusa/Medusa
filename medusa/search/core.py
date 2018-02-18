@@ -20,11 +20,6 @@ from medusa import (
     nzb_splitter,
     ui,
 )
-from medusa.downloaders import torrent
-from medusa.downloaders.nzb import (
-    nzbget,
-    sab,
-)
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
@@ -33,6 +28,11 @@ from medusa.common import (
     SNATCHED_BEST,
     SNATCHED_PROPER,
     UNKNOWN,
+)
+from medusa.downloaders import torrent
+from medusa.downloaders.nzb import (
+    nzbget,
+    sab,
 )
 from medusa.helper.common import (
     enabled_providers,

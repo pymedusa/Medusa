@@ -44,7 +44,6 @@ from medusa.server.web import (
     LogoutHandler,
     TokenHandler,
 )
-from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws import MedusaWebSocketHandler
 
 log = logging.getLogger(__name__)
