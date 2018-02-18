@@ -1,10 +1,10 @@
 # coding=utf-8
 """Replace core filesystem functions."""
 
-import logging
 import functools
 import glob
 import io
+import logging
 import os
 import shutil
 import sys

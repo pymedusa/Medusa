@@ -43,7 +43,7 @@ from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
-from medusa.subtitle_providers.utils import hash_itasa
+from medusa.subtitles.utils import hash_itasa
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

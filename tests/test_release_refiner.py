@@ -6,7 +6,7 @@ import os
 import pytest
 from subliminal.video import Video
 
-from medusa.refiners import release as sut
+from medusa.subtitles.refiners import release as sut
 
 
 @pytest.fixture
