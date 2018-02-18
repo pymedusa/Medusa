@@ -1,16 +1,22 @@
 # coding=utf-8
 """Replace core filesystem functions."""
 
+import logging
+import functools
 import glob
 import io
 import os
 import shutil
 import sys
 import tarfile
+from collections import Iterable, MutableMapping
 
 import certifi
 import rarfile
 from six import binary_type, text_type
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 fs_encoding = sys.getfilesystemencoding()
 
@@ -26,56 +32,49 @@ def decode(value):
     return text_type(value, 'utf-8' if os.name != 'nt' else fs_encoding)
 
 
-def _handle_input(arg):
+def _handle_input(value):
     """Encode argument to utf-8 or fs encoding."""
     # on windows the input params for fs operations needs to be encoded using fs encoding
-    return encode(arg) if isinstance(arg, text_type) else arg
+    return encode(value) if isinstance(value, text_type) else value
 
 
-def _handle_output_u(result):
+def _handle_output(value, target, func):
+    """Transform target type using func."""
+    if not value:
+        return value
+
+    if isinstance(value, target):
+        return func(value)
+
+    if isinstance(value, (list, tuple)):
+        # Apply arguments for map function
+        _handle = functools.partial(_handle_output, target=target, func=func)
+        return map(_handle, value)
+
+    if isinstance(value, MutableMapping):
+        for k, v in value.items():
+            value[k] = _handle_output(v, target, func)
+        return value
+
+    return value
+
+
+def _handle_output_u(value):
     """Convert result to unicode."""
-    if not result:
-        return result
-
-    if isinstance(result, binary_type):
-        return decode(result)
-
-    if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_u, result)
-
-    if isinstance(result, dict):
-        for k, v in result.items():
-            result[k] = _handle_output_u(v)
-        return result
-
-    return result
+    return _handle_output(value, binary_type, decode)
 
 
-def _handle_output_b(result):
+def _handle_output_b(value):
     """Convert result to binary."""
-    if not result:
-        return result
-
-    if isinstance(result, text_type):
-        return encode(result)
-
-    if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_b, result)
-
-    if isinstance(result, dict):
-        for k, v in result.items():
-            result[k] = _handle_output_b(v)
-        return result
-
-    return result
+    return _handle_output(value, text_type, encode)
 
 
-def _varargs(*args):
+def _encode_args(*args):
     """Encode var arguments to utf-8 or fs encoding."""
     return [_handle_input(arg) for arg in args]
 
 
-def _varkwargs(**kwargs):
+def _encode_kwargs(**kwargs):
     """Encode var keyword  arguments to utf-8."""
     return {k: _handle_input(arg) for k, arg in kwargs.items()}
 
@@ -110,6 +109,7 @@ def patch_output(f, handle_output=None):
 
 def initialize():
     """Replace original functions if the fs encoding is not utf-8."""
+    log.debug('Beginning initializations')
     if hasattr(sys, '_called_from_test'):
         return
 
@@ -135,14 +135,20 @@ def initialize():
     }
 
     if os.name != 'nt':
-        affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
+        affected_functions[os].extend([
+            'chmod', 'chown', 'link', 'statvfs', 'symlink'
+        ])
 
     if not fs_encoding or fs_encoding.lower() not in ('utf-8', 'mbcs'):
         handle_input = _handle_input
     else:
         handle_input = None
 
-    for k, v in affected_functions.items():
-        handle_output = handle_output_map.get(k, _handle_output_u)
-        for f in v:
-            setattr(k, f, make_closure(getattr(k, f), handle_input, handle_output))
+    for lib, funcs in affected_functions.items():
+        handle_output = handle_output_map.get(lib, _handle_output_u)
+        for func in funcs:
+            msg = 'Patching {pkg.__name__}.{func}'
+            log.debug(msg.format(pkg=lib, func=func))
+            attr = getattr(lib, func)
+            closure = make_closure(attr, handle_input, handle_output)
+            setattr(lib, func, closure)
