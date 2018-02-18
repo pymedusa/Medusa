@@ -9,7 +9,7 @@ import os
 import shutil
 import sys
 import tarfile
-from collections import Iterable, MutableMapping
+from collections import MutableMapping
 
 import certifi
 import rarfile
