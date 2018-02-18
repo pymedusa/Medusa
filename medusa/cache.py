@@ -66,7 +66,7 @@ def configure(cache_dir):
     # application cache
     recommended_series_cache.configure('dogpile.cache.dbm',
                                        expiration_time=timedelta(days=7),
-                                       arguments={'filename': os.path.join(cache_dir, 'rec_series.dbm'),
+                                       arguments={'filename': os.path.join(cache_dir, 'recommended.dbm'),
                                                   'lock_factory': MutexLock})
 
 

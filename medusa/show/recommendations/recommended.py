@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
+
 from imdbpie import imdbpie
+
 from medusa import (
     app,
     helpers,
@@ -30,7 +32,9 @@ from medusa.helpers import ensure_list
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
+
 from simpleanidb import Anidb
+
 from six import binary_type
 
 
@@ -48,8 +52,9 @@ class MissingTvdbMapping(Exception):
 
 class RecommendedShow(object):
     """Base class for show recommendations."""
+
     def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
-        """Create a show recommendation
+        """Create a show recommendation.
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
                               which facilitated the recommended shows list.
@@ -95,7 +100,7 @@ class RecommendedShow(object):
         self.session = session
 
     def cache_image(self, image_url, default=None):
-        """Store cache of image in cache dir
+        """Store cache of image in cache dir.
 
         :param image_url: Source URL
         :param default: default folder
@@ -177,17 +182,18 @@ def cached_get_imdb_series_details(imdb_id):
 
 def create_key_from_series(namespace, fn, **kw):
     """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-
     def generate_key(*arg, **kwargs):
         """
         Generate the key.
+
         The key is passed to the decorated function using the kwargs `storage_key`.
         Following this standard we can cache every object, using this key_generator.
         """
         try:
             return binary_type(kwargs['storage_key'])
         except KeyError:
-            log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key, that is used in the dogpile cache.')
+            log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key,'
+                          ' that is used in the dogpile cache.')
 
     return generate_key
 

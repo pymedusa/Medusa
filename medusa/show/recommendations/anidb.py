@@ -11,11 +11,13 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series, update_recommended_series_cache_index
+    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series,
+    update_recommended_series_cache_index
 )
 
 from simpleanidb import Anidb, REQUEST_HOT
 from simpleanidb.exceptions import GeneralError
+
 from six import binary_type
 
 
@@ -48,19 +50,20 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         if not tvdb_id:
             return tvdb_id
 
-        rec_show = RecommendedShow(self,
-                                   series.aid,
-                                   series.title,
-                                   INDEXER_TVDBV2,
-                                   tvdb_id,
-                                   **{'rating': series.rating_permanent,
-                                      'votes': series.count_permanent,
-                                      'image_href': self.base_url.format(aid=series.aid),
-                                      'ids': {'tvdb': tvdb_id,
-                                              'aid': series.aid
-                                              }
-                                      }
-                                   )
+        rec_show = RecommendedShow(
+            self,
+            series.aid,
+            series.title,
+            INDEXER_TVDBV2,
+            tvdb_id,
+            **{'rating': series.rating_permanent,
+                'votes': series.count_permanent,
+                'image_href': self.base_url.format(aid=series.aid),
+                'ids': {'tvdb': tvdb_id,
+                        'aid': series.aid
+                        }
+               }
+        )
 
         # Check cache or get and save image
         use_default = self.default_img_src if not series.picture.url else None

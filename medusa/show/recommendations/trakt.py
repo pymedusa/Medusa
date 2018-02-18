@@ -17,9 +17,12 @@ from medusa.show.recommendations.recommended import (
     RecommendedShow, create_key_from_series, update_recommended_series_cache_index
 )
 
-from traktor import (TokenExpiredException, TraktApi, TraktException)
-from tvdbapiv2.exceptions import ApiException
 from six import binary_type, text_type
+
+from traktor import (TokenExpiredException, TraktApi, TraktException)
+
+from tvdbapiv2.exceptions import ApiException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -42,28 +45,29 @@ class TraktPopular(object):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_keys=None):
+    def _create_recommended_show(self, series, storage_key=None):
         """Create the RecommendedShow object from the returned showobj."""
-        rec_show = RecommendedShow(self,
-                                   series['show']['ids'], series['show']['title'],
-                                   INDEXER_TVDBV2,  # indexer
-                                   series['show']['ids']['tvdb'],
-                                   **{'rating': series['show']['rating'],
-                                      'votes': try_int(series['show']['votes'], '0'),
-                                      'image_href': 'http://www.trakt.tv/shows/{0}'.format(series['show']['ids']['slug']),
-                                      # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
-                                      # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                                      'ids': series['show']['ids']
-                                      }
-                                   )
+        rec_show = RecommendedShow(
+            self,
+            series['show']['ids'], series['show']['title'],
+            INDEXER_TVDBV2,  # indexer
+            series['show']['ids']['tvdb'],
+            **{'rating': series['show']['rating'],
+                'votes': try_int(series['show']['votes'], '0'),
+                'image_href': 'http://www.trakt.tv/shows/{0}'.format(series['show']['ids']['slug']),
+                # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
+                # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
+                'ids': series['show']['ids']
+               }
+        )
 
         use_default = None
         image = None
         try:
             if not missing_posters.has(series['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(series['show']['ids']['tvdb']) or \
-                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(series['show']['ids']['tvdb'],
-                                                                                                 key_type='poster').data[0].file_name
+                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
+                            series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
             else:
                 log.info('CACHE: Missing poster on TVDB for show {0}', series['show']['title'])
                 use_default = self.default_img_src
@@ -104,7 +108,7 @@ class TraktPopular(object):
 
         return library_shows
 
-    def fetch_popular_shows(self, page_url=None, trakt_list=None):  # pylint: disable=too-many-nested-blocks,too-many-branches
+    def fetch_popular_shows(self, page_url=None, trakt_list=None):
         """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
 
         :param page_url: the page url opened to the base api url, for retreiving a specific list
@@ -123,7 +127,7 @@ class TraktPopular(object):
 
         trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
 
-        try:  # pylint: disable=too-many-nested-blocks
+        try:
             not_liked_show = ''
             if app.TRAKT_ACCESS_TOKEN != '':
                 library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
@@ -165,7 +169,7 @@ class TraktPopular(object):
                 except MultipleShowObjectsException:
                     continue
 
-            # Update the dogpile index
+            # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
             update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
