@@ -74,7 +74,7 @@ class DownloadStationAPI(GenericClient):
             self.auth = jdata.get('success')
             if not self.auth:
                 error_code = jdata.get('error', {}).get('code')
-                log.info(self.error_map.get(error_code, jdata))
+                log.warning('Error: {error!r}', {'error': self.error_map.get(error_code, jdata)})
                 self.session.cookies.clear()
 
             return self.auth
