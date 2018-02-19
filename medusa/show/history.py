@@ -33,7 +33,7 @@ class History(object):
 
     def clear(self):
         """
-        Clear all the history
+        Clear all the history.
         """
         self.db.action(
             'DELETE '
@@ -43,9 +43,12 @@ class History(object):
 
     def get(self, limit=100, action=None):
         """
+        Get items from history.
+
         :param limit: The maximum number of elements to return
-        :param action: The type of action to filter in the history. Either 'downloaded' or 'snatched'. Anything else or
-                        no value will return everything (up to ``limit``)
+        :param action: The type of action to filter in the history.
+            Either 'downloaded' or 'snatched'. Anything else or
+            no value will return everything (up to ``limit``)
         :return: The last ``limit`` elements of type ``action`` in the history
         """
 
@@ -89,7 +92,7 @@ class History(object):
 
     def trim(self, days=30):
         """
-        Remove expired elements from history
+        Remove expired elements from history.
 
         :param days: number of days to keep
         """
@@ -134,7 +137,7 @@ class History(object):
     class Item(namedtuple('Item', item_fields)):
         # TODO: Allow items to be added to a compact item
         """
-        An individual row item from history
+        An individual row item from history.
         """
         # prevent creation of a __dict__ when subclassing
         # from a class that uses __slots__
@@ -143,7 +146,7 @@ class History(object):
         @property
         def index(self):
             """
-            Create a look-up index for the item
+            Create a look-up index for the item.
             """
             return History.Index(
                 self.indexer_id,
@@ -156,7 +159,7 @@ class History(object):
         @property
         def cur_action(self):
             """
-            Create the current action from action_fields
+            Create the current action from action_fields.
             """
             return History.Action(
                 self.action,
@@ -169,7 +172,7 @@ class History(object):
 
         def compacted(self):
             """
-            Create a CompactItem
+            Create a CompactItem.
 
             :returns: the current item in compact form
             """
@@ -182,7 +185,7 @@ class History(object):
 
         def __add__(self, other):
             """
-            Combines two history items with the same index
+            Combines two history items with the same index.
 
             :param other: The other item to add
             :returns: a compact item with elements from both items
@@ -193,7 +196,7 @@ class History(object):
 
         def __radd__(self, other):
             """
-            Adds a history item to a compact item
+            Adds a history item to a compact item.
 
             :param other: The compact item to append
             :returns: the updated compact item

@@ -6,12 +6,9 @@
 restore/
 backup*/
 backup-*.zip
-cache.db*
 config.ini*
-sickbeard.db*
-main.db.*
-failed.db*
 *.db
+*.db.*
 autoProcessTV.cfg
 server.crt
 server.key
@@ -22,9 +19,7 @@ medusa.egg-info
 ######################
 /tests/legacy/Logs/
 /tests/cache/
-/tests/sickbeard.db*
-/tests/cache.db*
-/tests/failed.db
+/tests/*.db*
 /tests/data/
 
 #  Compiled source   #
@@ -82,7 +77,8 @@ lib/unrar2/UnRAR.exe
 .tox/
 .coverage*
 .cache
-htmlcov
+.pytest_cache
+htmlcov`````````````
 xo-errors.log
 yarn-error.log
 

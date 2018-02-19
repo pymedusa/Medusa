@@ -61,7 +61,7 @@ naming_sep_type_text = (' - ', 'space')
 
 def change_https_cert(https_cert):
     """
-    Replace HTTPS Certificate file path
+    Replace HTTPS Certificate file path.
 
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
@@ -82,7 +82,7 @@ def change_https_cert(https_cert):
 
 def change_https_key(https_key):
     """
-    Replace HTTPS Key file path
+    Replace HTTPS Key file path.
 
     :param https_key: path to the new key file
     :return: True on success, False on failure
@@ -103,7 +103,7 @@ def change_https_key(https_key):
 
 def change_log_dir(log_dir):
     """
-    Change logging directory for application and webserver
+    Change logging directory for application and web server.
 
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
@@ -122,7 +122,7 @@ def change_log_dir(log_dir):
 
 def change_nzb_dir(nzb_dir):
     """
-    Change NZB Folder
+    Change NZB Folder.
 
     :param nzb_dir: New NZB Folder location
     :return: True on success, False on failure
@@ -143,7 +143,7 @@ def change_nzb_dir(nzb_dir):
 
 def change_torrent_dir(torrent_dir):
     """
-    Change torrent directory
+    Change torrent directory.
 
     :param torrent_dir: New torrent directory
     :return: True on success, False on failure
@@ -164,7 +164,7 @@ def change_torrent_dir(torrent_dir):
 
 def change_tv_download_dir(tv_download_dir):
     """
-    Change TV_DOWNLOAD directory (used by postprocessor)
+    Change TV_DOWNLOAD directory (used by postprocessor).
 
     :param tv_download_dir: New tv download directory
     :return: True on success, False on failure
@@ -185,7 +185,7 @@ def change_tv_download_dir(tv_download_dir):
 
 def change_auto_postprocessor_frequency(freq):
     """
-    Change frequency of automatic postprocessing thread
+    Change frequency of automatic postprocessing thread.
     TODO: Make all thread frequency changers in config.py return True/False status
 
     :param freq: New frequency
@@ -200,7 +200,7 @@ def change_auto_postprocessor_frequency(freq):
 
 def change_torrent_checker_frequency(freq):
     """
-    Change frequency of Torrent Checker thread
+    Change frequency of Torrent Checker thread.
 
     :param freq: New frequency
     """
@@ -214,7 +214,7 @@ def change_torrent_checker_frequency(freq):
 
 def change_daily_search_frequency(freq):
     """
-    Change frequency of daily search thread
+    Change frequency of daily search thread.
 
     :param freq: New frequency
     """
@@ -228,7 +228,7 @@ def change_daily_search_frequency(freq):
 
 def change_backlog_frequency(freq):
     """
-    Change frequency of backlog thread
+    Change frequency of backlog thread.
 
     :param freq: New frequency
     """
@@ -243,7 +243,7 @@ def change_backlog_frequency(freq):
 
 def change_propers_frequency(check_propers_interval):
     """
-    Change frequency of backlog thread
+    Change frequency of backlog thread.
 
     :param freq: New frequency
     """
@@ -263,7 +263,7 @@ def change_propers_frequency(check_propers_interval):
 
 def change_update_frequency(freq):
     """
-    Change frequency of daily updater thread
+    Change frequency of daily updater thread.
 
     :param freq: New frequency
     """
@@ -277,7 +277,7 @@ def change_update_frequency(freq):
 
 def change_show_update_hour(freq):
     """
-    Change frequency of show updater thread
+    Change frequency of show updater thread.
 
     :param freq: New frequency
     """
@@ -293,7 +293,7 @@ def change_show_update_hour(freq):
 
 def change_subtitles_finder_frequency(subtitles_finder_frequency):
     """
-    Change frequency of subtitle thread
+    Change frequency of subtitle thread.
 
     :param subtitles_finder_frequency: New frequency
     """
@@ -305,7 +305,7 @@ def change_subtitles_finder_frequency(subtitles_finder_frequency):
 
 def change_version_notify(version_notify):
     """
-    Change frequency of versioncheck thread
+    Change frequency of version check thread.
 
     :param version_notify: New frequency
     """
@@ -336,7 +336,7 @@ def change_git_path():
 
 def change_download_propers(download_propers):
     """
-    Enable/Disable proper download thread
+    Enable/Disable proper download thread.
     TODO: Make this return True/False on success/failure
 
     :param download_propers: New desired state
@@ -362,7 +362,7 @@ def change_download_propers(download_propers):
 
 def change_use_trakt(use_trakt):
     """
-    Enable/disable trakt thread
+    Enable/disable trakt thread.
     TODO: Make this return true/false on success/failure
 
     :param use_trakt: New desired state
@@ -388,7 +388,7 @@ def change_use_trakt(use_trakt):
 
 def change_use_subtitles(use_subtitles):
     """
-    Enable/Disable subtitle searcher
+    Enable/Disable subtitle searcher.
     TODO: Make this return true/false on success/failure
 
     :param use_subtitles: New desired state
@@ -414,7 +414,7 @@ def change_use_subtitles(use_subtitles):
 
 def change_process_automatically(process_automatically):
     """
-    Enable/Disable postprocessor thread
+    Enable/Disable postprocessor thread.
     TODO: Make this return True/False on success/failure
 
     :param process_automatically: New desired state
@@ -439,7 +439,7 @@ def change_process_automatically(process_automatically):
 
 
 def check_section(CFG, sec):
-    """ Check if INI section exists, if not create it """
+    """Check if INI section exists, if not create it."""
 
     if sec in CFG:
         return True
@@ -450,8 +450,10 @@ def check_section(CFG, sec):
 
 def checkbox_to_value(option, value_on=1, value_off=0):
     """
+    Convert checkbox to values.
+
     Turns checkbox option 'on' or 'true' to value_on (1)
-    any other value returns value_off (0)
+    any other value returns value_off (0).
     """
 
     if isinstance(option, list):
@@ -465,6 +467,9 @@ def checkbox_to_value(option, value_on=1, value_off=0):
 
 def clean_host(host, default_port=None):
     """
+    Create a clean host string from given data.
+    # TODO: Replace with urllib.parse.SplitResult
+
     Returns host or host:port or empty string from a given url or host
     If no port is found and default_port is given use host:default_port
     """
@@ -497,7 +502,7 @@ def clean_host(host, default_port=None):
 
 def clean_hosts(hosts, default_port=None):
     """
-    Returns list of cleaned hosts by clean_host
+    Clean a list of hosts.
 
     :param hosts: list of hosts
     :param default_port: default port to use
@@ -505,8 +510,14 @@ def clean_hosts(hosts, default_port=None):
     """
     cleaned_hosts = []
 
-    for cur_host in [host.strip() for host in hosts.split(',') if host.strip()]:
-        cleaned_host = clean_host(cur_host, default_port)
+    gen_hosts = (
+        host.strip()
+        for host in hosts.split(',')
+        if host.strip()
+    )
+
+    for host in gen_hosts:
+        cleaned_host = clean_host(host, default_port)
         if cleaned_host:
             cleaned_hosts.append(cleaned_host)
 
@@ -517,6 +528,8 @@ def clean_hosts(hosts, default_port=None):
 
 def clean_url(url):
     """
+    Clean a url.
+
     Returns an cleaned url starting with a scheme and folder with trailing /
     or an empty string
     """
@@ -566,7 +579,7 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
 # Check_setting_int                                                            #
 ################################################################################
 def minimax(val, default, low, high):
-    """ Return value forced within range """
+    """Return value forced within range."""
 
     val = try_int(val, default)
 
@@ -713,7 +726,7 @@ def check_setting_list(config, cfg_name, item_name, default=None, silent=True, t
 ################################################################################
 def check_setting(config, section, attr_type, attr, default=None, silent=True, **kwargs):
     """
-    Check setting from config file
+    Check setting from config file.
     """
     func = {
         'string': check_setting_str,
@@ -730,7 +743,7 @@ def check_setting(config, section, attr_type, attr, default=None, silent=True, *
 ################################################################################
 def check_provider_setting(config, provider, attr_type, attr, default=None, silent=True, **kwargs):
     """
-    Check setting from config file
+    Check setting from config file.
     """
     name = provider.get_id()
     section = name.upper()
@@ -763,7 +776,7 @@ def save_provider_setting(config, provider, attr, **kwargs):
 class ConfigMigrator(object):
     def __init__(self, config_obj):
         """
-        Initializes a config migrator that can take the config from the version indicated in the config
+        Initializes a config migrator that can take the config from the version indicated in the config.
         file up to the version required by Medusa
         """
 
@@ -787,7 +800,7 @@ class ConfigMigrator(object):
 
     def migrate_config(self):
         """
-        Calls each successive migration until the config is the same version as SB expects
+        Calls each successive migration until the config is the same version expected.
         """
 
         if self.config_version > self.expected_config_version:
@@ -954,7 +967,7 @@ class ConfigMigrator(object):
 
     # Migration v4: Add default newznab cat_ids
     def _migrate_v4(self):
-        """ Update newznab providers so that the category IDs can be set independently via the config """
+        """Update newznab providers so that the category IDs can be set independently via the config."""
 
         new_newznab_data = []
         old_newznab_data = check_setting_str(self.config_obj, 'Newznab', 'newznab_data', '')
@@ -1091,15 +1104,17 @@ class ConfigMigrator(object):
 
     def _migrate_v9(self):
         """
-        Migrate to config version 9
+        Migrate to config version 9.
         """
         # Added setting 'enable_manualsearch' for providers (dynamic setting)
         pass
 
     def _migrate_v10(self):
         """
-        Convert all csv stored items as 'real' lists. ConfigObj provides a way for storing lists. These are saved
-        as comma separated values, using this the format documented here:
+        Convert all csv stored items as 'real' lists.
+
+        ConfigObj provides a way for storing lists. These are saved as
+        comma separated values, using this the format documented here:
         http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
         """
 

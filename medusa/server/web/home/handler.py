@@ -1072,8 +1072,11 @@ class Home(WebRoot):
         })
 
     def manualSearchCheckCache(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode', **last_prov_updates):
-        """ Periodic check if the searchthread is still running for t   he selected show/season/ep
-        and if there are new results in the cache.db
+        """
+        Check search thread status for an episode and get cache results.
+
+        Periodic check if the search thread is still running for the selected
+        show/season/ep and if there are new results in the cache.db
         """
 
         refresh_results = 'refresh'
@@ -1152,7 +1155,7 @@ class Home(WebRoot):
 
     def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
                         perform_search=0, down_cur_quality=0, show_all_results=0):
-        """ The view with results for the manual selected show/episode """
+        """The view with results for the manual selected show/episode."""
 
         # @TODO: add more comprehensive show validation
         try:

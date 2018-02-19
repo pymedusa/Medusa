@@ -9,11 +9,10 @@ import traceback
 import certifi
 import requests
 
-import factory
 import medusa.common
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session import hooks
+from medusa.session import hooks, factory
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

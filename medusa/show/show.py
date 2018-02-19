@@ -45,7 +45,8 @@ class Show(object):
     @staticmethod
     def delete(indexer_id, series_id, remove_files=False):
         """
-        Try to delete a show
+        Try to delete a show.
+
         :param indexer_id: The unique id of the indexer, used to add the show.
         :param series_id: The unique id of the series.
         :param remove_files: ``True`` to remove the files associated with the show, ``False`` otherwise
@@ -70,7 +71,8 @@ class Show(object):
     @staticmethod
     def find(shows, indexer_id, indexer=None):
         """
-        Find a show by its indexer id in the provided list of shows
+        Find a show by its indexer id in the provided list of shows.
+
         :param shows: The list of shows to search in
         :param indexer_id: The indexer id of the desired show
         :param indexer: The indexer to be used
@@ -106,7 +108,8 @@ class Show(object):
     @staticmethod
     def find_by_id(series, indexer_id, series_id):
         """
-        Find a show by its indexer id in the provided list of shows
+        Find a show by its indexer id in the provided list of shows.
+
         :param series: The list of shows to search in
         :param indexer_id: shows indexer
         :param series_id: The indexers show id of the desired show
@@ -184,7 +187,8 @@ class Show(object):
     @staticmethod
     def pause(indexer_id, series_id, pause=None):
         """
-        Change the pause state of a show
+        Change the pause state of a show.
+
         :param indexer_id: The unique id of the show to update
         :param pause: ``True`` to pause the show, ``False`` to resume the show, ``None`` to toggle the pause state
         :return: A tuple containing:
@@ -209,7 +213,8 @@ class Show(object):
     @staticmethod
     def refresh(indexer_id, series_id):
         """
-        Try to refresh a show
+        Try to refresh a show.
+
         :param indexer_id: The unique id of the show to refresh
         :return: A tuple containing:
          - an error message if the show could not be refreshed, ``None`` otherwise
@@ -231,7 +236,8 @@ class Show(object):
     @staticmethod
     def _validate_indexer_id(indexer_id, series_id):
         """
-        Check that the provided indexer_id is valid and corresponds with a known show
+        Check that the indexer_id is valid and corresponds to a known series.
+
         :param indexer_id: The indexer id to check
         :return: A tuple containing:
          - an error message if the indexer id is not correct, ``None`` otherwise

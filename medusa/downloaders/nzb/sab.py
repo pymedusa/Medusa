@@ -71,7 +71,6 @@ def send_nzb_get(params, nzb):
     :param nzb: The NZBSearchResult object to send to SAB
     :return: result of the communication with sabnzbd (True/False)
     """
-
     log.info('Sending NZB to SABnzbd')
 
     params.update({'name': nzb.url, 'mode': 'addurl'})
@@ -100,7 +99,6 @@ def send_nzb_post(params, nzb):
     :param nzb: The NZBSearchResult object to send to SAB
     :return: result of the communication with sabnzbd (True/False)
     """
-
     log.info('Sending NZB to SABnzbd using the post multipart/form data.')
     url = urljoin(app.SAB_HOST, 'api')
     params['mode'] = 'addfile'
@@ -130,7 +128,7 @@ def send_nzb_post(params, nzb):
 
 def _check_sab_response(jdata):
     """
-    Check response from SAB
+    Check response from SAB.
 
     :param jdata: Response from requests api call
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
@@ -147,7 +145,7 @@ def _check_sab_response(jdata):
 
 def get_sab_access_method(host=None):
     """
-    Find out how we should connect to SAB
+    Find out how to connect to SAB.
 
     :param host: hostname where SAB lives
     :return: (boolean, string) with True if method was successful
@@ -171,7 +169,7 @@ def get_sab_access_method(host=None):
 
 def test_authentication(host=None, username=None, password=None, apikey=None):
     """
-    Sends a simple API request to SAB to determine if the given connection information is connect
+    Send an API request to SAB to check connection and authentication.
 
     :param host: The host where SAB is running (incl port)
     :param username: The username to use for the HTTP request

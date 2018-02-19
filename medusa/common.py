@@ -32,7 +32,7 @@ VERSION = '0.1.23'
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
+ua_settings.DB = path.abspath(path.join(path.dirname(__file__), 'ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random

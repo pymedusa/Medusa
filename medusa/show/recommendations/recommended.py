@@ -36,8 +36,10 @@ class MissingTvdbMapping(Exception):
 
 class RecommendedShow(object):
     """Base class for show recommendations."""
+
     def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
-        """Create a show recommendation
+        """
+        Create a show recommendation.
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
                               which facilitated the recommended shows list.
@@ -83,7 +85,8 @@ class RecommendedShow(object):
         self.session = session
 
     def cache_image(self, image_url, default=None):
-        """Store cache of image in cache dir
+        """
+        Store cache of image in cache dir.
 
         :param image_url: Source URL
         :param default: default folder

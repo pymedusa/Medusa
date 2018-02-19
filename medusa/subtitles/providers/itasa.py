@@ -3,9 +3,30 @@ import copy
 import io
 import logging
 import re
+from zipfile import ZipFile, is_zipfile
 
 from babelfish import Language
 from guessit import guessit
+from requests import Session
+from subliminal import __version__
+from subliminal.cache import (
+    EPISODE_EXPIRATION_TIME,
+    SHOW_EXPIRATION_TIME,
+    region,
+)
+from subliminal.exceptions import (
+    AuthenticationError,
+    ConfigurationError,
+    DownloadLimitExceeded,
+)
+from subliminal.providers import Provider
+from subliminal.subtitle import (
+    Subtitle,
+    fix_line_ending,
+    guess_matches,
+    sanitize,
+)
+from subliminal.video import Episode
 
 try:
     from lxml import etree
@@ -14,15 +35,6 @@ except ImportError:  # pragma: no cover
         import xml.etree.cElementTree as etree
     except ImportError:
         import xml.etree.ElementTree as etree
-from requests import Session
-from zipfile import ZipFile, is_zipfile
-
-from subliminal.providers import Provider
-from subliminal import __version__
-from subliminal.cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
-from subliminal.exceptions import AuthenticationError, ConfigurationError, DownloadLimitExceeded
-from subliminal.subtitle import (Subtitle, fix_line_ending, guess_matches, sanitize)
-from subliminal.video import Episode
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +168,8 @@ class ItaSAProvider(Provider):
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _search_show_id(self, series):
-        """Search the show id from the `series`
+        """
+        Search the show id from the `series`.
 
         :param str series: series of the episode.
         :return: the show id, if found.

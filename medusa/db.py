@@ -78,7 +78,7 @@ class DBConnection(object):
 
     def _execute(self, query, args=None, fetchall=False, fetchone=False):
         """
-        Executes DB query
+        Execute a DB query.
 
         :param query: Query to execute
         :param args: Arguments in query
@@ -113,7 +113,7 @@ class DBConnection(object):
 
     def check_db_version(self):
         """
-        Fetch major and minor database version
+        Fetch major and minor database version.
 
         :return: Integer indicating current DB major version
         """
@@ -145,7 +145,7 @@ class DBConnection(object):
 
     def check_db_minor_version(self):
         """
-        Fetch database version
+        Fetch database version.
 
         :return: Integer inidicating current DB major version
         """
@@ -164,7 +164,8 @@ class DBConnection(object):
 
     @property
     def version(self):
-        """The database version
+        """
+        The database version.
 
         :return: A tuple containing the major and minor versions
         """
@@ -172,7 +173,7 @@ class DBConnection(object):
 
     def mass_action(self, querylist=None, logTransaction=False, fetchall=False):
         """
-        Execute multiple queries
+        Execute multiple queries.
 
         :param querylist: list of queries
         :param logTransaction: Boolean to wrap all in one transaction
@@ -228,7 +229,7 @@ class DBConnection(object):
 
     def action(self, query, args=None, fetchall=False, fetchone=False):
         """
-        Execute single query
+        Execute a single query.
 
         :param query: Query string
         :param args: Arguments to query string
@@ -427,7 +428,9 @@ def pretty_name(class_name):
 
 def restore_database(version):
     """
-    Restores a database to a previous version (backup file of version must still exist)
+    Restore a database to a previous version.
+
+    A backup file of the version must still exist.
 
     :param version: Version to restore to
     :return: True if restore succeeds, False if it fails

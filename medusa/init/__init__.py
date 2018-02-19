@@ -8,6 +8,7 @@ import mimetypes
 import os
 import shutil
 import sys
+import collections
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -46,26 +47,41 @@ def _root_location():
     return abs_root
 
 
-def _lib_location(root):
-    return os.path.join(root, 'lib')
+def _pkg_location(root):
+    return os.path.join(root, 'pkgs')
 
 
-def _ext_lib_location(root):
-    return os.path.join(root, 'ext')
+def _custom_pkg_locatoin(root):
+    return os.path.join(root, 'custom')
+
+
+def _common_pkg_location(root):
+    return os.path.join(root, 'common')
+
+
+def _py_version_specific_packages(root, version):
+    return os.path.join(root, 'py{0}'.format(version))
 
 
 def _configure_syspath():
     root = _root_location()
-    log.debug('Root location: {}'.format(root))
-    libs = _lib_location(root)
-    log.debug('Libs location: {}'.format(libs))
-    exts = _ext_lib_location(root)
-    log.debug('Exts location: {}'.format(exts))
+    log.debug('Project root location: {}'.format(root))
+    pkg_root = _pkg_location(root)
+    log.debug('Package root location: {}'.format(pkg_root))
+
+    py_ver = sys.version_info
+    major_ver_pkgs = _py_version_specific_packages(pkg_root, py_ver.major)
+
+    pkgs = collections.OrderedDict()
+    pkgs['Custom'] = _custom_pkg_locatoin(pkg_root)
+    pkgs['Common'] = _common_pkg_location(pkg_root)
+    pkgs['Python version specific'] = major_ver_pkgs
+
     log.debug('Initial sys.path = {}'.format(sys.path))
     log.debug('Inserting libs')
-    sys.path.insert(1, libs)
-    log.debug('Inserting exts')
-    sys.path.insert(1, exts)
+    for pkg, loc in pkgs.items():
+        log.debug('{name} package location: {dir}'.format(name=pkg, dir=loc))
+        sys.path.insert(1, loc)
     log.debug('Current sys.path = {}'.format(sys.path))
 
 
@@ -200,8 +216,9 @@ def _configure_knowit():
 
     os_family = detect_os()
     root = _root_location()
-    libs = _lib_location(root)
-    suggested_path = os.path.join(libs, 'native', os_family)
+    pkg_root = _pkg_location(root)
+    custom = _custom_pkg_locatoin(pkg_root)
+    suggested_path = os.path.join(custom, 'native', os_family)
     if os_family == 'windows':
         subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
         suggested_path = os.path.join(suggested_path, subfolder)

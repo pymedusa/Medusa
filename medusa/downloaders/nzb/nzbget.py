@@ -27,7 +27,8 @@ log.logger.addHandler(logging.NullHandler())
 
 
 def nzb_connection(url):
-    """Method to connect to NZBget client
+    """
+    Connect to NZBget client.
 
     :param url: nzb url to connect
     :return: True if connected, else False
@@ -74,7 +75,7 @@ def test_nzb(host, username, password, use_https):
 
 def send_nzb(nzb, proper=False):
     """
-    Sends NZB to NZBGet client
+    Send NZB to NZBGet client.
 
     :param nzb: nzb object
     :param proper: True if a Proper download, False if not.

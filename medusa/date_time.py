@@ -99,15 +99,13 @@ class DateTime(datetime.datetime):
     @StaticOrInstance
     def display_time(self, dt=None, show_seconds=False, t_preset=None):
         """
-        Display time in application format
-        TODO: Rename this to srftime
+        Display time in application format.
 
         :param dt: datetime object
         :param show_seconds: Boolean, show seconds
         :param t_preset: Preset time format
         :return: time string
         """
-
         try:
             locale.setlocale(locale.LC_TIME, '')
         except Exception:
@@ -153,14 +151,12 @@ class DateTime(datetime.datetime):
     @StaticOrInstance
     def display_date(self, dt=None, d_preset=None):
         """
-        Display date in application format
-        TODO: Rename this to srfdate
+        Display date in application format.
 
         :param dt: datetime object
         :param d_preset: Preset date format
         :return: date string
         """
-
         try:
             locale.setlocale(locale.LC_TIME, '')
         except Exception:
@@ -192,8 +188,7 @@ class DateTime(datetime.datetime):
     @StaticOrInstance
     def display_datetime(self, dt=None, show_seconds=False, d_preset=None, t_preset=None):
         """
-        Show datetime in application format
-        TODO: Rename this to srfdatetime
+        Show datetime in application format.
 
         :param dt: datetime object
         :param show_seconds: Boolean, show seconds as well
@@ -201,7 +196,6 @@ class DateTime(datetime.datetime):
         :param t_preset: Preset time format
         :return: datetime string
         """
-
         try:
             locale.setlocale(locale.LC_TIME, '')
         except Exception:

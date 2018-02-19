@@ -60,8 +60,8 @@ class BlackAndWhiteList(object):
         self._del_all_keywords(b'blacklist')
         self._add_keywords(b'blacklist', values)
         self.blacklist = values
-        log.debug('Blacklist set to: {blacklist}', 
-                  {'blacklist':self.blacklist})
+        log.debug('Blacklist set to: {blacklist}',
+                  {'blacklist': self.blacklist})
 
     def set_white_keywords(self, values):
         """Set whitelist to new values.
