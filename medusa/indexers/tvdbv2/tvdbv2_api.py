@@ -325,21 +325,32 @@ class TVDBv2(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
+        epno = seasnum = None
         for cur_ep in episodes:
             if self.config['dvdorder']:
-                log.debug('Using DVD ordering.')
-                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
+                seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
+                log.debug('Using DVD ordering for season: {0} and episode: {1}', seasnum, epno)
+                use_dvd = seasnum is not None and epno is not None
+                if epno is not None and seasnum is None:
+                    # We didn't get a season number but did get a dvd order episode number. Mark it as special.
+                    seasnum = 0
+                    use_dvd = True
             else:
                 use_dvd = False
 
-            if use_dvd:
-                seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
-                if self.config['dvdorder']:
-                    log.warning('No DVD order available for episode (season: {0}, episode: {1}). '
-                                'Falling back to non-DVD order. '
-                                'Please consider disabling DVD order for the show: {2}({3})',
-                                seasnum, epno, self.shows[tvdb_id]['seriesname'], tvdb_id)
-            else:
+            if self.config['dvdorder'] and not use_dvd:
+                log.warning(
+                    'No DVD order available for episode (season: {0}, episode: {1}). '
+                    'Falling back to non-DVD order. '
+                    'Please consider disabling DVD order for the show: {2}({3})',
+                    seasnum or cur_ep.get('seasonnumber'), epno or cur_ep.get('episodenumber'),
+                    self.shows[tvdb_id]['seriesname'], tvdb_id
+                )
+                seasnum = 0
+                epno = cur_ep.get('episodenumber')
+                use_dvd = True
+
+            if not use_dvd:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
