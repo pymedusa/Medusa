@@ -20,9 +20,8 @@ log.addHandler(logging.NullHandler())
 
 @route('/config/notifications(/?.*)')
 class ConfigNotifications(Config):
-    """
-    Handler for notification configuration
-    """
+    """Handler for notification configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigNotifications, self).__init__(*args, **kwargs)
 

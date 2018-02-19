@@ -26,9 +26,8 @@ log.addHandler(logging.NullHandler())
 
 @route('/config/postProcessing(/?.*)')
 class ConfigPostProcessing(Config):
-    """
-    Handler for Post Processor configuration
-    """
+    """Handler for Post Processor configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigPostProcessing, self).__init__(*args, **kwargs)
 

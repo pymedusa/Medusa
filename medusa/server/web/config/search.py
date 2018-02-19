@@ -24,9 +24,8 @@ log.addHandler(logging.NullHandler())
 
 @route('/config/search(/?.*)')
 class ConfigSearch(Config):
-    """
-    Handler for Search configuration
-    """
+    """Handler for Search configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigSearch, self).__init__(*args, **kwargs)
 

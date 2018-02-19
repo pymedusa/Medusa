@@ -9,9 +9,8 @@ ERROR = 'error'
 
 
 class Notifications(object):
-    """
-    A queue of Notification objects.
-    """
+    """A queue of Notification objects."""
+
     def __init__(self):
         self._messages = []
         self._errors = []
@@ -67,6 +66,7 @@ notifications = Notifications()
 
 class Notification(object):
     """Represents a single notification. Tracks its own timeout and a list of which clients have seen it before."""
+
     def __init__(self, title, message='', notification_type=None, timeout=None):
         self.title = title
         self.message = message
@@ -132,9 +132,8 @@ class ProgressIndicators(object):
 
 
 class QueueProgressIndicator(object):
-    """
-    A class used by the UI to show the progress of the queue or a part of it.
-    """
+    """A class used by the UI to show the progress of the queue or a part of it."""
+
     def __init__(self, name, queueItemList):
         self.queueItemList = queueItemList
         self.name = name

@@ -24,9 +24,8 @@ log.addHandler(logging.NullHandler())
 
 @route('/config/subtitles(/?.*)')
 class ConfigSubtitles(Config):
-    """
-    Handler for Subtitle Search configuration
-    """
+    """Handler for Subtitle Search configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigSubtitles, self).__init__(*args, **kwargs)
 

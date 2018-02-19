@@ -23,9 +23,8 @@ log.addHandler(logging.NullHandler())
 
 @route('/config/anime(/?.*)')
 class ConfigAnime(Config):
-    """
-    Handler for Anime configuration
-    """
+    """Handler for Anime configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigAnime, self).__init__(*args, **kwargs)
 

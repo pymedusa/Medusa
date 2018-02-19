@@ -75,9 +75,8 @@ def get_lookup():
 
 
 class PageTemplate(MakoTemplate):
-    """
-    Mako page template
-    """
+    """Mako page template."""
+
     def __init__(self, rh, filename):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
@@ -157,9 +156,8 @@ class PageTemplate(MakoTemplate):
 
 
 class BaseHandler(RequestHandler):
-    """
-    Base Handler for the server
-    """
+    """Base Handler for the server."""
+
     startTime = 0.
 
     def __init__(self, *args, **kwargs):
@@ -240,9 +238,8 @@ class BaseHandler(RequestHandler):
 
 
 class WebHandler(BaseHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
         self.io_loop = IOLoop.current()
@@ -294,7 +291,7 @@ class WebRoot(WebHandler):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def robots_txt(self):
-        """ Keep web crawlers out """
+        """Keep web crawlers out."""
         self.set_header('Content-Type', 'text/plain')
         return 'User-agent: *\nDisallow: /'
 

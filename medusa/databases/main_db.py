@@ -408,6 +408,7 @@ class TestIncreaseMajorVersion(AddMinorVersion):
     This is done both to test the new update functionality
     and to maintain version parity with other forks.
     """
+
     def test(self):
         """
         Test if the version is < 44.0

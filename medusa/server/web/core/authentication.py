@@ -27,9 +27,8 @@ log.addHandler(logging.NullHandler())
 
 
 class KeyHandler(RequestHandler):
-    """
-    Handler for API Keys.
-    """
+    """Handler for API Keys."""
+
     def __init__(self, *args, **kwargs):
         super(KeyHandler, self).__init__(*args, **kwargs)
 
@@ -99,9 +98,8 @@ class LoginHandler(BaseHandler):
 
 
 class LogoutHandler(BaseHandler):
-    """
-    Handler for Logout
-    """
+    """Handler for Logout."""
+
     def get(self, *args, **kwargs):
         """
         Logout and redirect to the Login page
