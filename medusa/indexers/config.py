@@ -78,7 +78,7 @@ indexerConfig = {
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com/',
-        'show_url': 'http://thetvdb.com/?tab=series&id=',
+        'show_url': 'http://thetvdb.com/?tab=series&id={0}',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
@@ -95,7 +95,7 @@ indexerConfig = {
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'show_url': 'http://www.tvmaze.com/shows/',
+        'show_url': 'http://www.tvmaze.com/shows/{0}',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map their tvmaze id to
         'identifier': 'tvmaze',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
@@ -113,7 +113,7 @@ indexerConfig = {
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org/',
-        'show_url': 'https://www.themoviedb.org/tv/',
+        'show_url': 'https://www.themoviedb.org/tv/{0}',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map their tmdb id to
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
@@ -130,7 +130,7 @@ indexerConfig = {
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'imdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_imdb.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'show_url': 'http://www.imdb.com/title/',
+        'show_url': 'http://www.imdb.com/title/tt{0:07d}',
         'base_url': 'https://v2.sg.media-imdb.com',
         'mapped_to': 'imdb_id',  # The attribute to which other indexers can map their imdb id to
         'identifier': 'imdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
