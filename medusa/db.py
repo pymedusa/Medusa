@@ -67,10 +67,7 @@ class DBConnection(object):
             raise
 
     def _set_row_factory(self):
-        """
-        once lock is aquired we can configure the connection for
-        this particular instance of DBConnection
-        """
+        """Once lock is acquired we can configure the connection for this particular instance of DBConnection."""
         if self.row_type == "dict":
             self.connection.row_factory = DBConnection._dict_factory
         else:

@@ -236,7 +236,7 @@ class ApiHandler(RequestHandler):
     @staticmethod
     def filter_params(cmd, args, kwargs):
         """
-        return only params kwargs that are for cmd
+        Return only params kwargs that are for cmd
         and rename them to a clean version (remove "<cmd>_")
         args are shared across all commands
 
@@ -425,7 +425,7 @@ class ApiCall(ApiHandler):
 
     def _check_param_value(self, value, name, allowed_values):
         """
-        will check if value (or all values in it ) are in allowed values
+        Will check if value (or all values in it ) are in allowed values
         will raise an exception if value is "out of range"
         if bool(allowed_value) is False a check is not performed and all values are excepted
         """
@@ -497,7 +497,7 @@ def _rename_element(dict_obj, old_key, new_key):
 
 def _responds(result_type, data=None, msg=''):
     """
-    result is a string of given "type" (success/failure/timeout/error)
+    Result is a string of given "type" (success/failure/timeout/error)
     message is a human readable string, can be empty
     data is either a dict or a array, can be a empty dict or empty array
     """
@@ -1251,7 +1251,7 @@ class CMD_(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """dGet miscellaneous information about Medusa."""
+        """Get miscellaneous information about Medusa."""
         data = {'sr_version': app.BRANCH, 'api_version': self.version,
                 'api_commands': sorted(function_mapper.keys())}
         return _responds(RESULT_SUCCESS, data)
