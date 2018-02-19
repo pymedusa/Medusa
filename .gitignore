@@ -78,7 +78,7 @@ lib/unrar2/UnRAR.exe
 .coverage*
 .cache
 .pytest_cache
-htmlcov`````````````
+htmlcov
 xo-errors.log
 yarn-error.log
 
