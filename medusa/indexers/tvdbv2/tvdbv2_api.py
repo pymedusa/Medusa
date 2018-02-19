@@ -346,9 +346,15 @@ class TVDBv2(BaseIndexer):
                     seasnum or cur_ep.get('seasonnumber'), epno or cur_ep.get('episodenumber'),
                     self.shows[tvdb_id]['seriesname'], tvdb_id
                 )
-                seasnum = 0
-                epno = cur_ep.get('episodenumber')
-                use_dvd = True
+                if not app.TVDB_DVD_ORDER_EP_IGNORE:
+                    seasnum = 0  # Add as special.
+                    # Use the epno (dvd order) and if not exist fall back to the regular episode number.
+                    epno = epno or cur_ep.get('episodenumber')
+                    use_dvd = True
+                else:
+                    # If TVDB_DVD_ORDER_EP_IGNORE is enabled, we wil not add any episode as a special, when there is not
+                    # dvd ordered episode number.
+                    continue
 
             if not use_dvd:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')

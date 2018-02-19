@@ -538,6 +538,7 @@ class Application(object):
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
             app.SSL_CA_BUNDLE = check_setting_str(app.CFG, 'General', 'ssl_ca_bundle', '')
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
+            app.TVDB_DVD_ORDER_EP_IGNORE = bool(check_setting_int(app.CFG, 'General', 'tvdb_dvd_order_ep_ignore', 0))
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
             app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
@@ -1474,6 +1475,7 @@ class Application(object):
         new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
+        new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
