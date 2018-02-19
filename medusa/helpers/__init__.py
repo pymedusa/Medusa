@@ -25,7 +25,7 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
-from itertools import cycle, izip
+from itertools import cycle
 
 import adba
 import certifi
@@ -59,6 +59,11 @@ try:
     from urllib.parse import splittype
 except ImportError:
     from urllib2 import splittype
+
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass  # zip will be 3.x series
 
 
 def indent_xml(elem, level=0):
@@ -966,18 +971,18 @@ def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 1: Simple XOR encryption (this is not very secure, but works)
     if encryption_version == 1:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data), cycle(unique_key1)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(unique_key1)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
     # Version 2: Simple XOR encryption (this is not very secure, but works)
     elif encryption_version == 2:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data),
-                                                                   cycle(app.ENCRYPTION_SECRET)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
+                                                                  cycle(app.ENCRYPTION_SECRET)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
     else:
         return data

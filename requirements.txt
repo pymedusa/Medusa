@@ -1,11 +1,8 @@
-git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.6.0
 CacheControl==0.12.3
-git+https://github.com/Anorov/cloudflare-scrape.git@85cf963f6eb81804227878df2ca74fe4a309db67#egg=cfscrape
 configobj==5.0.6
 contextlib2==0.5.5
 dogpile.cache==0.6.4
-git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
 futures==3.1.1
 guessit==2.1.4
 html5lib==0.999999999
@@ -15,7 +12,6 @@ knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
 markdown2==2.3.4
-git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.9.0
 PyGithub==1.35
 PyNMA==1.0
@@ -23,9 +19,13 @@ python-dateutil==2.6.1
 requests==2.18.4
 SQLAlchemy==1.1.14
 stevedore==1.26.0
-git+https://github.com/Diaoul/subliminal.git@4c0bcbfd68728241324f509317afdf6beb681f99#egg=subliminal
 tornado==4.5.2
 tornroutes==0.5.1
 validators==0.12.0
 vcrpy==1.11.1
 gntp==1.0.3
+git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
+git+https://github.com/Anorov/cloudflare-scrape.git@85cf963f6eb81804227878df2ca74fe4a309db67#egg=cfscrape
+git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
+git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
+git+https://github.com/Diaoul/subliminal.git@4c0bcbfd68728241324f509317afdf6beb681f99#egg=subliminal
