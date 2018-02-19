@@ -106,27 +106,27 @@ MEDUSA.addShows.newShow = function() {
                         checked = '';
                     }
 
-                    const whichSeries = obj.join('|');
+                    const whichSeries = `${obj.indexerName}|${obj.indexer}|${obj.showUrl}|${obj.seriesId}|${obj.seriesName}|${obj.firstAired}|${obj.network}`;
 
-                    resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
-                    if (data.langid && data.langid !== '' && obj[1] === 1) { // For now only add the language id to the tvdb url, as the others might have different routes.
-                        resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                    resultStr += `<input type="radio" id="whichSeries" name="whichSeries" value="${whichSeries.replace(/"/g, '')}"${checked} /> `;
+                    if (data.langid && data.langid !== '' && obj.indexer === 1) { // For now only add the language id to the tvdb url, as the others might have different routes.
+                        resultStr += `<a href="${MEDUSA.config.anonRedirect}${obj.showUrl}&lid=${data.langid}" onclick="window.open(this.href, '_blank'); return false;" ><b>${obj.seriesName}</b></a>`;
                     } else {
-                        resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                        resultStr += `<a href="${MEDUSA.config.anonRedirect}${obj.showUrl}" onclick="window.open(this.href, '_blank'); return false;" ><b>${obj.seriesName}</b></a>`;
                     }
 
-                    if (obj[5] !== null) {
-                        const startDate = new Date(obj[5]);
+                    if (obj.firstAired !== null) {
+                        const startDate = new Date(obj.firstAired);
                         const today = new Date();
                         if (startDate > today) {
-                            resultStr += ' (will debut on ' + obj[5] + ' on ' + obj[6] + ')';
+                            resultStr += ` (will debut on ${obj.firstAired} on ${obj.network})`;
                         } else {
-                            resultStr += ' (started on ' + obj[5] + ' on ' + obj[6] + ')';
+                            resultStr += ` (started on ${obj.firstAired} on ${obj.network})`;
                         }
                     }
 
-                    if (obj[0] !== null) {
-                        resultStr += ' [' + obj[0] + ']';
+                    if (obj.indexerName !== null) {
+                        resultStr += ` [${obj.indexerName}]`;
                     }
 
                     resultStr += '<br>';

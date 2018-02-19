@@ -95,9 +95,13 @@ class HomeAddShows(Home):
                     logger.log(u'Error searching for show: {error}'.format(error=e.message))
 
         for i, shows in iteritems(results):
-            final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
-                                   show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
-                                   show.get('network', '').encode('utf-8') or 'N/A') for show in shows})
+            final_results.extend({'indexerName': indexerApi(i).name,
+                                  'indexer': i,
+                                  'showUrl': indexerApi(i).config['show_url'].format(show['id']),
+                                  'seriesId': int(show['id']),
+                                  'seriesName': show['seriesname'].encode('utf-8'),
+                                  'firstAired': show['firstaired'] or 'N/A',
+                                  'network': show.get('network', '').encode('utf-8') or 'N/A'} for show in shows)
 
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
