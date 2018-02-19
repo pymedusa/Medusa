@@ -60,6 +60,7 @@ class Notifications(object):
         # return any notifications that haven't been shown to the client already
         return [x.see(remote_ip) for x in self._errors + self._messages if x.is_new(remote_ip)]
 
+
 # static notification queue object
 notifications = Notifications()
 

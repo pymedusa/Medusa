@@ -1,6 +1,6 @@
 import datetime
 
-import db
+from medusa import db
 from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
 from medusa.helper.encoding import ss
 from medusa.show.history import History

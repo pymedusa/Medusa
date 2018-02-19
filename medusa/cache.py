@@ -37,6 +37,7 @@ class MutexLock(AbstractFileLock):
         """Default release_write_lock."""
         return self.mutex.release_write_lock()
 
+
 cache = make_region()
 memory_cache = make_region()
 

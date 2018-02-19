@@ -2,13 +2,13 @@
 """First modules to initialize."""
 
 import codecs
+import collections
 import datetime
 import logging
 import mimetypes
 import os
 import shutil
 import sys
-import collections
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -171,7 +171,7 @@ def _configure_subliminal():
     except ImportError:
         log.warning('Subliminal not available!'
                     ' Subtitles will not be donwloaded')
-        return 
+        return
 
     base = __name__.split('.')[0]
     application = '{base}.subtitles'.format(base=base)
@@ -211,7 +211,7 @@ def _configure_subliminal():
 def _configure_knowit():
     from knowit import api
     from knowit.utils import detect_os
-    
+
     log.debug('Configuring knowit')
 
     os_family = detect_os()

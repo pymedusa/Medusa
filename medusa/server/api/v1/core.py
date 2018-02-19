@@ -21,12 +21,12 @@
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
-from collections import OrderedDict
-from datetime import date, datetime
 import json
 import logging
 import os
 import time
+from collections import OrderedDict
+from datetime import date, datetime
 
 from requests.compat import unquote_plus
 from six import iteritems, text_type

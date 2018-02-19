@@ -8,6 +8,7 @@ import re
 import subprocess
 import time
 
+import knowit
 from babelfish import (
     Country,
     Language,
@@ -16,7 +17,6 @@ from babelfish import (
     language_converters,
 )
 from dogpile.cache.api import NO_VALUE
-import knowit
 from six import iteritems, string_types, text_type
 from subliminal import (
     ProviderPool,
