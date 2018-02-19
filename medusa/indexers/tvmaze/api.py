@@ -382,11 +382,10 @@ class TVmaze(BaseIndexer):
         self._set_show_data(tvmaze_id, '_actors', cur_actors)
 
     def _get_show_data(self, tvmaze_id, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the tvmaze json response
-        into the shows dict in layout:
+        """
+        Takes a series ID, gets the epInfo URL and parses the tvmaze json response into the shows dict in layout.
         shows[series_id][season_number][episode_number]
         """
-
         if self.config['language'] is None:
             log.debug('Config language is none, using show language')
             if language is None:

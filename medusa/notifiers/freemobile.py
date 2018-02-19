@@ -101,15 +101,14 @@ class Notifier(object):
 
     def _notifyFreeMobile(self, title, message, cust_id=None, apiKey=None, force=False):  # pylint: disable=too-many-arguments
         """
-        Sends a SMS notification
+        Sends an SMS notification.
 
-        title: The title of the notification to send
-        message: The message string to send
-        cust_id: Your Free Mobile customer ID
-        apikey: Your Free Mobile API key
-        force: Enforce sending, for instance for testing
+        :param title: The title of the notification to send
+        :param message: The message string to send
+        :param cust_id: Your Free Mobile customer ID
+        :param apikey: Your Free Mobile API key
+        :param force: Enforce sending, for instance for testing
         """
-
         if not app.USE_FREEMOBILE and not force:
             log.debug(u'Notification for Free Mobile not enabled, skipping this notification')
             return False, 'Disabled'

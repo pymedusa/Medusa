@@ -59,7 +59,6 @@ class ComingEpisodes(object):
         :param paused: ``True`` to include paused shows, ``False`` otherwise
         :return: The list of coming episodes
         """
-
         categories = ComingEpisodes._get_categories(categories)
         sort = ComingEpisodes._get_sort(sort)
 

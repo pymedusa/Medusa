@@ -94,15 +94,14 @@ class Notifier(object):
 
     def _sendNMJ(self, host, database, mount=None):
         """
-        Send a NMJ update command to the specified machine
+        Send a NMJ update command to the specified machine.
 
-        host: The hostname/IP to send the request to (no port)
-        database: The database to send the request to
-        mount: The mount URL to use (optional)
+        :param host: The hostname/IP to send the request to (no port)
+        :param database: The database to send the request to
+        :param mount: The mount URL to use (optional)
 
-        return: True if the request succeeded, False otherwise
+        :return: True if the request succeeded, False otherwise
         """
-
         # if a mount URL is provided then attempt to open a handle to that URL
         if mount:
             try:

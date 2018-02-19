@@ -37,16 +37,15 @@ class Notifier(object):
 
     def _sendPushover(self, msg, title, sound=None, userKey=None, apiKey=None):
         """
-        Sends a pushover notification to the address provided
+        Sends a pushover notification to the address provided.
 
-        msg: The message to send (unicode)
-        title: The title of the message
-        sound: The notification sound to use
-        userKey: The pushover user id to send the message to (or to subscribe with)
-        apiKey: The pushover api key to use
-        returns: True if the message succeeded, False otherwise
+        :param msg: The message to send (unicode)
+        :param title: The title of the message
+        :param sound: The notification sound to use
+        :param userKey: The pushover user id to send the message to (or to subscribe with)
+        :param apiKey: The pushover api key to use
+        :returns: True if the message succeeded, False otherwise
         """
-
         if userKey is None:
             userKey = app.PUSHOVER_USERKEY
 
@@ -158,7 +157,7 @@ class Notifier(object):
 
     def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, force=False):
         """
-        Sends a pushover notification based on the provided info or Medusa config
+        Sends a pushover notification based on the provided info or Medusa config.
 
         title: The title of the notification to send
         message: The message string to send
@@ -167,7 +166,6 @@ class Notifier(object):
         apiKey: The apiKey to use to send the notification
         force: Enforce sending, for instance for testing
         """
-
         if not app.USE_PUSHOVER and not force:
             log.debug(u'Notification for Pushover not enabled, skipping this notification')
             return False

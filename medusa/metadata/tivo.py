@@ -145,22 +145,16 @@ class TIVOMetadata(generic.GenericMetadata):
 
     def _ep_data(self, ep_obj):
         """
-        Creates a key value structure for a Tivo episode metadata file and
-        returns the resulting data object.
-
-        ep_obj: a Episode instance to create the metadata file for.
+        Creates a key value structure for a Tivo episode metadata file and returns the resulting data object.
 
         Lookup the show in http://thetvdb.com/ using the python library:
-
-        https://github.com/dbr/indexer_api/
-
+            https://github.com/dbr/indexer_api/
         The results are saved in the object myShow.
-
         The key values for the tivo metadata file are from:
+            http://pytivo.sourceforge.net/wiki/index.php/Metadata
 
-        http://pytivo.sourceforge.net/wiki/index.php/Metadata
+        :param ep_obj: an Episode instance to create the metadata file for.
         """
-
         data = ''
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
@@ -278,17 +272,15 @@ class TIVOMetadata(generic.GenericMetadata):
 
     def write_ep_file(self, ep_obj):
         """
-        Generates and writes ep_obj's metadata under the given path with the
-        given filename root. Uses the episode's name with the extension in
-        _ep_nfo_extension.
+        Generates and writes ep_obj's metadata under the given path with the given filename root.
 
-        ep_obj: Episode object for which to create the metadata
+        ses the episode's name with the extension in _ep_nfo_extension.
 
-        file_name_path: The file name to use for this metadata. Note that the extension
+        :param ep_obj: Episode object for which to create the metadata
+        :param file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should
                 include an absolute path.
         """
-
         data = self._ep_data(ep_obj)
 
         if not data:

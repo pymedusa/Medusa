@@ -51,7 +51,6 @@ class History(object):
             no value will return everything (up to ``limit``)
         :return: The last ``limit`` elements of type ``action`` in the history
         """
-
         # TODO: Make this a generator instead
         # TODO: Split compact and detailed into separate methods
         # TODO: Add a date limit as well

@@ -91,11 +91,10 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         """
         Returns the full path to the file for a given season poster.
 
-        show_obj: a Series instance for which to generate the path
-        season: a season number to be used for the path. Note that season 0
-                means specials.
+        :param show_obj: a Series instance for which to generate the path
+        :param season: a season number to be used for the path
+            Note that season 0 means specials.
         """
-
         # Our specials thumbnail is, well, special
         if season == 0:
             season_poster_filename = 'season-specials'

@@ -8,7 +8,6 @@ def get_quality_string(quality):
     :param quality: The quality to convert into a string
     :return: The string representation of the provided quality
     """
-
     if quality in qualityPresetStrings:
         return qualityPresetStrings[quality]
 

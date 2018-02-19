@@ -326,11 +326,7 @@ class ApiCall(ApiHandler):
         return _responds(RESULT_ERROR, msg=msg)
 
     def check_params(self, args, kwargs, key, default, required, arg_type, allowed_values):
-
-        """ function to check passed params for the shorthand wrapper
-            and to detect missing/required params
-        """
-
+        """Check passed params for the shorthand wrapper detect missing/required params."""
         # auto-select indexer
         if key in INDEXER_IDS:
             if 'tvdbid' in kwargs:
@@ -1043,14 +1039,13 @@ class CMD_History(ApiCall):
 
         def make_result(cur_item, cur_type):
             """
-            Make an API result from a history item
+            Make an API result from a history item.
 
             :param cur_item: to convert to API item
             :param cur_type: the type of action to return
 
             :returns: an API result
             """
-
             def convert_date(history_date):
                 """
                 Convert date from a history date to datetime format
@@ -1132,8 +1127,7 @@ class CMD_Failed(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get the failed downloads """
-
+        """Get the failed downloads."""
         failed_db_con = db.DBConnection('failed.db', row_type='dict')
 
         u_limit = min(int(self.limit), 100)
@@ -1155,8 +1149,7 @@ class CMD_Backlog(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get the backlogged episodes """
-
+        """Get the backlogged episodes."""
         shows = []
 
         main_db_con = db.DBConnection(row_type='dict')
@@ -1277,8 +1270,7 @@ class CMD_AddRootDir(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Add a new root (parent) directory to Medusa """
-
+        """Add a new root (parent) directory to Medusa."""
         self.location = unquote_plus(self.location)
         location_matched = False
         index = 0
@@ -1441,8 +1433,7 @@ class CMD_GetDefaults(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get Medusa's user default configuration value """
-
+        """Get Medusa's user default configuration value."""
         any_qualities, best_qualities = _map_quality(app.QUALITY_DEFAULT)
 
         data = {'status': statusStrings[app.STATUS_DEFAULT].lower(),
@@ -1479,8 +1470,7 @@ class CMD_GetRootDirs(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get all root (parent) directories """
-
+        """Get all root (parent) directories."""
         return _responds(RESULT_SUCCESS, _get_root_dirs())
 
 
@@ -1567,8 +1557,7 @@ class CMD_SearchIndexers(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Search for a show with a given name on all the indexers, in a specific language """
-
+        """Search for a show with a given name on all the indexers, in a specific language."""
         results = []
         lang_id = self.valid_languages[self.lang]
 
@@ -1698,8 +1687,7 @@ class CMD_SetDefaults(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Set Medusa's user default configuration value """
-
+        """Set Medusa's user default configuration value."""
         i_quality_id = []
         a_quality_id = []
 

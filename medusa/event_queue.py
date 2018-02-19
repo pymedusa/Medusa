@@ -18,10 +18,7 @@ class Event(object):
 
     @property
     def event_type(self):
-        """
-        Returns the type of the event.
-        """
-
+        """Returns the type of the event."""
         return self._type
 
 

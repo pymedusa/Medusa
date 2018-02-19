@@ -137,7 +137,6 @@ def http_code_description(http_code):
     :param http_code: The HTTP status code
     :return: The description of the provided ``http_code``
     """
-
     description = http_status_code.get(try_int(http_code))
 
     if isinstance(description, list):
@@ -152,7 +151,6 @@ def is_sync_file(filename):
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a sync file, ``False`` otherwise
     """
-
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
@@ -169,7 +167,6 @@ def is_torrent_or_nzb_file(filename):
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a NZB file or a torrent file, ``False`` otherwise
     """
-
     if not isinstance(filename, (str, text_type)):
         return False
 
@@ -262,7 +259,6 @@ def remove_extension(filename):
     :param filename: The filename from which we want to remove the extension
     :return: The ``filename`` without its extension.
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, extension = filename.rpartition('.')
 
@@ -279,7 +275,6 @@ def replace_extension(filename, new_extension):
     :param new_extension: The new extension to apply on the ``filename``
     :return: The ``filename`` with the new extension
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, _ = filename.rpartition('.')
 
@@ -295,7 +290,6 @@ def sanitize_filename(filename):
     :param filename: The filename to clean
     :return: The ``filename``cleaned
     """
-
     if isinstance(filename, (str, text_type)):
         filename = re.sub(r'[\\/\*]', '-', filename)
         filename = re.sub(r'[:"<>|?]', '', filename)
@@ -314,7 +308,6 @@ def try_int(candidate, default_value=0):
     :param default_value: The value to return if the conversion fails
     :return: ``candidate`` as int, or ``default_value`` if the conversion fails
     """
-
     try:
         return int(candidate)
     except (ValueError, TypeError):

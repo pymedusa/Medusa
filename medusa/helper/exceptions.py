@@ -10,7 +10,6 @@ def ex(e):
     :param e: The exception to convert into a unicode string
     :return: A unicode string from the exception text if it exists
     """
-
     message = u''
 
     if not e or not e.args:

@@ -527,10 +527,10 @@ class GitUpdateManager(UpdateManager):
 
     def _check_github_for_update(self):
         """
-        Uses git commands to check if there is a newer version that the provided
-        commit hash. If there is a newer version it sets _num_commits_behind.
-        """
+        Uses git commands to check if there is a newer version that the provided commit hash.
 
+        If there is a newer version it sets _num_commits_behind.
+        """
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
@@ -806,13 +806,13 @@ class SourceUpdateManager(UpdateManager):
         return True
 
     def _check_github_for_update(self):
-        """Use pygithub to ask github if there is a newer version..
+        """
+        Use pygithub to ask github if there is a newer version..
 
         If there is a newer version it sets application's version text.
 
-        commit_hash: hash that we're checking against
+        :param commit_hash: hash that we're checking against
         """
-
         self._num_commits_behind = 0
         self._newest_commit_hash = None
 
@@ -878,10 +878,7 @@ class SourceUpdateManager(UpdateManager):
         app.NEWEST_VERSION_STRING = newest_text
 
     def update(self):
-        """
-        Downloads the latest source tarball from github and installs it over the existing version.
-        """
-
+        """Downloads the latest source tarball from github and installs it over the existing version."""
         tar_download_url = 'http://github.com/' + self.github_org + '/' + self.github_repo + '/tarball/' + self.branch
 
         try:

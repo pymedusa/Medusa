@@ -168,10 +168,7 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def testNaming(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
-        """
-        Test episode naming pattern
-        """
-
+        """Test episode naming pattern."""
         if multi is not None:
             multi = int(multi)
 
@@ -225,10 +222,10 @@ class ConfigPostProcessing(Config):
     @staticmethod
     def isRarSupported():
         """
-        Test Packing Support:
-            - Simulating in memory rar extraction on test.rar file
-        """
+        Test Packing Support.
 
+        - Simulating in memory rar extraction on test.rar file
+        """
         try:
             rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
             testing = RarFile(rar_path).read_files('*test.txt')

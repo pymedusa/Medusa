@@ -36,7 +36,6 @@ class GenericMedia(object):
         :param series_obj: The series object.
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
         """
-
         self.series_obj = series_obj
         self.series_id = series_obj.series_id
 
@@ -56,7 +55,6 @@ class GenericMedia(object):
     @property
     def media(self):
         """Get the contents of the desired media file."""
-
         static_media_path = self.static_media_path
 
         if isfile(static_media_path):

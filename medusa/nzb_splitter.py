@@ -30,7 +30,6 @@ def get_season_nzbs(name, url_data, season):
     :param season: Season to check
     :return: dict of (episode files, xml matches)
     """
-
     # TODO: clean up these regex'es, comment them, and make them all raw strings
     regex_string = {
         # Match the xmlns in an nzb

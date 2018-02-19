@@ -13,7 +13,6 @@ def ss(var):
     :param var: String to convert
     :return: Converted string
     """
-
     var = _to_unicode(var)
 
     try:
@@ -37,7 +36,6 @@ def _fix_list_encoding(var):
     :param var: List or tuple to convert to Unicode
     :return: Unicode converted input
     """
-
     if isinstance(var, (list, tuple)):
         return filter(lambda x: x is not None, map(_to_unicode, var))
 
@@ -51,7 +49,6 @@ def _to_unicode(var):
     :param var: String to convert
     :return: Converted string as unicode, fallback is System encoding
     """
-
     if isinstance(var, str):
         try:
             var = text_type(var)

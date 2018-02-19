@@ -100,16 +100,13 @@ class Notifier(object):
     def update_library(self, ep_obj=None, hosts=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
                        username=None, password=None,
                        plex_server_token=None, force=False):
-
-        """Handles updating the Plex Media Server host via HTTP API
+        """
+        Update Plex Media Server host via HTTP API.
 
         Plex Media Server currently only supports updating the whole video library and not a specific path.
 
-        Returns:
-            Returns None for no issue, else a string of host with connection issues
-
+        :returns: None for no issue or a string of host with connection issues
         """
-
         if not (app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY) and not force:
             return None
 

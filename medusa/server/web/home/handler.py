@@ -1005,7 +1005,6 @@ class Home(WebRoot):
 
         @return: A json with a {'success': true} or false.
         """
-
         # Try to retrieve the cached result from the providers cache table.
         # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
@@ -1079,7 +1078,6 @@ class Home(WebRoot):
         Periodic check if the search thread is still running for the selected
         show/season/ep and if there are new results in the cache.db
         """
-
         refresh_results = 'refresh'
 
         indexer_id = indexer_name_to_id(indexername)
@@ -1157,7 +1155,6 @@ class Home(WebRoot):
     def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
                         perform_search=0, down_cur_quality=0, show_all_results=0):
         """The view with results for the manual selected show/episode."""
-
         # @TODO: add more comprehensive show validation
         try:
             indexer_id = indexer_name_to_id(indexername)
@@ -1421,7 +1418,6 @@ class Home(WebRoot):
         :param language: Language two-letter country code. For ex: 'en'
         :returns: True if show is found in language else False
         """
-
         # Get the Indexer used by the show
         show_indexer = indexerApi(series_obj.indexer)
 

@@ -309,7 +309,6 @@ def change_version_notify(version_notify):
 
     :param version_notify: New frequency
     """
-
     oldSetting = app.VERSION_NOTIFY
 
     app.VERSION_NOTIFY = version_notify
@@ -440,7 +439,6 @@ def change_process_automatically(process_automatically):
 
 def check_section(CFG, sec):
     """Check if INI section exists, if not create it."""
-
     if sec in CFG:
         return True
 
@@ -455,7 +453,6 @@ def checkbox_to_value(option, value_on=1, value_off=0):
     Turns checkbox option 'on' or 'true' to value_on (1)
     any other value returns value_off (0).
     """
-
     if isinstance(option, list):
         option = option[-1]
 
@@ -473,7 +470,6 @@ def clean_host(host, default_port=None):
     Returns host or host:port or empty string from a given url or host
     If no port is found and default_port is given use host:default_port
     """
-
     host = host.strip()
 
     if host:
@@ -530,10 +526,8 @@ def clean_url(url):
     """
     Clean a url.
 
-    Returns an cleaned url starting with a scheme and folder with trailing /
-    or an empty string
+    :return: a cleaned url starting with a scheme and folder with trailing / or an empty string
     """
-
     if url and url.strip():
 
         url = url.strip()
@@ -563,7 +557,6 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
     :param trim: Optionally trim the individual list items.
     :return: The delimited value as a list.
     """
-
     if not isinstance(value, (string_types, text_type)):
         return value
 
@@ -580,7 +573,6 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
 ################################################################################
 def minimax(val, default, low, high):
     """Return value forced within range."""
-
     val = try_int(val, default)
 
     if val < low:
@@ -775,11 +767,7 @@ def save_provider_setting(config, provider, attr, **kwargs):
 
 class ConfigMigrator(object):
     def __init__(self, config_obj):
-        """
-        Initializes a config migrator that can take the config from the version indicated in the config.
-        file up to the version required by Medusa
-        """
-
+        """Initializes a config migrator that can take the config from the version indicated in the config file up to the version required by Medusa."""
         self.config_obj = config_obj
 
         # check the version of the config
@@ -799,10 +787,7 @@ class ConfigMigrator(object):
         }
 
     def migrate_config(self):
-        """
-        Calls each successive migration until the config is the same version expected.
-        """
-
+        """Calls each successive migration until the config is the same version expected."""
         if self.config_version > self.expected_config_version:
             msg = u"""
             Your config version (%i) has been incremented past what this
@@ -842,10 +827,7 @@ class ConfigMigrator(object):
 
     # Migration v1: Custom naming
     def _migrate_v1(self):
-        """
-        Reads in the old naming settings from your config and generates a new config template from them.
-        """
-
+        """Read old naming settings from config and generates new config template."""
         app.NAMING_PATTERN = self._name_to_pattern()
         log.info(u"Based on your old settings I'm setting your new naming pattern to: {pattern}",
                  {'pattern': app.NAMING_PATTERN})
@@ -968,7 +950,6 @@ class ConfigMigrator(object):
     # Migration v4: Add default newznab cat_ids
     def _migrate_v4(self):
         """Update newznab providers so that the category IDs can be set independently via the config."""
-
         new_newznab_data = []
         old_newznab_data = check_setting_str(self.config_obj, 'Newznab', 'newznab_data', '')
 
@@ -1022,7 +1003,6 @@ class ConfigMigrator(object):
         Drop the use of use_banner option.
         Migrate the poster override to just using the banner option (applies to xbmc only).
         """
-
         metadata_xbmc = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0')
         metadata_xbmc_12plus = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0')
         metadata_mediabrowser = check_setting_str(self.config_obj, 'General', 'metadata_mediabrowser', '0|0|0|0|0|0')
@@ -1117,7 +1097,6 @@ class ConfigMigrator(object):
         comma separated values, using this the format documented here:
         http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
         """
-
         def get_providers_from_data(providers_string):
             """Split the provider string into providers, and get the provider names."""
             return [provider.split('|')[0].upper() for provider in providers_string.split('!!!') if provider]

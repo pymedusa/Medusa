@@ -96,12 +96,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
 
     def get_episode_file_path(self, ep_obj):
         """
-        Returns a full show dir/metadata/episode.xml path for MediaBrowser
-        episode metadata files
+        Returns a full show dir/metadata/episode.xml path for MediaBrowser episode metadata files
 
-        ep_obj: a Episode object to get the path for
+        :param ep_obj: an Episode object to get the path for
         """
-
         if os.path.isfile(ep_obj.location):
             xml_file_name = replace_extension(os.path.basename(ep_obj.location), self._ep_nfo_extension)
             metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), u'metadata')
@@ -116,12 +114,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
     @staticmethod
     def get_episode_thumb_path(ep_obj):
         """
-        Returns a full show dir/metadata/episode.jpg path for MediaBrowser
-        episode thumbs.
+        Returns a full show dir/metadata/episode.jpg path for MediaBrowser episode thumbs.
 
-        ep_obj: a Episode object to get the path from
+        :param ep_obj: an Episode object to get the path from
         """
-
         if os.path.isfile(ep_obj.location):
             tbn_file_name = replace_extension(os.path.basename(ep_obj.location), u'jpg')
             metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), u'metadata')
@@ -134,11 +130,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
     @staticmethod
     def get_season_poster_path(show_obj, season):
         """
-        Season thumbs for MediaBrowser go in Show Dir/Season X/folder.jpg
+        Season thumbs for MediaBrowser go in Show Dir/Season X/folder.jpg.
 
-        If no season folder exists, None is returned
+        :returns: None if no season folder exists
         """
-
         dir_list = [x for x in os.listdir(show_obj.location) if
                     os.path.isdir(os.path.join(show_obj.location, x))]
 
@@ -176,11 +171,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
     @staticmethod
     def get_season_banner_path(show_obj, season):
         """
-        Season thumbs for MediaBrowser go in Show Dir/Season X/banner.jpg
+        Season thumbs for MediaBrowser go in Show Dir/Season X/banner.jpg.
 
-        If no season folder exists, None is returned
+        :returns: None if no season folder exists
         """
-
         dir_list = [x for x in os.listdir(show_obj.location) if
                     os.path.isdir(os.path.join(show_obj.location, x))]
 
@@ -355,12 +349,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
 
     def _ep_data(self, ep_obj):
         """
-        Creates an elementTree XML structure for a MediaBrowser style episode.xml
-        and returns the resulting data object.
+        Creates an elementTree XML structure for a MediaBrowser style episode.xml and returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        :param ep_obj: an Episode to create the NFO for
         """
-
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         persons_dict = {

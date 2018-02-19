@@ -31,7 +31,6 @@ session = MedusaSafeSession()
 # update the network timezone table
 def update_network_dict():
     """Update timezone information from Medusa repositories."""
-
     log.debug(u'Started updating network timezones')
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
@@ -112,7 +111,6 @@ def get_network_timezone(network, _network_dict):
     :param _network_dict: dict to look up in (haystack)
     :return:
     """
-
     # Get the name of the networks timezone from _network_dict
     network_tz_name = _network_dict[network] if network in _network_dict else None
 
@@ -134,7 +132,6 @@ def parse_date_time(d, t, network):
     :param network: network to use as base
     :return: datetime object containing local time
     """
-
     if not network_dict:
         load_network_dict()
 

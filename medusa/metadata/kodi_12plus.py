@@ -96,12 +96,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
     # SHOW DATA
     def _show_data(self, series_obj):
         """
-        Creates an elementTree XML structure for an KODI-style tvshow.nfo and
-        returns the resulting data object.
+        Creates an elementTree XML structure for an KODI-style tvshow.nfo and returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        :param show_obj: a Series instance to create the NFO for
         """
-
         my_show = self._get_show_data(series_obj)
 
         # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method

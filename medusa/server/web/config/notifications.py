@@ -87,10 +87,7 @@ class ConfigNotifications(Config):
                           email_show=None,
                           use_slack=None, slack_notify_onsnatch=None, slack_notify_ondownload=None, slack_notify_onsubtitledownload=None,
                           slack_webhook=None):
-        """
-        Save notification related settings
-        """
-
+        """Save notification related settings."""
         results = []
 
         app.USE_KODI = config.checkbox_to_value(use_kodi)

@@ -143,7 +143,7 @@ class Notifier(object):
 
     def _notify_telegram(self, title, message, user_id=None, api_key=None, force=False):
         """
-        Sends a Telegram notification
+        Sends a Telegram notification.
 
         :param title: The title of the notification to send
         :param message: The message string to send
@@ -153,7 +153,6 @@ class Notifier(object):
 
         :returns: the message to send
         """
-
         if not (force or app.USE_TELEGRAM):
             log.debug('Notification for Telegram not enabled, skipping this notification')
             return False, 'Disabled'

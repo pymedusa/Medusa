@@ -56,10 +56,7 @@ class ConfigSearch(Config):
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
                    torrent_seed_location=None):
-        """
-        Save Search related settings
-        """
-
+        """Save Search related settings."""
         results = []
 
         if not config.change_nzb_dir(nzb_dir):

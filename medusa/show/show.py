@@ -54,7 +54,6 @@ class Show(object):
          - an error message if the show could not be deleted, ``None`` otherwise
          - the show object that was deleted, if it exists, ``None`` otherwise
         """
-
         error, show = Show._validate_indexer_id(indexer_id, series_id)
 
         if error is not None:
@@ -195,7 +194,6 @@ class Show(object):
          - an error message if the pause state could not be changed, ``None`` otherwise
          - the show object that was updated, if it exists, ``None`` otherwise
         """
-
         error, show = Show._validate_indexer_id(indexer_id, series_id)
 
         if error is not None:
@@ -220,7 +218,6 @@ class Show(object):
          - an error message if the show could not be refreshed, ``None`` otherwise
          - the show object that was refreshed, if it exists, ``None`` otherwise
         """
-
         error, series_obj = Show._validate_indexer_id(indexer_id, series_id)
 
         if error is not None:
@@ -243,7 +240,6 @@ class Show(object):
          - an error message if the indexer id is not correct, ``None`` otherwise
          - the show object corresponding to ``indexer_id`` if it exists, ``None`` otherwise
         """
-
         try:
             series = Show.find_by_id(app.showList, indexer_id, series_id)
         except MultipleShowObjectsException:

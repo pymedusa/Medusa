@@ -281,7 +281,6 @@ class DBConnection(object):
         :param args:  arguments to query string
         :return: query results
         """
-
         sql_results = self.action(query, args, fetchall=True)
 
         if sql_results is None:
@@ -313,7 +312,6 @@ class DBConnection(object):
         :param valueDict: values in table to update/insert
         :param keyDict:  columns in table to update/insert
         """
-
         changesBefore = self.connection.total_changes
 
         genParams = lambda myDict: [x + " = ?" for x in myDict.keys()]

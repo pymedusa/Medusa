@@ -131,11 +131,10 @@ class WDTVMetadata(generic.GenericMetadata):
     @staticmethod
     def get_season_poster_path(show_obj, season):
         """
-        Season thumbs for WDTV go in Show Dir/Season X/folder.jpg
+        Season thumbs for WDTV go in Show Dir/Season X/folder.jpg.
 
-        If no season folder exists, None is returned
+        :returns: None if no season folder exists
         """
-
         dir_list = [x for x in os.listdir(show_obj.location) if
                     os.path.isdir(os.path.join(show_obj.location, x))]
 
@@ -169,12 +168,10 @@ class WDTVMetadata(generic.GenericMetadata):
 
     def _ep_data(self, ep_obj):
         """
-        Creates an elementTree XML structure for a WDTV style episode.xml
-        and returns the resulting data object.
+        Creates an elementTree XML structure for a WDTV style episode.xml and returns the resulting data object.
 
-        ep_obj: a Series instance to create the NFO for
+        :param ep_obj: a Series instance to create the NFO for
         """
-
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         my_show = self._get_show_data(ep_obj.series)

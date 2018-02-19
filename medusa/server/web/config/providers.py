@@ -42,10 +42,7 @@ class ConfigProviders(Config):
 
     @staticmethod
     def canAddNewznabProvider(name):
-        """
-        See if a Newznab provider can be added
-        """
-
+        """See if a Newznab provider can be added."""
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
@@ -60,10 +57,7 @@ class ConfigProviders(Config):
 
     @staticmethod
     def saveNewznabProvider(name, url, api_key=''):
-        """
-        Save a Newznab Provider
-        """
-
+        """Save a Newznab Provider."""
         if not name or not url:
             return '0'
 
@@ -119,10 +113,7 @@ class ConfigProviders(Config):
 
     @staticmethod
     def deleteNewznabProvider(nnid):
-        """
-        Delete a Newznab Provider
-        """
-
+        """Delete a Newznab Provider."""
         provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
 
         if nnid not in provider_dict or provider_dict[nnid].default:
@@ -160,10 +151,7 @@ class ConfigProviders(Config):
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, title_tag):
-        """
-        Save a Torrent Provider
-        """
-
+        """Save a Torrent Provider."""
         if not name or not url:
             return '0'
 
