@@ -180,8 +180,7 @@ class HomeAddShows(Home):
 
     def newShow(self, show_to_add=None, other_shows=None, search_string=None):
         """
-        Display the new show page which collects a tvdb id, folder, and extra options and
-        posts them to addNewShow
+        Display new show page which collects a tvdb id, folder, and extra options and posts them to addNewShow.
         """
         t = PageTemplate(rh=self, filename='addShows_newShow.mako')
 
@@ -224,8 +223,7 @@ class HomeAddShows(Home):
 
     def trendingShows(self, traktList=None):
         """
-        Display the new show page which collects a tvdb id, folder, and extra options and
-        posts them to addNewShow
+        Display the new show page which collects a tvdb id, folder, and extra options and posts them to addNewShow
         """
         trakt_list = traktList if traktList else ''
 
@@ -360,7 +358,7 @@ class HomeAddShows(Home):
 
     def existingShows(self):
         """
-        Prints out the page to add existing shows from a root dir
+        Prints out the page to add existing shows from a root dir.
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
@@ -598,8 +596,7 @@ class HomeAddShows(Home):
 
     def addExistingShows(self, shows_to_add=None, promptForSettings=None):
         """
-        Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
-        along to the newShow page.
+        Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards along to the newShow page.
         """
         prompt_for_settings = promptForSettings
 

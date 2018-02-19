@@ -18,7 +18,7 @@ class Notifications(object):
 
     def message(self, title, message=''):
         """
-        Add a regular notification to the queue
+        Add a regular notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
@@ -34,7 +34,7 @@ class Notifications(object):
 
     def error(self, title, message=''):
         """
-        Add an error notification to the queue
+        Add an error notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
@@ -65,10 +65,7 @@ notifications = Notifications()
 
 
 class Notification(object):
-    """
-    Represents a single notification. Tracks its own timeout and a list of which clients have
-    seen it before.
-    """
+    """Represents a single notification. Tracks its own timeout and a list of which clients have seen it before."""
     def __init__(self, title, message='', notification_type=None, timeout=None):
         self.title = title
         self.message = message
@@ -87,9 +84,7 @@ class Notification(object):
             self._timeout = datetime.timedelta(minutes=1)
 
     def is_new(self, remote_ip='127.0.0.1'):
-        """
-        Returns True if the notification hasn't been displayed to the current client (aka IP address).
-        """
+        """Returns True if the notification hasn't been displayed to the current client (aka IP address)."""
         return remote_ip not in self._seen
 
     def is_expired(self):
@@ -99,9 +94,7 @@ class Notification(object):
         return datetime.datetime.now() - self._when > self._timeout
 
     def see(self, remote_ip='127.0.0.1'):
-        """
-        Returns this notification object and marks it as seen by the client ip
-        """
+        """Returns this notification object and marks it as seen by the client ip."""
         self._seen.append(remote_ip)
         return self
 

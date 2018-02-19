@@ -9,8 +9,8 @@ import os
 import re
 import time
 import traceback
-
 from concurrent.futures import ThreadPoolExecutor
+
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED

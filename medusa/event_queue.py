@@ -19,7 +19,7 @@ class Event(object):
     @property
     def event_type(self):
         """
-        Returns the type of the event
+        Returns the type of the event.
         """
 
         return self._type
@@ -40,7 +40,7 @@ class Events(threading.Thread):
 
     def run(self):
         """
-        Actually runs the thread to process events
+        Actually runs the thread to process events.
         """
         try:
             while not self.stop.is_set():

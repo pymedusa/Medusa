@@ -87,7 +87,7 @@ def update_network_dict():
 # load network timezones from db into dict
 def load_network_dict():
     """
-    Load network timezones from db into dict network_dict (global dict)
+    Load network timezones from db into dict network_dict (global dict).
     """
     try:
         cache_db_con = db.DBConnection('cache.db')
@@ -106,7 +106,7 @@ def load_network_dict():
 # get timezone of a network or return default timezone
 def get_network_timezone(network, _network_dict):
     """
-    Get a timezone of a network from a given network dict
+    Get a timezone of a network from a given network dict.
 
     :param network: network to look up (needle)
     :param _network_dict: dict to look up in (haystack)
@@ -127,7 +127,7 @@ def get_network_timezone(network, _network_dict):
 # parse date and time string into local time
 def parse_date_time(d, t, network):
     """
-    Parse date and time string into local time
+    Parse date and time string into local time.
 
     :param d: date string
     :param t: time string

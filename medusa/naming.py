@@ -52,7 +52,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
 
     def _is_anime(self):
         """
-        Find out if show is anime
+        Find out if show is anime.
         :return: True if show is anime, False if not
         """
         return bool(self.anime)
@@ -61,7 +61,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
 
     def _is_sports(self):
         """
-        Find out if show is sports
+        Find out if show is sports.
         :return: True if show is sports, False if not
         """
         return bool(self.sports)
@@ -70,7 +70,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
 
     def _is_scene(self):
         """
-        Find out if show is scene numbering
+        Find out if show is scene numbering.
         :return: True if show is scene numbering, False if not
         """
         return bool(self.scene)
@@ -96,8 +96,7 @@ class TVEpisode(tv.Episode):  # pylint: disable=too-many-instance-attributes
 
 def check_force_season_folders(pattern=None, multi=None, anime_type=None):
     """
-    Checks if the name can still be parsed if you strip off the folders to determine if we need to force season folders
-    to be enabled or not.
+    Checks if the name can still be parsed if you strip off the folders to determine if we need to force season folders to be enabled or not.
 
     :return: true if season folders need to be forced on or false otherwise.
     """
@@ -170,7 +169,7 @@ def check_valid_sports_naming(pattern=None):
 def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-many-arguments, too-many-return-statements
                   file_only=False, abd=False, sports=False):
     """
-    See if we understand a name
+    See if we understand a name.
 
     :param pattern: Name to analyse
     :param multi: Is this a multi-episode name

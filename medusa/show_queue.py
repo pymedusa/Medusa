@@ -325,10 +325,7 @@ class QueueItemAdd(ShowQueueItem):
         self.priority = generic_queue.QueuePriorities.HIGH
 
     def _get_name(self):
-        """
-        Returns the show name if there is a show object created, if not returns
-        the dir that the show is being added to.
-        """
+        """Returns the show name if there is a show object created, if not returns the dir that the show is being added to."""
         if self.show is None:
             return self.showDir
         return self.show.name
@@ -336,10 +333,7 @@ class QueueItemAdd(ShowQueueItem):
     show_name = property(_get_name)
 
     def _is_loading(self):
-        """
-        Returns True if we've gotten far enough to have a show object, or False
-        if we still only know the folder name.
-        """
+        """Returns True if we've gotten far enough to have a show object, or False if we still only know the folder name."""
         if self.show is None:
             return True
         return False

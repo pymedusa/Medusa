@@ -68,7 +68,7 @@ class NumDict(MutableMapping):
 
     def has_key(self, key):
         """
-        DEPRECATED: Check for existence of key
+        DEPRECATED: Check for existence of key.
 
         :param key: A numeric key
         :return: True if key is found, else False
@@ -77,7 +77,7 @@ class NumDict(MutableMapping):
 
     def copy(self):
         """
-        Create a copy of a NumDict
+        Create a copy of a NumDict.
         :return: A copy
         """
         if self.__class__ is NumDict:
@@ -95,7 +95,7 @@ class NumDict(MutableMapping):
     @classmethod
     def fromkeys(cls, iterable, value=None):
         """
-        Build a NumDict from a dictionary
+        Build a NumDict from a dictionary.
 
         :param iterable:
         :param value:
@@ -110,7 +110,7 @@ class NumDict(MutableMapping):
     @staticmethod
     def numeric(key):
         """
-        Converts a key to its numeric representation
+        Converts a key to its numeric representation.
 
         :param key: numeric dict key
         :raise KeyError: if key can't be converted to an integer

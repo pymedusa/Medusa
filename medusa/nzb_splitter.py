@@ -23,7 +23,7 @@ session = MedusaSession()
 
 def get_season_nzbs(name, url_data, season):
     """
-    Split a season NZB into episodes
+    Split a season NZB into episodes.
 
     :param name: NZB name
     :param url_data: URL to get data from
@@ -102,7 +102,7 @@ def create_nzb_string(file_elements, xmlns):
 
 def save_nzb(nzb_name, nzb_string):
     """
-    Save NZB to disk
+    Save NZB to disk.
 
     :param nzb_name: Filename/path to write to
     :param nzb_string: Content to write in file

@@ -12,7 +12,7 @@ import requests
 import medusa.common
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session import hooks, factory
+from medusa.session import factory, hooks
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

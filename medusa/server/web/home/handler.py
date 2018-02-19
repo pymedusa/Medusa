@@ -789,10 +789,11 @@ class Home(WebRoot):
             })
 
     def getSeasonSceneExceptions(self, indexername, seriesid):
-        """Get show name scene exceptions per season
+        """
+        Get series name scene exceptions per season.
 
-        :param indexer: The shows indexer
-        :param indexer_id: The shows indexer_id
+        :param indexer: The series indexer
+        :param indexer_id: The series indexer_id
         :return: A json with the scene exceptions per season.
         """
         indexer_id = indexer_name_to_id(indexername)

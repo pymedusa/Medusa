@@ -9,7 +9,7 @@ from medusa.show.history import History
 def _log_history_item(action, ep_obj, quality, resource,
                       provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, size=-1):
     """
-    Insert a history item in DB
+    Insert a history item in DB.
 
     :param action: action taken (snatch, download, etc)
     :param showid: showid this entry is about
@@ -35,7 +35,7 @@ def _log_history_item(action, ep_obj, quality, resource,
 
 def log_snatch(searchResult):
     """
-    Log history of snatch
+    Log history of snatch.
 
     :param searchResult: search result object
     """
@@ -64,7 +64,7 @@ def log_snatch(searchResult):
 
 def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
     """
-    Log history of download
+    Log history of download.
 
     :param ep_obj: episode object of show
     :param filename: file on disk where the download is
@@ -89,7 +89,7 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
 
 def log_subtitle(ep_obj, status, subtitle_result):
     """
-    Log download of subtitle
+    Log download of subtitle.
 
     :param showid: Showid of download
     :param season: Show season
@@ -108,7 +108,7 @@ def log_subtitle(ep_obj, status, subtitle_result):
 
 def log_failed(ep_obj, release, provider=None):
     """
-    Log a failed download
+    Log a failed download.
 
     :param ep_obj: Episode object
     :param release: Release group

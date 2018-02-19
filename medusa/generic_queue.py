@@ -34,7 +34,7 @@ class GenericQueue(object):
 
     def add_item(self, item):
         """
-        Adds an item to this queue
+        Adds an item to this queue.
 
         :param item: Queue object to add
         :return: item
@@ -47,7 +47,7 @@ class GenericQueue(object):
 
     def run(self, force=False):
         """
-        Process items in this queue
+        Process items in this queue.
 
         :param force: Force queue processing (currently not implemented)
         """
@@ -68,7 +68,7 @@ class GenericQueue(object):
                     # sort by priority
                     def sorter(x, y):
                         """
-                        Sorts by priority descending then time ascending
+                        Sorts by priority descending then time ascending.
                         """
                         if x.priority == y.priority:
                             if y.added == x.added:

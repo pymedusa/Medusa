@@ -126,7 +126,7 @@ class DBConnection(object):
 
     def check_db_major_version(self):
         """
-        Fetch database version
+        Fetch database version.
 
         :return: Integer inidicating current DB version
         """
@@ -275,7 +275,7 @@ class DBConnection(object):
 
     def select(self, query, args=None):
         """
-        Perform single select query on database
+        Perform single select query on database.
 
         :param query: query string
         :param args:  arguments to query string
@@ -291,7 +291,7 @@ class DBConnection(object):
 
     def select_one(self, query, args=None):
         """
-        Perform single select query on database, returning one result
+        Perform single select query on database, returning one result.
 
         :param query: query string
         :param args: arguments to query string
@@ -306,7 +306,7 @@ class DBConnection(object):
 
     def upsert(self, tableName, valueDict, keyDict):
         """
-        Update values, or if no updates done, insert values
+        Update values, or if no updates done, insert values.
         TODO: Make this return true/false on success/error
 
         :param tableName: table to update/insert
@@ -330,7 +330,7 @@ class DBConnection(object):
 
     def table_info(self, tableName):
         """
-        Return information on a database table
+        Return information on a database table.
 
         :param tableName: name of table
         :return: array of name/type info
@@ -344,7 +344,7 @@ class DBConnection(object):
     @staticmethod
     def _unicode_text_factory(x):
         """
-        Convert text to unicode
+        Convert text to unicode.
 
         :param x: text to parse
         :return: unicode result
@@ -364,7 +364,7 @@ class DBConnection(object):
 
     def has_table(self, tableName):
         """
-        Check if a table exists in database
+        Check if a table exists in database.
 
         :param tableName: table name to check
         :return: True if table exists, False if it does not
@@ -373,7 +373,7 @@ class DBConnection(object):
 
     def has_column(self, tableName, column):
         """
-        Check if a table has a column
+        Check if a table has a column.
 
         :param tableName: Table to check
         :param column: Column to check for
@@ -383,7 +383,7 @@ class DBConnection(object):
 
     def add_column(self, table, column, column_type="NUMERIC", default=0):
         """
-        Adds a column to a table, default column type is NUMERIC
+        Adds a column to a table, default column type is NUMERIC.
         TODO: Make this return true/false on success/failure
 
         :param table: Table to add column too
@@ -413,7 +413,7 @@ class DBSanityCheck(object):
 
 def upgrade_database(connection, schema):
     """
-    Perform database upgrade and provide logging
+    Perform database upgrade and provide logging.
 
     :param connection: Existing DB Connection to use
     :param schema: New schema to upgrade to

@@ -44,7 +44,7 @@ def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
 
 def find_scene_numbering(series_obj, season, episode):
     """
-    Same as get_scene_numbering(), but returns None if scene numbering is not set
+    Same as get_scene_numbering(), but returns None if scene numbering is not set.
     """
     if series_obj is None or season is None or episode is None:
         return season, episode
@@ -89,7 +89,7 @@ def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=Tr
 
 def find_scene_absolute_numbering(series_obj, absolute_number):
     """
-    Same as get_scene_numbering(), but returns None if scene numbering is not set
+    Same as get_scene_numbering(), but returns None if scene numbering is not set.
     """
     if series_obj is None or absolute_number is None:
         return absolute_number
@@ -105,7 +105,7 @@ def find_scene_absolute_numbering(series_obj, absolute_number):
 
 def get_indexer_numbering(series_obj, sceneSeason, sceneEpisode, fallback_to_xem=True):
     """
-    Returns a tuple, (season, episode) with the TVDB numbering for (sceneSeason, sceneEpisode)
+    Returns a tuple, (season, episode) with the TVDB numbering for (sceneSeason, sceneEpisode).
     (this works like the reverse of get_scene_numbering)
     """
     if series_obj is None or sceneSeason is None or sceneEpisode is None:
@@ -233,7 +233,7 @@ def find_xem_absolute_numbering(series_obj, absolute_number):
 
 def get_indexer_numbering_for_xem(series_obj, sceneSeason, sceneEpisode):
     """
-    Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering
+    Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering.
 
     :param indexer_id: int
     :param sceneSeason: int
@@ -258,7 +258,7 @@ def get_indexer_numbering_for_xem(series_obj, sceneSeason, sceneEpisode):
 
 def get_indexer_absolute_numbering_for_xem(series_obj, sceneAbsoluteNumber, scene_season=None):
     """
-    Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering
+    Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering.
 
     :param indexer_id: int
     :param sceneAbsoluteNumber: int
@@ -392,7 +392,7 @@ def get_xem_absolute_numbering_for_show(series_obj):
 
 def xem_refresh(series_obj, force=False):
     """
-    Refresh data from xem for a tv show
+    Refresh data from xem for a tv show.
 
     :param indexer_id: int
     """
