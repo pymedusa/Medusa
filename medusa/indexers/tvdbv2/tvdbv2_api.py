@@ -353,7 +353,7 @@ class TVDBv2(BaseIndexer):
                     use_dvd = True
                 else:
                     # If TVDB_DVD_ORDER_EP_IGNORE is enabled, we wil not add any episode as a special, when there is not
-                    # dvd ordered episode number.
+                    # a dvd ordered episode number.
                     continue
 
             if not use_dvd:
