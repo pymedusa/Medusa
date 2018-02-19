@@ -186,10 +186,10 @@ def change_tv_download_dir(tv_download_dir):
 def change_auto_postprocessor_frequency(freq):
     """
     Change frequency of automatic postprocessing thread.
-    TODO: Make all thread frequency changers in config.py return True/False status
 
     :param freq: New frequency
     """
+    # TODO: Make all thread frequency changers in config.py return True/False status
     app.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
 
     if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
@@ -323,6 +323,7 @@ def change_version_notify(version_notify):
 def change_git_path():
     """
     Recreate the version_check scheduler when GIT_PATH is changed.
+
     Force a run to clear or set any error messages.
     """
     app.version_check_scheduler = None
@@ -336,10 +337,10 @@ def change_git_path():
 def change_download_propers(download_propers):
     """
     Enable/Disable proper download thread.
-    TODO: Make this return True/False on success/failure
 
     :param download_propers: New desired state
     """
+    # TODO: Make this return True/False on success/failure
     download_propers = checkbox_to_value(download_propers)
 
     if app.DOWNLOAD_PROPERS == download_propers:
@@ -362,10 +363,10 @@ def change_download_propers(download_propers):
 def change_use_trakt(use_trakt):
     """
     Enable/disable trakt thread.
-    TODO: Make this return true/false on success/failure
 
     :param use_trakt: New desired state
     """
+    # TODO: Make this return true/false on success/failure
     use_trakt = checkbox_to_value(use_trakt)
 
     if app.USE_TRAKT == use_trakt:
@@ -388,10 +389,10 @@ def change_use_trakt(use_trakt):
 def change_use_subtitles(use_subtitles):
     """
     Enable/Disable subtitle searcher.
-    TODO: Make this return true/false on success/failure
 
     :param use_subtitles: New desired state
     """
+    # TODO: Make this return true/false on success/failure
     use_subtitles = checkbox_to_value(use_subtitles)
 
     if app.USE_SUBTITLES == use_subtitles:
@@ -414,10 +415,10 @@ def change_use_subtitles(use_subtitles):
 def change_process_automatically(process_automatically):
     """
     Enable/Disable postprocessor thread.
-    TODO: Make this return True/False on success/failure
 
     :param process_automatically: New desired state
     """
+    # TODO: Make this return True/False on success/failure
     process_automatically = checkbox_to_value(process_automatically)
 
     if app.PROCESS_AUTOMATICALLY == process_automatically:

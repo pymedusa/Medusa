@@ -306,12 +306,12 @@ class DBConnection(object):
     def upsert(self, tableName, valueDict, keyDict):
         """
         Update values, or if no updates done, insert values.
-        TODO: Make this return true/false on success/error
 
         :param tableName: table to update/insert
         :param valueDict: values in table to update/insert
         :param keyDict:  columns in table to update/insert
         """
+        # TODO: Make this return true/false on success/error
         changesBefore = self.connection.total_changes
 
         genParams = lambda myDict: [x + " = ?" for x in myDict.keys()]
@@ -382,13 +382,13 @@ class DBConnection(object):
     def add_column(self, table, column, column_type="NUMERIC", default=0):
         """
         Adds a column to a table, default column type is NUMERIC.
-        TODO: Make this return true/false on success/failure
 
         :param table: Table to add column too
         :param column: Column name to add
         :param column_type: Column type to add
         :param default: Default value for column
         """
+        # TODO: Make this return true/false on success/failure
         self.action("ALTER TABLE [%s] ADD %s %s" % (table, column, column_type))
         self.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
 

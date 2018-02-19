@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class WizdomSubtitle(Subtitle):
     """Wizdom Subtitle."""
+
     provider_name = 'wizdom'
 
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, imdb_id, subtitle_id,
@@ -73,6 +74,7 @@ class WizdomSubtitle(Subtitle):
 
 class WizdomProvider(Provider):
     """Wizdom Provider."""
+
     languages = {Language.fromalpha2(l) for l in ['he']}
     server_url = 'wizdom.xyz'
 

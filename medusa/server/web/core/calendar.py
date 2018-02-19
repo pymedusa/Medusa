@@ -22,9 +22,8 @@ log.addHandler(logging.NullHandler())
 
 
 class CalendarHandler(BaseHandler):
-    """
-    Handler for iCalendar
-    """
+    """Handler for iCalendar."""
+
     def get(self):
         """
         Render the iCalendar

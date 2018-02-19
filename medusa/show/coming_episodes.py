@@ -40,6 +40,7 @@ class ComingEpisodes(object):
     Soon:     tomorrow till next week
     Later:    later than next week
     """
+
     categories = ['later', 'missed', 'soon', 'today']
     sorts = {
         'date': (lambda a, b: cmp(a['localtime'], b['localtime'])),

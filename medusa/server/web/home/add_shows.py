@@ -257,10 +257,7 @@ class HomeAddShows(Home):
                         realpage="trendingShows")
 
     def getTrendingShows(self, traktList=None):
-        """
-        Display the new show page which collects a tvdb id, folder, and extra options and
-        posts them to addNewShow
-        """
+        """Display the new show page which collects a tvdb id, folder, and extra options and posts them to addNewShow."""
         e = None
         t = PageTemplate(rh=self, filename="addShows_recommended.mako")
         if traktList is None:
@@ -375,6 +372,7 @@ class HomeAddShows(Home):
                     configure_show_options=False):
         """
         Add's a new show with provided show options by indexer_id.
+
         Currently only TVDB and IMDB id's supported.
         """
         series_id = seriesid

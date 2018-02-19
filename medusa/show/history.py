@@ -135,9 +135,8 @@ class History(object):
 
     class Item(namedtuple('Item', item_fields)):
         # TODO: Allow items to be added to a compact item
-        """
-        An individual row item from history.
-        """
+        """An individual row item from history."""
+
         # prevent creation of a __dict__ when subclassing
         # from a class that uses __slots__
         __slots__ = ()

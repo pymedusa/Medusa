@@ -14,6 +14,7 @@ class EpisodeTags(object):
     """
     Quality tags.
     """
+
     def __init__(self, name):
         self.name = name
         self.rex = {
@@ -205,8 +206,8 @@ class EpisodeTags(object):
     def avc_free(self):
         """
         The free avc codec found in the name.
-        e.g.: x.265 or X264
 
+        e.g.: x.265 or X264
         :returns: an empty string if not found
         """
         return '' if self.avc_non_free else self.avc
@@ -215,8 +216,8 @@ class EpisodeTags(object):
     def avc_non_free(self):
         """
         The non-free avc codec found in the name.
-        e.g.: h.265 or H264
 
+        e.g.: h.265 or H264
         :returns: an empty string if not found
         """
         return '' if not self.avc.lower().startswith('h') else self.avc

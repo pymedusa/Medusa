@@ -285,9 +285,8 @@ class WebHandler(BaseHandler):
 
 @route('(.*)(/?)')
 class WebRoot(WebHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
     def __init__(self, *args, **kwargs):
         super(WebRoot, self).__init__(*args, **kwargs)
 
