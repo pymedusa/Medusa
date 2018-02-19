@@ -206,13 +206,14 @@ class Imdb(BaseIndexer):
 
         companies = self.imdb_api.get_title_companies(imdb_id)
 
-        # If there was a release it had to be distributed.
+        # If there was a release check if it was distributed.
         if companies.get('distribution'):
             origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
             released_in_regions = [
                 dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
             ]
-            first_release = sorted(released_in_regions, key=lambda x: x['startYear'])
+            # Used item.get('startYear') because a startYear is not always available.
+            first_release = sorted(released_in_regions, key=lambda x: x.get('startYear'))
 
             if first_release:
                 mapped_results['network'] = first_release[0]['company']['name']
