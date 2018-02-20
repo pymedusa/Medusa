@@ -325,49 +325,58 @@ class TVDBv2(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
-        epno = seasnum = None
         for cur_ep in episodes:
-            if self.config['dvdorder']:
-                seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
-                log.debug('Using DVD ordering for season: {0} and episode: {1}', seasnum, epno)
-                use_dvd = seasnum is not None and epno is not None
-                if epno is not None and seasnum is None:
-                    # We didn't get a season number but did get a dvd order episode number. Mark it as special.
-                    seasnum = 0
-                    use_dvd = True
-            else:
-                use_dvd = False
+            flag_dvd_numbering = False
+            dvd_seas_no = dvd_ep_no = None
 
-            if self.config['dvdorder'] and not use_dvd:
+            seas_no, ep_no = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
+
+            if self.config['dvdorder']:
+                dvd_seas_no, dvd_ep_no = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
+
+                log.debug(
+                    'Using DVD ordering for dvd season: {0} and dvd episode: {1}, '
+                    'with regular season {2} and episode {3}',
+                    dvd_seas_no, dvd_ep_no, seas_no, ep_no
+                )
+                flag_dvd_numbering = dvd_seas_no is not None and dvd_ep_no is not None
+
+                # We didn't get a season number but did get a dvd order episode number. Mark it as special.
+                if dvd_ep_no is not None and dvd_seas_no is None:
+                    dvd_seas_no = 0
+                    flag_dvd_numbering = True
+
+            if self.config['dvdorder'] and not flag_dvd_numbering:
                 log.warning(
-                    'No DVD order available for episode (season: {0}, episode: {1}). '
-                    'Falling back to non-DVD order. '
-                    'Please consider disabling DVD order for the show: {2}({3})',
-                    seasnum or cur_ep.get('seasonnumber'), epno or cur_ep.get('episodenumber'),
+                    'No DVD order available for episode (season: {0}, episode: {1}). Skipping this episode. '
+                    'If you want to have this episode visible, please change it on the TheTvdb site, '
+                    'or consider disabling DVD order for the show: {2}({3})',
+                    dvd_seas_no or seas_no, dvd_ep_no or ep_no,
                     self.shows[tvdb_id]['seriesname'], tvdb_id
                 )
                 if not app.TVDB_DVD_ORDER_EP_IGNORE:
-                    seasnum = 0  # Add as special.
+                    dvd_seas_no = 0  # Add as special.
                     # Use the epno (dvd order) and if not exist fall back to the regular episode number.
-                    epno = epno or cur_ep.get('episodenumber')
-                    use_dvd = True
+                    dvd_ep_no = dvd_ep_no or ep_no
+                    flag_dvd_numbering = True
                 else:
                     # If TVDB_DVD_ORDER_EP_IGNORE is enabled, we wil not add any episode as a special, when there is not
                     # a dvd ordered episode number.
                     continue
 
-            if not use_dvd:
-                seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
+            if flag_dvd_numbering:
+                seas_no = dvd_seas_no
+                ep_no = dvd_ep_no
 
-            if seasnum is None or epno is None:
+            if seas_no is None or ep_no is None:
                 log.warning('Invalid episode numbering (series: {0}({1}), season: {2!r}, episode: {3!r}) '
                             'Contact TVDB forums to have it fixed',
-                            self.shows[tvdb_id]['seriesname'], tvdb_id, seasnum, epno)
+                            self.shows[tvdb_id]['seriesname'], tvdb_id, seas_no, ep_no)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
-            seas_no = int(float(seasnum))
-            ep_no = int(float(epno))
+            seas_no = int(float(seas_no))
+            ep_no = int(float(ep_no))
 
             for k, v in cur_ep.items():
                 k = k.lower()
