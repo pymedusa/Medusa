@@ -1114,7 +1114,8 @@ class Application(object):
             # Start sqlAlchemy db migration
             # Expirimental open database Session.
             with session_scope('main') as session:
-                from medusa.models.application import TvShow
+                from medusa.models.application import TvShow, DbVersion, Blacklist, XemRefresh, SceneNumbering, TvEpisode, IndexerMapping
+                XemRefresh.get_version(4, 1424)
                 print(session.query(TvShow).all())
                 print(session.query(SceneNumbering).all())
 

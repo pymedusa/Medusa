@@ -3,12 +3,15 @@ from os.path import join
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from medusa import app
 
 # Examples on how the Base class can be declared.
 main_engine = create_engine('sqlite:///' + join(app.DATA_DIR, 'main.db'))
 BaseMain = declarative_base(main_engine)
+main_session_factory = sessionmaker(bind=main_engine)
+Session = scoped_session(main_session_factory)
 
 
 class TvShow(BaseMain):
@@ -183,3 +186,211 @@ class SceneNumbering(BaseMain):
         self.scene_episode = scene_episode
         self.absolute_number = absolute_number
         self.scene_absolute_number = scene_absolute_number
+
+
+class Whitelist(BaseMain):
+    """"""
+    __tablename__ = 'whitelist'
+    whitelist_id = Column(Integer, primary_key=True)
+    indexer_id = Column(Integer, nullable=False)
+    show_id = Column(Integer, nullable=False)
+    keyword = Column(Integer)
+
+    def __init__(self, indexer_id, show_id, keyword=None):
+        self.indexer_id = indexer_id
+        self.show_id = show_id
+        self.keyword = keyword
+
+
+class Blacklist(BaseMain):
+    """"""
+    __tablename__ = 'blacklist'
+    blacklist_id = Column(Integer, primary_key=True)
+    indexer_id = Column(Integer, nullable=False)
+    show_id = Column(Integer, nullable=False)
+    range = Column(Integer)
+    keyword = Column(Integer)
+
+    def __init__(self, indexer_id, show_id, keyword=None):
+        self.indexer_id = indexer_id
+        self.show_id = show_id
+        self.keyword = keyword
+
+
+class DbVersion(BaseMain):
+    """"""
+    __tablename__ = 'db_version'
+    db_version_id = Column(Integer, primary_key=True)
+    db_version = Column(Integer)
+    db_minor_version = Column(Integer)
+
+    @classmethod
+    def get_version(class_):
+        """Return a query of users sorted by name."""
+        DbVersion = class_
+        q = Session.query(DbVersion).one()
+        return q
+
+    def __str__(self):
+        return b'{major}.{minor}'.format(major=self.db_version, minor=self.db_minor_version)
+
+    def __unicode__(self):
+        return u'{major}.{minor}'.format(major=self.db_version, minor=self.db_minor_version)
+
+    def __iter__(self):
+        """Return the version as an iterable."""
+        for i in self.db_version, self.db_minor_version:
+            yield i
+
+
+class History(BaseMain):
+    """"""
+    __tablename__ = 'history'
+    history_id = Column(Integer, primary_key=True)
+    action = Column(Integer, nullable=False)
+    date = Column(Integer)
+    indexer_id = Column(Integer, nullable=False)
+    showid = Column(Integer, nullable=False)
+    season = Column(Integer, nullable=False)
+    episode = Column(Integer, nullable=False)
+    quality = Column(Integer)
+    resource = Column(String)
+    provider = Column(String)
+    version = Column(Integer, server_default='-1')
+    proper_tags = Column(String)
+    manually_searched = Column(Integer)
+    info_hash = Column(String)
+    size = Column(Integer)
+
+    def __init__(self, action, date, indexer_id, showid, season, episode, quality, resource, provider=-1, version=None,
+                 proper_tags=None, manually_searched=None, info_hash=None, size=None):
+        self.action = action
+        self.date = date
+        self.indexer_id = indexer_id
+        self.showid = showid
+        self.season = season
+        self.episode = episode
+        self.quality = quality
+        self.resource = resource
+        self.provider = provider
+        self.version = version
+        self.proper_tags = proper_tags
+        self.manually_searched = manually_searched
+        self.info_hash = info_hash
+        self.size = size
+
+
+class ImdbInfo(BaseMain):
+    """"""
+    __tablename__ = 'imdb_info'
+    imdb_info_id = Column(Integer, primary_key=True)
+    indexer = Column(Integer, nullable=False)
+    indexer_id = Column(Integer, nullable=False)
+    imdb_id = Column(String, nullable=False)
+    title = Column(String)
+    year = Column(Integer)
+    akas = Column(String)
+    runtimes = Column(Integer)
+    genres = Column(String)
+    countries = Column(String)
+    country_codes = Column(String)
+    certificates = Column(String)
+    rating = Column(String)
+    votes = Column(Integer)
+    plot = Column(String)
+    last_update = Column(Integer)
+
+    def __init__(self, indexer, indexer_id, imdb_id, title=None, year=None, akas=None, runtimes=None, genres=None,
+                 countries=None, country_codes=None, certificates=None, rating=None, votes=None, plot=None, last_update=None):
+        self.indexer = indexer
+        self.indexer = indexer_id
+        self.indexer = imdb_id
+        self.indexer = title
+        self.indexer = year
+        self.indexer = akas
+        self.indexer = runtimes
+        self.indexer = genres
+        self.indexer = countries
+        self.indexer = country_codes
+        self.indexer = certificates
+        self.indexer = rating
+        self.indexer = votes
+        self.indexer = plot
+        self.indexer = last_update
+
+    def __str__(self):
+        return self.imdb_id
+
+    def __unicode__(self):
+        return self.imdb_id
+
+
+class IndexerMapping(BaseMain):
+    """"""
+    __tablename__ = 'indexer_mapping'
+    indexer_mapping_id = Column(Integer, primary_key=True)
+    indexer = Column(Integer, nullable=False)
+    indexer_id = Column(Integer, nullable=False)
+    mindexer = Column(Integer, nullable=False)
+    mindexer_id = Column(Integer, nullable=False)
+
+    def __init__(self, indexer, indexer_id, mindexer, mindexer_id):
+        self.indexer = indexer
+        self.indexer_id = indexer_id
+        self.mindexer = mindexer
+        self.mindexer_id = mindexer_id
+
+
+class Info(BaseMain):
+    """"""
+    __tablename__ = 'info'
+    info_id = Column(Integer, primary_key=True)
+    last_backlog = Column(Integer, nullable=False)
+    last_indexer = Column(Integer, nullable=False)
+    last_proper_search = Column(Integer, nullable=False)
+
+    def __init__(self, last_backlog, last_indexer, last_proper_search):
+        self.last_backlog = last_backlog
+        self.last_indexer = last_indexer
+        self.last_proper_search = last_proper_search
+
+    @classmethod
+    def get_version(class_):
+        """Return a query of users sorted by name."""
+        q = Session.query(class_).one()
+        return q
+
+    def __str__(self):
+        return b'backlog: {0}, indexer: {1}, proper search: {2}'.format(
+            self.last_backlog, self.last_indexer, self.last_proper_search
+        )
+
+    def __unicode__(self):
+        return u'backlog: {0}, indexer: {1}, proper search: {2}'.format(
+            self.last_backlog, self.last_indexer, self.last_proper_search
+        )
+
+    def __iter__(self):
+        """Return the version as an iterable."""
+        for i in self.last_backlog, self.last_indexer, self.last_proper_search:
+            yield i
+
+
+class XemRefresh(BaseMain):
+    """"""
+    __tablename__ = 'xem_refresh'
+    xem_refresh_id = Column(Integer, primary_key=True)
+    indexer = Column(Integer, nullable=False)
+    series_id = Column('indexer_id', Integer, nullable=False)
+    last_refreshed = Column(Integer)
+
+    def __init__(self, indexer, series_id, last_refreshed):
+        self.indexer = indexer
+        self.series_id = series_id
+        self.last_refreshed = last_refreshed
+
+    @classmethod
+    def get_version(class_, indexer, series_id):
+        """Return a query of users sorted by name."""
+        q = Session.query(class_).filter(class_.indexer == indexer).filter(class_.series_id == series_id).one()
+        return q
