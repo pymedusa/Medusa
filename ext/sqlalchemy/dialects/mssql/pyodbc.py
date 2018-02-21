@@ -1,5 +1,5 @@
 # mssql/pyodbc.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -64,34 +64,19 @@ as illustrated below using ``urllib.quote_plus``::
     engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
 
 
-Unicode Binds
--------------
+Driver / Unicode Support
+-------------------------
 
-The current state of PyODBC on a unix backend with FreeTDS and/or
-EasySoft is poor regarding unicode; different OS platforms and versions of
-UnixODBC versus IODBC versus FreeTDS/EasySoft versus PyODBC itself
-dramatically alter how strings are received.  The PyODBC dialect attempts to
-use all the information it knows to determine whether or not a Python unicode
-literal can be passed directly to the PyODBC driver or not; while SQLAlchemy
-can encode these to bytestrings first, some users have reported that PyODBC
-mis-handles bytestrings for certain encodings and requires a Python unicode
-object, while the author has observed widespread cases where a Python unicode
-is completely misinterpreted by PyODBC, particularly when dealing with
-the information schema tables used in table reflection, and the value
-must first be encoded to a bytestring.
+PyODBC works best with Microsoft ODBC drivers, particularly in the area
+of Unicode support on both Python 2 and Python 3.
 
-It is for this reason that whether or not unicode literals for bound
-parameters be sent to PyODBC can be controlled using the
-``supports_unicode_binds`` parameter to ``create_engine()``.  When
-left at its default of ``None``, the PyODBC dialect will use its
-best guess as to whether or not the driver deals with unicode literals
-well.  When ``False``, unicode literals will be encoded first, and when
-``True`` unicode literals will be passed straight through.  This is an interim
-flag that hopefully should not be needed when the unicode situation stabilizes
-for unix + PyODBC.
+Using the FreeTDS ODBC drivers on Linux or OSX with PyODBC is **not**
+recommended; there have been historically many Unicode-related issues
+in this area, including before Microsoft offered ODBC drivers for Linux
+and OSX.   Now that Microsoft offers drivers for all platforms, for
+PyODBC support these are recommended.  FreeTDS remains relevant for
+non-ODBC drivers such as pymssql where it works very well.
 
-.. versionadded:: 0.7.7
-    ``supports_unicode_binds`` parameter to ``create_engine()``\ .
 
 Rowcount Support
 ----------------
@@ -102,7 +87,7 @@ versioning.
 
 """
 
-from .base import MSExecutionContext, MSDialect, VARBINARY
+from .base import MSExecutionContext, MSDialect, BINARY, VARBINARY
 from ...connectors.pyodbc import PyODBCConnector
 from ... import types as sqltypes, util, exc
 import decimal
@@ -129,7 +114,6 @@ class _ms_numeric_pyodbc(object):
         def process(value):
             if self.asdecimal and \
                     isinstance(value, decimal.Decimal):
-
                 adjusted = value.adjusted()
                 if adjusted < 0:
                     return self._small_dec_to_string(value)
@@ -182,7 +166,13 @@ class _MSFloat_pyodbc(_ms_numeric_pyodbc, sqltypes.Float):
     pass
 
 
-class _VARBINARY_pyodbc(VARBINARY):
+class _ms_binary_pyodbc(object):
+    """Wraps binary values in dialect-specific Binary wrapper.
+    If the value is null, return a pyodbc-specific BinaryNull
+    object to prevent pyODBC [and FreeTDS] from defaulting binary
+    NULL types to SQLWCHAR and causing implicit conversion errors.
+    """
+
     def bind_processor(self, dialect):
         if dialect.dbapi is None:
             return None
@@ -196,6 +186,14 @@ class _VARBINARY_pyodbc(VARBINARY):
                 # pyodbc-specific
                 return dialect.dbapi.BinaryNull
         return process
+
+
+class _VARBINARY_pyodbc(_ms_binary_pyodbc, VARBINARY):
+    pass
+
+
+class _BINARY_pyodbc(_ms_binary_pyodbc, BINARY):
+    pass
 
 
 class MSExecutionContext_pyodbc(MSExecutionContext):
@@ -255,7 +253,13 @@ class MSDialect_pyodbc(PyODBCConnector, MSDialect):
         {
             sqltypes.Numeric: _MSNumeric_pyodbc,
             sqltypes.Float: _MSFloat_pyodbc,
+            BINARY: _BINARY_pyodbc,
+
+            # SQL Server dialect has a VARBINARY that is just to support
+            # "deprecate_large_types" w/ VARBINARY(max), but also we must
+            # handle the usual SQL standard VARBINARY
             VARBINARY: _VARBINARY_pyodbc,
+            sqltypes.VARBINARY: _VARBINARY_pyodbc,
             sqltypes.LargeBinary: _VARBINARY_pyodbc,
         }
     )
@@ -272,11 +276,12 @@ class MSDialect_pyodbc(PyODBCConnector, MSDialect):
 
     def _get_server_version_info(self, connection):
         try:
-            raw = connection.scalar("SELECT  SERVERPROPERTY('ProductVersion')")
+            raw = connection.scalar(
+                "SELECT CAST(SERVERPROPERTY('ProductVersion') AS VARCHAR)")
         except exc.DBAPIError:
             # SQL Server docs indicate this function isn't present prior to
-            # 2008; additionally, unknown combinations of pyodbc aren't
-            # able to run this query.
+            # 2008.  Before we had the VARCHAR cast above, pyodbc would also
+            # fail on this query.
             return super(MSDialect_pyodbc, self).\
                 _get_server_version_info(connection)
         else:
@@ -288,5 +293,16 @@ class MSDialect_pyodbc(PyODBCConnector, MSDialect):
                 except ValueError:
                     version.append(n)
             return tuple(version)
+
+    def is_disconnect(self, e, connection, cursor):
+        if isinstance(e, self.dbapi.Error):
+            for code in (
+                    '08S01', '01002', '08003', '08007',
+                    '08S02', '08001', 'HYT00', 'HY010',
+                    '10054'):
+                if code in str(e):
+                    return True
+        return super(MSDialect_pyodbc, self).is_disconnect(
+            e, connection, cursor)
 
 dialect = MSDialect_pyodbc

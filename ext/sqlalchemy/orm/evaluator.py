@@ -1,5 +1,5 @@
 # orm/evaluator.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -7,6 +7,8 @@
 
 import operator
 from ..sql import operators
+from .. import inspect
+from .. import util
 
 
 class UnevaluatableError(Exception):
@@ -60,6 +62,17 @@ class EvaluatorCompiler(object):
             key = parentmapper._columntoproperty[clause].key
         else:
             key = clause.key
+            if self.target_cls and \
+                    key in inspect(self.target_cls).column_attrs:
+                util.warn(
+                    "Evaluating non-mapped column expression '%s' onto "
+                    "ORM instances; this is a deprecated use case.  Please "
+                    "make use of the actual mapped columns in ORM-evaluated "
+                    "UPDATE / DELETE expressions." % clause)
+            else:
+                raise UnevaluatableError(
+                    "Cannot evaluate column: %s" % clause
+                )
 
         get_corresponding_attr = operator.attrgetter(key)
         return lambda obj: get_corresponding_attr(obj)

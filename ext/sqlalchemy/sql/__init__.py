@@ -1,5 +1,5 @@
 # sql/__init__.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -53,10 +53,13 @@ from .expression import (
     modifier,
     not_,
     null,
+    nullsfirst,
+    nullslast,
     or_,
     outerjoin,
     outparam,
     over,
+    quoted_name,
     select,
     subquery,
     table,

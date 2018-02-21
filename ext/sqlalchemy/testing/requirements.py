@@ -1,5 +1,5 @@
 # testing/requirements.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -174,6 +174,19 @@ class SuiteRequirements(Requirements):
         return exclusions.closed()
 
     @property
+    def ctes(self):
+        """Target database supports CTEs"""
+
+        return exclusions.closed()
+
+    @property
+    def ctes_on_dml(self):
+        """target database supports CTES which consist of INSERT, UPDATE
+        or DELETE"""
+
+        return exclusions.closed()
+
+    @property
     def autoincrement_insert(self):
         """target platform generates new surrogate integer primary key values
         when insert() is executed, excluding the pk column."""
@@ -192,6 +205,40 @@ class SuiteRequirements(Requirements):
         """
 
         return exclusions.open()
+
+    @property
+    def group_by_complex_expression(self):
+        """target platform supports SQL expressions in GROUP BY
+
+        e.g.
+
+        SELECT x + y AS somelabel FROM table GROUP BY x + y
+
+        """
+
+        return exclusions.open()
+
+    @property
+    def sane_rowcount(self):
+        return exclusions.skip_if(
+            lambda config: not config.db.dialect.supports_sane_rowcount,
+            "driver doesn't support 'sane' rowcount"
+        )
+
+    @property
+    def sane_multi_rowcount(self):
+        return exclusions.fails_if(
+            lambda config: not config.db.dialect.supports_sane_multi_rowcount,
+            "driver %(driver)s %(doesnt_support)s 'sane' multi row count"
+        )
+
+    @property
+    def sane_rowcount_w_returning(self):
+        return exclusions.fails_if(
+            lambda config:
+                not config.db.dialect.supports_sane_rowcount_returning,
+            "driver doesn't support 'sane' rowcount when returning is on"
+        )
 
     @property
     def empty_inserts(self):
@@ -218,6 +265,14 @@ class SuiteRequirements(Requirements):
             lambda config: config.db.dialect.implicit_returning,
             "%(database)s %(does_support)s 'returning'"
         )
+
+    @property
+    def tuple_in(self):
+        """Target platform supports the syntax
+        "(x, y) IN ((x1, y1), (x2, y2), ...)"
+        """
+
+        return exclusions.closed()
 
     @property
     def duplicate_names_in_cursor_description(self):
@@ -322,6 +377,10 @@ class SuiteRequirements(Requirements):
         return exclusions.open()
 
     @property
+    def comment_reflection(self):
+        return exclusions.closed()
+
+    @property
     def view_column_reflection(self):
         """target database must support retrieval of the columns in a view,
         similarly to how a table is inspected.
@@ -350,7 +409,11 @@ class SuiteRequirements(Requirements):
         return exclusions.open()
 
     @property
-    def foreign_key_constraint_option_reflection(self):
+    def foreign_key_constraint_option_reflection_ondelete(self):
+        return exclusions.closed()
+
+    @property
+    def foreign_key_constraint_option_reflection_onupdate(self):
         return exclusions.closed()
 
     @property
@@ -380,6 +443,11 @@ class SuiteRequirements(Requirements):
     def unique_constraint_reflection(self):
         """target dialect supports reflection of unique constraints"""
         return exclusions.open()
+
+    @property
+    def check_constraint_reflection(self):
+        """target dialect supports reflection of check constraints"""
+        return exclusions.closed()
 
     @property
     def duplicate_key_raises_integrity_error(self):
@@ -433,6 +501,13 @@ class SuiteRequirements(Requirements):
         datetime.datetime() with microsecond objects."""
 
         return exclusions.open()
+
+    @property
+    def timestamp_microseconds(self):
+        """target dialect supports representation of Python
+        datetime.datetime() with microsecond objects but only
+        if TIMESTAMP is used."""
+        return exclusions.closed()
 
     @property
     def datetime_historic(self):
@@ -501,6 +576,11 @@ class SuiteRequirements(Requirements):
         return exclusions.open()
 
     @property
+    def autocommit(self):
+        """target dialect supports 'AUTOCOMMIT' as an isolation_level"""
+        return exclusions.closed()
+
+    @property
     def json_type(self):
         """target platform implements a native JSON type."""
 
@@ -538,6 +618,22 @@ class SuiteRequirements(Requirements):
 
         """
         return exclusions.closed()
+
+    @property
+    def nested_aggregates(self):
+        """target database can select an aggregate from a subquery that's
+        also using an aggregate
+
+        """
+        return exclusions.open()
+
+    @property
+    def recursive_fk_cascade(self):
+        """target database must support ON DELETE CASCADE on a self-referential
+        foreign key
+
+        """
+        return exclusions.open()
 
     @property
     def precision_numerics_retains_significant_digits(self):
@@ -619,6 +715,11 @@ class SuiteRequirements(Requirements):
         return exclusions.closed()
 
     @property
+    def delete_from(self):
+        """Target must support DELETE FROM..FROM or DELETE..USING syntax"""
+        return exclusions.closed()
+
+    @property
     def update_where_target_in_subquery(self):
         """Target must support UPDATE where the same table is present in a
         subquery in the WHERE clause.
@@ -665,6 +766,20 @@ class SuiteRequirements(Requirements):
 
         """
         return exclusions.closed()
+
+    @property
+    def order_by_collation(self):
+        def check(config):
+            try:
+                self.get_order_by_collation(config)
+                return False
+            except NotImplementedError:
+                return True
+
+        return exclusions.skip_if(check)
+
+    def get_order_by_collation(self, config):
+        raise NotImplementedError()
 
     @property
     def unicode_connections(self):

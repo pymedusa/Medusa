@@ -20,7 +20,7 @@ PyGithub==1.35
 PyNMA==1.0
 python-dateutil==2.6.1
 requests==2.18.4
-SQLAlchemy==1.1.14
+SQLAlchemy==1.2.3
 stevedore==1.26.0
 git+https://github.com/Diaoul/subliminal.git@4c0bcbfd68728241324f509317afdf6beb681f99#egg=subliminal
 tornado==4.5.3

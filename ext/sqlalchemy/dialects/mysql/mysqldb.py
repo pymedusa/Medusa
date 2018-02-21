@@ -1,5 +1,5 @@
 # mysql/mysqldb.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -64,19 +64,11 @@ class MySQLExecutionContext_mysqldb(MySQLExecutionContext):
 
 
 class MySQLCompiler_mysqldb(MySQLCompiler):
-    def visit_mod_binary(self, binary, operator, **kw):
-        return self.process(binary.left, **kw) + " %% " + \
-            self.process(binary.right, **kw)
-
-    def post_process_text(self, text):
-        return text.replace('%', '%%')
+    pass
 
 
 class MySQLIdentifierPreparer_mysqldb(MySQLIdentifierPreparer):
-
-    def _escape_identifier(self, value):
-        value = value.replace(self.escape_quote, self.escape_to_quote)
-        return value.replace("%", "%%")
+    pass
 
 
 class MySQLDialect_mysqldb(MySQLDialect):
