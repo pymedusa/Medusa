@@ -1,5 +1,5 @@
 # orm/__init__.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -68,6 +68,7 @@ from .query import AliasOption, Query, Bundle
 from ..util.langhelpers import public_factory
 from .. import util as _sa_util
 from . import strategies as _strategies
+from .. import sql as _sql
 
 
 def create_session(bind=None, **kwargs):
@@ -177,6 +178,20 @@ def deferred(*columns, **kw):
     return ColumnProperty(deferred=True, *columns, **kw)
 
 
+def query_expression():
+    """Indicate an attribute that populates from a query-time SQL expression.
+
+    .. versionadded:: 1.2
+
+    .. seealso::
+
+        :ref:`mapper_query_expression`
+
+    """
+    prop = ColumnProperty(_sql.null())
+    prop.strategy_key = (("query_expression", True),)
+    return prop
+
 mapper = public_factory(Mapper, ".orm.mapper")
 
 synonym = public_factory(SynonymProperty, ".orm.synonym")
@@ -235,15 +250,19 @@ contains_eager = strategy_options.contains_eager._unbound_fn
 defer = strategy_options.defer._unbound_fn
 undefer = strategy_options.undefer._unbound_fn
 undefer_group = strategy_options.undefer_group._unbound_fn
+with_expression = strategy_options.with_expression._unbound_fn
 load_only = strategy_options.load_only._unbound_fn
 lazyload = strategy_options.lazyload._unbound_fn
 lazyload_all = strategy_options.lazyload_all._unbound_all_fn
 subqueryload = strategy_options.subqueryload._unbound_fn
 subqueryload_all = strategy_options.subqueryload_all._unbound_all_fn
+selectinload = strategy_options.selectinload._unbound_fn
+selectinload_all = strategy_options.selectinload_all._unbound_all_fn
 immediateload = strategy_options.immediateload._unbound_fn
 noload = strategy_options.noload._unbound_fn
 raiseload = strategy_options.raiseload._unbound_fn
 defaultload = strategy_options.defaultload._unbound_fn
+selectin_polymorphic = strategy_options.selectin_polymorphic._unbound_fn
 
 from .strategy_options import Load
 
@@ -266,11 +285,13 @@ def __go(lcls):
     from .. import util as sa_util
     from . import dynamic
     from . import events
+    from . import loading
     import inspect as _inspect
 
     __all__ = sorted(name for name, obj in lcls.items()
                      if not (name.startswith('_') or _inspect.ismodule(obj)))
 
     _sa_util.dependencies.resolve_all("sqlalchemy.orm")
+    _sa_util.dependencies.resolve_all("sqlalchemy.ext")
 
 __go(locals())

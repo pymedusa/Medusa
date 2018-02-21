@@ -3,7 +3,7 @@
 from .. import fixtures, config
 from ..assertions import eq_
 from ..config import requirements
-from sqlalchemy import Integer, Unicode, UnicodeText, select
+from sqlalchemy import Integer, Unicode, UnicodeText, select, TIMESTAMP
 from sqlalchemy import Date, DateTime, Time, MetaData, String, \
     Text, Numeric, Float, literal, Boolean, cast, null, JSON, and_, type_coerce
 from ..schema import Table, Column
@@ -187,6 +187,10 @@ class TextTest(_LiteralRoundTripFixture, fixtures.TablesTest):
         data = r'backslash one \ backslash two \\ end'
         self._literal_round_trip(Text, [data], [data])
 
+    def test_literal_percentsigns(self):
+        data = r'percent % signs %% percent'
+        self._literal_round_trip(Text, [data], [data])
+
 
 class StringTest(_LiteralRoundTripFixture, fixtures.TestBase):
     __backend__ = True
@@ -277,6 +281,12 @@ class DateTimeMicrosecondsTest(_DateFixture, fixtures.TablesTest):
     datatype = DateTime
     data = datetime.datetime(2012, 10, 15, 12, 57, 18, 396)
 
+class TimestampMicrosecondsTest(_DateFixture, fixtures.TablesTest):
+    __requires__ = 'timestamp_microseconds',
+    __backend__ = True
+    datatype = TIMESTAMP
+    data = datetime.datetime(2012, 10, 15, 12, 57, 18, 396)
+
 
 class TimeTest(_DateFixture, fixtures.TablesTest):
     __requires__ = 'time',
@@ -340,7 +350,7 @@ class NumericTest(_LiteralRoundTripFixture, fixtures.TestBase):
         t.create()
         t.insert().execute([{'x': x} for x in input_])
 
-        result = set([row[0] for row in t.select().execute()])
+        result = {row[0] for row in t.select().execute()}
         output = set(output)
         if filter_:
             result = set(filter_(x) for x in result)
@@ -430,6 +440,23 @@ class NumericTest(_LiteralRoundTripFixture, fixtures.TestBase):
             [15.7563],
             filter_=lambda n: n is not None and round(n, 5) or None
         )
+
+    def test_float_coerce_round_trip(self):
+        expr = 15.7563
+
+        val = testing.db.scalar(
+            select([literal(expr)])
+        )
+        eq_(val, expr)
+
+    # TODO: this one still breaks on MySQL
+    # def test_decimal_coerce_round_trip(self):
+    #    expr = decimal.Decimal("15.7563")
+    #
+    #    val = testing.db.scalar(
+    #        select([literal(expr)])
+    #    )
+    #    eq_(val, expr)
 
     @testing.requires.precision_numerics_general
     def test_precision_decimal(self):
@@ -839,22 +866,25 @@ class JSONTest(_LiteralRoundTripFixture, fixtures.TablesTest):
         )
 
     def test_unicode_round_trip(self):
-        s = select([
-            cast(
+        with config.db.connect() as conn:
+            conn.execute(
+                self.tables.data_table.insert(),
+                {
+                    "name": "r1",
+                    "data": {
+                        util.u('réveillé'): util.u('réveillé'),
+                        "data": {"k1": util.u('drôle')}
+                    }
+                }
+            )
+
+            eq_(
+                conn.scalar(select([self.tables.data_table.c.data])),
                 {
                     util.u('réveillé'): util.u('réveillé'),
                     "data": {"k1": util.u('drôle')}
                 },
-                self.datatype
             )
-        ])
-        eq_(
-            config.db.scalar(s),
-            {
-                util.u('réveillé'): util.u('réveillé'),
-                "data": {"k1": util.u('drôle')}
-            },
-        )
 
     def test_eval_none_flag_orm(self):
         from sqlalchemy.ext.declarative import declarative_base
@@ -894,5 +924,6 @@ __all__ = ('UnicodeVarcharTest', 'UnicodeTextTest', 'JSONTest',
            'DateTest', 'DateTimeTest', 'TextTest',
            'NumericTest', 'IntegerTest',
            'DateTimeHistoricTest', 'DateTimeCoercedToDateTimeTest',
-           'TimeMicrosecondsTest', 'TimeTest', 'DateTimeMicrosecondsTest',
+           'TimeMicrosecondsTest', 'TimestampMicrosecondsTest', 'TimeTest',
+           'DateTimeMicrosecondsTest',
            'DateHistoricTest', 'StringTest', 'BooleanTest')
