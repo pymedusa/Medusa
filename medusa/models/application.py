@@ -11,6 +11,8 @@ from medusa import app
 main_engine = create_engine('sqlite:///' + join(app.DATA_DIR, 'main.db'))
 BaseMain = declarative_base(main_engine)
 main_session_factory = sessionmaker(bind=main_engine)
+
+# TODO: Test if this also works when the class is used in different threads.
 Session = scoped_session(main_session_factory)
 
 
@@ -19,8 +21,8 @@ class TvShow(BaseMain):
     __tablename__ = 'tv_shows'
 
     show_id = Column(Integer, primary_key=True)
-    indexer_id = Column(Integer)
     indexer = Column(Integer)
+    series_id = Column('indexer_id', Integer)
     show_name = Column(String)
     location = Column(String)
     network = Column(String)
@@ -49,11 +51,11 @@ class TvShow(BaseMain):
     default_ep_status = Column(Integer, server_default='-1')
     plot = Column(String)
 
-    def __init__(self, indexer_id, indexer, show_name, location, quality, status, network=None, genre=None, classification=None,
+    def __init__(self, indexer, series_id, show_name, location, quality, status, network=None, genre=None, classification=None,
                  runtime=None, airs=None, flatten_folders=False, paused=False, startyear=None, air_by_date=False, lang=None,
                  subtitles=False, notify_list=None, imdb_id=None, last_update_indexer=None, dvdorder=False, archive_firstmatch=False,
                  rls_require_words=None, rls_ignore_words=None, sports=False, anime=False, scene=False, default_ep_status=-1, plot=None):
-        self.indexer_id = indexer_id
+        self.series_id = series_id
         self.indexer = indexer
         self.show_name = show_name
         self.location = location
@@ -98,7 +100,7 @@ class TvEpisode(BaseMain):
     __tablename__ = 'tv_episodes'
 
     episode_id = Column(Integer, primary_key=True)
-    showid = Column(Integer, nullable=False)
+    series_id = Column('showid', Integer, nullable=False)
     indexerid = Column(Integer, nullable=False)
     indexer = Column(Integer, nullable=False)
     name = Column(String)
@@ -124,12 +126,12 @@ class TvEpisode(BaseMain):
     release_group = Column(String)
     manually_searched = Column(Integer)
 
-    def __init__(self, showid, indexerid, indexer, season, episode, name=None, desription=None, airdate=None, hasnfo=False,
+    def __init__(self, series_id, indexerid, indexer, season, episode, name=None, desription=None, airdate=None, hasnfo=False,
                  hastbn=False, status=-1, location=None, file_size=None, release_name=None, subtitles=None,
                  subtitles_searchcount=None, subtitles_lastsearch=None, is_proper=False, scene_season=None,
                  scene_episode=None, absolute_number=None, scene_absolute_number=None, version=-1,
                  release_group=None, manually_searched=False):
-        self.showid = showid
+        self.series_id = series_id
         self.indexerid = indexerid
         self.indexer = indexer
         self.season = season
@@ -156,10 +158,10 @@ class TvEpisode(BaseMain):
         self.manually_searched = manually_searched
 
     def __str__(self):
-        return b'{season}x{episode}'.format(season=self.season, episode=self.episode)
+        return b'{series}: {season}x{episode}'.format(series=self.series_id, season=self.season, episode=self.episode)
 
     def __unicode__(self):
-        return u'{season}x{episode}'.format(season=self.season, episode=self.episode)
+        return u'{series}: {season}x{episode}'.format(series=self.series_id, season=self.season, episode=self.episode)
 
 
 class SceneNumbering(BaseMain):
@@ -168,7 +170,7 @@ class SceneNumbering(BaseMain):
 
     scene_numbering_id = Column(Integer, primary_key=True)
     indexer = Column(Integer)
-    indexer_id = Column(Integer)
+    series_id = Column('indexer_id', Integer)
     season = Column(Integer)
     episode = Column(Integer)
     scene_season = Column(Integer)
@@ -176,10 +178,10 @@ class SceneNumbering(BaseMain):
     absolute_number = Column(Integer)
     scene_absolute_number = Column(Integer)
 
-    def __init__(self, indexer, indexer_id, season=None, episode=None, scene_season=None,
+    def __init__(self, indexer, series_id, season=None, episode=None, scene_season=None,
                  scene_episode=None, absolute_number=None, scene_absolute_number=None):
         self.indexer = indexer
-        self.indexer_id = indexer_id
+        self.series_id = series_id
         self.season = season
         self.episode = episode
         self.scene_season = scene_season
@@ -192,13 +194,13 @@ class Whitelist(BaseMain):
     """"""
     __tablename__ = 'whitelist'
     whitelist_id = Column(Integer, primary_key=True)
-    indexer_id = Column(Integer, nullable=False)
-    show_id = Column(Integer, nullable=False)
+    indexer = Column('indexer_id', Integer, nullable=False)
+    series_id = Column('show_id', Integer, nullable=False)
     keyword = Column(Integer)
 
-    def __init__(self, indexer_id, show_id, keyword=None):
-        self.indexer_id = indexer_id
-        self.show_id = show_id
+    def __init__(self, indexer, series_id, keyword=None):
+        self.indexer = indexer
+        self.series_id = series_id
         self.keyword = keyword
 
 
@@ -206,14 +208,13 @@ class Blacklist(BaseMain):
     """"""
     __tablename__ = 'blacklist'
     blacklist_id = Column(Integer, primary_key=True)
-    indexer_id = Column(Integer, nullable=False)
-    show_id = Column(Integer, nullable=False)
-    range = Column(Integer)
+    indexer = Column('indexer_id', Integer, nullable=False)
+    series_id = Column('show_id', Integer, nullable=False)
     keyword = Column(Integer)
 
-    def __init__(self, indexer_id, show_id, keyword=None):
-        self.indexer_id = indexer_id
-        self.show_id = show_id
+    def __init__(self, indexer, series_id, keyword=None):
+        self.indexer = indexer
+        self.series_id = series_id
         self.keyword = keyword
 
 
@@ -249,8 +250,8 @@ class History(BaseMain):
     history_id = Column(Integer, primary_key=True)
     action = Column(Integer, nullable=False)
     date = Column(Integer)
-    indexer_id = Column(Integer, nullable=False)
-    showid = Column(Integer, nullable=False)
+    indexer = Column('indexer_id', Integer, nullable=False)
+    series_id = Column('showid', Integer, nullable=False)
     season = Column(Integer, nullable=False)
     episode = Column(Integer, nullable=False)
     quality = Column(Integer)
@@ -262,12 +263,12 @@ class History(BaseMain):
     info_hash = Column(String)
     size = Column(Integer)
 
-    def __init__(self, action, date, indexer_id, showid, season, episode, quality, resource, provider=-1, version=None,
+    def __init__(self, action, date, indexer, series_id, season, episode, quality, resource, provider=-1, version=None,
                  proper_tags=None, manually_searched=None, info_hash=None, size=None):
         self.action = action
         self.date = date
-        self.indexer_id = indexer_id
-        self.showid = showid
+        self.indexer = indexer
+        self.series_id = series_id
         self.season = season
         self.episode = episode
         self.quality = quality
@@ -285,7 +286,7 @@ class ImdbInfo(BaseMain):
     __tablename__ = 'imdb_info'
     imdb_info_id = Column(Integer, primary_key=True)
     indexer = Column(Integer, nullable=False)
-    indexer_id = Column(Integer, nullable=False)
+    series_id = Column('series_id', Integer, nullable=False)
     imdb_id = Column(String, nullable=False)
     title = Column(String)
     year = Column(Integer)
@@ -300,23 +301,23 @@ class ImdbInfo(BaseMain):
     plot = Column(String)
     last_update = Column(Integer)
 
-    def __init__(self, indexer, indexer_id, imdb_id, title=None, year=None, akas=None, runtimes=None, genres=None,
+    def __init__(self, indexer, series_id, imdb_id, title=None, year=None, akas=None, runtimes=None, genres=None,
                  countries=None, country_codes=None, certificates=None, rating=None, votes=None, plot=None, last_update=None):
         self.indexer = indexer
-        self.indexer = indexer_id
-        self.indexer = imdb_id
-        self.indexer = title
-        self.indexer = year
-        self.indexer = akas
-        self.indexer = runtimes
-        self.indexer = genres
-        self.indexer = countries
-        self.indexer = country_codes
-        self.indexer = certificates
-        self.indexer = rating
-        self.indexer = votes
-        self.indexer = plot
-        self.indexer = last_update
+        self.series_id = series_id
+        self.imdb_id = imdb_id
+        self.title = title
+        self.year = year
+        self.akas = akas
+        self.runtimes = runtimes
+        self.genres = genres
+        self.countries = countries
+        self.country_codes = country_codes
+        self.certificates = certificates
+        self.rating = rating
+        self.votes = votes
+        self.plot = plot
+        self.last_update = last_update
 
     def __str__(self):
         return self.imdb_id
@@ -330,15 +331,15 @@ class IndexerMapping(BaseMain):
     __tablename__ = 'indexer_mapping'
     indexer_mapping_id = Column(Integer, primary_key=True)
     indexer = Column(Integer, nullable=False)
-    indexer_id = Column(Integer, nullable=False)
+    series_id = Column('indexer_id', Integer, nullable=False)
     mindexer = Column(Integer, nullable=False)
-    mindexer_id = Column(Integer, nullable=False)
+    mseries_id = Column('mindexer_id', Integer, nullable=False)
 
-    def __init__(self, indexer, indexer_id, mindexer, mindexer_id):
+    def __init__(self, indexer, series_id, mindexer, mseries_id):
         self.indexer = indexer
-        self.indexer_id = indexer_id
+        self.series_id = series_id
         self.mindexer = mindexer
-        self.mindexer_id = mindexer_id
+        self.mseries_id = mseries_id
 
 
 class Info(BaseMain):
