@@ -792,13 +792,13 @@ class AddPkToEachTable(AddIndexerIds):
         self.connection.action(b'DROP TABLE IF EXISTS tmp_history')
         self.connection.action(b'ALTER TABLE history RENAME TO tmp_history')
         self.connection.action(
-            b'CREATE TABLE history(history_id PRIMARY KEY, action NUMERIC, date NUMERIC, showid NUMERIC, season NUMERIC, episode NUMERIC, '
+            b'CREATE TABLE history(history_id INTEGER PRIMARY KEY, action NUMERIC, date NUMERIC, showid NUMERIC, season NUMERIC, episode NUMERIC, '
             b'quality NUMERIC, resource TEXT, provider TEXT, version NUMERIC DEFAULT -1, proper_tags TEXT, '
             b'manually_searched NUMERIC, info_hash TEXT, size NUMERIC, indexer_id NUMERIC)'
         )
         self.connection.action(
-            b'INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, '
-            b'proper_tags, manually_searched , info_hash, size, indexer_id) '
+            b'INSERT INTO history () action, date, showid, season, episode, quality, resource, provider, version, '
+            b'proper_tags, manually_searched , info_hash, size, indexer_id'
             b'SELECT action, date, showid, season, episode, quality, resource, provider, version, '
             b'proper_tags, manually_searched , info_hash, size, indexer_id FROM tmp_history'
         )
@@ -821,7 +821,7 @@ class AddPkToEachTable(AddIndexerIds):
         self.connection.action(b'DROP TABLE IF EXISTS tmp_info')
         self.connection.action(b'ALTER TABLE info RENAME TO tmp_info')
         self.connection.action(
-            b'CREATE TABLE info(last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC)'
+            b'CREATE TABLE info(info_id INTEGER PRIMARY KEY, last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC)'
         )
         self.connection.action(
             b'INSERT INTO info (last_backlog, last_indexer, last_proper_search) '
