@@ -20,11 +20,13 @@
 # TODO: break this up into separate files
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
+from __future__ import unicode_literals
 
 import json
 import logging
 import os
 import time
+from builtins import str
 from collections import OrderedDict
 from datetime import date, datetime
 
@@ -59,7 +61,9 @@ from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
-from six import iteritems, text_type
+
+from six import iteritems, text_type, viewitems
+
 from tornado.web import RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -531,7 +535,7 @@ quality_map = OrderedDict((
 
 
 def _map_quality(show_obj):
-    mapped_quality = {v: k for k, v in quality_map.items()}
+    mapped_quality = {v: k for k, v in viewitems(quality_map)}
 
     allowed_qualities = []
     preferred_qualities = []
@@ -612,7 +616,7 @@ class CMD_Help(ApiCall):
     def __init__(self, args, kwargs):
         # required
         # optional
-        self.subject, args = self.check_params(args, kwargs, 'subject', 'help', False, 'string', function_mapper.keys())
+        self.subject, args = self.check_params(args, kwargs, 'subject', 'help', False, 'string', list(function_mapper))
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
@@ -639,7 +643,7 @@ class CMD_ComingEpisodes(ApiCall):
     def __init__(self, args, kwargs):
         # required
         # optional
-        self.sort, args = self.check_params(args, kwargs, 'sort', 'date', False, 'string', ComingEpisodes.sorts.keys())
+        self.sort, args = self.check_params(args, kwargs, 'sort', 'date', False, 'string', list(ComingEpisodes.sorts))
         self.type, args = self.check_params(args, kwargs, 'type', '|'.join(ComingEpisodes.categories), False, 'list',
                                             ComingEpisodes.categories)
         self.paused, args = self.check_params(args, kwargs, 'paused', bool(app.COMING_EPS_DISPLAY_PAUSED), False,
@@ -650,7 +654,7 @@ class CMD_ComingEpisodes(ApiCall):
     def run(self):
         """ Get the coming episodes """
         grouped_coming_episodes = ComingEpisodes.get_coming_episodes(self.type, self.sort, True, self.paused)
-        data = {section: [] for section in grouped_coming_episodes.keys()}
+        data = {section: [] for section in grouped_coming_episodes}
 
         for section, coming_episodes in iteritems(grouped_coming_episodes):
             for coming_episode in coming_episodes:
@@ -1615,7 +1619,7 @@ class CMD_SearchIndexers(ApiCall):
         # optional
         self.name, args = self.check_params(args, kwargs, 'name', None, False, 'string', [])
         self.lang, args = self.check_params(args, kwargs, 'lang', app.INDEXER_DEFAULT_LANGUAGE, False, 'string',
-                                            self.valid_languages.keys())
+                                            list(self.valid_languages))
         self.indexerid, args = self.check_params(args, kwargs, 'indexerid', None, False, 'int', [])
 
         # super, missing, help
@@ -2041,7 +2045,7 @@ class CMD_ShowAddNew(ApiCall):
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         self.lang, args = self.check_params(args, kwargs, 'lang', app.INDEXER_DEFAULT_LANGUAGE, False, 'string',
-                                            self.valid_languages.keys())
+                                            list(self.valid_languages))
         self.subtitles, args = self.check_params(args, kwargs, 'subtitles', bool(app.USE_SUBTITLES),
                                                  False, 'bool', [])
         self.anime, args = self.check_params(args, kwargs, 'anime', bool(app.ANIME_DEFAULT), False,

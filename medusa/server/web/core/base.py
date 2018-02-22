@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+from past.builtins import cmp
+from builtins import str
 import datetime
 import json
 import os
@@ -34,7 +36,9 @@ from six import (
     binary_type,
     iteritems,
     text_type,
+    viewitems,
 )
+
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
@@ -189,7 +193,7 @@ class BaseHandler(RequestHandler):
             exc_info = kwargs['exc_info']
             trace_info = ''.join(['{line}<br>'.format(line=line) for line in traceback.format_exception(*exc_info)])
             request_info = ''.join(['<strong>{key}</strong>: {value}<br>'.format(key=k, value=v)
-                                    for k, v in self.request.__dict__.items()])
+                                    for k, v in viewitems(self.request.__dict__)])
             error = exc_info[1]
 
             self.set_header('Content-Type', 'text/html')
