@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+from builtins import zip
 import logging
 import re
 from os.path import join
@@ -127,7 +128,7 @@ class BinSearchProvider(NZBProvider):
             rows = rows[row_offset:]
             for row in rows:
                 try:
-                    col = dict(zip(labels, row('td')))
+                    col = dict(list(zip(labels, row('td'))))
                     nzb_id_input = col[0 if mode == 'RSS' else 1].find('input')
                     if not nzb_id_input:
                         continue

@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 import logging
 import re
 from base64 import b16encode, b32decode
+from builtins import map
+from builtins import object
+from builtins import str
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
@@ -53,6 +56,8 @@ from medusa.show.show import Show
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -196,10 +201,13 @@ class GenericProvider(object):
         :param pk: Primary key for removing duplicates
         :return: An iterable of unique mappings
         """
-        return OrderedDict(
-            (item[pk], item)
-            for item in items
-        ).values()
+        return list(
+            itervalues(OrderedDict(
+                (item[pk], item)
+                for item in items
+                )
+            )
+        )
 
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
@@ -488,7 +496,7 @@ class GenericProvider(object):
         if request.method.upper() == 'POST':
             body = request.body
             # try to log post data using various codecs to decode
-            if isinstance(body, unicode):
+            if isinstance(body, str):
                 log.debug('With post data: {0}', body)
                 return
 
