@@ -89,7 +89,7 @@ class ComingEpisodes(object):
             [today, next_week] + qualities_list
         )
 
-        done_shows_list = [int(result['showid']) for result in results]
+        done_shows_list = [int(result[b'showid']) for result in results]
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER))
 
@@ -99,15 +99,15 @@ class ComingEpisodes(object):
             'FROM tv_episodes e, tv_shows s '
             'WHERE season != 0 '
             'AND showid NOT IN (' + placeholder + ') '
-                                                  'AND s.indexer_id = e.showid '
-                                                  'AND airdate = (SELECT airdate '
-                                                  'FROM tv_episodes inner_e '
-                                                  'WHERE inner_e.season != 0 '
-                                                  'AND inner_e.showid = e.showid '
-                                                  'AND inner_e.indexer = e.indexer '
-                                                  'AND inner_e.airdate >= ? '
-                                                  'ORDER BY inner_e.airdate ASC LIMIT 1) '
-                                                  'AND e.status NOT IN (' + placeholder2 + ')',
+            'AND s.indexer_id = e.showid '
+            'AND airdate = (SELECT airdate '
+            'FROM tv_episodes inner_e '
+            'WHERE inner_e.season != 0 '
+            'AND inner_e.showid = e.showid '
+            'AND inner_e.indexer = e.indexer '
+            'AND inner_e.airdate >= ? '
+            'ORDER BY inner_e.airdate ASC LIMIT 1) '
+            'AND e.status NOT IN (' + placeholder2 + ')',
             done_shows_list + [next_week] + Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER
         )
 
