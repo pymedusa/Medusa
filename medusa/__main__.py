@@ -1327,7 +1327,7 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
                 app.torrent_checker_scheduler.enable = True
             app.torrent_checker_scheduler.silent = False
             app.torrent_checker_scheduler.start()
