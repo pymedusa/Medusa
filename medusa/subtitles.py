@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Subtitles module."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import datetime
 import logging
@@ -25,6 +27,8 @@ import os
 import re
 import subprocess
 import time
+from builtins import object
+from builtins import str
 
 from babelfish import Country, Language, LanguageConvertError, LanguageReverseError, language_converters
 

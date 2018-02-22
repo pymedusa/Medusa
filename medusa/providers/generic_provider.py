@@ -57,7 +57,7 @@ from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
-from six import itervalues
+from six import itervalues, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -496,7 +496,7 @@ class GenericProvider(object):
         if request.method.upper() == 'POST':
             body = request.body
             # try to log post data using various codecs to decode
-            if isinstance(body, str):
+            if isinstance(body, text_type):
                 log.debug('With post data: {0}', body)
                 return
 

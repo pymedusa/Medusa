@@ -15,9 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import os
 import traceback
+from builtins import object
 
 from imdbpie.exceptions import ImdbAPIError
 
@@ -60,7 +62,7 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.tv import Series
 
-from six import binary_type, text_type
+from six import binary_type, text_type, viewitems
 
 from traktor import TraktException
 
@@ -158,11 +160,11 @@ class ShowQueue(generic_queue.GenericQueue):
         return self.get_queue_action(show)[1]
 
     def get_queue_action(self, show):
-        for action, message in self.mappings.items():
+        for action, message in viewitems(self.mappings):
             if self._isBeingSomethinged(show, (action, )):
                 return action, message
 
-        for action, message in self.queue_mappings.items():
+        for action, message in viewitems(self.queue_mappings):
             if self._isInQueue(show, (action, )):
                 return action, message
 
