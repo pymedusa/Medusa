@@ -16,12 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Post processor module."""
+from __future__ import unicode_literals
 
 import fnmatch
 import os
 import re
 import stat
 import subprocess
+from builtins import object
+from builtins import str
 from collections import OrderedDict
 
 import adba
@@ -59,7 +62,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type
+from six import text_type, viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags
@@ -201,7 +204,7 @@ class PostProcessor(object):
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
-        processed_names += filter(None, (self._rar_basename(file_path, files),))
+        processed_names += [_f for _f in (self._rar_basename(file_path, files),) if _f]
 
         associated_files = set()
         for found_file in files:
@@ -759,7 +762,7 @@ class PostProcessor(object):
         :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
-        for resource_name, cur_name in self.item_resources.items():
+        for resource_name, cur_name in viewitems(self.item_resources):
 
             # Skip names that are falsey
             if not cur_name:

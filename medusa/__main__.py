@@ -44,6 +44,8 @@ Options:
 
 from __future__ import print_function, unicode_literals
 
+from builtins import str
+from builtins import object
 import datetime
 import getopt
 import io
@@ -985,18 +987,18 @@ class Application(object):
                 try:
                     import getpass
                     app.OS_USER = getpass.getuser()
-                except StandardError:
+                except Exception:
                     pass
 
             try:
                 app.LOCALE = locale.getdefaultlocale()
-            except StandardError:
+            except Exception:
                 app.LOCALE = None, None
 
             try:
                 import ssl
                 app.OPENSSL_VERSION = ssl.OPENSSL_VERSION
-            except StandardError:
+            except Exception:
                 pass
 
             if app.VERSION_NOTIFY:

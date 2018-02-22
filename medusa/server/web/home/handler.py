@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+from past.builtins import cmp
+from builtins import str
 import ast
 import json
 import os

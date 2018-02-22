@@ -1,6 +1,8 @@
 # coding=utf-8
 """Request handler for authentication."""
+from __future__ import unicode_literals
 
+from builtins import range
 import logging
 import random
 import string

@@ -26,7 +26,10 @@ according to our needs.
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import range
 import copy
 import logging
 import re

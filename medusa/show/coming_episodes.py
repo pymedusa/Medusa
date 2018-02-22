@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from past.builtins import cmp
+from builtins import str
+from builtins import object
 from datetime import date, timedelta
 
 from medusa import app
@@ -187,7 +191,7 @@ class ComingEpisodes(object):
     def _get_sort(sort):
         sort = sort.lower() if sort else ''
 
-        if sort not in ComingEpisodes.sorts.keys():
+        if sort not in ComingEpisodes.sorts:
             return 'date'
 
         return sort

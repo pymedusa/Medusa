@@ -9,6 +9,7 @@ circumventing the requirement to use the WebUI.
 
 from __future__ import unicode_literals
 
+from builtins import object
 import logging
 from base64 import b64encode
 

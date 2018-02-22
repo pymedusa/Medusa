@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from builtins import str
 import datetime
 import logging
 from base64 import standard_b64encode

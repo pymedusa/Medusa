@@ -1,4 +1,6 @@
 """Base theme module."""
+from __future__ import unicode_literals
+from builtins import object
 import json
 import logging
 import os

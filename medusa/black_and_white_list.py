@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 
+from builtins import object
 import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError

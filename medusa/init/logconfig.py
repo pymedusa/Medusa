@@ -1,5 +1,7 @@
 # coding=utf-8
 """Monkey-patch logger functions to accept enhanced format styles."""
+from __future__ import unicode_literals
+from builtins import object
 import logging
 from inspect import getargspec
 

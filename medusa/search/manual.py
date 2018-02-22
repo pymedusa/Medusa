@@ -1,7 +1,9 @@
 # coding=utf-8
 
 """Manual search module."""
+from __future__ import unicode_literals
 
+from builtins import zip
 import json
 import logging
 import threading

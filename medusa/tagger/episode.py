@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+from builtins import object
 import re
 
 from medusa.helper.common import try_int

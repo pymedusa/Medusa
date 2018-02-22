@@ -1,5 +1,8 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+from builtins import str
+from builtins import object
 import logging
 import re
 

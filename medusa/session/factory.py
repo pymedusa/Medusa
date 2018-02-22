@@ -1,19 +1,17 @@
 """Session class factory methods."""
+from __future__ import unicode_literals
 
 import logging
+
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
 from medusa import app
 
+from six.moves.urllib.parse import urlparse
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-
-try:
-    from urllib.parse import splittype
-except ImportError:
-    from urllib2 import splittype
 
 
 def add_cache_control(session, cache_control_config):
@@ -32,12 +30,12 @@ def add_cache_control(session, cache_control_config):
 def add_proxies():
     # request session proxies
     if app.PROXY_SETTING:
-        log.debug(u"Using global proxy: " + app.PROXY_SETTING)
-        scheme, address = splittype(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
+        log.debug('Using global proxy: ' + app.PROXY_SETTING)
+        proxy = urlparse(app.PROXY_SETTING)
+        address = app.PROXY_SETTING if proxy.scheme else 'http://' + app.PROXY_SETTING
         return {
-            "http": address,
-            "https": address,
+            'http': address,
+            'https': address,
         }
     else:
         return None

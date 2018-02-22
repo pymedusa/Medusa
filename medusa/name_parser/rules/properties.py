@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Properties: This section contains additional properties to be guessed by guessit."""
+from __future__ import unicode_literals
 
 import re
 

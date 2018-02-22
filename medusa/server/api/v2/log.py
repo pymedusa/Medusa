@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for logs."""
+from __future__ import unicode_literals
 import json
 import logging
 

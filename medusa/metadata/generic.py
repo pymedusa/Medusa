@@ -1,5 +1,8 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+from builtins import str
+from builtins import object
 import io
 import logging
 import os
@@ -789,7 +792,7 @@ class GenericMetadata(object):
         # to present to user via ui to pick down the road.
 
         # find the correct season in the TVDB object and just copy the dict into our result dict
-        for season_art_id in season_art_obj[u'original'][season].keys():
+        for season_art_id in season_art_obj[u'original'][season]:
             if season not in result:
                 result[season] = {}
             result[season][season_art_id] = season_art_obj[u'original'][season][season_art_id][u'_bannerpath']
@@ -825,7 +828,7 @@ class GenericMetadata(object):
         # to present to user via ui to pick down the road.
 
         # find the correct season in the TVDB object and just copy the dict into our result dict
-        for season_art_id in season_art_obj[u'original'][season].keys():
+        for season_art_id in season_art_obj[u'original'][season]:
             if season not in result:
                 result[season] = {}
             result[season][season_art_id] = season_art_obj[u'original'][season][season_art_id][u'_bannerpath']
