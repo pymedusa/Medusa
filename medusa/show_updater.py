@@ -17,10 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import object
+
 import logging
 import threading
 import time
+from builtins import object
 
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -144,7 +145,8 @@ class ShowUpdater(object):
             elif hasattr(indexer_api, 'get_last_updated_seasons'):
                 # Get updated seasons and add them to the season update list.
                 try:
-                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update,
+                                                                           update_max_weeks)
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'connectivity issues while trying to look for showupdates on show: {show}',

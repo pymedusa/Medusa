@@ -44,8 +44,6 @@ Options:
 
 from __future__ import print_function, unicode_literals
 
-from builtins import str
-from builtins import object
 import datetime
 import getopt
 import io
@@ -61,6 +59,8 @@ import subprocess
 import sys
 import threading
 import time
+from builtins import object
+from builtins import str
 
 from configobj import ConfigObj
 

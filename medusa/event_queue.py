@@ -1,10 +1,11 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import object
+
 import logging
 import threading
 import traceback
+from builtins import object
 
 from medusa.helper.exceptions import ex
 

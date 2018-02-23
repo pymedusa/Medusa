@@ -17,10 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import object
+
 import datetime
 import functools
 import locale
+from builtins import object
 
 from medusa import app
 from medusa.network_timezones import app_timezone

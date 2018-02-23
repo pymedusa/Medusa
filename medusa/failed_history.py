@@ -18,9 +18,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """failed history code."""
 from __future__ import unicode_literals
-from builtins import str
+
 import re
+from builtins import str
 from datetime import datetime, timedelta
+
 from medusa import db, logger
 from medusa.common import FAILED, Quality, WANTED, statusStrings
 from medusa.helper.common import episode_num

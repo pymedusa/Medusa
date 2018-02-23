@@ -15,10 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 from __future__ import unicode_literals
-from builtins import str
-from builtins import object
+
 import datetime
 import logging
 import os
@@ -29,7 +27,10 @@ import stat
 import subprocess
 import tarfile
 import time
+from builtins import object
+from builtins import str
 from logging import DEBUG, WARNING
+
 from medusa import app, db, helpers, notifiers, ui
 from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter

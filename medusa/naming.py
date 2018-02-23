@@ -17,10 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import str
-from builtins import object
+
 import datetime
 import os
+from builtins import object
+from builtins import str
 
 from medusa import app, common, logger, tv
 from medusa.common import DOWNLOADED, Quality

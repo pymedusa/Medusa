@@ -3,11 +3,11 @@
 """Trakt checker module."""
 from __future__ import unicode_literals
 
-from builtins import str
-from builtins import object
 import datetime
 import logging
 import time
+from builtins import object
+from builtins import str
 
 from medusa import app, db, ui
 from medusa.common import Quality, SKIPPED, WANTED

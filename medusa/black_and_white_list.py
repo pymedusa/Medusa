@@ -21,10 +21,11 @@
 
 from __future__ import unicode_literals
 
-from builtins import object
 import logging
+from builtins import object
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
+
 from medusa import app, db, helpers
 
 

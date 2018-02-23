@@ -18,20 +18,24 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import str
-from builtins import object
+
 import datetime
 import logging
 import os.path
 import re
+from builtins import object
+from builtins import str
 
 from contextlib2 import suppress
+
 from medusa import app, common, db, helpers, logger, naming, scheduler
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.version_checker import CheckVersion
+
 from requests.compat import urlsplit
+
 from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 
@@ -66,7 +70,7 @@ naming_sep_type_text = (' - ', 'space')
 
 def change_HTTPS_CERT(https_cert):
     """
-    Replace HTTPS Certificate file path
+    Replace HTTPS Certificate file path.
 
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
@@ -87,7 +91,7 @@ def change_HTTPS_CERT(https_cert):
 
 def change_HTTPS_KEY(https_key):
     """
-    Replace HTTPS Key file path
+    Replace HTTPS Key file path.
 
     :param https_key: path to the new key file
     :return: True on success, False on failure
@@ -108,7 +112,7 @@ def change_HTTPS_KEY(https_key):
 
 def change_LOG_DIR(log_dir):
     """
-    Change logging directory for application and webserver
+    Change logging directory for application and webserver.
 
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure

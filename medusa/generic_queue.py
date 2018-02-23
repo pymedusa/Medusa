@@ -1,10 +1,11 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import object
+
 import datetime
 import logging
 import threading
+from builtins import object
 
 log = logging.getLogger()
 

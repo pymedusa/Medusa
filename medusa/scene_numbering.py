@@ -22,10 +22,11 @@
 #
 
 from __future__ import unicode_literals
-from builtins import str
+
 import datetime
 import time
 import traceback
+from builtins import str
 
 from medusa import db, logger
 from medusa.helper.exceptions import ex

@@ -3,11 +3,12 @@
 """Browser module."""
 from __future__ import unicode_literals
 
-from past.builtins import cmp
-from builtins import str
 import logging
 import os
 import string
+from builtins import str
+
+from past.builtins import cmp
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
