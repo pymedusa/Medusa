@@ -609,8 +609,8 @@ class PostProcessor(object):
                 [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
-                season = int(sql_result[0]['season'])
-                episodes = [int(sql_result[0]['episode'])]
+                season = int(sql_result[0][b'season'])
+                episodes = [int(sql_result[0][b'episode'])]
             else:
                 # Found no result, trying with season 0
                 sql_result = main_db_con.select(
@@ -622,8 +622,8 @@ class PostProcessor(object):
                     [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
-                    season = int(sql_result[0]['season'])
-                    episodes = [int(sql_result[0]['episode'])]
+                    season = int(sql_result[0][b'season'])
+                    episodes = [int(sql_result[0][b'episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
                              (episodes[0], series_obj.indexerid), logger.DEBUG)
@@ -826,15 +826,15 @@ class PostProcessor(object):
                     'ORDER BY date DESC',
                     [series_obj.indexer, series_obj.series_id, season, episode])
 
-                if history_result and history_result[0]['quality'] == quality:
+                if history_result and history_result[0][b'quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
                     # Check if the last snatch was a manual snatch
-                    if history_result[0]['manually_searched']:
+                    if history_result[0][b'manually_searched']:
                         self.manually_searched = True
                     # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0]['info_hash'] or None
+                    self.info_hash = history_result[0][b'info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -849,7 +849,7 @@ class PostProcessor(object):
                         [series_obj.indexer, series_obj.series_id, season, episode, quality])
 
                     if download_result:
-                        download_name = os.path.basename(download_result[0]['resource'])
+                        download_name = os.path.basename(download_result[0][b'resource'])
                         # If the file name we are processing differs from the file
                         # that was previously processed, we want this file
                         if self.file_name != download_name:
