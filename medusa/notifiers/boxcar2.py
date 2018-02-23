@@ -4,8 +4,8 @@
 
 from __future__ import unicode_literals
 
-from builtins import object
 import logging
+from builtins import object
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter

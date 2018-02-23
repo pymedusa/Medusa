@@ -28,16 +28,17 @@ have a fixed execution order, that's why the rules() method should add the rules
 """
 from __future__ import unicode_literals
 
-from builtins import str
-from builtins import range
 import copy
 import logging
 import re
+from builtins import range
+from builtins import str
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
+
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule

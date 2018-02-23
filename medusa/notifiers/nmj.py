@@ -1,10 +1,11 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import object
+
 import logging
 import re
 import telnetlib
+from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex

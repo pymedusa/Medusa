@@ -1,17 +1,19 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import object
+
 import ast
 import logging
 import socket
 import time
+from builtins import object
 
 from medusa import app, common, db
 from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.http_client import HTTPException, HTTPSConnection
 
 try:

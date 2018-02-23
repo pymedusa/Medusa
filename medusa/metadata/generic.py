@@ -1,12 +1,13 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import str
-from builtins import object
+
 import io
 import logging
 import os
 import re
+from builtins import object
+from builtins import str
 
 from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension

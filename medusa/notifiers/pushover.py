@@ -1,9 +1,10 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from builtins import object
+
 import logging
 import time
+from builtins import object
 
 from medusa import app
 from medusa.common import (
@@ -21,6 +22,7 @@ from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError
 
