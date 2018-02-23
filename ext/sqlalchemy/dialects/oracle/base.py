@@ -1,5 +1,5 @@
 # oracle/base.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -195,6 +195,51 @@ accepted, including methods such as :meth:`.MetaData.reflect` and
 
 If synonyms are not in use, this flag should be left disabled.
 
+.. _oracle_constraint_reflection:
+
+Constraint Reflection
+---------------------
+
+The Oracle dialect can return information about foreign key, unique, and
+CHECK constraints, as well as indexes on tables.
+
+Raw information regarding these constraints can be acquired using
+:meth:`.Inspector.get_foreign_keys`, :meth:`.Inspector.get_unique_constraints`,
+:meth:`.Inspector.get_check_constraints`, and :meth:`.Inspector.get_indexes`.
+
+.. versionchanged:: 1.2  The Oracle dialect can now reflect UNIQUE and
+   CHECK constraints.
+
+When using reflection at the :class:`.Table` level, the :class:`.Table`
+will also include these constraints.
+
+Note the following caveats:
+
+* When using the :meth:`.Inspector.get_check_constraints` method, Oracle
+  builds a special "IS NOT NULL" constraint for columns that specify
+  "NOT NULL".  This constraint is **not** returned by default; to include
+  the "IS NOT NULL" constraints, pass the flag ``include_all=True``::
+
+      from sqlalchemy import create_engine, inspect
+
+      engine = create_engine("oracle+cx_oracle://s:t@dsn")
+      inspector = inspect(engine)
+      all_check_constraints = inspector.get_check_constraints(
+          "some_table", include_all=True)
+
+* in most cases, when reflecting a :class:`.Table`, a UNIQUE constraint will
+  **not** be available as a :class:`.UniqueConstraint` object, as Oracle
+  mirrors unique constraints with a UNIQUE index in most cases (the exception
+  seems to be when two or more unique constraints represent the same columns);
+  the :class:`.Table` will instead represent these using :class:`.Index`
+  with the ``unique=True`` flag set.
+
+* Oracle creates an implicit index for the primary key of a table; this index
+  is **excluded** from all index results.
+
+* the list of columns reflected for an index will not include column names
+  that start with SYS_NC.
+
 Table names with SYSTEM/SYSAUX tablespaces
 -------------------------------------------
 
@@ -310,6 +355,7 @@ from sqlalchemy.sql.elements import quoted_name
 from sqlalchemy import types as sqltypes, schema as sa_schema
 from sqlalchemy.types import VARCHAR, NVARCHAR, CHAR, \
     BLOB, CLOB, TIMESTAMP, FLOAT
+from itertools import groupby
 
 RESERVED_WORDS = \
     set('SHARE RAW DROP BETWEEN FROM DESC OPTION PRIOR LONG THEN '
@@ -373,6 +419,28 @@ class DOUBLE_PRECISION(sqltypes.Numeric):
             asdecimal = False
 
         super(DOUBLE_PRECISION, self).__init__(
+            precision=precision, scale=scale, asdecimal=asdecimal)
+
+
+class BINARY_DOUBLE(sqltypes.Numeric):
+    __visit_name__ = 'BINARY_DOUBLE'
+
+    def __init__(self, precision=None, scale=None, asdecimal=None):
+        if asdecimal is None:
+            asdecimal = False
+
+        super(BINARY_DOUBLE, self).__init__(
+            precision=precision, scale=scale, asdecimal=asdecimal)
+
+
+class BINARY_FLOAT(sqltypes.Numeric):
+    __visit_name__ = 'BINARY_FLOAT'
+
+    def __init__(self, precision=None, scale=None, asdecimal=None):
+        if asdecimal is None:
+            asdecimal = False
+
+        super(BINARY_FLOAT, self).__init__(
             precision=precision, scale=scale, asdecimal=asdecimal)
 
 
@@ -510,6 +578,12 @@ class OracleTypeCompiler(compiler.GenericTypeCompiler):
 
     def visit_DOUBLE_PRECISION(self, type_, **kw):
         return self._generate_numeric(type_, "DOUBLE PRECISION", **kw)
+
+    def visit_BINARY_DOUBLE(self, type_, **kw):
+        return self._generate_numeric(type_, "BINARY_DOUBLE", **kw)
+
+    def visit_BINARY_FLOAT(self, type_, **kw):
+        return self._generate_numeric(type_, "BINARY_FLOAT", **kw)
 
     def visit_NUMBER(self, type_, **kw):
         return self._generate_numeric(type_, "NUMBER", **kw)
@@ -659,12 +733,17 @@ class OracleCompiler(compiler.SQLCompiler):
 
         def visit_join(join):
             if join.isouter:
+                # https://docs.oracle.com/database/121/SQLRF/queries006.htm#SQLRF52354
+                # "apply the outer join operator (+) to all columns of B in
+                # the join condition in the WHERE clause" - that is,
+                # unconditionally regardless of operator or the other side
                 def visit_binary(binary):
-                    if binary.operator == sql_operators.eq:
-                        if join.right.is_derived_from(binary.left.table):
-                            binary.left = _OuterJoinColumn(binary.left)
-                        elif join.right.is_derived_from(binary.right.table):
-                            binary.right = _OuterJoinColumn(binary.right)
+                    if isinstance(binary.left, expression.ColumnClause) \
+                            and join.right.is_derived_from(binary.left.table):
+                        binary.left = _OuterJoinColumn(binary.left)
+                    elif isinstance(binary.right, expression.ColumnClause) \
+                            and join.right.is_derived_from(binary.right.table):
+                        binary.right = _OuterJoinColumn(binary.right)
                 clauses.append(visitors.cloned_traverse(
                     join.onclause, {}, {'binary': visit_binary}))
             else:
@@ -700,12 +779,14 @@ class OracleCompiler(compiler.SQLCompiler):
     def returning_clause(self, stmt, returning_cols):
         columns = []
         binds = []
+
         for i, column in enumerate(
                 expression._select_iterables(returning_cols)):
             if column.type._has_column_expression:
                 col_expr = column.type.column_expression(column)
             else:
                 col_expr = column
+
             outparam = sql.outparam("ret_%d" % i, type_=column.type)
             self.binds[outparam.key] = outparam
             binds.append(
@@ -714,7 +795,8 @@ class OracleCompiler(compiler.SQLCompiler):
                 self.process(col_expr, within_columns_clause=False))
 
             self._add_to_result_map(
-                outparam.key, outparam.key,
+                getattr(col_expr, 'name', col_expr.anon_label),
+                getattr(col_expr, 'name', col_expr.anon_label),
                 (column, getattr(column, 'name', None),
                  getattr(column, 'key', None)),
                 column.type
@@ -925,9 +1007,9 @@ class OracleDDLCompiler(compiler.DDLCompiler):
 
 class OracleIdentifierPreparer(compiler.IdentifierPreparer):
 
-    reserved_words = set([x.lower() for x in RESERVED_WORDS])
-    illegal_initial_characters = set(
-        (str(dig) for dig in range(0, 10))).union(["_", "$"])
+    reserved_words = {x.lower() for x in RESERVED_WORDS}
+    illegal_initial_characters = {str(dig) for dig in range(0, 10)} \
+        .union(["_", "$"])
 
     def _bindparam_requires_quotes(self, value):
         """Return True if the given identifier requires quoting."""
@@ -957,8 +1039,6 @@ class OracleDialect(default.DefaultDialect):
     supports_unicode_statements = False
     supports_unicode_binds = False
     max_identifier_length = 30
-    supports_sane_rowcount = True
-    supports_sane_multi_rowcount = False
 
     supports_simple_order_by_label = False
 
@@ -971,6 +1051,7 @@ class OracleDialect(default.DefaultDialect):
     ischema_names = ischema_names
     requires_name_normalize = True
 
+    supports_comments = True
     supports_default_values = False
     supports_empty_insert = False
 
@@ -1302,22 +1383,35 @@ class OracleDialect(default.DefaultDialect):
             char_length_col = 'data_length'
 
         params = {"table_name": table_name}
-        text = "SELECT column_name, data_type, %(char_length_col)s, "\
-            "data_precision, data_scale, "\
-            "nullable, data_default FROM ALL_TAB_COLUMNS%(dblink)s "\
-            "WHERE table_name = :table_name"
+        text = """
+            SELECT col.column_name, col.data_type, col.%(char_length_col)s,
+              col.data_precision, col.data_scale, col.nullable,
+              col.data_default, com.comments\
+            FROM all_tab_columns%(dblink)s col
+            LEFT JOIN all_col_comments%(dblink)s com
+            ON col.table_name = com.table_name
+            AND col.column_name = com.column_name
+            AND col.owner = com.owner
+            WHERE col.table_name = :table_name
+        """
         if schema is not None:
             params['owner'] = schema
-            text += " AND owner = :owner "
-        text += " ORDER BY column_id"
+            text += " AND col.owner = :owner "
+        text += " ORDER BY col.column_id"
         text = text % {'dblink': dblink, 'char_length_col': char_length_col}
 
         c = connection.execute(sql.text(text), **params)
 
         for row in c:
-            (colname, orig_colname, coltype, length, precision, scale, nullable, default) = \
-                (self.normalize_name(row[0]), row[0], row[1], row[
-                 2], row[3], row[4], row[5] == 'Y', row[6])
+            colname = self.normalize_name(row[0])
+            orig_colname = row[0]
+            coltype = row[1]
+            length = row[2]
+            precision = row[3]
+            scale = row[4]
+            nullable = row[5] == 'Y'
+            default = row[6]
+            comment = row[7]
 
             if coltype == 'NUMBER':
                 coltype = NUMBER(precision, scale)
@@ -1340,12 +1434,32 @@ class OracleDialect(default.DefaultDialect):
                 'nullable': nullable,
                 'default': default,
                 'autoincrement': 'auto',
+                'comment': comment,
             }
             if orig_colname.lower() == orig_colname:
                 cdict['quote'] = True
 
             columns.append(cdict)
         return columns
+
+    @reflection.cache
+    def get_table_comment(self, connection, table_name, schema=None,
+                          resolve_synonyms=False, dblink='', **kw):
+
+        info_cache = kw.get('info_cache')
+        (table_name, schema, dblink, synonym) = \
+            self._prepare_reflection_args(connection, table_name, schema,
+                                          resolve_synonyms, dblink,
+                                          info_cache=info_cache)
+
+        COMMENT_SQL = """
+            SELECT comments
+            FROM user_tab_comments
+            WHERE table_name = :table_name
+        """
+
+        c = connection.execute(sql.text(COMMENT_SQL), table_name=table_name)
+        return {"text": c.scalar()}
 
     @reflection.cache
     def get_indexes(self, connection, table_name, schema=None,
@@ -1391,21 +1505,9 @@ class OracleDialect(default.DefaultDialect):
 
         oracle_sys_col = re.compile(r'SYS_NC\d+\$', re.IGNORECASE)
 
-        def upper_name_set(names):
-            return set([i.upper() for i in names])
-
-        pk_names = upper_name_set(pkeys)
-
-        def remove_if_primary_key(index):
-            # don't include the primary key index
-            if index is not None and \
-               upper_name_set(index['column_names']) == pk_names:
-                indexes.pop()
-
         index = None
         for rset in rp:
             if rset.index_name != last_index_name:
-                remove_if_primary_key(index)
                 index = dict(name=self.normalize_name(rset.index_name),
                              column_names=[], dialect_options={})
                 indexes.append(index)
@@ -1422,7 +1524,17 @@ class OracleDialect(default.DefaultDialect):
                 index['column_names'].append(
                     self.normalize_name(rset.column_name))
             last_index_name = rset.index_name
-        remove_if_primary_key(index)
+
+        def upper_name_set(names):
+            return {i.upper() for i in names}
+
+        pk_names = upper_name_set(pkeys)
+        if pk_names:
+            def is_pk_index(index):
+                # don't include the primary key index
+                return upper_name_set(index['column_names']) == pk_names
+            indexes = [idx for idx in indexes if not is_pk_index(idx)]
+
         return indexes
 
     @reflection.cache
@@ -1431,33 +1543,37 @@ class OracleDialect(default.DefaultDialect):
 
         params = {'table_name': table_name}
 
-        text = \
-            "SELECT"\
-            "\nac.constraint_name,"\
-            "\nac.constraint_type,"\
-            "\nloc.column_name AS local_column,"\
-            "\nrem.table_name AS remote_table,"\
-            "\nrem.column_name AS remote_column,"\
-            "\nrem.owner AS remote_owner,"\
-            "\nloc.position as loc_pos,"\
-            "\nrem.position as rem_pos"\
-            "\nFROM all_constraints%(dblink)s ac,"\
-            "\nall_cons_columns%(dblink)s loc,"\
-            "\nall_cons_columns%(dblink)s rem"\
-            "\nWHERE ac.table_name = :table_name"\
-            "\nAND ac.constraint_type IN ('R','P')"
+        text = (
+            "SELECT"
+            "\nac.constraint_name,"  # 0
+            "\nac.constraint_type,"  # 1
+            "\nloc.column_name AS local_column,"  # 2
+            "\nrem.table_name AS remote_table,"  # 3
+            "\nrem.column_name AS remote_column,"  # 4
+            "\nrem.owner AS remote_owner,"  # 5
+            "\nloc.position as loc_pos,"  # 6
+            "\nrem.position as rem_pos,"  # 7
+            "\nac.search_condition,"  # 8
+            "\nac.delete_rule"  # 9
+            "\nFROM all_constraints%(dblink)s ac,"
+            "\nall_cons_columns%(dblink)s loc,"
+            "\nall_cons_columns%(dblink)s rem"
+            "\nWHERE ac.table_name = :table_name"
+            "\nAND ac.constraint_type IN ('R','P', 'U', 'C')"
+        )
 
         if schema is not None:
             params['owner'] = schema
             text += "\nAND ac.owner = :owner"
 
-        text += \
-            "\nAND ac.owner = loc.owner"\
-            "\nAND ac.constraint_name = loc.constraint_name"\
-            "\nAND ac.r_owner = rem.owner(+)"\
-            "\nAND ac.r_constraint_name = rem.constraint_name(+)"\
-            "\nAND (rem.position IS NULL or loc.position=rem.position)"\
+        text += (
+            "\nAND ac.owner = loc.owner"
+            "\nAND ac.constraint_name = loc.constraint_name"
+            "\nAND ac.r_owner = rem.owner(+)"
+            "\nAND ac.r_constraint_name = rem.constraint_name(+)"
+            "\nAND (rem.position IS NULL or loc.position=rem.position)"
             "\nORDER BY ac.constraint_name, loc.position"
+        )
 
         text = text % {'dblink': dblink}
         rp = connection.execute(sql.text(text), **params)
@@ -1500,7 +1616,6 @@ class OracleDialect(default.DefaultDialect):
             dblink
 
         """
-
         requested_schema = schema  # to check later on
         resolve_synonyms = kw.get('oracle_resolve_synonyms', False)
         dblink = kw.get('dblink', '')
@@ -1521,7 +1636,8 @@ class OracleDialect(default.DefaultDialect):
                 'constrained_columns': [],
                 'referred_schema': None,
                 'referred_table': None,
-                'referred_columns': []
+                'referred_columns': [],
+                'options': {},
             }
 
         fkeys = util.defaultdict(fkey_rec)
@@ -1529,6 +1645,8 @@ class OracleDialect(default.DefaultDialect):
         for row in constraint_data:
             (cons_name, cons_type, local_column, remote_table, remote_column, remote_owner) = \
                 row[0:2] + tuple([self.normalize_name(x) for x in row[2:6]])
+
+            cons_name = self.normalize_name(cons_name)
 
             if cons_type == 'R':
                 if remote_table is None:
@@ -1565,10 +1683,47 @@ class OracleDialect(default.DefaultDialect):
                        self.denormalize_name(remote_owner) != schema:
                         rec['referred_schema'] = remote_owner
 
+                    if row[9] != 'NO ACTION':
+                        rec['options']['ondelete'] = row[9]
+
                 local_cols.append(local_column)
                 remote_cols.append(remote_column)
 
         return list(fkeys.values())
+
+    @reflection.cache
+    def get_unique_constraints(self, connection, table_name, schema=None, **kw):
+        resolve_synonyms = kw.get('oracle_resolve_synonyms', False)
+        dblink = kw.get('dblink', '')
+        info_cache = kw.get('info_cache')
+
+        (table_name, schema, dblink, synonym) = \
+            self._prepare_reflection_args(connection, table_name, schema,
+                                          resolve_synonyms, dblink,
+                                          info_cache=info_cache)
+
+        constraint_data = self._get_constraint_data(
+            connection, table_name, schema, dblink,
+            info_cache=kw.get('info_cache'))
+
+        unique_keys = filter(lambda x: x[1] == 'U', constraint_data)
+        uniques_group = groupby(unique_keys, lambda x: x[0])
+
+        index_names = set([ix['name'] for ix in self.get_indexes(connection, table_name, schema=schema)])
+        return [
+            {
+                'name': name,
+                'column_names': cols,
+                'duplicates_index': name if name in index_names else None
+            }
+            for name, cols in
+            [
+                [
+                    self.normalize_name(i[0]),
+                    [self.normalize_name(x[2]) for x in i[1]]
+                ] for i in uniques_group
+            ]
+        ]
 
     @reflection.cache
     def get_view_definition(self, connection, view_name, schema=None,
@@ -1593,6 +1748,32 @@ class OracleDialect(default.DefaultDialect):
             return rp
         else:
             return None
+
+    @reflection.cache
+    def get_check_constraints(self, connection, table_name, schema=None,
+                              include_all=False, **kw):
+        resolve_synonyms = kw.get('oracle_resolve_synonyms', False)
+        dblink = kw.get('dblink', '')
+        info_cache = kw.get('info_cache')
+
+        (table_name, schema, dblink, synonym) = \
+            self._prepare_reflection_args(connection, table_name, schema,
+                                          resolve_synonyms, dblink,
+                                          info_cache=info_cache)
+
+        constraint_data = self._get_constraint_data(
+            connection, table_name, schema, dblink,
+            info_cache=kw.get('info_cache'))
+
+        check_constraints = filter(lambda x: x[1] == 'C', constraint_data)
+
+        return [
+            {
+                'name': self.normalize_name(cons[0]),
+                'sqltext': cons[8],
+            }
+            for cons in check_constraints if include_all or
+            not re.match(r'..+?. IS NOT NULL$', cons[8])]
 
 
 class _OuterJoinColumn(sql.ClauseElement):

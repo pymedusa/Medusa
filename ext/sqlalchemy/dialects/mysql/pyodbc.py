@@ -1,5 +1,5 @@
 # mysql/pyodbc.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -59,7 +59,7 @@ class MySQLDialect_pyodbc(PyODBCConnector, MySQLDialect):
         # If it's decided that issuing that sort of SQL leaves you SOL, then
         # this can prefer the driver value.
         rs = connection.execute("SHOW VARIABLES LIKE 'character_set%%'")
-        opts = dict([(row[0], row[1]) for row in self._compat_fetchall(rs)])
+        opts = {row[0]: row[1] for row in self._compat_fetchall(rs)}
         for key in ('character_set_connection', 'character_set'):
             if opts.get(key, None):
                 return opts[key]

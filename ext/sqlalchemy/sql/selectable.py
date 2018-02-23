@@ -1,5 +1,5 @@
 # sql/selectable.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -1241,13 +1241,13 @@ class Alias(FromClause):
                                                     or 'anon'))
         self.name = name
 
-    def self_group(self, target=None):
-        if isinstance(target, CompoundSelect) and \
+    def self_group(self, against=None):
+        if isinstance(against, CompoundSelect) and \
             isinstance(self.original, Select) and \
                 self.original._needs_parens_for_grouping():
             return FromGrouping(self)
 
-        return super(Alias, self).self_group(target)
+        return super(Alias, self).self_group(against=against)
 
     @property
     def description(self):
@@ -1841,6 +1841,19 @@ class ForUpdateArg(ClauseElement):
         else:
             return True
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, ForUpdateArg) and
+            other.nowait == self.nowait and
+            other.read == self.read and
+            other.skip_locked == self.skip_locked and
+            other.key_share == self.key_share and
+            other.of is self.of
+        )
+
+    def __hash__(self):
+        return id(self)
+
     def _copy_internals(self, clone=_clone, **kw):
         if self.of is not None:
             self.of = [clone(col, **kw) for col in self.of]
@@ -2269,7 +2282,7 @@ class CompoundSelect(GenerativeSelect):
                      n + 1, len(s.c._all_columns))
                 )
 
-            self.selects.append(s.self_group(self))
+            self.selects.append(s.self_group(against=self))
 
         GenerativeSelect.__init__(self, **kwargs)
 

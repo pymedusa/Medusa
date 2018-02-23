@@ -1,6 +1,5 @@
 <%!
     from medusa import app
-    from medusa.server.core import clean_url_path
 %>
 <!DOCTYPE html>
 <html>
@@ -44,12 +43,12 @@
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + clean_url_path(app.WEB_ROOT + '/api/v2/', end_with_slash=True) + '"', '')[title == 'Login']}>
+    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
         <div v-cloak id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
