@@ -105,7 +105,7 @@ def container():
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
-    nzb = ['nzb']
+    nzb = [b'nzb']
 
     rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 
