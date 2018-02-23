@@ -10,9 +10,9 @@ import re
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
-from subliminal.video import Episode
-
 from six import viewitems
+
+from subliminal.video import Episode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

@@ -3,11 +3,11 @@
 """Manual search module."""
 from __future__ import unicode_literals
 
-from builtins import zip
 import json
 import logging
 import threading
 import time
+from builtins import zip
 from datetime import datetime
 
 from dateutil import parser

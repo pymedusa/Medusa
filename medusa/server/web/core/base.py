@@ -2,14 +2,13 @@
 
 from __future__ import unicode_literals
 
-from past.builtins import cmp
-from builtins import str
 import datetime
 import json
 import os
 import re
 import time
 import traceback
+from builtins import str
 from concurrent.futures import ThreadPoolExecutor
 
 from mako.exceptions import RichTraceback
@@ -29,6 +28,8 @@ from medusa import (
 )
 from medusa.server.api.v1.core import function_mapper
 from medusa.show.coming_episodes import ComingEpisodes
+
+from past.builtins import cmp
 
 from requests.compat import urljoin
 
@@ -51,6 +52,7 @@ from tornado.web import (
     addslash,
     authenticated,
 )
+
 from tornroutes import route
 
 
@@ -79,9 +81,8 @@ def get_lookup():
 
 
 class PageTemplate(MakoTemplate):
-    """
-    Mako page template
-    """
+    """Mako page template."""
+
     def __init__(self, rh, filename):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
@@ -140,9 +141,7 @@ class PageTemplate(MakoTemplate):
                 type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
-        """
-        Render the Page template
-        """
+        """Render the Page template."""
         for key in self.arguments:
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
@@ -163,9 +162,8 @@ class PageTemplate(MakoTemplate):
 
 
 class BaseHandler(RequestHandler):
-    """
-    Base Handler for the server
-    """
+    """Base Handler for the server."""
+
     startTime = 0.
 
     def __init__(self, *args, **kwargs):
@@ -174,9 +172,7 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).__init__(*args, **kwargs)
 
     def write_error(self, status_code, **kwargs):
-        """
-        Base error Handler for 404's
-        """
+        """Base error Handler for 404's."""
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
@@ -215,8 +211,7 @@ class BaseHandler(RequestHandler):
             )
 
     def redirect(self, url, permanent=False, status=None):
-        """
-        Sends a redirect to the given (optionally relative) URL.
+        """Send a redirect to the given (optionally relative) URL.
 
         ----->>>>> NOTE: Removed self.finish <<<<<-----
 
@@ -246,9 +241,8 @@ class BaseHandler(RequestHandler):
 
 
 class WebHandler(BaseHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
         self.io_loop = IOLoop.current()
@@ -292,9 +286,8 @@ class WebHandler(BaseHandler):
 
 @route('(.*)(/?)')
 class WebRoot(WebHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
     def __init__(self, *args, **kwargs):
         super(WebRoot, self).__init__(*args, **kwargs)
 
@@ -302,7 +295,7 @@ class WebRoot(WebHandler):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def robots_txt(self):
-        """ Keep web crawlers out """
+        """Keep web crawlers out."""
         self.set_header('Content-Type', 'text/plain')
         return 'User-agent: *\nDisallow: /'
 
@@ -401,9 +394,9 @@ class WebRoot(WebHandler):
         ]
 
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=app.COMING_EPS_LAYOUT,
-                        title='Schedule', header='Schedule', topmenu='schedule',
-                        controller='schedule', action='index')
+        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results,
+                        layout=app.COMING_EPS_LAYOUT, title='Schedule', header='Schedule',
+                        topmenu='schedule', controller='schedule', action='index')
 
 
 @route('/ui(/?.*)')

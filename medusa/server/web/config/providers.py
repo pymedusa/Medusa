@@ -4,10 +4,10 @@
 
 from __future__ import unicode_literals
 
-from builtins import zip
-from builtins import str
 import json
 import os
+from builtins import str
+from builtins import zip
 
 from medusa import app, config, logger, providers, ui
 from medusa.helper.common import try_int
@@ -17,6 +17,7 @@ from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
 
 

@@ -4,14 +4,14 @@
 
 from __future__ import unicode_literals
 
-from builtins import zip
-from builtins import str
-from builtins import range
 import logging
 import os
 import re
 import time
 import traceback
+from builtins import range
+from builtins import str
+from builtins import zip
 
 from medusa import (
     app,
@@ -35,6 +35,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))

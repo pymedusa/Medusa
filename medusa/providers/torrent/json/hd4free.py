@@ -4,9 +4,9 @@
 
 from __future__ import unicode_literals
 
-from builtins import str
 import logging
 import traceback
+from builtins import str
 
 from medusa import tv
 from medusa.helper.common import convert_size

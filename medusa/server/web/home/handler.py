@@ -2,12 +2,11 @@
 
 from __future__ import unicode_literals
 
-from past.builtins import cmp
-from builtins import str
 import ast
 import json
 import os
 import time
+from builtins import str
 from datetime import date, datetime
 
 import adba
@@ -106,6 +105,8 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
+
+from past.builtins import cmp
 
 from requests.compat import (
     quote_plus,

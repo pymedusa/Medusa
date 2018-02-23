@@ -2,11 +2,11 @@
 
 from __future__ import unicode_literals
 
-from builtins import str
 import datetime
 import json
 import os
 import re
+from builtins import str
 
 from medusa import (
     app,

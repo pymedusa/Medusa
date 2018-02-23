@@ -2,17 +2,20 @@
 """Request handler for authentication."""
 from __future__ import unicode_literals
 
-from builtins import range
 import logging
 import random
 import string
 import time
+from builtins import range
 
 import jwt
+
 from medusa import app, helpers, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
+
 from six import text_type
+
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))

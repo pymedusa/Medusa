@@ -18,8 +18,8 @@
 """Torrent checker module."""
 from __future__ import unicode_literals
 
-from builtins import object
 import logging
+from builtins import object
 
 from medusa import app
 from medusa.clients import torrent

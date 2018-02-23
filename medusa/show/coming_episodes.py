@@ -17,9 +17,9 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from past.builtins import cmp
-from builtins import str
+
 from builtins import object
+from builtins import str
 from datetime import date, timedelta
 
 from medusa import app
@@ -36,6 +36,8 @@ from medusa.network_timezones import parse_date_time
 from medusa.sbdatetime import sbdatetime
 from medusa.tv.series import SeriesIdentifier
 
+from past.builtins import cmp
+
 
 class ComingEpisodes(object):
     """
@@ -44,6 +46,7 @@ class ComingEpisodes(object):
     Soon:     tomorrow till next week
     Later:    later than next week
     """
+
     categories = ['later', 'missed', 'soon', 'today']
     sorts = {
         'date': (lambda a, b: cmp(a['localtime'], b['localtime'])),
@@ -63,7 +66,6 @@ class ComingEpisodes(object):
         :param paused: ``True`` to include paused shows, ``False`` otherwise
         :return: The list of coming episodes
         """
-
         categories = ComingEpisodes._get_categories(categories)
         sort = ComingEpisodes._get_sort(sort)
 

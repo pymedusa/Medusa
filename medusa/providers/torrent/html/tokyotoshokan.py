@@ -4,9 +4,9 @@
 
 from __future__ import unicode_literals
 
-from builtins import zip
 import logging
 import re
+from builtins import zip
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser

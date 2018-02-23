@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from medusa.common import Quality
 from medusa.helper.common import try_int
 
-from six import text_type, itervalues
+from six import itervalues, text_type
 
 
 class History(object):

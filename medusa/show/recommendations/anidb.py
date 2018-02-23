@@ -2,9 +2,9 @@
 
 from __future__ import unicode_literals
 
-from builtins import object
 import logging
 import traceback
+from builtins import object
 
 from medusa import app
 from medusa.cache import recommended_series_cache
