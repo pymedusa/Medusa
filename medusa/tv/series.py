@@ -14,7 +14,6 @@ import traceback
 import warnings
 from builtins import map
 from builtins import str
-from builtins import zip
 from collections import (
     namedtuple,
 )
@@ -1488,7 +1487,7 @@ class Series(TV):
                      {'id': self.series_id, 'show': self.name})
             return
         else:
-            self.imdb_info = dict(list(zip(list(sql_results[0]), sql_results[0])))
+            self.imdb_info = dict(sql_results[0])
 
         self.reset_dirty()
         return True
