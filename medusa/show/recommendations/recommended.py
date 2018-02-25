@@ -49,7 +49,7 @@ anidb_api = None
 
 def load_anidb_api(func):
     """
-    Simple wrapper/decorator to lazy load the anidb_api.
+    Decorate a function to lazy load the anidb_api.
 
     We need to do this, because we're passing the Medusa cache location to the lib. As the module is imported before
     the app.CACHE_DIR location has been read, we can't initialize it at module level.
