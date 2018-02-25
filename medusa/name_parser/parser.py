@@ -173,22 +173,26 @@ class NameParser(object):
                 # Apparently we got a scene_season using the season scene exceptions. If we also do not have a season
                 # parsed, guessit made a 'mistake' and it should have set the season with the value.
                 # This is required for titles like: '[HorribleSubs].Kekkai.Sensen.&.Beyond.-.01.[1080p].mkv'
+                #
+                # Don't assume that scene_exceptions season is the same as indexer season.
+                # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
+                if result.series.is_scene or (result.season_number is None and scene_season > 0):
+                    a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode,
+                                                                       True, scene_season)
+
+                # Translate the absolute episode number, back to the indexers season and episode.
+                (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
+
                 if result.season_number is None and scene_season > 0:
-                    season = scene_season
-                    episode = [a]
                     log.debug(
                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
                         'season number in the title, '
-                        'assuming the episode # [{scene_absolute}] is the scene_absolute #.',
-                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a}
-                    )
+                        'translating the episode absolute # [{scene_absolute}] to season #[{absolute_season}] and '
+                        'episode #[{absolute_episode}].',
+                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a,
+                         'absolute_season': season, 'absolute_episode': episode}
+                        )
                 else:
-                    if result.series.is_scene:
-                        a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode,
-                                                                           True, scene_season)
-
-                    # Translate the absolute episode number, back to the indexers season and episode.
-                    (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
                     log.debug(
                         'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
                         {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
