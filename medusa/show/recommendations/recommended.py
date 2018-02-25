@@ -42,8 +42,24 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSession()
-anidb_api = Anidb(cache_dir=app.CACHE_DIR)
 imdb_api = imdbpie.Imdb(session=session)
+
+anidb_api = None
+
+
+def load_anidb_api(func):
+    """
+    Simple wrapper/decorator to lazy load the anidb_api.
+
+    We need to do this, because we're passing the Medusa cache location to the lib. As the module is imported before
+    the app.CACHE_DIR location has been read, we can't initialize it at module level.
+    """
+    def func_wrapper(aid):
+        global anidb_api
+        if anidb_api is None:
+            anidb_api = Anidb(cache_dir=app.CACHE_DIR)
+        return func(aid)
+    return func_wrapper
 
 
 class MissingTvdbMapping(Exception):
@@ -150,6 +166,7 @@ class RecommendedShow(object):
         return 'Recommended show {0} from recommended list: {1}'.format(self.title, self.recommender)
 
 
+@load_anidb_api
 @recommended_series_cache.cache_on_arguments()
 def cached_tvdb_to_aid(tvdb_id):
     """
@@ -160,6 +177,7 @@ def cached_tvdb_to_aid(tvdb_id):
     return anidb_api.tvdb_id_to_aid(tvdbid=tvdb_id)
 
 
+@load_anidb_api
 @recommended_series_cache.cache_on_arguments()
 def cached_aid_to_tvdb(aid):
     """

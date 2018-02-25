@@ -42,7 +42,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
-        except Exception:
+        except Exception as error:
             log.warning("Couldn't map AniDB id {0} to a TVDB id", series.aids)
             return None
 
