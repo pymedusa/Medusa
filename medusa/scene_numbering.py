@@ -132,8 +132,10 @@ def get_indexer_numbering(series_obj, sceneSeason, sceneEpisode, fallback_to_xem
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        "SELECT season, episode FROM scene_numbering WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
-        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode])
+        "SELECT season, episode FROM scene_numbering "
+        "WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
+        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode]
+    )
 
     if rows:
         return int(rows[0]["season"]), int(rows[0]["episode"])

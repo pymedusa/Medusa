@@ -109,6 +109,34 @@ import pytest
         },
         'expected': ([26], [3], [100]),
     },
+    # Ajin season 2, ep 13 using a S0xE0x format.
+    {
+        'name': u'[Ajin2.com].Ajin.Season.2.Episode.13.[End].[720p].[Subbed]',
+        'indexer_id': 1,
+        'indexer': 300835,
+        'mocks': {
+            'get_scene_exceptions_by_name': [(None, None, None)],
+            'get_absolute_number_from_season_and_episode': 26,
+        },
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure"
+        },
+        'expected': ([13], [2], [26]),
+    },
+    # Ajin season 2, ep 13 using a S0xE0x format.
+    {
+        'name': u'[DragsterPS].AJIN.Demi-Human.S02E13.[1080p].[Multi-Audio].[Multi-Subs].[B2041D7E]',
+        'indexer_id': 1,
+        'indexer': 300835,
+        'mocks': {
+            'get_scene_exceptions_by_name': [(None, None, None)],
+            'get_absolute_number_from_season_and_episode': 26,
+        },
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure"
+        },
+        'expected': ([13], [2], [26]),
+    },
 
 ])
 def test_series_parsing(p, monkeypatch, create_tvshow):
@@ -118,15 +146,11 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
     def mock_get_indexer_numbering():
         return p['mocks']['get_indexer_numbering']
 
-    # Series
+    # Anime
     # a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
-    def mock_get_absolute_number_from_season_and_episode():
+    def mock_get_absolute_number_from_season_and_episode(a, b, c):
         return p['mocks']['get_absolute_number_from_season_and_episode']
 
-    def mock_get_show():
-        return p['mocks']['get_show']
-
-    # Anime
     # scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
     def mock_get_scene_exceptions_by_name(a):
         return p['mocks']['get_scene_exceptions_by_name']
@@ -163,11 +187,11 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
         mock_get_scene_exceptions_by_name
     )
 
-    monkeypatch.setattr(
-        helpers,
-        'get_show',
-        mock_get_show
-    )
+    # monkeypatch.setattr(
+    #     helpers,
+    #     'get_show',
+    #     mock_get_show
+    # )
 
     monkeypatch.setattr(
         helpers,

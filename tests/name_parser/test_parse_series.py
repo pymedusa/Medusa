@@ -92,12 +92,6 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
         mock_get_absolute_number_from_season_and_episode
     )
 
-    monkeypatch.setattr(
-        helpers,
-        'get_show',
-        mock_get_show
-    )
-
     parser = NameParser()
     guess = guessit.guessit(p['name'])
     result = parser.to_parse_result(p['name'], guess)
@@ -105,7 +99,7 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
     # confirm passed in show object indexer id matches result show object indexer id
     result.series = create_tvshow(name=p['series_info']['name'])
 
-    actual = parser._parse_anime(result)
+    actual = parser._parse_series(result)
 
     expected = p['expected']
 
