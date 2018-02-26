@@ -24,7 +24,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (4, [8])
         },
         'series_info':{
-            'name': u'Cardcaptor Sakura'
+            'name': u'Cardcaptor Sakura',
+            'is_scene': True
         },
         'expected': ([8], [4], [78]),
     },
@@ -42,7 +43,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (4, [8])
         },
         'series_info': {
-            'name': u'Cardcaptor Sakura'
+            'name': u'Cardcaptor Sakura',
+            'is_scene': True
         },
         'expected': ([8], [4], [78]),
     },
@@ -60,7 +62,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (1, [8])
         },
         'series_info': {
-            'name': u'Cardcaptor Sakura'
+            'name': u'Cardcaptor Sakura',
+            'is_scene': True
         },
         'expected': ([8], [1], [8]),
     },
@@ -75,7 +78,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (1, [26])
         },
         'series_info': {
-            'name': u"JoJo's.Bizarre.Adventure.(2012)"
+            'name': u"JoJo's.Bizarre.Adventure.(2012)",
+            'is_scene': True
         },
         'expected': ([26], [1], [26]),
     },
@@ -90,7 +94,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (2, [26])
         },
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure"
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
         },
         'expected': ([26], [2], [52]),
     },
@@ -105,7 +110,8 @@ import pytest
             'get_all_episodes_from_absolute_number': (3, [26])
         },
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure"
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
         },
         'expected': ([26], [3], [100]),
     },
@@ -119,7 +125,8 @@ import pytest
             'get_absolute_number_from_season_and_episode': 26,
         },
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure"
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
         },
         'expected': ([13], [2], [26]),
     },
@@ -133,7 +140,8 @@ import pytest
             'get_absolute_number_from_season_and_episode': 26,
         },
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure"
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
         },
         'expected': ([13], [2], [26]),
     },
@@ -141,33 +149,22 @@ import pytest
 ])
 def test_series_parsing(p, monkeypatch, create_tvshow):
 
-    # _parse_air_by_date
-    # (season, episode) = scene_numbering.get_indexer_numbering(result.series, season_number, episode_number)
-    def mock_get_indexer_numbering():
-        return p['mocks']['get_indexer_numbering']
-
     # Anime
     # a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
-    def mock_get_absolute_number_from_season_and_episode(a, b, c):
+    def mock_get_absolute_number_from_season_and_episode(*_):
         return p['mocks']['get_absolute_number_from_season_and_episode']
 
     # scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
-    def mock_get_scene_exceptions_by_name(a):
+    def mock_get_scene_exceptions_by_name(*_):
         return p['mocks']['get_scene_exceptions_by_name']
 
     # a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode, True, scene_season)
-    def mock_get_indexer_absolute_numbering(a, b, c, d):
+    def mock_get_indexer_absolute_numbering(*_):
         return p['mocks']['get_indexer_absolute_numbering']
 
     # helpers.get_all_episodes_from_absolute_number(result.series, [a])
-    def mock_get_all_episodes_from_absolute_number(a, b):
+    def mock_get_all_episodes_from_absolute_number(*_):
         return p['mocks']['get_all_episodes_from_absolute_number']
-
-    monkeypatch.setattr(
-        medusa.scene_numbering,
-        'get_indexer_numbering',
-        mock_get_indexer_numbering
-    )
 
     monkeypatch.setattr(
         medusa.scene_numbering,
@@ -187,12 +184,6 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
         mock_get_scene_exceptions_by_name
     )
 
-    # monkeypatch.setattr(
-    #     helpers,
-    #     'get_show',
-    #     mock_get_show
-    # )
-
     monkeypatch.setattr(
         helpers,
         'get_all_episodes_from_absolute_number',
@@ -205,6 +196,7 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
 
     # confirm passed in show object indexer id matches result show object indexer id
     result.series = create_tvshow(name=p['series_info']['name'])
+    result.scene = p['series_info']['scene']
 
     actual = parser._parse_anime(result)
 

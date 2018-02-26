@@ -17,8 +17,9 @@ import pytest
         'mocks': {
             'get_indexer_numbering': (6, 28),
         },
-        'series_info':{
-            'name': u'Regular.Show'
+        'series_info': {
+            'name': u'Regular.Show',
+            'is_scene': True
         },
         'expected': ([28], [6], []),
     },
@@ -27,7 +28,7 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
 
     # _parse_air_by_date
     # (season, episode) = scene_numbering.get_indexer_numbering(result.series, season_number, episode_number)
-    def mock_get_indexer_numbering():
+    def mock_get_indexer_numbering(*_):
         return p['mocks']['get_indexer_numbering']
 
     monkeypatch.setattr(
@@ -42,6 +43,7 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
 
     # confirm passed in show object indexer id matches result show object indexer id
     result.series = create_tvshow(name=p['series_info']['name'])
+    result.series.scene = p['series_info']['is_scene']
 
     actual = parser._parse_series(result)
 
