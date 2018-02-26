@@ -1,9 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_list_associated_files.py."""
 
-from medusa import helpers
-import medusa.scene_numbering
-import medusa.scene_exceptions
 from medusa.name_parser.parser import NameParser
 import guessit
 import pytest
@@ -150,44 +147,28 @@ import pytest
 def test_series_parsing(p, monkeypatch, create_tvshow):
 
     # Anime
+    # a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode, True, scene_season)
+    monkeypatch.setattr(
+        'medusa.scene_numbering.get_indexer_absolute_numbering',
+        lambda *args: p['mocks']['get_indexer_absolute_numbering']
+    )
+
     # a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
-    def mock_get_absolute_number_from_season_and_episode(*_):
-        return p['mocks']['get_absolute_number_from_season_and_episode']
+    monkeypatch.setattr(
+        'medusa.helpers.get_absolute_number_from_season_and_episode',
+        lambda *args: p['mocks']['get_absolute_number_from_season_and_episode']
+    )
 
     # scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
-    def mock_get_scene_exceptions_by_name(*_):
-        return p['mocks']['get_scene_exceptions_by_name']
-
-    # a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode, True, scene_season)
-    def mock_get_indexer_absolute_numbering(*_):
-        return p['mocks']['get_indexer_absolute_numbering']
+    monkeypatch.setattr(
+        'medusa.scene_exceptions.get_scene_exceptions_by_name',
+        lambda *args: p['mocks']['get_scene_exceptions_by_name']
+    )
 
     # helpers.get_all_episodes_from_absolute_number(result.series, [a])
-    def mock_get_all_episodes_from_absolute_number(*_):
-        return p['mocks']['get_all_episodes_from_absolute_number']
-
     monkeypatch.setattr(
-        medusa.scene_numbering,
-        'get_indexer_absolute_numbering',
-        mock_get_indexer_absolute_numbering
-    )
-
-    monkeypatch.setattr(
-        helpers,
-        'get_absolute_number_from_season_and_episode',
-        mock_get_absolute_number_from_season_and_episode
-    )
-
-    monkeypatch.setattr(
-        medusa.scene_exceptions,
-        'get_scene_exceptions_by_name',
-        mock_get_scene_exceptions_by_name
-    )
-
-    monkeypatch.setattr(
-        helpers,
-        'get_all_episodes_from_absolute_number',
-        mock_get_all_episodes_from_absolute_number
+        'medusa.helpers.get_all_episodes_from_absolute_number',
+        lambda *args: p['mocks']['get_all_episodes_from_absolute_number']
     )
 
     parser = NameParser()
@@ -196,7 +177,7 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
 
     # confirm passed in show object indexer id matches result show object indexer id
     result.series = create_tvshow(name=p['series_info']['name'])
-    result.scene = p['series_info']['scene']
+    result.scene = p['series_info']['is_scene']
 
     actual = parser._parse_anime(result)
 

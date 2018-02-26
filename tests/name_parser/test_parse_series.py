@@ -1,8 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_list_associated_files.py."""
 
-import medusa.scene_numbering
-import medusa.scene_exceptions
 from medusa.name_parser.parser import NameParser
 import guessit
 import pytest
@@ -26,15 +24,9 @@ import pytest
 ])
 def test_series_parsing(p, monkeypatch, create_tvshow):
 
-    # _parse_air_by_date
-    # (season, episode) = scene_numbering.get_indexer_numbering(result.series, season_number, episode_number)
-    def mock_get_indexer_numbering(*_):
-        return p['mocks']['get_indexer_numbering']
-
     monkeypatch.setattr(
-        medusa.scene_numbering,
-        'get_indexer_numbering',
-        mock_get_indexer_numbering
+        'medusa.scene_numbering.get_indexer_numbering',
+        lambda *args: p['mocks']['get_indexer_numbering']
     )
 
     parser = NameParser()
