@@ -344,8 +344,10 @@ def get_xem_numbering_for_show(series_obj, refresh_data=True):
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
-        [series_obj.indexer, series_obj.series_id])
+        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes '
+        'WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
+        [series_obj.indexer, series_obj.series_id]
+    )
 
     result = {}
     for row in rows:
@@ -465,21 +467,24 @@ def xem_refresh(series_obj, force=False):
             for entry in parsed_json['data']:
                 if 'scene' in entry:
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene']['season'], entry['scene']['episode'],
                          entry['scene']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                     cl.append([
-                        "UPDATE tv_episodes SET absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
+                        "UPDATE tv_episodes SET absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
                         [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                 if 'scene_2' in entry:  # for doubles
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene_2']['season'], entry['scene_2']['episode'],
                          entry['scene_2']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],

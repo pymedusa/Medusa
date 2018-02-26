@@ -177,6 +177,11 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
+        # Try to translate the scene series name to a scene number.
+        # For example Jojo's bizarre Adventure - Diamond is unbreakable, will use xem, to translate the
+        # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
+        # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
+        # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
 
         for absolute_episode in result.ab_episode_numbers:
@@ -189,8 +194,9 @@ class NameParser(object):
             # Don't assume that scene_exceptions season is the same as indexer season.
             # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
             if result.series.is_scene or (result.season_number is None and scene_season > 0):
-                a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode,
-                                                                   True, scene_season)
+                a = scene_numbering.get_indexer_absolute_numbering(
+                    result.series, absolute_episode, True, scene_season
+                )
 
             # Translate the absolute episode number, back to the indexers season and episode.
             (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
@@ -278,7 +284,7 @@ class NameParser(object):
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
 
         elif result.season_number and result.episode_numbers:
-            new_episode_numbers, new_season_numbers, new_absolute = self._parse_series(result)
+            new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
         # need to do a quick sanity check heregex.  It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
