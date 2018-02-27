@@ -165,7 +165,9 @@ class NameParser(object):
         elif result.series.is_anime and result.is_anime:
             log.debug('Scene numbering enabled series {name} is anime',
                       {'name': result.series.name})
-            scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
+            found_exceptions = list(scene_exceptions.get_scene_exceptions_by_name(result.series_name))
+            if found_exceptions:
+                scene_season = found_exceptions[0].season
 
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode

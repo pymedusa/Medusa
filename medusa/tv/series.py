@@ -226,8 +226,6 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
-        self.episode_search_template = None
-        self.season_search_template = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -2078,7 +2076,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self, season)
+        show_names = {exception.series_name for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()

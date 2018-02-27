@@ -91,9 +91,9 @@ def get_expected_titles(show_list):
     """
     expected_titles = []
     for show in show_list:
-        exceptions = {show.name}.union(show.exceptions)
+        exceptions = {show.name}.union({exception.series_name for exception in show.exceptions})
         for exception in exceptions:
-            if exception.series_name.isdigit():
+            if exception.isdigit():
                 # do not add numbers to expected titles.
                 continue
 

@@ -26,7 +26,8 @@ exceptionLock = threading.Lock()
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
-TitleException = namedtuple('TitleException', 'series_name, season, episode_search_template, season_search_template, indexer, series_id')
+TitleException = namedtuple('TitleException', 'series_name, season, episode_search_template, '
+                                              'season_search_template, indexer, series_id')
 
 
 def refresh_exceptions_cache():
@@ -146,45 +147,39 @@ def get_all_scene_exceptions(series_obj):
 
 def get_scene_exceptions_by_name(show_name):
     """Get the series_id, season and indexer of the scene exception."""
-    # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
-    # Try the obvious case first
-    main_db_con = db.DBConnection()
-    scene_exceptions = main_db_con.select(
-        b'SELECT indexer, indexer_id, season, custom,  '
-        b'FROM scene_exceptions '
-        b'WHERE show_name = ? ORDER BY season ASC',
-        [show_name])
-    if scene_exceptions:
-        # FIXME: Need to add additional layer indexer.
-        return [(int(exception[b'indexer_id']), int(exception[b'season']), int(exception[b'indexer']))
-                for exception in scene_exceptions]
 
-    result = []
-    scene_exceptions = main_db_con.select(
-        b'SELECT show_name, indexer, indexer_id, season '
-        b'FROM scene_exceptions'
-    )
+    # Flatten the exceptions_cache.
+    scene_exceptions = set()
+    for exception_set in exceptions_cache.values():
+        for title_exception in exception_set.values():
+            scene_exceptions.update(title_exception)
 
-    for exception in scene_exceptions:
-        indexer = int(exception[b'indexer'])
-        indexer_id = int(exception[b'indexer_id'])
-        season = int(exception[b'season'])
-        exception_name = exception[b'show_name']
+    matches = set()
+    # First attempt exact match.
+    for title_exception in scene_exceptions:
+        if show_name == title_exception.series_name:
+            matches.add(title_exception)
 
-        sanitized_name = helpers.sanitize_scene_name(exception_name)
-        show_names = (
-            exception_name.lower(),
+    if matches:
+        return matches
+
+    # Let's try out some sanitized names.
+    for title_exception in scene_exceptions:
+        sanitized_name = helpers.sanitize_scene_name(title_exception.series_name)
+        series_names = (
+            title_exception.series_name.lower(),
             sanitized_name.lower().replace('.', ' '),
         )
 
-        if show_name.lower() in show_names:
+        if show_name.lower() in series_names:
             logger.debug(
-                'Scene exception lookup got indexer ID {cur_indexer},'
-                ' using that', cur_indexer=indexer_id
+                'Scene exception lookup got series id {title_exception.series_id} '
+                'from indexer {title_exception.indexer},'
+                ' using that', title_exception=title_exception
             )
-            result.append((indexer_id, season, indexer))
+            matches.add(title_exception)
 
-    return result or [(None, None, None)]
+    return matches
 
 
 def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
