@@ -22,14 +22,16 @@ class AliasHandler(BaseRequestHandler):
 
     def get(self, identifier, path_param):
         """Query scene_exception information."""
-        cache_db_con = db.DBConnection('cache.db')
+        cache_db_con = db.DBConnection()
         sql_base = (b'SELECT '
                     b'  exception_id, '
                     b'  indexer, '
                     b'  indexer_id, '
                     b'  show_name, '
                     b'  season, '
-                    b'  custom '
+                    b'  custom, '
+                    b'  episode_search_template, '
+                    b'  season_search_template '
                     b'FROM scene_exceptions ')
         sql_where = []
         params = []
@@ -46,12 +48,15 @@ class AliasHandler(BaseRequestHandler):
 
             season = self._parse(self.get_query_argument('season', None))
             exception_type = self.get_query_argument('type', None)
+            episode_search_template = self.get_query_argument('episodetemplate', None)
+            season_search_template = self.get_query_argument('episodetemplate', None)
+
             if exception_type and exception_type not in ('local', ):
                 return self._bad_request('Invalid type')
 
             if series_identifier:
                 sql_where.append(b'indexer')
-                sql_where.append(b'indexer_id')
+                sql_where.append(b'series_id')
                 params += [series_identifier.indexer.id, series_identifier.id]
 
             if season is not None:
@@ -61,6 +66,14 @@ class AliasHandler(BaseRequestHandler):
             if exception_type == 'local':
                 sql_where.append(b'custom')
                 params += [1]
+
+            if episode_search_template is not None:
+                sql_where.append(b'episode_search_template')
+                params += [episode_search_template]
+
+            if season_search_template is not None:
+                sql_where.append(b'season_search_template')
+                params += [season_search_template]
 
         if sql_where:
             sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])

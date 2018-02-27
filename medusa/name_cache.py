@@ -88,7 +88,6 @@ def build_name_cache(series_obj=None):
     """Build internal name cache.
 
     :param series_obj: Specify series to build name cache for, if None, just do all series
-    :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
     def _cache_name(cache_series_obj):
         """Build the name cache for a single show."""
@@ -97,7 +96,7 @@ def build_name_cache(series_obj=None):
         series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
-            full_sanitize_scene_name(name): series_identifier
+            full_sanitize_scene_name(name.series_name): series_identifier
             for season_exceptions in scene_exceptions.values()
             for name in season_exceptions
         }
