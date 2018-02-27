@@ -526,13 +526,13 @@ class Series(TV):
     def poster(self):
         """Return poster path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def banner(self):
         """Return banner path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
@@ -1472,10 +1472,6 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
-            # Load the episode and season search templates
-            self.episode_search_template = sql_results[0][b'episode_search_template']
-            self.season_search_template = sql_results[0][b'season_search_template']
-
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -2001,6 +1997,7 @@ class Series(TV):
         data['id'] = NonEmptyDict()
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
+        data['id']['slug'] = self.identifier.slug
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
@@ -2041,7 +2038,7 @@ class Series(TV):
         data['config']['scene'] = self.is_scene
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = self.aliases
+        data['config']['aliases'] = [_._asdict() for _ in self.aliases]
         data['config']['release'] = NonEmptyDict()
         data['config']['release']['blacklist'] = bw_list.blacklist
         data['config']['release']['whitelist'] = bw_list.whitelist
