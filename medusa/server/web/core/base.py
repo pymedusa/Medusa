@@ -107,6 +107,7 @@ class PageTemplate(MakoTemplate):
             'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
             rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
             'realpage': '',
+            'full_url': rh.request.full_url()
         }
 
         if rh.request.headers['Host'][0] == '[':
