@@ -587,7 +587,7 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: list
+        :type season: int or list of int
         :param has_location:
         :type has_location: bool
         :return:
@@ -611,6 +611,7 @@ class Series(TV):
         sql_args = [self.indexer, self.series_id]
 
         if season is not None:
+            season = helpers.ensure_list(season)
             sql_selection += b' AND season IN (?)'
             sql_args.append(','.join(map(text_type, season)))
 

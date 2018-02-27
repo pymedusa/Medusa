@@ -2,15 +2,18 @@
 
 """Base class for indexer api's."""
 
+from __future__ import division
+
 import getpass
 import logging
 import os
 import tempfile
 import time
 import warnings
-from itertools import chain
 from operator import itemgetter
 
+from medusa import statistics as stats
+from medusa.helpers.utils import gen_values_by_key
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
@@ -20,6 +23,7 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.statistics import weights
 
 import requests
 from six import integer_types
@@ -205,6 +209,159 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
+    def _save_images_by_type(self, image_type, series_id, images):
+        """
+        Save the highest rated images for a show by image type.
+
+        :param image_type: Image type being processed (e.g. `fanart`)
+        :param series: ID of series being processed
+        :param images: Images to be processed
+        """
+        def pop_stats(it, key):
+            """Get the population statistics for a key."""
+            values = list(gen_values_by_key(it, key))
+            num_values = len(values)
+            total = sum(values)
+            mean = total / num_values
+            std_dev = stats.population_standard_deviation(values)
+            return mean, std_dev, values
+
+        def result(item, threshold, mean):
+            """Calculate a score given a threshold and population mean."""
+            if not threshold:
+                threshold = 1  # Prevent division by zero
+            value = item['rating']
+            weight = item['ratingcount']
+            res_index = item['res_index']
+            score_rated = weights.bayesian(weight, value, threshold, mean)
+            weight_score = .5
+            weight_res = .5
+            score_weighted = weight_score * score_rated + weight_res * res_index
+            item['score_rated'] = score_rated
+            item['score_weighted'] = score_weighted
+            return score_weighted, value, weight, item
+
+        def format_result(item):
+            """Format result row for logging output."""
+            row = '{score:>10.3f} {rating:>10.3f} {votes:>6} {res:>15}\t{url}'
+            return row.format(
+                score=item[0],
+                rating=item[1],
+                votes=item[2],
+                res=item[3]['resolution'],
+                url=item[3]['_bannerpath'],
+            )
+
+        # Header for display of format results
+        column_header = '{:>10} {:>10} {:>6} {:>15}\t{}'.format(
+            'Score', 'Rating', 'Votes', 'Resolution', 'URL'
+        )
+
+        available_res = sorted(images.keys(), key=lambda x: int(x.split('x')[0]) * int(x.split('x')[1]))
+
+        # add resolution information to each image and flatten dict
+        merged_images = []
+        for resolution in images:
+            images_by_resolution = images[resolution]
+            for image in images_by_resolution.values():
+                image['resolution'] = resolution
+                image['res_index'] = available_res.index(resolution) + 1
+            # add all current resolution images to the merged list
+            merged_images.extend(images_by_resolution.values())
+            log.debug(
+                u'Found {x} {image}s at {res} ({res_index}) resolution for series {id}', {
+                    'x': len(images_by_resolution),
+                    'image': image_type,
+                    'res': image['resolution'],
+                    'res_index': image['res_index'],
+                    'id': series_id,
+                }
+            )
+
+        # Get population statistics
+        num_items = len(merged_images)
+        log.debug(
+            u'Found {x} total {image}s for series {id}', {
+                'x': num_items,
+                'image': image_type,
+                'id': series_id,
+            }
+        )
+
+        # Get population rating statistics
+        rating_mean, rating_dev, ratings = pop_stats(merged_images, 'rating')
+
+        # Get population rating statistics
+        vote_mean, vote_dev, votes = pop_stats(merged_images, 'ratingcount')
+
+        # Set vote threshold to one standard deviation above the mean
+        # This would be the 84th percentile in a normal distribution
+        vote_threshold = vote_mean + vote_dev
+        log.debug(u'{image} threshold set to {x} votes',
+                  {'image': image_type.capitalize(), 'x': vote_threshold})
+
+        # create a list of results
+        rated_images = (
+            result(image, vote_threshold, rating_mean)
+            for image in merged_images
+        )
+        # sort results by score
+        sorted_results = sorted(rated_images, key=itemgetter(0), reverse=True)
+        log.debug(
+            u'Weighted {image} results for series {id}:'
+            u'\n{header}'
+            u'\n{items}', {
+                'image': image_type,
+                'id': series_id,
+                'header': column_header,
+                'items': '\n'.join(
+                    format_result(item)
+                    for item in sorted_results
+                )
+            }
+        )
+        # filter only highest rated results
+        best_result = sorted_results[0]
+        best_results = [
+            item for item in sorted_results
+            if item[0] >= best_result[0]
+        ]
+        if len(best_results) > 1:
+            log.warning(
+                u'Multiple {image}s at highest weighted score for series {id}:'
+                u'\n{header}'
+                u'\n{results}', {
+                    'image': image_type,
+                    'id': series_id,
+                    'header': column_header,
+                    'results': '\n'.join(
+                        format_result(item)
+                        for item in best_results
+                    )
+                }
+            )
+        img_score, img_rating, img_votes, img = best_result
+        img_url = img['_bannerpath']
+        img_res = img['resolution']
+        img_bay_score = img['score_rated']
+        log.info(
+            u'Selected {image} for series {id}'
+            u' (score={x}, score_bay={b}, rating={y}, votes={z}, res={r}): {url}', {
+                'image': image_type,
+                'id': series_id,
+                'x': img_score,
+                'b': img_bay_score,
+                'y': img_rating,
+                'z': img_votes,
+                'r': img_res,
+                'url': img_url,
+            }
+        )
+        log.debug(u'Full info for best {image} for series {id}: {info}',
+                  {'image': image_type, 'id': series_id, 'info': img})
+
+        self._set_show_data(series_id, image_type, img_url)
+
     def _save_images(self, series_id, images):
         """
         Save the highest rated images for the show.
@@ -216,13 +373,12 @@ class BaseIndexer(object):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
-        # Get desired image types from images
         image_types = 'banner', 'fanart', 'poster'
 
         # Iterate through desired image types
         for img_type in image_types:
             try:
-                image_type = images[img_type]
+                images_by_type = images[img_type]
             except KeyError:
                 log.debug(
                     u'No {image}s found for {series}', {
@@ -232,55 +388,7 @@ class BaseIndexer(object):
                 )
                 continue
 
-            # Flatten image_type[res][id].values() into list of values
-            merged_images = chain.from_iterable(
-                resolution.values()
-                for resolution in image_type.values()
-            )
-
-            # Sort by rating
-            images_by_rating = sorted(
-                merged_images,
-                key=itemgetter('rating'),
-                reverse=True,
-            )
-            log.debug(
-                u'Found {x} {image}s for {series}: {results}', {
-                    'x': len(images_by_rating),
-                    'image': img_type,
-                    'series': series_id,
-                    'results': u''.join(
-                        u'\n\t{rating}: {url}'.format(
-                            rating=img['rating'],
-                            url=img['_bannerpath'],
-                        )
-                        for img in images_by_rating
-                    )
-                }
-            )
-
-            if not images_by_rating:
-                continue
-
-            # Get the highest rated image
-            highest_rated = images_by_rating[0]
-            img_url = highest_rated['_bannerpath']
-            log.debug(
-                u'Selecting highest rated {image} (rating={img[rating]}):'
-                u' {img[_bannerpath]}', {
-                    'image': img_type,
-                    'img': highest_rated,
-                }
-            )
-            log.debug(
-                u'{image} details: {img}', {
-                    'image': img_type.capitalize(),
-                    'img': highest_rated,
-                }
-            )
-
-            # Save the image
-            self._set_show_data(series_id, img_type, img_url)
+            self._save_images_by_type(img_type, series_id, images_by_type)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""

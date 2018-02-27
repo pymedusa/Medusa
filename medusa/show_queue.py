@@ -294,7 +294,7 @@ class ShowQueueItem(generic_queue.QueueItem):
             app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
 
     def _getName(self):
-        return str(self.show.series_id)
+        return text_type(self.show.series_id)
 
     def _isLoading(self):
         return False
@@ -362,7 +362,7 @@ class QueueItemAdd(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"Starting to add show {0}".format("by ShowDir: {0}".format(self.showDir) if self.showDir else
+        logger.log(u"Starting to add show {0}".format(u"by ShowDir: {0}".format(self.showDir) if self.showDir else
                    u"by Indexer Id: {0}".format(self.indexer_id)))
 
         # make sure the Indexer IDs are valid
@@ -371,7 +371,9 @@ class QueueItemAdd(ShowQueueItem):
             if self.lang:
                 l_indexer_api_params['language'] = self.lang
 
-            logger.log(u"" + str(indexerApi(self.indexer).name) + ": " + repr(l_indexer_api_params))
+            logger.log(u"{indexer_name}: {indexer_params!r}".format(
+                indexer_name=indexerApi(self.indexer).name, indexer_params=l_indexer_api_params
+            ))
 
             indexer_api = indexerApi(self.indexer).indexer(**l_indexer_api_params)
             s = indexer_api[self.indexer_id]
@@ -398,18 +400,19 @@ class QueueItemAdd(ShowQueueItem):
                 logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
                            (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error('Unable to add show',
-                                       'Show in {0} has no name on {1}, probably the wrong language. \
+                ui.notifications.error(u'Unable to add show',
+                                       u'Show in {0} has no name on {1}, probably the wrong language. \
                                        Delete .nfo and manually add the correct language.'
                                        .format(self.showDir, indexerApi(self.indexer).name))
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
             if not s:
-                logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(indexerApi(self.indexer).name) +
-                           u" but contains no season/episode data.")
-                ui.notifications.error("Unable to add show",
-                                       "Show {0} is on {1} but contains no season/episode data.".
+                logger.log(u"Show {series_name} is on {indexer_name} but contains no season/episode data.".format(
+                    series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
+                )
+                ui.notifications.error(u"Unable to add show",
+                                       u"Show {0} is on {1} but contains no season/episode data.".
                                        format(s['seriesname'], indexerApi(self.indexer).name))
                 self._finishEarly()
 
@@ -436,9 +439,9 @@ class QueueItemAdd(ShowQueueItem):
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
             ui.notifications.error(
-                "Unable to add show",
-                "Unable to look up the show in {0} on {1} using ID {2} "
-                "Reason: {3}"
+                u"Unable to add show",
+                u"Unable to look up the show in {0} on {1} using ID {2} "
+                u"Reason: {3}"
                 .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, e.message)
             )
             self._finishEarly()
@@ -448,8 +451,8 @@ class QueueItemAdd(ShowQueueItem):
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
                        (id=self.indexer_id, indexer=indexerApi(self.indexer).name,
                         language=e.language, error_msg=e.message), logger.WARNING)
-            ui.notifications.error('Error adding show!',
-                                   'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
+            ui.notifications.error(u'Error adding show!',
+                                   u'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
                                    format(indexer_id=self.indexer_id,
                                           indexer=indexerApi(self.indexer).name,
                                           language=e.language))
@@ -459,9 +462,9 @@ class QueueItemAdd(ShowQueueItem):
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.ERROR)
             ui.notifications.error(
-                "Unable to add show",
-                "Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
-                "Delete .nfo and try adding manually again.".
+                u"Unable to add show",
+                u"Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
+                u"Delete .nfo and try adding manually again.".
                 format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
             )
             self._finishEarly()
@@ -509,17 +512,20 @@ class QueueItemAdd(ShowQueueItem):
                 logger.ERROR)
             if self.show:
                 ui.notifications.error(
-                    "Unable to add " + str(self.show.name) + " due to an error with " + indexerApi(
-                        self.indexer).name + "")
+                    u"Unable to add {series_name} due to an error with {indexer_name}".format(
+                        series_name=self.show.name, indexer_name=indexerApi(self.indexer).name
+                    )
+                )
             else:
                 ui.notifications.error(
-                    "Unable to add show due to an error with " + indexerApi(self.indexer).name + "")
+                    u"Unable to add show due to an error with {indexer_name}".format(indexer_name=indexerApi(self.indexer).name)
+                )
             self._finishEarly()
             return
 
         except MultipleShowObjectsException:
-            logger.log(u"The show in " + self.showDir + " is already in your show list, skipping", logger.WARNING)
-            ui.notifications.error('Show skipped', "The show in " + self.showDir + " is already in your show list")
+            logger.log(u"The show in {show_dir} is already in your show list, skipping".format(show_dir=self.showDir), logger.WARNING)
+            ui.notifications.error(u'Show skipped', u"The show in {show_dir} is already in your show list".format(show_dir=self.showDir))
             self._finishEarly()
             return
 
@@ -552,7 +558,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.load_episodes_from_indexer(tvapi=indexer_api)
         except Exception as e:
             logger.log(
-                u"Error with " + indexerApi(self.show.indexer).name + ", not creating episode list: " + e.message,
+                u"Error with " + indexerApi(self.show.indexer).name + u", not creating episode list: " + e.message,
                 logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
@@ -654,7 +660,7 @@ class QueueItemRename(ShowQueueItem):
         try:
             self.show.location
         except ShowDirectoryNotFoundException:
-            logger.log(u"Can't perform rename on " + self.show.name + " when the show dir is missing.", logger.WARNING)
+            logger.log(u"Can't perform rename on {series_name} when the show dir is missing.".format(series_name=self.show.name), logger.WARNING)
             return
 
         ep_obj_rename_list = []
@@ -735,8 +741,8 @@ class QueueItemUpdate(ShowQueueItem):
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
                        (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
                         language=e.language, error_msg=e.message), logger.WARNING)
-            ui.notifications.error('Error changing language show!',
-                                   'Unable to change language for show {show_name} on {indexer} to language: {language}'.
+            ui.notifications.error(u'Error changing language show!',
+                                   u'Unable to change language for show {show_name} on {indexer} to language: {language}'.
                                    format(show_name=self.show.name,
                                           indexer=indexerApi(self.show.indexer).name,
                                           language=e.language))
@@ -847,7 +853,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                    (id=self.show.series_id,
                     show=self.show.name,
                     season=u' with season(s) [{0}]'.
-                    format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
+                    format(u','.join(text_type(s) for s in self.seasons) if self.seasons else u'')
                     ), logger.INFO)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format

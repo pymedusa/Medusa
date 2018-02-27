@@ -1,7 +1,6 @@
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.6.0
 CacheControl==0.12.3
-git+https://github.com/Anorov/cloudflare-scrape.git@85cf963f6eb81804227878df2ca74fe4a309db67#egg=cfscrape
 configobj==5.0.6
 contextlib2==0.5.5
 dogpile.cache==0.6.4
@@ -10,7 +9,7 @@ futures==3.1.1
 guessit==2.1.4
 html5lib==0.999999999
 imdbpie==5.2.0
-jsonrpclib==0.1.7
+jsonrpclib-pelix==0.3.1
 knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
@@ -21,7 +20,7 @@ PyGithub==1.35
 PyNMA==1.0
 python-dateutil==2.6.1
 requests==2.18.4
-SQLAlchemy==1.1.14
+SQLAlchemy==1.2.3
 stevedore==1.26.0
 git+https://github.com/Diaoul/subliminal.git@4c0bcbfd68728241324f509317afdf6beb681f99#egg=subliminal
 tornado==4.5.3
