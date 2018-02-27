@@ -327,7 +327,7 @@ class BaseIndexer(object):
             if item[0] >= best_result[0]
         ]
         if len(best_results) > 1:
-            log.warning(
+            log.debug(
                 u'Multiple {image}s at highest weighted score for series {id}:'
                 u'\n{header}'
                 u'\n{results}', {
