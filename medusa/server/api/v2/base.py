@@ -73,7 +73,7 @@ class BaseRequestHandler(RequestHandler):
         if app.DEVELOPER and 'exc_info' in kwargs:
             self.set_header('content-type', 'text/plain')
             self.set_status(500)
-            for line in traceback.format_exception(*kwargs["exc_info"]):
+            for line in traceback.format_exception(*kwargs['exc_info']):
                 self.write(line)
             self.finish()
         else:
