@@ -1,6 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import adba
+    import json
     from medusa import app, common
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import statusStrings
@@ -11,13 +12,6 @@
 %>
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
-</%block>
-<%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/edit-show.js"></script>
-% if show.is_anime:
-    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-% endif
 </%block>
 <%block name="content">
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
@@ -198,9 +192,9 @@
                                     <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
                                     <div class="pull-left">
                                         <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
-                                        % for cur_exception in show.exceptions:
-                                            <option value="${cur_exception}">${cur_exception}</option>
-                                        % endfor
+                                            <option v-for="exception in exceptions" :value="exception.series_name">
+                                                {{exception.series_name}} ({{exception.episode_search_template}})
+                                            </option>
                                         </select>
                                         <div><input id="removeSceneName" value="Remove" class="btn float-left" type="button" style="margin-top: 10px;"/></div>
                                     </div>
@@ -215,6 +209,53 @@
         <br>
         <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
         </form>
+
+    <my-component></my-component>
+
     </div>
 </div>
+
+</%block>
+<%block name="scripts">
+    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/edit-show.js"></script>
+% if show.is_anime:
+    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
+% endif
+<script src="js/lib/vue.js"></script>
+<%
+    seriesObj = json.dumps(show.to_json());
+%>
+<script>
+// register the component
+Vue.component('my-component', {
+  template: '<div>A custom component!</div>'
+})
+var startVue = function() {
+    const app = new Vue({
+        el: '#config-content',
+        data() {
+            const seriesObj = ${seriesObj};
+            const seriesSlug = seriesObj.id.slug;
+            const exceptions = seriesObj.config.aliases;
+            return {
+                config: MEDUSA.config,
+                exceptions: exceptions,
+                seriesSlug: seriesSlug,
+                seriesObj: seriesObj
+            }
+        },
+        methods: {
+            anonRedirect: function(e) {
+                e.preventDefault();
+                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
+            },
+            prettyPrintJSON: function(x) {
+                return JSON.stringify(x, undefined, 4)
+            }
+        }
+    });
+    $('[v-cloak]').removeAttr('v-cloak');
+};
+</script>
 </%block>
