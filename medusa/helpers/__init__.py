@@ -1029,11 +1029,10 @@ def get_show(name, try_indexers=False):
 
         # try scene exceptions
         if not series:
-            found_exceptions = scene_exceptions.get_scene_exceptions_by_name(series_name)
+            found_exceptions = list(scene_exceptions.get_scene_exceptions_by_name(series_name))
             if found_exceptions:
                 # Only use the first exception.
-                exception = found_exceptions.pop()
-                series = Show.find_by_id(app.showList, exception.indexer, exception.series_id)
+                series = Show.find_by_id(app.showList, found_exceptions[0].indexer, found_exceptions[0].series_id)
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and

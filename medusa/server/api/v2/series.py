@@ -110,7 +110,9 @@ class SeriesHandler(BaseRequestHandler):
         patches = {
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
             'config.flattenFolders': BooleanField(series, 'flatten_folders'),
+            'config.anime': BooleanField(series, 'anime'),
             'config.scene': BooleanField(series, 'scene'),
+            'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
             'config.location': StringField(series, '_location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),

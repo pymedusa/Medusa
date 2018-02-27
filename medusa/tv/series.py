@@ -2034,7 +2034,9 @@ class Series(TV):
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
         data['config']['dvdOrder'] = bool(self.dvd_order)
         data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
+        data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = [_._asdict() for _ in self.aliases]

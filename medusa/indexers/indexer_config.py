@@ -2,6 +2,7 @@
 
 """Indexer config module."""
 
+from six import text_type
 from medusa.app import BASE_PYMEDUSA_URL
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
@@ -113,3 +114,43 @@ indexerConfig = {
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     }
 }
+
+
+def create_config_json(indexer):
+    """Create a json (pickable) conpatible dict, for using as an apiv2 resource."""
+    return {
+        'enabled': indexer['enabled'],
+        'id': indexer['id'],
+        'name': indexer['name'],
+        'module': text_type(indexer['module']),
+        'apiParams': {
+            'language': indexer['api_params']['language'],
+            'useZip': indexer['api_params']['use_zip'],
+            'session': '',
+        },
+        'xemOrigin': indexer.get('xem_origin'),
+        'icon': indexer.get('icon'),
+        'scene_loc': indexer.get('scene_loc'),
+        'baseUrl': indexer.get('base_url'),
+        'showUrl': indexer.get('show_url'),
+        'mappedTo': indexer.get('mapped_to'),  # The attribute to which other indexers can map there thetvdb id to
+        'identifier': indexer.get('identifier'),  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
+        'validLanguages': initConfig['valid_languages'],
+        'langabbvToId': initConfig['langabbv_to_id'],
+    }
+
+
+def get_indexer_config():
+    indexers = {
+        indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig.keys()
+    }
+
+    main = {
+        'validLanguages': initConfig['valid_languages'],
+        'langabbvToId': initConfig['langabbv_to_id'],
+        'externalMappings': EXTERNAL_MAPPINGS,
+        'traktIndexers': TRAKT_INDEXERS,
+        'statusMap': STATUS_MAP
+    }
+
+    return {'indexers': indexers, 'main': main}

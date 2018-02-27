@@ -22,9 +22,9 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<div id="config" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
-    <div id="config-content">
-        <form action="home/editShow" method="post">
+<div id="config-content">
+    <div id="config" v-bind:class="{ summaryFanArt: config.fanartBackground }">
+        <form v-on:submit.prevent="storeConfig">
         <div id="config-components">
             <ul>
                 ## @TODO: Fix this stupid hack
@@ -40,9 +40,9 @@
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="indexername" id="form-indexername" value="${show.indexer_name}" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" value="${show.series_id}" />
-                                    <input type="text" name="location" id="location" value="${show._location}" class="form-control form-control-inline input-sm input350"/>
+                                    <input type="hidden" name="indexername" id="form-indexername" :value="seriesObj.indexer" />
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesObj.id[seriesObj.indexer]" />
+                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -72,7 +72,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguagesAvailable" @change="storeConfig($event)"></select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -81,7 +81,7 @@
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and app.USE_SUBTITLES is True else ''} ${'' if app.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="seriesObj.config.subtitlesEnabled" @change="storeConfig($event)"/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -89,7 +89,7 @@
                             <label for="paused">
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" ${'checked="checked"' if show.paused == 1 else ''} /> pause this show (Medusa will not download episodes)
+                                    <input type="checkbox" id="paused" name="paused" v-model="seriesObj.config.paused" @change="storeConfig($event)"/> pause this show (Medusa will not download episodes)
                                 </span>
                             </label>
                         </div>
@@ -104,7 +104,7 @@
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="seriesObj.config.paused" @change="storeConfig($event)" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -113,7 +113,7 @@
                             <label for="anime">
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="anime" name="anime" v-model="seriesObj.config.anime" @change="storeConfig($event)"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                                     % if show.is_anime:
                                         <%include file="/inc_blackwhitelist.mako"/>
                                     % endif
@@ -124,7 +124,7 @@
                             <label for="sports">
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="sports" name="sports" v-model="seriesObj.config.sports" @change="storeConfig($event)"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -133,7 +133,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not app.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="seriesObj.config.flattenFolders" @change="storeConfig($event)"/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>
@@ -141,7 +141,7 @@
                             <label for="scene">
                                 <span class="component-title">Scene Numbering</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="scene" name="scene" ${'checked="checked"' if show.scene == 1 else ''} /> search by scene numbering (uncheck to search by indexer numbering)
+                                    <input type="checkbox" id="scene" name="scene" v-model="seriesObj.config.scene" @change="storeConfig($event)"/> search by scene numbering (uncheck to search by indexer numbering)
                                 </span>
                             </label>
                         </div>
@@ -149,7 +149,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="seriesObj.config.dvdOrder" @change="storeConfig($event)"/> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>
@@ -209,9 +209,6 @@
         <br>
         <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
         </form>
-
-    <my-component></my-component>
-
     </div>
 </div>
 
@@ -242,7 +239,9 @@ var startVue = function() {
                 config: MEDUSA.config,
                 exceptions: exceptions,
                 seriesSlug: seriesSlug,
-                seriesObj: seriesObj
+                seriesObj: seriesObj,
+                subtitles: seriesObj.config.subtitlesEnabled,
+                folders: seriesObj.config.flattenFolders
             }
         },
         methods: {
@@ -252,7 +251,31 @@ var startVue = function() {
             },
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
+            },
+            storeConfig(evt) {
+                api.patch('config/main', {
+                    config: {
+                        dvdOrder: this.seriesObj.config.dvdOrder,
+                        flattenFolders: this.seriesObj.config.flattenFolders,
+                        anime: this.seriesObj.config.anime,
+                        scene: this.seriesObj.config.scene,
+                        sports: this.seriesObj.config.sports,
+                        paused: this.seriesObj.config.paused,
+                        location: this.seriesObj.config.location,
+                        airByDate: this.seriesObj.config.airByDate,
+                        subtitlesEnabled: this.seriesObj.config.subtitlesEnabled
+                    }
+                }).then(response => {
+                    log.info(response);
+                }).catch(err => {
+                    log.error(err);
+                });
             }
+        },
+        computed: {
+            availableLanguagesAvailable: function() {
+                return this.config.indexers.config.main.validLanguages.join(',');
+            }   
         }
     });
     $('[v-cloak]').removeAttr('v-cloak');
