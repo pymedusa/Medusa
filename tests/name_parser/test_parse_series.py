@@ -16,10 +16,23 @@ import pytest
             'get_indexer_numbering': (6, 28),
         },
         'series_info': {
-            'name': u'Regular.Show',
+            'name': u'Regular Show',
             'is_scene': True
         },
         'expected': ([28], [6], []),
+    },
+{
+        'name': u'Inside.West.Coast.Customs.S06E04.720p.WEB.x264-TBS',
+        'indexer_id': 1,
+        'indexer': 307007,
+        'mocks': {
+            'get_indexer_numbering': (8, 4),
+        },
+        'series_info': {
+            'name': u'Inside West Coast Customs',
+            'is_scene': True
+        },
+        'expected': ([4], [8], []),
     },
 ])
 def test_series_parsing(p, monkeypatch, create_tvshow):
