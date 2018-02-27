@@ -154,3 +154,13 @@ class AddIndexerIds(AddIndexerSceneExceptions):
 
         # clean up null values from the scene_exceptions_table
         self.connection.action("DELETE FROM scene_exceptions WHERE indexer = '' or indexer is null;")
+
+
+class RemoveSceneExceptionsTable(AddIndexerIds):
+    """The scene_exceptions table has been moved to main.db"""
+    def test(self):
+        """Test if the table history already has the indexer_id."""
+        return not self.hasTable("db_version")
+
+    def execute(self):
+        self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')

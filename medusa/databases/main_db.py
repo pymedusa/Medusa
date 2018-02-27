@@ -360,7 +360,13 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
         log.info(u'Converting column indexer and default_ep_status field types to numeric')
         self.connection.action("DROP TABLE IF EXISTS tmp_tv_shows")
         self.connection.action("ALTER TABLE tv_shows RENAME TO tmp_tv_shows")
-        self.connection.action("CREATE TABLE tv_shows (show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC)")
+        self.connection.action("CREATE TABLE tv_shows (show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, "
+                               "show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, "
+                               "runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, "
+                               "paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, "
+                               "notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, "
+                               "archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, "
+                               "sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC)")
         self.connection.action("INSERT INTO tv_shows SELECT * FROM tmp_tv_shows")
         self.connection.action("DROP TABLE tmp_tv_shows")
 
@@ -714,10 +720,12 @@ class AddSearchTemplates(AddIndexerIds):
     def execute(self):
         backupDatabase(self.connection.version)
 
-        log.info(u"Adding column episode_search_template to the tv_shows table")
-        if not self.hasColumn("tv_shows", "episode_search_template"):
-            self.addColumn("tv_shows", "episode_search_template", 'TEXT', None)
-        if not self.hasColumn("tv_shows", "season_search_template"):
-            self.addColumn("tv_shows", "season_search_template", 'TEXT', None)
+        log.info(u"Creating a new table scene_exceptions in the main.db database.")
+
+        self.connection.action(
+            'CREATE TABLE scene_exceptions '
+            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, show_name TEXT, '
+            'season NUMERIC DEFAULT -1, custom NUMERIC DEFAULT 0, episode_search_template TEXT, season_search_template TEXT);'
+        )
 
         self.inc_minor_version()
