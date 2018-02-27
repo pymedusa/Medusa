@@ -1033,7 +1033,7 @@ def get_show(name, try_indexers=False):
             if found_exceptions:
                 # Only use the first exception.
                 exception = found_exceptions.pop()
-                series = Show.find_by_id(app.showList, exception.indexer_id, exception.series_id)
+                series = Show.find_by_id(app.showList, exception.indexer, exception.series_id)
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
