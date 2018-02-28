@@ -68,9 +68,11 @@ class NameParser(object):
         return sql_result
 
     def _parse_air_by_date(self, result):
-        """"
-        Translate scene episode and season numbering to indexer numbering, using an airdate to indexer season/episode
-        translation.
+        """
+        Parse anime season episode results.
+
+        Translate scene episode and season numbering to indexer numbering,
+        using an air date to indexer season/episode translation.
 
         :param result: Guessit parse result object.
         :return: tuple of found indexer episode numbers and indexer season numbers
@@ -164,8 +166,10 @@ class NameParser(object):
     @staticmethod
     def _parse_anime(result):
         """
-        Translate scene episode and season numbering to indexer numbering, using anime scen episode/season translation
-        tables to indexer episode/season.
+        Parse anime season episode results.
+
+        Translate scene episode and season numbering to indexer numbering,
+        using anime scen episode/season translation tables to indexer episode/season.
 
         :param result: Guessit parse result object.
         :return: tuple of found indexer episode numbers and indexer season numbers
