@@ -48,6 +48,19 @@ import pytest
         },
         'expected': ([13], [4], []),
     },
+    {
+        'name': u'American.Dad.S14E02.XviD-AFG',
+        'indexer_id': 1,
+        'indexer': 73141,
+        'mocks': [
+            ('medusa.scene_numbering.get_indexer_numbering', (15, 1))
+        ],
+        'series_info': {
+            'name': u'American Dad',
+            'is_scene': True
+        },
+        'expected': ([1], [15], []),
+    },
 ])
 def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
 
