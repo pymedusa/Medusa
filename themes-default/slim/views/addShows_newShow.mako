@@ -8,6 +8,20 @@
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
+<script src="js/lib/vue.js"></script>
+<script src="js/lib/vue-async-computed@3.3.0.js"></script>
+<%include file="/inc_qualityChooser.mako"/>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:

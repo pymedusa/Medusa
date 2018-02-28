@@ -18,6 +18,20 @@
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
+<script src="js/lib/vue.js"></script>
+<script src="js/lib/vue-async-computed@3.3.0.js"></script>
+<%include file="/inc_qualityChooser.mako"/>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
@@ -55,8 +69,7 @@
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
-                                    <%include file="/inc_qualityChooser.mako"/>
+                                    <quality-chooser></quality-chooser>
                                 </span>
                             </label>
                         </div>
