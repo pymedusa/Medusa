@@ -122,7 +122,7 @@ import pytest
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure",
+            'name': u"Ajin",
             'is_scene': True
         },
         'expected': ([13], [2], [26]),
@@ -137,10 +137,26 @@ import pytest
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
-            'name': u"JoJo's Bizarre Adventure",
+            'name': u"Ajin",
             'is_scene': True
         },
         'expected': ([13], [2], [26]),
+    },
+    # Anime show, no scene names, no scene numbering.
+    {
+        'name': u'[Chotab].Dragon.Ball.Super.-.002.(BD.Hi10P.1080p).-.To.the.Promised.Resort!.Vegeta.Goes.on.a.Family.Trip!.[3814D4D3]',
+        'indexer_id': 1,
+        'indexer': 295068,
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 2),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [2]))
+        ],
+        'series_info': {
+            'name': u"Dragon Ball Super",
+            'is_scene': False
+        },
+        'expected': ([2], [1], [2]),
     },
 
 ])
