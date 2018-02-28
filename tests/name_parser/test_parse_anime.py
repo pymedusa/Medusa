@@ -15,11 +15,11 @@ import pytest
         'indexer_ep_episodes': 8,
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(70668, 2, 1)],
-            'get_indexer_absolute_numbering': 78,
-            'get_all_episodes_from_absolute_number': (4, [8])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
+        ],
         'series_info':{
             'name': u'Cardcaptor Sakura',
             'is_scene': True
@@ -34,11 +34,11 @@ import pytest
         'indexer_ep_episodes': 8,
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(70668, 2, 1)],
-            'get_indexer_absolute_numbering': 78,
-            'get_all_episodes_from_absolute_number': (4, [8])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
+        ],
         'series_info': {
             'name': u'Cardcaptor Sakura',
             'is_scene': True
@@ -53,11 +53,11 @@ import pytest
         'indexer_ep_episodes': 8,
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(None, None, None)],
-            'get_indexer_absolute_numbering': 8,
-            'get_all_episodes_from_absolute_number': (1, [8])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 8),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [8]))
+        ],
         'series_info': {
             'name': u'Cardcaptor Sakura',
             'is_scene': True
@@ -69,11 +69,11 @@ import pytest
         'name': u"JoJo's.Bizarre.Adventure.(2012).EP.26.The.Ascendant.One.(BD.AVC.1080p.FLAC.AC3).[Dual.Audio].[ACD1301E]",
         'indexer_id': 1,
         'indexer': 262954,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(None, None, None)],
-            'get_indexer_absolute_numbering': 26,
-            'get_all_episodes_from_absolute_number': (1, [26])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 26),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [26]))
+        ],
         'series_info': {
             'name': u"JoJo's.Bizarre.Adventure.(2012)",
             'is_scene': True
@@ -85,11 +85,11 @@ import pytest
         'name': u"[HorribleSubs].JoJo's.Bizarre.Adventure.-.Stardust.Crusaders.Egypt.Arc.-.26.[1080p]",
         'indexer_id': 1,
         'indexer': 262954,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(262954, 3, 1)],
-            'get_indexer_absolute_numbering': 52,
-            'get_all_episodes_from_absolute_number': (2, [26])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 3, 1)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [26]))
+        ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
@@ -101,11 +101,11 @@ import pytest
         'name': u"[HorribleSubs].JoJo's.Bizarre.Adventure.-.Diamond.is.Unbreakable.-.26.[1080p]",
         'indexer_id': 1,
         'indexer': 262954,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(262954, 4, 1)],
-            'get_indexer_absolute_numbering': 100,
-            'get_all_episodes_from_absolute_number': (3, [26])
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 4, 1)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (3, [26]))
+        ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
@@ -117,10 +117,10 @@ import pytest
         'name': u'[Ajin2.com].Ajin.Season.2.Episode.13.[End].[720p].[Subbed]',
         'indexer_id': 1,
         'indexer': 300835,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(None, None, None)],
-            'get_absolute_number_from_season_and_episode': 26,
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+        ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
@@ -132,10 +132,10 @@ import pytest
         'name': u'[DragsterPS].AJIN.Demi-Human.S02E13.[1080p].[Multi-Audio].[Multi-Subs].[B2041D7E]',
         'indexer_id': 1,
         'indexer': 300835,
-        'mocks': {
-            'get_scene_exceptions_by_name': [(None, None, None)],
-            'get_absolute_number_from_season_and_episode': 26,
-        },
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+        ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
@@ -144,32 +144,16 @@ import pytest
     },
 
 ])
-def test_series_parsing(p, monkeypatch, create_tvshow):
+def test_anime_parsing(p, create_tvshow, monkeypatch_function_return):
+    """Test the function medusa.name_parser.NameParser().parser, for a number of (scene/non-scene) numbered
+    anime shows.
 
-    # Anime
-    # a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode, True, scene_season)
-    monkeypatch.setattr(
-        'medusa.scene_numbering.get_indexer_absolute_numbering',
-        lambda *args: p['mocks']['get_indexer_absolute_numbering']
-    )
-
-    # a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
-    monkeypatch.setattr(
-        'medusa.helpers.get_absolute_number_from_season_and_episode',
-        lambda *args: p['mocks']['get_absolute_number_from_season_and_episode']
-    )
-
-    # scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
-    monkeypatch.setattr(
-        'medusa.scene_exceptions.get_scene_exceptions_by_name',
-        lambda *args: p['mocks']['get_scene_exceptions_by_name']
-    )
-
-    # helpers.get_all_episodes_from_absolute_number(result.series, [a])
-    monkeypatch.setattr(
-        'medusa.helpers.get_all_episodes_from_absolute_number',
-        lambda *args: p['mocks']['get_all_episodes_from_absolute_number']
-    )
+    :p: List of parameters to test with.
+    :create_tvshow: Fixture injected for creating a mock TvShow object. Found in conftest.py.
+    :monkeypatch_function_return: Fixture to monkeypatch a list of tuples (configured through
+    the pytest.mark.parameterize config)
+    """
+    monkeypatch_function_return(p['mocks'])
 
     parser = NameParser()
     guess = guessit.guessit(p['name'], dict(show_type='anime'))
@@ -184,4 +168,3 @@ def test_series_parsing(p, monkeypatch, create_tvshow):
     expected = p['expected']
 
     assert expected == actual
-

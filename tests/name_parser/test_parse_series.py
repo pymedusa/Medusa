@@ -14,7 +14,7 @@ import pytest
         'indexer_id': 1,
         'indexer': 188401,
         'mocks': [
-            'medusa.scene_numbering.get_indexer_numbering': (6, 28),
+            ('medusa.scene_numbering.get_indexer_numbering', (6, 28))
         ],
         'series_info': {
             'name': u'Regular Show',
@@ -22,12 +22,12 @@ import pytest
         },
         'expected': ([28], [6], []),
     },
-{
+    {
         'name': u'Inside.West.Coast.Customs.S06E04.720p.WEB.x264-TBS',
         'indexer_id': 1,
         'indexer': 307007,
         'mocks': [
-            'medusa.scene_numbering.get_indexer_numbering': (8, 4),
+            ('medusa.scene_numbering.get_indexer_numbering', (8, 4))
         ],
         'series_info': {
             'name': u'Inside West Coast Customs',
@@ -35,18 +35,23 @@ import pytest
         },
         'expected': ([4], [8], []),
     },
+    {
+        'name': u'The.100.S04E13.1080p.BluRay.x264-SPRINTER-Scrambled',
+        'indexer_id': 1,
+        'indexer': 307007,
+        'mocks': [
+            ('medusa.scene_numbering.get_indexer_numbering', (None, None))
+        ],
+        'series_info': {
+            'name': u'The 100',
+            'is_scene': False
+        },
+        'expected': ([13], [4], []),
+    },
 ])
-def test_series_parsing(p, monkeypatch, create_tvshow):
+def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
 
-    # A helper that allows you to mock a list of functions/return values.
-    # This can be moved to conftest as a fixture.
-    def mock_functions(mocks):
-        for function_to_mock, return_value in iteritems(mocks):
-            monkeypatch.setattr(
-                function_to_mock,
-                lambda *args: return_value
-            )
-    mock_functions(p['mocks'])
+    monkeypatch_function_return(p['mocks'])
 
     parser = NameParser()
     guess = guessit.guessit(p['name'])

@@ -295,7 +295,7 @@ class NameParser(object):
         elif result.season_number and result.episode_numbers:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        # need to do a quick sanity check heregex.  It's possible that we now have episodes
+        # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
         # for the application, so we'd need to flag it.
         new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
