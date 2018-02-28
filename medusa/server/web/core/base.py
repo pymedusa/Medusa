@@ -82,7 +82,8 @@ class PageTemplate(MakoTemplate):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
-        base_url = rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' + rh.request.headers.get('X-Forwarded-Host', rh.request.host)
+        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
+                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
 
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
