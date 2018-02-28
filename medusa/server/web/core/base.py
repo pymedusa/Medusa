@@ -82,6 +82,8 @@ class PageTemplate(MakoTemplate):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
+        base_url = rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' + rh.request.headers.get('X-Forwarded-Host', rh.request.host)
+
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
             'sbHttpsPort': app.WEB_PORT,
@@ -104,10 +106,9 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
-            'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
+            'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
-            'full_url': rh.request.full_url()
+            'full_url': base_url + rh.request.uri
         }
 
         if rh.request.headers['Host'][0] == '[':
