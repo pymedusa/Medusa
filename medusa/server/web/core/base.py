@@ -26,6 +26,7 @@ from medusa import (
     ui,
 )
 from medusa.server.api.v1.core import function_mapper
+from medusa.server.api.v2.base import json_default_encoder
 from medusa.show.coming_episodes import ComingEpisodes
 
 from requests.compat import urljoin
@@ -369,6 +370,7 @@ class WebRoot(WebHandler):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
         next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
+        results_json = json.JSONEncoder(default=json_default_encoder).encode(results)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
 
         submenu = [
@@ -400,7 +402,8 @@ class WebRoot(WebHandler):
         ]
 
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=app.COMING_EPS_LAYOUT,
+        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today,
+                        results=results, resulsjson=results_json, layout=app.COMING_EPS_LAYOUT,
                         title='Schedule', header='Schedule', topmenu='schedule',
                         controller='schedule', action='index')
 
