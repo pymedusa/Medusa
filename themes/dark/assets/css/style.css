@@ -2041,9 +2041,9 @@ config*.mako
     margin-right: 6px;
 }
 
-#config div.field-pair input {
+/* #config div.field-pair input {
     float: left;
-}
+} */
 
 #config .nocheck,
 #config div #customQuality,
@@ -3527,7 +3527,7 @@ div.formpaginate .next {
 
 div.field-pair input {
     margin-right: 6px;
-    float: left;
+    /* float: left; */
 }
 
 /* step 3 related */

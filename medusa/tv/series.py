@@ -104,7 +104,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import text_type
+from six import string_types, text_type
 
 try:
     from send2trash import send2trash
@@ -542,10 +542,18 @@ class Series(TV):
         """Return release ignore words."""
         return [v for v in (self.rls_ignore_words or '').split(',') if v]
 
+    @release_ignore_words.setter
+    def release_ignore_words(self, value):
+        self.rls_ignore_words = value if isinstance(value, string_types) else ','.join(value)
+
     @property
     def release_required_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_require_words or '').split(',') if v]
+
+    @release_required_words.setter
+    def release_required_words(self, value):
+        self.rls_require_words = value if isinstance(value, string_types) else ','.join(value)
 
     @staticmethod
     def normalize_status(series_status):

@@ -42,13 +42,14 @@
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="seriesObj.indexer" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesObj.id[seriesObj.indexer]" />
-                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350"/>
+                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig($event)"/>
                                 </span>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
+                                <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
                                     <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
                                     <%include file="/inc_qualityChooser.mako"/>
@@ -59,10 +60,9 @@
                             <label for="defaultEpStatusSelect">
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
-                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
-                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == show.default_ep_status else ''}>${statusStrings[cur_status]}</option>
-                                        % endfor
+                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm" 
+                                    v-model="seriesObj.config.defaultEpisodeStatus"  @change="storeConfig($event)">
+                                        <option v-for="option in defaultEpisodeStatusOptions" v-bind:value="option.value">{{ option.text }}</option>
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
                                 </span>
@@ -72,7 +72,9 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguagesAvailable" @change="storeConfig($event)"></select>
+                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" 
+                                        data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguages" @change="storeConfig($event)">
+                                    </select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -165,7 +167,8 @@
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350"/><br>
+                                    <!-- <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350"/><br> -->
+                                    <select-list :list-items="transformToIndexedObject(seriesObj.config.release.ignoredWords)" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
@@ -177,7 +180,7 @@
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_require_words" name="rls_require_words" id="rls_require_words" value="${show.rls_require_words}" class="form-control form-control-inline input-sm input350"/><br>
+                                    <select-list :list-items="transformToIndexedObject(seriesObj.config.release.requiredWords)" @change="onChangeRequiredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
@@ -225,9 +228,46 @@
 %>
 <script>
 // register the component
-Vue.component('my-component', {
-  template: '<div>A custom component!</div>'
-})
+Vue.component('select-list', {
+    template:
+        '<div class="select-list"> \
+            <div v-for="item of editItems"> \
+                <input style="display: inline-block" type="text" @change="sendValues" v-model="item.value"/> \
+                <img style="display: inline-block" src="images/no16.png" alt="N" width="16" height="16" @click="deleteItem(item)"> \
+            </div> \
+            <input style="display: inline-block" type="text" v-model="newItem"/> \
+            <img style="display: inline-block" src="images/pencil_add.png" alt="N" width="16" height="16" @click="addItem"> \
+        </div>'
+    ,
+    props: ['listItems'],
+    mounted() {
+        this.editItems = this.listItems.slice();
+    },
+    data: function() {
+        return {
+            editItems: [],
+            newItem: '',
+            indexCounter: 0
+        }
+    },
+    methods: {
+		sendValues: function() {
+			this.$emit('change', this.editItems);
+        },
+        addItem: function(evt) {
+            this.editItems.push({id: this.indexCounter, value: this.newItem});
+            this.indexCounter += 1;
+            this.newItem = '';
+            this.sendValues();
+        },
+        deleteItem: function(item) {
+            this.editItems = this.editItems.filter(e => e !== item);
+            this.newItem = item.value;
+            this.sendValues();
+        }
+    }
+});
+
 var startVue = function() {
     const app = new Vue({
         el: '#config-content',
@@ -241,7 +281,12 @@ var startVue = function() {
                 seriesSlug: seriesSlug,
                 seriesObj: seriesObj,
                 subtitles: seriesObj.config.subtitlesEnabled,
-                folders: seriesObj.config.flattenFolders
+                folders: seriesObj.config.flattenFolders,
+                defaultEpisodeStatusOptions: [
+                    {text: 'Wanted', value: 'Wanted'},
+                    {text: 'Skipped', value: 'Skipped'},
+                    {text: 'Ignored', value: 'Ignored'}
+                ]
             }
         },
         methods: {
@@ -252,8 +297,8 @@ var startVue = function() {
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
             },
-            storeConfig(evt) {
-                api.patch('config/main', {
+            storeConfig: function(x) {
+                api.patch('series/' + this.seriesSlug, {
                     config: {
                         dvdOrder: this.seriesObj.config.dvdOrder,
                         flattenFolders: this.seriesObj.config.flattenFolders,
@@ -263,19 +308,41 @@ var startVue = function() {
                         paused: this.seriesObj.config.paused,
                         location: this.seriesObj.config.location,
                         airByDate: this.seriesObj.config.airByDate,
-                        subtitlesEnabled: this.seriesObj.config.subtitlesEnabled
+                        subtitlesEnabled: this.seriesObj.config.subtitlesEnabled,
+                        release: {
+                            requiredWords: this.seriesObj.config.release.requiredWords,
+                            ignoredWords: this.seriesObj.config.release.ignoredWords
+                            // blacklist: this.seriesObj.config.release.blacklist,
+                            // whitelist: this.seriesObj.config.release.whitelist
+                        }
+                            
                     }
                 }).then(response => {
                     log.info(response);
                 }).catch(err => {
                     log.error(err);
                 });
+            },
+            onChangeIgnoredWords: function(items) {
+		        console.log('Event from child component emitted', items);
+                this.seriesObj.config.release.ignoredWords = items.map(item => {return item.value});
+            },
+            onChangeRequiredWords: function(items) {
+		        console.log('Event from child component emitted', items);
+                this.seriesObj.config.release.requiredWords = items.map(item => {return item.value});
+            },
+            transformToIndexedObject: arrayOfStrings => {
+                arrayOfObjects = [];
+                for (let index=0; index < arrayOfStrings.length; index++) {
+                    arrayOfObjects.push({id: index, value: arrayOfStrings[index]});
+                }
+                return arrayOfObjects;
             }
         },
         computed: {
-            availableLanguagesAvailable: function() {
+            availableLanguages: function() {
                 return this.config.indexers.config.main.validLanguages.join(',');
-            }   
+            }
         }
     });
     $('[v-cloak]').removeAttr('v-cloak');
