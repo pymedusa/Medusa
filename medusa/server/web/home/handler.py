@@ -2384,8 +2384,10 @@ class Home(WebRoot):
             if sceneEpisode is not None:
                 sceneEpisode = int(sceneEpisode)
 
-            set_scene_numbering(series_obj, season=forSeason, episode=forEpisode,
-                                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode)
+            set_scene_numbering(
+                series_obj, season=forSeason, episode=forEpisode,
+                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+            )
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)

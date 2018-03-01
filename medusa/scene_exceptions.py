@@ -136,8 +136,10 @@ def get_all_scene_exceptions(series_obj):
 
 
 def get_scene_exceptions_by_name(show_name):
-    """Get the indexer_id and season of the scene exception."""
+    """Look for a series_id, season and indexer for a given series scene exception."""
     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
+    # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
+    # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     scene_exceptions = cache_db_con.select(
