@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Name cache module."""
+from __future__ import unicode_literals
 
 import logging
 import threading
@@ -14,7 +15,7 @@ from medusa.scene_exceptions import (
     retrieve_exceptions,
 )
 
-from six import iteritems
+from six import iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -98,7 +99,7 @@ def build_name_cache(series_obj=None):
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
             full_sanitize_scene_name(name): series_identifier
-            for season_exceptions in scene_exceptions.values()
+            for season_exceptions in itervalues(scene_exceptions)
             for name in season_exceptions
         }
         # Add original name to name cache
@@ -110,7 +111,7 @@ def build_name_cache(series_obj=None):
 
         log.debug(u'Internal name cache for {series} set to: {names}', {
             'series': series_name,
-            'names': u', '.join(names.keys())
+            'names': u', '.join(list(names))
         })
 
     with nameCacheLock:

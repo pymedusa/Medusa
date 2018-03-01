@@ -8,11 +8,9 @@ import traceback
 
 import certifi
 
-import factory
-
 import medusa.common
 from medusa import app
-from medusa.session import hooks
+from medusa.session import factory, hooks
 
 import requests
 

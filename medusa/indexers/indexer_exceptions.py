@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Custom exceptions used or raised by indexer_api."""
+from __future__ import unicode_literals
 
 
 class IndexerException(Exception):

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 from os.path import join
 
 from medusa.media.generic import GenericMedia

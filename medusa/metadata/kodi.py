@@ -1,6 +1,7 @@
 # coding=utf-8
 
 
+from __future__ import unicode_literals
 import os
 
 from medusa.helper.common import replace_extension
