@@ -11,9 +11,8 @@
             <form id="configForm" action="config/anime/saveAnime" method="post">
                 <div id="config-components">
                     <ul>
-                        ## @TODO: Fix this stupid hack
-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
+                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
+                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
                     </ul>
                     <div id="animedb-settings" class="tab-pane active component-group">
                         <div class="component-group-desc">

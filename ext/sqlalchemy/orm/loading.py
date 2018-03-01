@@ -1,5 +1,5 @@
 # orm/loading.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -18,6 +18,8 @@ from .. import util
 from . import attributes, exc as orm_exc
 from ..sql import util as sql_util
 from . import strategy_options
+from . import path_registry
+from .. import sql
 
 from .util import _none_set, state_str
 from .base import _SET_DEFERRED_EXPIRED, _DEFER_FOR_STATE
@@ -31,6 +33,7 @@ def instances(query, cursor, context):
     """Return an ORM result as an iterator."""
 
     context.runid = _new_runid()
+    context.post_load_paths = {}
 
     filtered = query._has_mapper_entities
 
@@ -76,6 +79,10 @@ def instances(query, cursor, context):
             else:
                 rows = [keyed_tuple([proc(row) for proc in process])
                         for row in fetch]
+
+            for path, post_load in \
+                    context.post_load_paths.items():
+                post_load.invoke(context, path)
 
             if filtered:
                 rows = util.unique_list(rows, filter_fn)
@@ -163,7 +170,7 @@ def get_from_identity(session, key, passive):
 
 
 def load_on_ident(query, key,
-                  refresh_state=None, lockmode=None,
+                  refresh_state=None, with_for_update=None,
                   only_load_props=None):
     """Load the given identity key from the database."""
 
@@ -203,9 +210,10 @@ def load_on_ident(query, key,
 
         q._params = params
 
-    if lockmode is not None:
+    # with_for_update needs to be query.LockmodeArg()
+    if with_for_update is not None:
         version_check = True
-        q = q.with_lockmode(lockmode)
+        q._for_update_arg = with_for_update
     elif query._for_update_arg is not None:
         version_check = True
         q._for_update_arg = query._for_update_arg
@@ -361,6 +369,36 @@ def _instance_processor(
     session_id = context.session.hash_key
     version_check = context.version_check
     runid = context.runid
+    identity_token = context.identity_token
+
+    if not refresh_state and _polymorphic_from is not None:
+        key = ('loader', path.path)
+        if (
+                key in context.attributes and
+                context.attributes[key].strategy ==
+                (('selectinload_polymorphic', True), )
+        ):
+            selectin_load_via = mapper._should_selectin_load(
+                context.attributes[key].local_opts['entities'],
+                _polymorphic_from)
+        else:
+            selectin_load_via = mapper._should_selectin_load(
+                None, _polymorphic_from)
+
+        if selectin_load_via and selectin_load_via is not _polymorphic_from:
+            # only_load_props goes w/ refresh_state only, and in a refresh
+            # we are a single row query for the exact entity; polymorphic
+            # loading does not apply
+            assert only_load_props is None
+
+            callable_ = _load_subclass_via_in(context, path, selectin_load_via)
+
+            PostLoad.callable_for_path(
+                context, load_path, selectin_load_via.mapper,
+                selectin_load_via,
+                callable_, selectin_load_via)
+
+    post_load = PostLoad.for_context(context, load_path, only_load_props)
 
     if refresh_state:
         refresh_identity_key = refresh_state.key
@@ -394,7 +432,8 @@ def _instance_processor(
             # session, or we have to create a new one
             identitykey = (
                 identity_class,
-                tuple([row[column] for column in pk_cols])
+                tuple([row[column] for column in pk_cols]),
+                identity_token
             )
 
             instance = session_identity_map.get(identitykey)
@@ -428,6 +467,7 @@ def _instance_processor(
                 dict_ = instance_dict(instance)
                 state = instance_state(instance)
                 state.key = identitykey
+                state.identity_token = identity_token
 
                 # attach instance to session.
                 state.session_id = session_id
@@ -467,6 +507,9 @@ def _instance_processor(
                     else:
                         state._commit_all(dict_, session_identity_map)
 
+            if post_load:
+                post_load.add_state(state, True)
+
         else:
             # partial population routines, for objects that were already
             # in the Session, but a row matches them; apply eager loaders
@@ -490,6 +533,9 @@ def _instance_processor(
 
                     state._commit(dict_, to_load)
 
+            if post_load and context.invoke_all_eagers:
+                post_load.add_state(state, False)
+
         return instance
 
     if mapper.polymorphic_map and not _polymorphic_from and not refresh_state:
@@ -500,6 +546,39 @@ def _instance_processor(
             polymorphic_discriminator, adapter)
 
     return _instance
+
+
+def _load_subclass_via_in(context, path, entity):
+    mapper = entity.mapper
+
+    zero_idx = len(mapper.base_mapper.primary_key) == 1
+
+    if entity.is_aliased_class:
+        q, enable_opt, disable_opt = mapper._subclass_load_via_in(entity)
+    else:
+        q, enable_opt, disable_opt = mapper._subclass_load_via_in_mapper
+
+    def do_load(context, path, states, load_only, effective_entity):
+        orig_query = context.query
+
+        q._add_lazyload_options(
+            (enable_opt, ) + orig_query._with_options + (disable_opt, ),
+            path.parent, cache_path=path
+        )
+
+        if orig_query._populate_existing:
+            q.add_criteria(
+                lambda q: q.populate_existing()
+            )
+
+        q(context.session).params(
+            primary_keys=[
+                state.key[1][0] if zero_idx else state.key[1]
+                for state, load_attrs in states
+            ]
+        ).all()
+
+    return do_load
 
 
 def _populate_full(
@@ -647,6 +726,62 @@ def _decorate_polymorphic_switch(
     return polymorphic_instance
 
 
+class PostLoad(object):
+    """Track loaders and states for "post load" operations.
+
+    """
+    __slots__ = 'loaders', 'states', 'load_keys'
+
+    def __init__(self):
+        self.loaders = {}
+        self.states = util.OrderedDict()
+        self.load_keys = None
+
+    def add_state(self, state, overwrite):
+        # the states for a polymorphic load here are all shared
+        # within a single PostLoad object among multiple subtypes.
+        # Filtering of callables on a per-subclass basis needs to be done at
+        # the invocation level
+        self.states[state] = overwrite
+
+    def invoke(self, context, path):
+        if not self.states:
+            return
+        path = path_registry.PathRegistry.coerce(path)
+        for token, limit_to_mapper, loader, arg, kw in self.loaders.values():
+            states = [
+                (state, overwrite)
+                for state, overwrite
+                in self.states.items()
+                if state.manager.mapper.isa(limit_to_mapper)
+            ]
+            loader(
+                context, path, states, self.load_keys, *arg, **kw)
+        self.states.clear()
+
+    @classmethod
+    def for_context(cls, context, path, only_load_props):
+        pl = context.post_load_paths.get(path.path)
+        if pl is not None and only_load_props:
+            pl.load_keys = only_load_props
+        return pl
+
+    @classmethod
+    def path_exists(self, context, path, key):
+        return path.path in context.post_load_paths and \
+            key in context.post_load_paths[path.path].loaders
+
+    @classmethod
+    def callable_for_path(
+            cls, context, path, limit_to_mapper, token,
+            loader_callable, *arg, **kw):
+        if path.path in context.post_load_paths:
+            pl = context.post_load_paths[path.path]
+        else:
+            pl = context.post_load_paths[path.path] = PostLoad()
+        pl.loaders[token] = (token, limit_to_mapper, loader_callable, arg, kw)
+
+
 def load_scalar_attributes(mapper, state, attribute_names):
     """initiate a column-based attribute refresh operation."""
 
@@ -661,6 +796,15 @@ def load_scalar_attributes(mapper, state, attribute_names):
     has_key = bool(state.key)
 
     result = False
+
+    # in the case of inheritance, particularly concrete and abstract
+    # concrete inheritance, the class manager might have some keys
+    # of attributes on the superclass that we didn't actually map.
+    # These could be mapped as "concrete, dont load" or could be completely
+    # exluded from the mapping and we know nothing about them.  Filter them
+    # here to prevent them from coming through.
+    if attribute_names:
+        attribute_names = attribute_names.intersection(mapper.attrs.keys())
 
     if mapper.inherits and not mapper.concrete:
         # because we are using Core to produce a select() that we

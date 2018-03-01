@@ -440,6 +440,32 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
         app.auto_post_processor_scheduler.silent = True
 
 
+def change_remove_from_client(new_state):
+    """
+    Enable/disable TorrentChecker thread
+    TODO: Make this return true/false on success/failure
+
+    :param new_state: New desired state
+    """
+    new_state = checkbox_to_value(new_state)
+
+    if app.REMOVE_FROM_CLIENT == new_state:
+        return
+
+    app.REMOVE_FROM_CLIENT = new_state
+    if app.REMOVE_FROM_CLIENT:
+        if not app.torrent_checker_scheduler.enable:
+            log.info(u'Starting TORRENTCHECKER thread')
+            app.torrent_checker_scheduler.silent = False
+            app.torrent_checker_scheduler.enable = True
+        else:
+            log.info(u'Unable to start TORRENTCHECKER thread. Already running')
+    else:
+        app.torrent_checker_scheduler.enable = False
+        app.torrent_checker_scheduler.silent = True
+        log.info(u'Stopping TORRENTCHECKER thread')
+
+
 def CheckSection(CFG, sec):
     """ Check if INI section exists, if not create it """
 

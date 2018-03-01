@@ -470,14 +470,16 @@ class Application(object):
             app.GIT_REMOTE = check_setting_str(app.CFG, 'General', 'git_remote', 'origin')
             app.GIT_REMOTE_URL = check_setting_str(app.CFG, 'General', 'git_remote_url', app.APPLICATION_URL)
 
-            repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
-            m = repo_url_re.match(app.GIT_REMOTE_URL)
-            if m:
-                groups = m.groupdict()
-                if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
-                    app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
-            else:
-                app.GIT_REMOTE_URL = app.APPLICATION_URL
+            if not app.DEVELOPER:
+                repo_url_re = re.compile(
+                    r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+                m = repo_url_re.match(app.GIT_REMOTE_URL)
+                if m:
+                    groups = m.groupdict()
+                    if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
+                        app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
+                else:
+                    app.GIT_REMOTE_URL = app.APPLICATION_URL
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
@@ -534,7 +536,9 @@ class Application(object):
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
+            app.SSL_CA_BUNDLE = check_setting_str(app.CFG, 'General', 'ssl_ca_bundle', '')
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
+            app.TVDB_DVD_ORDER_EP_IGNORE = bool(check_setting_int(app.CFG, 'General', 'tvdb_dvd_order_ep_ignore', 0))
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
             app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
@@ -1323,7 +1327,7 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
                 app.torrent_checker_scheduler.enable = True
             app.torrent_checker_scheduler.silent = False
             app.torrent_checker_scheduler.start()
@@ -1428,6 +1432,7 @@ class Application(object):
         new_config['General']['subliminal_log'] = int(app.SUBLIMINAL_LOG)
         new_config['General']['privacy_level'] = app.PRIVACY_LEVEL
         new_config['General']['ssl_verify'] = int(app.SSL_VERIFY)
+        new_config['General']['ssl_ca_bundle'] = app.SSL_CA_BUNDLE
         new_config['General']['download_url'] = app.DOWNLOAD_URL
         new_config['General']['localhost_ip'] = app.LOCALHOST_IP
         new_config['General']['cpu_preset'] = app.CPU_PRESET
@@ -1470,6 +1475,7 @@ class Application(object):
         new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
+        new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER

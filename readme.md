@@ -1,4 +1,4 @@
-![Medusa](static/images/medusa-logo.png)
+![Medusa](themes-default/slim/static/images/medusa-logo.png)
 
 [![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=develop)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open") [![codebeat badge](https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0)](https://codebeat.co/projects/github-com-pymedusa-medusa-develop) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo) [![codecov](https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg)](https://codecov.io/gh/pymedusa/Medusa)
 

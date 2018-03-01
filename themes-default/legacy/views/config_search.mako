@@ -14,10 +14,9 @@
         <form id="configForm" action="config/search/saveSearch" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
+                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
+                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
+                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
                 </ul>
                 <div id="episode-search">
                         <div class="component-group-desc">
