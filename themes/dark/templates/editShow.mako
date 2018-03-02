@@ -41,7 +41,7 @@
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="getSafe(seriesObj.indexer, '')" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], ''/>
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], '')"/>
                                     <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig($event)"/>
                                 </span>
                             </label>
@@ -223,9 +223,6 @@
 <script src="js/lib/vue.js"></script>
 <%include file="/vue-components/selectListUi.mako"/>
 <%include file="/vue-components/anidbReleaseGroupUi.mako"/>
-<%
-    seriesObj = json.dumps(show.to_json());
-%>
 <script>
 var startVue = function() {
     const app = new Vue({
