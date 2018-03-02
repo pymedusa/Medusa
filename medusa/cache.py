@@ -41,6 +41,7 @@ class MutexLock(AbstractFileLock):
 cache = make_region()
 memory_cache = make_region()
 recommended_series_cache = make_region()
+anidb_cache = make_region()
 
 
 def configure(cache_dir):
@@ -68,6 +69,12 @@ def configure(cache_dir):
                                        expiration_time=timedelta(days=7),
                                        arguments={'filename': os.path.join(cache_dir, 'recommended.dbm'),
                                                   'lock_factory': MutexLock})
+
+    # anidb (adba) series cache
+    anidb_cache.configure('dogpile.cache.dbm',
+                    expiration_time=timedelta(days=3),
+                    arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
+                               'lock_factory': MutexLock})
 
 
 def fallback():
