@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for alias source."""
+from __future__ import unicode_literals
 from datetime import datetime
 
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
@@ -13,7 +14,7 @@ def find_alias_sources(predicate=None):
     mapping = {'local': 'custom_exceptions'}
     for identifier in ('local', 'xem', 'anidb'):
         if not predicate or predicate(identifier):
-            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0]['last_refreshed']
+            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0][b'last_refreshed']
             data.append({'id': identifier, 'lastRefresh': last_refresh})
 
     return data

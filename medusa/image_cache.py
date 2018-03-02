@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import division
 from __future__ import unicode_literals
 
 import logging
@@ -28,6 +28,8 @@ from medusa.helper.exceptions import ShowDirectoryNotFoundException
 from medusa.helpers import copy_file, get_image_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata.generic import GenericMetadata
+
+from six import itervalues, viewitems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -140,7 +142,7 @@ def which_type(path):
         return
 
     height, width = image_dimension
-    aspect_ratio = width / float(height)
+    aspect_ratio = width / height
     log.debug('Image aspect ratio: {0}', aspect_ratio)
 
     for img_type in ASPECT_RATIOS:
@@ -279,7 +281,7 @@ def fill_cache(series_obj):
     # check if artwork is cached
     needed = {
         img_type: location
-        for img_type, location in images.items()
+        for img_type, location in viewitems(images)
         if not os.path.exists(location)
     }
 
@@ -295,7 +297,7 @@ def fill_cache(series_obj):
         if not needed.get(img_type):
             continue
         try:
-            for provider in app.metadata_provider_dict.values():
+            for provider in itervalues(app.metadata_provider_dict):
                 log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 

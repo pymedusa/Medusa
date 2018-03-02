@@ -6,11 +6,11 @@ Deluge Daemon Client.
 This client script allows connection to Deluge Daemon directly, completely
 circumventing the requirement to use the WebUI.
 """
-
 from __future__ import unicode_literals
 
 import logging
 from base64 import b64encode
+from builtins import object
 
 from medusa import app
 from medusa.clients.torrent.deluge_client import read_torrent_status

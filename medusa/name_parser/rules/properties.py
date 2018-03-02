@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Properties: This section contains additional properties to be guessed by guessit."""
+from __future__ import unicode_literals
 
 import re
 
@@ -104,7 +105,7 @@ def container():
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
-    nzb = ['nzb']
+    nzb = [b'nzb']
 
     rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 

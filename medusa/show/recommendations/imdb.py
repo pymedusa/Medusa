@@ -6,6 +6,7 @@ import logging
 import os
 import posixpath
 import re
+from builtins import object
 
 from imdbpie import imdbpie
 

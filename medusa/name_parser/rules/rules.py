@@ -26,15 +26,19 @@ according to our needs.
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+from __future__ import unicode_literals
 
 import copy
 import logging
 import re
+from builtins import range
+from builtins import str
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
+
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule

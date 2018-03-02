@@ -1,10 +1,13 @@
 """Base theme module."""
+from __future__ import unicode_literals
+
 import json
 import logging
 import os
+from builtins import object
+
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

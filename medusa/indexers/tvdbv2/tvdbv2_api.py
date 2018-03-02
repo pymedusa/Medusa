@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """TVDB2 api module."""
+from __future__ import unicode_literals
 
 import logging
 from collections import OrderedDict
@@ -20,7 +21,7 @@ from medusa.show.show import Show
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
-from six import string_types, text_type
+from six import string_types, text_type, viewitems
 
 from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
@@ -108,7 +109,7 @@ class TVDBv2(BaseIndexer):
                             if isinstance(value, dict) and isinstance(key_mapping[attribute], dict):
                                 # Let's map the children, i'm only going 1 deep, because usecases that I need it for,
                                 # I don't need to go any further
-                                for k, v in value.iteritems():
+                                for k, v in viewitems(value):
                                     if key_mapping.get(attribute)[k]:
                                         return_dict[key_mapping[attribute][k]] = v
 
@@ -378,7 +379,7 @@ class TVDBv2(BaseIndexer):
             seas_no = int(float(seas_no))
             ep_no = int(float(ep_no))
 
-            for k, v in cur_ep.items():
+            for k, v in viewitems(cur_ep):
                 k = k.lower()
 
                 if v and k == 'filename':
@@ -459,7 +460,7 @@ class TVDBv2(BaseIndexer):
             log.info('Could not get image count for show id: {0} with reason: {1!r}', sid, error.message)
             return
 
-        for image_type, image_count in self._object_to_dict(series_images_count).items():
+        for image_type, image_count in viewitems(self._object_to_dict(series_images_count)):
             try:
                 if search_for_image_type and search_for_image_type != image_type:
                     # We want to use the 'poster' image also for the 'poster_thumb' type
@@ -498,7 +499,7 @@ class TVDBv2(BaseIndexer):
                             _images[image_type][resolution][bid] = {}
                         base_path = _images[image_type][resolution][bid]
 
-                    for k, v in image_attributes.items():
+                    for k, v in viewitems(image_attributes):
                         if k is None or v is None:
                             continue
 
@@ -589,7 +590,7 @@ class TVDBv2(BaseIndexer):
             raise IndexerError('Series result returned zero')
 
         # get series data / add the base_url to the image urls
-        for k, v in series_info['series'].items():
+        for k, v in viewitems(series_info['series']):
             if v is not None:
                 if v and k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'] % v

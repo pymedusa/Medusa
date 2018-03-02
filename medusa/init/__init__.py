@@ -1,5 +1,7 @@
 # coding=utf-8
 """First modules to initialize."""
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import codecs
 import datetime

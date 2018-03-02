@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import datetime
 import io
@@ -14,6 +14,7 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
+
 from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
