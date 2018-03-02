@@ -40,8 +40,8 @@
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="indexername" id="form-indexername" :value="seriesObj.indexer" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesObj.id[seriesObj.indexer]" />
+                                    <input type="hidden" name="indexername" id="form-indexername" :value="getSafe(seriesObj.indexer, '')" />
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], ''/>
                                     <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig($event)"/>
                                 </span>
                             </label>
@@ -117,7 +117,8 @@
                                 <span class="component-desc">
                                     <input type="checkbox" id="anime" name="anime" v-model="seriesObj.config.anime" @change="storeConfig($event)"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                                     % if show.is_anime:
-                                        <%include file="/inc_blackwhitelist.mako"/>
+                                        <!-- <%include file="/inc_blackwhitelist.mako"/> -->
+                                        <anidb-release-group-ui></anidb-release-group-ui>
                                     % endif
                                 </span>
                             </label>
@@ -219,74 +220,33 @@
 <%block name="scripts">
     <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/edit-show.js"></script>
-% if show.is_anime:
-    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-% endif
 <script src="js/lib/vue.js"></script>
+<%include file="/vue-components/selectListUi.mako"/>
+<%include file="/vue-components/anidbReleaseGroupUi.mako"/>
 <%
     seriesObj = json.dumps(show.to_json());
 %>
 <script>
-// register the component
-Vue.component('select-list', {
-    template:
-        '<div class="select-list"> \
-            <div v-for="item of editItems"> \
-                <input style="display: inline-block" type="text" @change="sendValues" v-model="item.value"/> \
-                <img style="display: inline-block" src="images/no16.png" alt="N" width="16" height="16" @click="deleteItem(item)"> \
-            </div> \
-            <input style="display: inline-block" type="text" v-model="newItem"/> \
-            <img style="display: inline-block" src="images/pencil_add.png" alt="N" width="16" height="16" @click="addItem"> \
-        </div>'
-    ,
-    props: ['listItems'],
-    mounted() {
-        this.editItems = this.listItems.slice();
-    },
-    data: function() {
-        return {
-            editItems: [],
-            newItem: '',
-            indexCounter: 0
-        }
-    },
-    methods: {
-		sendValues: function() {
-			this.$emit('change', this.editItems);
-        },
-        addItem: function(evt) {
-            this.editItems.push({id: this.indexCounter, value: this.newItem});
-            this.indexCounter += 1;
-            this.newItem = '';
-            this.sendValues();
-        },
-        deleteItem: function(item) {
-            this.editItems = this.editItems.filter(e => e !== item);
-            this.newItem = item.value;
-            this.sendValues();
-        }
-    }
-});
-
 var startVue = function() {
     const app = new Vue({
         el: '#config-content',
         data() {
-            const seriesObj = ${seriesObj};
-            const seriesSlug = seriesObj.id.slug;
-            const exceptions = seriesObj.config.aliases;
+            // Python conversions
+            const seriesObj = this.loadSeries();
+            
+            // JS only
+            const exceptions = [];
             return {
+                seriesSlug: $('#series-slug').attr('value'),
                 config: MEDUSA.config,
                 exceptions: exceptions,
-                seriesSlug: seriesSlug,
                 seriesObj: seriesObj,
-                subtitles: seriesObj.config.subtitlesEnabled,
-                folders: seriesObj.config.flattenFolders,
                 defaultEpisodeStatusOptions: [
                     {text: 'Wanted', value: 'Wanted'},
                     {text: 'Skipped', value: 'Skipped'},
                     {text: 'Ignored', value: 'Ignored'}
-                ]
+                ],
+                saveStatus: ''
             }
         },
         methods: {
@@ -297,8 +257,8 @@ var startVue = function() {
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
             },
-            storeConfig: function(x) {
-                api.patch('series/' + this.seriesSlug, {
+            storeConfig: async function() {
+                const data = {
                     config: {
                         dvdOrder: this.seriesObj.config.dvdOrder,
                         flattenFolders: this.seriesObj.config.flattenFolders,
@@ -315,13 +275,22 @@ var startVue = function() {
                             // blacklist: this.seriesObj.config.release.blacklist,
                             // whitelist: this.seriesObj.config.release.whitelist
                         }
-                            
                     }
-                }).then(response => {
-                    log.info(response);
-                }).catch(err => {
-                    log.error(err);
-                });
+                }
+                const response = await api.patch('series/' + this.seriesSlug, data);
+                if (response.status === 200) {
+                    this.saveStatus = 'Successfully patched series';
+                } else {
+                    this.saveStatus = 'Problem trying to archive using payload: ' + data;
+                }
+            },
+            loadSeries: () => {
+                const url = 'series/' + $('#series-slug').attr('value');
+                const response = await api.get('series/' + this.seriesSlug);
+                return response.data;
+            },
+            getSafe: (item, defaultValue) => {
+                return this.seriesObj ? item : defaultValue;
             },
             onChangeIgnoredWords: function(items) {
 		        console.log('Event from child component emitted', items);
