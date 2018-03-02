@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 from base64 import standard_b64encode
+from builtins import str
 
 from medusa import app
 from medusa.common import Quality
@@ -20,7 +21,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 def NZBConnection(url):
-    """Method to connect to NZBget client
+    """Method to connect to NZBget client.
 
     :param url: nzb url to connect
     :return: True if connected, else False

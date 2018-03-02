@@ -1,5 +1,6 @@
 # coding=utf-8
 """First module to initialize."""
+from __future__ import unicode_literals
 import random
 from threading import Lock
 

@@ -27,10 +27,9 @@
         <form v-on:submit.prevent="storeConfig">
         <div id="config-components">
             <ul>
-                ## @TODO: Fix this stupid hack
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
+                <li><a href="${full_url}#core-component-group1">Main</a></li>
+                <li><a href="${full_url}#core-component-group2">Format</a></li>
+                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">
@@ -40,9 +39,9 @@
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="indexername" id="form-indexername" :value="getSafe(seriesObj.indexer, '')" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], '')"/>
-                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig($event)"/>
+                                    <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId"/>
+                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig()"/>
                                 </span>
                             </label>
                         </div>
@@ -168,7 +167,6 @@
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <!-- <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350"/><br> -->
                                     <select-list :list-items="transformToIndexedObject(seriesObj.config.release.ignoredWords)" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
@@ -229,15 +227,34 @@ var startVue = function() {
         el: '#config-content',
         data() {
             // Python conversions
-            const seriesObj = this.loadSeries();
-            
             // JS only
             const exceptions = [];
             return {
                 seriesSlug: $('#series-slug').attr('value'),
+                seriesId: $('#series-id').attr('value'),
+                indexerName: $('#indexer-name').attr('value'),
                 config: MEDUSA.config,
                 exceptions: exceptions,
-                seriesObj: seriesObj,
+                seriesObj: {
+                    config: {
+                        dvdOrder: false,
+                        flattenFolders: false,
+                        anime: false,
+                        scene: false,
+                        sports: false,
+                        paused: false,
+                        location: "",
+                        airByDate: false,
+                        subtitlesEnabled: false,
+                        release: {
+                            requiredWords: [],
+                            ignoredWords: [],
+                            blacklist: [],
+                            whitelist: []
+                        }
+                    },
+                    language: ''
+                },
                 defaultEpisodeStatusOptions: [
                     {text: 'Wanted', value: 'Wanted'},
                     {text: 'Skipped', value: 'Skipped'},
@@ -246,6 +263,11 @@ var startVue = function() {
                 saveStatus: ''
             }
         },
+        async mounted() {
+            const url = 'series/' + $('#series-slug').attr('value');
+            const response = await api.get('series/' + this.seriesSlug);
+            this.seriesObj.config = response.data.config;
+        },
         methods: {
             anonRedirect: function(e) {
                 e.preventDefault();
@@ -253,6 +275,9 @@ var startVue = function() {
             },
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
+            },
+            loadSeries: async function() {
+
             },
             storeConfig: async function() {
                 const data = {
@@ -281,14 +306,6 @@ var startVue = function() {
                     this.saveStatus = 'Problem trying to archive using payload: ' + data;
                 }
             },
-            loadSeries: () => {
-                const url = 'series/' + $('#series-slug').attr('value');
-                const response = await api.get('series/' + this.seriesSlug);
-                return response.data;
-            },
-            getSafe: (item, defaultValue) => {
-                return this.seriesObj ? item : defaultValue;
-            },
             onChangeIgnoredWords: function(items) {
 		        console.log('Event from child component emitted', items);
                 this.seriesObj.config.release.ignoredWords = items.map(item => {return item.value});
@@ -307,7 +324,9 @@ var startVue = function() {
         },
         computed: {
             availableLanguages: function() {
-                return this.config.indexers.config.main.validLanguages.join(',');
+                if (this.config.indexers.config.main.validLanguages){
+                    return this.config.indexers.config.main.validLanguages.join(',');
+                }
             }
         }
     });

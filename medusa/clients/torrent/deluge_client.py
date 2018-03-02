@@ -1,12 +1,12 @@
 # coding=utf-8
 
 """Deluge Web Client."""
-
 from __future__ import unicode_literals
 
 import json
 import logging
 from base64 import b64encode
+from builtins import str
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -21,6 +21,8 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
+from six import viewitems
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -29,7 +31,7 @@ def read_torrent_status(torrent_data):
     """Read torrent status from Deluge and Deluged client."""
     found_torrents = False
     info_hash_to_remove = []
-    for torrent in torrent_data.items():
+    for torrent in viewitems(torrent_data):
         info_hash = str(torrent[0])
         details = torrent[1]
         if not is_info_hash_in_history(info_hash):

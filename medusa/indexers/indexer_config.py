@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Indexer config module."""
+from __future__ import unicode_literals
 
 from six import text_type
 from medusa.app import BASE_PYMEDUSA_URL

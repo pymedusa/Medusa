@@ -1,11 +1,15 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
+from builtins import str
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -43,7 +47,7 @@ def needs_metadata(episode):
     if not episode.is_location_valid():
         return
 
-    for provider in app.metadata_provider_dict.values():
+    for provider in itervalues(app.metadata_provider_dict):
         if provider.episode_metadata and not provider.has_episode_metadata(episode):
             return True
 

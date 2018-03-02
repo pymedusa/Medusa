@@ -8,13 +8,18 @@ import re
 import time
 import traceback
 from base64 import b16encode, b32decode
+from builtins import object
+from builtins import str
 from hashlib import sha1
+
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
+
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
+
 import requests
 
 log = BraceAdapter(logging.getLogger(__name__))

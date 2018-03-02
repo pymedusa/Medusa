@@ -1,7 +1,11 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import re
+from builtins import object
+from builtins import str
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
@@ -10,6 +14,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
 import requests
+
 from six import iteritems
 
 try:

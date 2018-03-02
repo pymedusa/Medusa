@@ -1,12 +1,15 @@
 # coding=utf-8
 
 """Search core module."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import datetime
 import logging
 import os
 import threading
 import time
+from builtins import str
 
 from medusa import (
     app,
@@ -46,6 +49,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -438,7 +442,7 @@ def search_for_needed_episodes(force=False):
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
-        return found_results.values()
+        return list(itervalues(found_results))
 
     original_thread_name = threading.currentThread().name
 
@@ -447,7 +451,7 @@ def search_for_needed_episodes(force=False):
     if not providers:
         log.warning(u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
                     u' Please check your settings')
-        return found_results.values()
+        return list(itervalues(found_results))
 
     log.info(u'Using daily search providers')
     for cur_provider in providers:
@@ -489,14 +493,14 @@ def search_for_needed_episodes(force=False):
 
     threading.currentThread().name = original_thread_name
 
-    return found_results.values()
+    return list(itervalues(found_results))
 
 
 def delay_search(best_result):
     """Delay the search by ignoring the best result, when search delay is enabled for this provider.
 
     If the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
-    search_delay time (minutes) skipp it. For this we need to check if the result has already been
+    search_delay time (minutes) skip it. For this we need to check if the result has already been
     stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
     :param best_result: SearchResult object.
     :return: True if we want to skipp this result.

@@ -1,11 +1,13 @@
 # coding=utf-8
 
 """Manual search module."""
+from __future__ import unicode_literals
 
 import json
 import logging
 import threading
 import time
+from builtins import zip
 from datetime import datetime
 
 from dateutil import parser
@@ -258,7 +260,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             # Get the last updated cache items timestamp
             last_update = main_db_con.select(b"SELECT max(time) AS lastupdate "
                                              b"FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
-            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
+            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0][b'lastupdate'] if last_update[0][b'lastupdate'] else 0
 
     # Check if we have the combined sql strings
     if combined_sql_q:

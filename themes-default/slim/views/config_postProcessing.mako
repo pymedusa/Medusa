@@ -22,10 +22,9 @@
             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
                 <div id="config-components">
                     <ul>
-                        ## @TODO: Fix this stupid hack
-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
+                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
+                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
+                        <li><a href="${full_url}#metadata">Metadata</a></li>
                     </ul>
                     <div id="post-processing" class="component-group">
                         <div class="component-group-desc">

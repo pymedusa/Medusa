@@ -1,7 +1,9 @@
 # coding=utf-8
 """TV base class."""
+from __future__ import unicode_literals
 
 import threading
+from builtins import object
 
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 
@@ -9,11 +11,9 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 class Identifier(object):
     """Base identifier class."""
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method."""
         raise NotImplementedError
-
-    __bool__ = __nonzero__
 
     def __ne__(self, other):
         """Magic method."""
