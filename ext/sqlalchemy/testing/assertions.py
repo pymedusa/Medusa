@@ -1,5 +1,5 @@
 # testing/assertions.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -130,9 +130,16 @@ def _expect_warnings(exc_cls, messages, regex=True, assert_=True,
 
     real_warn = warnings.warn
 
-    def our_warn(msg, exception, *arg, **kw):
-        if not issubclass(exception, exc_cls):
-            return real_warn(msg, exception, *arg, **kw)
+    def our_warn(msg, *arg, **kw):
+        if isinstance(msg, exc_cls):
+            exception = msg
+            msg = str(exception)
+        elif arg:
+            exception = arg[0]
+        else:
+            exception = None
+        if not exception or not issubclass(exception, exc_cls):
+            return real_warn(msg, *arg, **kw)
 
         if not filters:
             return
@@ -143,7 +150,7 @@ def _expect_warnings(exc_cls, messages, regex=True, assert_=True,
                 seen.discard(filter_)
                 break
         else:
-            real_warn(msg, exception, *arg, **kw)
+            real_warn(msg, *arg, **kw)
 
     with mock.patch("warnings.warn", our_warn):
         yield
@@ -288,7 +295,6 @@ def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
             msg, util.text_type(e), re.UNICODE), "%r !~ %s" % (msg, e)
         print(util.text_type(e).encode('utf-8'))
 
-
 class AssertsCompiledSQL(object):
     def assert_compile(self, clause, result, params=None,
                        checkparams=None, dialect=None,
@@ -331,6 +337,10 @@ class AssertsCompiledSQL(object):
             context = clause._compile_context()
             context.statement.use_labels = True
             clause = context.statement
+        elif isinstance(clause, orm.persistence.BulkUD):
+            with mock.patch.object(clause, "_execute_stmt") as stmt_mock:
+                clause.exec_()
+                clause = stmt_mock.mock_calls[0][1][0]
 
         if compile_kwargs:
             kw['compile_kwargs'] = compile_kwargs
@@ -385,8 +395,8 @@ class ComparesTables(object):
                 eq_(c.type.length, reflected_c.type.length)
 
             eq_(
-                set([f.column.name for f in c.foreign_keys]),
-                set([f.column.name for f in reflected_c.foreign_keys])
+                {f.column.name for f in c.foreign_keys},
+                {f.column.name for f in reflected_c.foreign_keys}
             )
             if c.server_default:
                 assert isinstance(reflected_c.server_default,
@@ -441,7 +451,7 @@ class AssertsExecutionResults(object):
                 return id(self)
 
         found = util.IdentitySet(result)
-        expected = set([immutabledict(e) for e in expected])
+        expected = {immutabledict(e) for e in expected}
 
         for wrong in util.itertools_filterfalse(lambda o:
                                                 isinstance(o, cls), found):
@@ -486,8 +496,9 @@ class AssertsExecutionResults(object):
 
     def assert_sql_execution(self, db, callable_, *rules):
         with self.sql_execution_asserter(db) as asserter:
-            callable_()
+            result = callable_()
         asserter.assert_(*rules)
+        return result
 
     def assert_sql(self, db, callable_, rules):
 
@@ -501,20 +512,17 @@ class AssertsExecutionResults(object):
                 newrule = assertsql.CompiledSQL(*rule)
             newrules.append(newrule)
 
-        self.assert_sql_execution(db, callable_, *newrules)
+        return self.assert_sql_execution(db, callable_, *newrules)
 
     def assert_sql_count(self, db, callable_, count):
         self.assert_sql_execution(
             db, callable_, assertsql.CountStatements(count))
 
     @contextlib.contextmanager
-    def assert_execution(self, *rules):
-        assertsql.asserter.add_rules(rules)
-        try:
+    def assert_execution(self, db, *rules):
+        with self.sql_execution_asserter(db) as asserter:
             yield
-            assertsql.asserter.statement_complete()
-        finally:
-            assertsql.asserter.clear_rules()
+        asserter.assert_(*rules)
 
-    def assert_statement_count(self, count):
-        return self.assert_execution(assertsql.CountStatements(count))
+    def assert_statement_count(self, db, count):
+        return self.assert_execution(db, assertsql.CountStatements(count))

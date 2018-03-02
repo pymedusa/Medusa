@@ -1,5 +1,5 @@
 # engine/interfaces.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -109,16 +109,6 @@ class Dialect(object):
       If an insert statement has returning() specified explicitly,
       the "implicit" functionality is not used and inserted_primary_key
       will not be available.
-
-    dbapi_type_map
-      A mapping of DB-API type objects present in this Dialect's
-      DB-API implementation mapped to TypeEngine implementations used
-      by the dialect.
-
-      This is used to apply types to result sets based on the DB-API
-      types present in cursor.description; it only takes effect for
-      result sets against textual statements where no explicit
-      typemap was present.
 
     colspecs
       A dictionary of TypeEngine classes from sqlalchemy.types mapped
@@ -417,6 +407,25 @@ class Dialect(object):
           method.
 
         .. versionadded:: 1.1.0
+
+        """
+
+        raise NotImplementedError()
+
+    def get_table_comment(
+            self, connection, table_name, schema=None, **kw):
+        r"""Return the "comment" for the table identified by `table_name`.
+
+        Given a string `table_name` and an optional string `schema`, return
+        table comment information as a dictionary with this key:
+
+        text
+           text of the comment
+
+        Raises ``NotImplementedError`` for dialects that don't support
+        comments.
+
+        .. versionadded:: 1.2
 
         """
 
@@ -834,6 +843,16 @@ class CreateEnginePlugin(object):
 
         engine = create_engine(
           "mysql+pymysql://scott:tiger@localhost/test?plugin=myplugin")
+
+    Alternatively, the :paramref:`.create_engine.plugins" argument may be
+    passed as a list to :func:`.create_engine`::
+
+        engine = create_engine(
+          "mysql+pymysql://scott:tiger@localhost/test",
+          plugins=["myplugin"])
+
+    .. versionadded:: 1.2.3  plugin names can also be specified
+       to :func:`.create_engine` as a list
 
     The ``plugin`` argument supports multiple instances, so that a URL
     may specify multiple plugins; they are loaded in the order stated

@@ -1,8 +1,11 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import datetime
 import logging
 import re
+from builtins import str
 
 from babelfish import Country
 

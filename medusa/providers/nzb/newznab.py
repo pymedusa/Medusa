@@ -9,6 +9,9 @@ import os
 import re
 import time
 import traceback
+from builtins import range
+from builtins import str
+from builtins import zip
 
 from medusa import (
     app,
@@ -382,7 +385,7 @@ class NewznabProvider(NZBProvider):
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
+        providers_dict = dict(list(zip([provider.name for provider in providers_list], providers_list)))
 
         for default in default_list:
             if not default:

@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
+                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
+                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
+                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
                 </ul>
                 <div id="subtitles-search" class="component-group">
                     <div class="component-group-desc">

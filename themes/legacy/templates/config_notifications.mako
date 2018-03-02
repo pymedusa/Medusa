@@ -19,10 +19,9 @@
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
+                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
+                    <li><a href="${full_url}#devices">Devices</a></li>
+                    <li><a href="${full_url}#social">Social</a></li>
                 </ul>
                 <div id="home-theater-nas">
                     <div class="component-group-desc">

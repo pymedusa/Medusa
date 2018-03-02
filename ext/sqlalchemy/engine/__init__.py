@@ -1,5 +1,5 @@
 # engine/__init__.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -192,6 +192,24 @@ def create_engine(*args, **kwargs):
         :ref:`dbengine_logging` for information on how to configure logging
         directly.
 
+    :param empty_in_strategy:  The SQL compilation strategy to use when
+        rendering an IN or NOT IN expression for :meth:`.ColumnOperators.in_`
+        where the right-hand side
+        is an empty set.   This is a string value that may be one of
+        ``static``, ``dynamic``, or ``dynamic_warn``.   The ``static``
+        strategy is the default, and an IN comparison to an empty set
+        will generate a simple false expression "1 != 1".   The ``dynamic``
+        strategy behaves like that of SQLAlchemy 1.1 and earlier, emitting
+        a false expression of the form "expr != expr", which has the effect
+        of evaluting to NULL in the case of a null expression.
+        ``dynamic_warn`` is the same as ``dynamic``, however also emits a
+        warning when an empty set is encountered; this because the "dynamic"
+        comparison is typically poorly performing on most databases.
+
+        .. versionadded:: 1.2  Added the ``empty_in_strategy`` setting and
+           additionally defaulted the behavior for empty-set IN comparisons
+           to a static boolean expression.
+
     :param encoding: Defaults to ``utf-8``.  This is the string
         encoding used by SQLAlchemy for string encode/decode
         operations which occur within SQLAlchemy, **outside of
@@ -337,6 +355,16 @@ def create_engine(*args, **kwargs):
        "sqlalchemy.pool" logger. Defaults to a hexstring of the object's
        id.
 
+    :param pool_pre_ping: boolean, if True will enable the connection pool
+        "pre-ping" feature that tests connections for liveness upon
+        each checkout.
+
+        .. versionadded:: 1.2
+
+        .. seealso::
+
+            :ref:`pool_disconnects_pessimistic`
+
     :param pool_size=5: the number of connections to keep open
         inside the connection pool. This used with
         :class:`~sqlalchemy.pool.QueuePool` as
@@ -369,6 +397,11 @@ def create_engine(*args, **kwargs):
     :param pool_timeout=30: number of seconds to wait before giving
         up on getting a connection from the pool. This is only used
         with :class:`~sqlalchemy.pool.QueuePool`.
+
+    :param plugins: string list of plugin names to load.  See
+        :class:`.CreateEnginePlugin` for background.
+
+        .. versionadded:: 1.2.3
 
     :param strategy='plain': selects alternate engine implementations.
         Currently available are:

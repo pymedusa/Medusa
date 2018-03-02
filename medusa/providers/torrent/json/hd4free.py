@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import traceback
+from builtins import str
 
 from medusa import tv
 from medusa.helper.common import convert_size

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Provider code for Generic NZB Provider."""
+from __future__ import unicode_literals
 
 from medusa import app
 from medusa.classes import NZBSearchResult

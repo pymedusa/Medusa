@@ -1,5 +1,6 @@
 # coding=utf-8
 """First module to initialize."""
+from __future__ import unicode_literals
 import random
 from threading import Lock
 
@@ -152,6 +153,7 @@ HANDLE_REVERSE_PROXY = False
 PROXY_SETTING = None
 PROXY_INDEXERS = True
 SSL_VERIFY = True
+SSL_CA_BUNDLE = None
 
 LOCALHOST_IP = None
 
@@ -173,6 +175,7 @@ LAUNCH_BROWSER = False
 CACHE_DIR = None
 ACTUAL_CACHE_DIR = None
 ROOT_DIRS = []
+TVDB_DVD_ORDER_EP_IGNORE = False
 
 TRASH_REMOVE_SHOW = False
 TRASH_ROTATE_LOGS = False

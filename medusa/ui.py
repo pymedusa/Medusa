@@ -16,8 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
 import json
+from builtins import object
 
 from medusa import app
 from medusa.ws.MedusaWebSocketHandler import push_to_web_socket
@@ -27,16 +30,15 @@ ERROR = 'error'
 
 
 class Notifications(object):
-    """
-    A queue of Notification objects.
-    """
+    """A queue of Notification objects."""
+
     def __init__(self):
         self._messages = []
         self._errors = []
 
     def message(self, title, message=''):
         """
-        Add a regular notification to the queue
+        Add a regular notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
@@ -52,7 +54,7 @@ class Notifications(object):
 
     def error(self, title, message=''):
         """
-        Add an error notification to the queue
+        Add an error notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
@@ -77,6 +79,7 @@ class Notifications(object):
 
         # return any notifications that haven't been shown to the client already
         return [x.see(remote_ip) for x in self._errors + self._messages if x.is_new(remote_ip)]
+
 
 # static notification queue object
 notifications = Notifications()

@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import json
 import os
+from builtins import str
+from builtins import zip
 
 from medusa import app, config, providers, ui
 from medusa.helper.common import try_int
@@ -40,7 +42,7 @@ class ConfigProviders(Config):
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
-        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         if kind == 'newznab':
             temp_provider = NewznabProvider(name, url)
@@ -59,7 +61,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.name for x in app.newznabProviderList], app.newznabProviderList)))
 
         if name in provider_dict:
             if not provider_dict[name].default:
@@ -113,7 +115,7 @@ class ConfigProviders(Config):
     @staticmethod
     def deleteNewznabProvider(nnid):
         """Delete a Newznab Provider."""
-        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         if nnid not in provider_dict or provider_dict[nnid].default:
             return '0'
@@ -133,7 +135,7 @@ class ConfigProviders(Config):
             return json.dumps({'error': 'Invalid name specified'})
 
         provider_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
 
@@ -153,7 +155,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in app.torrentRssProviderList], app.torrentRssProviderList))
+        provider_dict = dict(list(zip([x.name for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         if name in provider_dict:
             provider_dict[name].name = name
@@ -172,7 +174,7 @@ class ConfigProviders(Config):
     def deleteTorrentRssProvider(provider_id):
         """Delete a Torrent Provider."""
         provider_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         if provider_id not in provider_dict:
             return '0'
@@ -190,7 +192,7 @@ class ConfigProviders(Config):
         providers = []
         settings = providers_settings.split('!!!')
         providers_dict = dict(
-            zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+            list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         for provider_settings in settings:
             if not provider_settings:
@@ -232,7 +234,7 @@ class ConfigProviders(Config):
         providers = []
         settings = providers_settings.split('!!!')
         providers_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         for provider_settings in settings:
             if not provider_settings:

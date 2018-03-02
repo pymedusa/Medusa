@@ -55,19 +55,19 @@ class Config(WebRoot):
             try:
                 import getpass
                 app_user = getpass.getuser()
-            except StandardError:
+            except Exception:
                 app_user = 'Unknown'
 
         try:
             import locale
             app_locale = locale.getdefaultlocale()
-        except StandardError:
+        except Exception:
             app_locale = 'Unknown', 'Unknown'
 
         try:
             import ssl
             ssl_version = ssl.OPENSSL_VERSION
-        except StandardError:
+        except Exception:
             ssl_version = 'Unknown'
 
         app_version = ''

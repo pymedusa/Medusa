@@ -36,11 +36,10 @@ $('#config-components').tabs();
         <form id="configForm" action="config/providers/saveProviders" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
+                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
+                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
                   % if app.USE_NZBS:
-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
+                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if app.USE_TORRENTS:
                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>

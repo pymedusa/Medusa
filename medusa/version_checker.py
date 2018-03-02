@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import datetime
 import logging
@@ -26,7 +27,10 @@ import stat
 import subprocess
 import tarfile
 import time
+from builtins import object
+from builtins import str
 from logging import DEBUG, WARNING
+
 from medusa import app, db, helpers, notifiers, ui
 from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter
@@ -742,20 +746,7 @@ class GitUpdateManager(UpdateManager):
 
     def update_remote_origin(self):
         self._run_git(self._git_path, 'config remote.%s.url %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-        if app.GIT_AUTH_TYPE == 0:
-            if app.GIT_USERNAME:
-                if app.DEVELOPER:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-                else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
-                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
-        else:
-            if app.GIT_TOKEN:
-                if app.DEVELOPER:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-                else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
-                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+        self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
 
 
 class SourceUpdateManager(UpdateManager):

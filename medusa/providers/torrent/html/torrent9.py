@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -24,6 +25,8 @@ log.logger.addHandler(logging.NullHandler())
 class Torrent9Provider(TorrentProvider):
     """Torrent9 Torrent provider."""
 
+    non_words = re.compile(r'\W')
+
     def __init__(self):
         """Initialize the class."""
         super(Torrent9Provider, self).__init__('Torrent9')
@@ -32,7 +35,7 @@ class Torrent9Provider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.torrent9.bz'
+        self.url = 'http://www.torrent9.red'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
@@ -70,7 +73,7 @@ class Torrent9Provider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_query = search_string.replace('.', '-').replace(' ', '-')
+                    search_query = Torrent9Provider.non_words.sub('-', search_string)
                     search_url = self.urls['search'].format(query=search_query)
                 else:
                     search_url = self.urls['daily']

@@ -1,8 +1,11 @@
 # coding=utf-8
 
 """All providers type init."""
+from __future__ import unicode_literals
 
 import pkgutil
+from builtins import next
+from builtins import zip
 from os import sys
 from random import shuffle
 
@@ -73,7 +76,7 @@ __all__ = [
 
 def sorted_provider_list(randomize=False):
     initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
-    provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
+    provider_dict = dict(list(zip([x.get_id() for x in initial_list], initial_list)))
 
     new_list = []
 
