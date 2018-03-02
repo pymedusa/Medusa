@@ -14,7 +14,7 @@
         template: '#select-list',
         props: ['listItems'],
         mounted() {
-            this.editItems = this.listItems;
+            this.editItems = this.sanitize(this.listItems);
         },
         data: function() {
             return {
@@ -37,6 +37,20 @@
                 this.editItems = this.editItems.filter(e => e !== item);
                 this.newItem = item.value;
                 this.sendValues();
+            },
+            sanitize: function(items) {
+                if (items.filter(item => typeof(item) === 'string').length) {
+                    return this.transformToIndexedObject(items);
+                } else {
+                    return items;
+                }
+            },
+            transformToIndexedObject: arrayOfStrings => {
+                arrayOfObjects = [];
+                for (let index=0; index < arrayOfStrings.length; index++) {
+                    arrayOfObjects.push({id: index, value: arrayOfStrings[index]});
+                }
+                return arrayOfObjects;
             }
         }
     });

@@ -171,7 +171,7 @@
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <select-list :list-items="transformToIndexedObject(seriesObj.config.release.ignoredWords)" @change="onChangeIgnoredWords"></select-list>
+                                    <select-list v-if="seriesObj.config.release.ignoredWords !== null" :list-items="seriesObj.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
@@ -183,7 +183,7 @@
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
                                 <span class="component-desc">
-                                    <select-list :list-items="transformToIndexedObject(seriesObj.config.release.requiredWords)" @change="onChangeRequiredWords"></select-list>
+                                    <select-list v-if="seriesObj.config.release.requiredWords !== null" :list-items="seriesObj.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
@@ -251,8 +251,8 @@ var startVue = function() {
                         airByDate: false,
                         subtitlesEnabled: false,
                         release: {
-                            requiredWords: [],
-                            ignoredWords: [],
+                            requiredWords: null,
+                            ignoredWords: null,
                             blacklist: [],
                             whitelist: []
                         }
@@ -264,7 +264,8 @@ var startVue = function() {
                     {text: 'Skipped', value: 'Skipped'},
                     {text: 'Ignored', value: 'Ignored'}
                 ],
-                saveStatus: ''
+                saveStatus: '',
+                seriesLoaded: false
             }
         },
         async mounted() {
