@@ -11,7 +11,7 @@ from medusa.server.web.core.base import WebRoot
 from tornroutes import route
 
 
-@route('/e(/?.*)')
+@route('/browser(/?.*)')
 class WebFileBrowser(WebRoot):
     def __init__(self, *args, **kwargs):
         super(WebFileBrowser, self).__init__(*args, **kwargs)
