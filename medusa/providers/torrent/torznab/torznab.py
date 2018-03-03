@@ -4,23 +4,28 @@
 
 from __future__ import unicode_literals
 
+from base64 import b16encode, b32decode
 import logging
 import os
+from os.path import join
+from random import shuffle
+import re
 
 from medusa import (
     app,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size
+from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helper.encoding import ss
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
-    mappings,
 )
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
