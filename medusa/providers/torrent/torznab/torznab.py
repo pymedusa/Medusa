@@ -93,7 +93,7 @@ class TorznabProvider(TorrentProvider):
 
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
-                log.warning('Invalid: {0}'.format(match_indexer))
+                # log.warning('Invalid: {0}'.format(match_indexer))
 
                 if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
