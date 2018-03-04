@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 from base64 import standard_b64encode
-from builtins import str
 from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 from medusa import app
