@@ -12,8 +12,7 @@ from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 
-from six.moves.http_client import socket
-from six.moves.xmlrpc_client import ProtocolError, ServerProxy
+from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -35,16 +34,17 @@ def NZBConnection(url):
                         ' send a message')
         return True
 
-    except socket.error:
-        log.warning('Please check your NZBget host and port (if it is'
-                    ' running). NZBget is not responding to this combination')
-        return False
-
-    except ProtocolError as e:
+    except ProtocolError as error:
         if e.errmsg == 'Unauthorized':
             log.warning('NZBget username or password is incorrect.')
         else:
-            log.error('Protocol Error: {msg}', {'msg': e.errmsg})
+            log.error('Protocol Error: {msg}', {'msg': error.errmsg})
+        return False
+
+    except Error as error:
+        log.warning('Please check your NZBget host and port (if it is'
+                    ' running). NZBget is not responding to this combination'
+                    ' Error: {msg}', {'msg': error.errmsg})
         return False
 
 
