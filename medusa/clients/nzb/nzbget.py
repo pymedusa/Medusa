@@ -35,7 +35,7 @@ def NZBConnection(url):
         return True
 
     except ProtocolError as error:
-        if e.errmsg == 'Unauthorized':
+        if error.errmsg == 'Unauthorized':
             log.warning('NZBget username or password is incorrect.')
         else:
             log.error('Protocol Error: {msg}', {'msg': error.errmsg})
