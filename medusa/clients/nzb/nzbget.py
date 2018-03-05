@@ -12,6 +12,7 @@ from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -99,10 +100,10 @@ def sendNZB(nzb, proper=False):
     for cur_ep in nzb.episodes:
         if dupekey == '':
             if cur_ep.series.indexer == 1:
-                dupekey = 'Medusa-' + str(cur_ep.series.indexerid)
+                dupekey = 'Medusa-' + text_type(cur_ep.series.indexerid)
             elif cur_ep.series.indexer == 2:
-                dupekey = 'Medusa-tvr' + str(cur_ep.series.indexerid)
-        dupekey += '-' + str(cur_ep.season) + '.' + str(cur_ep.episode)
+                dupekey = 'Medusa-tvr' + text_type(cur_ep.series.indexerid)
+        dupekey += '-' + text_type(cur_ep.season) + '.' + text_type(cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
             addToTop = True
             nzbgetprio = app.NZBGET_PRIORITY
