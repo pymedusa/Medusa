@@ -175,7 +175,7 @@ class ApiHandler(RequestHandler):
             or returns an error that there is no such cmd
         """
         log.debug(u'API :: all args: {0!r}', args)
-        log.debug(u'API :: all kwargs: {0!r}', kwargs)
+        log.debug(u'API :: all kwargs: {0!r}', text_type(kwargs))
 
         commands = None
         if args:
@@ -2291,9 +2291,12 @@ class CMD_ShowGetPoster(ApiCall):
 
     def run(self):
         """ Get the poster a show """
+        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not series_obj:
+            return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowPoster(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowPoster(series_obj),
         }
 
 
@@ -2317,9 +2320,12 @@ class CMD_ShowGetBanner(ApiCall):
 
     def run(self):
         """ Get the banner of a show """
+        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not series_obj:
+            return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowBanner(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowBanner(series_obj),
         }
 
 
@@ -2345,9 +2351,12 @@ class CMD_ShowGetNetworkLogo(ApiCall):
         """
         :return: Get the network logo of a show
         """
+        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not series_obj:
+            return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowNetworkLogo(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowNetworkLogo(series_obj),
         }
 
 
@@ -2371,9 +2380,12 @@ class CMD_ShowGetFanArt(ApiCall):
 
     def run(self):
         """ Get the fan art of a show """
+        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not series_obj:
+            return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowFanArt(Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)),
+            'image': ShowFanArt(series_obj),
         }
 
 
@@ -2765,6 +2777,9 @@ class CMD_Shows(ApiCall):
         for cur_show in app.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused
             if self.paused is not None and self.paused != cur_show.paused:
+                continue
+
+            if cur_show.indexer != INDEXER_TVDBV2:
                 continue
 
             show_dict = {
