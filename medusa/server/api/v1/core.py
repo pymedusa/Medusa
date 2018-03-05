@@ -175,7 +175,7 @@ class ApiHandler(RequestHandler):
             or returns an error that there is no such cmd
         """
         log.debug(u'API :: all args: {0!r}', args)
-        log.debug(u'API :: all kwargs: {0!r}', kwargs)
+        log.debug(u'API :: all kwargs: {0!r}', text_type(kwargs))
 
         commands = None
         if args:
@@ -2777,6 +2777,9 @@ class CMD_Shows(ApiCall):
         for cur_show in app.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused
             if self.paused is not None and self.paused != cur_show.paused:
+                continue
+
+            if cur_show.indexer != INDEXER_TVDBV2:
                 continue
 
             show_dict = {
