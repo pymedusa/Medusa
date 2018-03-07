@@ -72,6 +72,7 @@ try:
 except ImportError:
     reflink = None
 
+
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
     i = "\n" + level * "  "
