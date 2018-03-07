@@ -1,7 +1,6 @@
 # coding=utf-8
 
 """Series classes."""
-
 from __future__ import unicode_literals
 
 import copy
@@ -13,6 +12,8 @@ import shutil
 import stat
 import traceback
 import warnings
+from builtins import map
+from builtins import str
 from collections import (
     namedtuple,
 )
@@ -69,17 +70,20 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
-    indexerConfig,
-    indexer_id_to_slug,
-    mappings,
-    reverse_mappings,
-    slug_to_indexer_id)
+    indexerConfig
+)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
 from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.utils import (
+    indexer_id_to_slug,
+    mappings,
+    reverse_mappings,
+    slug_to_indexer_id
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -101,7 +105,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import text_type
+from six import itervalues, text_type, viewitems
 
 try:
     from send2trash import send2trash
@@ -154,7 +158,7 @@ class SeriesIdentifier(Identifier):
         indexer_api = indexerApi(self.indexer.id)
         return indexer_api.indexer(**indexer_api.api_params)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method."""
         return self.indexer is not None and self.id is not None
 
@@ -521,13 +525,13 @@ class Series(TV):
     def poster(self):
         """Return poster path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def banner(self):
         """Return banner path."""
         img_type = image_cache.POSTER
-        return image_cache.get_artwork(img_type, self.series_id)
+        return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
@@ -582,7 +586,7 @@ class Series(TV):
         """Retrieve all episodes for this show given the specified filter.
 
         :param season:
-        :type season: int
+        :type season: int or list of int
         :param has_location:
         :type has_location: bool
         :return:
@@ -606,6 +610,7 @@ class Series(TV):
         sql_args = [self.indexer, self.series_id]
 
         if season is not None:
+            season = helpers.ensure_list(season)
             sql_selection += b' AND season IN (?)'
             sql_args.append(','.join(map(text_type, season)))
 
@@ -839,11 +844,11 @@ class Series(TV):
         :type show_only: bool
         """
         if not self.is_location_valid():
-            log.warning(u"{id}: Show directory doesn't exist, skipping NFO generation",
+            log.warning("{id}: Show directory doesn't exist, skipping NFO generation",
                         {'id': self.series_id})
             return
 
-        for metadata_provider in app.metadata_provider_dict.values():
+        for metadata_provider in itervalues(app.metadata_provider_dict):
             self.__get_images(metadata_provider)
             self.__write_show_nfo(metadata_provider)
 
@@ -896,7 +901,7 @@ class Series(TV):
                  {'id': self.series_id})
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
-        for cur_provider in app.metadata_provider_dict.values():
+        for cur_provider in itervalues(app.metadata_provider_dict):
             result = cur_provider.update_show_indexer_metadata(self) or result
 
         return result
@@ -1482,7 +1487,7 @@ class Series(TV):
                      {'id': self.series_id, 'show': self.name})
             return
         else:
-            self.imdb_info = dict(zip(sql_results[0].keys(), sql_results[0]))
+            self.imdb_info = dict(sql_results[0])
 
         self.reset_dirty()
         return True
@@ -1517,7 +1522,7 @@ class Series(TV):
         self.runtime = int(getattr(indexed_show, 'runtime', 0) or 0)
 
         # set the externals, using the result from the indexer.
-        self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
+        self.externals = {k: v for k, v in viewitems(getattr(indexed_show, 'externals', {})) if v}
 
         # Add myself (indexer) as an external
         self.externals[mappings[self.indexer]] = self.series_id
@@ -1567,7 +1572,7 @@ class Series(TV):
             country_codes = Tmdb().get_show_country_codes(tmdb_id)
             if country_codes:
                 countries = (from_country_code_to_name(country) for country in country_codes)
-                self.imdb_info['countries'] = '|'.join(filter(None, countries))
+                self.imdb_info['countries'] = '|'.join([_f for _f in countries if _f])
                 self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
 
         # Make sure these always have a value
@@ -2081,7 +2086,7 @@ class Series(TV):
             # add the country list
             country_list.update(countryList)
             # add the reversed mapping of the country list
-            country_list.update({v: k for k, v in countryList.items()})
+            country_list.update({v: k for k, v in viewitems(countryList)})
 
             for name in show_names:
                 if not name:

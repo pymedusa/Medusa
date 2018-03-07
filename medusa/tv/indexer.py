@@ -1,7 +1,9 @@
 # coding=utf-8
 """Indexer class."""
+from __future__ import unicode_literals
 
-from medusa.indexers.indexer_config import indexer_id_to_name, indexer_name_to_id
+from builtins import str
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.tv.base import Identifier
 
 
@@ -33,7 +35,7 @@ class Indexer(Identifier):
         """Slug name."""
         return indexer_id_to_name(self.id)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method bool."""
         return self.id is not None
 

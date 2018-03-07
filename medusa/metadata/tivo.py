@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import datetime
 import io
@@ -14,6 +14,8 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -178,7 +180,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 return None
 
             if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):
-                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
+                my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
 
             if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                 return None

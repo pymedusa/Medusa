@@ -9,6 +9,9 @@ import os
 import re
 import time
 import traceback
+from builtins import range
+from builtins import str
+from builtins import zip
 
 from medusa import (
     app,
@@ -26,12 +29,13 @@ from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
-    mappings,
 )
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -380,7 +384,7 @@ class NewznabProvider(NZBProvider):
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
+        providers_dict = dict(list(zip([provider.name for provider in providers_list], providers_list)))
 
         for default in default_list:
             if not default:
@@ -402,7 +406,7 @@ class NewznabProvider(NZBProvider):
 
         Returns found image or the default newznab image
         """
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
 
@@ -598,7 +602,7 @@ class NewznabProvider(NZBProvider):
             },
             {
                 'name': 'Usenet-Crawler',
-                'url': 'https://www.usenet-crawler.com/',
+                'url': 'https://api.usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,

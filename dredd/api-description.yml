@@ -812,7 +812,10 @@ paths:
         200:
           description: The JWT for the user
           schema:
-            type: string
+            type: object
+            properties:
+              token:
+                type: string
           x-no-api-key: true
           x-request:
             body:

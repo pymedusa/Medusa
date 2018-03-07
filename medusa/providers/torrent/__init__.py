@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Initialize all torrent providers."""
+from __future__ import unicode_literals
 
 from medusa.providers.torrent.html import (
     abnormal,
@@ -23,6 +24,7 @@ from medusa.providers.torrent.html import (
     nebulance,
     newpct,
     pretome,
+    privatehd,
     scenetime,
     sdbits,
     shanaproject,
@@ -34,7 +36,6 @@ from medusa.providers.torrent.html import (
     torrentbytes,
     torrenting,
     torrentleech,
-    torrentproject,
     tvchaosuk,
     yggtorrent,
     zooqle,
@@ -64,7 +65,7 @@ __all__ = [
     'gftracker', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
+    'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker'
+    'elitetracker', 'privatehd'
 ]

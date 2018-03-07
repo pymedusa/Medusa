@@ -1,5 +1,5 @@
 # orm/relationships.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -102,7 +102,7 @@ class RelationshipProperty(StrategizedProperty):
                  back_populates=None,
                  post_update=False,
                  cascade=False, extension=None,
-                 viewonly=False, lazy=True,
+                 viewonly=False, lazy="select",
                  collection_class=None, passive_deletes=False,
                  passive_updates=True, remote_side=None,
                  enable_typechecks=True, join_depth=None,
@@ -277,22 +277,13 @@ class RelationshipProperty(StrategizedProperty):
 
         :param bake_queries=True:
           Use the :class:`.BakedQuery` cache to cache the construction of SQL
-          used in lazy loads, when the :func:`.bake_lazy_loaders` function has
-          first been called.  Defaults to True and is intended to provide an
-          "opt out" flag per-relationship when the baked query cache system is
-          in use.
+          used in lazy loads.  True by default.   Set to False if the
+          join condition of the relationship has unusual features that
+          might not respond well to statement caching.
 
-          .. warning::
-
-              This flag **only** has an effect when the application-wide
-              :func:`.bake_lazy_loaders` function has been called.   It
-              defaults to True so is an "opt out" flag.
-
-          Setting this flag to False when baked queries are otherwise in
-          use might be to reduce
-          ORM memory use for this :func:`.relationship`, or to work around
-          unresolved stability issues observed within the baked query
-          cache system.
+          .. versionchanged:: 1.2
+             "Baked" loading is the default implementation for the "select",
+             a.k.a. "lazy" loading strategy for relationships.
 
           .. versionadded:: 1.0.0
 
@@ -535,6 +526,13 @@ class RelationshipProperty(StrategizedProperty):
             loaded, using one additional SQL statement, which issues a JOIN to
             a subquery of the original statement, for each collection
             requested.
+
+          * ``selectin`` - items should be loaded "eagerly" as the parents
+            are loaded, using one or more additional SQL statements, which
+            issues a JOIN to the immediate parent object, specifying primary
+            key identifiers using an IN clause.
+
+            .. versionadded:: 1.2
 
           * ``noload`` - no loading should occur at any time.  This is to
             support "write-only" attributes, or attributes which are
@@ -965,11 +963,9 @@ class RelationshipProperty(StrategizedProperty):
                 return pj
 
         def of_type(self, cls):
-            """Produce a construct that represents a particular 'subtype' of
-            attribute for the parent class.
+            r"""Redefine this object in terms of a polymorphic subclass.
 
-            Currently this is usable in conjunction with :meth:`.Query.join`
-            and :meth:`.Query.outerjoin`.
+            See :meth:`.PropComparator.of_type` for an example.
 
             """
             return RelationshipProperty.Comparator(
@@ -1358,10 +1354,16 @@ class RelationshipProperty(StrategizedProperty):
                 mapperlib.Mapper._configure_all()
             return self.prop
 
-    def _with_parent(self, instance, alias_secondary=True):
+    def _with_parent(self, instance, alias_secondary=True, from_entity=None):
         assert instance is not None
+        adapt_source = None
+        if from_entity is not None:
+            insp = inspect(from_entity)
+            if insp.is_aliased_class:
+                adapt_source = insp._adapter.adapt_clause
         return self._optimized_compare(
-            instance, value_is_parent=True, alias_secondary=alias_secondary)
+            instance, value_is_parent=True, adapt_source=adapt_source,
+            alias_secondary=alias_secondary)
 
     def _optimized_compare(self, state, value_is_parent=False,
                            adapt_source=None,
@@ -1728,8 +1730,8 @@ class RelationshipProperty(StrategizedProperty):
             support_sync=not self.viewonly,
             can_be_synced_fn=self._columns_are_mapped
         )
-        self.primaryjoin = jc.deannotated_primaryjoin
-        self.secondaryjoin = jc.deannotated_secondaryjoin
+        self.primaryjoin = jc.primaryjoin
+        self.secondaryjoin = jc.secondaryjoin
         self.direction = jc.direction
         self.local_remote_pairs = jc.local_remote_pairs
         self.remote_side = jc.remote_columns
@@ -1798,6 +1800,15 @@ class RelationshipProperty(StrategizedProperty):
             self.mapper.primary_mapper()._delete_orphans.append(
                 (self.key, self.parent.class_)
             )
+
+    def _persists_for(self, mapper):
+        """Return True if this property will persist values on behalf
+        of the given mapper.
+
+        """
+
+        return self.key in mapper.relationships and \
+            mapper.relationships[self.key] is self
 
     def _columns_are_mapped(self, *cols):
         """Return True if all columns in the given collection are
@@ -1988,6 +1999,7 @@ class JoinCondition(object):
         self._annotate_fks()
         self._annotate_remote()
         self._annotate_local()
+        self._annotate_parentmapper()
         self._setup_pairs()
         self._check_foreign_cols(self.primaryjoin, True)
         if self.secondaryjoin is not None:
@@ -2451,6 +2463,19 @@ class JoinCondition(object):
             self.primaryjoin, {}, locals_
         )
 
+    def _annotate_parentmapper(self):
+        if self.prop is None:
+            return
+
+        def parentmappers_(elem):
+            if "remote" in elem._annotations:
+                return elem._annotate({"parentmapper": self.prop.mapper})
+            elif "local" in elem._annotations:
+                return elem._annotate({"parentmapper": self.prop.parent})
+        self.primaryjoin = visitors.replacement_traverse(
+            self.primaryjoin, {}, parentmappers_
+        )
+
     def _check_remote_side(self):
         if not self.local_remote_pairs:
             raise sa_exc.ArgumentError(
@@ -2673,10 +2698,16 @@ class JoinCondition(object):
             else:
                 other_props = []
                 prop_to_from = self._track_overlapping_sync_targets[to_]
+
                 for pr, fr_ in prop_to_from.items():
                     if pr.mapper in mapperlib._mapper_registry and \
+                        (
+                            self.prop._persists_for(pr.parent) or
+                            pr._persists_for(self.prop.parent)
+                        ) and \
                         fr_ is not from_ and \
                             pr not in self.prop._reverse_property:
+
                         other_props.append((pr, fr_))
 
                 if other_props:
@@ -2708,17 +2739,6 @@ class JoinCondition(object):
     def foreign_key_columns(self):
         return self._gather_join_annotations("foreign")
 
-    @util.memoized_property
-    def deannotated_primaryjoin(self):
-        return _deep_deannotate(self.primaryjoin)
-
-    @util.memoized_property
-    def deannotated_secondaryjoin(self):
-        if self.secondaryjoin is not None:
-            return _deep_deannotate(self.secondaryjoin)
-        else:
-            return None
-
     def _gather_join_annotations(self, annotation):
         s = set(
             self._gather_columns_with_annotation(
@@ -2729,7 +2749,7 @@ class JoinCondition(object):
                 self._gather_columns_with_annotation(
                     self.secondaryjoin, annotation)
             )
-        return set([x._deannotate() for x in s])
+        return {x._deannotate() for x in s}
 
     def _gather_columns_with_annotation(self, clause, *annotation):
         annotation = set(annotation)
@@ -2855,10 +2875,7 @@ class JoinCondition(object):
                     secondaryjoin, {}, col_to_bind)
             lazywhere = sql.and_(lazywhere, secondaryjoin)
 
-        bind_to_col = dict((binds[col].key, col) for col in binds)
-
-        # this is probably not necessary
-        lazywhere = _deep_deannotate(lazywhere)
+        bind_to_col = {binds[col].key: col for col in binds}
 
         return lazywhere, bind_to_col, equated_columns
 

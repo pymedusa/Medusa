@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import threading
+from builtins import object
 from datetime import date, datetime, timedelta
 
 from medusa import app, common

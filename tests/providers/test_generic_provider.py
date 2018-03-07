@@ -39,7 +39,7 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p5: date, time and custom timezone
         'pubdate': '2017-05-18 16:19:33',
-        'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.gettz('UTC')),
+        'expected': datetime(2017, 5, 18, 12, 19, 33, tzinfo=tz.gettz('US/Eastern')),
         'timezone': 'US/Eastern'
     },
     {  # p6: human time hours (full day)
@@ -116,6 +116,17 @@ sut = GenericProvider('FakeProvider')
         'expected': 157680000,
         'human_time': True
     },
+    {  # p20: fromtimestamp (epoch time)
+        'pubdate': 1516315053,
+        'expected': datetime(2018, 1, 18, 22, 37, 33, tzinfo=tz.gettz('UTC')),
+        'fromtimestamp': True
+    },
+    {  # p21: fromtimestamp (epoch time), with timezone
+        'pubdate': 1516315053,
+        'expected': datetime(2018, 1, 18, 17, 37, 33, tzinfo=tz.gettz('US/Eastern')),
+        'timezone': 'US/Eastern',
+        'fromtimestamp': True
+    },
 ])
 def test_parse_pubdate(p):
     # Given
@@ -125,10 +136,11 @@ def test_parse_pubdate(p):
     tzone = p.get('timezone')
     df = p.get('dayfirst', False)
     yf = p.get('yearfirst', False)
+    ft = p.get('fromtimestamp', False)
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone,
-                               dayfirst=df, yearfirst=yf)
+                               dayfirst=df, yearfirst=yf, fromtimestamp=ft)
 
     # Calculate the difference for human date comparison
     if ht and actual:

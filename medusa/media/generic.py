@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from builtins import object
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
@@ -76,7 +78,7 @@ class GenericMedia(object):
     @staticmethod
     def get_media_root():
         """Get the root folder containing the media."""
-        return join(app.PROG_DIR, 'static')
+        return join(app.THEME_DATA_ROOT, 'assets')
 
     @property
     def media_type(self):
@@ -105,6 +107,6 @@ class GenericMedia(object):
             if isfile(media_path):
                 return normpath(media_path)
 
-        image_path = join(self.get_media_root(), 'images', self.default_media_name)
+        image_path = join(self.get_media_root(), 'img', self.default_media_name)
 
         return image_path.replace('\\', '/')

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 from os.path import join
 
 from medusa.media.generic import GenericMedia
@@ -34,6 +35,6 @@ class ShowNetworkLogo(GenericMedia):
         """Get the relative path to the media."""
         series = self.series
         if series:
-            return join(self.get_media_root(), 'images', 'network', series.network_logo_name + '.png')
+            return join(self.get_media_root(), 'img', 'network', series.network_logo_name + '.png')
         else:
             return ''
