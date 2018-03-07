@@ -1,16 +1,15 @@
 # postgresql/psycopg2.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""
+r"""
 .. dialect:: postgresql+psycopg2
     :name: psycopg2
     :dbapi: psycopg2
-    :connectstring: postgresql+psycopg2://user:password@host:port/dbname\
-[?key=value&key=value...]
+    :connectstring: postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
     :url: http://pypi.python.org/pypi/psycopg2/
 
 psycopg2 Connect Arguments
@@ -31,6 +30,7 @@ psycopg2-specific keyword arguments which are accepted by
   Note that the :paramref:`.Connection.execution_options.stream_results`
   execution option is a more targeted
   way of enabling this mode on a per-execution basis.
+
 * ``use_native_unicode``: Enable the usage of Psycopg2 "native unicode" mode
   per connection.  True by default.
 
@@ -53,6 +53,16 @@ psycopg2-specific keyword arguments which are accepted by
 
     :ref:`psycopg2_unicode`
 
+* ``use_batch_mode``: This flag allows ``psycopg2.extras.execute_batch``
+  for ``cursor.executemany()`` calls performed by the :class:`.Engine`.
+  It is currently experimental but
+  may well become True by default as it is critical for executemany
+  performance.
+
+  .. seealso::
+
+    :ref:`psycopg2_batch_mode`
+
 Unix Domain Connections
 ------------------------
 
@@ -70,10 +80,9 @@ using ``host`` as an additional keyword argument::
     create_engine("postgresql+psycopg2://user:password@/dbname?\
 host=/var/lib/postgresql")
 
-See also:
+.. seealso::
 
-`PQconnectdbParams <http://www.postgresql.org/docs/9.1/static/\
-libpq-connect.html#LIBPQ-PQCONNECTDBPARAMS>`_
+    `PQconnectdbParams <http://www.postgresql.org/docs/9.1/static/libpq-connect.html#LIBPQ-PQCONNECTDBPARAMS>`_
 
 .. _psycopg2_execution_options:
 
@@ -100,6 +109,31 @@ The following DBAPI-specific options are respected when used with
   buffer will grow to ultimately store 1000 rows at a time.
 
   .. versionadded:: 1.0.6
+
+.. _psycopg2_batch_mode:
+
+Psycopg2 Batch Mode (Fast Execution)
+------------------------------------
+
+Modern versions of psycopg2 include a feature known as
+`Fast Execution Helpers <http://initd.org/psycopg/docs/extras.html#fast-execution-helpers>`_,
+which have been shown in benchmarking to improve psycopg2's executemany()
+performance with INSERTS by multiple orders of magnitude.   SQLAlchemy
+allows this extension to be used for all ``executemany()`` style calls
+invoked by an :class:`.Engine` when used with multiple parameter sets,
+by adding the ``use_batch_mode`` flag to :func:`.create_engine`::
+
+    engine = create_engine(
+        "postgresql+psycopg2://scott:tiger@host/dbname",
+        use_batch_mode=True)
+
+Batch mode is considered to be **experimental** at this time, however may
+be enabled by default in a future release.
+
+
+.. versionadded:: 1.2.0
+
+
 
 .. _psycopg2_unicode:
 
@@ -364,7 +398,7 @@ class _PGNumeric(sqltypes.Numeric):
 
 class _PGEnum(ENUM):
     def result_processor(self, dialect, coltype):
-        if self.native_enum and util.py2k and self.convert_unicode is True:
+        if util.py2k and self.convert_unicode is True:
             # we can't easily use PG's extensions here because
             # the OID is on the fly, and we need to give it a python
             # function anyway - not really worth it.
@@ -455,18 +489,11 @@ class PGExecutionContext_psycopg2(PGExecutionContext):
 
 
 class PGCompiler_psycopg2(PGCompiler):
-    def visit_mod_binary(self, binary, operator, **kw):
-        return self.process(binary.left, **kw) + " %% " + \
-            self.process(binary.right, **kw)
-
-    def post_process_text(self, text):
-        return text.replace('%', '%%')
+    pass
 
 
 class PGIdentifierPreparer_psycopg2(PGIdentifierPreparer):
-    def _escape_identifier(self, value):
-        value = value.replace(self.escape_quote, self.escape_to_quote)
-        return value.replace('%', '%%')
+    pass
 
 
 class PGDialect_psycopg2(PGDialect):
@@ -517,6 +544,7 @@ class PGDialect_psycopg2(PGDialect):
     def __init__(self, server_side_cursors=False, use_native_unicode=True,
                  client_encoding=None,
                  use_native_hstore=True, use_native_uuid=True,
+                 use_batch_mode=False,
                  **kwargs):
         PGDialect.__init__(self, **kwargs)
         self.server_side_cursors = server_side_cursors
@@ -525,6 +553,7 @@ class PGDialect_psycopg2(PGDialect):
         self.use_native_uuid = use_native_uuid
         self.supports_unicode_binds = use_native_unicode
         self.client_encoding = client_encoding
+        self.psycopg2_batch_mode = use_batch_mode
         if self.dbapi and hasattr(self.dbapi, '__version__'):
             m = re.match(r'(\d+)\.(\d+)(?:\.(\d+))?',
                          self.dbapi.__version__)
@@ -547,7 +576,8 @@ class PGDialect_psycopg2(PGDialect):
         # http://initd.org/psycopg/docs/news.html#what-s-new-in-psycopg-2-0-9
         self.supports_sane_multi_rowcount = \
             self.psycopg2_version >= \
-            self.FEATURE_VERSION_MAP['sane_multi_rowcount']
+            self.FEATURE_VERSION_MAP['sane_multi_rowcount'] and \
+            not self.psycopg2_batch_mode
 
     @classmethod
     def dbapi(cls):
@@ -645,6 +675,13 @@ class PGDialect_psycopg2(PGDialect):
         else:
             return None
 
+    def do_executemany(self, cursor, statement, parameters, context=None):
+        if self.psycopg2_batch_mode:
+            extras = self._psycopg2_extras()
+            extras.execute_batch(cursor, statement, parameters)
+        else:
+            cursor.executemany(statement, parameters)
+
     @util.memoized_instancemethod
     def _hstore_oids(self, conn):
         if self.psycopg2_version >= self.FEATURE_VERSION_MAP['hstore_adapter']:
@@ -693,6 +730,7 @@ class PGDialect_psycopg2(PGDialect):
                 'SSL SYSCALL error: Bad file descriptor',
                 'SSL SYSCALL error: EOF detected',
                 'SSL error: decryption failed or bad record mac',
+                'SSL SYSCALL error: Operation timed out',
             ]:
                 idx = str_e.find(msg)
                 if idx >= 0 and '"' not in str_e[:idx]:

@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import logging
 import threading
 import time
+from builtins import object
 
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -142,7 +145,8 @@ class ShowUpdater(object):
             elif hasattr(indexer_api, 'get_last_updated_seasons'):
                 # Get updated seasons and add them to the season update list.
                 try:
-                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update,
+                                                                           update_max_weeks)
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'connectivity issues while trying to look for showupdates on show: {show}',
@@ -245,7 +249,7 @@ class UpdateCache(db.DBConnection):
             'WHERE provider = ?',
             [indexer]
         )
-        return last_update_indexer[0]['time'] if last_update_indexer else None
+        return last_update_indexer[0][b'time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):
         """Set the last update timestamp from the lastUpdate table.

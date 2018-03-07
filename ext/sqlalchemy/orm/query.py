@@ -1,5 +1,5 @@
 # orm/query.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -29,7 +29,8 @@ from .base import _entity_descriptor, _is_aliased_class, \
     _is_mapped_class, _orm_columns, _generative, InspectionAttr
 from .path_registry import PathRegistry
 from .util import (
-    AliasedClass, ORMAdapter, join as orm_join, with_parent, aliased
+    AliasedClass, ORMAdapter, join as orm_join, with_parent, aliased,
+    _entity_corresponds_to
 )
 from .. import sql, util, log, exc as sa_exc, inspect, inspection
 from ..sql.expression import _interpret_as_from
@@ -752,9 +753,14 @@ class Query(object):
         (e.g. approximately 1000) is used, even with DBAPIs that buffer
         rows (which are most).
 
-        The :meth:`.Query.yield_per` method **is not compatible with most
-        eager loading schemes, including subqueryload and joinedload with
-        collections**.  For this reason, it may be helpful to disable
+        The :meth:`.Query.yield_per` method **is not compatible
+        subqueryload eager loading or joinedload eager loading when
+        using collections**.  It is potentially compatible with "select in"
+        eager loading, **provided the databse driver supports multiple,
+        independent cursors** (pysqlite and psycopg2 are known to work,
+        MySQL and SQL Server ODBC drivers do not).
+
+        Therefore in some cases, it may be helpful to disable
         eager loads, either unconditionally with
         :meth:`.Query.enable_eagerloads`::
 
@@ -861,9 +867,10 @@ class Query(object):
         :return: The object instance, or ``None``.
 
         """
-        return self._get_impl(ident, loading.load_on_ident)
+        return self._get_impl(
+            ident, loading.load_on_ident)
 
-    def _get_impl(self, ident, fallback_fn):
+    def _get_impl(self, ident, fallback_fn, identity_token=None):
         # convert composite types to individual args
         if hasattr(ident, '__composite_values__'):
             ident = ident.__composite_values__()
@@ -878,7 +885,8 @@ class Query(object):
                 "primary key for query.get(); primary key columns are %s" %
                 ','.join("'%s'" % c for c in mapper.primary_key))
 
-        key = mapper.identity_key_from_primary_key(ident)
+        key = mapper.identity_key_from_primary_key(
+            ident, identity_token=identity_token)
 
         if not self._populate_existing and \
                 not mapper.always_refresh and \
@@ -962,7 +970,7 @@ class Query(object):
         """
         self._invoke_all_eagers = value
 
-    def with_parent(self, instance, property=None):
+    def with_parent(self, instance, property=None, from_entity=None):
         """Add filtering criterion that relates the given instance
         to a child object or collection, using its attribute state
         as well as an established :func:`.relationship()`
@@ -975,16 +983,31 @@ class Query(object):
         that the given property can be None, in which case a search is
         performed against this :class:`.Query` object's target mapper.
 
+        :param instance:
+          An instance which has some :func:`.relationship`.
+
+        :param property:
+          String property name, or class-bound attribute, which indicates
+          what relationship from the instance should be used to reconcile the
+          parent/child relationship.
+
+        :param from_entity:
+          Entity in which to consider as the left side.  This defaults to the
+          "zero" entity of the :class:`.Query` itself.
+
         """
 
+        if from_entity:
+            entity_zero = inspect(from_entity)
+        else:
+            entity_zero = self._entity_zero()
         if property is None:
-            mapper_zero = self._mapper_zero()
 
             mapper = object_mapper(instance)
 
             for prop in mapper.iterate_properties:
                 if isinstance(prop, properties.RelationshipProperty) and \
-                        prop.mapper is mapper_zero:
+                        prop.mapper is entity_zero.mapper:
                     property = prop
                     break
             else:
@@ -992,11 +1015,11 @@ class Query(object):
                     "Could not locate a property which relates instances "
                     "of class '%s' to instances of class '%s'" %
                     (
-                        self._mapper_zero().class_.__name__,
+                        entity_zero.mapper.class_.__name__,
                         instance.__class__.__name__)
                 )
 
-        return self.filter(with_parent(instance, property))
+        return self.filter(with_parent(instance, property, entity_zero.entity))
 
     @_generative()
     def add_entity(self, entity, alias=None):
@@ -1258,7 +1281,7 @@ class Query(object):
 
     @_generative()
     def with_entities(self, *entities):
-        """Return a new :class:`.Query` replacing the SELECT list with the
+        r"""Return a new :class:`.Query` replacing the SELECT list with the
         given entities.
 
         e.g.::
@@ -3045,7 +3068,8 @@ class Query(object):
         # omitting the FROM clause from a query(X) (#2818);
         # .with_only_columns() after we have a core select() so that
         # we get just "SELECT 1" without any entities.
-        return sql.exists(self.add_columns('1').with_labels().
+        return sql.exists(self.enable_eagerloads(False).add_columns('1').
+                          with_labels().
                           statement.with_only_columns([1]))
 
     def count(self):
@@ -3499,12 +3523,22 @@ class Query(object):
         """Apply single-table-inheritance filtering.
 
         For all distinct single-table-inheritance mappers represented in
-        the columns clause of this query, add criterion to the WHERE
+        the columns clause of this query, as well as the "select from entity",
+        add criterion to the WHERE
         clause of the given QueryContext such that only the appropriate
         subtypes are selected from the total results.
 
         """
-        for (ext_info, adapter) in set(self._mapper_adapter_map.values()):
+
+        search = set(self._mapper_adapter_map.values())
+        if self._select_from_entity:
+            # based on the behavior in _set_select_from,
+            # when we have self._select_from_entity, we don't
+            # have  _from_obj_alias.
+            # assert self._from_obj_alias is None
+            search = search.union([(self._select_from_entity, None)])
+
+        for (ext_info, adapter) in search:
             if ext_info in self._join_entities:
                 continue
             single_crit = ext_info.mapper._single_table_criterion
@@ -3631,18 +3665,7 @@ class _MapperEntity(_QueryEntity):
         return self.entity_zero
 
     def corresponds_to(self, entity):
-        if entity.is_aliased_class:
-            if self.is_aliased_class:
-                if entity._base_alias is self.entity_zero._base_alias:
-                    return True
-            return False
-        elif self.is_aliased_class:
-            if self.entity_zero._use_mapper_path:
-                return entity in self._with_polymorphic
-            else:
-                return entity is self.entity_zero
-
-        return entity.common_parent(self.entity_zero)
+        return _entity_corresponds_to(self.entity_zero, entity)
 
     def adapt_to_selectable(self, query, sel):
         query._entities.append(self)
@@ -3724,7 +3747,8 @@ class _MapperEntity(_QueryEntity):
             self.path, adapter, context.primary_columns,
             with_polymorphic=self._with_polymorphic,
             only_load_props=query._only_load_props,
-            polymorphic_discriminator=self._polymorphic_discriminator)
+            polymorphic_discriminator=self._polymorphic_discriminator
+        )
 
     def __str__(self):
         return str(self.mapper)
@@ -3869,6 +3893,10 @@ class _BundleEntity(_QueryEntity):
         self.supports_single_entity = self.bundle.single_entity
 
     @property
+    def mapper(self):
+        return self.entity_zero.mapper
+
+    @property
     def entities(self):
         entities = []
         for ent in self._entities:
@@ -4010,7 +4038,8 @@ class _ColumnEntity(_QueryEntity):
             self._from_entities = set(self.entities)
         else:
             all_elements = [
-                elem for elem in sql_util.surface_column_elements(column)
+                elem for elem in sql_util.surface_column_elements(
+                    column, include_scalar_selects=False)
                 if 'parententity' in elem._annotations
             ]
 
@@ -4103,7 +4132,8 @@ class QueryContext(object):
         'primary_columns', 'secondary_columns', 'eager_order_by',
         'eager_joins', 'create_eager_joins', 'propagate_options',
         'attributes', 'statement', 'from_clause', 'whereclause',
-        'order_by', 'labels', '_for_update_arg', 'runid', 'partials'
+        'order_by', 'labels', '_for_update_arg', 'runid', 'partials',
+        'post_load_paths', 'identity_token'
     )
 
     def __init__(self, query):
@@ -4140,6 +4170,7 @@ class QueryContext(object):
         self.propagate_options = set(o for o in query._with_options if
                                      o.propagate_to_loaders)
         self.attributes = query._attributes.copy()
+        self.identity_token = None
 
 
 class AliasOption(interfaces.MapperOption):

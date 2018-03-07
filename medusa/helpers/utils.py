@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """General utility functions."""
+from __future__ import unicode_literals
 
 from collections import Iterable
 
@@ -21,6 +22,11 @@ def generate(it):
             yield item
     else:
         yield it
+
+
+def gen_values_by_key(it, key):
+    """Generate values by key."""
+    return (item[key] for item in it)
 
 
 def split_and_strip(value, sep=','):

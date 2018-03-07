@@ -1,5 +1,6 @@
 # coding=utf-8
 """Replace core filesystem functions."""
+from __future__ import unicode_literals
 
 import glob
 import io
@@ -7,11 +8,14 @@ import os
 import shutil
 import sys
 import tarfile
-
 import tempfile # noqa # pylint: disable=unused-import
+from builtins import map
+
 import certifi
 
-from six import binary_type, text_type
+import rarfile
+
+from six import binary_type, text_type, viewitems
 
 
 fs_encoding = sys.getfilesystemencoding()
@@ -43,10 +47,10 @@ def _handle_output_u(result):
         return decode(result)
 
     if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_u, result)
+        return list(map(_handle_output_u, result))
 
     if isinstance(result, dict):
-        for k, v in result.items():
+        for k, v in viewitems(result):
             result[k] = _handle_output_u(v)
         return result
 
@@ -62,10 +66,10 @@ def _handle_output_b(result):
         return encode(result)
 
     if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_b, result)
+        return list(map(_handle_output_b, result))
 
     if isinstance(result, dict):
-        for k, v in result.items():
+        for k, v in viewitems(result):
             result[k] = _handle_output_b(v)
         return result
 
@@ -79,7 +83,7 @@ def _varargs(*args):
 
 def _varkwargs(**kwargs):
     """Encode var keyword  arguments to utf-8."""
-    return {k: _handle_input(arg) for k, arg in kwargs.items()}
+    return {k: _handle_input(arg) for k, arg in viewitems(kwargs)}
 
 
 def make_closure(f, handle_arg=None, handle_output=None):
@@ -96,7 +100,7 @@ def patch_input(f, handle_arg=None):
     If handle_arg is None, just return the original function.
     """
     def patched_input(*args, **kwargs):
-        return f(*[handle_arg(arg) for arg in args], **{k: handle_arg(arg) for k, arg in kwargs.items()})
+        return f(*[handle_arg(arg) for arg in args], **{k: handle_arg(arg) for k, arg in viewitems(kwargs)})
     return patched_input if callable(handle_arg) else f
 
 
@@ -126,6 +130,7 @@ def initialize():
                   'split', 'splitext'],
         shutil: ['copyfile', 'copymode', 'move', 'rmtree'],
         tarfile: ['is_tarfile'],
+        rarfile: ['is_rarfile'],
     }
 
     # pyOpenSSL 0.14-1 bug: it can't handle unicode input.
@@ -143,7 +148,7 @@ def initialize():
     else:
         handle_input = None
 
-    for k, v in affected_functions.items():
+    for k, v in viewitems(affected_functions):
         handle_output = handle_output_map.get(k, _handle_output_u)
         for f in v:
             setattr(k, f, make_closure(getattr(k, f), handle_input, handle_output))

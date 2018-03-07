@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Various helper methods."""
+from __future__ import unicode_literals
 
 import base64
 import ctypes
@@ -22,10 +23,17 @@ import struct
 import time
 import traceback
 import uuid
-import warnings
 import xml.etree.ElementTree as ET
 import zipfile
-from itertools import cycle, izip
+from builtins import chr
+from builtins import hex
+from builtins import str
+from itertools import cycle
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 import adba
 
@@ -53,7 +61,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type
+from six import binary_type, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -63,12 +71,6 @@ try:
     import reflink
 except ImportError:
     reflink = None
-
-try:
-    from urllib.parse import splittype
-except ImportError:
-    from urllib2 import splittype
-
 
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
@@ -1004,7 +1006,7 @@ def check_url(url):
         conn = http_client.HTTPConnection(host)
         conn.request('HEAD', path)
         return conn.getresponse().status in good_codes
-    except StandardError:
+    except Exception:
         return None
 
 
@@ -1037,18 +1039,18 @@ def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 1: Simple XOR encryption (this is not very secure, but works)
     if encryption_version == 1:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data), cycle(unique_key1)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(unique_key1)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
     # Version 2: Simple XOR encryption (this is not very secure, but works)
     elif encryption_version == 2:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data),
-                                                                   cycle(app.ENCRYPTION_SECRET)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
+                                                                  cycle(app.ENCRYPTION_SECRET)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
     else:
         return data
@@ -1090,7 +1092,8 @@ def get_show(name, try_indexers=False):
 
         # try indexers
         if not series and try_indexers:
-            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)
+            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name),
+                                                                              ui=classes.ShowListUI)
             series = Show.find_by_id(app.showList, found_indexer_id, found_series_id)
 
         # try scene exceptions
@@ -1103,7 +1106,7 @@ def get_show(name, try_indexers=False):
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
-                               series_name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
+                               series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
                 log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
                             (name=series_name, series=found_series))
@@ -1290,65 +1293,9 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
 def request_defaults(**kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
-    verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
+    verify = certifi.where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
-    # request session proxies
-    if app.PROXY_SETTING:
-        log.debug(u'Using global proxy: {0}', app.PROXY_SETTING)
-        scheme, address = splittype(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
-        proxies = {
-            "http": address,
-            "https": address,
-        }
-    else:
-        proxies = None
-
-    return hooks, cookies, verify, proxies
-
-
-def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
-    """Return data retrieved from the url provider."""
-    log.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
-                'please make use of the PolicedRequest session for all of your requests.')
-    response_type = kwargs.pop(u'returns', u'response')
-    stream = kwargs.pop(u'stream', False)
-    hooks, cookies, verify, proxies = request_defaults(**kwargs)
-    method = u'POST' if post_data else u'GET'
-
-    try:
-        req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
-                               headers=headers, cookies=cookies)
-        prepped = session.prepare_request(req)
-        resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
-                            allow_redirects=True)
-
-    except requests.exceptions.RequestException as e:
-        log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
-        return None
-    except Exception as error:
-        if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-            log.warning(u'Connection reset by peer accessing url {url}.'
-                        u' Error: {msg}', {'url': url, 'msg': error})
-        else:
-            log.info(u'Unknown exception in url {url}.'
-                     u' Error: {msg}', {'url': url, 'msg': error})
-            log.debug(traceback.format_exc())
-        return None
-
-    if not response_type or response_type == u'response':
-        return resp
-    else:
-        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the'
-                      u' near future!'.format(response_type, 'response'),
-                      PendingDeprecationWarning)
-        if response_type == u'json':
-            try:
-                return resp.json()
-            except ValueError:
-                return {}
-        else:
-            return getattr(resp, response_type, None)
+    return hooks, cookies, verify
 
 
 def download_file(url, filename, session, method='GET', data=None, headers=None, **kwargs):
@@ -1363,12 +1310,11 @@ def download_file(url, filename, session, method='GET', data=None, headers=None,
     :return: True on success, False on failure
     """
     try:
-        hooks, cookies, verify, proxies = request_defaults(**kwargs)
+        hooks, cookies, verify = request_defaults(**kwargs)
 
         with session as s:
             resp = s.request(method, url, data=data, allow_redirects=True, stream=True,
-                             verify=verify, headers=headers, cookies=cookies,
-                             hooks=hooks, proxies=proxies)
+                             verify=verify, headers=headers, cookies=cookies, hooks=hooks)
 
             if not resp:
                 log.debug(
@@ -1708,6 +1654,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 # http://stackoverflow.com/a/20380514
 def get_image_size(image_path):
     """Determine the image type of image_path and return its size.."""
+    img_ext = os.path.splitext(image_path)[1].lower().strip('.')
     with open(image_path, 'rb') as f:
         head = f.read(24)
         if len(head) != 24:
@@ -1719,7 +1666,7 @@ def get_image_size(image_path):
             return struct.unpack('>ii', head[16:24])
         elif imghdr.what(image_path) == 'gif':
             return struct.unpack('<HH', head[6:10])
-        elif imghdr.what(image_path) == 'jpeg':
+        elif imghdr.what(image_path) == 'jpeg' or img_ext in ('jpg', 'jpeg'):
             f.seek(0)  # Read 0xff next
             size = 2
             ftype = 0
@@ -1830,7 +1777,7 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
     return text_type(
         text_type(separator).join(
             [text_type(fmt).format(key=unicodify(k), value=unicodify(v))
-             for k, v in guess.items() if k not in ignore_list]))
+             for k, v in viewitems(guess) if k not in ignore_list]))
 
 
 def get_broken_providers():

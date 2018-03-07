@@ -1,5 +1,8 @@
 # coding=utf-8
 
+from __future__ import division
+from __future__ import unicode_literals
+
 import datetime
 import logging
 import threading
@@ -75,7 +78,7 @@ class Scheduler(threading.Thread):
                         # check if wanting to start around certain time taking interval into account
                         if self.start_time is not None:
                             hour_diff = current_time.time().hour - self.start_time.hour
-                            if not hour_diff < 0 and hour_diff < self.cycleTime.seconds / 3600:
+                            if not hour_diff < 0 and hour_diff < self.cycleTime.seconds // 3600:
                                 should_run = True
                             else:
                                 # set lastRun to only check start_time after another cycleTime

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """class NumDict - A dict with numeric keys."""
+from __future__ import unicode_literals
 
 from collections import MutableMapping
 

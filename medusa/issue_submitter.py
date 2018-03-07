@@ -7,9 +7,13 @@ import locale
 import logging
 import platform
 import sys
+from builtins import object
+from builtins import str
 from datetime import datetime, timedelta
+
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
+
 from medusa import app, db
 from medusa.classes import ErrorViewer
 from medusa.github_client import authenticate, get_github_repo, token_authenticate
@@ -37,7 +41,7 @@ _STAFF NOTIFIED_: @{org}/support @{org}/moderators
 class IssueSubmitter(object):
     """GitHub issue submitter."""
 
-    MISSING_CREDENTIALS = 'Please set your GitHub Username and Passowrd in the config.  Unable to submit issue ticket to GitHub.'
+    MISSING_CREDENTIALS = 'Please set your GitHub Username and Password in the config.  Unable to submit issue ticket to GitHub.'
     DEBUG_NOT_ENABLED = 'Please enable Debug mode in the config.  Unable to submit issue ticket to GitHub.'
     NO_ISSUES = 'No issue to be submitted to GitHub.'
     UNSUPPORTED_VERSION = 'Please update Medusa, unable to submit issue ticket to GitHub with an outdated version.'

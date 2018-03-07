@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for configuration."""
+from __future__ import unicode_literals
 import logging
 import platform
 import sys

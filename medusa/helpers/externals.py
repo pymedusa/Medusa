@@ -1,16 +1,21 @@
 # coding=utf-8
 
 """Externals helper functions."""
+from __future__ import unicode_literals
 
 import logging
 
 from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig, mappings
+from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
+
+from six import viewitems
+
 from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -45,7 +50,7 @@ def get_trakt_externals(externals):
 
     id_lookup = '/search/{external_key}/{external_value}?type=show'
     trakt_mapping = {'tvdb_id': 'tvdb', 'imdb_id': 'imdb', 'tmdb_id': 'tmdb', 'trakt_id': 'trakt'}
-    trakt_mapping_rev = {v: k for k, v in trakt_mapping.items()}
+    trakt_mapping_rev = {v: k for k, v in viewitems(trakt_mapping)}
 
     for external_key in externals:
         if not trakt_mapping.get(external_key) or not externals[external_key]:
@@ -60,7 +65,7 @@ def get_trakt_externals(externals):
         )
         result = trakt_request(trakt_api, url)
         if result and len(result) and result[0].get('show') and result[0]['show'].get('ids'):
-            ids = {trakt_mapping_rev[k]: v for k, v in result[0]['show'].get('ids').items()
+            ids = {trakt_mapping_rev[k]: v for k, v in viewitems(result[0]['show'].get('ids'))
                    if v and trakt_mapping_rev.get(k)}
             return ids
     return {}
@@ -145,7 +150,7 @@ def check_existing_shows(indexed_show, indexer):
                                                .format(show.name, indexerApi(show.indexer).name,
                                                        indexerApi(indexer).name))
 
-        for new_show_external_key in new_show_externals.keys():
+        for new_show_external_key in list(new_show_externals):
             if show.indexer not in other_indexers:
                 continue
 
