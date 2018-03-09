@@ -69,10 +69,10 @@
                                                     <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                                                 % endfor
                                             % else:
-                                                % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
+                                                <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
+                                                % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
                                                     <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                                                 % endfor
-                                                <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
                                             % endif
                                         </select>
                                     </span>
