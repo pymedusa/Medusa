@@ -18,7 +18,7 @@ from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 import shutil_custom
 
-from six import viewitems
+from six import iteritems
 
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
@@ -170,8 +170,7 @@ class ProcessResult(object):
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
         if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            to_remove_hashes = viewitems(app.RECENTLY_POSTPROCESSED)
-            for info_hash, release_names in to_remove_hashes:
+            for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
 
