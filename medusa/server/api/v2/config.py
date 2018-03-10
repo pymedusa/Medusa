@@ -10,7 +10,7 @@ from medusa import (
     db,
 )
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.indexer_config import get_indexer_config
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -183,8 +183,7 @@ class ConfigHandler(BaseRequestHandler):
         config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         config_data['indexers'] = NonEmptyDict()
-        config_data['indexers']['config'] = {text_type(indexer_id): indexer['identifier'] for indexer_id,
-                                             indexer in iteritems(indexerConfig)}
+        config_data['indexers']['config'] = get_indexer_config()
 
         if not identifier:
             return self._paginate([config_data])

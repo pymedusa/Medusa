@@ -89,13 +89,15 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
+from medusa.name_cache import build_name_cache
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions
+from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
+
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -105,7 +107,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import itervalues, text_type, viewitems
+from six import itervalues, string_types, text_type, viewitems
 
 try:
     from send2trash import send2trash
@@ -538,15 +540,30 @@ class Series(TV):
         """Return series aliases."""
         return self.exceptions or get_scene_exceptions(self)
 
+    @aliases.setter
+    def aliases(self, exceptions):
+        """Set the series aliases."""
+        self.exceptions = exceptions
+        update_scene_exceptions(self, exceptions)
+        build_name_cache(self)
+
     @property
     def release_ignore_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_ignore_words or '').split(',') if v]
 
+    @release_ignore_words.setter
+    def release_ignore_words(self, value):
+        self.rls_ignore_words = value if isinstance(value, string_types) else ','.join(value)
+
     @property
     def release_required_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_require_words or '').split(',') if v]
+
+    @release_required_words.setter
+    def release_required_words(self, value):
+        self.rls_require_words = value if isinstance(value, string_types) else ','.join(value)
 
     @staticmethod
     def normalize_status(series_status):
@@ -1997,6 +2014,7 @@ class Series(TV):
         data['id'] = NonEmptyDict()
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
+        data['id']['slug'] = self.identifier.slug
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
@@ -2034,7 +2052,9 @@ class Series(TV):
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
         data['config']['dvdOrder'] = bool(self.dvd_order)
         data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
+        data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases
@@ -2076,7 +2096,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self, season)
+        show_names = {exception.series_name for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()

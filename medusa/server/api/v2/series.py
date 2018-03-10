@@ -7,6 +7,7 @@ import logging
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
+    ListField,
     StringField,
     iter_nested_items,
     set_nested_value
@@ -113,13 +114,20 @@ class SeriesHandler(BaseRequestHandler):
         accepted = {}
         ignored = {}
         patches = {
+            'config.aliases': ListField(series, 'aliases'),
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
             'config.flattenFolders': BooleanField(series, 'flatten_folders'),
+            'config.anime': BooleanField(series, 'anime'),
             'config.scene': BooleanField(series, 'scene'),
+            'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
             'config.location': StringField(series, '_location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
-            'config.subtitlesEnabled': BooleanField(series, 'subtitles')
+            'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
+            'config.release.requiredWords': ListField(series, 'release_required_words'),
+            'config.release.ignoredWords': ListField(series, 'release_ignore_words')
+            # 'config.release.blacklist': ListField(series, 'release_required_words'),
+            # 'config.release.whitelist': ListField(series, 'release_required_words'),
         }
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
