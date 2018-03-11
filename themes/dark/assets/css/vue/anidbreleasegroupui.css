@@ -22,3 +22,7 @@ div#anidb-release-group-ui-wrapper div.arrow img {
     height: 32px;
     width: 32px;
 }
+
+div#anidb-release-group-ui-wrapper {
+    margin-bottom: 20px;
+}

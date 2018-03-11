@@ -30,6 +30,9 @@
                     </ul>
                 </div>
         </div>
+        <div id="add-new-release-group">
+            <input type="text" v-model="newGroup" />
+        </div>
     </div>
 </script>
 <script>
@@ -42,7 +45,8 @@ Vue.component('anidb-release-group-ui', {
             // JS only
             defSeries: '12345',
             index: 0,
-            allItems: []
+            allItems: [],
+            newGroup: ''
         };
     },
     mounted() {
@@ -81,6 +85,18 @@ Vue.component('anidb-release-group-ui', {
                     item.memberOf = list;
                 }
             }
+
+            if (this.newGroup) {
+                this.allItems.push({
+                    id: this.index,
+                    name: this.newGroup, 
+                    toggled: false,
+                    memberOf: list
+                })
+                this.index += 1;
+                this.newGroup = '';
+            }
+
             this.sendValues();
         }
     },
