@@ -42,7 +42,7 @@
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId"/>
-                                    <input type="text" name="location" id="location" :value="series.config.location" class="form-control form-control-inline input-sm input350" @change="saveSeries()"/>
+                                    <input type="text" name="location" id="location" :value="series.config.location" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -350,6 +350,7 @@ var startVue = function() {
             }
         }
     });
+    $('[v-cloak]').removeAttr('v-cloak');
 };
 </script>
 </%block>
