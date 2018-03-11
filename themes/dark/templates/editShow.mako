@@ -281,6 +281,11 @@ var startVue = function() {
             } catch (error) {
                 console.log('Could not get series info for: '+ seriesSlug);
             }
+
+            // Add the Browse.. button after the show location input.
+            $('#location').fileBrowser({
+	            title: 'Select Show Location'
+	        });
         },
         methods: {
             anonRedirect: function(e) {
