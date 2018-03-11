@@ -125,9 +125,9 @@ class SeriesHandler(BaseRequestHandler):
             'config.airByDate': BooleanField(series, 'air_by_date'),
             'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
             'config.release.requiredWords': ListField(series, 'release_required_words'),
-            'config.release.ignoredWords': ListField(series, 'release_ignore_words')
-            # 'config.release.blacklist': ListField(series, 'release_required_words'),
-            # 'config.release.whitelist': ListField(series, 'release_required_words'),
+            'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
+            'config.release.blacklist': ListField(series, 'blacklist'),
+            'config.release.whitelist': ListField(series, 'whitelist'),
         }
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)

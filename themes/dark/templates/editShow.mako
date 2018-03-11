@@ -123,7 +123,7 @@
                         <div v-if="seriesObj.config.anime" class="field-pair">
                             <span class="component-title">Release Groups</span>
                             <span class="component-desc">
-                                <anidb-release-group-ui :series="seriesSlug" :blacklist="seriesObj.config.release.blacklist" :whitelist="seriesObj.config.release.whitelist" :all-groups="['group1', 'group2']"></anidb-release-group-ui>
+                                <anidb-release-group-ui :series="seriesSlug" :blacklist="seriesObj.config.release.blacklist" :whitelist="seriesObj.config.release.whitelist" :all-groups="seriesObj.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </span>
                         </div>
 
@@ -257,7 +257,8 @@ var startVue = function() {
                             requiredWords: null,
                             ignoredWords: null,
                             blacklist: [],
-                            whitelist: []
+                            whitelist: [],
+                            allgroups: []
                         }
                     },
                     language: ''
@@ -308,9 +309,9 @@ var startVue = function() {
                             subtitlesEnabled: this.seriesObj.config.subtitlesEnabled,
                             release: {
                                 requiredWords: this.seriesObj.config.release.requiredWords,
-                                ignoredWords: this.seriesObj.config.release.ignoredWords
-                                // blacklist: this.seriesObj.config.release.blacklist,
-                                // whitelist: this.seriesObj.config.release.whitelist
+                                ignoredWords: this.seriesObj.config.release.ignoredWords,
+                                blacklist: this.seriesObj.config.release.blacklist,
+                                whitelist: this.seriesObj.config.release.whitelist
                             }
                         }
                     };
@@ -333,11 +334,17 @@ var startVue = function() {
             onChangeAliases: function(items) {
 		        console.log('Event from child component emitted', items);
                 this.seriesObj.config.aliases = items.map(item => item.value);
+            },
+            onChangeReleaseGroupsAnime: function(items) {
+                this.seriesObj.config.release.whitelist = items.filter(item => item.list === 'whitelist');
+                this.seriesObj.config.release.blacklist = items.filter(item => item.list === 'blacklist');
+                this.seriesObj.config.release.whitelist = items.filter(item => item.list === 'releasegroups');
+
             }
         },
         computed: {
             availableLanguages: function() {
-                if (this.config.indexers.config.main.validLanguages){
+                if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
             }

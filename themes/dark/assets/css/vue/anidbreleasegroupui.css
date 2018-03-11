@@ -3,13 +3,22 @@
  Should be moved from here, when moving the .vue files.
  ========================================================================== */
 
-div#anidb_release_group_ui_wrapper {
+div#anidb-release-group-ui-wrapper {
     clear: both;
 }
 
-div#anidb_release_group_ui_wrapper ul {
+div#anidb-release-group-ui-wrapper ul {
     border-style: solid;
     border-width: thin;
     padding: 5px 2px 2px 5px;
     list-style: none;
+}
+
+div#anidb-release-group-ui-wrapper li.active {
+    background-color: cornflowerblue;
+}
+
+div#anidb-release-group-ui-wrapper div.arrow img {
+    height: 32px;
+    width: 32px;
 }
