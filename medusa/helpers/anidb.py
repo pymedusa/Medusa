@@ -69,6 +69,27 @@ def get_release_groups_for_anime(series_name):
     return groups
 
 
+@anidb_cache.cache_on_arguments()
+def get_short_group_name(release_group):
+    short_group_list = []
+
+    try:
+        group = app.ADBA_CONNECTION.group(gname=release_group)
+    except AniDBCommandTimeoutError:
+        log.debug('Timeout while loading group from AniDB. Trying next group')
+    except Exception:
+        log.debug('Failed while loading group from AniDB. Trying next group')
+    else:
+        for line in group.datalines:
+            if line[b'shortname']:
+                short_group_list.append(line[b'shortname'])
+            else:
+                if release_group not in short_group_list:
+                    short_group_list.append(release_group)
+
+    return short_group_list
+
+
 def short_group_names(groups):
     """Find AniDB short group names for release groups.
 
@@ -78,19 +99,7 @@ def short_group_names(groups):
     short_group_list = []
     if set_up_anidb_connection():
         for group_name in groups:
-            try:
-                group = app.ADBA_CONNECTION.group(gname=group_name)
-            except AniDBCommandTimeoutError:
-                log.debug('Timeout while loading group from AniDB. Trying next group')
-            except Exception:
-                log.debug('Failed while loading group from AniDB. Trying next group')
-            else:
-                for line in group.datalines:
-                    if line[b'shortname']:
-                        short_group_list.append(line[b'shortname'])
-                    else:
-                        if group_name not in short_group_list:
-                            short_group_list.append(group_name)
+            short_group_list += get_short_group_name(group_name)
     else:
         short_group_list = groups
     return short_group_list

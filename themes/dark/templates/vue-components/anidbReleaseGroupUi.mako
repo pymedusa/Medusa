@@ -42,8 +42,6 @@ Vue.component('anidb-release-group-ui', {
     props: ['series', 'blacklist', 'whitelist', 'allGroups'],
     data() {
         return {
-            // JS only
-            defSeries: '12345',
             index: 0,
             allItems: [],
             newGroup: ''
@@ -70,12 +68,19 @@ Vue.component('anidb-release-group-ui', {
         createIndexedObjects: function(items, list) {
             newList = [];
             for (item of items) {
+                
+                // Whitelist and blacklist pass an array of strings not objects.
+                if (typeof(item) === 'string') {
+                    item = { name: item };
+                }
+
+                // Merge the passed object with some additional information.
                 itemAsObject = Object.assign({
                     id: this.index, 
                     toggled: false, memberOf: list
                 }, item);
                 this.allItems.push(itemAsObject);
-                this.index += 1;
+                this.index += 1; // increment the counter for our next item.
             }
         },
         moveToList: function(list) {

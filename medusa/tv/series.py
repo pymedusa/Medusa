@@ -579,7 +579,7 @@ class Series(TV):
 
         :param value: A list of blacklist release groups.
         """
-        self.release_groups.set_black_keywords(short_group_names(value))
+        self.release_groups.set_black_keywords(short_group_names([v['name'] for v in value]))
 
     @property
     def whitelist(self):
@@ -594,7 +594,7 @@ class Series(TV):
 
         :param value: A list of whitelist release groups.
         """
-        self.release_groups.set_white_keywords(short_group_names(value))
+        self.release_groups.set_white_keywords(short_group_names([v['name'] for v in value]))
 
     @staticmethod
     def normalize_status(series_status):
