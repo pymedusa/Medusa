@@ -64,6 +64,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helper.mappings import NonEmptyDict
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get
 from medusa.indexers.indexer_api import indexerApi
@@ -564,6 +565,36 @@ class Series(TV):
     @release_required_words.setter
     def release_required_words(self, value):
         self.rls_require_words = value if isinstance(value, string_types) else ','.join(value)
+
+    @property
+    def blacklist(self):
+        """return the anime's blacklisted release groups."""
+        bw_list = self.release_groups or BlackAndWhiteList(self)
+        return bw_list.blacklist
+
+    @blacklist.setter
+    def blacklist(self, value):
+        """
+        Set the anime's blacklisted release groups.
+
+        :param value: A list of blacklist release groups.
+        """
+        self.release_groups.set_black_keywords(short_group_names(value))
+
+    @property
+    def whitelist(self):
+        """return the anime's whitelisted release groups."""
+        bw_list = self.release_groups or BlackAndWhiteList(self)
+        return bw_list.whitelist
+
+    @whitelist.setter
+    def whitelist(self, value):
+        """
+        Set the anime's whitelisted release groups.
+
+        :param value: A list of whitelist release groups.
+        """
+        self.release_groups.set_white_keywords(short_group_names(value))
 
     @staticmethod
     def normalize_status(series_status):
@@ -2061,6 +2092,7 @@ class Series(TV):
         data['config']['release'] = NonEmptyDict()
         data['config']['release']['blacklist'] = bw_list.blacklist
         data['config']['release']['whitelist'] = bw_list.whitelist
+        data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
 

@@ -8,10 +8,10 @@ import os
 import re
 
 from medusa import app, classes, config, db, helpers, logger, ui
-from medusa.black_and_white_list import short_group_names
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
+from medusa.helpers.anidb import short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable

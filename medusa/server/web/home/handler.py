@@ -9,8 +9,6 @@ import time
 from builtins import str
 from datetime import date, datetime
 
-import adba
-
 from medusa import (
     app,
     config,
@@ -25,7 +23,6 @@ from medusa import (
 )
 from medusa.black_and_white_list import (
     BlackAndWhiteList,
-    short_group_names,
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -54,11 +51,13 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
+    AnidbAdbaConnectionException,
     CantRefreshShowException,
     CantUpdateShowException,
     ShowDirectoryNotFoundException,
     ex,
 )
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
@@ -1481,6 +1480,7 @@ class Home(WebRoot):
 
         if not location and not allowed_qualities and not preferred_qualities and not flatten_folders:
             t = PageTemplate(rh=self, filename='editShow.mako')
+            anime_release_groups = []
 
             if series_obj.is_anime:
                 if not series_obj.release_groups:
@@ -1488,12 +1488,10 @@ class Home(WebRoot):
                 whitelist = series_obj.release_groups.whitelist
                 blacklist = series_obj.release_groups.blacklist
 
-                groups = []
-                if helpers.set_up_anidb_connection() and not anidb_failed:
+                if not anidb_failed:
                     try:
-                        anime = adba.Anime(app.ADBA_CONNECTION, name=series_obj.name)
-                        groups = anime.get_groups()
-                    except Exception as e:
+                        anime_release_groups = get_release_groups_for_anime(series_obj.name.encode('utf-8'))
+                    except AnidbAdbaConnectionException as e:
                         errors += 1
                         logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
                                    (error=e.message), logger.WARNING)
@@ -1503,7 +1501,7 @@ class Home(WebRoot):
                 scene_exceptions = get_scene_exceptions(series_obj)
 
             if series_obj.is_anime:
-                return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
+                return t.render(show=show, scene_exceptions=scene_exceptions, groups=anime_release_groups, whitelist=whitelist,
                                 blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home', action='editShow')
             else:
                 return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
@@ -2436,19 +2434,19 @@ class Home(WebRoot):
             })
 
     @staticmethod
-    def fetch_releasegroups(show_name):
-        logger.log(u'ReleaseGroups: {show}'.format(show=show_name), logger.INFO)
-        if helpers.set_up_anidb_connection():
-            try:
-                anime = adba.Anime(app.ADBA_CONNECTION, name=show_name)
-                groups = anime.get_groups()
-                logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
-                return json.dumps({
-                    'result': 'success',
-                    'groups': groups,
-                })
-            except AttributeError as msg:
-                logger.log(u'Unable to get ReleaseGroups: {error}'.format(error=msg), logger.DEBUG)
+    def fetch_releasegroups(series_name):
+        """Api route for retrieving anidb release groups for an anime show."""
+        logger.log(u'ReleaseGroups: {show}'.format(show=series_name), logger.INFO)
+        try:
+            groups = get_release_groups_for_anime(series_name)
+            logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
+        except AnidbAdbaConnectionException as error:
+            logger.log(u'Unable to get ReleaseGroups: {error}'.format(error=error), logger.DEBUG)
+        else:
+            return json.dumps({
+                'result': 'success',
+                'groups': groups,
+            })
 
         return json.dumps({
             'result': 'failure',
