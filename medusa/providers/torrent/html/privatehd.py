@@ -118,12 +118,12 @@ class PrivateHDProvider(TorrentProvider):
                     continue
 
                 try:
-                    title = row.find(class_='torrent-filename').text.strip()
+                    title = row.find(class_='torrent-filename').get_text(strip=True)
                     download_url = row.find(class_='torrent-download-icon').get('href')
-                    size = convert_size(row.contents[11].text.strip(), -1)
-                    seeders = row.contents[13].text
-                    leechers = row.contents[15].text
-                    pubdate = self.parse_pubdate(row.contents[7].findChild().get('title'))
+                    seeders = row.contents[13].get_text()
+                    leechers = row.contents[15].get_text()
+                    size = convert_size(row.contents[11].get_text(strip=True), default=-1)
+                    pubdate = self.parse_pubdate(row.contents[7].contents[1].get('title'))
 
                     item = {
                         'title': title,
@@ -150,7 +150,8 @@ class PrivateHDProvider(TorrentProvider):
         if 'pass' in dict_from_cookiejar(self.session.cookies):
             return True
 
-        with BS4Parser(self.session.get(self.urls['login']).text, 'html5lib') as html:
+        login_html = self.session.get(self.urls['login']).get_text()
+        with BS4Parser(login_html, 'html5lib') as html:
             token = html.find('input', attrs={'name': '_token'}).get('value')
 
         login_params = {
