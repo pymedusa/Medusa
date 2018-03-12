@@ -42,6 +42,7 @@ class PrivateHDProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
+        self.freeleech = False
 
         # Torrent Stats
 
@@ -72,7 +73,9 @@ class PrivateHDProvider(TorrentProvider):
                 search_params = {
                     'in': 1,
                     'search': search_string,
-                    'type': 2
+                    'type': 2,
+                    'discount[]': 1 if self.freeleech else None,
+                    'tv_type[]': {'episode': 1, 'season': 2}.get(mode.lower())
                 }
 
                 if not search_string:
