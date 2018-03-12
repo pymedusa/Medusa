@@ -23,6 +23,7 @@ from medusa.providers.torrent import (
     bitcannon,
     bithdtv,
     btn,
+    cinemaz,
     danishbits,
     elitetorrent,
     elitetracker,
@@ -70,7 +71,7 @@ __all__ = [
     'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
 ]
 
 
