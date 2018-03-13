@@ -21,8 +21,8 @@ def data():
             'format': 'HDTV',
             'resolution': '1080p',
             'release_group': 'Group',
-            'video_codec': 'h265',
-            'audio_codec': 'AC3'
+            'video_codec': 'H.265',
+            'audio_codec': 'Dolby Digital'
         },
         'another_release_name': 'Different.Show.2013.S03E04.Another.Episode.720p.BluRay.x264-NoGroup',
         'video': Video.fromname('Show.Name.S01E02.mkv'),

@@ -593,7 +593,7 @@ class Quality(object):
         }
     }
 
-    to_guessit_format_list = [
+    to_guessit_source_list = [
         ANYHDTV, ANYWEBDL, ANYBLURAY, ANYHDTV | UHD_4K_TV, ANYWEBDL | UHD_4K_WEBDL, ANYBLURAY | UHD_4K_BLURAY
     ]
 
@@ -740,56 +740,56 @@ class Quality(object):
         :rtype: int
         """
         screen_size = guess.get('screen_size')
-        fmt = guess.get('format')
+        source = guess.get('source')
 
         if not screen_size or isinstance(screen_size, list):
             return Quality.UNKNOWN
 
-        format_map = Quality.guessit_map.get(screen_size)
-        if not format_map:
+        source_map = Quality.guessit_map.get(screen_size)
+        if not source_map:
             return Quality.UNKNOWN
 
-        if isinstance(format_map, int):
-            return format_map
+        if isinstance(source_map, int):
+            return source_map
 
-        if not fmt or isinstance(fmt, list):
+        if not source or isinstance(source, list):
             return Quality.UNKNOWN
 
-        quality = format_map.get(fmt)
+        quality = source_map.get(source)
         return quality if quality is not None else Quality.UNKNOWN
 
     @staticmethod
     def to_guessit(status):
-        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status).
+        """Return a guessit dict containing 'screen_size and source' from a Quality (composite status).
 
         :param status: a quality composite status
         :type status: int
-        :return: dict {'screen_size': <screen_size>, 'format': <format>}
+        :return: dict {'screen_size': <screen_size>, 'source': <source>}
         :rtype: dict (str, str)
         """
         _, quality = Quality.split_composite_status(status)
         screen_size = Quality.to_guessit_screen_size(quality)
-        fmt = Quality.to_guessit_format(quality)
+        source = Quality.to_guessit_source(quality)
         result = dict()
         if screen_size:
             result['screen_size'] = screen_size
-        if fmt:
-            result['format'] = fmt
+        if source:
+            result['source'] = source
 
         return result
 
     @staticmethod
-    def to_guessit_format(quality):
-        """Return a guessit format from a Quality.
+    def to_guessit_source(quality):
+        """Return a guessit source from a Quality.
 
         :param quality: the quality
         :type quality: int
-        :return: guessit format
+        :return: guessit source
         :rtype: str
         """
-        for q in Quality.to_guessit_format_list:
+        for q in Quality.to_guessit_source_list:
             if quality & q:
-                key = q & (512 - 1)  # 4k formats are bigger than 384 and are not part of ANY* bit set
+                key = q & (512 - 1)  # 4k sources are bigger than 384 and are not part of ANY* bit set
                 return Quality.combinedQualityStrings.get(key)
 
     @staticmethod

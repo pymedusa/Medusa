@@ -36,24 +36,24 @@ def blacklist():
     return rebulk
 
 
-def format_():
-    """Format property.
+def source_():
+    """Source property.
 
     :return:
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='format', tags='video-codec-prefix')
+    rebulk.defaults(name='source', tags='video-codec-prefix')
 
-    # More accurate formats
+    # More accurate sources
     rebulk.regex('BD-?Rip', 'BD(?=-?Mux)', value='BDRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('BD(?!\d)', value='BDRip', validator=seps_surround,
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('BR-?Rip', 'BR(?=-?Mux)', value='BRRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('DVD-?Rip', value='DVDRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
 
     rebulk.regex('DVD\d', value='DVD')
 
@@ -102,7 +102,7 @@ def container():
     rebulk.defaults(name='container',
                     tags=['extension'],
                     conflict_solver=lambda match, other: other
-                    if other.name in ['format', 'video_codec'] or
+                    if other.name in ['source', 'video_codec'] or
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
@@ -114,7 +114,7 @@ def container():
                     validator=seps_surround,
                     formatter=lambda s: s.upper(),
                     conflict_solver=lambda match, other: match
-                    if other.name in ['format',
+                    if other.name in ['source',
                                       'video_codec'] or other.name == 'container' and 'extension' in other.tags
                     else '__default__')
 
