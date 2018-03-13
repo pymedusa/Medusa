@@ -45,7 +45,6 @@ from medusa.providers.torrent.json import (
     bitcannon,
     btn,
     danishbits,
-    hd4free,
     hdbits,
     norbits,
     rarbg,
@@ -65,7 +64,7 @@ __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
     'gftracker', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
+    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
     'elitetracker', 'privatehd', 'cinemaz'
