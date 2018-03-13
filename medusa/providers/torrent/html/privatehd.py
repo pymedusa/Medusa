@@ -102,11 +102,8 @@ class PrivateHDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if not html:
-                log.debug('No html data parsed from provider')
-                return items
-
             torrents = html('tr')
+
             if not torrents or len(torrents) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
