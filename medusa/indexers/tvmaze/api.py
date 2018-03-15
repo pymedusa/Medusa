@@ -439,7 +439,7 @@ class TVmaze(BaseIndexer):
         return results
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None, *args, **kwargs):
         """Retrieve a list with updated shows
 
         :param from_time: epoch timestamp, with the start date/time

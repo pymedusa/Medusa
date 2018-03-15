@@ -628,7 +628,7 @@ class TVDBv2(BaseIndexer):
         return total_updates
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, show_list, from_time, weeks=1):
+    def get_last_updated_seasons(self, from_time, weeks=1, filter_show_list=None, *args, **kwargs):
         """Return updated seasons for shows passed, using the from_time.
 
         :param show_list[int]: The list of shows, where seasons updates are retrieved for.
@@ -637,7 +637,7 @@ class TVDBv2(BaseIndexer):
         """
         show_season_updates = {}
 
-        for show_id in show_list:
+        for show_id in filter_show_list:
             total_updates = []
             # Get the shows episodes using the GET /series/{id}/episodes route, and use the lastUpdated attribute
             # to check if the episodes season should be updated.
