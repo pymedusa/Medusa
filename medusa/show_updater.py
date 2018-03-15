@@ -23,7 +23,7 @@ import time
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from medusa.indexers.api import indexerApi
-from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.exceptions import IndexerException, IndexerSeasonUpdatesNotSupported, IndexerUnavailable
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
@@ -81,68 +81,66 @@ class ShowUpdater(object):
 
             # Get a list of updated shows from the indexer, since last update.
             # Use the list, to limit the shows for which are requested for the last updated seasons.
-            if last_update and last_update > time.time() - (604800 * update_max_weeks):
-                if show.indexer not in indexer_updated_shows:
-                    try:
-                        indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
-                            last_update, update_max_weeks
-                        )
-                    except IndexerUnavailable:
-                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'connectivity issues while trying to look for show updates on show: {show}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        continue
-                    except IndexerException as e:
-                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
-                        continue
-                    except HTTPError as error:
-                        if error.response.status_code == 503:
+            try:
+                if last_update and last_update > time.time() - (604800 * update_max_weeks):
+                    if show.indexer not in indexer_updated_shows:
+                        try:
+                            indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
+                                last_update, update_max_weeks
+                            )
+                        except IndexerUnavailable:
                             logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: TMDB api Service offline: '
-                                           u'This service is temporarily offline, try again later.',
+                                           u'connectivity issues while trying to look for show updates on show: {show}',
                                            indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        if error.response.status_code == 429:
-                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: Your request count (#) is over the allowed limit of (40)..',
-                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        continue
-                    except Exception as e:
-                        logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                         u'issues while trying to get updates for show {show}. Cause: {cause}.',
-                                         indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
-                        continue
+                            continue
+                        except HTTPError as error:
+                            if error.response.status_code == 503:
+                                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                               u'issues while trying to get updates for show {show}. '
+                                               u'Cause: TMDB api Service offline: '
+                                               u'This service is temporarily offline, try again later.',
+                                               indexer_name=indexerApi(show.indexer).name, show=show.name)
+                            if error.response.status_code == 429:
+                                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                               u'issues while trying to get updates for show {show}. '
+                                               u'Cause: Your request count (#) is over the allowed limit of (40)..',
+                                               indexer_name=indexerApi(show.indexer).name, show=show.name)
+                            continue
 
-                # If the current show is not in the list, move on to the next.
-                # Only do this for shows, if the indexer has had a successful update run within the last 12 weeks.
-                if all([isinstance(indexer_updated_shows[show.indexer], list),
-                        show.indexerid not in indexer_updated_shows.get(show.indexer)]):
-                    logger.debug(u'Skipping show update for {show}. As the show is not '
-                                 u'in the indexers {indexer_name} list with updated '
-                                 u'shows within the last {weeks} weeks.', show=show.name,
-                                 indexer_name=indexerApi(show.indexer).name, weeks=update_max_weeks)
-                    continue
+            except IndexerSeasonUpdatesNotSupported:
+                logger.info(
+                    u'Indexer {indexer_name} does not provide a list of recently updated shows.'
+                    u'Using the `calculate_update_by_season_release_date` function for show {show}',
+                    indexer_name=indexerApi(show.indexer).name, show=show.name
+                )
+            except Exception as e:
+                logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                 u'issues while trying to get updates for show {show}. Cause: {cause}.',
+                                 indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                continue
 
-            # These are the criteria for performing a full show refresh.
-            if any([not hasattr(indexer_api, 'get_last_updated_seasons'),
-                    not last_update,
-                    last_update < time.time() - 604800 * update_max_weeks]):
-                # no entry in lastUpdate, or last update was too long ago,
-                # let's refresh the show for this indexer
-                logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
-                             u" or the indexer doesn't support per season updates. Doing a full update.",
-                             show=show.name, indexer_name=indexerApi(show.indexer).name,
-                             weeks=update_max_weeks)
-                refresh_shows.append(show)
+            # If the current show is not in the list, move on to the next.
+            # Only do this for shows, if the indexer has had a successful update run within the last 12 weeks.
+            if all([isinstance(indexer_updated_shows.get(show.indexer), list),
+                    show.indexerid not in indexer_updated_shows.get(show.indexer, [])]):
+                logger.debug(u'Skipping show update for {show}. As the show is not '
+                             u'in the indexers {indexer_name} list with updated '
+                             u'shows within the last {weeks} weeks.', show=show.name,
+                             indexer_name=indexerApi(show.indexer).name, weeks=update_max_weeks)
+                continue
 
-            # Else fall back to per season updates.
-            elif hasattr(indexer_api, 'get_last_updated_seasons'):
+            # These are the criteria for performing a season update.
+            if all([
+                hasattr(indexer_api, 'get_last_updated_seasons'),
+                last_update,
+                last_update > time.time() - 604800 * update_max_weeks
+            ]):
+
                 # Get updated seasons and add them to the season update list.
                 try:
-                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                    updated_seasons = indexer_api.get_last_updated_seasons(
+                        last_update, update_max_weeks, filter_show_list=[show.indexerid], cache=self.update_cache
+                    )
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'connectivity issues while trying to look for showupdates on show: {show}',
@@ -164,6 +162,17 @@ class ShowUpdater(object):
                                 show_name=show.name, seasons=updated_seasons[show.indexerid])
                     for season in updated_seasons[show.indexerid]:
                         season_updates.append((show.indexer, show, season))
+
+            # Else fall back to per season updates.
+            else:
+                # no entry in lastUpdate, or last update was too long ago,
+                # let's refresh the show for this indexer
+                logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
+                             u" or the indexer doesn't support per season updates. Doing a full update.",
+                             show=show.name, indexer_name=indexerApi(show.indexer).name,
+                             weeks=update_max_weeks)
+                refresh_shows.append(show)
+
 
         pi_list = []
 
@@ -247,6 +256,14 @@ class UpdateCache(db.DBConnection):
         )
         return last_update_indexer[0]['time'] if last_update_indexer else None
 
+    def get_last_update_season(self, indexer_name, series_id, season):
+        """Get the last indexer update for a specific series."""
+        return self.get_generic_last_update('show_updater', indexer_name, series_id, season)
+
+    def set_last_update_season(self, indexer_name, series_id, season):
+        """Get the last indexer update for a specific series."""
+        self.set_generic_last_update('show_updater', indexer_name, series_id, season)
+
     def set_last_indexer_update(self, indexer):
         """Set the last update timestamp from the lastUpdate table.
 
@@ -258,3 +275,33 @@ class UpdateCache(db.DBConnection):
         return self.upsert('lastUpdate',
                            {'time': int(time.time())},
                            {'provider': indexer})
+
+    def get_generic_last_update(self, namespace, field_id_1, field_id_2=None, field_id_3=None):
+        """Use the generic_updates table to get a specific last update. Using one ore more keys."""
+
+        rows = self.select(
+            'SELECT last_update '
+            'FROM generic_updates '
+            'WHERE namespace = ? '
+            'AND field_id_1 = ? '
+            'AND field_id_2 = ? '
+            'AND field_id_3 = ? ',
+            [namespace, field_id_1, field_id_2, field_id_3]
+        )
+
+        if rows:
+            return rows[0]['last_update']
+        else:
+            return 0
+
+    def set_generic_last_update(self, group, field_id_1, field_id_2=None, field_id_3=None):
+        """Use the generic_updates table to set a specific last update. Using one ore more keys."""
+
+        return self.upsert(
+            'generic_update',
+            {'last_update': int(time.time())},
+            {'group': group,
+             'field_id_1': field_id_1,
+             'field_id_2': field_id_2,
+             'field_id_3': field_id_3}
+        )

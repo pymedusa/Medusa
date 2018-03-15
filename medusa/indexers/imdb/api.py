@@ -220,7 +220,7 @@ class Imdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, imdb_id, *args):  # pylint: disable=unused-argument
+    def _get_episodes(self, imdb_id, detailed=True, *args):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by imdb id
 
@@ -232,7 +232,12 @@ class Imdb(BaseIndexer):
 
         series_id = imdb_id
         imdb_id = ImdbIdentifier(imdb_id).imdb_id
+
+        if not self[imdb_id]:
+            self._get_show_data(imdb_id)
+
         try:
+            # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes(imdb_id)
         except LookupError as error:
             raise IndexerShowIncomplete(
@@ -264,9 +269,86 @@ class Imdb(BaseIndexer):
 
                         self._set_item(series_id, season_no, episode_no, k, v)
 
-            if season.get('season'):
+            if detailed and season.get('season'):
                 # Enrich episode for the current season.
+                self._get_episodes_detailed(imdb_id, season['season'])
+
+                # Scrape the synopsys and the episode thumbnail.
                 self._enrich_episodes(imdb_id, season['season'])
+
+        # Try to calculate the airs day of week
+        self._calc_airs_day_of_week(imdb_id)
+
+    def _calc_airs_day_of_week(self, imdb_id):
+        series_id = ImdbIdentifier(imdb_id).series_id
+
+        if self[series_id]:
+            all_episodes = []
+
+            for season in self[series_id]:
+                all_episodes.extend([self[series_id][season][ep] for ep in self[series_id][season]])
+
+            # Get the last (max 10 airdates) and try to calculate an airday + time.
+            last_airdates = sorted(all_episodes, key=lambda x: x['firstaired'], reverse=True)[:10]
+            weekdays = {}
+            for episode in last_airdates:
+                if episode['firstaired']:
+                    day = self._parse_date_with_local(datetime.strptime(episode['firstaired'], '%Y-%m-%d'), '%A', 'C', method='strftime')
+                    weekdays[day] = 1 if day not in weekdays else weekdays[day] + 1
+
+            airs_day_of_week = sorted(weekdays.keys(), key=lambda x: weekdays[x], reverse=True)[0] if weekdays else None
+            self._set_show_data(series_id, 'airs_dayofweek', airs_day_of_week)
+
+    @staticmethod
+    def _parse_date_with_local(date, template, use_locale, method='strptime'):
+        lc = locale.setlocale(locale.LC_TIME)
+        locale.setlocale(locale.LC_ALL, use_locale)
+        try:
+            if method == 'strptime':
+                return datetime.strptime(date, template)
+            else:
+                return date.strftime(template)
+        except (AttributeError, ValueError):
+            raise
+        finally:
+            locale.setlocale(locale.LC_TIME, lc)
+
+    def _get_episodes_detailed(self, imdb_id, season):
+        """
+        Enrich the episodes with additional information for a specific season.
+
+        :param imdb_id: imdb id including the `tt`.
+        :param season: season passed as integer.
+        """
+
+        try:
+            # results = self.imdb_api.get_title_episodes(imdb_id)
+            results = self.imdb_api.get_title_episodes_detailed(imdb_id=imdb_id, season=season)
+        except LookupError as error:
+            raise IndexerShowIncomplete(
+                'Show episode search exception, '
+                'could not get any episodes. Exception: {e!r}'.format(
+                    e=error
+                )
+            )
+
+        if not results.get('episodes'):
+            return
+
+        series_id = ImdbIdentifier(imdb_id).series_id
+        for episode in results.get('episodes'):
+            try:
+                first_aired = self._parse_date_with_local(
+                    datetime.strptime(episode['releaseDate']['first']['date'], '%Y-%m-%d'), '%Y-%m-%d', 'C', method='strftime'
+                )
+                self._set_item(series_id, season, episode['episodeNumber'], 'firstaired', first_aired)
+            except ValueError:
+                pass
+
+            self._set_item(series_id, season, episode['episodeNumber'], 'rating', episode['rating'])
+            self._set_item(series_id, season, episode['episodeNumber'], 'votes', episode['ratingCount'])
+            # self._set_item(series_id, season, episode, 'overview', episode.synopsis)
+            # self._set_item(series_id, season, episode, 'filename', episode.thumbnail)
 
     def _enrich_episodes(self, imdb_id, season):
         """
@@ -276,18 +358,6 @@ class Imdb(BaseIndexer):
         :param imdb_id: imdb id including the `tt`.
         :param season: season passed as integer.
         """
-        def parse_date_with_local(date, template, use_locale, method='strptime'):
-            lc = locale.setlocale(locale.LC_TIME)
-            locale.setlocale(locale.LC_ALL, use_locale)
-            try:
-                if method == 'strptime':
-                    return datetime.strptime(date, template)
-                else:
-                    return date.strftime(template)
-            except (AttributeError, ValueError):
-                raise
-            finally:
-                locale.setlocale(locale.LC_TIME, lc)
 
         episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
         series_id = ImdbIdentifier(imdb_id).series_id
@@ -295,49 +365,20 @@ class Imdb(BaseIndexer):
         episodes = []
 
         try:
-            response = self.config['session'].get(episodes_url.format(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season))
+            response = self.config['session'].get(episodes_url.format(
+                imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
+            )
             if not response or not response.text:
                 log.warning('Problem requesting episode information for show {0}, and season {1}.', imdb_id, season)
                 return
 
-            Episode = namedtuple('Episode', ['episode_number', 'season_number', 'first_aired', 'episode_rating', 'episode_votes', 'synopsis', 'thumbnail'])
+            Episode = namedtuple('Episode', ['episode_number', 'season_number', 'synopsis', 'thumbnail'])
             with BS4Parser(response.text, 'html5lib') as html:
                 for episode in html.find_all('div', class_='list_item'):
                     try:
                         episode_number = int(episode.find('meta')['content'])
                     except AttributeError:
                         pass
-
-                    try:
-                        first_aired_raw = episode.find('div', class_='airdate').get_text(strip=True)
-                    except AttributeError:
-                        pass
-
-                    try:
-                        first_aired = parse_date_with_local(first_aired_raw.replace('.', ''), '%d %b %Y', 'C').strftime('%Y-%m-%d')
-                    except (AttributeError, ValueError):
-                        try:
-                            first_aired = parse_date_with_local(first_aired_raw.replace('.', ''), '%b %Y', 'C').strftime('%Y-%m-01')
-                            series_status = 'Continuing'
-                        except (AttributeError, ValueError):
-                            try:
-                                parse_date_with_local(first_aired_raw.replace('.', ''), '%Y', 'C').strftime('%Y')
-                                first_aired = None
-                                series_status = 'Continuing'
-                            except (AttributeError, ValueError):
-                                first_aired = None
-
-                    try:
-                        episode_rating = float(episode.find('span', class_='ipl-rating-star__rating').get_text(strip=True))
-                    except AttributeError:
-                        episode_rating = None
-
-                    try:
-                        episode_votes = int(episode.find('span', class_='ipl-rating-star__total-votes').get_text(
-                            strip=True
-                        ).strip('()').replace(',', ''))
-                    except AttributeError:
-                        episode_votes = None
 
                     try:
                         synopsis = episode.find('div', class_='item_description').get_text(strip=True)
@@ -348,11 +389,10 @@ class Imdb(BaseIndexer):
 
                     try:
                         episode_thumbnail = episode.find('img', class_='zero-z-index')['src']
-                    except:
+                    except (AttributeError, TypeError):
                         episode_thumbnail = None
 
-                    episodes.append(Episode(episode_number=episode_number, season_number=season, first_aired=first_aired,
-                                            episode_rating=episode_rating, episode_votes=episode_votes,
+                    episodes.append(Episode(episode_number=episode_number, season_number=season,
                                             synopsis=synopsis, thumbnail=episode_thumbnail))
                     self._set_show_data(series_id, 'status', series_status)
 
@@ -360,22 +400,8 @@ class Imdb(BaseIndexer):
             log.exception('Error while trying to enrich imdb series {0}, {1}', series_id, error)
 
         for episode in episodes:
-            self._set_item(series_id, episode.season_number, episode.episode_number, 'firstaired', episode.first_aired)
-            self._set_item(series_id, episode.season_number, episode.episode_number, 'rating', episode.episode_rating)
-            self._set_item(series_id, episode.season_number, episode.episode_number, 'votes', episode.episode_votes)
             self._set_item(series_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
             self._set_item(series_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
-
-        # Get the last (max 10 airdates) and try to calculate an airday + time.
-        last_airdates = sorted(episodes, key=lambda x: x.first_aired, reverse=True)[:10]
-        weekdays = {}
-        for aired in last_airdates:
-            if aired.first_aired:
-                day = parse_date_with_local(datetime.strptime(aired.first_aired, '%Y-%m-%d'), '%A', 'C', method='strftime')
-                weekdays[day] = 1 if day not in weekdays else weekdays[day] + 1
-
-        airs_day_of_week = sorted(weekdays.keys(), key=lambda x: weekdays[x], reverse=True)[0] if weekdays else None
-        self._set_show_data(series_id, 'airs_dayofweek', airs_day_of_week)
 
     def _parse_images(self, imdb_id):
         """Parse Show and Season posters.
@@ -574,3 +600,52 @@ class Imdb(BaseIndexer):
             self._parse_actors(imdb_id)
 
         return True
+
+    @staticmethod
+    def _calc_update_interval(date_season_start, date_season_last, last_updated):
+        pass
+
+    # Public methods, usable separate from the default api's interface api['show_id']
+    def get_last_updated_seasons(self, from_time, weeks=1, filter_show_list=None,  cache=None, *args, **kwargs):
+        """Return updated seasons for shows passed, using the from_time.
+
+        :param show_list[int]: The list of shows, where seasons updates are retrieved for.
+        :param from_time[int]: epoch timestamp, with the start date/time
+        :param weeks: number of weeks to get updates for.
+        """
+        show_season_updates = {}
+
+        for series_id in filter_show_list:
+            total_updates = []
+
+            season = None
+            date_season_start = date_season_last = 0
+
+            self.config['episodes_enabled'] = True
+            series = self._get_show_data(ImdbIdentifier(series_id).imdb_id)
+
+            # Get all the seasons
+
+            # Loop through seasons
+            for season in self[series_id]:
+
+                # Per season, get latest episode airdate
+
+                # Calculate update interval for the season
+
+                # Get date for last updated, from the cache object.
+                last_update = cache.get_last_update_season(self.name, series_id, season)
+
+                update_interval = self._calc_update_interval(date_season_start, date_season_last, last_update)
+
+                import time
+                if last_update < time.time() - update_interval:
+                    # This season should be updated.
+                    total_updates.append(season)
+
+                    # Update last_update for this season.
+                    cache.set_last_update_season(self.name, series_id, season)
+
+            show_season_updates[series_id] = list(set(total_updates))
+
+        return show_season_updates
