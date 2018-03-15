@@ -244,7 +244,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 }
             });
         }
-        alert('Please fill in the Popcorn IP address');  // eslint-disable-line no-alert
+        alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
         $('#nmj_host').focus();
     });
 
@@ -304,7 +304,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 }
             });
         }
-        alert('Please fill in the Popcorn IP address');  // eslint-disable-line no-alert
+        alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
         $('#nmjv2_host').focus();
     });
 

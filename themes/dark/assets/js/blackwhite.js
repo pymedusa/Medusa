@@ -34,23 +34,23 @@ function updateBlackWhiteList(showName) { // eslint-disable-line no-unused-vars
 }
 
 $('#removeW').on('click', () => {
-    !$('#white option:selected').remove().appendTo('#pool');  // eslint-disable-line no-unused-expressions
+    !$('#white option:selected').remove().appendTo('#pool'); // eslint-disable-line no-unused-expressions
 });
 
 $('#addW').on('click', () => {
-    !$('#pool option:selected').remove().appendTo('#white');  // eslint-disable-line no-unused-expressions
+    !$('#pool option:selected').remove().appendTo('#white'); // eslint-disable-line no-unused-expressions
 });
 
 $('#addB').on('click', () => {
-    !$('#pool option:selected').remove().appendTo('#black');  // eslint-disable-line no-unused-expressions
+    !$('#pool option:selected').remove().appendTo('#black'); // eslint-disable-line no-unused-expressions
 });
 
 $('#removeP').on('click', () => {
-    !$('#pool option:selected').remove();  // eslint-disable-line no-unused-expressions
+    !$('#pool option:selected').remove(); // eslint-disable-line no-unused-expressions
 });
 
 $('#removeB').on('click', () => {
-    !$('#black option:selected').remove().appendTo('#pool');  // eslint-disable-line no-unused-expressions
+    !$('#black option:selected').remove().appendTo('#pool'); // eslint-disable-line no-unused-expressions
 });
 
 $('#addToWhite').on('click', () => {

@@ -134,10 +134,10 @@ MEDUSA.home.snatchSelection = function() {
 
         self.refreshResults = function() {
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection' + urlParams,
-                    'Loading new search results...',
-                    'Time out, refresh page to try again',
-                    toggleHistoryTable // This is a callback function
+                'home/snatchSelection' + urlParams,
+                'Loading new search results...',
+                'Time out, refresh page to try again',
+                toggleHistoryTable // This is a callback function
             );
         };
 
@@ -251,8 +251,8 @@ MEDUSA.home.snatchSelection = function() {
 
     $('#btnReset').click(() => {
         $('#showTable')
-        .trigger('saveSortReset') // Clear saved sort
-        .trigger('sortReset');    // Reset current table sort
+            .trigger('saveSortReset') // Clear saved sort
+            .trigger('sortReset'); // Reset current table sort
         return false;
     });
 
