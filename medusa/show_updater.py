@@ -160,7 +160,7 @@ class ShowUpdater(object):
                                      indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                     continue
 
-                if updated_seasons[show.indexerid]:
+                if updated_seasons.get(show.series_id):
                     logger.info(u'{show_name}: Adding the following seasons for update to queue: {seasons}',
                                 show_name=show.name, seasons=updated_seasons[show.indexerid])
                     for season in updated_seasons[show.indexerid]:
