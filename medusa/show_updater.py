@@ -293,17 +293,17 @@ class UpdateCache(db.DBConnection):
         )
 
         if rows:
-            return rows[0]['last_update']
+            return int(rows[0][b'last_update'])
         else:
             return 0
 
-    def set_generic_last_update(self, group, field_id_1, field_id_2=None, field_id_3=None):
+    def set_generic_last_update(self, namespace, field_id_1, field_id_2=None, field_id_3=None):
         """Use the generic_updates table to set a specific last update. Using one ore more keys."""
 
         return self.upsert(
-            'generic_update',
+            'generic_updates',
             {'last_update': int(time.time())},
-            {'group': group,
+            {'namespace': namespace,
              'field_id_1': field_id_1,
              'field_id_2': field_id_2,
              'field_id_3': field_id_3}

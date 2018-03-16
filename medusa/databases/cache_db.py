@@ -156,3 +156,21 @@ class AddIndexerIds(AddIndexerSceneExceptions):
 
         # clean up null values from the scene_exceptions_table
         self.connection.action("DELETE FROM scene_exceptions WHERE indexer = '' or indexer is null;")
+
+
+class AddGenericUpdatesTable(AddIndexerIds):  # pylint:disable=too-many-ancestors
+    def test(self):
+        return self.hasTable("generic_updates")
+
+    def execute(self):
+        self.connection.action(
+            '''CREATE TABLE "generic_updates" ( 
+              `generic_updates_id`	INTEGER, 
+              `namespace`	INTEGER, 
+              `field_id_1`	INTEGER NOT NULL, 
+              `field_id_2`	INTEGER, 
+              `field_id_3`	INTEGER, 
+              `field_desc`	INTEGER, 
+              `last_update`	TEXT, 
+              PRIMARY KEY(generic_updates_id))'''
+        )

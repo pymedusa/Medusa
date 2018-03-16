@@ -8,13 +8,17 @@ import logging
 from collections import namedtuple, OrderedDict
 from imdbpie import imdbpie
 import locale
-from six import string_types, text_type
+from medusa import app
 from medusa.bs4_parser import BS4Parser
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
-    IndexerError, IndexerShowIncomplete
+    IndexerError, IndexerShowIncomplete, IndexerUnavailable
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.show import Show
+from six import string_types, text_type
+from time import time
+from requests.exceptions import RequestException
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -168,7 +172,10 @@ class Imdb(BaseIndexer):
         series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
 
-        results = self._show_search(series)
+        try:
+            results = self._show_search(series)
+        except RequestException:
+            results = None
 
         if not results:
             return
@@ -246,6 +253,8 @@ class Imdb(BaseIndexer):
                     e=error
                 )
             )
+        except RequestException as error:
+            raise IndexerUnavailable('Error connecting to Imdb api. Caused by: {0!r}'.format(error))
 
         if not results or not results.get('seasons'):
             return False
@@ -300,9 +309,9 @@ class Imdb(BaseIndexer):
             self._set_show_data(series_id, 'airs_dayofweek', airs_day_of_week)
 
     @staticmethod
-    def _parse_date_with_local(date, template, use_locale, method='strptime'):
+    def _parse_date_with_local(date, template, locale_format='C', method='strptime'):
         lc = locale.setlocale(locale.LC_TIME)
-        locale.setlocale(locale.LC_ALL, use_locale)
+        locale.setlocale(locale.LC_ALL, locale_format)
         try:
             if method == 'strptime':
                 return datetime.strptime(date, template)
@@ -347,8 +356,6 @@ class Imdb(BaseIndexer):
 
             self._set_item(series_id, season, episode['episodeNumber'], 'rating', episode['rating'])
             self._set_item(series_id, season, episode['episodeNumber'], 'votes', episode['ratingCount'])
-            # self._set_item(series_id, season, episode, 'overview', episode.synopsis)
-            # self._set_item(series_id, season, episode, 'filename', episode.thumbnail)
 
     def _enrich_episodes(self, imdb_id, season):
         """
@@ -602,8 +609,18 @@ class Imdb(BaseIndexer):
         return True
 
     @staticmethod
-    def _calc_update_interval(date_season_start, date_season_last, last_updated):
-        pass
+    def _calc_update_interval(date_season_start, date_season_last, last_updated, season_finished=True):
+
+        minimum_interval = 2 * 24 * 3600  # 2 days
+
+        # Season net yet finished, let's use the minimum update interval of 2 days.
+        if not season_finished:
+            return minimum_interval
+
+        # season is finished, or show has ended. So let's calculate using the delta divided by 50.
+        interval = int((datetime.combine(date_season_last, datetime.min.time()) - datetime.utcfromtimestamp(0)).total_seconds() / 50)
+
+        return max(minimum_interval, interval)
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_seasons(self, from_time, weeks=1, filter_show_list=None,  cache=None, *args, **kwargs):
@@ -615,36 +632,64 @@ class Imdb(BaseIndexer):
         """
         show_season_updates = {}
 
+        # we don't have a single api call tha we can run to check if an update is required.
+        # So we'll have to check what's there in the library, and decide based on the last epiosode's date, if a
+        # season update is needed.
+
         for series_id in filter_show_list:
+            series_obj = Show.find_by_id(app.showList, self.indexer, series_id)
+            all_episodes = series_obj.get_all_episodes()
+
+            if not all_episodes:
+                continue
+
             total_updates = []
 
             season = None
             date_season_start = date_season_last = 0
 
-            self.config['episodes_enabled'] = True
-            series = self._get_show_data(ImdbIdentifier(series_id).imdb_id)
+            #self.config['episodes_enabled'] = True
+            #series = self._get_show_data(ImdbIdentifier(series_id).imdb_id)
+
+            # A small api call to get the amount of known seasons
+            self._get_episodes(series_id, detailed=False)
 
             # Get all the seasons
 
             # Loop through seasons
             for season in self[series_id]:
 
-                # Per season, get latest episode airdate
+                # Check if the season is already known in our local db.
+                season_episodes = [ep for ep in all_episodes if ep.season == season]
+                if not season_episodes:
+                    if len(self[series_id][season]):
+                        total_updates.append(season)
+                        log.debug('{series}: Season {season} seems to be a new season. Adding it.',
+                                  {'series': series_obj.name, 'season': season})
+                        continue
 
-                # Calculate update interval for the season
+                # Per season, get latest episode airdate
+                sorted_episodes = sorted(season_episodes, key=lambda x: x.airdate)
+                date_season_start = sorted_episodes[0].airdate
+                date_season_last = sorted_episodes[-1].airdate
 
                 # Get date for last updated, from the cache object.
                 last_update = cache.get_last_update_season(self.name, series_id, season)
 
+                # Calculate update interval for the season
                 update_interval = self._calc_update_interval(date_season_start, date_season_last, last_update)
 
-                import time
-                if last_update < time.time() - update_interval:
+                if last_update < time() - update_interval:
                     # This season should be updated.
                     total_updates.append(season)
 
                     # Update last_update for this season.
                     cache.set_last_update_season(self.name, series_id, season)
+                else:
+                    log.debug(
+                        '{series}: Season {season} seems to have been recently updated. Not scheduling a new refresh',
+                         {'series': series_obj.name, 'season': season}
+                    )
 
             show_season_updates[series_id] = list(set(total_updates))
 
