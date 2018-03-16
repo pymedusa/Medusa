@@ -30,7 +30,7 @@ from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavaila
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError, RequestException
 
 logger = logging.getLogger(__name__)
 
@@ -104,13 +104,15 @@ class ShowUpdater(object):
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'issues while trying to get updates for show {show}. ',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        if error.response.status_code == 503:
-                            logger.warning(u'Cause: API Service offline: '
-                                           u'This service is temporarily offline, try again later.')
-                        elif error.response.status_code == 429:
-                            logger.warning(u'Cause: Your request count (#) is over the allowed limit of (40).')
-                        else:
-                            logger.warning(u'Cause: {cause}.', cause=error)
+                        
+                        if isinstance(error, HTTPError):
+                            if error.response.status_code == 503:
+                                logger.warning(u'API Service offline: '
+                                               u'This service is temporarily offline, try again later.')
+                            elif error.response.status_code == 429:
+                                logger.warning(u'Your request count (#) is over the allowed limit of (40).')
+
+                        logger.warning(u'Cause: {cause}.', cause=error)
                         continue
                     except Exception as error:
                         logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
