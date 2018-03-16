@@ -104,7 +104,7 @@ class ShowUpdater(object):
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'issues while trying to get updates for show {show}. ',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        
+
                         if isinstance(error, HTTPError):
                             if error.response.status_code == 503:
                                 logger.warning(u'API Service offline: '
