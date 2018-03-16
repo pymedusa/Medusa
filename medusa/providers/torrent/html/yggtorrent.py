@@ -49,6 +49,7 @@ class YggtorrentProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.translation = {
+            'à l\'instant': 'just now',
             'seconde': 'second',
             'secondes': 'seconds',
             'minute': 'minute',
