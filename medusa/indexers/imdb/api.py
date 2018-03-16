@@ -264,8 +264,8 @@ class Imdb(BaseIndexer):
                 season_no, episode_no = episode.get('season'), episode.get('episode')
 
                 if season_no is None or episode_no is None:
-                    log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})',
-                                season_no, episode_no)
+                    log.debug('{0}: Found incomplete episode with season: {1!r} and episode: {2!r})',
+                              imdb_id, season_no, episode_no)
                     continue  # Skip to next episode
 
                 for k, config in self.episode_map:
@@ -295,7 +295,11 @@ class Imdb(BaseIndexer):
             all_episodes = []
 
             for season in self[series_id]:
-                all_episodes.extend([self[series_id][season][ep] for ep in self[series_id][season]])
+                all_episodes.extend([
+                    self[series_id][season][ep]
+                    for ep in self[series_id][season]
+                    if self[series_id][season][ep].get('firstaired')
+                ])
 
             # Get the last (max 10 airdates) and try to calculate an airday + time.
             last_airdates = sorted(all_episodes, key=lambda x: x['firstaired'], reverse=True)[:10]
@@ -347,10 +351,13 @@ class Imdb(BaseIndexer):
         series_id = ImdbIdentifier(imdb_id).series_id
         for episode in results.get('episodes'):
             try:
-                first_aired = self._parse_date_with_local(
-                    datetime.strptime(episode['releaseDate']['first']['date'], '%Y-%m-%d'), '%Y-%m-%d', 'C', method='strftime'
-                )
-                self._set_item(series_id, season, episode['episodeNumber'], 'firstaired', first_aired)
+                if episode['releaseDate']['first']['date']:
+                    first_aired = self._parse_date_with_local(
+                        datetime.strptime(
+                            episode['releaseDate']['first']['date'], '%Y-%m-%d'
+                        ), '%Y-%m-%d', 'C', method='strftime'
+                    )
+                    self._set_item(series_id, season, episode['episodeNumber'], 'firstaired', first_aired)
             except ValueError:
                 pass
 
@@ -623,7 +630,7 @@ class Imdb(BaseIndexer):
         return max(minimum_interval, interval)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, from_time, weeks=1, filter_show_list=None,  cache=None, *args, **kwargs):
+    def get_last_updated(self, filter_show_list=None, cache=None, *args, **kwargs):
         """Return updated seasons for shows passed, using the from_time.
 
         :param show_list[int]: The list of shows, where seasons updates are retrieved for.
@@ -644,12 +651,6 @@ class Imdb(BaseIndexer):
                 continue
 
             total_updates = []
-
-            season = None
-            date_season_start = date_season_last = 0
-
-            #self.config['episodes_enabled'] = True
-            #series = self._get_show_data(ImdbIdentifier(series_id).imdb_id)
 
             # A small api call to get the amount of known seasons
             self._get_episodes(series_id, detailed=False)
@@ -688,7 +689,7 @@ class Imdb(BaseIndexer):
                 else:
                     log.debug(
                         '{series}: Season {season} seems to have been recently updated. Not scheduling a new refresh',
-                         {'series': series_obj.name, 'season': season}
+                        {'series': series_obj.name, 'season': season}
                     )
 
             show_season_updates[series_id] = list(set(total_updates))

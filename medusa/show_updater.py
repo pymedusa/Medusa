@@ -113,26 +113,32 @@ class ShowUpdater(object):
             except IndexerSeasonUpdatesNotSupported:
                 logger.info(
                     u'Indexer {indexer_name} does not provide a list of recently updated shows.'
-                    u'Using the `calculate_update_by_season_release_date` function for show {show}',
+                    u'\nUsing the `calculate_update_by_season_release_date` function for show {show}',
                     indexer_name=indexerApi(show.indexer).name, show=show.name
                 )
-            except Exception as e:
+            except Exception as error:
                 logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                  u'issues while trying to get updates for show {show}. Cause: {cause}.',
-                                 indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                                 indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                 continue
 
             # If the current show is not in the list, move on to the next.
             # Only do this for shows, if the indexer has had a successful update run within the last 12 weeks.
             if all([isinstance(indexer_updated_shows.get(show.indexer), list),
-                    show.indexerid not in indexer_updated_shows.get(show.indexer, [])]):
+                    show.series_id not in indexer_updated_shows.get(show.indexer, [])]):
                 logger.debug(u'Skipping show update for {show}. As the show is not '
                              u'in the indexers {indexer_name} list with updated '
                              u'shows within the last {weeks} weeks.', show=show.name,
                              indexer_name=indexerApi(show.indexer).name, weeks=update_max_weeks)
                 continue
 
-            # These are the criteria for performing a season update.
+            """
+            These are the criteria for performing a season update.
+                * The indexer needs to have the get_last_updated_seasons method.
+                * There is a last update for the indexer in the cache lastUpdate table. Meaning this is not the first update.
+                * The last update for this indexer was done less then the "update_max_weeks" (12) ago. If it's older
+                we resort to a full update.
+            """
             if all([
                 hasattr(indexer_api, 'get_last_updated_seasons'),
                 last_update,
@@ -142,7 +148,7 @@ class ShowUpdater(object):
                 # Get updated seasons and add them to the season update list.
                 try:
                     updated_seasons = indexer_api.get_last_updated_seasons(
-                        last_update, update_max_weeks, filter_show_list=[show.indexerid], cache=self.update_cache
+                        last_update, update_max_weeks, filter_show_list=[show.series_id], cache=self.update_cache
                     )
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
@@ -162,20 +168,28 @@ class ShowUpdater(object):
 
                 if updated_seasons.get(show.series_id):
                     logger.info(u'{show_name}: Adding the following seasons for update to queue: {seasons}',
-                                show_name=show.name, seasons=updated_seasons[show.indexerid])
-                    for season in updated_seasons[show.indexerid]:
+                                show_name=show.name, seasons=updated_seasons[show.series_id])
+                    for season in updated_seasons[show.series_id]:
                         season_updates.append((show.indexer, show, season))
 
-            # Else fall back to per season updates.
+            # Else fall back to full show updates.
             else:
                 # no entry in lastUpdate, or last update was too long ago,
                 # let's refresh the show for this indexer
-                logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
-                             u" or the indexer doesn't support per season updates. Doing a full update.",
-                             show=show.name, indexer_name=indexerApi(show.indexer).name,
-                             weeks=update_max_weeks)
-                refresh_shows.append(show)
-
+                if hasattr(indexer_api, 'get_last_updated'):
+                    updated = indexer_api.get_last_updated(
+                        filter_show_list=[show.series_id], cache=self.update_cache
+                    )
+                    if updated.get(show.series_id):
+                        refresh_shows.append(show)
+                else:
+                    logger.debug(
+                        u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
+                        u" or the indexer doesn't support per season updates. Doing a full update.",
+                        show=show.name, indexer_name=indexerApi(show.indexer).name,
+                        weeks=update_max_weeks
+                    )
+                    refresh_shows.append(show)
 
         pi_list = []
 

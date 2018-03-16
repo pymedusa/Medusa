@@ -61,24 +61,17 @@ class BaseIndexer(object):
         """Pass these arguments on as args from the subclass."""
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
+        self.name = None
 
-        self.config = {}
-
-        self.config['debug_enabled'] = debug  # show debugging messages
-
-        self.config['custom_ui'] = custom_ui
-
-        self.config['interactive'] = interactive  # prompt for correct series?
-
-        self.config['select_first'] = select_first
-
-        self.config['search_all_languages'] = search_all_languages
-
-        self.config['use_zip'] = use_zip
-
-        self.config['dvdorder'] = dvdorder
-
-        self.config['proxy'] = proxy
+        self.config = {
+            'debug_enabled': debug,
+            'custom_ui': custom_ui,
+            'interactive': interactive,
+            'select_first': select_first,
+            'search_all_languages': search_all_languages,
+            'use_zip': use_zip,
+            'dvdorder': dvdorder, 'proxy': proxy
+        }
 
         if cache is True:
             self.config['cache_enabled'] = True
