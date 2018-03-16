@@ -13,7 +13,7 @@ $(document).ready(function(){
     // @TODO: This needs to be moved to an API function
     % if app.USE_NZBS:
         % for cur_newznab_provider in app.newznabProviderList:
-            $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)});
+            $(this).addNewznabProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)});
         % endfor
     % endif
     % if app.USE_TORRENTS:
@@ -42,7 +42,7 @@ $('#config-components').tabs();
                     <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
                     <li><a href="${full_url}#provider-options">Provider Options</a></li>
                   % if app.USE_NZBS:
-                  <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if app.USE_TORRENTS:
                     <li><a href="${full_url}#custom-torrent">Configure Custom Torrent Providers</a></li>
@@ -216,6 +216,34 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+                        % if hasattr(cur_newznab_provider, 'enable_search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_newznab_provider.get_id()}_enable_search_delay">
+                                <span class="component-title">Enable search delay</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${cur_newznab_provider.get_id()}_enable_search_delay" id="${cur_newznab_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_newznab_provider.enable_search_delay else ''}/>
+                                    <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+                        % if hasattr(cur_newznab_provider, 'search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_newznab_provider.get_id()}_ratio">
+                                <span class="component-title" id="${cur_newznab_provider.get_id()}_search_delay">Search delay (hours):</span>
+                                <span class="component-desc">
+                                    <input type="number" min="0.5" step="0.5" name="${cur_newznab_provider.get_id()}_search_delay" id="${cur_newznab_provider.get_id()}_search_delay" value="${8 if cur_newznab_provider.search_delay is None else round(cur_newznab_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                </span>
+                            </label>
+                            <label>
+                                <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">
+                                    <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
                     </div>
                     % endfor
                     % for cur_nzb_provider in [cur_provider for cur_provider in sorted_provider_list() if cur_provider.provider_type == GenericProvider.NZB and cur_provider not in app.newznabProviderList]:
@@ -303,6 +331,34 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${cur_nzb_provider.get_id()}_search_fallback" id="${cur_nzb_provider.get_id()}_search_fallback" ${'checked="checked"' if cur_nzb_provider.search_fallback else ''}/>
                                     <p>when searching for a complete season depending on search mode you may return no results, this helps by restarting the search using the opposite search mode.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+                        % if hasattr(cur_nzb_provider, 'enable_search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_nzb_provider.get_id()}_enable_search_delay">
+                                <span class="component-title">Enable search delay</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${cur_nzb_provider.get_id()}_enable_search_delay" id="${cur_nzb_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_nzb_provider.enable_search_delay else ''}/>
+                                    <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+                        % if hasattr(cur_nzb_provider, 'search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_nzb_provider.get_id()}_ratio">
+                                <span class="component-title" id="${cur_nzb_provider.get_id()}_search_delay">Search delay (hours):</span>
+                                <span class="component-desc">
+                                    <input type="number" min="0.5" step="0.5" name="${cur_nzb_provider.get_id()}_search_delay" id="${cur_nzb_provider.get_id()}_search_delay" value="${8 if cur_nzb_provider.search_delay is None else round(cur_nzb_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                </span>
+                            </label>
+                            <label>
+                                <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">
+                                    <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
                                 </span>
                             </label>
                         </div>
@@ -614,6 +670,34 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+                        % if hasattr(cur_torrent_provider, 'enable_search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_torrent_provider.get_id()}_enable_search_delay">
+                                <span class="component-title">Enable search delay</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${cur_torrent_provider.get_id()}_enable_search_delay" id="${cur_torrent_provider.get_id()}_enable_search_delay" ${'checked="checked"' if cur_torrent_provider.enable_search_delay else ''}/>
+                                    <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
+                                    <p>Searches for PROPER releases are exempted from the delay.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+                        % if hasattr(cur_torrent_provider, 'search_delay'):
+                        <div class="field-pair">
+                            <label for="${cur_torrent_provider.get_id()}_ratio">
+                                <span class="component-title" id="${cur_torrent_provider.get_id()}_search_delay">Search delay (hours):</span>
+                                <span class="component-desc">
+                                    <input type="number" min="0.5" step="0.5" name="${cur_torrent_provider.get_id()}_search_delay" id="${cur_torrent_provider.get_id()}_search_delay" value="${8 if cur_torrent_provider.search_delay is None else round(cur_torrent_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                </span>
+                            </label>
+                            <label>
+                                <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">
+                                    <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
                     </div>
                     % endfor
                     <!-- end div for editing providers -->
@@ -675,6 +759,7 @@ $('#config-components').tabs();
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
                                         <input class="btn" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="newznab_cat_select" id="newznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>
@@ -805,6 +890,7 @@ $('#config-components').tabs();
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
                                         <input class="btn" type="button" class="torznab_cat_update" id="torznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="torznab_cat_select" id="torznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>

@@ -45,8 +45,8 @@ $('#config-components').tabs();
                     <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if app.USE_TORRENTS:
-                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
-                    <li><a href="${base_url}config/providers/#custom-torznab">Configure Jackett Providers</a></li>
+                    <li><a href="${full_url}#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><a href="${full_url}#custom-torznab">Configure Jackett Providers</a></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>

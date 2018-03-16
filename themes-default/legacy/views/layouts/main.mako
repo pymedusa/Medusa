@@ -1,6 +1,5 @@
 <%!
     from medusa import app
-    from medusa.server.core import clean_url_path
 %>
 <!DOCTYPE html>
 <html>
@@ -49,7 +48,7 @@
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + clean_url_path(app.WEB_ROOT + '/api/v2/', end_with_slash=True) + '"', '')[title == 'Login']}>
+    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
         <div v-cloak id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
