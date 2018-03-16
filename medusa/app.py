@@ -1,5 +1,6 @@
 # coding=utf-8
 """First module to initialize."""
+from __future__ import unicode_literals
 import random
 from threading import Lock
 
@@ -173,6 +174,7 @@ LAUNCH_BROWSER = False
 CACHE_DIR = None
 ACTUAL_CACHE_DIR = None
 ROOT_DIRS = []
+TVDB_DVD_ORDER_EP_IGNORE = False
 
 TRASH_REMOVE_SHOW = False
 TRASH_ROTATE_LOGS = False

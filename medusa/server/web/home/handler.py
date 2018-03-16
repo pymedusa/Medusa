@@ -6,6 +6,7 @@ import ast
 import json
 import os
 import time
+from builtins import str
 from datetime import date, datetime
 
 import adba
@@ -104,6 +105,8 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
+
+from past.builtins import cmp
 
 from requests.compat import (
     quote_plus,
@@ -2354,7 +2357,7 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if series_obj.is_anime:
-            ep_obj = series_obj.get_episode(absolute=forAbsolute)
+            ep_obj = series_obj.get_episode(absolute_number=forAbsolute)
         else:
             ep_obj = series_obj.get_episode(forSeason, forEpisode)
 
@@ -2384,8 +2387,10 @@ class Home(WebRoot):
             if sceneEpisode is not None:
                 sceneEpisode = int(sceneEpisode)
 
-            set_scene_numbering(series_obj, season=forSeason, episode=forEpisode,
-                                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode)
+            set_scene_numbering(
+                series_obj, season=forSeason, episode=forEpisode,
+                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+            )
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)

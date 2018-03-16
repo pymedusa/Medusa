@@ -286,3 +286,31 @@ def raise_github_exception():
         raise exception_type(http_status, {})
 
     return raise_ex
+
+
+@pytest.fixture
+def monkeypatch_function_return(monkeypatch):
+    def mock_function(mocks):
+        """
+        Mock one or more functions passing a list of two value tuples
+        with the full function import path and the return value.
+
+        Example: The following structure will mock two functions with their expected return values.
+        [
+            ('medusa.scene_numbering.get_indexer_numbering', (None, None)),
+            ('get_scene_exceptions_by_name': [(70668, 2, 1)]),
+        ]
+        :mocks: A list of two value tuples.
+        """
+
+        for function_to_mock, return_value in mocks:
+            def create_function(return_value):
+                def create_return(*args):
+                    return return_value
+                return create_return
+
+            monkeypatch.setattr(
+                function_to_mock,
+                create_function(return_value)
+            )
+    return mock_function

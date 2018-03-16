@@ -35,7 +35,7 @@ class NewpctProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.newpct.com'
+        self.url = 'http://www.tvsinpagar.com'
         self.urls = OrderedDict([
             ('daily', urljoin(self.url, 'ultimas-descargas')),
             ('torrent_url', urljoin(self.url, 'descargar-torrent/{0}_{1}.html')),
@@ -223,8 +223,8 @@ class NewpctProvider(TorrentProvider):
 
         torrent_info = torrent_content.find('div', class_='entry-left')
         spans = torrent_info('span', class_='imp')
-        size = spans[1].contents[1].strip()
-        pubdate_raw = spans[2].contents[1].strip()
+        size = spans[0].contents[1].strip()
+        pubdate_raw = spans[1].contents[1].strip()
 
         dl_script = torrent_dl.find('script', type='text/javascript').get_text(strip=True)
         item_id = try_int(NewpctProvider.torrent_id.search(dl_script).group(1))

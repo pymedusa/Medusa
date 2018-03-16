@@ -1,6 +1,8 @@
 # coding=utf-8
 """Request handler for series operations."""
+from __future__ import unicode_literals
 
+from builtins import map
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.series import Series, SeriesIdentifier
@@ -37,9 +39,9 @@ class SeriesLegacyHandler(BaseRequestHandler):
         if identifier == 'backlogged':
             # TODO: revisit
             allowed_qualities = self._parse(self.get_argument('allowed', default=None), str)
-            allowed_qualities = map(int, allowed_qualities.split(',')) if allowed_qualities else []
+            allowed_qualities = list(map(int, allowed_qualities.split(','))) if allowed_qualities else []
             preferred_qualities = self._parse(self.get_argument('preferred', default=None), str)
-            preferred_qualities = map(int, preferred_qualities.split(',')) if preferred_qualities else []
+            preferred_qualities = list(map(int, preferred_qualities.split(','))) if preferred_qualities else []
             new, existing = series.get_backlogged_episodes(allowed_qualities=allowed_qualities,
                                                            preferred_qualities=preferred_qualities)
             data = {'new': new, 'existing': existing}

@@ -16,22 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Collection of generic used classes."""
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 
 from dateutil import parser
 
 from medusa import app
-from medusa.common import Quality, USER_AGENT
+from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
-from six.moves.urllib.request import FancyURLopener
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
-
-
-class ApplicationURLopener(FancyURLopener, object):
-    version = USER_AGENT
 
 
 class SearchResult(object):
@@ -48,7 +47,7 @@ class SearchResult(object):
         self.series = None
 
         # URL to the NZB/torrent file
-        self.url = u''
+        self.url = ''
 
         # used by some providers to store extra info associated with the result
         self.extra_info = []
@@ -57,7 +56,7 @@ class SearchResult(object):
         self.quality = Quality.UNKNOWN
 
         # release name
-        self.name = u''
+        self.name = ''
 
         # size of the release (-1 = n/a)
         self.size = -1
@@ -75,7 +74,7 @@ class SearchResult(object):
         self.pubdate = None
 
         # release group
-        self.release_group = u''
+        self.release_group = ''
 
         # version
         self.version = -1
@@ -84,7 +83,7 @@ class SearchResult(object):
         self.hash = None
 
         # proper_tags
-        self.proper_tags = u''
+        self.proper_tags = ''
 
         # manually_searched
         self.manually_searched = False
@@ -93,7 +92,7 @@ class SearchResult(object):
         self.content = None
 
         # Result type like: nzb, nzbdata, torrent
-        self.result_type = u''
+        self.result_type = ''
 
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
@@ -341,14 +340,7 @@ class Viewer(object):
         :return:
         :rtype: list of medusa.logger.LogLine
         """
-        return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
-
-
-try:
-    import urllib
-    urllib._urlopener = ApplicationURLopener()
-except ImportError:
-    log.debug(u'Unable to import _urlopener, not using user_agent for urllib')
+        return sorted(list(itervalues(self._errors)), key=lambda error: error.timestamp, reverse=True)
 
 
 # The warning viewer: TODO: Change CamelCase to snake_case

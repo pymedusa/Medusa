@@ -1,11 +1,11 @@
 # coding=utf-8
 
 """TMDB module."""
-
-
+from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from builtins import range
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -17,7 +17,8 @@ from medusa.indexers.exceptions import IndexerError, IndexerException, IndexerSh
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
-from six import integer_types, string_types, text_type
+
+from six import integer_types, string_types, text_type, viewitems
 
 import tmdbsimple as tmdb
 
@@ -278,7 +279,7 @@ class Tmdb(BaseIndexer):
             ep_no = int(epno)
 
             image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
-            for k, v in cur_ep.items():
+            for k, v in viewitems(cur_ep):
                 k = k.lower()
 
                 if v is not None:
@@ -307,7 +308,7 @@ class Tmdb(BaseIndexer):
 
         images = self.tmdb.TV(sid).images(params=params)
         bid = images['id']
-        for image_type, images in {'poster': images['posters'], 'fanart': images['backdrops']}.iteritems():
+        for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
                 if image_type not in _images:
                     _images[image_type] = {}
@@ -331,7 +332,7 @@ class Tmdb(BaseIndexer):
                         if bid not in _images[image_type][resolution]:
                             _images[image_type][resolution][bid] = {}
 
-                        for k, v in image_mapped.items():
+                        for k, v in viewitems(image_mapped):
                             if k is None or v is None:
                                 continue
 
@@ -410,7 +411,7 @@ class Tmdb(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language='en'):
         """Take a series ID, gets the epInfo URL and parses the TMDB json response.
 
         into the shows dict in layout:
@@ -442,7 +443,7 @@ class Tmdb(BaseIndexer):
         # self.configuration.images['still_sizes']
         image_width = {'fanart': 'w1280', 'poster_thumb': 'w500'}
 
-        for k, v in series_info['series'].items():
+        for k, v in viewitems(series_info['series']):
             if v is not None:
                 if k in ['fanart', 'banner', 'poster_thumb']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
@@ -591,7 +592,7 @@ class Tmdb(BaseIndexer):
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
                     externals = {tmdb_external_id: external_value
                                  for tmdb_external_id, external_value
-                                 in externals.items()
+                                 in viewitems(externals)
                                  if external_value and tmdb_external_id in wanted_externals}
                     externals['tmdb_id'] = result['tv_results'][0]['id']
                     return externals

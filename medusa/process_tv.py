@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import os
 import shutil
 import stat
+from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
@@ -17,10 +18,11 @@ from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 import shutil_custom
 
+from six import iteritems
+
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -168,8 +170,7 @@ class ProcessResult(object):
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
         if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            to_remove_hashes = app.RECENTLY_POSTPROCESSED.items()
-            for info_hash, release_names in to_remove_hashes:
+            for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
 

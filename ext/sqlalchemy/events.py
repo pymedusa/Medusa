@@ -1,5 +1,5 @@
 # sqlalchemy/events.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -60,6 +60,24 @@ class DDLEvents(event.Events):
     as the names of members that are passed to listener
     functions.
 
+    For all :class:`.DDLEvent` events, the ``propagate=True`` keyword argument
+    will ensure that a given event handler is propagated to copies of the
+    object, which are made when using the :meth:`.Table.tometadata` method::
+
+        from sqlalchemy import DDL
+        event.listen(
+            some_table,
+            "after_create",
+            DDL("ALTER TABLE %(table)s SET name=foo_%(table)s"),
+            propagate=True
+        )
+
+        new_table = some_table.tometadata(new_metadata)
+
+    The above :class:`.DDL` object will also be associated with the
+    :class:`.Table` object represented by ``new_table``.
+
+
     See also:
 
         :ref:`event_toplevel`
@@ -89,6 +107,12 @@ class DDLEvents(event.Events):
          event, the checkfirst flag, and other
          elements used by internal events.
 
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
+
         """
 
     def after_create(self, target, connection, **kw):
@@ -104,6 +128,12 @@ class DDLEvents(event.Events):
          list of tables being generated for a metadata-level
          event, the checkfirst flag, and other
          elements used by internal events.
+
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
 
         """
 
@@ -121,6 +151,12 @@ class DDLEvents(event.Events):
          event, the checkfirst flag, and other
          elements used by internal events.
 
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
+
         """
 
     def after_drop(self, target, connection, **kw):
@@ -137,6 +173,12 @@ class DDLEvents(event.Events):
          event, the checkfirst flag, and other
          elements used by internal events.
 
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
+
         """
 
     def before_parent_attach(self, target, parent):
@@ -146,12 +188,11 @@ class DDLEvents(event.Events):
         :param target: the target object
         :param parent: the parent to which the target is being attached.
 
-        :func:`.event.listen` also accepts a modifier for this event:
-
-        :param propagate=False: When True, the listener function will
-         be established for any copies made of the target object,
-         i.e. those copies that are generated when
-         :meth:`.Table.tometadata` is used.
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
 
         """
 
@@ -162,12 +203,11 @@ class DDLEvents(event.Events):
         :param target: the target object
         :param parent: the parent to which the target is being attached.
 
-        :func:`.event.listen` also accepts a modifier for this event:
-
-        :param propagate=False: When True, the listener function will
-         be established for any copies made of the target object,
-         i.e. those copies that are generated when
-         :meth:`.Table.tometadata` is used.
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
 
         """
 
@@ -240,6 +280,12 @@ class DDLEvents(event.Events):
 
         This because the reflection process initiated by ``autoload=True``
         completes within the scope of the constructor for :class:`.Table`.
+
+        :func:`.event.listen` also accepts the ``propagate=True``
+        modifier for this event; when True, the listener function will
+        be established for any copies made of the target object,
+        i.e. those copies that are generated when
+        :meth:`.Table.tometadata` is used.
 
         """
 
@@ -602,7 +648,7 @@ class ConnectionEvents(event.Events):
         arguments should be returned as a three-tuple in this case::
 
             @event.listens_for(Engine, "before_execute", retval=True)
-            def before_execute(conn, conn, clauseelement, multiparams, params):
+            def before_execute(conn, clauseelement, multiparams, params):
                 # do something with clauseelement, multiparams, params
                 return clauseelement, multiparams, params
 
@@ -775,7 +821,23 @@ class ConnectionEvents(event.Events):
         the scope of this hook; the rollback of the per-statement transaction
         also occurs after the hook is called.
 
-        The user-defined event handler has two options for replacing
+        For the common case of detecting a "disconnect" situation which
+        is not currently handled by the SQLAlchemy dialect, the
+        :attr:`.ExceptionContext.is_disconnect` flag can be set to True which
+        will cause the exception to be considered as a disconnect situation,
+        which typically results in the connection pool being invalidated::
+
+            @event.listens_for(Engine, "handle_error")
+            def handle_exception(context):
+                if isinstance(context.original_exception, pyodbc.Error):
+                    for code in (
+                        '08S01', '01002', '08003',
+                        '08007', '08S02', '08001', 'HYT00', 'HY010'):
+
+                        if code in str(context.original_exception):
+                            context.is_disconnect = True
+
+        A handler function has two options for replacing
         the SQLAlchemy-constructed exception into one that is user
         defined.   It can either raise this new exception directly, in
         which case all further event listeners are bypassed and the
@@ -813,9 +875,10 @@ class ConnectionEvents(event.Events):
                     return MySpecialException("failed",
                         cause=context.chained_exception)
 
-        Handlers that return ``None`` may remain within this chain; the
-        last non-``None`` return value is the one that continues to be
-        passed to the next handler.
+        Handlers that return ``None`` may be used within the chain; when
+        a handler returns ``None``, the previous exception instance,
+        if any, is maintained as the current exception that is passed onto the
+        next handler.
 
         When a custom exception is raised or returned, SQLAlchemy raises
         this new exception as-is, it is not wrapped by any SQLAlchemy

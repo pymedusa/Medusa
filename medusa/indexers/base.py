@@ -3,6 +3,7 @@
 """Base class for indexer api's."""
 
 from __future__ import division
+from __future__ import unicode_literals
 
 import getpass
 import logging
@@ -10,6 +11,8 @@ import os
 import tempfile
 import time
 import warnings
+from builtins import object
+from builtins import str
 from operator import itemgetter
 
 from medusa import statistics as stats
@@ -26,7 +29,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.statistics import weights
 
 import requests
-from six import integer_types
+
+from six import integer_types, itervalues, string_types, viewitems
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -81,7 +85,7 @@ class BaseIndexer(object):
             self.config['cache_location'] = self._get_temp_dir()
         elif cache is False:
             self.config['cache_enabled'] = False
-        elif isinstance(cache, basestring):
+        elif isinstance(cache, string_types):
             self.config['cache_enabled'] = True
             self.config['cache_location'] = cache
         else:
@@ -296,17 +300,17 @@ class BaseIndexer(object):
             'Score', 'Rating', 'Votes', 'Resolution', 'URL'
         )
 
-        available_res = sorted(images.keys(), key=lambda x: int(x.split('x')[0]) * int(x.split('x')[1]))
+        available_res = sorted(list(images), key=lambda x: int(x.split('x')[0]) * int(x.split('x')[1]))
 
         # add resolution information to each image and flatten dict
         merged_images = []
         for resolution in images:
             images_by_resolution = images[resolution]
-            for image in images_by_resolution.values():
+            for image in itervalues(images_by_resolution):
                 image['resolution'] = resolution
                 image['res_index'] = available_res.index(resolution) + 1
             # add all current resolution images to the merged list
-            merged_images.extend(images_by_resolution.values())
+            merged_images.extend(list(itervalues(images_by_resolution)))
             log.debug(
                 u'Found {x} {image}s at {res} ({res_index}) resolution for series {id}', {
                     'x': len(images_by_resolution),
@@ -366,7 +370,7 @@ class BaseIndexer(object):
             if item[0] >= best_result[0]
         ]
         if len(best_results) > 1:
-            log.warning(
+            log.debug(
                 u'Multiple {image}s at highest weighted score for series {id}:'
                 u'\n{header}'
                 u'\n{results}', {
@@ -431,7 +435,7 @@ class BaseIndexer(object):
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
-        if isinstance(key, (integer_types, long)):
+        if isinstance(key, (integer_types, int)):
             # Item is integer, treat as show id
             if key not in self.shows:
                 self._get_show_data(key, self.config['language'])
@@ -444,7 +448,7 @@ class BaseIndexer(object):
             selected_series = [selected_series]
 
         for show in selected_series:
-            for k, v in show.items():
+            for k, v in viewitems(show):
                 self._set_show_data(show['id'], k, v)
         return selected_series
 
@@ -553,7 +557,7 @@ class Show(dict):
         first match.
         """
         results = []
-        for cur_season in self.values():
+        for cur_season in itervalues(self):
             searchresult = cur_season.search(term=term, key=key)
             if len(searchresult) != 0:
                 results.extend(searchresult)
@@ -571,7 +575,7 @@ class Season(dict):
     def __repr__(self):
         """Representation of a season object."""
         return '<Season instance (containing {0} episodes)>'.format(
-            len(self.keys())
+            len(list(self))
         )
 
     def __getattr__(self, episode_number):
@@ -599,7 +603,7 @@ class Season(dict):
 
         """
         results = []
-        for ep in self.values():
+        for ep in itervalues(self):
             searchresult = ep.search(term=term, key=key)
             if searchresult is not None:
                 results.append(
@@ -664,13 +668,13 @@ class Episode(dict):
         if term is None:
             raise TypeError('must supply string to search for (contents)')
 
-        term = unicode(term).lower()
-        for cur_key, cur_value in self.items():
-            cur_key, cur_value = unicode(cur_key).lower(), unicode(cur_value).lower()
+        term = str(term).lower()
+        for cur_key, cur_value in viewitems(self):
+            cur_key, cur_value = str(cur_key).lower(), str(cur_value).lower()
             if key is not None and cur_key != key:
                 # Do not search this key
                 continue
-            if cur_value.find(unicode(term).lower()) > -1:
+            if cur_value.find(str(term).lower()) > -1:
                 return self
 
 

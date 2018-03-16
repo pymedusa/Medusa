@@ -1,5 +1,5 @@
 # sql/functions.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -689,7 +689,14 @@ class array_agg(GenericFunction):
 
     def __init__(self, *args, **kwargs):
         args = [_literal_as_binds(c) for c in args]
-        kwargs.setdefault('type_', self.type(_type_from_args(args)))
+
+        if 'type_' not in kwargs:
+
+            type_from_args = _type_from_args(args)
+            if isinstance(type_from_args, sqltypes.ARRAY):
+                kwargs['type_'] = type_from_args
+            else:
+                kwargs['type_'] = sqltypes.ARRAY(type_from_args)
         kwargs['_parsed_args'] = args
         super(array_agg, self).__init__(*args, **kwargs)
 
@@ -811,3 +818,65 @@ class cume_dist(GenericFunction):
 
     """
     type = sqltypes.Numeric()
+
+
+class cube(GenericFunction):
+    r"""Implement the ``CUBE`` grouping operation.
+
+    This function is used as part of the GROUP BY of a statement,
+    e.g. :meth:`.Select.group_by`::
+
+        stmt = select(
+            [func.sum(table.c.value), table.c.col_1, table.c.col_2]
+            ).group_by(func.cube(table.c.col_1, table.c.col_2))
+
+    .. versionadded:: 1.2
+
+    """
+
+
+class rollup(GenericFunction):
+    r"""Implement the ``ROLLUP`` grouping operation.
+
+    This function is used as part of the GROUP BY of a statement,
+    e.g. :meth:`.Select.group_by`::
+
+        stmt = select(
+            [func.sum(table.c.value), table.c.col_1, table.c.col_2]
+        ).group_by(func.rollup(table.c.col_1, table.c.col_2))
+
+    .. versionadded:: 1.2
+
+    """
+
+
+class grouping_sets(GenericFunction):
+    r"""Implement the ``GROUPING SETS`` grouping operation.
+
+    This function is used as part of the GROUP BY of a statement,
+    e.g. :meth:`.Select.group_by`::
+
+        stmt = select(
+            [func.sum(table.c.value), table.c.col_1, table.c.col_2]
+        ).group_by(func.grouping_sets(table.c.col_1, table.c.col_2))
+
+    In order to group by multiple sets, use the :func:`.tuple_` construct::
+
+        from sqlalchemy import tuple_
+
+        stmt = select(
+            [
+                func.sum(table.c.value),
+                table.c.col_1, table.c.col_2,
+                table.c.col_3]
+        ).group_by(
+            func.grouping_sets(
+                tuple_(table.c.col_1, table.c.col_2),
+                tuple_(table.c.value, table.c.col_3),
+            )
+        )
+
+
+    .. versionadded:: 1.2
+
+    """

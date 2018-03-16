@@ -1,8 +1,11 @@
 # coding=utf-8
 
 """All providers type init."""
+from __future__ import unicode_literals
 
 import pkgutil
+from builtins import next
+from builtins import zip
 from os import sys
 from random import shuffle
 
@@ -20,11 +23,11 @@ from medusa.providers.torrent import (
     bitcannon,
     bithdtv,
     btn,
+    cinemaz,
     danishbits,
     elitetorrent,
     elitetracker,
     gftracker,
-    hd4free,
     hdbits,
     hdspace,
     hdtorrents,
@@ -65,15 +68,15 @@ __all__ = [
     'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
 ]
 
 
 def sorted_provider_list(randomize=False):
     initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
-    provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
+    provider_dict = dict(list(zip([x.get_id() for x in initial_list], initial_list)))
 
     new_list = []
 

@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+from builtins import map
 from chardet import detect
 
 from medusa import app
@@ -40,7 +42,7 @@ def _fix_list_encoding(var):
     """
 
     if isinstance(var, (list, tuple)):
-        return filter(lambda x: x is not None, map(_to_unicode, var))
+        return [x for x in map(_to_unicode, var) if x is not None]
 
     return var
 

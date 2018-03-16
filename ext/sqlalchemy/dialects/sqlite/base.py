@@ -1,5 +1,5 @@
 # sqlite/base.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -531,8 +531,7 @@ class DATETIME(_DateTimeMixin, sqltypes.DateTime):
 
     The default string storage format is::
 
-        "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(min)02d:\
-%(second)02d.%(microsecond)06d"
+        "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(min)02d:%(second)02d.%(microsecond)06d"
 
     e.g.::
 
@@ -558,6 +557,7 @@ class DATETIME(_DateTimeMixin, sqltypes.DateTime):
      Otherwise, if positional groups are used, the datetime() constructor
      is called with positional arguments via
      ``*map(int, match_obj.groups(0))``.
+
     """
 
     _storage_format = (
@@ -1545,14 +1545,19 @@ class SQLiteDialect(default.DefaultDialect):
     def _get_table_sql(self, connection, table_name, schema=None, **kw):
         try:
             s = ("SELECT sql FROM "
-                 " (SELECT * FROM sqlite_master UNION ALL "
-                 "  SELECT * FROM sqlite_temp_master) "
-                 "WHERE name = '%s' "
-                 "AND type = 'table'") % table_name
+                 " (SELECT * FROM %(schema)ssqlite_master UNION ALL "
+                 "  SELECT * FROM %(schema)ssqlite_temp_master) "
+                 "WHERE name = '%(table)s' "
+                 "AND type = 'table'" % {
+                     "schema": ("%s." % schema) if schema else "",
+                     "table": table_name})
             rs = connection.execute(s)
         except exc.DBAPIError:
-            s = ("SELECT sql FROM sqlite_master WHERE name = '%s' "
-                 "AND type = 'table'") % table_name
+            s = ("SELECT sql FROM %(schema)ssqlite_master "
+                 "WHERE name = '%(table)s' "
+                 "AND type = 'table'" % {
+                     "schema": ("%s." % schema) if schema else "",
+                     "table": table_name})
             rs = connection.execute(s)
         return rs.scalar()
 

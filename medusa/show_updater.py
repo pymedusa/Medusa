@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import logging
 import threading
 import time
+from builtins import object
 
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -254,7 +257,7 @@ class UpdateCache(db.DBConnection):
             'WHERE provider = ?',
             [indexer]
         )
-        return last_update_indexer[0]['time'] if last_update_indexer else None
+        return last_update_indexer[0][b'time'] if last_update_indexer else None
 
     def get_last_update_season(self, indexer_name, series_id, season):
         """Get the last indexer update for a specific series."""

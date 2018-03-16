@@ -1,5 +1,5 @@
 # sql/dml.py
-# Copyright (C) 2009-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2009-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -582,7 +582,7 @@ class Insert(ValuesBase):
 
         self.parameters, self._has_multi_parameters = \
             self._process_colparams(
-                dict((_column_as_key(n), Null()) for n in names))
+                {_column_as_key(n): Null() for n in names})
 
         self.select_names = names
         self.inline = True
@@ -656,7 +656,7 @@ class Update(ValuesBase):
                     )
 
          .. versionchanged:: 0.7.4
-             The WHERE clause can refer to multiple tables.
+             The WHERE clause of UPDATE can refer to multiple tables.
 
         :param values:
           Optional dictionary which specifies the ``SET`` conditions of the
@@ -768,10 +768,8 @@ class Update(ValuesBase):
 
     @property
     def _extra_froms(self):
-        # TODO: this could be made memoized
-        # if the memoization is reset on each generative call.
         froms = []
-        seen = set([self.table])
+        seen = {self.table}
 
         if self._whereclause is not None:
             for item in _from_objects(self._whereclause):
@@ -811,6 +809,23 @@ class Delete(UpdateBase):
           condition of the ``DELETE`` statement. Note that the
           :meth:`~Delete.where()` generative method may be used instead.
 
+         The WHERE clause can refer to multiple tables.
+         For databases which support this, a ``DELETE..USING`` or similar
+         clause will be generated.  The statement
+         will fail on databases that don't have support for multi-table
+         delete statements.  A SQL-standard method of referring to
+         additional tables in the WHERE clause is to use a correlated
+         subquery::
+
+            users.delete().where(
+                    users.c.name==select([addresses.c.email_address]).\
+                                where(addresses.c.user_id==users.c.id).\
+                                as_scalar()
+                    )
+
+         .. versionchanged:: 1.2.0
+             The WHERE clause of DELETE can refer to multiple tables.
+
         .. seealso::
 
             :ref:`deletes` - SQL Expression Tutorial
@@ -845,6 +860,19 @@ class Delete(UpdateBase):
                                      _literal_as_text(whereclause))
         else:
             self._whereclause = _literal_as_text(whereclause)
+
+    @property
+    def _extra_froms(self):
+        froms = []
+        seen = {self.table}
+
+        if self._whereclause is not None:
+            for item in _from_objects(self._whereclause):
+                if not seen.intersection(item._cloned_set):
+                    froms.append(item)
+                seen.update(item._cloned_set)
+
+        return froms
 
     def _copy_internals(self, clone=_clone, **kw):
         # TODO: coverage

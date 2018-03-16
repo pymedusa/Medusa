@@ -21,9 +21,12 @@
 # @copyright: Dermot Buckley
 #
 
+from __future__ import unicode_literals
+
 import datetime
 import time
 import traceback
+from builtins import str
 
 from medusa import db, logger
 from medusa.helper.exceptions import ex
@@ -74,7 +77,7 @@ def find_scene_numbering(series_obj, season, episode):
         [series_obj.indexer, series_obj.series_id, season, episode])
 
     if rows:
-        return int(rows[0]["scene_season"]), int(rows[0]["scene_episode"])
+        return int(rows[0][b"scene_season"]), int(rows[0][b"scene_episode"])
 
 
 def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=True):
@@ -119,7 +122,7 @@ def find_scene_absolute_numbering(series_obj, absolute_number):
         [series_obj.indexer, series_obj.series_id, absolute_number])
 
     if rows:
-        return int(rows[0]["scene_absolute_number"])
+        return int(rows[0][b"scene_absolute_number"])
 
 
 def get_indexer_numbering(series_obj, sceneSeason, sceneEpisode, fallback_to_xem=True):
@@ -132,11 +135,13 @@ def get_indexer_numbering(series_obj, sceneSeason, sceneEpisode, fallback_to_xem
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        "SELECT season, episode FROM scene_numbering WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
-        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode])
+        "SELECT season, episode FROM scene_numbering "
+        "WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
+        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode]
+    )
 
     if rows:
-        return int(rows[0]["season"]), int(rows[0]["episode"])
+        return int(rows[0][b"season"]), int(rows[0][b"episode"])
     else:
         if fallback_to_xem:
             return get_indexer_numbering_for_xem(series_obj, sceneSeason, sceneEpisode)
@@ -162,7 +167,7 @@ def get_indexer_absolute_numbering(series_obj, sceneAbsoluteNumber, fallback_to_
             [series_obj.indexer, series_obj.series_id, sceneAbsoluteNumber, scene_season])
 
     if rows:
-        return int(rows[0]["absolute_number"])
+        return int(rows[0][b"absolute_number"])
     else:
         if fallback_to_xem:
             return get_indexer_absolute_numbering_for_xem(series_obj, sceneAbsoluteNumber, scene_season)
@@ -224,7 +229,7 @@ def find_xem_numbering(series_obj, season, episode):
         [series_obj.indexer, series_obj.series_id, season, episode])
 
     if rows:
-        return int(rows[0]["scene_season"]), int(rows[0]["scene_episode"])
+        return int(rows[0][b"scene_season"]), int(rows[0][b"scene_episode"])
 
 
 def find_xem_absolute_numbering(series_obj, absolute_number):
@@ -247,7 +252,7 @@ def find_xem_absolute_numbering(series_obj, absolute_number):
         [series_obj.indexer, series_obj.series_id, absolute_number])
 
     if rows:
-        return int(rows[0]["scene_absolute_number"])
+        return int(rows[0][b"scene_absolute_number"])
 
 
 def get_indexer_numbering_for_xem(series_obj, sceneSeason, sceneEpisode):
@@ -270,7 +275,7 @@ def get_indexer_numbering_for_xem(series_obj, sceneSeason, sceneEpisode):
         [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode])
 
     if rows:
-        return int(rows[0]["season"]), int(rows[0]["episode"])
+        return int(rows[0][b"season"]), int(rows[0][b"episode"])
 
     return sceneSeason, sceneEpisode
 
@@ -299,7 +304,7 @@ def get_indexer_absolute_numbering_for_xem(series_obj, sceneAbsoluteNumber, scen
             [series_obj.indexer, series_obj.series_id, sceneAbsoluteNumber, scene_season])
 
     if rows:
-        return int(rows[0]["absolute_number"])
+        return int(rows[0][b"absolute_number"])
 
     return sceneAbsoluteNumber
 
@@ -320,10 +325,10 @@ def get_scene_numbering_for_show(series_obj):
 
     result = {}
     for row in rows:
-        season = int(row['season'])
-        episode = int(row['episode'])
-        scene_season = int(row['scene_season'])
-        scene_episode = int(row['scene_episode'])
+        season = int(row[b'season'])
+        episode = int(row[b'episode'])
+        scene_season = int(row[b'scene_season'])
+        scene_episode = int(row[b'scene_episode'])
 
         result[(season, episode)] = (scene_season, scene_episode)
 
@@ -344,15 +349,17 @@ def get_xem_numbering_for_show(series_obj, refresh_data=True):
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
-        [series_obj.indexer, series_obj.series_id])
+        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes '
+        'WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
+        [series_obj.indexer, series_obj.series_id]
+    )
 
     result = {}
     for row in rows:
-        season = int(row['season'])
-        episode = int(row['episode'])
-        scene_season = int(row['scene_season'])
-        scene_episode = int(row['scene_episode'])
+        season = int(row[b'season'])
+        episode = int(row[b'episode'])
+        scene_season = int(row[b'scene_season'])
+        scene_episode = int(row[b'scene_episode'])
 
         result[(season, episode)] = (scene_season, scene_episode)
 
@@ -375,8 +382,8 @@ def get_scene_absolute_numbering_for_show(series_obj):
 
     result = {}
     for row in rows:
-        absolute_number = int(row['absolute_number'])
-        scene_absolute_number = int(row['scene_absolute_number'])
+        absolute_number = int(row[b'absolute_number'])
+        scene_absolute_number = int(row[b'scene_absolute_number'])
 
         result[absolute_number] = scene_absolute_number
 
@@ -401,8 +408,8 @@ def get_xem_absolute_numbering_for_show(series_obj):
         [series_obj.indexer, series_obj.series_id])
 
     for row in rows:
-        absolute_number = int(row['absolute_number'])
-        scene_absolute_number = int(row['scene_absolute_number'])
+        absolute_number = int(row[b'absolute_number'])
+        scene_absolute_number = int(row[b'scene_absolute_number'])
 
         result[absolute_number] = scene_absolute_number
 
@@ -427,7 +434,7 @@ def xem_refresh(series_obj, force=False):
     rows = main_db_con.select("SELECT last_refreshed FROM xem_refresh WHERE indexer = ? and indexer_id = ?",
                               [indexer_id, series_id])
     if rows:
-        lastRefresh = int(rows[0]['last_refreshed'])
+        lastRefresh = int(rows[0][b'last_refreshed'])
         refresh = int(time.mktime(datetime.datetime.today().timetuple())) > lastRefresh + MAX_REFRESH_AGE_SECS
     else:
         refresh = True
@@ -450,12 +457,12 @@ def xem_refresh(series_obj, force=False):
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
-            if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(indexer_id) not in parsed_json['data']:
+            if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(series_id) not in parsed_json['data']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(series_id, series_obj.indexer_name), logger.DEBUG)
                 return
 
             # XEM API URL
-            url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer_id).config['xem_origin'])
+            url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(series_id, indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, series_obj.indexer_name), logger.DEBUG)
@@ -465,21 +472,24 @@ def xem_refresh(series_obj, force=False):
             for entry in parsed_json['data']:
                 if 'scene' in entry:
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene']['season'], entry['scene']['episode'],
                          entry['scene']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                     cl.append([
-                        "UPDATE tv_episodes SET absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
+                        "UPDATE tv_episodes SET absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
                         [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
                     ])
                 if 'scene_2' in entry:  # for doubles
                     cl.append([
-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
+                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
                         [entry['scene_2']['season'], entry['scene_2']['episode'],
                          entry['scene_2']['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
@@ -526,42 +536,42 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
 
     cl = []
     for row in rows:
-        season = int(row['season'])
-        episode = int(row['episode'])
+        season = int(row[b'season'])
+        episode = int(row[b'episode'])
 
-        if not int(row['scene_season']) and last_scene_season:
+        if not int(row[b'scene_season']) and last_scene_season:
             scene_season = last_scene_season + 1
             update_scene_season = True
         else:
-            scene_season = int(row['scene_season'])
+            scene_season = int(row[b'scene_season'])
             if last_scene_season and scene_season < last_scene_season:
                 scene_season = last_scene_season + 1
                 update_scene_season = True
 
-        if not int(row['scene_episode']) and last_scene_episode:
+        if not int(row[b'scene_episode']) and last_scene_episode:
             scene_episode = last_scene_episode + 1
             update_scene_episode = True
         else:
-            scene_episode = int(row['scene_episode'])
+            scene_episode = int(row[b'scene_episode'])
             if last_scene_episode and scene_episode < last_scene_episode:
                 scene_episode = last_scene_episode + 1
                 update_scene_episode = True
 
         # check for unset values and correct them
-        if not int(row['absolute_number']) and last_absolute_number:
+        if not int(row[b'absolute_number']) and last_absolute_number:
             absolute_number = last_absolute_number + 1
             update_absolute_number = True
         else:
-            absolute_number = int(row['absolute_number'])
+            absolute_number = int(row[b'absolute_number'])
             if last_absolute_number and absolute_number < last_absolute_number:
                 absolute_number = last_absolute_number + 1
                 update_absolute_number = True
 
-        if not int(row['scene_absolute_number']) and last_scene_absolute_number:
+        if not int(row[b'scene_absolute_number']) and last_scene_absolute_number:
             scene_absolute_number = last_scene_absolute_number + 1
             update_scene_absolute_number = True
         else:
-            scene_absolute_number = int(row['scene_absolute_number'])
+            scene_absolute_number = int(row[b'scene_absolute_number'])
             if last_scene_absolute_number and scene_absolute_number < last_scene_absolute_number:
                 scene_absolute_number = last_scene_absolute_number + 1
                 update_scene_absolute_number = True

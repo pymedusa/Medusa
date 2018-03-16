@@ -1,6 +1,6 @@
 # coding=utf-8
 """Module with common helper utils."""
-
+from __future__ import division
 from __future__ import unicode_literals
 
 import datetime
@@ -8,7 +8,9 @@ import logging
 import re
 import traceback
 from fnmatch import fnmatch
+
 from medusa import app
+
 from six import PY3, text_type
 
 
@@ -246,7 +248,7 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
     finally:
         try:
             if result != default:
-                result = long(result)
+                result = int(result)
                 result = max(result, 0)
         except (TypeError, ValueError):
             pass
@@ -387,8 +389,8 @@ def pretty_date(d):
     elif s < 120:
         return '1 minute ago'
     elif s < 3600:
-        return '{} minutes ago'.format(s / 60)
+        return '{} minutes ago'.format(s // 60)
     elif s < 7200:
         return '1 hour ago'
     else:
-        return '{} hours ago'.format(s / 3600)
+        return '{} hours ago'.format(s // 3600)

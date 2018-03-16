@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Custom exceptions used or raised by tvmaze api."""
+from __future__ import unicode_literals
 
 __author__ = "p0psicles"
 __version__ = "1.0"

@@ -1,8 +1,11 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import os
 import subprocess
+from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex

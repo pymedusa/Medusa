@@ -1,13 +1,17 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import os
+from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
 

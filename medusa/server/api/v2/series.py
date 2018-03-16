@@ -1,5 +1,7 @@
 # coding=utf-8
 """Request handler for series and episodes."""
+from __future__ import unicode_literals
+
 import logging
 
 from medusa.server.api.v2.base import (
@@ -10,6 +12,9 @@ from medusa.server.api.v2.base import (
     set_nested_value
 )
 from medusa.tv.series import Series, SeriesIdentifier
+
+from six import itervalues, viewitems
+
 from tornado.escape import json_decode
 
 log = logging.getLogger(__name__)
@@ -69,11 +74,11 @@ class SeriesHandler(BaseRequestHandler):
         if not data or 'id' not in data:
             return self._bad_request('Invalid series data')
 
-        ids = {k: v for k, v in data['id'].items() if k != 'imdb'}
+        ids = {k: v for k, v in viewitems(data['id']) if k != 'imdb'}
         if len(ids) != 1:
             return self._bad_request('Only 1 indexer identifier should be specified')
 
-        identifier = SeriesIdentifier.from_slug('{slug}{id}'.format(slug=ids.keys()[0], id=ids.values()[0]))
+        identifier = SeriesIdentifier.from_slug('{slug}{id}'.format(slug=list(ids)[0], id=list(itervalues(ids))[0]))
         if not identifier:
             return self._bad_request('Invalid series identifier')
 

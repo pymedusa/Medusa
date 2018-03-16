@@ -25,7 +25,7 @@ from medusa.show.show import Show
 from requests import RequestException
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
-from six import iteritems
+from six import iteritems, itervalues
 from tornroutes import route
 from traktor import TraktApi
 
@@ -174,7 +174,7 @@ class HomeAddShows(Home):
                 indexer_id = show_name = indexer = None
                 # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
                 # is reset. This will prevent errors, when using multiple indexers and caching.
-                for cur_provider in app.metadata_provider_dict.values():
+                for cur_provider in itervalues(app.metadata_provider_dict):
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
@@ -317,7 +317,7 @@ class HomeAddShows(Home):
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
-        except (RequestException, StandardError) as e:
+        except (RequestException, Exception) as e:
             recommended_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",

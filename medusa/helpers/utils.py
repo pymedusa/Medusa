@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """General utility functions."""
+from __future__ import unicode_literals
 
 from collections import Iterable
 

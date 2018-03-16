@@ -59,6 +59,8 @@ import subprocess
 import sys
 import threading
 import time
+from builtins import object
+from builtins import str
 
 from configobj import ConfigObj
 
@@ -538,6 +540,7 @@ class Application(object):
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
             app.SSL_CA_BUNDLE = check_setting_str(app.CFG, 'General', 'ssl_ca_bundle', '')
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
+            app.TVDB_DVD_ORDER_EP_IGNORE = bool(check_setting_int(app.CFG, 'General', 'tvdb_dvd_order_ep_ignore', 0))
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
             app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
@@ -984,18 +987,18 @@ class Application(object):
                 try:
                     import getpass
                     app.OS_USER = getpass.getuser()
-                except StandardError:
+                except Exception:
                     pass
 
             try:
                 app.LOCALE = locale.getdefaultlocale()
-            except StandardError:
+            except Exception:
                 app.LOCALE = None, None
 
             try:
                 import ssl
                 app.OPENSSL_VERSION = ssl.OPENSSL_VERSION
-            except StandardError:
+            except Exception:
                 pass
 
             if app.VERSION_NOTIFY:
@@ -1326,7 +1329,7 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
                 app.torrent_checker_scheduler.enable = True
             app.torrent_checker_scheduler.silent = False
             app.torrent_checker_scheduler.start()
@@ -1474,6 +1477,7 @@ class Application(object):
         new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
+        new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
