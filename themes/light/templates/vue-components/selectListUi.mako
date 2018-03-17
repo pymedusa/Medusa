@@ -1,6 +1,20 @@
+<style scoped>
+    /* =========================================================================
+    Style for the selectList.mako.
+    Should be moved from here, when moving the .vue files.
+    ========================================================================== */
+
+    div.select-list ul {
+        padding-left: 0;
+    }
+
+    div.select-list li {
+        list-style-type: none;
+        display: flex;
+    }
+</style>
 <script type="text/x-template" id="select-list">
     <div class="select-list">
-            <link rel="stylesheet" type="text/css" href="css/vue/selectlistui.css?${sbPID}" />
             <ul>
             <li v-for="item of editItems">
                 <input style="display: inline-block" type="text" @change="sendValues" v-model="item.value"/>
@@ -42,22 +56,27 @@
                 this.newItem = item.value;
                 this.sendValues();
             },
-            sanitize: function(items) {
-                if (!items) {
+            /**
+             * Initially an array of strings is passed, which we'd like to translate to an array of object.
+             * Where the index has been added.
+             * @param values - array of strings.
+             * @returns - An array of objects with the index and value.
+             */
+            sanitize: function(values) {
+                if (!values) {
                     return [];
                 }
-                if (items.filter(item => typeof(item) === 'string').length) {
-                    return this.transformToIndexedObject(items);
-                } else {
-                    return items;
-                }
-            },
-            transformToIndexedObject: arrayOfStrings => {
-                arrayOfObjects = [];
-                for (let index=0; index < arrayOfStrings.length; index++) {
-                    arrayOfObjects.push({id: index, value: arrayOfStrings[index]});
-                }
-                return arrayOfObjects;
+                
+                return values.map((value, index) => {
+                    if (typeof(value) === 'string') {
+                        return {
+                            id: index,
+                            value: value
+                        }
+                    } else {
+                        return value;
+                    }
+                })
             }
         }
     });

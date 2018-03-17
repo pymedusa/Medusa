@@ -42,7 +42,7 @@
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId"/>
-                                    <input type="text" name="location" id="location" :value="series.config.location" class="form-control form-control-inline input-sm input350"/>
+                                    <input type="text" name="location" ref="locationBtn" id="location" v-model="location" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -229,9 +229,10 @@
 <%include file="/vue-components/selectListUi.mako"/>
 <%include file="/vue-components/anidbReleaseGroupUi.mako"/>
 <script>
-var startVue = function() {
+let eventBus = null;
+const startVue = function() {
     const app = new Vue({
-        el: '#config-content',
+        el: '#vue-wrap',
         data() {
             // Python conversions
             // JS only
@@ -250,7 +251,7 @@ var startVue = function() {
                         scene: false,
                         sports: false,
                         paused: false,
-                        location: "",
+                        location: '',
                         airByDate: false,
                         subtitlesEnabled: false,
                         release: {
@@ -269,7 +270,8 @@ var startVue = function() {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 saveStatus: '',
-                seriesLoaded: false
+                seriesLoaded: false,
+                location: ''
             }
         },
         async mounted() {
@@ -277,15 +279,22 @@ var startVue = function() {
             const url = 'series/' + seriesSlug;
             try {
                 const response = await api.get('series/' + this.seriesSlug);
-                this.series.config = response.data.config;
+                this.series = response.data;
+                this.location = this.series.config.location;
             } catch (error) {
-                console.log('Could not get series info for: '+ seriesSlug);
+                console.debug('Could not get series info for: '+ seriesSlug);
             }
 
             // Add the Browse.. button after the show location input.
             $('#location').fileBrowser({
 	            title: 'Select Show Location'
-	        });
+            });
+            
+            // Mount an event bus
+            $.eventBus = new Vue({parent: this});
+            $.eventBus.$on('locationEvt', function(value) {
+                this.$parent.saveLocation(value);
+            });
         },
         methods: {
             anonRedirect: function(e) {
@@ -294,9 +303,6 @@ var startVue = function() {
             },
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
-            },
-            loadSeries: async function() {
-
             },
             saveSeries: async function(subject) {
                 if (['series', 'all'].includes(subject)) {
@@ -329,15 +335,15 @@ var startVue = function() {
                 };
             },
             onChangeIgnoredWords: function(items) {
-		        console.log('Event from child component emitted', items);
+		        console.debug('Event from child component emitted', items);
                 this.series.config.release.ignoredWords = items.map(item => item.value);
             },
             onChangeRequiredWords: function(items) {
-		        console.log('Event from child component emitted', items);
+		        console.debug('Event from child component emitted', items);
                 this.series.config.release.requiredWords = items.map(item => item.value);
             },
             onChangeAliases: function(items) {
-		        console.log('Event from child component emitted', items);
+		        console.debug('Event from child component emitted', items);
                 this.series.config.aliases = items.map(item => item.value);
             },
             onChangeReleaseGroupsAnime: function(items) {
@@ -345,6 +351,9 @@ var startVue = function() {
                 this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
 
+            },
+            saveLocation: function(value) {
+                this.series.config.location = value;
             }
         },
         computed: {
@@ -352,10 +361,12 @@ var startVue = function() {
                 if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
+            },
+            location: function() {
+                return this.series.config.location;
             }
         }
     });
-    $('[v-cloak]').removeAttr('v-cloak');
 };
 </script>
 </%block>

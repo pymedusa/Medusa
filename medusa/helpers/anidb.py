@@ -99,7 +99,8 @@ def short_group_names(groups):
     short_group_list = []
     if set_up_anidb_connection():
         for group_name in groups:
-            short_group_list += get_short_group_name(group_name)
+            # Try to get a short group name, or return the group name provided.
+            short_group_list += get_short_group_name(group_name) or [group_name]
     else:
         short_group_list = groups
     return short_group_list

@@ -10,10 +10,6 @@ function metaToBool(pyVar) {
     return !(meta === 'false' || meta === 'none' || meta === '0');
 }
 
-$('#location').fileBrowser({
-    title: 'Select Show Location'
-});
-
 $('#submit').on('click', () => {
     const allExceptions = [];
 

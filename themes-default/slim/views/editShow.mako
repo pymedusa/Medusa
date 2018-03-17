@@ -42,7 +42,7 @@
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId"/>
-                                    <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="saveSeries()"/>
+                                    <input type="text" name="location" ref="locationBtn" id="location" v-model="location" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -61,7 +61,7 @@
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm" 
-                                        v-model="seriesObj.config.defaultEpisodeStatus"  @change="saveSeries('seriesObj')"/>
+                                        v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
                                         <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -73,7 +73,7 @@
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
                                     <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" 
-                                        data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguages" @change="saveSeries('seriesObj')">
+                                        data-blank="false" :data-language="series.language" :data-available="availableLanguages" @change="saveSeries('series')">
                                     </select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
@@ -83,7 +83,7 @@
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="seriesObj.config.subtitlesEnabled" @change="saveSeries('seriesObj')"/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" @change="saveSeries('series')"/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -91,7 +91,7 @@
                             <label for="paused">
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" v-model="seriesObj.config.paused" @change="saveSeries('seriesObj')"/> pause this show (Medusa will not download episodes)
+                                    <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
                                 </span>
                             </label>
                         </div>
@@ -106,7 +106,7 @@
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="seriesObj.config.paused" @change="saveSeries('seriesObj')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.paused" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -115,15 +115,15 @@
                             <label for="anime">
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" v-model="seriesObj.config.anime" @change="saveSeries('seriesObj')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="anime" name="anime" v-model="series.config.anime" @change="saveSeries('series')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                                 </span>
                             </label>
                         </div>
                         
-                        <div v-if="seriesObj.config.anime" class="field-pair">
+                        <div v-if="series.config.anime" class="field-pair">
                             <span class="component-title">Release Groups</span>
                             <span class="component-desc">
-                                <anidb-release-group-ui :series="seriesSlug" :blacklist="seriesObj.config.release.blacklist" :whitelist="seriesObj.config.release.whitelist" :all-groups="['group1', 'group2']"></anidb-release-group-ui>
+                                <anidb-release-group-ui :series="seriesSlug" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </span>
                         </div>
 
@@ -131,7 +131,7 @@
                             <label for="sports">
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" v-model="seriesObj.config.sports" @change="saveSeries('seriesObj')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="sports" name="sports" v-model="series.config.sports" @change="saveSeries('series')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -140,7 +140,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="seriesObj.config.flattenFolders" @change="saveSeries('seriesObj')"/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="series.config.flattenFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>
@@ -148,7 +148,7 @@
                             <label for="scene">
                                 <span class="component-title">Scene Numbering</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="scene" name="scene" v-model="seriesObj.config.scene" @change="saveSeries('seriesObj')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                    <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
                                 </span>
                             </label>
                         </div>
@@ -156,7 +156,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="seriesObj.config.dvdOrder" @change="saveSeries('seriesObj')"/> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>
@@ -172,7 +172,7 @@
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <select-list v-if="seriesObj.config.release.ignoredWords !== null" :list-items="seriesObj.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
+                                    <select-list v-if="series.config.release.ignoredWords !== null" :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
@@ -184,7 +184,7 @@
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
                                 <span class="component-desc">
-                                    <select-list v-if="seriesObj.config.release.requiredWords !== null" :list-items="seriesObj.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
+                                    <select-list v-if="series.config.release.requiredWords !== null" :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
@@ -196,7 +196,7 @@
                             <label for="SceneName">
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
-                                    <select-list v-if="seriesObj.config.aliases" :list-items="seriesObj.config.aliases" @change="onChangeAliases"></select-list>
+                                    <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
                                     
                                     <!-- <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
                                     <div class="pull-left">
@@ -229,9 +229,10 @@
 <%include file="/vue-components/selectListUi.mako"/>
 <%include file="/vue-components/anidbReleaseGroupUi.mako"/>
 <script>
-var startVue = function() {
+let eventBus = null;
+const startVue = function() {
     const app = new Vue({
-        el: '#config-content',
+        el: '#vue-wrap',
         data() {
             // Python conversions
             // JS only
@@ -242,7 +243,7 @@ var startVue = function() {
                 indexerName: $('#indexer-name').attr('value'),
                 config: MEDUSA.config,
                 exceptions: exceptions,
-                seriesObj: {
+                series: {
                     config: {
                         dvdOrder: false,
                         flattenFolders: false,
@@ -250,14 +251,15 @@ var startVue = function() {
                         scene: false,
                         sports: false,
                         paused: false,
-                        location: "",
+                        location: '',
                         airByDate: false,
                         subtitlesEnabled: false,
                         release: {
                             requiredWords: null,
                             ignoredWords: null,
                             blacklist: [],
-                            whitelist: []
+                            whitelist: [],
+                            allgroups: []
                         }
                     },
                     language: ''
@@ -268,7 +270,8 @@ var startVue = function() {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 saveStatus: '',
-                seriesLoaded: false
+                seriesLoaded: false,
+                location: ''
             }
         },
         async mounted() {
@@ -276,10 +279,22 @@ var startVue = function() {
             const url = 'series/' + seriesSlug;
             try {
                 const response = await api.get('series/' + this.seriesSlug);
-                this.seriesObj.config = response.data.config;
+                this.series = response.data;
+                this.location = this.series.config.location;
             } catch (error) {
-                console.log('Could not get series info for: '+ seriesSlug);
+                console.debug('Could not get series info for: '+ seriesSlug);
             }
+
+            // Add the Browse.. button after the show location input.
+            $('#location').fileBrowser({
+	            title: 'Select Show Location'
+            });
+            
+            // Mount an event bus
+            $.eventBus = new Vue({parent: this});
+            $.eventBus.$on('locationEvt', function(value) {
+                this.$parent.saveLocation(value);
+            });
         },
         methods: {
             anonRedirect: function(e) {
@@ -289,28 +304,25 @@ var startVue = function() {
             prettyPrintJSON: function(x) {
                 return JSON.stringify(x, undefined, 4)
             },
-            loadSeries: async function() {
-
-            },
             saveSeries: async function(subject) {
-                if (['seriesObj', 'all'].includes(subject)) {
+                if (['series', 'all'].includes(subject)) {
                     const data = {
                         config: {
-                            aliases: this.seriesObj.config.aliases,
-                            dvdOrder: this.seriesObj.config.dvdOrder,
-                            flattenFolders: this.seriesObj.config.flattenFolders,
-                            anime: this.seriesObj.config.anime,
-                            scene: this.seriesObj.config.scene,
-                            sports: this.seriesObj.config.sports,
-                            paused: this.seriesObj.config.paused,
-                            location: this.seriesObj.config.location,
-                            airByDate: this.seriesObj.config.airByDate,
-                            subtitlesEnabled: this.seriesObj.config.subtitlesEnabled,
+                            aliases: this.series.config.aliases,
+                            dvdOrder: this.series.config.dvdOrder,
+                            flattenFolders: this.series.config.flattenFolders,
+                            anime: this.series.config.anime,
+                            scene: this.series.config.scene,
+                            sports: this.series.config.sports,
+                            paused: this.series.config.paused,
+                            location: this.series.config.location,
+                            airByDate: this.series.config.airByDate,
+                            subtitlesEnabled: this.series.config.subtitlesEnabled,
                             release: {
-                                requiredWords: this.seriesObj.config.release.requiredWords,
-                                ignoredWords: this.seriesObj.config.release.ignoredWords
-                                // blacklist: this.seriesObj.config.release.blacklist,
-                                // whitelist: this.seriesObj.config.release.whitelist
+                                requiredWords: this.series.config.release.requiredWords,
+                                ignoredWords: this.series.config.release.ignoredWords,
+                                blacklist: this.series.config.release.blacklist,
+                                whitelist: this.series.config.release.whitelist
                             }
                         }
                     };
@@ -323,27 +335,38 @@ var startVue = function() {
                 };
             },
             onChangeIgnoredWords: function(items) {
-		        console.log('Event from child component emitted', items);
-                this.seriesObj.config.release.ignoredWords = items.map(item => item.value);
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.ignoredWords = items.map(item => item.value);
             },
             onChangeRequiredWords: function(items) {
-		        console.log('Event from child component emitted', items);
-                this.seriesObj.config.release.requiredWords = items.map(item => item.value);
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.requiredWords = items.map(item => item.value);
             },
             onChangeAliases: function(items) {
-		        console.log('Event from child component emitted', items);
-                this.seriesObj.config.aliases = items.map(item => item.value);
+		        console.debug('Event from child component emitted', items);
+                this.series.config.aliases = items.map(item => item.value);
+            },
+            onChangeReleaseGroupsAnime: function(items) {
+                this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+                this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+                this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+
+            },
+            saveLocation: function(value) {
+                this.series.config.location = value;
             }
         },
         computed: {
             availableLanguages: function() {
-                if (this.config.indexers.config.main.validLanguages){
+                if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
+            },
+            location: function() {
+                return this.series.config.location;
             }
         }
     });
-    $('[v-cloak]').removeAttr('v-cloak');
 };
 </script>
 </%block>
