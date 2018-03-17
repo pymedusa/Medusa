@@ -147,8 +147,8 @@ class PrivateHDProvider(TorrentProvider):
         if 'pass' in dict_from_cookiejar(self.session.cookies):
             return True
 
-        login_html = self.session.get(self.urls['login']).get_text()
-        with BS4Parser(login_html, 'html5lib') as html:
+        login_html = self.session.get(self.urls['login'])
+        with BS4Parser(login_html.text, 'html5lib') as html:
             token = html.find('input', attrs={'name': '_token'}).get('value')
 
         login_params = {
