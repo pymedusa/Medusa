@@ -12,7 +12,7 @@ from medusa import app
 from medusa.bs4_parser import BS4Parser
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
-    IndexerError, IndexerShowIncomplete, IndexerUnavailable
+    IndexerError, IndexerShowIncomplete, IndexerShowNotFound, IndexerUnavailable
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
@@ -240,13 +240,13 @@ class Imdb(BaseIndexer):
         series_id = imdb_id
         imdb_id = ImdbIdentifier(imdb_id).imdb_id
 
-        if not self[imdb_id]:
-            self._get_show_data(imdb_id)
-
         try:
+            if not self[imdb_id]:
+                self._get_show_data(imdb_id)
+
             # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes(imdb_id)
-        except LookupError as error:
+        except (LookupError, IndexerShowNotFound) as error:
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
                 'could not get any episodes. Exception: {e!r}'.format(

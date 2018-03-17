@@ -193,7 +193,9 @@ class BaseIndexer(object):
         all_series = self.search(series)
         if not all_series:
             log.debug('Series result returned zero')
-            raise IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
+            raise IndexerShowNotFound(
+                'Show search for {series} returned zero results (cannot find show on Indexer)'.format(series=series)
+            )
 
         if not isinstance(all_series, list):
             all_series = [all_series]
