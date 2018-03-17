@@ -20,7 +20,7 @@
 % endif
 <script src="js/lib/vue.js"></script>
 <script src="js/lib/vue-async-computed@3.3.0.js"></script>
-<%include file="/inc_qualityChooser.mako"/>
+<%include file="/vue-components/inc_qualityChooser.mako"/>
 <script>
 let app;
 const startVue = () => {
