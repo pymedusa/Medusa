@@ -3,6 +3,19 @@
     from medusa import app
     from medusa.clients import torrent
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
 <h1 class="header">${header}</h1>
@@ -14,14 +27,14 @@
         <form id="configForm" action="config/search/saveSearch" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
-                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
-                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                    <li><app-link href="#episode-search">Episode Search</app-link></li>
+                    <li><app-link href="#nzb-search">NZB Search</app-link></li>
+                    <li><app-link href="#torrent-search">Torrent Search</app-link></li>
                 </ul>
                 <div id="episode-search">
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
-                            <p>How to manage searching with <a href="config/providers">providers</a>.</p>
+                            <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">

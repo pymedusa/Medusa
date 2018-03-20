@@ -10,6 +10,19 @@
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -25,8 +38,8 @@
         <form name="configForm" method="post" action="config/backuprestore">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#backup">Backup</a></li>
-                    <li><a href="${full_url}#restore">Restore</a></li>
+                    <li><app-link href="#backup">Backup</app-link></li>
+                    <li><app-link href="#restore">Restore</app-link></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
                     <div class="component-group-desc">

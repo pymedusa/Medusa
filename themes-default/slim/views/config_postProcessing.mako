@@ -11,6 +11,19 @@
     from medusa.metadata.generic import GenericMetadata
     from medusa import naming
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 <div id="content960">
     % if not header is UNDEFINED:
@@ -23,9 +36,9 @@
             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
                 <div id="config-components">
                     <ul>
-                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
-                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
-                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                        <li><app-link href="#post-processing">Post Processing</app-link></li>
+                        <li><app-link href="#episode-naming">Episode Naming</app-link></li>
+                        <li><app-link href="#metadata">Metadata</app-link></li>
                     </ul>
                     <div id="post-processing" class="component-group">
                         <div class="component-group-desc">
@@ -84,7 +97,7 @@
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc"><b>NOTE:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</span>
-                                    <span class="component-desc">To use reference linking, the <a href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</a> needs to be installed.</span>
+                                    <span class="component-desc">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -233,7 +246,7 @@
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">See <a href="${app.EXTRA_SCRIPTS_URL}" class="wikie"><strong>Wiki</strong></a> for script arguments description and usage.</span>
+                                    <span class="component-desc">See <app-link href="${app.EXTRA_SCRIPTS_URL}" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                 </label>
                             </div>
                             <input type="submit" class="btn config_submitter" value="Save Changes" /><br>

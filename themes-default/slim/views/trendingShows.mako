@@ -8,6 +8,17 @@
 </%block>
 <%block name="scripts">
 <script type="text/javascript" src="js/trending-shows.js"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <div id="container">
@@ -26,9 +37,9 @@
     <div class="trakt_show" data-name="${cur_show['show']['title']}" data-rating="${cur_show['show']['rating']}" data-votes="${cur_show['show']['votes']}">
         <div class="traktContainer">
             <div class="trakt-image">
-                <a class="trakt-image" href="${anon_url(show_url)}" target="_blank">
+                <app-link class="trakt-image" href="${anon_url(show_url)}" target="_blank">
                     <img alt="" class="trakt-image" src="images/poster.png" data-src="${poster_url}" height="273px" width="186px" />
-                </a>
+                </app-link>
             </div>
             <div class="show-title">
                 ${(cur_show['show']['title'], '<span>&nbsp;</span>')['' == cur_show['show']['title']]}
@@ -37,9 +48,9 @@
             <p>${int(cur_show['show']['rating']*10)}% <img src="images/heart.png"></p>
             <i>${cur_show['show']['votes']} votes</i>
             <div class="traktShowTitleIcons">
-                <a href="addShows/addShowByID?indexer_id=${cur_show['show']['ids']['tvdb']}&amp;show_name=${cur_show['show']['title'] | u}" class="btn btn-xs" data-no-redirect>Add Show</a>
+                <app-link href="addShows/addShowByID?indexer_id=${cur_show['show']['ids']['tvdb']}&amp;show_name=${cur_show['show']['title'] | u}" class="btn btn-xs" data-no-redirect>Add Show</app-link>
                 % if blacklist:
-                <a href="addShows/addShowToBlacklist?indexer_id=${cur_show['show']['ids']['tvdb'] or cur_show['show']['ids']['tvrage']}" class="btn btn-xs">Remove Show</a>
+                <app-link href="addShows/addShowToBlacklist?indexer_id=${cur_show['show']['ids']['tvdb'] or cur_show['show']['ids']['tvrage']}" class="btn btn-xs">Remove Show</app-link>
                 % endif
             </div>
         </div>

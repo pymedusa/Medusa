@@ -20,6 +20,10 @@ Vue.component('app-link', {
         linkProperties() {
             const {to, href} = this;
             const base = document.getElementsByTagName('base')[0].getAttribute('href');
+            const isIRC = url => {
+                console.debug('isIRC', {url});
+                return url.startsWith('irc://');
+            };
             const isAbsolute = url => {
                 console.debug('isAbsolute', {url});
                 return /^[a-z][a-z0-9+.-]*:/.test(url);
@@ -38,6 +42,9 @@ Vue.component('app-link', {
                     const resolvedHref = () => {
                         if (isHashPath(href)) {
                             return window.location.href + href;
+                        }
+                        if (isIRC(href)) {
+                            return href;
                         }
                         if (isAbsolute(href)) {
                             if (isExternal(href)) {

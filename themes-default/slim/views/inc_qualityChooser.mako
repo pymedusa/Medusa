@@ -51,7 +51,7 @@ selected = None
     <div id="archive" style="display: none;">
         <h5>
             <b>
-                Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
+                Archive downloaded episodes that are not currently in <app-link target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></app-link>
             </b>
                 <br />Avoids unnecessarily increasing your backlog
             </br>

@@ -10,6 +10,19 @@
     from medusa.providers.generic_provider import GenericProvider
     from medusa.helper.common import pretty_file_size
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>

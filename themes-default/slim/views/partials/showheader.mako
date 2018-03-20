@@ -16,7 +16,7 @@
     <div id="showtitle" class="col-lg-12" data-showname="${show.name}">
         <div>
             <h1 class="title" data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
-            <a href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
+            <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name}</app-link></h1>
         </div>
 
     % if action == 'snatchSelection':
@@ -40,7 +40,7 @@
                 <span class="h2footer display-specials">
                     % if season_special:
                     Display Specials:
-                        <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                        <app-link class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</app-link>
                     % endif
                 </span>
 
@@ -57,9 +57,9 @@
                         Season:
                         % for seasonNum in season_results:
                             % if int(seasonNum["season"]) == 0:
-                                <a href="#season-${seasonNum["season"]}">Specials</a>
+                                <app-link href="#season-${seasonNum["season"]}">Specials</app-link>
                             % else:
-                                <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
+                                <app-link href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</app-link>
                             % endif
                             % if seasonNum != season_results[-1]:
                                 <span class="separator">|</span>
@@ -87,9 +87,9 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <a series="${show.slug}" asset="poster">
+                    <app-link series="${show.slug}" asset="poster">
                         <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
-                    </a>
+                    </app-link>
                 </div>
             </div>
         </div>
@@ -120,34 +120,34 @@
                      % endif
                                      ${show.imdb_info.get('runtimes') or show.runtime} minutes
                                  </span>
-                                 <a href="${anon_url('http://www.imdb.com/title/', show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdb_id}">
+                                 <app-link href="${anon_url('http://www.imdb.com/title/', show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdb_id}">
                                      <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
-                                 </a>
+                                 </app-link>
                  % endif
                 % if show.externals.get('trakt_id'):
-                    <a href="${anon_url('https://trakt.tv/shows/', show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
+                    <app-link href="${anon_url('https://trakt.tv/shows/', show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
-                    </a>
+                    </app-link>
                 % endif
-                 <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                 <app-link href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
                      <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
-                 </a>
+                 </app-link>
                  % if xem_numbering or xem_absolute_numbering:
-                     <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                     <app-link href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
                          <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
-                     </a>
+                     </app-link>
                  % endif
-                     <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
+                     <app-link href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
                          % if show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                                 <app-link href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % elif show.genre:
                              % for genre in show.genre.strip('|').split('|'):
-                                 <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
+                                 <app-link href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
                              % endfor
                          % endif
                      </ul>
