@@ -3,6 +3,19 @@
     import pkgutil
     from medusa import app
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 
 <div class="row">

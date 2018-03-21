@@ -13,11 +13,11 @@
                               inner_first = True
                           %>
                           % for cur_link in menuItem['path']:
-                              ${("&middot; ", "")[bool(inner_first)]}<a class="inner" href="${menuItem['path'][cur_link]}">${cur_link}</a>
+                              ${("&middot; ", "")[bool(inner_first)]}<app-link class="inner" href="${menuItem['path'][cur_link]}">${cur_link}</app-link>
                               <% inner_first = False %>
                           % endfor
                       % else:
-                          <a href="${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
+                          <app-link href="${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</app-link>
                           <% first = False %>
                       % endif
                 % endif
@@ -33,11 +33,11 @@
     <div class="btn-group">
 
   <ul class="dropdown-menu">
-    <li><a href="#">Action</a></li>
-    <li><a href="#">Another action</a></li>
-    <li><a href="#">Something else here</a></li>
+    <li><app-link href="#">Action</app-link></li>
+    <li><app-link href="#">Another action</app-link></li>
+    <li><app-link href="#">Something else here</app-link></li>
     <li role="separator" class="divider"></li>
-    <li><a href="#">Separated link</a></li>
+    <li><app-link href="#">Separated link</app-link></li>
   </ul>
 </div>
 % endif

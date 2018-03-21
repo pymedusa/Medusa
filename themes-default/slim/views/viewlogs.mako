@@ -5,6 +5,19 @@
     from medusa.logger import LOGGING_LEVELS
     from random import choice
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="css">
 <style>
 pre {
@@ -83,7 +96,7 @@ pre {
 </div> <!-- row -->
 <div class="row">
     <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
-        <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
+        <pre><div class="notepad"><app-link id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></app-link></div>${log_lines}</pre>
     </div>
 </div>
 </%block>

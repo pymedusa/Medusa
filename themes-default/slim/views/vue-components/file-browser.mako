@@ -10,7 +10,7 @@
                     @mouseover="file.isFile ? '' : addClass($event, 'ui-icon-folder-open')"
                     @mouseout="file.isFile ? '' : removeClass($event, 'ui-icon-folder-open')"
                     @click="fileClicked(file)"
-                ><span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}</a>
+                ><span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}</app-link>
             </li>
         </ul>
     </span>
@@ -219,7 +219,7 @@ Vue.component('file-browser', {
                     });
                     return $('<li></li>')
                         .data('ui-autocomplete-item', item)
-                        .append('<a class="nowrap">' + resultItem + '</a>')
+                        .append('<app-link class="nowrap">' + resultItem + '</app-link>')
                         .appendTo(ul);
                 };
             }

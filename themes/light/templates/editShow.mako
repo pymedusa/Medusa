@@ -18,6 +18,17 @@
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
@@ -33,9 +44,9 @@
         <form action="home/editShow" method="post">
         <div id="config-components">
             <ul>
-                <li><a href="${full_url}#core-component-group1">Main</a></li>
-                <li><a href="${full_url}#core-component-group2">Format</a></li>
-                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+                <li><app-link href="#core-component-group1">Main</app-link></li>
+                <li><app-link href="#core-component-group2">Format</app-link></li>
+                <li><app-link href="#core-component-group3">Advanced</app-link></li>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">
