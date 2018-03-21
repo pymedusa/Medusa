@@ -3,6 +3,19 @@
     from medusa import logger
     from medusa import classes
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="css">
 <style>
 pre {
