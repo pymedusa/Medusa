@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import pkgutl
+    import pkgutil
     from medusa import app
 %>
 <%block name="content">
