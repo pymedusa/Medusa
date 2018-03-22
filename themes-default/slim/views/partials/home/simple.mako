@@ -150,7 +150,7 @@
                             </app-link>
                         % endif
                         % if cur_show.externals.get('trakt_id'):
-                            <app-link href="${https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                            <app-link href="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                             </app-link>
                         % endif
