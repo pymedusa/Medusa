@@ -14,11 +14,19 @@
 Vue.component('app-link', {
     props: {
         to: [String, Object],
-        href: String
+        href: String,
+        indexerId: {
+            type: String
+        },
+        placeholder: {
+            type: String,
+            default: 'indexer-to-name'
+        }
     },
     computed: {
         linkProperties() {
-            const {to, href} = this;
+            const {to, indexerId, placeholder} = this;
+            const href = indexerId && placeholder ? this.href.replace(placeholder, MEDUSA.config.indexers.indexerIdToName(indexerId)) : this.href;
             const base = document.getElementsByTagName('base')[0].getAttribute('href');
             const isIRC = url => {
                 console.debug('isIRC', {url});
