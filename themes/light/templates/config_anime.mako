@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script>
@@ -31,7 +30,7 @@ const startVue = () => {
                         <div class="component-group-desc">
                             <span class="icon-notifiers-anime" title="AniDB"></span>
                             <h3>
-                                <app-link href="${anon_url('http://anidb.info')}" onclick="window.open(this.href, '_blank'); return false;">AniDB</app-link>
+                                <app-link href="http://anidb.info">AniDB</app-link>
                             </h3>
                             <p>AniDB is non-profit database of anime information that is freely open to the public</p>
                         </div><!-- .component-group-desc //-->

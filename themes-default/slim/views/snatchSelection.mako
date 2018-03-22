@@ -2,7 +2,6 @@
 <%!
     from datetime import datetime
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>

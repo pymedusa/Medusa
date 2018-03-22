@@ -7,7 +7,6 @@
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
-    from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
@@ -598,7 +597,7 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <input type="checkbox" name="encryption_version" id="encryption_version" ${'checked="checked"' if app.ENCRYPTION_VERSION else ''}/>
                                     <p>in the <code>config.ini</code> file.
-                                    <b>Warning:</b> Passwords must only contain <app-link target="_blank" href="${anon_url('http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters')}">ASCII characters</app-link></p>
+                                    <b>Warning:</b> Passwords must only contain <app-link href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII characters</app-link></p>
                                 </span>
                             </label>
                         </div>

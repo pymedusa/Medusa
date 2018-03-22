@@ -5,7 +5,6 @@
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
-    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
 %>
@@ -121,12 +120,12 @@
                      % endif
                                      ${show.imdb_info.get('runtimes') or show.runtime} minutes
                                  </span>
-                                 <app-link href="${anon_url('http://www.imdb.com/title/', show.imdb_id)}" title="http://www.imdb.com/title/${show.imdb_id}">
+                                 <app-link href="http://www.imdb.com/title/${show.imdb_id}" title="http://www.imdb.com/title/${show.imdb_id}">
                                      <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                                  </app-link>
                  % endif
                 % if show.externals.get('trakt_id'):
-                    <app-link href="${anon_url('https://trakt.tv/shows/', show.externals.get('trakt_id'))}" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
+                    <app-link href="https://trakt.tv/shows/${show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </app-link>
                 % endif
@@ -144,11 +143,11 @@
                      <ul class="tags">
                          % if show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <app-link href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
+                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % elif show.genre:
                              % for genre in show.genre.strip('|').split('|'):
-                                 <app-link href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
+                                 <app-link href="http://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
                              % endfor
                          % endif
                      </ul>
