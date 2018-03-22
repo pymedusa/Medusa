@@ -62,7 +62,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <app-link href="displayShow?indexername=${cur_loading_show.show.indexer_name}&seriesid=${cur_loading_show.show.series_id}">${cur_loading_show.show.name}</app-link>
+                        <app-link href="displayShow?indexername=${cur_loading_show.show.indexer_name}&seriesid=${cur_loading_show.show.series_id}">${cur_loading_show.show.name | h}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -140,10 +140,10 @@
                 % endif
                     <td class="tvShow">
                         <div class="imgsmallposter small">
-                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name}">
+                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name | h}">
                                 <img src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
                             </app-link>
-                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name}</app-link>
+                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
                         </div>
                     </td>
                     <td align="center">
