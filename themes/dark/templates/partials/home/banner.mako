@@ -4,7 +4,6 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
     import re
@@ -143,7 +142,7 @@
                         <span style="display: none;">${cur_show.name}</span>
                         <div class="imgbanner banner">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">
-                            <img src="images/banner.png" lazy="on" series="${cur_show.slug}" asset="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name}"/>
+                                <asset default="images/banner.png" series-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
                             </app-link>
                         </div>
                     </td>
@@ -158,16 +157,16 @@
                     </td>
                     <td align="center">
                         % if cur_show.imdb_id:
-                            <app-link href="${anon_url('http://www.imdb.com/title/', cur_show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdb_id}">
+                            <app-link href="http://www.imdb.com/title/${cur_show.imdb_id}" title="http://www.imdb.com/title/${cur_show.imdb_id}">
                                 <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                             </app-link>
                         % endif
                         % if cur_show.externals.get('trakt_id'):
-                            <app-link href="${anon_url('https://trakt.tv/shows/', cur_show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                            <app-link href="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                             </app-link>
                         % endif
-                        <app-link data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.series_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
+                        <app-link data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
                             <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                         </app-link>
                     </td>

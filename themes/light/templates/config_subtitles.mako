@@ -2,7 +2,6 @@
 <%!
     from medusa import subtitles
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script>
@@ -223,7 +222,7 @@ const startVue = () => {
                             <% provider_name = curService['name'] %>
                             <li class="ui-state-default" id="${provider_name}">
                                 <input type="checkbox" id="enable_${provider_name}" class="service_enabler" ${'checked="checked"' if curService['enabled'] else ''}/>
-                                <app-link href="${anon_url(curService['url'])}" class="imgLink" target="_new">
+                                <app-link href="${curService['url']}" class="imgLink" target="_new">
                                     <img src="images/subtitles/${curService['image']}" alt="${curService['url']}" title="${curService['url']}" width="16" height="16" style="vertical-align:middle;"/>
                                 </app-link>
                             <span style="vertical-align:middle;">${provider_name.capitalize()}</span>

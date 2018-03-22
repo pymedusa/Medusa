@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
     from medusa.providers import sorted_provider_list
     from medusa.providers.generic_provider import GenericProvider
 %>
@@ -88,7 +87,7 @@ const startVue = () => {
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(cur_provider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
                                 <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if cur_provider.is_enabled() is True and cur_provider.get_id() not in app.BROKEN_PROVIDERS else ''}/>
-                                <app-link href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${cur_provider.image_name()}" alt="${cur_provider.name}" title="${cur_provider.name}" width="16" height="16" style="vertical-align:middle;"/></app-link>
+                                <app-link href="${curURL}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${cur_provider.image_name()}" alt="${cur_provider.name}" title="${cur_provider.name}" width="16" height="16" style="vertical-align:middle;"/></app-link>
                                 <span style="vertical-align:middle;">${cur_provider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(cur_provider.supports_backlog)]}
                                 ${('<span class="red-text">!</span>', '')[bool(cur_provider.get_id() not in app.BROKEN_PROVIDERS)]}
@@ -455,7 +454,7 @@ const startVue = () => {
                                 <span class="component-desc">
                                     % if hasattr(cur_torrent_provider, 'required_cookies'):
                                         <p>eg. ${'=xx;'.join(cur_torrent_provider.required_cookies) + '=xx'}</p>
-                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}. <br/>For a step by step guide please follow the link to our <app-link target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Configure-Providers-with-captcha-protection')}">WIKI</app-link></p>
+                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}. <br/>For a step by step guide please follow the link to our <app-link href="https://github.com/pymedusa/Medusa/wiki/Configure-Providers-with-captcha-protection">WIKI</app-link></p>
                                     % endif
                                 </span>
                             </label>
@@ -797,7 +796,7 @@ const startVue = () => {
                             </span>
                         </label>
                         <label>
-                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <app-link target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa')}"><font color="blue">Wiki</font></app-link></span>
+                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <app-link target="_blank" href="https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa"><font color="blue">Wiki</font></app-link></span>
                         </label>
                     </div>
                     <div class="torrentRssProviderDiv" id="addTorrentRss">

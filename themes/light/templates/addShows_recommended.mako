@@ -1,6 +1,5 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa.helpers import anon_url
     from medusa import app
 %>
 <%block name="scripts">
@@ -48,8 +47,8 @@ const startVue = () => {
                     <div class="field-pair">
                         <label class="clearfix" for="configure_show_options">
                             <ul>
-                                <li><app-link href="addShows/${'realpage + '/'}#tabs-1">Manage Directories</app-link></li>
-                                <li><app-link href="addShows/${'realpage + '/'}#tabs-2">Customize Options</app-link></li>
+                                <li><app-link href="addShows/${realpage + '/'}#tabs-1">Manage Directories</app-link></li>
+                                <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
                                 <%include file="/inc_rootDirs.mako"/>
@@ -125,7 +124,7 @@ const startVue = () => {
                 <div class="show-row" data-name="${cur_show.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_show.is_anime}">
                     <div class="recommended-container default-poster ${('', 'show-in-list')[cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa]}">
                         <div class="recommended-image">
-                            <app-link href="${anon_url(cur_show.image_href)}" target="_blank">
+                            <app-link href="${cur_show.image_href}">
                                 <img alt="" class="recommended-image" src="images/poster.png" data-original="${cur_show.image_src}" height="273px" width="186px"/>
                             </app-link>
                         </div>
@@ -138,7 +137,7 @@ const startVue = () => {
                         <div class="clearfix show-attributes">
                             <p>${int(float(cur_rating)*10)}% <img src="images/heart.png">
                                 % if cur_show.is_anime and cur_show.ids.get('aid'):
-                                    <app-link class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_show.ids["aid"]))}'>
+                                    <app-link class="anidb-url" href="https://anidb.net/a${cur_show.ids['aid']}">
                                         <img src="images/anidb_inline_refl.png" class="anidb-inline" alt=""/>
                                     </app-link>
                                 % endif

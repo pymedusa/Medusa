@@ -190,25 +190,6 @@ function wsCheckNotifications() {
 // Listen for the config loaded event.
 window.addEventListener('build', e => {
     if (e.detail === 'medusa config loaded') {
-        /**
-         * Search for anchors with the attribute indexer-to-name and translate the indexer id to a name using the helper
-         * function MEDUSA.config.indexers.indexerIdToName().
-         *
-         * The anchor is rebuild using the indexer name.
-         */
-        $('[data-indexer-to-name]').each((index, target) => {
-            const indexerId = $(target).attr('data-indexer-to-name');
-            const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
-
-            const re = /indexer-to-name/gi;
-
-            $.each(target.attributes, (index, attr) => {
-                if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {
-                    target[attr.name] = target[attr.name].replace(re, indexerName);
-                }
-            });
-        });
-
         wsCheckNotifications();
         if (test) {
             displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');

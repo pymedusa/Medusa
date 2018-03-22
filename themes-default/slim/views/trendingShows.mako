@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="metas">
 <meta data-var="app.SORT_ARTICLE" data-content="${app.SORT_ARTICLE}">
@@ -37,8 +36,8 @@ const startVue = () => {
     <div class="trakt_show" data-name="${cur_show['show']['title']}" data-rating="${cur_show['show']['rating']}" data-votes="${cur_show['show']['votes']}">
         <div class="traktContainer">
             <div class="trakt-image">
-                <app-link class="trakt-image" href="${anon_url(show_url)}" target="_blank">
-                    <img alt="" class="trakt-image" src="images/poster.png" data-src="${poster_url}" height="273px" width="186px" />
+                <app-link class="trakt-image" href="${show_url}">
+                    <img class="trakt-image" src="images/poster.png" data-src="${poster_url}" height="273px" width="186px" />
                 </app-link>
             </div>
             <div class="show-title">

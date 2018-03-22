@@ -14,11 +14,19 @@
 Vue.component('app-link', {
     props: {
         to: [String, Object],
-        href: String
+        href: String,
+        indexerId: {
+            type: String
+        },
+        placeholder: {
+            type: String,
+            default: 'indexer-to-name'
+        }
     },
     computed: {
         linkProperties() {
-            const {to, href} = this;
+            const {to, indexerId, placeholder} = this;
+            const href = indexerId && placeholder ? this.href.replace(placeholder, MEDUSA.config.indexers.indexerIdToName(indexerId)) : this.href;
             const base = document.getElementsByTagName('base')[0].getAttribute('href');
             const isIRC = url => {
                 console.debug('isIRC', {url});
@@ -30,15 +38,23 @@ Vue.component('app-link', {
             }
             const isExternal = url => {
                 console.debug('isExternal', {url});
-                return !url.includes(base);
+                return !url.startsWith(base);
             };
             const isHashPath = url => {
                 console.debug('isHashPath', {url});
                 return url.startsWith('#')
             };
+            const isAnonymised = url => {
+                console.debug('isAnonymised', {url});
+                return url.startsWith(MEDUSA.config.anonRedirect);
+            };
             const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : null;
             if (!to) {
                 if (href) {
+                    // @TODO: Remove this once we move to vue only
+                    if (isAnonymised(href)) {
+                        throw new Error('Still using anon_url in Python!');
+                    }
                     const resolvedHref = () => {
                         if (isHashPath(href)) {
                             return window.location.href + href;

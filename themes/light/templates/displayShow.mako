@@ -6,7 +6,6 @@
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
-    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import mappings
