@@ -183,7 +183,7 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
-                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location" class="form-control form-control-inline input-sm input350"></file-browser>
+                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location"></file-browser>
                                 </span>
                             </label>
                         </div>
