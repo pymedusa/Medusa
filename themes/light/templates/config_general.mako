@@ -7,10 +7,22 @@
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
-    from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -26,9 +38,9 @@
         <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#misc">Misc</a></li>
-                    <li><a href="${full_url}#interface">Interface</a></li>
-                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                    <li><app-link href="#misc">Misc</app-link></li>
+                    <li><app-link href="#interface">Interface</app-link></li>
+                    <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
                 </ul>
                 <div id="misc">
                     <div class="component-group-desc">
@@ -406,7 +418,7 @@
                                     <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
-                                        <p>you can try all the features of the API <a href="apibuilder/">here</a></p>
+                                        <p>you can try all the features of the API <app-link href="apibuilder/">here</app-link></p>
                                     </div>
                                 </span>
                             </label>
@@ -585,7 +597,7 @@
                                 <span class="component-desc">
                                     <input type="checkbox" name="encryption_version" id="encryption_version" ${'checked="checked"' if app.ENCRYPTION_VERSION else ''}/>
                                     <p>in the <code>config.ini</code> file.
-                                    <b>Warning:</b> Passwords must only contain <a target="_blank" href="${anon_url('http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters')}">ASCII characters</a></p>
+                                    <b>Warning:</b> Passwords must only contain <app-link href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII characters</app-link></p>
                                 </span>
                             </label>
                         </div>

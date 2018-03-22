@@ -14,6 +14,147 @@
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
+<%block name="scripts">
+<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
+<script type="text/javascript" src="js/edit-show.js"></script>
+<%include file="/vue-components/select-list-ui.mako"/>
+<%include file="/vue-components/anidb-release-group-ui.mako"/>
+<script>
+const startVue = () => {
+    const app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            // Python conversions
+            // JS only
+            const exceptions = [];
+            return {
+                seriesSlug: $('#series-slug').attr('value'),
+                seriesId: $('#series-id').attr('value'),
+                indexerName: $('#indexer-name').attr('value'),
+                config: MEDUSA.config,
+                exceptions: exceptions,
+                series: {
+                    config: {
+                        dvdOrder: false,
+                        flattenFolders: false,
+                        anime: false,
+                        scene: false,
+                        sports: false,
+                        paused: false,
+                        location: '',
+                        airByDate: false,
+                        subtitlesEnabled: false,
+                        release: {
+                            requiredWords: null,
+                            ignoredWords: null,
+                            blacklist: [],
+                            whitelist: [],
+                            allgroups: []
+                        }
+                    },
+                    language: ''
+                },
+                defaultEpisodeStatusOptions: [
+                    {text: 'Wanted', value: 'Wanted'},
+                    {text: 'Skipped', value: 'Skipped'},
+                    {text: 'Ignored', value: 'Ignored'}
+                ],
+                saveStatus: '',
+                seriesLoaded: false,
+                location: ''
+            }
+        },
+        async mounted() {
+            const seriesSlug = $('#series-slug').attr('value');
+            const url = 'series/' + seriesSlug;
+            try {
+                const response = await api.get('series/' + this.seriesSlug);
+                this.series = response.data;
+                this.location = this.series.config.location;
+            } catch (error) {
+                console.debug('Could not get series info for: '+ seriesSlug);
+            }
+
+            // Add the Browse.. button after the show location input.
+            $('#location').fileBrowser({
+	            title: 'Select Show Location'
+            });
+
+        },
+        methods: {
+            anonRedirect: function(e) {
+                e.preventDefault();
+                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
+            },
+            prettyPrintJSON: function(x) {
+                return JSON.stringify(x, undefined, 4)
+            },
+            saveSeries: async function(subject) {
+                if (['series', 'all'].includes(subject)) {
+                    const data = {
+                        config: {
+                            aliases: this.series.config.aliases,
+                            dvdOrder: this.series.config.dvdOrder,
+                            flattenFolders: this.series.config.flattenFolders,
+                            anime: this.series.config.anime,
+                            scene: this.series.config.scene,
+                            sports: this.series.config.sports,
+                            paused: this.series.config.paused,
+                            location: this.series.config.location,
+                            airByDate: this.series.config.airByDate,
+                            subtitlesEnabled: this.series.config.subtitlesEnabled,
+                            release: {
+                                requiredWords: this.series.config.release.requiredWords,
+                                ignoredWords: this.series.config.release.ignoredWords,
+                                blacklist: this.series.config.release.blacklist,
+                                whitelist: this.series.config.release.whitelist
+                            }
+                        }
+                    };
+                    try {
+                        const response = await api.patch('series/' + this.seriesSlug, data);
+                        this.saveStatus = 'Successfully patched series';
+                    } catch (error) {
+                        this.saveStatus = 'Problem trying to save series with error' + error + ', sending data: ' + data;
+                    }
+                };
+            },
+            onChangeIgnoredWords: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.ignoredWords = items.map(item => item.value);
+            },
+            onChangeRequiredWords: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.requiredWords = items.map(item => item.value);
+            },
+            onChangeAliases: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.aliases = items.map(item => item.value);
+            },
+            onChangeReleaseGroupsAnime: function(items) {
+                this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+                this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+                this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+
+            },
+            saveLocation: function(value) {
+                this.series.config.location = value;
+            }
+        },
+        computed: {
+            availableLanguages: function() {
+                if (this.config.indexers.config.main.validLanguages) {
+                    return this.config.indexers.config.main.validLanguages.join(',');
+                }
+            },
+            location: function() {
+                return this.series.config.location;
+            }
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
@@ -28,9 +169,9 @@
         <form @submit.prevent="saveSeries('all')">
         <div id="config-components">
             <ul>
-                <li><a href="${full_url}#core-component-group1">Main</a></li>
-                <li><a href="${full_url}#core-component-group2">Format</a></li>
-                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+                <li><app-link href="#core-component-group1">Main</app-link></li>
+                <li><app-link href="#core-component-group2">Format</app-link></li>
+                <li><app-link href="#core-component-group3">Advanced</app-link></li>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">
@@ -41,8 +182,8 @@
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId"/>
-                                    <input type="text" name="location" ref="locationBtn" id="location" v-model="location" class="form-control form-control-inline input-sm input350"/>
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
+                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location" class="form-control form-control-inline input-sm input350"></file-browser>
                                 </span>
                             </label>
                         </div>
@@ -60,7 +201,7 @@
                             <label for="defaultEpStatusSelect">
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
-                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm" 
+                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
                                         v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
                                         <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                     </select>
@@ -72,7 +213,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" 
+                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages"
                                         data-blank="false" :data-language="series.language" :data-available="availableLanguages" @change="saveSeries('series')">
                                     </select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
@@ -119,7 +260,7 @@
                                 </span>
                             </label>
                         </div>
-                        
+
                         <div v-if="series.config.anime" class="field-pair">
                             <span class="component-title">Release Groups</span>
                             <span class="component-desc">
@@ -197,7 +338,7 @@
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
                                     <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
-                                    
+
                                     <!-- <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
                                     <div class="pull-left">
                                         <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
@@ -220,153 +361,5 @@
         </form>
     </div>
 </div>
-
 </%block>
-<%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/edit-show.js"></script>
-<script src="js/lib/vue.js"></script>
-<%include file="/vue-components/selectListUi.mako"/>
-<%include file="/vue-components/anidbReleaseGroupUi.mako"/>
-<script>
-let eventBus = null;
-const startVue = function() {
-    const app = new Vue({
-        el: '#vue-wrap',
-        data() {
-            // Python conversions
-            // JS only
-            const exceptions = [];
-            return {
-                seriesSlug: $('#series-slug').attr('value'),
-                seriesId: $('#series-id').attr('value'),
-                indexerName: $('#indexer-name').attr('value'),
-                config: MEDUSA.config,
-                exceptions: exceptions,
-                series: {
-                    config: {
-                        dvdOrder: false,
-                        flattenFolders: false,
-                        anime: false,
-                        scene: false,
-                        sports: false,
-                        paused: false,
-                        location: '',
-                        airByDate: false,
-                        subtitlesEnabled: false,
-                        release: {
-                            requiredWords: null,
-                            ignoredWords: null,
-                            blacklist: [],
-                            whitelist: [],
-                            allgroups: []
-                        }
-                    },
-                    language: ''
-                },
-                defaultEpisodeStatusOptions: [
-                    {text: 'Wanted', value: 'Wanted'},
-                    {text: 'Skipped', value: 'Skipped'},
-                    {text: 'Ignored', value: 'Ignored'}
-                ],
-                saveStatus: '',
-                seriesLoaded: false,
-                location: ''
-            }
-        },
-        async mounted() {
-            const seriesSlug = $('#series-slug').attr('value');
-            const url = 'series/' + seriesSlug;
-            try {
-                const response = await api.get('series/' + this.seriesSlug);
-                this.series = response.data;
-                this.location = this.series.config.location;
-            } catch (error) {
-                console.debug('Could not get series info for: '+ seriesSlug);
-            }
 
-            // Add the Browse.. button after the show location input.
-            $('#location').fileBrowser({
-	            title: 'Select Show Location'
-            });
-            
-            // Mount an event bus
-            $.eventBus = new Vue({parent: this});
-            $.eventBus.$on('locationEvt', function(value) {
-                this.$parent.saveLocation(value);
-            });
-        },
-        methods: {
-            anonRedirect: function(e) {
-                e.preventDefault();
-                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
-            },
-            prettyPrintJSON: function(x) {
-                return JSON.stringify(x, undefined, 4)
-            },
-            saveSeries: async function(subject) {
-                if (['series', 'all'].includes(subject)) {
-                    const data = {
-                        config: {
-                            aliases: this.series.config.aliases,
-                            dvdOrder: this.series.config.dvdOrder,
-                            flattenFolders: this.series.config.flattenFolders,
-                            anime: this.series.config.anime,
-                            scene: this.series.config.scene,
-                            sports: this.series.config.sports,
-                            paused: this.series.config.paused,
-                            location: this.series.config.location,
-                            airByDate: this.series.config.airByDate,
-                            subtitlesEnabled: this.series.config.subtitlesEnabled,
-                            release: {
-                                requiredWords: this.series.config.release.requiredWords,
-                                ignoredWords: this.series.config.release.ignoredWords,
-                                blacklist: this.series.config.release.blacklist,
-                                whitelist: this.series.config.release.whitelist
-                            }
-                        }
-                    };
-                    try {
-                        const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.saveStatus = 'Successfully patched series';
-                    } catch (error) {
-                        this.saveStatus = 'Problem trying to save series with error' + error + ', sending data: ' + data;
-                    }
-                };
-            },
-            onChangeIgnoredWords: function(items) {
-		        console.debug('Event from child component emitted', items);
-                this.series.config.release.ignoredWords = items.map(item => item.value);
-            },
-            onChangeRequiredWords: function(items) {
-		        console.debug('Event from child component emitted', items);
-                this.series.config.release.requiredWords = items.map(item => item.value);
-            },
-            onChangeAliases: function(items) {
-		        console.debug('Event from child component emitted', items);
-                this.series.config.aliases = items.map(item => item.value);
-            },
-            onChangeReleaseGroupsAnime: function(items) {
-                this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
-                this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-                this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
-
-            },
-            saveLocation: function(value) {
-                this.series.config.location = value;
-            }
-        },
-        computed: {
-            availableLanguages: function() {
-                if (this.config.indexers.config.main.validLanguages) {
-                    return this.config.indexers.config.main.validLanguages.join(',');
-                }
-            },
-            location: function() {
-                return this.series.config.location;
-            }
-        }
-    });
-};
-</script>
-</%block>

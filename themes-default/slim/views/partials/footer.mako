@@ -37,7 +37,7 @@
             <span class="footerhighlight">${stats['shows']['total']}</span> Shows (<span class="footerhighlight">${stats['shows']['active']}</span> Active)
             | <span class="footerhighlight">${ep_downloaded}</span>
             % if ep_snatched:
-            <span class="footerhighlight"><a href="manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
+            <span class="footerhighlight"><app-link href="manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</app-link></span> Snatched
             % endif
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
             | Daily Search: <span class="footerhighlight">${str(daily_search_scheduler.timeLeft()).split('.')[0]}</span>

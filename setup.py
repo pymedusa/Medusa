@@ -45,7 +45,7 @@ setup(
         'pep8-naming',
         'pytest',
         'pytest-cov',
-        'pytest-flake8',
+        'pytest-flake8==0.9.1',
         'pytest-tornado',
         'PyYAML',
         'mock',

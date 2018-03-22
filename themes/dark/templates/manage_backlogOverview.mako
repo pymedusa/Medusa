@@ -5,7 +5,16 @@
     from medusa import sbdatetime
 %>
 <%block name="scripts">
-<script type="text/javascript">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
 </script>
 </%block>
 <%block name="content">
@@ -79,7 +88,7 @@
                     <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                         <div class="col-md-12">
                             <div class="col-md-6 left-30">
-                                <h3 style="display: inline;"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</a></h3>
+                                <h3 style="display: inline;"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></h3>
                                  % if cur_show.quality in qualityPresets:
                                     &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
                                  % endif
@@ -92,8 +101,8 @@
                                     % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
-                                    <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
-                                    <a class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.series_id}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
+                                    <app-link class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
+                                    <app-link class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.series_id}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>
@@ -151,10 +160,10 @@
                             % endif
                         </td>
                         <td class="col-search">
-                            <a class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-                            <a class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                            <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+                            <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                             % if old_status == DOWNLOADED:
-                                <a class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
+                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
                             % endif
                         </td>
                     </tr>

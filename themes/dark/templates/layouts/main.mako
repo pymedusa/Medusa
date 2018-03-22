@@ -119,6 +119,17 @@
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
+
+        <%
+            ## Add Global Vue component x-templates here
+            ## @NOTE: These will be usable on all pages
+        %>
+        <script src="js/lib/vue.js"></script>
+        <script src="js/lib/vue-async-computed@3.3.0.js"></script>
+        <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
+        <%include file="/vue-components/app-link.mako"/>
+        <%include file="/vue-components/asset.mako"/>
+        <%include file="/vue-components/file-browser.mako"/>
         <%block name="scripts" />
     </body>
 </html>

@@ -2,12 +2,24 @@
 <%!
     import re
     from medusa import app
-    from medusa.helpers import anon_url
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import get_trakt_indexer
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -19,14 +31,14 @@
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
-                    <li><a href="${full_url}#devices">Devices</a></li>
-                    <li><a href="${full_url}#social">Social</a></li>
+                    <li><app-link href="#home-theater-nas">Home Theater / NAS</app-link></li>
+                    <li><app-link href="#devices">Devices</app-link></li>
+                    <li><app-link href="#social">Social</app-link></li>
                 </ul>
                 <div id="home-theater-nas">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
-                        <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
+                        <h3><app-link href="http://kodi.tv">KODI</app-link></h3>
                         <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
                     </div>
                     <div class="component-group">
@@ -156,7 +168,7 @@
                     </div><!-- /kodi component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-plex" title="Plex Media Server"></span>
-                            <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Media Server</a></h3>
+                            <h3><app-link href="https://plex.tv">Plex Media Server</app-link></h3>
                             <p>Experience your media on a visually stunning, easy to use interface on your Mac connected to your TV. Your media library has never looked this good!</p>
                             <p class="plexinfo hide">For sending notifications to Plex Home Theater (PHT) clients, use the KODI notifier with port <b>3005</b>.</p>
                         </div>
@@ -183,7 +195,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">See: <a href="${anon_url('https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token')}" class="wiki" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><strong>Finding your account token</strong></a></span>
+                                        <span class="component-desc">See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span>
                                     </label>
                                 </div>
                                 <div class="component-group" style="padding: 0; min-height: 130px;">
@@ -251,7 +263,7 @@
                     </div><!-- /plex media server component-group -->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
-                        <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Home Theater</a></h3>
+                        <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
                     </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -335,7 +347,7 @@
                     </div><!-- /Plex Home Theater component-group -->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-emby" title="Emby"></span>
-                        <h3><a href="${anon_url('http://emby.media/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Emby</a></h3>
+                        <h3><app-link href="http://emby.media">Emby</app-link></h3>
                         <p>A home media server built using other popular open source technologies.</p>
                     </div>
                     <div class="component-group">
@@ -374,7 +386,7 @@
                     </div><!-- /emby component-group //-->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
-                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJ</a></h3>
+                        <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
                     </div>
                     <div class="component-group">
@@ -437,7 +449,7 @@
                     </div><!-- /nmj component-group //-->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
-                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJv2</a></h3>
+                        <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
                     </div>
                     <div class="component-group">
@@ -521,7 +533,7 @@
                     </div><!-- /nmjv2 component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-syno1" title="Synology"></span>
-                            <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology</a></h3>
+                            <h3><app-link href="http://synology.com/">Synology</app-link></h3>
                             <p>The Synology DiskStation NAS.</p>
                             <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
                         </div>
@@ -547,7 +559,7 @@
                     </div><!-- /synoindex component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
-                            <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology Notifier</a></h3>
+                            <h3><app-link href="http://synology.com/">Synology Notifier</app-link></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
                         </div>
                     <div class="component-group">
@@ -599,7 +611,7 @@
                     </div><!-- /synology notifier component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
-                            <h3><a href="${anon_url('http://pytivo.sourceforge.net/wiki/index.php/PyTivo')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">pyTivo</a></h3>
+                            <h3><app-link href="http://pytivo.sourceforge.net/wiki/index.php/PyTivo">pyTivo</app-link></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
                         </div>
                     <div class="component-group">
@@ -656,7 +668,7 @@
                 <div id="devices">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-growl" title="Growl"></span>
-                        <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
+                        <h3><app-link href="http://growl.info/">Growl</app-link></h3>
                         <p>A cross-platform unobtrusive global notification system.</p>
                     </div>
                     <div class="component-group">
@@ -730,7 +742,7 @@
                     </div><!-- /growl component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
-                            <h3><a href="${anon_url('http://www.prowlapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Prowl</a></h3>
+                            <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
                             <p>A Growl client for iOS.</p>
                         </div>
                     <div class="component-group">
@@ -787,8 +799,8 @@
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br> receive notifications for <b>all</b> shows.
                                                                      Your Prowl API key is available at:
-                                                                     <a href="${anon_url('https://www.prowlapp.com/api_settings.php')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">
-                                                                     https://www.prowlapp.com/api_settings.php</a><br>
+                                                                     <app-link href="https://www.prowlapp.com/api_settings.php">
+                                                                     https://www.prowlapp.com/api_settings.php</app-link><br>
                                                                      (This field may be blank except when testing.)</span>
                                     </label>
                                 </div>
@@ -838,8 +850,8 @@
                     </div><!-- /prowl component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
-                            <h3><a href="${anon_url('http://library.gnome.org/devel/libnotify/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Libnotify</a></h3>
-                            <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <a href="apt:python-notify">python-notify</a>).</p>
+                            <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>
+                            <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <app-link href="apt:python-notify">python-notify</app-link>).</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -888,7 +900,7 @@
                     </div><!-- /libnotify component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
-                            <h3><a href="${anon_url('https://pushover.net/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
+                            <h3><app-link href="https://pushover.net/">Pushover</app-link></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
                     <div class="component-group">
@@ -948,7 +960,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><a href="${anon_url('https://pushover.net/apps/build/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
+                                        <span class="component-desc"><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1003,7 +1015,7 @@
                     </div><!-- /pushover component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
-                            <h3><a href="${anon_url('https://new.boxcar.io/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Boxcar 2</a></h3>
+                            <h3><app-link href="https://new.boxcar.io/">Boxcar 2</app-link></h3>
                             <p>Read your messages where and when you want them!</p>
                         </div>
                     <div class="component-group">
@@ -1063,7 +1075,7 @@
                     </div><!-- /boxcar2 component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-nma" title="NMA"></span>
-                            <h3><a href="${anon_url('http://www.notifymyandroid.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Notify My Android</a></h3>
+                            <h3><app-link href="http://www.notifymyandroid.com">Notify My Android</app-link></h3>
                             <p>Notify My Android is a Prowl-like Android App and API that offers an easy way to send notifications from your application directly to your Android device.</p>
                         </div>
                     <div class="component-group">
@@ -1139,7 +1151,7 @@
                     </div><!-- /nma component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushalot" title="Pushalot"></span>
-                            <h3><a href="${anon_url('https://pushalot.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushalot</a></h3>
+                            <h3><app-link href="https://pushalot.com">Pushalot</app-link></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
                         </div>
                     <div class="component-group">
@@ -1199,7 +1211,7 @@
                     </div><!-- /pushalot component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
-                            <h3><a href="${anon_url('https://www.pushbullet.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushbullet</a></h3>
+                            <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
                             <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
                         </div>
                     <div class="component-group">
@@ -1271,7 +1283,7 @@
                     </div><!-- /pushbullet component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
-                            <h3><a href="${anon_url('http://mobile.free.fr/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Free Mobile</a></h3>
+                            <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                             <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
                         </div>
                     <div class="component-group">
@@ -1342,7 +1354,7 @@
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-telegram" title="Telegram"></span>
-                        <h3><a href="${anon_url('https://telegram.org/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Telegram</a></h3>
+                        <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
                         <p>Telegram is a cloud-based instant messaging service.</p>
                     </div>
                     <div class="component-group">
@@ -1414,7 +1426,7 @@
                 <div id="social">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>
-                        <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>
+                        <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
                         <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
                     </div>
                     <div class="component-group">
@@ -1512,7 +1524,7 @@
                     </div><!-- twitter .component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
-                            <h3><a href="${anon_url('http://trakt.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Trakt</a></h3>
+                            <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
                         </div><!-- .component-group-desc //-->
                     <div class="component-group">
@@ -1683,7 +1695,7 @@
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-email" title="Email"></span>
-                        <h3><a href="${anon_url('http://en.wikipedia.org/wiki/Comparison_of_webmail_providers')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Email</a></h3>
+                        <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
                         <p>Allows configuration of email notifications on a per show basis.</p>
                     </div><!-- .component-group-desc //-->
                     <div class="component-group">
@@ -1848,7 +1860,7 @@
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-slack" title="Slack"></span>
-                        <h3><a href="${anon_url('https://slack.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Slack</a></h3>
+                        <h3><app-link href="https://slack.com">Slack</app-link></h3>
                         <p>Slack is a messaging app for teams.</p>
                     </div>
                     <div class="component-group">
@@ -1898,7 +1910,7 @@
                                     <label>
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">Create an incoming webhook, to communicate with your slack channel.
-                                        <a href="${anon_url('https://my.slack.com/services/new/incoming-webhook/')}">https://my.slack.com/services/new/incoming-webhook/</a></span>
+                                        <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>

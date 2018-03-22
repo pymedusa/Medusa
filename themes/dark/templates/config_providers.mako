@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
     from medusa.providers import sorted_provider_list
     from medusa.providers.generic_provider import GenericProvider
 %>
@@ -24,6 +23,17 @@ $(document).ready(function(){
 });
 $('#config-components').tabs();
 </script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -36,13 +46,13 @@ $('#config-components').tabs();
         <form id="configForm" action="config/providers/saveProviders" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
-                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                    <li><app-link href="#provider-priorities">Provider Priorities</app-link></li>
+                    <li><app-link href="#provider-options">Provider Options</app-link></li>
                   % if app.USE_NZBS:
-                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                    <li><app-link href="#custom-newznab">Configure Custom Newznab Providers</app-link></li>
                   % endif
                   % if app.USE_TORRENTS:
-                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><app-link href="config/providers/#custom-torrent">Configure Custom Torrent Providers</app-link></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
@@ -51,7 +61,7 @@ $('#config-components').tabs();
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
                         % if not app.USE_NZBS or not app.USE_TORRENTS:
-                        <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><a href="config/search">Search Settings</a></b></blockquote>
+                        <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><app-link href="config/search">Search Settings</app-link></b></blockquote>
                         % else:
                         <br>
                         % endif
@@ -77,7 +87,7 @@ $('#config-components').tabs();
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(cur_provider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
                                 <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if cur_provider.is_enabled() is True and cur_provider.get_id() not in app.BROKEN_PROVIDERS else ''}/>
-                                <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${cur_provider.image_name()}" alt="${cur_provider.name}" title="${cur_provider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
+                                <app-link href="${curURL}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${cur_provider.image_name()}" alt="${cur_provider.name}" title="${cur_provider.name}" width="16" height="16" style="vertical-align:middle;"/></app-link>
                                 <span style="vertical-align:middle;">${cur_provider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(cur_provider.supports_backlog)]}
                                 ${('<span class="red-text">!</span>', '')[bool(cur_provider.get_id() not in app.BROKEN_PROVIDERS)]}
@@ -444,7 +454,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     % if hasattr(cur_torrent_provider, 'required_cookies'):
                                         <p>eg. ${'=xx;'.join(cur_torrent_provider.required_cookies) + '=xx'}</p>
-                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}. <br/>For a step by step guide please follow the link to our <a target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Configure-Providers-with-captcha-protection')}">WIKI</a></p>
+                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}. <br/>For a step by step guide please follow the link to our <app-link href="https://github.com/pymedusa/Medusa/wiki/Configure-Providers-with-captcha-protection">WIKI</app-link></p>
                                     % endif
                                 </span>
                             </label>
@@ -786,7 +796,7 @@ $('#config-components').tabs();
                             </span>
                         </label>
                         <label>
-                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <a target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa')}"><font color="blue">Wiki</font></a></span>
+                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <app-link target="_blank" href="https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa"><font color="blue">Wiki</font></app-link></span>
                         </label>
                     </div>
                     <div class="torrentRssProviderDiv" id="addTorrentRss">

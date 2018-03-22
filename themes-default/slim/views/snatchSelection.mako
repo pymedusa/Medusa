@@ -2,12 +2,22 @@
 <%!
     from datetime import datetime
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -143,7 +153,7 @@
                             </td>
                             <td class="col-date triggerhighlight">${hItem["pubdate"]}</td>
                             <td class="col-date triggerhighlight">${datetime.fromtimestamp(float(hItem["date_added"])) if hItem["date_added"] else 'NA'}</td>
-                            <td class="col-search triggerhighlight"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                            <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                         </tr>
                     % endfor
                     </tbody>
