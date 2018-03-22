@@ -47,8 +47,8 @@ const startVue = () => {
                     <div class="field-pair">
                         <label class="clearfix" for="configure_show_options">
                             <ul>
-                                <li><app-link href="addShows/${'realpage + '/'}#tabs-1">Manage Directories</app-link></li>
-                                <li><app-link href="addShows/${'realpage + '/'}#tabs-2">Customize Options</app-link></li>
+                                <li><app-link href="addShows/${realpage + '/'}#tabs-1">Manage Directories</app-link></li>
+                                <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
                                 <%include file="/inc_rootDirs.mako"/>
