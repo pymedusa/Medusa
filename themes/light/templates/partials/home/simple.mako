@@ -62,7 +62,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <app-link href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</app-link>
+                        <app-link href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name | h}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -139,7 +139,7 @@
                 % else:
                     <td align="center" class="nowrap triggerhighlight"></td>
                 % endif
-                    <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></td>
+                    <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name | h}</app-link></td>
                     <td class="triggerhighlight">
                         <span title="${cur_show.network}">${cur_show.network}</span>
                     </td>
@@ -150,7 +150,7 @@
                             </app-link>
                         % endif
                         % if cur_show.externals.get('trakt_id'):
-                            <app-link href="${https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                            <app-link href="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                             </app-link>
                         % endif
