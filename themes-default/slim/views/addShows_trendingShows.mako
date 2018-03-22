@@ -48,8 +48,8 @@ const startVue = () => {
                 <div class="field-pair">
                     <label class="clearfix" for="configure_show_options">
                         <ul>
-                            <li><app-link id="trakt-tab-1" href="addShows/${'realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</app-link></li>
-                            <li><app-link id="trakt-tab-2" href="addShows/${'realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</app-link></li>
+                            <li><app-link id="trakt-tab-1" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</app-link></li>
+                            <li><app-link id="trakt-tab-2" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</app-link></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
                             <%include file="/inc_rootDirs.mako"/>
