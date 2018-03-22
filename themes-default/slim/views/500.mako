@@ -1,4 +1,5 @@
 <%inherit file="/layouts/main.mako"/>
+<%block name="scripts">
 <script>
 let app;
 const startVue = () => {
