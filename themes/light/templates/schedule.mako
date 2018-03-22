@@ -284,7 +284,7 @@ const startVue = () => {
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
+                    <asset class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series-slug="${cur_result['series_slug']}" type="${(layout, 'posterThumb')[layout == 'poster']}"></asset>
                 </app-link>
             </th>
 % if 'banner' == layout:
@@ -370,7 +370,9 @@ const startVue = () => {
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <app-link title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></app-link>
+                            <app-link title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
+                                <asset series-slug="${cur_result['series_slug']}" type="posterThumb"></asset>
+                            </app-link>
                         </div>
                         <div class="text">
                             <span class="airtime">
