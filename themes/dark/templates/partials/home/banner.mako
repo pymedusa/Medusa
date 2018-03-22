@@ -143,7 +143,7 @@
                         <span style="display: none;">${cur_show.name}</span>
                         <div class="imgbanner banner">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">
-                            <img src="images/banner.png" lazy="on" series="${cur_show.slug}" asset="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name}"/>
+                                <asset default="images/banner.png" series-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
                             </app-link>
                         </div>
                     </td>
