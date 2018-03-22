@@ -674,15 +674,15 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 # Check_setting_str                                                            #
 ################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
-    # For passwords you must include the word `password` in the item_name
+def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None, encrypted=False):
+    # For passwords you must include the word `password` in the item_name or pass `encrypted=True`
     # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
-    if bool(item_name.find('password') + 1):
+    if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:
         encryption_version = 0
