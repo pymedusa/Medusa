@@ -88,7 +88,7 @@
             <div class="row">
                 <div class="image-flex-container col-md-12">
                     <app-link series="${show.slug}" asset="poster">
-                        <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
+                        <asset class="show-image shadow" series-slug="${show.slug}" type="posterThumb"></asset>
                     </app-link>
                 </div>
             </div>
@@ -99,7 +99,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right shadow" series="${show.slug}" asset="banner">
+                    <asset id="showBanner" class="pull-right shadow" series-slug="${show.slug}" type="banner"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:

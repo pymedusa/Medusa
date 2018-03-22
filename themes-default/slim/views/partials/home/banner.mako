@@ -148,7 +148,7 @@
                     </td>
                     <td align="center">
                     % if cur_show.network:
-                        <span title="${cur_show.network}" class="hidden-print"><img id="network" class="show-network-image" width="54" height="27" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                        <span title="${cur_show.network}" class="hidden-print"><asset id="network" class="show-network-image" width="54" height="27" default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" alt="${cur_show.network}" title="${cur_show.network}"></asset></span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:
                         <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
