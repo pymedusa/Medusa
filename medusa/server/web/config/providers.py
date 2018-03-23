@@ -108,7 +108,7 @@ class ConfigProviders(Config):
         # Get newznabprovider obj with provided name
         temp_provider = NewznabProvider(name, url, api_key)
 
-        success, tv_categories, caps, error = temp_provider.get_categories()
+        success, tv_categories, caps, error = temp_provider.get_capabilities()
 
         return json.dumps({'success': success, 'tv_categories': tv_categories, 'caps': caps, 'error': error})
 

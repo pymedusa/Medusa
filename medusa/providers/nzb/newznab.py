@@ -506,18 +506,20 @@ class NewznabProvider(NZBProvider):
         # self.caps = any([self.cap_tv_search, self.cap_search, self.cap_movie_search, self.cap_audio_search])
         self.caps = any([self.cap_tv_search])
 
-    def get_categories(self, just_caps=False):
+    def get_capabilities(self, just_caps=False):
         """
-        Use the newznab provider url and apikey to get the capabilities.
+        Use the provider url and apikey to get the capabilities.
 
         Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """
-        categories = []
+        categories = supported_params = []
+        error_msg = ''
 
         if not self._check_auth():
-            return False, categories, '', 'Provider requires auth and your key is not set'
+            error_msg = 'Provider requires auth and your key is not set'
+            return False, categories, supported_params, error_msg
 
         url_params = {'t': 'caps'}
         if self.needs_auth and self.api_key:
@@ -525,28 +527,29 @@ class NewznabProvider(NZBProvider):
 
         response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
-            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
-            log.warning(error_string)
-            return False, categories, '', error_string
+            error_msg = 'Error getting caps xml for: {0}'.format(self.name)
+            log.warning(error_msg)
+            return False, categories, supported_params, error_msg
 
         with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
-                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
-                log.warning(error_string)
-                return False, categories, '', error_string
+                error_msg = 'Error parsing caps xml for: {0}'.format(self.name)
+                log.warning(error_msg)
+                return False, categories, supported_params, error_msg
 
             self.set_caps(html.find('searching'))
+            supported_params = self.cap_tv_search
             if just_caps:
-                return True, categories, self.cap_tv_search, ''
+                return True, categories, supported_params, error_msg
 
             for category in html('category'):
                 if 'TV' in category.get('name', '') and category.get('id', ''):
                     categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
-                        if subcat.get('name', '') and subcat.get('id', ''):
+                        if 'TV' in subcat.get('name', '') and subcat.get('id', ''):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
-            return True, categories, self.cap_tv_search, ''
+            return True, categories, supported_params, error_msg
 
     @staticmethod
     def _create_default_provider(config):
