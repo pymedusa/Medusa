@@ -4,12 +4,12 @@
 
 from __future__ import unicode_literals
 
-from base64 import b16encode, b32decode
 import logging
 import os
+import re
+from base64 import b16encode, b32decode
 from os.path import join
 from random import shuffle
-import re
 
 from medusa import (
     app,
@@ -25,7 +25,6 @@ from medusa.indexers.indexer_config import (
 )
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
@@ -347,10 +346,10 @@ class TorznabProvider(TorrentProvider):
                 return True, categories, supported_params, error_msg
 
             for category in html('category'):
-                if 'TV' in category.get('name', '') and category.get('id', ''):
+                if 'TV' in category.get('name', '') and category.get('id'):
                     categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
-                        if 'TV' in subcat.get('name', '') and subcat.get('id', ''):
+                        if 'TV' in subcat.get('name', '') and subcat.get('id'):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, categories, supported_params, error_msg
@@ -385,15 +384,16 @@ class TorznabProvider(TorrentProvider):
                 log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
                 return urls, filename
         else:
+            response = self.session.get(result.url, allow_redirects=False)
+            if response:
+                new_url = response.headers.get('Location')
+                if result.url != new_url:
+                    result.url = new_url
+                    return self._make_url(result)
+
             urls = [result.url]
 
         result_name = sanitize_filename(result.name)
-
-        # Some NZB providers (e.g. Jackett) can also download torrents
-        if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
-            filename = join(app.TORRENT_DIR, result_name + '.torrent')
-        else:
-            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename

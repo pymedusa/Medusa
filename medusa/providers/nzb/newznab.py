@@ -543,10 +543,10 @@ class NewznabProvider(NZBProvider):
                 return True, categories, supported_params, error_msg
 
             for category in html('category'):
-                if 'TV' in category.get('name', '') and category.get('id', ''):
+                if 'TV' in category.get('name', '') and category.get('id'):
                     categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
-                        if 'TV' in subcat.get('name', '') and subcat.get('id', ''):
+                        if 'TV' in subcat.get('name', '') and subcat.get('id'):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, categories, supported_params, error_msg

@@ -776,13 +776,7 @@ class GenericProvider(object):
             urls = [result.url]
 
         result_name = sanitize_filename(result.name)
-
-        # Some NZB providers (e.g. Jackett) can also download torrents
-        if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
-            filename = join(app.TORRENT_DIR, result_name + '.torrent')
-        else:
-            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
