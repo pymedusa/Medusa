@@ -6,7 +6,7 @@ import json
 import os
 
 from medusa.browser import list_folders
-from medusa.helpers import truth_to_bool
+from medusa.helpers.utils import truth_to_bool
 from medusa.server.web.core.base import WebRoot
 
 from tornroutes import route
