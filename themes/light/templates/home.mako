@@ -8,6 +8,19 @@
     from random import choice
     import re
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
@@ -99,7 +112,7 @@
             <!-- Nav tabs -->
             <ul>
                 % for cur_show_list in show_lists:
-                    <li><a href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</a></li>
+                    <li><app-link href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
                 % endfor
             </ul>
             <!-- Tab panes -->

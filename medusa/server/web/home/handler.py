@@ -2356,7 +2356,7 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if series_obj.is_anime:
-            ep_obj = series_obj.get_episode(absolute=forAbsolute)
+            ep_obj = series_obj.get_episode(absolute_number=forAbsolute)
         else:
             ep_obj = series_obj.get_episode(forSeason, forEpisode)
 

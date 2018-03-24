@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import indexer_id_to_name, mappings
     from medusa import sbdatetime
@@ -13,6 +12,17 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 
 <%block name="content">
@@ -36,8 +46,8 @@
             <span class="listing-key listing-default">Soon</span>
             <span class="listing-key listing-toofar">Later</span>
         % endif
-            <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
-            <i class="icon-calendar icon-white"></i>Subscribe</a>
+            <app-link class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <i class="icon-calendar icon-white"></i>Subscribe</app-link>
         </div>
 
         <div class="pull-right">
@@ -126,7 +136,7 @@
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
-            <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</a>
+            <td class="tvShow triggerhighlight" nowrap="nowrap"><app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</app-link>
 % if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
@@ -153,20 +163,20 @@
             </td>
             <td align="center" style="vertical-align: middle;" class="triggerhighlight">
             % if cur_result['imdb_id']:
-                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
+                <app-link href="http://www.imdb.com/title/${cur_result['imdb_id']}" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
-                </a>
+                </app-link>
             % endif
-                <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" data-indexer-name="${indexerApi(cur_indexer).name}"
-                    rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
+                <app-link href="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}" data-indexer-name="${indexerApi(cur_indexer).name}"
+                    title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
                     <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
-                </a>
+                </app-link>
             </td>
             <td align="center" class="triggerhighlight">
-            <a class="epSearch" id="forceUpdate-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
-                href="home/searchEpisode?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-            <a class="epManualSearch" id="forcedSearch-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
-                href="home/snatchSelection?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+            <app-link class="epSearch" id="forceUpdate-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
+                href="home/searchEpisode?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+            <app-link class="epManualSearch" id="forcedSearch-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
+                href="home/snatchSelection?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
             </td>
         </tr>
 % endfor
@@ -273,9 +283,9 @@
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
-                <a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
+                <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
                     <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
-                </a>
+                </app-link>
             </th>
 % if 'banner' == layout:
         </tr>
@@ -284,19 +294,19 @@
             <td class="next_episode">
                 <div class="clearfix">
                     <span class="tvshowTitle">
-                        <a href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}}
+                        <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}}">
                             ${('', '<span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
-                        </a>
+                        </app-link>
                     </span>
                     <span class="tvshowTitleIcons">
 % if cur_result['imdb_id']:
-                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
+                        <app-link href="http://www.imdb.com/title/${cur_result['imdb_id']}" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
-                        </a>
+                        </app-link>
 % endif
-                        <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}"><img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" /></a>
-                        <a class="epSearch" id="forceUpdate-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-                        <a class="epManualSearch" id="forcedSearch-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                        <app-link href="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}" title="${indexerApi(cur_indexer).config['show_url']}"><img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" /></app-link>
+                        <app-link class="epSearch" id="forceUpdate-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+                        <app-link class="epManualSearch" id="forcedSearch-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                     </span>
                 </div>
                 <span class="title">Next Episode:</span> <span>${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))} - ${cur_result['name']}</span>
@@ -360,7 +370,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></a>
+                            <app-link title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></app-link>
                         </div>
                         <div class="text">
                             <span class="airtime">

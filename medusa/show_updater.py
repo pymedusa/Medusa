@@ -30,7 +30,7 @@ from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavaila
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, RequestException
 
 logger = logging.getLogger(__name__)
 
@@ -95,28 +95,29 @@ class ShowUpdater(object):
                                        u'connectivity issues while trying to look for show updates on show: {show}',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
-                    except IndexerException as e:
+                    except IndexerException as error:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error.message)
                         continue
-                    except HTTPError as error:
-                        if error.response.status_code == 503:
-                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: TMDB api Service offline: '
-                                           u'This service is temporarily offline, try again later.',
-                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
-                        if error.response.status_code == 429:
-                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                           u'issues while trying to get updates for show {show}. '
-                                           u'Cause: Your request count (#) is over the allowed limit of (40)..',
-                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
+                    except RequestException as error:
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'issues while trying to get updates for show {show}. ',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
+
+                        if isinstance(error, HTTPError):
+                            if error.response.status_code == 503:
+                                logger.warning(u'API Service offline: '
+                                               u'This service is temporarily offline, try again later.')
+                            elif error.response.status_code == 429:
+                                logger.warning(u'Your request count (#) is over the allowed limit of (40).')
+
+                        logger.warning(u'Cause: {cause}.', cause=error)
                         continue
-                    except Exception as e:
+                    except Exception as error:
                         logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                          u'issues while trying to get updates for show {show}. Cause: {cause}.',
-                                         indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                                         indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                         continue
 
                 # If the current show is not in the list, move on to the next.

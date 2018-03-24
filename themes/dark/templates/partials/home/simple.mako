@@ -4,7 +4,6 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
     import re
@@ -37,7 +36,7 @@
             </thead>
             <tfoot class="hidden-print shadow">
                 <tr>
-                    <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[cur_list_type == 'Anime']}</a></th>
+                    <th rowspan="1" colspan="1" align="center"><app-link href="addShows/">Add ${('Show', 'Anime')[cur_list_type == 'Anime']}</app-link></th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
@@ -63,7 +62,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <a href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</a>
+                        <app-link href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name | h}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -140,24 +139,24 @@
                 % else:
                     <td align="center" class="nowrap triggerhighlight"></td>
                 % endif
-                    <td class="tvShow triggerhighlight"><a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</a></td>
+                    <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name | h}</app-link></td>
                     <td class="triggerhighlight">
                         <span title="${cur_show.network}">${cur_show.network}</span>
                     </td>
                     <td align="center" class="triggerhighlight">
                         % if cur_show.imdb_id:
-                            <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdb_id}">
+                            <app-link href="http://www.imdb.com/title/${cur_show.imdb_id}" title="http://www.imdb.com/title/${cur_show.imdb_id}">
                                 <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
-                            </a>
+                            </app-link>
                         % endif
                         % if cur_show.externals.get('trakt_id'):
-                            <a href="${anon_url('https://trakt.tv/shows/', cur_show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                            <app-link href="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
-                            </a>
+                            </app-link>
                         % endif
-                        <a data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.series_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
+                        <app-link data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
                             <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
-                        </a>
+                        </app-link>
                     </td>
                     <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
                     <td class="triggerhighlight" align="center">

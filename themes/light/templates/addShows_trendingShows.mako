@@ -8,6 +8,17 @@
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <div class="row">
@@ -37,8 +48,8 @@
                 <div class="field-pair">
                     <label class="clearfix" for="configure_show_options">
                         <ul>
-                            <li><a id="trakt-tab-1" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</a></li>
-                            <li><a id="trakt-tab-2" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</a></li>
+                            <li><app-link id="trakt-tab-1" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</app-link></li>
+                            <li><app-link id="trakt-tab-2" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</app-link></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
                             <%include file="/inc_rootDirs.mako"/>

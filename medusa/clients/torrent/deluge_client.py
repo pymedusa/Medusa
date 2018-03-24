@@ -71,8 +71,8 @@ def read_torrent_status(torrent_data):
                 ' seed idle limit'
                 ' Removing it: [{name}]',
                 ratio=details['ratio'],
-                ratio_limit=torrent['stop_ratio'],
-                name=torrent['name']
+                ratio_limit=details['stop_ratio'],
+                name=details['name']
             )
             info_hash_to_remove.append(info_hash)
         elif status == 'seeding':
@@ -81,9 +81,9 @@ def read_torrent_status(torrent_data):
                     'Torrent did not reach minimum'
                     ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
                     ' Keeping it: [{name}]',
-                    ratio=torrent['ratio'],
-                    ratio_limit=torrent['stop_ratio'],
-                    name=torrent['name']
+                    ratio=details['ratio'],
+                    ratio_limit=details['stop_ratio'],
+                    name=details['name']
                 )
             else:
                 log.info(
@@ -91,9 +91,9 @@ def read_torrent_status(torrent_data):
                     ' was force started again. Current'
                     ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
                     ' Keeping it: [{name}]',
-                    ratio=torrent['uploadRatio'],
-                    ratio_limit=torrent['seedRatioLimit'],
-                    name=torrent['name']
+                    ratio=details['ratio'],
+                    ratio_limit=details['stop_ratio'],
+                    name=details['name']
                 )
         else:
             log.info('Torrent is {status}. Keeping it: [{name}]', status=status, name=details['name'])
