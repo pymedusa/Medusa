@@ -21,6 +21,56 @@ const startVue = () => {
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            $('#historyTable:has(tbody tr)').tablesorter({
+                widgets: ['saveSort', 'zebra', 'filter'],
+                sortList: [[0, 1]],
+                textExtraction: (function() {
+                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
+                        return {
+                            // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
+                            0: node => $(node).find('time').attr('datetime'),
+                            1: node => $(node).find('a').text()
+                        };
+                    }
+                    return {
+                        // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded, 4: Quality
+                        0: node => $(node).find('time').attr('datetime'),
+                        1: node => $(node).find('a').text(),
+                        2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        3: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                    };
+                })(),
+                headers: (function() {
+                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
+                        return {
+                            0: { sorter: 'realISODate' }
+                        };
+                    }
+                    return {
+                        0: { sorter: 'realISODate' },
+                        2: { sorter: 'text' }
+                    };
+                })()
+            });
+
+            $('#history_limit').on('change', function() {
+                window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
+            });
+
+            $('.show-option select[name="layout"]').on('change', function() {
+                api.patch('config/main', {
+                    layout: {
+                        history: $(this).val()
+                    }
+                }).then(response => {
+                    log.info(response);
+                    window.location.reload();
+                }).catch(err => {
+                    log.info(err);
+                });
+            });
         }
     });
 };
@@ -96,7 +146,7 @@ const startVue = () => {
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
-                        <td class="tvShow triggerhighlight"><app-link data-indexer-to-name="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </app-link></td>
+                        <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </app-link></td>
                         <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                         % if composite.status == SUBTITLED:
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -166,7 +216,7 @@ const startVue = () => {
                         </td>
                         <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
-                            <span><app-link data-indexer-to-name="${hItem.index.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</app-link></span>
+                            <span><app-link indexer-id="${hItem.index.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</app-link></span>
                         </td>
                         <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
