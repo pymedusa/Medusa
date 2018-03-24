@@ -55,7 +55,7 @@ const startVue = () => {
                     <li><app-link href="#custom-newznab">Configure Custom Newznab Providers</app-link></li>
                   % endif
                   % if app.USE_TORRENTS:
-                    <li><app-link href="config/providers/#custom-torrent">Configure Custom Torrent Providers</app-link></li>
+                    <li><app-link href="#custom-torrent">Configure Custom Torrent Providers</app-link></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
