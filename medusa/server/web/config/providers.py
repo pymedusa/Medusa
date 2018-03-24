@@ -8,6 +8,7 @@ import json
 import os
 from builtins import str
 from builtins import zip
+from collections import OrderedDict
 
 from medusa import app, config, providers, ui
 from medusa.helper.common import try_int
@@ -379,13 +380,13 @@ class ConfigProviders(Config):
         if hasattr(provider, 'minseed'):
             try:
                 provider.minseed = int(str(kwargs['{id}_minseed'.format(id=provider.get_id())]).strip())
-            except (AttributeError, KeyError):
+            except (AttributeError, KeyError, ValueError):
                 provider.minseed = 1  # these exceptions are actually catching unselected checkboxes
 
         if hasattr(provider, 'minleech'):
             try:
                 provider.minleech = int(str(kwargs['{id}_minleech'.format(id=provider.get_id())]).strip())
-            except (AttributeError, KeyError):
+            except (AttributeError, KeyError, ValueError):
                 provider.minleech = 0  # these exceptions are actually catching unselected checkboxes
 
         if hasattr(provider, 'ratio'):
@@ -497,30 +498,43 @@ class ConfigProviders(Config):
         self._save_rsstorrent_providers(torrentrss_string)
         self._save_torznab_providers(torznab_string)
 
-        provider_list = []
-        provider_names_list = provider_order.split()
-        sorted_providers = providers.sorted_provider_list()
+        def provider_names(names, providers):
+            reminder = {}
+            for name in names:
+                for provider in providers:
+                    reminder[provider.get_id()] = provider
+                    if provider.get_id() == name:
+                        yield provider
+            else:
+                rest = set(reminder).difference(set(names))
+                for provider in rest:
+                    yield reminder[provider]
 
-        # do the enable/disable
-        for provider_name in provider_names_list:
-            cur_provider, cur_enabled = provider_name.split(':')
-            cur_enabled = try_int(cur_enabled)
+        ordered_names = OrderedDict()
+        provider_order_list = provider_order.split()
+        for provider_setting in provider_order_list:
+            cur_provider, cur_setting = provider_setting.split(':')
+            enabled = try_int(cur_setting)
+            ordered_names[cur_provider] = enabled
 
-            provider_list.append(cur_provider)
+        providers_enabled = []
+        providers_disabled = []
+        all_providers = providers.sorted_provider_list()
 
-            for provider in sorted_providers:
-                if provider.get_id() == cur_provider and hasattr(provider, 'enabled'):
-                    provider.enabled = bool(cur_enabled)
-                    break
+        for provider in provider_names(ordered_names, all_providers):
+            name = provider.get_id()
+            if ordered_names.get(name):
+                provider.enabled = True
+                providers_enabled.append(name)
+            else:
+                provider.enabled = False
+                providers_disabled.append(name)
 
-        # dynamically load provider settings
-        for provider in sorted_providers:
             self._set_common_settings(provider, **kwargs)
             if isinstance(provider, (TorrentRssProvider, TorznabProvider)):
                 self._set_torrent_settings(provider, **kwargs)
 
-        # app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
-        app.PROVIDER_ORDER = provider_list
+        app.PROVIDER_ORDER = providers_enabled + providers_disabled
 
         app.instance.save_config()
 

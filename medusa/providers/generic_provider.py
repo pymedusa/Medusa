@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-from base64 import b16encode, b32decode
 from builtins import map
 from builtins import object
 from builtins import str
@@ -14,7 +13,6 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
-from random import shuffle
 
 from dateutil import parser, tz
 
@@ -150,11 +148,62 @@ class GenericProvider(object):
                              {'result': result.name, 'location': filename})
                     return True
 
-        if urls:
-            log.warning('Failed to download any results for {result}',
-                        {'result': result.name})
+        log.warning('Failed to download any results for {result}',
+                    {'result': result.name})
 
         return False
+
+    def _make_url(self, result):
+        """Return url if result is a magnet link."""
+        urls = []
+        filename = ''
+
+        if not result or not result.url:
+            return urls, filename
+
+        urls = [result.url]
+
+        result_name = sanitize_filename(result.name)
+        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+
+        return urls, filename
+
+    @staticmethod
+    def get_url_hook(response, **kwargs):
+        """Get URL hook."""
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
+
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, text_type):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
+
+    def _verify_download(self, file_name=None):
+        return True
 
     def get_content(self, url, params=None, timeout=30, **kwargs):
         """Retrieve the torrent/nzb content."""
@@ -480,52 +529,6 @@ class GenericProvider(object):
         """Get result."""
         return self._get_result(episodes)
 
-    @staticmethod
-    def get_url_hook(response, **kwargs):
-        """Get URL hook."""
-        request = response.request
-        log.debug(
-            '{method} URL: {url} [Status: {status}]', {
-                'method': request.method,
-                'url': request.url,
-                'status': response.status_code,
-            }
-        )
-        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
-
-        if request.method.upper() == 'POST':
-            body = request.body
-            # try to log post data using various codecs to decode
-            if isinstance(body, text_type):
-                log.debug('With post data: {0}', body)
-                return
-
-            codecs = ('utf-8', 'latin1', 'cp1252')
-            for codec in codecs:
-                try:
-                    data = body.decode(codec)
-                except UnicodeError as error:
-                    log.debug('Failed to decode post data as {codec}: {msg}',
-                              {'codec': codec, 'msg': error})
-                else:
-                    log.debug('With post data: {0}', data)
-                    break
-            else:
-                log.warning('Failed to decode post data with {codecs}',
-                            {'codecs': codecs})
-
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
-        """Load the given URL."""
-        log.info('providers.generic_provider.get_url() is deprecated, '
-                 'please rewrite your provider to make use of the MedusaSession session class.')
-        kwargs['hooks'] = {'response': self.get_url_hook}
-
-        if not post_data:
-            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
-        else:
-            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
-                                     timeout=timeout, **kwargs)
-
     def image_name(self):
         """Return provider image name."""
         return self.get_id() + '.png'
@@ -742,46 +745,6 @@ class GenericProvider(object):
             url = ''
 
         return title, url
-
-    def _make_url(self, result):
-        """Return url if result is a magnet link."""
-        if not result:
-            return '', ''
-
-        urls = []
-        filename = ''
-
-        if result.url.startswith('magnet:'):
-            try:
-                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
-
-                try:
-                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
-                except Exception:
-                    torrent_name = 'NO_DOWNLOAD_NAME'
-
-                if len(info_hash) == 32:
-                    info_hash = b16encode(b32decode(info_hash)).upper()
-
-                if not info_hash:
-                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
-                    return urls, filename
-
-                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
-                shuffle(urls)
-            except Exception:
-                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
-                return urls, filename
-        else:
-            urls = [result.url]
-
-        result_name = sanitize_filename(result.name)
-        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
-
-        return urls, filename
-
-    def _verify_download(self, file_name=None):
-        return True
 
     @property
     def recent_results(self):

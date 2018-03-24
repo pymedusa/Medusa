@@ -8,7 +8,6 @@ import logging
 import os
 import re
 import time
-import traceback
 from builtins import range
 from builtins import str
 from builtins import zip
@@ -106,7 +105,7 @@ class NewznabProvider(NZBProvider):
 
         # For providers that don't have caps, or for which the t=caps is not working.
         if not self.caps and all(provider not in self.url for provider in self.providers_without_caps):
-            self.get_categories(just_caps=True)
+            self.get_capabilities(just_caps=True)
             if not self.caps:
                 return results
 
@@ -284,10 +283,10 @@ class NewznabProvider(NZBProvider):
                         else:
                             log.debug('Found result: {0} with {1} seeders and {2} leechers',
                                       title, seeders, leechers)
+
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -546,7 +545,7 @@ class NewznabProvider(NZBProvider):
                 if 'TV' in category.get('name', '') and category.get('id'):
                     categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
-                        if 'TV' in subcat.get('name', '') and subcat.get('id'):
+                        if subcat.get('name', '') and subcat.get('id'):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, categories, supported_params, error_msg

@@ -6,17 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import re
-from base64 import b16encode, b32decode
-from os.path import join
-from random import shuffle
 
 from medusa import (
     app,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size, sanitize_filename
+from medusa.helper.common import convert_size
 from medusa.helper.encoding import ss
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
@@ -58,7 +54,7 @@ class TorznabProvider(TorrentProvider):
             'Season {season}',  # example: 'Series.Name Season 3'
         )
 
-        self.cache = tv.Cache(self, min_time=20)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, force_query=False, manual_search=False, **kwargs):
         """
@@ -176,8 +172,8 @@ class TorznabProvider(TorrentProvider):
             for item in rows:
                 try:
                     title = item.title.get_text(strip=True)
-                    download_url = item.enclosure.get('url', '').strip()
-                    if not (title and download_url):
+                    download_url = item.enclosure.get('url')
+                    if not all([title, download_url]):
                         continue
 
                     seeders_attr = item.find('torznab:attr', attrs={'name': 'seeders'})
@@ -252,7 +248,7 @@ class TorznabProvider(TorrentProvider):
 
         Returns found image or the default Torznab image
         """
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'jackett.png'
 
@@ -353,47 +349,3 @@ class TorznabProvider(TorrentProvider):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, categories, supported_params, error_msg
-
-    def _make_url(self, result):
-        """Return url if result is a magnet link."""
-        if not result:
-            return '', ''
-
-        urls = []
-        filename = ''
-
-        if result.url.startswith('magnet:'):
-            try:
-                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
-
-                try:
-                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
-                except Exception:
-                    torrent_name = 'NO_DOWNLOAD_NAME'
-
-                if len(info_hash) == 32:
-                    info_hash = b16encode(b32decode(info_hash)).upper()
-
-                if not info_hash:
-                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
-                    return urls, filename
-
-                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
-                shuffle(urls)
-            except Exception:
-                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
-                return urls, filename
-        else:
-            response = self.session.get(result.url, allow_redirects=False)
-            if response:
-                new_url = response.headers.get('Location')
-                if result.url != new_url:
-                    result.url = new_url
-                    return self._make_url(result)
-
-            urls = [result.url]
-
-        result_name = sanitize_filename(result.name)
-        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
-
-        return urls, filename
