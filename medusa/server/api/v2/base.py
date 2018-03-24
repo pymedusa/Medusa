@@ -111,6 +111,7 @@ class BaseRequestHandler(RequestHandler):
                 self.finish(json.JSONEncoder(default=json_default_encoder).encode(data))
             elif stream:
                 # This is mainly for assets
+                self.set_header('cache-control', 'public, max-age=3600')
                 self.set_header('content-type', content_type)
                 self.finish(stream)
             elif kwargs and 'chunk' in kwargs:
