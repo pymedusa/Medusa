@@ -56,6 +56,7 @@ const startVue = () => {
                   % endif
                   % if app.USE_TORRENTS:
                     <li><app-link href="#custom-torrent">Configure Custom Torrent Providers</app-link></li>
+                    <li><app-link href="#custom-torznab">Configure Jackett Providers</app-link></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
