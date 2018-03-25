@@ -77,6 +77,8 @@ from medusa.config import (
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.models import session_scope
+from medusa.models.application import TvShow, TvEpisode, SceneNumbering
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -1111,6 +1113,14 @@ class Application(object):
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
+
+            # Start sqlAlchemy db migration
+            # Expirimental open database Session.
+            with session_scope('main') as session:
+                from medusa.models.application import TvShow, DbVersion, Blacklist, XemRefresh, SceneNumbering, TvEpisode, IndexerMapping
+                XemRefresh.get_version(4, 1424)
+                print(session.query(TvShow).all())
+                print(session.query(SceneNumbering).all())
 
             # initialize metadata_providers
             app.metadata_provider_dict = metadata.get_metadata_generator_dict()

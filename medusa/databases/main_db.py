@@ -627,33 +627,33 @@ class AddIndexerIds(AddIndexerInteger):
             self.addColumn('imdb_info', 'indexer', 'NUMERIC', None)
 
         log.info(u'Dropping the unique index on idx_indexer_id')
-        self.connection.action('DROP INDEX IF EXISTS idx_indexer_id')
+        self.connection.action(b'DROP INDEX IF EXISTS idx_indexer_id')
 
         # Add the column imdb_info_id with PK
-        self.connection.action('DROP TABLE IF EXISTS tmp_imdb_info')
-        self.connection.action('ALTER TABLE imdb_info RENAME TO tmp_imdb_info')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_imdb_info')
+        self.connection.action(b'ALTER TABLE imdb_info RENAME TO tmp_imdb_info')
         self.connection.action(
-            'CREATE TABLE imdb_info(imdb_info_id INTEGER PRIMARY KEY, indexer NUMERIC, indexer_id INTEGER, imdb_id TEXT, '
-            'title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, '
-            'certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC, plot TEXT)'
+            b'CREATE TABLE imdb_info(imdb_info_id INTEGER PRIMARY KEY, indexer NUMERIC, indexer_id INTEGER, imdb_id TEXT, '
+            b'title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, '
+            b'certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC, plot TEXT)'
         )
-        self.connection.action('INSERT INTO imdb_info (indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
-                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot) '
-                               'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
-                               'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
-        self.connection.action('DROP TABLE tmp_imdb_info')
+        self.connection.action(b'INSERT INTO imdb_info (indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               b'genres, countries, country_codes, certificates, rating, votes, last_update, plot) '
+                               b'SELECT indexer, indexer_id, imdb_id, title, year, akas, runtimes, '
+                               b'genres, countries, country_codes, certificates, rating, votes, last_update, plot FROM tmp_imdb_info')
+        self.connection.action(b'DROP TABLE tmp_imdb_info')
 
         # recreate the xem_refresh table, without the primary key on indexer_id. Add the column xem_refresh_id.
         log.info(u'Dropping the primary key on the table xem_refresh')
 
-        self.connection.action('DROP TABLE IF EXISTS tmp_xem_refresh')
-        self.connection.action('ALTER TABLE xem_refresh RENAME TO tmp_xem_refresh')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_xem_refresh')
+        self.connection.action(b'ALTER TABLE xem_refresh RENAME TO tmp_xem_refresh')
         self.connection.action(
-            'CREATE TABLE xem_refresh (xem_refresh_id INTEGER PRIMARY KEY, indexer INTEGER, indexer_id INTEGER, last_refreshed INTEGER)'
+            b'CREATE TABLE xem_refresh (xem_refresh_id INTEGER PRIMARY KEY, indexer INTEGER, indexer_id INTEGER, last_refreshed INTEGER)'
         )
-        self.connection.action('INSERT INTO xem_refresh (indexer, indexer_id, last_refreshed) '
-                               'SELECT CAST(indexer AS INTEGER), indexer_id, last_refreshed FROM tmp_xem_refresh')
-        self.connection.action('DROP TABLE tmp_xem_refresh')
+        self.connection.action(b'INSERT INTO xem_refresh (indexer, indexer_id, last_refreshed) '
+                               b'SELECT CAST(indexer AS INTEGER), indexer_id, last_refreshed FROM tmp_xem_refresh')
+        self.connection.action(b'DROP TABLE tmp_xem_refresh')
 
         series_dict = {}
 
@@ -683,7 +683,7 @@ class AddIndexerIds(AddIndexerInteger):
                 migration_config[0], migration_config[1]
             )
 
-            query = 'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} is null'.format(config=migration_config)
+            query = b'SELECT {config[1]} FROM {config[0]} WHERE {config[2]} is null'.format(config=migration_config)
             results = self.connection.select(query)
             if not results:
                 continue
@@ -699,10 +699,141 @@ class AddIndexerIds(AddIndexerInteger):
                     continue
 
                 self.connection.action(
-                    'UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
+                    b'UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
                     [indexer_id, series_id])
 
         self.inc_minor_version()
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
+
+
+class AddPkToEachTable(AddIndexerIds):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    """
+
+    def test(self):
+        """
+        Test if the version is at least 44.9
+        """
+        return self.connection.version >= (45, 0)
+
+    def execute(self):
+        log.info(u'Add explict PK (autonumbered) column to tables that do not have any yet')
+
+        log.info(u'Add explict PK scene_numbering_id to table scene_numbering')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_scene_numbering')
+        self.connection.action(b'ALTER TABLE scene_numbering RENAME TO tmp_scene_numbering')
+        self.connection.action(
+            b'CREATE TABLE scene_numbering(scene_numbering_id INTEGER PRIMARY KEY, indexer TEXT, indexer_id INTEGER, '
+            b'season INTEGER, episode INTEGER, scene_season INTEGER, scene_episode INTEGER, absolute_number NUMERIC, '
+            b'scene_absolute_number NUMERIC)'
+        )
+        self.connection.action(b'INSERT INTO scene_numbering (indexer, indexer_id, season, episode, scene_season, scene_episode, absolute_number, scene_absolute_number) '
+                               b'SELECT indexer, indexer_id, season, episode, scene_season, scene_episode, absolute_number, scene_absolute_number FROM tmp_scene_numbering')
+        self.connection.action(b'DROP TABLE tmp_scene_numbering')
+
+        log.info(u'Add explict PK scene_numbering_id to table scene_numbering')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_scene_numbering')
+        self.connection.action(b'ALTER TABLE scene_numbering RENAME TO tmp_scene_numbering')
+        self.connection.action(
+            b'CREATE TABLE scene_numbering(scene_numbering_id INTEGER PRIMARY KEY, indexer TEXT, indexer_id INTEGER, '
+            b'season INTEGER, episode INTEGER, scene_season INTEGER, scene_episode INTEGER, absolute_number NUMERIC, '
+            b'scene_absolute_number NUMERIC)'
+        )
+        self.connection.action(b'INSERT INTO scene_numbering (indexer, indexer_id, season, episode, scene_season, scene_episode, absolute_number, scene_absolute_number) '
+                               b'SELECT indexer, indexer_id, season, episode, scene_season, scene_episode, absolute_number, scene_absolute_number FROM tmp_scene_numbering')
+        self.connection.action(b'DROP TABLE tmp_scene_numbering')
+
+        log.info(u'Add explict PK blacklist_id to table blacklist')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_blacklist')
+        self.connection.action(b'ALTER TABLE blacklist RENAME TO tmp_blacklist')
+        self.connection.action(
+            b'CREATE TABLE blacklist (blacklist_id INTEGER PRIMARY KEY, show_id INTEGER, range TEXT, keyword TEXT, indexer_id NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO blacklist (show_id, range, keyword, indexer_id) '
+            b'SELECT show_id, range, keyword, indexer_id FROM tmp_blacklist')
+        self.connection.action(b'DROP TABLE tmp_blacklist')
+
+        log.info(u'Add explict PK whitelist_id to table whitelist')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_whitelist')
+        self.connection.action(b'ALTER TABLE whitelist RENAME TO tmp_whitelist')
+        self.connection.action(
+            b'CREATE TABLE whitelist (whitelist_id INTEGER PRIMARY KEY, show_id INTEGER, range TEXT, keyword TEXT, indexer_id NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO whitelist (show_id, range, keyword, indexer_id) '
+            b'SELECT show_id, range, keyword, indexer_id FROM tmp_whitelist')
+        self.connection.action(b'DROP TABLE tmp_whitelist')
+
+        log.info(u'Add explict PK blacklist_id to table blacklist')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_blacklist')
+        self.connection.action(b'ALTER TABLE blacklist RENAME TO tmp_blacklist')
+        self.connection.action(
+            b'CREATE TABLE blacklist (blacklist_id INTEGER PRIMARY KEY, show_id INTEGER, range TEXT, keyword TEXT, indexer_id NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO blacklist (show_id, range, keyword, indexer_id) '
+            b'SELECT show_id, range, keyword, indexer_id FROM tmp_blacklist')
+        self.connection.action(b'DROP TABLE tmp_blacklist')
+
+        log.info(u'Add explict PK db_version_id to table db_version')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_db_version')
+        self.connection.action(b'ALTER TABLE db_version RENAME TO tmp_db_version')
+        self.connection.action(
+            b'CREATE TABLE db_version(db_version_id INTEGER PRIMARY KEY, db_version INTEGER, db_minor_version NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO db_version (db_version, db_minor_version) '
+            b'SELECT db_version, db_minor_version FROM tmp_db_version'
+        )
+        self.connection.action(b'DROP TABLE tmp_db_version')
+
+        log.info(u'Add explict PK history_id to table history')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_history')
+        self.connection.action(b'ALTER TABLE history RENAME TO tmp_history')
+        self.connection.action(
+            b'CREATE TABLE history(history_id INTEGER PRIMARY KEY, action NUMERIC, date NUMERIC, showid NUMERIC, season NUMERIC, episode NUMERIC, '
+            b'quality NUMERIC, resource TEXT, provider TEXT, version NUMERIC DEFAULT -1, proper_tags TEXT, '
+            b'manually_searched NUMERIC, info_hash TEXT, size NUMERIC, indexer_id NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO history () action, date, showid, season, episode, quality, resource, provider, version, '
+            b'proper_tags, manually_searched , info_hash, size, indexer_id'
+            b'SELECT action, date, showid, season, episode, quality, resource, provider, version, '
+            b'proper_tags, manually_searched , info_hash, size, indexer_id FROM tmp_history'
+        )
+        self.connection.action(b'DROP TABLE tmp_history')
+
+        log.info(u'Add explict PK indexer_mapping_id to table indexer_mapping')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_indexer_mapping')
+        self.connection.action(b'ALTER TABLE indexer_mapping RENAME TO tmp_indexer_mapping')
+        self.connection.action(
+            b'CREATE TABLE "indexer_mapping"(indexer_mapping_id INTEGER PRIMARY KEY, indexer_id INTEGER, '
+            b'indexer INTEGER, mindexer_id INTEGER, mindexer INTEGER)'
+        )
+        self.connection.action(
+            b'INSERT INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
+            b'SELECT indexer_id, indexer, mindexer_id, mindexer FROM tmp_indexer_mapping'
+        )
+        self.connection.action(b'DROP TABLE tmp_indexer_mapping')
+
+        log.info(u'Add explict PK info_id to table info')
+        self.connection.action(b'DROP TABLE IF EXISTS tmp_info')
+        self.connection.action(b'ALTER TABLE info RENAME TO tmp_info')
+        self.connection.action(
+            b'CREATE TABLE info(info_id INTEGER PRIMARY KEY, last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC)'
+        )
+        self.connection.action(
+            b'INSERT INTO info (last_backlog, last_indexer, last_proper_search) '
+            b'SELECT last_backlog, last_indexer, last_proper_search FROM tmp_info'
+        )
+        self.connection.action(b'DROP TABLE tmp_info')
+
+        self.inc_major_version()
+        log.info(u'Finished adding primary keys to all main.db tables.')
