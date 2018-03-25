@@ -43,7 +43,6 @@ from six import (
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
 from tornado.web import (
     HTTPError,
@@ -246,11 +245,10 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
+    executor = ThreadPoolExecutor(cpu_count())
+
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
-        self.io_loop = IOLoop.current()
-
-    executor = ThreadPoolExecutor(cpu_count())
 
     @authenticated
     @coroutine

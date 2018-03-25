@@ -10,7 +10,7 @@ http://self-issued.info/docs/draft-jones-json-web-token-01.html
 
 
 __title__ = 'pyjwt'
-__version__ = '1.5.3'
+__version__ = '1.6.1'
 __author__ = 'José Padilla'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 José Padilla'
@@ -25,5 +25,6 @@ from .exceptions import (
     InvalidTokenError, DecodeError, InvalidAlgorithmError,
     InvalidAudienceError, ExpiredSignatureError, ImmatureSignatureError,
     InvalidIssuedAtError, InvalidIssuerError, ExpiredSignature,
-    InvalidAudience, InvalidIssuer, MissingRequiredClaimError
+    InvalidAudience, InvalidIssuer, MissingRequiredClaimError,
+    InvalidSignatureError,
 )
