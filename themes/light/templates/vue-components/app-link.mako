@@ -29,23 +29,18 @@ Vue.component('app-link', {
             const href = indexerId && placeholder ? this.href.replace(placeholder, MEDUSA.config.indexers.indexerIdToName(indexerId)) : this.href;
             const base = document.getElementsByTagName('base')[0].getAttribute('href');
             const isIRC = url => {
-                console.debug('isIRC', {url});
                 return url.startsWith('irc://');
             };
             const isAbsolute = url => {
-                console.debug('isAbsolute', {url});
                 return /^[a-z][a-z0-9+.-]*:/.test(url);
             }
             const isExternal = url => {
-                console.debug('isExternal', {url});
                 return !url.startsWith(base);
             };
             const isHashPath = url => {
-                console.debug('isHashPath', {url});
                 return url.startsWith('#')
             };
             const isAnonymised = url => {
-                console.debug('isAnonymised', {url});
                 return url.startsWith(MEDUSA.config.anonRedirect);
             };
             const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : null;
