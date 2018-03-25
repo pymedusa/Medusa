@@ -102,13 +102,12 @@ def get_apiv2_handlers(base):
     ]
 
 
-class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
-    def __init__(self, options=None, io_loop=None):
+class AppWebServer(threading.Thread):
+    def __init__(self, options=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self.alive = True
         self.name = 'TORNADO'
-        self.io_loop = io_loop or IOLoop.current()
 
         self.options = options or {}
         self.options.setdefault('port', 8081)
@@ -277,12 +276,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             os._exit(1)  # pylint: disable=protected-access
 
         try:
-            self.io_loop.start()
-            self.io_loop.close(True)
+            IOLoop.current().start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):
         self.alive = False
-        self.io_loop.stop()
+        IOLoop.current().stop()

@@ -37,7 +37,8 @@ def instances(query, cursor, context):
 
     filtered = query._has_mapper_entities
 
-    single_entity = len(query._entities) == 1 and \
+    single_entity = not query._only_return_tuples and \
+        len(query._entities) == 1 and \
         query._entities[0].supports_single_entity
 
     if filtered:
@@ -755,8 +756,8 @@ class PostLoad(object):
                 in self.states.items()
                 if state.manager.mapper.isa(limit_to_mapper)
             ]
-            loader(
-                context, path, states, self.load_keys, *arg, **kw)
+            if states:
+                loader(context, path, states, self.load_keys, *arg, **kw)
         self.states.clear()
 
     @classmethod
