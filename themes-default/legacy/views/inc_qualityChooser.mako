@@ -54,7 +54,7 @@ selected = None
                 Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
             </b>
                 <br />Avoids unnecessarily increasing your backlog
-            </br>
+            <br />
         </h5>
         <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
         <h5 id="archivedStatus"></h5>

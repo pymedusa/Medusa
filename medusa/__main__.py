@@ -2041,7 +2041,7 @@ class Application(object):
         try:
             logger.info('Shutting down Tornado')
             self.web_server.shutDown()
-            self.web_server.join(10)
+            self.web_server.join(5)
         except Exception as error:
             exception_handler.handle(error)
 
