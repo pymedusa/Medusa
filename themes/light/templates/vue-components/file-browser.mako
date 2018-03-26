@@ -13,7 +13,7 @@
                 ><span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}</app-link>
             </li>
         </ul>
-    </span>
+    </div>
 </script>
 <script>
 Vue.component('file-browser', {
