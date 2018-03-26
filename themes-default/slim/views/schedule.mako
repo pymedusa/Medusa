@@ -294,6 +294,7 @@ const startVue = () => {
         % if cur_segment != show_network:
             <div>
                 <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} network">${show_network}</h2>
+            </div>
             <% cur_segment = cur_result['network'] %>
         % endif
         % if cur_ep_enddate < today:
@@ -328,6 +329,7 @@ const startVue = () => {
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
             <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            </div>
             <% today_header = True %>
         % endif
         % if cur_ep_enddate < today:
@@ -469,8 +471,6 @@ const startVue = () => {
 <!-- end calender view //-->
 </div>
 % endif
-</div>
+</div> <!-- end horizontal scroll -->
 <div class="clearfix"></div>
-</div>
-</div>
 </%block>
