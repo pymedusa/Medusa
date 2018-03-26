@@ -300,8 +300,8 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
             i['seeders'] = i['seeders'] if i['seeders'] >= 0 else '-'
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
-            i['pubdate'] = sbdatetime.convert_to_setting(parser.parse(i['pubdate'])).strftime(
-                app.DATE_PRESET + ' ' + app.TIME_PRESET) if i['pubdate'] else '-'
+            i['pubdate'] = parser.parse(i['pubdate']).strftime(
+                '%Y-%m-%d %H:%M:%S') if i['pubdate'] else '-'
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'
