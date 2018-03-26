@@ -149,9 +149,9 @@
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan="11"></td>
+                        <th class="tablesorter-no-sort" colspan="12"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="12"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->
