@@ -6,7 +6,7 @@
         <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control input-sm fileBrowserSearchBox" style="display: none;"/>
         <ul class="fileBrowserFileList" style="display: hidden;">
             <li v-for="file in files" class="ui-state-default ui-corner-all">
-                <a
+                <app-link
                     @mouseover="file.isFile ? '' : addClass($event, 'ui-icon-folder-open')"
                     @mouseout="file.isFile ? '' : removeClass($event, 'ui-icon-folder-open')"
                     @click="fileClicked(file)"
