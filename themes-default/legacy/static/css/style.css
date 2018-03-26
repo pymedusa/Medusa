@@ -2847,7 +2847,7 @@ select,
     position: absolute;
     top: -5px;
     right: -8px;
-    padding: 0px 4px;
+    padding: 0 4px;
     background-color: #777;
     border: 2px solid #959595;
     border-radius: 100px;
