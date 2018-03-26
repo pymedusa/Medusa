@@ -1,5 +1,5 @@
 # ext/mutable.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -203,6 +203,28 @@ In the case that our mutable value object is pickled as it is attached to one
 or more parent objects that are also part of the pickle, the :class:`.Mutable`
 mixin will re-establish the :attr:`.Mutable._parents` collection on each value
 object as the owning parents themselves are unpickled.
+
+Receiving Events
+----------------
+
+The :meth:`.AttributeEvents.modified` event handler may be used to receive
+an event when a mutable scalar emits a change event.  This event handler
+is called when the :func:`.attributes.flag_modified` function is called
+from within the mutable extension::
+
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy import event
+
+    Base = declarative_base()
+
+    class MyDataClass(Base):
+        __tablename__ = 'my_data'
+        id = Column(Integer, primary_key=True)
+        data = Column(MutableDict.as_mutable(JSONEncodedDict))
+
+    @event.listens_for(MyDataClass.data, "modified")
+    def modified_json(instance):
+        print("json value modified:", instance.data)
 
 .. _mutable_composites:
 
@@ -422,7 +444,7 @@ class MutableBase(object):
         .. versionadded:: 1.0.5
 
         """
-        return set([attribute.key])
+        return {attribute.key}
 
     @classmethod
     def _listen_on_attribute(cls, attribute, coerce, parent_cls):
@@ -624,7 +646,7 @@ class MutableComposite(MutableBase):
 
     @classmethod
     def _get_listen_keys(cls, attribute):
-        return set([attribute.key]).union(attribute.property._attribute_keys)
+        return {attribute.key}.union(attribute.property._attribute_keys)
 
     def changed(self):
         """Subclasses should call this method whenever change events occur."""
@@ -784,6 +806,10 @@ class MutableList(Mutable, list):
         list.extend(self, x)
         self.changed()
 
+    def __iadd__(self, x):
+        self.extend(x)
+        return self
+
     def insert(self, i, x):
         list.insert(self, i, x)
         self.changed()
@@ -862,6 +888,22 @@ class MutableSet(Mutable, set):
     def symmetric_difference_update(self, *arg):
         set.symmetric_difference_update(self, *arg)
         self.changed()
+
+    def __ior__(self, other):
+        self.update(other)
+        return self
+
+    def __iand__(self, other):
+        self.intersection_update(other)
+        return self
+
+    def __ixor__(self, other):
+        self.symmetric_difference_update(other)
+        return self
+
+    def __isub__(self, other):
+        self.difference_update(other)
+        return self
 
     def add(self, elem):
         set.add(self, elem)

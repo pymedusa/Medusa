@@ -1,5 +1,5 @@
 # sqlalchemy/ext/baked.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -28,6 +28,27 @@ import logging
 log = logging.getLogger(__name__)
 
 
+class Bakery(object):
+    """Callable which returns a :class:`.BakedQuery`.
+
+    This object is returned by the class method
+    :meth:`.BakedQuery.bakery`.  It exists as an object
+    so that the "cache" can be easily inspected.
+
+    .. versionadded:: 1.2
+
+
+    """
+    __slots__ = 'cls', 'cache'
+
+    def __init__(self, cls_, cache):
+        self.cls = cls_
+        self.cache = cache
+
+    def __call__(self, initial_fn, *args):
+        return self.cls(self.cache, initial_fn, args)
+
+
 class BakedQuery(object):
     """A builder object for :class:`.query.Query` objects."""
 
@@ -41,15 +62,14 @@ class BakedQuery(object):
         self._bakery = bakery
 
     @classmethod
-    def bakery(cls, size=200):
-        """Construct a new bakery."""
+    def bakery(cls, size=200, _size_alert=None):
+        """Construct a new bakery.
 
-        _bakery = util.LRUCache(size)
+        :return: an instance of :class:`.Bakery`
 
-        def call(initial_fn, *args):
-            return cls(_bakery, initial_fn, args)
+        """
 
-        return call
+        return Bakery(cls, util.LRUCache(size, size_alert=_size_alert))
 
     def _clone(self):
         b1 = BakedQuery.__new__(BakedQuery)
@@ -127,12 +147,45 @@ class BakedQuery(object):
          invocation.
 
         """
-        if not full:
+        if not full and not self._spoiled:
             _spoil_point = self._clone()
             _spoil_point._cache_key += ('_query_only', )
             self.steps = [_spoil_point._retrieve_baked_query]
         self._spoiled = True
         return self
+
+    def _add_lazyload_options(self, options, effective_path, cache_path=None):
+        """Used by per-state lazy loaders to add options to the
+        "lazy load" query from a parent query.
+
+        Creates a cache key based on given load path and query options;
+        if a repeatable cache key cannot be generated, the query is
+        "spoiled" so that it won't use caching.
+
+        """
+
+        key = ()
+
+        if not cache_path:
+            cache_path = effective_path
+
+        if cache_path.path[0].is_aliased_class:
+            # paths that are against an AliasedClass are unsafe to cache
+            # with since the AliasedClass is an ad-hoc object.
+            self.spoil()
+        else:
+            for opt in options:
+                cache_key = opt._generate_cache_key(cache_path)
+                if cache_key is False:
+                    self.spoil()
+                elif cache_key is not None:
+                    key += cache_key
+
+        self.add_criteria(
+            lambda q: q._with_current_path(effective_path).
+            _conditional_options(*options),
+            cache_path.path, key
+        )
 
     def _retrieve_baked_query(self, session):
         query = self._bakery.get(self._cache_key, None)
@@ -208,12 +261,13 @@ class Result(object):
     against a target :class:`.Session`, and is then invoked for results.
 
     """
-    __slots__ = 'bq', 'session', '_params'
+    __slots__ = 'bq', 'session', '_params', '_post_criteria'
 
     def __init__(self, bq, session):
         self.bq = bq
         self.session = session
         self._params = {}
+        self._post_criteria = []
 
     def params(self, *args, **kw):
         """Specify parameters to be replaced into the string SQL statement."""
@@ -227,15 +281,44 @@ class Result(object):
         self._params.update(kw)
         return self
 
+    def _using_post_criteria(self, fns):
+        if fns:
+            self._post_criteria.extend(fns)
+        return self
+
+    def with_post_criteria(self, fn):
+        """Add a criteria function that will be applied post-cache.
+
+        This adds a function that will be run against the
+        :class:`.Query` object after it is retrieved from the
+        cache.    Functions here can be used to alter the query in ways
+        that **do not affect the SQL output**, such as execution options
+        and shard identifiers (when using a shard-enabled query object)
+
+        .. warning::  :meth:`.Result.with_post_criteria` functions are applied
+           to the :class:`.Query` object **after** the query's SQL statement
+           object has been retrieved from the cache.   Any operations here
+           which intend to modify the SQL should ensure that
+           :meth:`.BakedQuery.spoil` was called first.
+
+        .. versionadded:: 1.2
+
+
+        """
+        return self._using_post_criteria([fn])
+
     def _as_query(self):
-        return self.bq._as_query(self.session).params(self._params)
+        q = self.bq._as_query(self.session).params(self._params)
+        for fn in self._post_criteria:
+            q = fn(q)
+        return q
 
     def __str__(self):
         return str(self._as_query())
 
     def __iter__(self):
         bq = self.bq
-        if bq._spoiled:
+        if not self.session.enable_baked_queries or bq._spoiled:
             return iter(self._as_query())
 
         baked_context = bq._bakery.get(bq._cache_key, None)
@@ -251,8 +334,11 @@ class Result(object):
         context.statement.use_labels = True
         if context.autoflush and not context.populate_existing:
             self.session._autoflush()
-        return context.query.params(self._params).\
-            with_session(self.session)._execute_and_instances(context)
+        q = context.query.params(self._params).with_session(self.session)
+        for fn in self._post_criteria:
+            q = fn(q)
+
+        return q._execute_and_instances(context)
 
     def count(self):
         """return the 'count'.
@@ -295,7 +381,9 @@ class Result(object):
 
         """
         bq = self.bq.with_criteria(lambda q: q.slice(0, 1))
-        ret = list(bq.for_session(self.session).params(self._params))
+        ret = list(
+            bq.for_session(self.session).params(self._params).
+            _using_post_criteria(self._post_criteria))
         if len(ret) > 0:
             return ret[0]
         else:
@@ -382,6 +470,8 @@ class Result(object):
 
             _lcl_get_clause = q._adapt_clause(_lcl_get_clause, True, False)
             q._criterion = _lcl_get_clause
+            for fn in self._post_criteria:
+                q = fn(q)
             return q
 
         # cache the query against a key that includes
@@ -412,125 +502,31 @@ class Result(object):
             return None
 
 
+@util.deprecated(
+    "1.2", "Baked lazy loading is now the default implementation.")
 def bake_lazy_loaders():
     """Enable the use of baked queries for all lazyloaders systemwide.
 
-    This operation should be safe for all lazy loaders, and will reduce
-    Python overhead for these operations.
+    The "baked" implementation of lazy loading is now the sole implementation
+    for the base lazy loader; this method has no effect except for a warning.
 
     """
-    BakedLazyLoader._strategy_keys[:] = []
-
-    properties.RelationshipProperty.strategy_for(
-        lazy="select")(BakedLazyLoader)
-    properties.RelationshipProperty.strategy_for(
-        lazy=True)(BakedLazyLoader)
-    properties.RelationshipProperty.strategy_for(
-        lazy="baked_select")(BakedLazyLoader)
-
-    strategies.LazyLoader._strategy_keys[:] = BakedLazyLoader._strategy_keys[:]
+    pass
 
 
+@util.deprecated(
+    "1.2", "Baked lazy loading is now the default implementation.")
 def unbake_lazy_loaders():
     """Disable the use of baked queries for all lazyloaders systemwide.
 
-    This operation reverts the changes produced by :func:`.bake_lazy_loaders`.
+    This method now raises NotImplmentedError() as the "baked" implementation
+    is the only lazy load implementation.  The
+    :paramref:`.relationship.bake_queries` flag may be used to disable
+    the caching of queries on a per-relationship basis.
 
     """
-    strategies.LazyLoader._strategy_keys[:] = []
-    BakedLazyLoader._strategy_keys[:] = []
-
-    properties.RelationshipProperty.strategy_for(
-        lazy="select")(strategies.LazyLoader)
-    properties.RelationshipProperty.strategy_for(
-        lazy=True)(strategies.LazyLoader)
-    properties.RelationshipProperty.strategy_for(
-        lazy="baked_select")(BakedLazyLoader)
-    assert strategies.LazyLoader._strategy_keys
-
-
-@sqla_log.class_logger
-@properties.RelationshipProperty.strategy_for(lazy="baked_select")
-class BakedLazyLoader(strategies.LazyLoader):
-
-    def _emit_lazyload(self, session, state, ident_key, passive):
-        q = BakedQuery(
-            self.mapper._compiled_cache,
-            lambda session: session.query(self.mapper))
-        q.add_criteria(
-            lambda q: q._adapt_all_clauses()._with_invoke_all_eagers(False),
-            self.parent_property)
-
-        if not self.parent_property.bake_queries:
-            q.spoil(full=True)
-
-        if self.parent_property.secondary is not None:
-            q.add_criteria(
-                lambda q:
-                q.select_from(self.mapper, self.parent_property.secondary))
-
-        pending = not state.key
-
-        # don't autoflush on pending
-        if pending or passive & attributes.NO_AUTOFLUSH:
-            q.add_criteria(lambda q: q.autoflush(False))
-
-        if state.load_options:
-            q.spoil()
-            args = state.load_path[self.parent_property]
-            q.add_criteria(
-                lambda q:
-                q._with_current_path(args), args)
-            q.add_criteria(
-                lambda q: q._conditional_options(*state.load_options))
-
-        if self.use_get:
-            return q(session)._load_on_ident(
-                session.query(self.mapper), ident_key)
-
-        if self.parent_property.order_by:
-            q.add_criteria(
-                lambda q:
-                q.order_by(*util.to_list(self.parent_property.order_by)))
-
-        for rev in self.parent_property._reverse_property:
-            # reverse props that are MANYTOONE are loading *this*
-            # object from get(), so don't need to eager out to those.
-            if rev.direction is interfaces.MANYTOONE and \
-                rev._use_get and \
-                    not isinstance(rev.strategy, strategies.LazyLoader):
-
-                q.add_criteria(
-                    lambda q:
-                    q.options(
-                        strategy_options.Load.for_existing_path(
-                            q._current_path[rev.parent]
-                        ).baked_lazyload(rev.key)
-                    )
-                )
-
-        lazy_clause, params = self._generate_lazy_clause(state, passive)
-
-        if pending:
-            if orm_util._none_set.intersection(params.values()):
-                return None
-
-        q.add_criteria(lambda q: q.filter(lazy_clause))
-        result = q(session).params(**params).all()
-        if self.uselist:
-            return result
-        else:
-            l = len(result)
-            if l:
-                if l > 1:
-                    util.warn(
-                        "Multiple rows returned with "
-                        "uselist=False for lazily-loaded attribute '%s' "
-                        % self.parent_property)
-
-                return result[0]
-            else:
-                return None
+    raise NotImplementedError(
+        "Baked lazy loading is now the default implementation")
 
 
 @strategy_options.loader_option()
@@ -543,12 +539,18 @@ def baked_lazyload(loadopt, attr):
 
 
 @baked_lazyload._add_unbound_fn
+@util.deprecated(
+    "1.2", "Baked lazy loading is now the default "
+    "implementation for lazy loading.")
 def baked_lazyload(*keys):
     return strategy_options._UnboundLoad._from_keys(
         strategy_options._UnboundLoad.baked_lazyload, keys, False, {})
 
 
 @baked_lazyload._add_unbound_all_fn
+@util.deprecated(
+    "1.2", "Baked lazy loading is now the default "
+    "implementation for lazy loading.")
 def baked_lazyload_all(*keys):
     return strategy_options._UnboundLoad._from_keys(
         strategy_options._UnboundLoad.baked_lazyload, keys, True, {})

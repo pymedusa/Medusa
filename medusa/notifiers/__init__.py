@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
 import logging
 import socket
 
@@ -91,7 +92,7 @@ def notify_download(ep_name):
     for n in notifiers:
         try:
             n.notify_download(ep_name)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
@@ -99,7 +100,7 @@ def notify_subtitle_download(ep_name, lang):
     for n in notifiers:
         try:
             n.notify_subtitle_download(ep_name, lang)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
@@ -107,7 +108,7 @@ def notify_snatch(ep_name, is_proper):
     for n in notifiers:
         try:
             n.notify_snatch(ep_name, is_proper)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
 
@@ -116,7 +117,7 @@ def notify_git_update(new_version=""):
         if app.NOTIFY_ON_UPDATE:
             try:
                 n.notify_git_update(new_version)
-            except (RequestException, socket.gaierror) as error:
+            except (RequestException, socket.gaierror, socket.timeout) as error:
                 log.debug(u'Unable to send new update notification. Error: {0}', error.message)
 
 
@@ -125,5 +126,5 @@ def notify_login(ipaddress):
         if app.NOTIFY_ON_LOGIN:
             try:
                 n.notify_login(ipaddress)
-            except (RequestException, socket.gaierror) as error:
+            except (RequestException, socket.gaierror, socket.timeout) as error:
                 log.debug(u'Unable to new login notification. Error: {0}', error.message)

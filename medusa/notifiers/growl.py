@@ -1,11 +1,14 @@
 # coding=utf-8
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import socket
+from builtins import object
 
-from libgrowl import gntp
+import gntp
+
 from medusa import app, common
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter

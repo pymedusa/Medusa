@@ -75,7 +75,7 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
-        if result.show.is_anime and app.TORRENT_LABEL_ANIME:
+        if result.series.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
             label = app.TORRENT_LABEL

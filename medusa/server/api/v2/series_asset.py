@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for series assets."""
+from __future__ import unicode_literals
 
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
@@ -33,4 +34,4 @@ class SeriesAssetHandler(BaseRequestHandler):
         if not asset:
             return self._not_found('Asset not found')
 
-        self._ok(stream=asset.get_media(), content_type=asset.get_media_type())
+        self._ok(stream=asset.media, content_type=asset.media_type)

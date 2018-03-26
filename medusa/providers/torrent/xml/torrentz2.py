@@ -50,7 +50,7 @@ class Torrentz2Provider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -105,7 +105,7 @@ class Torrentz2Provider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
+                    if row.category and 'video' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text

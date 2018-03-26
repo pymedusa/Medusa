@@ -1,5 +1,5 @@
 # orm/state.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -15,6 +15,7 @@ defines a large part of the ORM's interactivity.
 import weakref
 from .. import util
 from .. import inspection
+from .. import exc as sa_exc
 from . import exc as orm_exc, interfaces
 from .path_registry import PathRegistry
 from .base import PASSIVE_NO_RESULT, SQL_OK, NEVER_SET, ATTR_WAS_SET, \
@@ -60,7 +61,9 @@ class InstanceState(interfaces.InspectionAttr):
     expired = False
     _deleted = False
     _load_pending = False
+    _orphaned_outside_of_session = False
     is_instance = True
+    identity_token = None
 
     callables = ()
     """A namespace where a per-state loader callable can be associated.
@@ -460,21 +463,34 @@ class InstanceState(interfaces.InspectionAttr):
         if 'callables' in state_dict:
             self.callables = state_dict['callables']
 
-        try:
-            self.expired_attributes = state_dict['expired_attributes']
-        except KeyError:
-            self.expired_attributes = set()
-            # 0.9 and earlier compat
-            for k in list(self.callables):
-                if self.callables[k] is self:
-                    self.expired_attributes.add(k)
-                    del self.callables[k]
+            try:
+                self.expired_attributes = state_dict['expired_attributes']
+            except KeyError:
+                self.expired_attributes = set()
+                # 0.9 and earlier compat
+                for k in list(self.callables):
+                    if self.callables[k] is self:
+                        self.expired_attributes.add(k)
+                        del self.callables[k]
+        else:
+            if 'expired_attributes' in state_dict:
+                self.expired_attributes = state_dict['expired_attributes']
+            else:
+                self.expired_attributes = set()
 
         self.__dict__.update([
             (k, state_dict[k]) for k in (
-                'key', 'load_options',
+                'key', 'load_options'
             ) if k in state_dict
         ])
+        if self.key:
+            try:
+                self.identity_token = self.key[2]
+            except IndexError:
+                # 1.1 and earlier compat before identity_token
+                assert len(self.key) == 2
+                self.key = self.key + (None, )
+                self.identity_token = None
 
         if 'load_path' in state_dict:
             self.load_path = PathRegistry.\
@@ -608,6 +624,7 @@ class InstanceState(interfaces.InspectionAttr):
     def unmodified_intersection(self, keys):
         """Return self.unmodified.intersection(keys)."""
 
+
         return set(keys).intersection(self.manager).\
             difference(self.committed_state)
 
@@ -624,6 +641,18 @@ class InstanceState(interfaces.InspectionAttr):
             difference(self.dict)
 
     @property
+    def unloaded_expirable(self):
+        """Return the set of keys which do not have a loaded value.
+
+        This includes expired attributes and any other attribute that
+        was never populated or modified.
+
+        """
+        return self.unloaded.intersection(
+            attr for attr in self.manager
+            if self.manager[attr].impl.expire_missing)
+
+    @property
     def _unloaded_non_object(self):
         return self.unloaded.intersection(
             attr for attr in self.manager
@@ -634,19 +663,23 @@ class InstanceState(interfaces.InspectionAttr):
         return None
 
     def _modified_event(
-            self, dict_, attr, previous, collection=False, force=False):
-        if not attr.send_modified_events:
-            return
-        if attr.key not in self.committed_state or force:
-            if collection:
-                if previous is NEVER_SET:
-                    if attr.key in dict_:
-                        previous = dict_[attr.key]
+            self, dict_, attr, previous, collection=False, is_userland=False):
+        if attr:
+            if not attr.send_modified_events:
+                return
+            if is_userland and attr.key not in dict_:
+                raise sa_exc.InvalidRequestError(
+                    "Can't flag attribute '%s' modified; it's not present in "
+                    "the object state" % attr.key)
+            if attr.key not in self.committed_state or is_userland:
+                if collection:
+                    if previous is NEVER_SET:
+                        if attr.key in dict_:
+                            previous = dict_[attr.key]
 
-                if previous not in (None, NO_VALUE, NEVER_SET):
-                    previous = attr.copy(previous)
-
-            self.committed_state[attr.key] = previous
+                    if previous not in (None, NO_VALUE, NEVER_SET):
+                        previous = attr.copy(previous)
+                self.committed_state[attr.key] = previous
 
         # assert self._strong_obj is None or self.modified
 
@@ -664,7 +697,7 @@ class InstanceState(interfaces.InspectionAttr):
             if self.session_id:
                 self._strong_obj = inst
 
-            if inst is None:
+            if inst is None and attr:
                 raise orm_exc.ObjectDereferencedError(
                     "Can't emit change event for attribute '%s' - "
                     "parent object of type %s has been garbage "

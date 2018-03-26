@@ -7,8 +7,11 @@ import logging
 import cfscrape
 
 from medusa.logger.adapters.style import BraceAdapter
+
 import requests
 from requests.utils import dict_from_cookiejar
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -27,9 +30,16 @@ def log_url(response, **kwargs):
     log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
     if request.method.upper() == 'POST':
-        body = request.body
+        if request.body:
+            if 'multipart/form-data' not in request.headers.get('content-type', ''):
+                body = request.body
+            else:
+                body = request.body[1:99].replace('\n', ' ') + '...'
+        else:
+            body = ''
+
         # try to log post data using various codecs to decode
-        if isinstance(body, unicode):
+        if isinstance(body, text_type):
             log.debug('With post data: {0}', body)
             return
 
@@ -56,8 +66,7 @@ def cloudflare(resp, **kwargs):
     protection.  Use the sessioned hook factory to attach the session to the
     response to persist CloudFlare authentication at the session level.
     """
-    if all([resp.status_code == 503,  # Service unavailable
-            resp.headers.get('server') == u'cloudflare-nginx', ]):
+    if is_cloudflare_challenge(resp):
 
         log.debug(u'CloudFlare protection detected, trying to bypass it')
 
@@ -107,3 +116,16 @@ def sessioned(session):
         response.session = session
         return response
     return sessioned_response_hook
+
+
+def is_cloudflare_challenge(resp):
+    """Check if the response is a Cloudflare challange.
+
+    Source: goo.gl/v8FvnD
+    """
+    return (
+        resp.status_code == 503
+        and resp.headers.get('Server', '').startswith('cloudflare')
+        and b'jschl_vc' in resp.content
+        and b'jschl_answer' in resp.content
+    )

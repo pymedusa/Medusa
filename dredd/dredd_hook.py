@@ -51,7 +51,8 @@ def configure_transaction(transaction):
     expected_content_type = expected['headers'].get('Content-Type')
     expected_status_code = int(expected['statusCode'])
     if expected_status_code == 204 or response.get('x-expect', {}).get('no-body', False):
-        del expected['body']
+        if expected.get('body'):
+            del expected['body']
         if expected_content_type:
             print('Skipping content-type validation for {name!r}.'.format(name=transaction['name']))
             del expected['headers']['Content-Type']

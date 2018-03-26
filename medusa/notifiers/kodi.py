@@ -1,8 +1,10 @@
 # coding=utf-8
 
 """Kodi notifier module."""
+from __future__ import unicode_literals
 
 import logging
+from builtins import object
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
@@ -11,6 +13,7 @@ from medusa.session.core import MedusaSession
 from requests.auth import HTTPBasicAuth
 from requests.compat import unquote_plus
 from requests.exceptions import HTTPError, RequestException
+
 from six import string_types, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))

@@ -4,11 +4,11 @@ import sqlalchemy as sa
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import types as sql_types
 from sqlalchemy import inspect
-from sqlalchemy import MetaData, Integer, String
+from sqlalchemy import MetaData, Integer, String, func
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.testing import engines, fixtures
 from sqlalchemy.testing.schema import Table, Column
-from sqlalchemy.testing import eq_, assert_raises_message
+from sqlalchemy.testing import eq_, is_, assert_raises_message
 from sqlalchemy import testing
 from .. import config
 import operator
@@ -16,6 +16,7 @@ from sqlalchemy.schema import DDL, Index
 from sqlalchemy import event
 from sqlalchemy.sql.elements import quoted_name
 from sqlalchemy import ForeignKey
+import re
 
 metadata, users = None, None
 
@@ -70,7 +71,8 @@ class ComponentReflectionTest(fixtures.TablesTest):
                           Column('test2', sa.Float(5), nullable=False),
                           Column('parent_user_id', sa.Integer,
                                  sa.ForeignKey('%susers.user_id' %
-                                               schema_prefix)),
+                                               schema_prefix,
+                                               name='user_id_fk')),
                           schema=schema,
                           test_needs_fk=True,
                           )
@@ -101,9 +103,31 @@ class ComponentReflectionTest(fixtures.TablesTest):
               schema=schema,
               test_needs_fk=True,
               )
+        Table('comment_test', metadata,
+              Column('id', sa.Integer, primary_key=True, comment='id comment'),
+              Column('data', sa.String(20), comment='data % comment'),
+              Column(
+                  'd2', sa.String(20),
+                  comment=r"""Comment types type speedily ' " \ '' Fun!"""),
+              schema=schema,
+              comment=r"""the test % ' " \ table comment""")
 
         if testing.requires.index_reflection.enabled:
             cls.define_index(metadata, users)
+
+            if not schema:
+                noncol_idx_test_nopk = Table(
+                    'noncol_idx_test_nopk', metadata,
+                    Column('q', sa.String(5)),
+                )
+                noncol_idx_test_pk = Table(
+                    'noncol_idx_test_pk', metadata,
+                    Column('id', sa.Integer, primary_key=True),
+                    Column('q', sa.String(5)),
+                )
+                Index('noncol_idx_nopk', noncol_idx_test_nopk.c.q.desc())
+                Index('noncol_idx_pk', noncol_idx_test_pk.c.q.desc())
+
         if testing.requires.view_column_reflection.enabled:
             cls.define_views(metadata, schema)
         if not schema and testing.requires.temp_table_reflection.enabled:
@@ -191,6 +215,9 @@ class ComponentReflectionTest(fixtures.TablesTest):
     @testing.provide_metadata
     def _test_get_table_names(self, schema=None, table_type='table',
                               order_by=None):
+        _ignore_tables = [
+            'comment_test', 'noncol_idx_test_pk', 'noncol_idx_test_nopk'
+        ]
         meta = self.metadata
         users, addresses, dingalings = self.tables.users, \
             self.tables.email_addresses, self.tables.dingalings
@@ -202,8 +229,11 @@ class ComponentReflectionTest(fixtures.TablesTest):
             answer = ['email_addresses_v', 'users_v']
             eq_(sorted(table_names), answer)
         else:
-            table_names = insp.get_table_names(schema,
-                                               order_by=order_by)
+            table_names = [
+                t for t in insp.get_table_names(
+                    schema,
+                    order_by=order_by) if t not in _ignore_tables]
+
             if order_by == 'foreign_key':
                 answer = ['users', 'email_addresses', 'dingalings']
                 eq_(table_names, answer)
@@ -233,6 +263,42 @@ class ComponentReflectionTest(fixtures.TablesTest):
     @testing.requires.foreign_key_constraint_reflection
     def test_get_table_names_fks(self):
         self._test_get_table_names(order_by='foreign_key')
+
+    @testing.requires.comment_reflection
+    def test_get_comments(self):
+        self._test_get_comments()
+
+    @testing.requires.comment_reflection
+    @testing.requires.schemas
+    def test_get_comments_with_schema(self):
+        self._test_get_comments(testing.config.test_schema)
+
+    def _test_get_comments(self, schema=None):
+        insp = inspect(testing.db)
+
+        eq_(
+            insp.get_table_comment("comment_test", schema=schema),
+            {"text": r"""the test % ' " \ table comment"""}
+        )
+
+        eq_(
+            insp.get_table_comment("users", schema=schema),
+            {"text": None}
+        )
+
+        eq_(
+            [
+                {"name": rec['name'], "comment": rec['comment']}
+                for rec in
+                insp.get_columns("comment_test", schema=schema)
+            ],
+            [
+                {'comment': 'id comment', 'name': 'id'},
+                {'comment': 'data % comment', 'name': 'data'},
+                {'comment': r"""Comment types type speedily ' " \ '' Fun!""",
+                 'name': 'd2'}
+            ]
+        )
 
     @testing.requires.table_reflection
     @testing.requires.schemas
@@ -444,7 +510,7 @@ class ComponentReflectionTest(fixtures.TablesTest):
             fkey1 = users_fkeys[0]
 
             with testing.requires.named_constraints.fail_if():
-                self.assert_(fkey1['name'] is not None)
+                eq_(fkey1['name'], "user_id_fk")
 
             eq_(fkey1['referred_schema'], expected_schema)
             eq_(fkey1['referred_table'], users.name)
@@ -457,7 +523,7 @@ class ComponentReflectionTest(fixtures.TablesTest):
                                            schema=schema)
         fkey1 = addr_fkeys[0]
 
-        with testing.requires.named_constraints.fail_if():
+        with testing.requires.implicitly_named_constraints.fail_if():
             self.assert_(fkey1['name'] is not None)
 
         eq_(fkey1['referred_schema'], expected_schema)
@@ -474,9 +540,16 @@ class ComponentReflectionTest(fixtures.TablesTest):
     def test_get_foreign_keys_with_schema(self):
         self._test_get_foreign_keys(schema=testing.config.test_schema)
 
-    @testing.requires.foreign_key_constraint_option_reflection
+    @testing.requires.foreign_key_constraint_option_reflection_ondelete
+    def test_get_foreign_key_options_ondelete(self):
+        self._test_get_foreign_key_options(ondelete="CASCADE")
+
+    @testing.requires.foreign_key_constraint_option_reflection_onupdate
+    def test_get_foreign_key_options_onupdate(self):
+        self._test_get_foreign_key_options(onupdate="SET NULL")
+
     @testing.provide_metadata
-    def test_get_foreign_key_options(self):
+    def _test_get_foreign_key_options(self, **options):
         meta = self.metadata
 
         Table(
@@ -498,7 +571,7 @@ class ComponentReflectionTest(fixtures.TablesTest):
               sa.ForeignKeyConstraint(
                   ['tid'], ['table.id'],
                   name='myfk',
-                  onupdate="SET NULL", ondelete="CASCADE"),
+                  **options),
               test_needs_fk=True)
 
         meta.create_all()
@@ -523,8 +596,16 @@ class ComponentReflectionTest(fixtures.TablesTest):
                 (k, opts[k])
                 for k in opts if opts[k]
             ),
-            {'onupdate': 'SET NULL', 'ondelete': 'CASCADE'}
+            options
         )
+
+    def _assert_insp_indexes(self, indexes, expected_indexes):
+        index_names = [d['name'] for d in indexes]
+        for e_index in expected_indexes:
+            assert e_index['name'] in index_names
+            index = indexes[index_names.index(e_index['name'])]
+            for key in e_index:
+                eq_(e_index[key], index[key])
 
     @testing.provide_metadata
     def _test_get_indexes(self, schema=None):
@@ -543,12 +624,7 @@ class ComponentReflectionTest(fixtures.TablesTest):
              'column_names': ['user_id', 'test2', 'test1'],
              'name': 'users_all_idx'}
         ]
-        index_names = [d['name'] for d in indexes]
-        for e_index in expected_indexes:
-            assert e_index['name'] in index_names
-            index = indexes[index_names.index(e_index['name'])]
-            for key in e_index:
-                eq_(e_index[key], index[key])
+        self._assert_insp_indexes(indexes, expected_indexes)
 
     @testing.requires.index_reflection
     def test_get_indexes(self):
@@ -558,6 +634,34 @@ class ComponentReflectionTest(fixtures.TablesTest):
     @testing.requires.schemas
     def test_get_indexes_with_schema(self):
         self._test_get_indexes(schema=testing.config.test_schema)
+
+    @testing.provide_metadata
+    def _test_get_noncol_index(self, tname, ixname):
+        meta = self.metadata
+        insp = inspect(meta.bind)
+        indexes = insp.get_indexes(tname)
+
+        # reflecting an index that has "x DESC" in it as the column.
+        # the DB may or may not give us "x", but make sure we get the index
+        # back, it has a name, it's connected to the table.
+        expected_indexes = [
+            {'unique': False,
+             'name': ixname}
+        ]
+        self._assert_insp_indexes(indexes, expected_indexes)
+
+        t = Table(tname, meta, autoload_with=meta.bind)
+        eq_(len(t.indexes), 1)
+        is_(list(t.indexes)[0].table, t)
+        eq_(list(t.indexes)[0].name, ixname)
+
+    @testing.requires.index_reflection
+    def test_get_noncol_index_no_pk(self):
+        self._test_get_noncol_index("noncol_idx_test_nopk", "noncol_idx_nopk")
+
+    @testing.requires.index_reflection
+    def test_get_noncol_index_pk(self):
+        self._test_get_noncol_index("noncol_idx_test_pk", "noncol_idx_pk")
 
     @testing.requires.unique_constraint_reflection
     def test_get_unique_constraints(self):
@@ -634,11 +738,82 @@ class ComponentReflectionTest(fixtures.TablesTest):
             key=operator.itemgetter('name')
         )
 
+        names_that_duplicate_index = set()
+
         for orig, refl in zip(uniques, reflected):
             # Different dialects handle duplicate index and constraints
             # differently, so ignore this flag
-            refl.pop('duplicates_index', None)
+            dupe = refl.pop('duplicates_index', None)
+            if dupe:
+                names_that_duplicate_index.add(dupe)
             eq_(orig, refl)
+
+        reflected_metadata = MetaData()
+        reflected = Table(
+            'testtbl', reflected_metadata, autoload_with=orig_meta.bind,
+            schema=schema)
+
+        # test "deduplicates for index" logic.   MySQL and Oracle
+        # "unique constraints" are actually unique indexes (with possible
+        # exception of a unique that is a dupe of another one in the case
+        # of Oracle).  make sure # they aren't duplicated.
+        idx_names = set([idx.name for idx in reflected.indexes])
+        uq_names = set([
+            uq.name for uq in reflected.constraints
+            if isinstance(uq, sa.UniqueConstraint)]).difference(
+            ['unique_c_a_b'])
+
+        assert not idx_names.intersection(uq_names)
+        if names_that_duplicate_index:
+            eq_(names_that_duplicate_index, idx_names)
+            eq_(uq_names, set())
+
+    @testing.requires.check_constraint_reflection
+    def test_get_check_constraints(self):
+        self._test_get_check_constraints()
+
+    @testing.requires.check_constraint_reflection
+    @testing.requires.schemas
+    def test_get_check_constraints_schema(self):
+        self._test_get_check_constraints(schema=testing.config.test_schema)
+
+    @testing.provide_metadata
+    def _test_get_check_constraints(self, schema=None):
+        orig_meta = self.metadata
+        Table(
+            'sa_cc', orig_meta,
+            Column('a', Integer()),
+            sa.CheckConstraint('a > 1 AND a < 5', name='cc1'),
+            sa.CheckConstraint('a = 1 OR (a > 2 AND a < 5)', name='cc2'),
+            schema=schema
+        )
+
+        orig_meta.create_all()
+
+        inspector = inspect(orig_meta.bind)
+        reflected = sorted(
+            inspector.get_check_constraints('sa_cc', schema=schema),
+            key=operator.itemgetter('name')
+        )
+
+        # trying to minimize effect of quoting, parenthesis, etc.
+        # may need to add more to this as new dialects get CHECK
+        # constraint reflection support
+        def normalize(sqltext):
+            return " ".join(re.findall(r"and|\d|=|a|or|<|>", sqltext.lower(), re.I))
+
+        reflected = [
+            {"name": item["name"],
+             "sqltext": normalize(item["sqltext"])}
+            for item in reflected
+        ]
+        eq_(
+            reflected,
+            [
+                {'name': 'cc1', 'sqltext': 'a > 1 and a < 5'},
+                {'name': 'cc2', 'sqltext': 'a = 1 or a > 2 and a < 5'}
+            ]
+        )
 
     @testing.provide_metadata
     def _test_get_view_definition(self, schema=None):
@@ -703,7 +878,7 @@ class ComponentReflectionTest(fixtures.TablesTest):
             ('dingalings', 'dingaling_id'),
         ]:
             cols = insp.get_columns(tname)
-            id_ = dict((c['name'], c) for c in cols)[cname]
+            id_ = {c['name']: c for c in cols}[cname]
             assert id_.get('autoincrement', True)
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Guessit Name Parser."""
+from __future__ import unicode_literals
 
 import re
 from datetime import timedelta
@@ -21,6 +22,9 @@ expected_groups = [
 
     # episode titles in the wrong place
     'DHD',
+
+    # The.Good.Wife.Season.6.480p.HDTV.H264-20-40.WEB-DL
+    '20-40',
 ]
 
 allowed_languages = {

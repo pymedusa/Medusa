@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for alias (scene exceptions)."""
+from __future__ import unicode_literals
 
 from medusa import db
 from medusa.helper.mappings import NonEmptyDict

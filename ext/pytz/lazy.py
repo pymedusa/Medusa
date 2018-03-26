@@ -13,6 +13,7 @@ _fill_lock = RLock()
 class LazyDict(DictMixin):
     """Dictionary populated on first use."""
     data = None
+
     def __getitem__(self, key):
         if self.data is None:
             _fill_lock.acquire()

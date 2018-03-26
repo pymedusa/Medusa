@@ -1,10 +1,13 @@
 # coding=utf-8
 
 """Backlog module."""
+from __future__ import unicode_literals
 
 import datetime
 import logging
 import threading
+from builtins import object
+from builtins import str
 
 from medusa import app, common, db, scheduler, ui
 from medusa.helper.common import episode_num
@@ -98,21 +101,22 @@ class BacklogSearcher(object):
             log.info(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
-        for cur_show in show_list:
+        for series_obj in show_list:
 
-            if cur_show.paused:
+            if series_obj.paused:
                 continue
 
-            segments = self._get_segments(cur_show, from_date)
+            segments = self._get_segments(series_obj, from_date)
 
             for season, segment in iteritems(segments):
-                self.currentSearchInfo = {'title': cur_show.name + ' Season ' + str(season)}
+                self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=series_obj.name,
+                                                                                          season=season)}
 
-                backlog_queue_item = BacklogQueueItem(cur_show, segment)
+                backlog_queue_item = BacklogQueueItem(series_obj, segment)
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
-                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', cur_show.name)
+                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', series_obj.name)
 
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
@@ -132,10 +136,10 @@ class BacklogSearcher(object):
 
         if not sql_results:
             last_backlog = 1
-        elif sql_results[0]['last_backlog'] is None or sql_results[0]['last_backlog'] == '':
+        elif sql_results[0][b'last_backlog'] is None or sql_results[0][b'last_backlog'] == '':
             last_backlog = 1
         else:
-            last_backlog = int(sql_results[0]['last_backlog'])
+            last_backlog = int(sql_results[0][b'last_backlog'])
             if last_backlog > datetime.date.today().toordinal():
                 last_backlog = 1
 
@@ -143,38 +147,39 @@ class BacklogSearcher(object):
         return self._last_backlog
 
     @staticmethod
-    def _get_segments(show, from_date):
+    def _get_segments(series_obj, from_date):
         """Get episodes that should be backlog searched."""
         wanted = {}
-        if show.paused:
-            log.debug(u'Skipping backlog for {0} because the show is paused', show.name)
+        if series_obj.paused:
+            log.debug(u'Skipping backlog for {0} because the show is paused', series_obj.name)
             return wanted
 
-        log.debug(u'Seeing if we need anything from {0}', show.name)
+        log.debug(u'Seeing if we need anything from {0}', series_obj.name)
 
         con = db.DBConnection()
         sql_results = con.select(
             'SELECT status, season, episode, manually_searched '
             'FROM tv_episodes '
             'WHERE airdate > ?'
+            ' AND indexer = ? '
             ' AND showid = ?',
-            [from_date.toordinal(), show.indexerid]
+            [from_date.toordinal(), series_obj.indexer, series_obj.series_id]
         )
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            should_search, shold_search_reason = common.Quality.should_search(sql_result['status'], show,
-                                                                              sql_result['manually_searched'])
+            should_search, shold_search_reason = common.Quality.should_search(sql_result[b'status'], series_obj,
+                                                                              sql_result[b'manually_searched'])
             if not should_search:
                 continue
             log.debug(
                 u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
-                    'show': show.name,
-                    'ep': episode_num(sql_result['season'], sql_result['episode']),
+                    'show': series_obj.name,
+                    'ep': episode_num(sql_result[b'season'], sql_result[b'episode']),
                     'reason': shold_search_reason,
                 }
             )
-            ep_obj = show.get_episode(sql_result['season'], sql_result['episode'])
+            ep_obj = series_obj.get_episode(sql_result[b'season'], sql_result[b'episode'])
 
             if ep_obj.season not in wanted:
                 wanted[ep_obj.season] = [ep_obj]

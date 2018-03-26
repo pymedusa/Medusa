@@ -1,5 +1,5 @@
 # engine/base.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -345,10 +345,13 @@ class Connection(Connectable):
         try:
             return self.__connection
         except AttributeError:
-            try:
-                return self._revalidate_connection()
-            except BaseException as e:
-                self._handle_dbapi_exception(e, None, None, None, None)
+            # escape "except AttributeError" before revalidating
+            # to prevent misleading stacktraces in Py3K
+            pass
+        try:
+            return self._revalidate_connection()
+        except BaseException as e:
+            self._handle_dbapi_exception(e, None, None, None, None)
 
     def get_isolation_level(self):
         """Return the current isolation level assigned to this
@@ -962,6 +965,10 @@ class Connection(Connectable):
             try:
                 conn = self.__connection
             except AttributeError:
+                # escape "except AttributeError" before revalidating
+                # to prevent misleading stacktraces in Py3K
+                conn = None
+            if conn is None:
                 conn = self._revalidate_connection()
 
             dialect = self.dialect
@@ -970,7 +977,7 @@ class Connection(Connectable):
         except BaseException as e:
             self._handle_dbapi_exception(e, None, None, None, None)
 
-        ret = ctx._exec_default(default, None)
+        ret = ctx._exec_default(None, default, None)
         if self.should_close_with_result:
             self.close()
 
@@ -1111,6 +1118,10 @@ class Connection(Connectable):
             try:
                 conn = self.__connection
             except AttributeError:
+                # escape "except AttributeError" before revalidating
+                # to prevent misleading stacktraces in Py3K
+                conn = None
+            if conn is None:
                 conn = self._revalidate_connection()
 
             context = constructor(dialect, self, conn, *args)
@@ -2178,6 +2189,8 @@ class Engine(Connectable, log.Identified):
 
 
 class OptionEngine(Engine):
+    _sa_propagate_class_events = False
+
     def __init__(self, proxied, execution_options):
         self._proxied = proxied
         self.url = proxied.url
@@ -2185,7 +2198,21 @@ class OptionEngine(Engine):
         self.logging_name = proxied.logging_name
         self.echo = proxied.echo
         log.instance_logger(self, echoflag=self.echo)
+
+        # note: this will propagate events that are assigned to the parent
+        # engine after this OptionEngine is created.   Since we share
+        # the events of the parent we also disallow class-level events
+        # to apply to the OptionEngine class directly.
+        #
+        # the other way this can work would be to transfer existing
+        # events only, using:
+        # self.dispatch._update(proxied.dispatch)
+        #
+        # that might be more appropriate however it would be a behavioral
+        # change for logic that assigns events to the parent engine and
+        # would like it to take effect for the already-created sub-engine.
         self.dispatch = self.dispatch._join(proxied.dispatch)
+
         self._execution_options = proxied._execution_options
         self.update_execution_options(**execution_options)
 

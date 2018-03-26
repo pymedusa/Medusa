@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -16,17 +15,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import datetime
 import re
 
-from app import BASE_PYMEDUSA_URL
 from dateutil import tz
-from six import iteritems
 
-from . import db, logger
-from .helper.common import try_int
-from .session.core import MedusaSafeSession
+from medusa import db, logger
+from medusa.app import BASE_PYMEDUSA_URL
+from medusa.helper.common import try_int
+from medusa.session.core import MedusaSafeSession
+
+from six import iteritems
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
@@ -45,12 +46,11 @@ session = MedusaSafeSession()
 # update the network timezone table
 def update_network_dict():
     """Update timezone information from Medusa repositories."""
-
-    logger.log(u'Started updating network timezones', logger.DEBUG)
+    logger.log('Started updating network timezones', logger.DEBUG)
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = session.get(url)
     if not response or not response.text:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
+        logger.log('Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.INFO)
         load_network_dict()
         return
 
@@ -101,9 +101,7 @@ def update_network_dict():
 
 # load network timezones from db into dict
 def load_network_dict():
-    """
-    Load network timezones from db into dict network_dict (global dict)
-    """
+    """Load network timezones from db into dict network_dict (global dict)."""
     try:
         cache_db_con = db.DBConnection('cache.db')
         cur_network_list = cache_db_con.select('SELECT * FROM network_timezones;')
@@ -121,20 +119,19 @@ def load_network_dict():
 # get timezone of a network or return default timezone
 def get_network_timezone(network, _network_dict):
     """
-    Get a timezone of a network from a given network dict
+    Get a timezone of a network from a given network dict.
 
     :param network: network to look up (needle)
     :param _network_dict: dict to look up in (haystack)
     :return:
     """
-
     # Get the name of the networks timezone from _network_dict
     network_tz_name = _network_dict[network] if network in _network_dict else None
 
     if not network_tz_name and network and network not in missing_network_timezones:
         missing_network_timezones.add(network)
         if network is not None:
-            logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
+            logger.log('Missing time zone for network: %s' % network, logger.ERROR)
 
     return tz.gettz(network_tz_name) if network_tz_name else app_timezone
 
@@ -142,14 +139,13 @@ def get_network_timezone(network, _network_dict):
 # parse date and time string into local time
 def parse_date_time(d, t, network):
     """
-    Parse date and time string into local time
+    Parse date and time string into local time.
 
     :param d: date string
     :param t: time string
     :param network: network to use as base
     :return: datetime object containing local time
     """
-
     if not network_dict:
         load_network_dict()
 

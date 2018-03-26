@@ -97,7 +97,7 @@ def tvshow(create_tvshow):
 
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
-    return create_tvepisode(show=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
+    return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
                             name='Episode Title', status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
                             release_group='SuperGroup')
 
@@ -107,7 +107,7 @@ def parse_method(create_tvshow):
     def parse(self, name):
         """Parse the string and add a TVShow object with the parsed series name."""
         result = self._parse_string(name)
-        result.show = create_tvshow(name=result.series_name)
+        result.series = create_tvshow(name=result.series_name)
         return result
     return parse
 
@@ -140,9 +140,9 @@ def create_tvshow(monkeypatch):
 
 @pytest.fixture
 def create_tvepisode(monkeypatch):
-    def create(show, season, episode, filepath='', **kwargs):
+    def create(series, season, episode, filepath='', **kwargs):
         monkeypatch.setattr(Episode, '_specify_episode', lambda method, season, episode: None)
-        target = Episode(series=show, season=season, episode=episode, filepath=filepath)
+        target = Episode(series=series, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
@@ -286,3 +286,31 @@ def raise_github_exception():
         raise exception_type(http_status, {})
 
     return raise_ex
+
+
+@pytest.fixture
+def monkeypatch_function_return(monkeypatch):
+    def mock_function(mocks):
+        """
+        Mock one or more functions passing a list of two value tuples
+        with the full function import path and the return value.
+
+        Example: The following structure will mock two functions with their expected return values.
+        [
+            ('medusa.scene_numbering.get_indexer_numbering', (None, None)),
+            ('get_scene_exceptions_by_name': [(70668, 2, 1)]),
+        ]
+        :mocks: A list of two value tuples.
+        """
+
+        for function_to_mock, return_value in mocks:
+            def create_function(return_value):
+                def create_return(*args):
+                    return return_value
+                return create_return
+
+            monkeypatch.setattr(
+                function_to_mock,
+                create_function(return_value)
+            )
+    return mock_function

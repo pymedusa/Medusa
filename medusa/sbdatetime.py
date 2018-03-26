@@ -16,12 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
 import functools
 import locale
+from builtins import object
 
-from . import app
-from .network_timezones import app_timezone
+from medusa import app
+from medusa.network_timezones import app_timezone
 
 date_presets = (
     '%Y-%m-%d',

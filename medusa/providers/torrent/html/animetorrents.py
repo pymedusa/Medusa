@@ -61,7 +61,7 @@ class AnimeTorrentsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -235,9 +235,7 @@ class AnimeTorrentsProvider(TorrentProvider):
         }
 
         season_scene_names = scene_exceptions.get_scene_exceptions(
-            episode.series.indexerid,
-            episode.series.indexer,
-            episode.scene_season
+            episode.series, episode.scene_season
         )
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):

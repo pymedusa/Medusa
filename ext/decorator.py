@@ -1,6 +1,6 @@
 # #########################     LICENSE     ############################ #
 
-# Copyright (c) 2005-2017, Michele Simionato
+# Copyright (c) 2005-2018, Michele Simionato
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import operator
 import itertools
 import collections
 
-__version__ = '4.1.2'
+__version__ = '4.2.1'
 
 if sys.version >= '3':
     from inspect import getfullargspec
@@ -112,26 +112,21 @@ class FunctionMaker(object):
                     setattr(self, a, getattr(argspec, a))
                 for i, arg in enumerate(self.args):
                     setattr(self, 'arg%d' % i, arg)
-                if sys.version < '3':  # easy way
-                    self.shortsignature = self.signature = (
-                        inspect.formatargspec(
-                            formatvalue=lambda val: "", *argspec[:-2])[1:-1])
-                else:  # Python 3 way
-                    allargs = list(self.args)
-                    allshortargs = list(self.args)
-                    if self.varargs:
-                        allargs.append('*' + self.varargs)
-                        allshortargs.append('*' + self.varargs)
-                    elif self.kwonlyargs:
-                        allargs.append('*')  # single star syntax
-                    for a in self.kwonlyargs:
-                        allargs.append('%s=None' % a)
-                        allshortargs.append('%s=%s' % (a, a))
-                    if self.varkw:
-                        allargs.append('**' + self.varkw)
-                        allshortargs.append('**' + self.varkw)
-                    self.signature = ', '.join(allargs)
-                    self.shortsignature = ', '.join(allshortargs)
+                allargs = list(self.args)
+                allshortargs = list(self.args)
+                if self.varargs:
+                    allargs.append('*' + self.varargs)
+                    allshortargs.append('*' + self.varargs)
+                elif self.kwonlyargs:
+                    allargs.append('*')  # single star syntax
+                for a in self.kwonlyargs:
+                    allargs.append('%s=None' % a)
+                    allshortargs.append('%s=%s' % (a, a))
+                if self.varkw:
+                    allargs.append('**' + self.varkw)
+                    allshortargs.append('**' + self.varkw)
+                self.signature = ', '.join(allargs)
+                self.shortsignature = ', '.join(allshortargs)
                 self.dict = func.__dict__.copy()
         # func=None happens when decorating a caller
         if name:
@@ -230,13 +225,18 @@ class FunctionMaker(object):
         return self.make(body, evaldict, addsource, **attrs)
 
 
-def decorate(func, caller):
+def decorate(func, caller, extras=()):
     """
     decorate(func, caller) decorates a function using a caller.
     """
     evaldict = dict(_call_=caller, _func_=func)
+    es = ''
+    for i, extra in enumerate(extras):
+        ex = '_e%d_' % i
+        evaldict[ex] = extra
+        es += ex + ', '
     fun = FunctionMaker.create(
-        func, "return _call_(_func_, %(shortsignature)s)",
+        func, "return _call_(_func_, %s%%(shortsignature)s)" % es,
         evaldict, __wrapped__=func)
     if hasattr(func, '__qualname__'):
         fun.__qualname__ = func.__qualname__
@@ -249,6 +249,7 @@ def decorator(caller, _func=None):
         # this is obsolete behavior; you should use decorate instead
         return decorate(_func, caller)
     # else return a decorator function
+    defaultargs, defaults = '', ()
     if inspect.isclass(caller):
         name = caller.__name__.lower()
         doc = 'decorator(%s) converts functions/generators into ' \
@@ -259,15 +260,24 @@ def decorator(caller, _func=None):
         else:
             name = caller.__name__
         doc = caller.__doc__
+        nargs = caller.__code__.co_argcount
+        ndefs = len(caller.__defaults__ or ())
+        defaultargs = ', '.join(caller.__code__.co_varnames[nargs-ndefs:nargs])
+        if defaultargs:
+            defaultargs += ','
+        defaults = caller.__defaults__
     else:  # assume caller is an object with a __call__ method
         name = caller.__class__.__name__.lower()
         doc = caller.__call__.__doc__
     evaldict = dict(_call=caller, _decorate_=decorate)
-    return FunctionMaker.create(
-        '%s(func)' % name, 'return _decorate_(func, _call)',
-        evaldict, doc=doc, module=caller.__module__,
-        __wrapped__=caller)
-
+    dec = FunctionMaker.create(
+        '%s(func, %s)' % (name, defaultargs),
+        'if func is None: return lambda func:  _decorate_(func, _call, (%s))\n'
+        'return _decorate_(func, _call, (%s))' % (defaultargs, defaultargs),
+        evaldict, doc=doc, module=caller.__module__, __wrapped__=caller)
+    if defaults:
+        dec.__defaults__ = (None,) + defaults
+    return dec
 
 # ####################### contextmanager ####################### #
 
@@ -298,7 +308,12 @@ elif n_args == 4:  # (self, gen, args, kwds) Python 3.5
         return _GeneratorContextManager.__init__(self, g, a, k)
     ContextManager.__init__ = __init__
 
-contextmanager = decorator(ContextManager)
+_contextmanager = decorator(ContextManager)
+
+
+def contextmanager(func):
+    # Enable Pylint config: contextmanager-decorators=decorator.contextmanager
+    return _contextmanager(func)
 
 
 # ############################ dispatch_on ############################ #

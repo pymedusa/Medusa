@@ -15,7 +15,7 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
-from medusa.indexers.indexer_config import mappings
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -57,7 +57,7 @@ class SDBitsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -87,7 +87,7 @@ class SDBitsProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    imdb_id = self.show.externals.get(mappings[10])
+                    imdb_id = self.series.externals.get(mappings[10])
                     if imdb_id:
                         search_params['imdb'] = imdb_id
                         log.debug('Search string (IMDb ID): {imdb_id}',

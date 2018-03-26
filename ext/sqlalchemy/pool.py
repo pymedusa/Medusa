@@ -1,5 +1,5 @@
 # sqlalchemy/pool.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -88,6 +88,11 @@ class _ConnDialect(object):
     def do_close(self, dbapi_connection):
         dbapi_connection.close()
 
+    def do_ping(self, dbapi_connection):
+        raise NotImplementedError(
+            "The ping feature requires that a dialect is "
+            "passed to the connection pool.")
+
 
 class Pool(log.Identified):
 
@@ -103,6 +108,7 @@ class Pool(log.Identified):
                  listeners=None,
                  events=None,
                  dialect=None,
+                 pre_ping=False,
                  _dispatch=None):
         """
         Construct a Pool.
@@ -219,6 +225,16 @@ class Pool(log.Identified):
          .. versionadded:: 1.1 - ``dialect`` is now a public parameter
             to the :class:`.Pool`.
 
+        :param pre_ping: if True, the pool will emit a "ping" (typically
+         "SELECT 1", but is dialect-specific) on the connection
+         upon checkout, to test if the connection is alive or not.   If not,
+         the connection is transparently re-connected and upon success, all
+         other pooled connections established prior to that timestamp are
+         invalidated.     Requires that a dialect is passed as well to
+         interpret the disconnection error.
+
+         .. versionadded:: 1.2
+
         """
         if logging_name:
             self.logging_name = self._orig_logging_name = logging_name
@@ -231,6 +247,7 @@ class Pool(log.Identified):
         self._recycle = recycle
         self._invalidate_time = 0
         self._use_threadlocal = use_threadlocal
+        self._pre_ping = pre_ping
         if reset_on_return in ('rollback', True, reset_rollback):
             self._reset_on_return = reset_rollback
         elif reset_on_return in ('none', None, False, reset_none):
@@ -332,7 +349,7 @@ class Pool(log.Identified):
 
         return _ConnectionRecord(self)
 
-    def _invalidate(self, connection, exception=None):
+    def _invalidate(self, connection, exception=None, _checkin=True):
         """Mark all connections established within the generation
         of the given connection as invalidated.
 
@@ -343,11 +360,10 @@ class Pool(log.Identified):
         Connections with a start time prior to this pool's invalidation
         time will be recycled upon next checkout.
         """
-
         rec = getattr(connection, "_connection_record", None)
         if not rec or self._invalidate_time < rec.starttime:
             self._invalidate_time = time.time()
-        if getattr(connection, 'is_valid', False):
+        if _checkin and getattr(connection, 'is_valid', False):
             connection.invalidate(exception)
 
     def recreate(self):
@@ -525,7 +541,7 @@ class _ConnectionRecord(object):
             fairy,
             lambda ref: _finalize_fairy and
             _finalize_fairy(
-                dbapi_connection,
+                None,
                 rec, pool, ref, echo)
         )
         _refs.add(rec)
@@ -671,9 +687,11 @@ def _finalize_fairy(connection, connection_record,
     """
     _refs.discard(connection_record)
 
-    if ref is not None and \
-            connection_record.fairy_ref is not ref:
-        return
+    if ref is not None:
+        if connection_record.fairy_ref is not ref:
+            return
+        assert connection is None
+        connection = connection_record.connection
 
     if connection is not None:
         if connection_record and echo:
@@ -775,21 +793,50 @@ class _ConnectionFairy(object):
             raise exc.InvalidRequestError("This connection is closed")
         fairy._counter += 1
 
-        if not pool.dispatch.checkout or fairy._counter != 1:
+        if (not pool.dispatch.checkout and not pool._pre_ping) or \
+                fairy._counter != 1:
             return fairy
 
-        # Pool listeners can trigger a reconnection on checkout
+        # Pool listeners can trigger a reconnection on checkout, as well
+        # as the pre-pinger.
+        # there are three attempts made here, but note that if the database
+        # is not accessible from a connection standpoint, those won't proceed
+        # here.
         attempts = 2
         while attempts > 0:
             try:
+                if pool._pre_ping:
+                    if fairy._echo:
+                        pool.logger.debug(
+                            "Pool pre-ping on connection %s",
+                            fairy.connection)
+
+                    result = pool._dialect.do_ping(fairy.connection)
+                    if not result:
+                        if fairy._echo:
+                            pool.logger.debug(
+                                "Pool pre-ping on connection %s failed, "
+                                "will invalidate pool", fairy.connection)
+                        raise exc.InvalidatePoolError()
+
                 pool.dispatch.checkout(fairy.connection,
                                        fairy._connection_record,
                                        fairy)
                 return fairy
             except exc.DisconnectionError as e:
-                pool.logger.info(
-                    "Disconnection detected on checkout: %s", e)
-                fairy._connection_record.invalidate(e)
+                if e.invalidate_pool:
+                    pool.logger.info(
+                        "Disconnection detected on checkout, "
+                        "invalidating all pooled connections prior to "
+                        "current timestamp (reason: %r)", e)
+                    fairy._connection_record.invalidate(e)
+                    pool._invalidate(fairy, e, _checkin=False)
+                else:
+                    pool.logger.info(
+                        "Disconnection detected on checkout, "
+                        "invalidating individual connection %s (reason: %r)",
+                        fairy.connection, e)
+                    fairy._connection_record.invalidate(e)
                 try:
                     fairy.connection = \
                         fairy._connection_record.get_connection()
@@ -1121,23 +1168,27 @@ class QueuePool(Pool):
             wait = use_overflow and self._overflow >= self._max_overflow
             return self._pool.get(wait, self._timeout)
         except sqla_queue.Empty:
-            if use_overflow and self._overflow >= self._max_overflow:
-                if not wait:
-                    return self._do_get()
-                else:
-                    raise exc.TimeoutError(
-                        "QueuePool limit of size %d overflow %d reached, "
-                        "connection timed out, timeout %d" %
-                        (self.size(), self.overflow(), self._timeout))
-
-            if self._inc_overflow():
-                try:
-                    return self._create_connection()
-                except:
-                    with util.safe_reraise():
-                        self._dec_overflow()
-            else:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
                 return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %d" %
+                    (self.size(), self.overflow(), self._timeout), code="3o7r")
+
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+                    self._dec_overflow()
+        else:
+            return self._do_get()
 
     def _inc_overflow(self):
         if self._max_overflow == -1:

@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import json
 import os
+from builtins import str
+from builtins import zip
 
 from medusa import app, config, logger, providers, ui
 from medusa.helper.common import try_int
@@ -15,6 +17,7 @@ from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
 
 
@@ -44,7 +47,7 @@ class ConfigProviders(Config):
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
-        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         temp_provider = NewznabProvider(name, '')
 
@@ -62,7 +65,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.name for x in app.newznabProviderList], app.newznabProviderList)))
 
         if name in provider_dict:
             if not provider_dict[name].default:
@@ -118,7 +121,7 @@ class ConfigProviders(Config):
         Delete a Newznab Provider
         """
 
-        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+        provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         if nnid not in provider_dict or provider_dict[nnid].default:
             return '0'
@@ -140,7 +143,7 @@ class ConfigProviders(Config):
             return json.dumps({'error': 'Invalid name specified'})
 
         provider_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
 
@@ -162,7 +165,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in app.torrentRssProviderList], app.torrentRssProviderList))
+        provider_dict = dict(list(zip([x.name for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         if name in provider_dict:
             provider_dict[name].name = name
@@ -183,7 +186,7 @@ class ConfigProviders(Config):
         Delete a Torrent Provider
         """
         provider_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
 
         if provider_id not in provider_dict:
             return '0'
@@ -206,7 +209,7 @@ class ConfigProviders(Config):
         provider_list = []
 
         newznab_provider_dict = dict(
-            zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
+            list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
 
         finished_names = []
 
@@ -279,7 +282,7 @@ class ConfigProviders(Config):
         NewznabProvider.save_newnab_providers()
 
         torrent_rss_provider_dict = dict(
-            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
         finished_names = []
 
         if torrentrss_string:
@@ -496,6 +499,20 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     cur_torrent_provider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
+            if hasattr(cur_torrent_provider, 'enable_search_delay'):
+                try:
+                    cur_torrent_provider.enable_search_delay = config.checkbox_to_value(
+                        kwargs['{id}_enable_search_delay'.format(id=cur_torrent_provider.get_id())])
+                except (AttributeError, KeyError):
+                    cur_torrent_provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_torrent_provider, 'search_delay'):
+                try:
+                    search_delay = float(str(kwargs['{id}_search_delay'.format(id=cur_torrent_provider.get_id())]).strip())
+                    cur_torrent_provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+                except (AttributeError, KeyError, ValueError):
+                    cur_torrent_provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
+
             if cur_torrent_provider.enable_cookies:
                 try:
                     cur_torrent_provider.cookies = str(kwargs['{id}_cookies'.format(id=cur_torrent_provider.get_id())]).strip()
@@ -551,6 +568,21 @@ class ConfigProviders(Config):
                         kwargs['{id}_enable_backlog'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
                     cur_nzb_provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_nzb_provider, 'enable_search_delay'):
+                try:
+                    cur_nzb_provider.enable_search_delay = config.checkbox_to_value(
+                        kwargs['{id}_enable_search_delay'.format(id=cur_nzb_provider.get_id())])
+                except (AttributeError, KeyError):
+                    cur_nzb_provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_nzb_provider, 'search_delay'):
+                try:
+                    search_delay = float(
+                        str(kwargs['{id}_search_delay'.format(id=cur_nzb_provider.get_id())]).strip())
+                    cur_nzb_provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+                except (AttributeError, KeyError, ValueError):
+                    cur_nzb_provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
 
         # app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
         app.PROVIDER_ORDER = provider_list

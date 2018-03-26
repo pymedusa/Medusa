@@ -5,13 +5,11 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
-    try_int,
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -53,7 +51,7 @@ class TorrentLeechProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -80,7 +78,7 @@ class TorrentLeechProvider(TorrentProvider):
 
                     categories = ['2', '7', '35']
                     categories += ['26', '32', '44'] if mode == 'Episode' else ['27']
-                    if self.show and self.show.is_anime:
+                    if self.series and self.series.is_anime:
                         categories += ['34']
                 else:
                     categories = ['2', '26', '27', '32', '7', '34', '35', '44']
@@ -130,14 +128,19 @@ class TorrentLeechProvider(TorrentProvider):
 
             # Skip column headers
             for row in torrent_rows[1:]:
+                cells = row('td')
+
                 try:
-                    title = row.find('td', class_='name').find('a').get_text(strip=True)
-                    download_url = urljoin(self.url, row.find('td', class_='quickdownload').find('a')['href'])
+                    name = cells[labels.index('Name')]
+                    title = name.find('a').get_text(strip=True)
+                    download_url = row.find('td', class_='quickdownload').find('a')
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(row.find('td', class_='seeders').get_text(strip=True))
-                    leechers = try_int(row.find('td', class_='leechers').get_text(strip=True))
+                    download_url = urljoin(self.url, download_url['href'])
+
+                    seeders = int(cells[labels.index('Seeders')].get_text(strip=True))
+                    leechers = int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -147,8 +150,11 @@ class TorrentLeechProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = row('td')[labels.index('Size')].get_text()
+                    torrent_size = cells[labels.index('Size')].get_text()
                     size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = name.get_text(strip=True)[-19:]
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -156,7 +162,7 @@ class TorrentLeechProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -164,8 +170,7 @@ class TorrentLeechProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

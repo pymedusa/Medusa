@@ -6,13 +6,23 @@ import os
 
 from github import GithubException
 
-from tornroutes import route
+from medusa import (
+    app,
+    config,
+    github_client,
+    helpers,
+    logger,
+    ui,
+)
+from medusa.common import (
+    Quality,
+    WANTED,
+)
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, github_client, helpers, logger, ui
-from ....common import Quality, WANTED
-from ....helper.common import try_int
+from tornroutes import route
 
 
 @route('/config/general(/?.*)')
@@ -68,7 +78,7 @@ class ConfigGeneral(Config):
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
                     display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
-                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None):
+                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None, ssl_ca_bundle=None):
 
         results = []
 
@@ -110,6 +120,7 @@ class ConfigGeneral(Config):
         app.NO_RESTART = config.checkbox_to_value(no_restart)
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
+        app.SSL_CA_BUNDLE = ssl_ca_bundle
         # app.LOG_DIR is set in config.change_LOG_DIR()
         app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)

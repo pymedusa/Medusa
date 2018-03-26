@@ -6,6 +6,7 @@ import ast
 import logging
 import re
 import smtplib
+from builtins import object
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate

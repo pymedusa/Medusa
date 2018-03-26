@@ -2,6 +2,7 @@
 """Tests for medusa/process_tv.py."""
 import os
 
+from medusa import app
 from medusa.post_processor import PostProcessor
 from medusa.process_tv import ProcessResult
 
@@ -245,3 +246,122 @@ def test__process_postponed(monkeypatch, p, create_structure):
 
     # Then
     assert p['expected'] == result
+
+
+@pytest.mark.parametrize('p', [
+    {   # path is not TV_DOWNLOAD_DIR, folder should be deleted
+        'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
+        'proc_type': 'manual',
+        'delete': True,
+        'expected': False,
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+            'readme.txt',
+        ),
+        'process_method': 'copy',
+        'unwanted_files': ['readme.txt']
+    },
+    {   # path is TV_DOWNLOAD_DIR, folder shouldn't be deleted
+        'path': 'media/postprocess',
+        'proc_type': 'manual',
+        'delete': True,
+        'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'process_method': 'copy',
+        'unwanted_files': ['show.name.103.hdtv.x264-lol.en.srt']
+    },
+    {   # delete is False, nothing should be deleted
+        'path': 'media/postprocess',
+        'proc_type': 'manual',
+        'delete': False,
+        'expected': ['show.name.103.hdtv.x264-lol.en.srt',
+                     'show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'process_method': 'copy',
+        'unwanted_files': ['show.name.103.hdtv.x264-lol.en.srt']
+    },
+    {   # delete is False and process_method move, still delete files
+        'path': 'media/postprocess',
+        'proc_type': 'manual',
+        'delete': False,
+        'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'process_method': 'move',
+        'unwanted_files': ['show.name.103.hdtv.x264-lol.en.srt']
+    },
+    {   # path is not TV_DOWNLOAD_DIR and NO_DELETE is True, folder should be kept
+        'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
+        'proc_type': 'auto',
+        'delete': False,
+        'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+            'readme.txt',
+        ),
+        'process_method': 'move',
+        'unwanted_files': ['readme.txt', 'show.name.103.hdtv.x264-lol.en.srt'],
+        'no_delete': True
+    },
+    {   # path is TV_DOWNLOAD_DIR, folder should be kept
+        'path': 'media/postprocess',
+        'proc_type': 'auto',
+        'delete': False,
+        'expected': ['show.name.103.hdtv.x264-lol.en.srt',
+                     'show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+            'readme.txt',
+        ),
+        'process_method': 'move',
+        'unwanted_files': ['readme.txt']
+    },
+    {   # path is TV_DOWNLOAD_DIR and NO_DELETE is True, folder should be kept
+        'path': 'media/postprocess',
+        'proc_type': 'auto',
+        'delete': False,
+        'expected': ['show.name.103.hdtv.x264-lol.en.srt',
+                     'show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+            'readme.txt',
+        ),
+        'process_method': 'move',
+        'unwanted_files': ['readme.txt'],
+        'no_delete': True
+    },
+])
+def test__clean_up(monkeypatch, p, create_structure):
+    """Run the test."""
+    # Given
+    test_path = create_structure(p['path'], structure=p['structure'])
+    path = os.path.join(test_path, os.path.normcase(p['path']))
+    tv_download_dir = os.path.join(test_path, os.path.normcase('media/postprocess'))
+    sut = ProcessResult(path)
+
+    monkeypatch.setattr(app, 'TV_DOWNLOAD_DIR', tv_download_dir)
+    monkeypatch.setattr(app, 'NO_DELETE', p.get('no_delete', False))
+    monkeypatch.setattr(sut, 'process_method', p['process_method'])
+    monkeypatch.setattr(sut, 'unwanted_files', p['unwanted_files'])
+
+    # When
+    sut._clean_up(path, p['proc_type'], p['delete'])
+    if p['expected'] is False:
+        expected = os.path.isdir(path)
+    else:
+        expected = sorted(os.listdir(path))
+
+    # Then
+    assert p['expected'] == expected

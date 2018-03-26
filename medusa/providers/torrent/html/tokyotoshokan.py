@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from builtins import zip
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -52,7 +53,7 @@ class TokyoToshokanProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=15)  # only poll TokyoToshokan every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 

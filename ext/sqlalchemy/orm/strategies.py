@@ -1,5 +1,5 @@
 # orm/strategies.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -14,10 +14,10 @@ from ..sql import util as sql_util, visitors
 from .. import sql
 from . import (
     attributes, interfaces, exc as orm_exc, loading,
-    unitofwork, util as orm_util
+    unitofwork, util as orm_util, query
 )
 from .state import InstanceState
-from .util import _none_set
+from .util import _none_set, aliased
 from . import properties
 from .interfaces import (
     LoaderStrategy, StrategizedProperty
@@ -195,7 +195,59 @@ class ColumnLoader(LoaderStrategy):
 
 
 @log.class_logger
+@properties.ColumnProperty.strategy_for(query_expression=True)
+class ExpressionColumnLoader(ColumnLoader):
+    def __init__(self, parent, strategy_key):
+        super(ExpressionColumnLoader, self).__init__(parent, strategy_key)
+
+    def setup_query(
+            self, context, entity, path, loadopt,
+            adapter, column_collection, memoized_populators, **kwargs):
+
+        if loadopt and "expression" in loadopt.local_opts:
+            columns = [loadopt.local_opts["expression"]]
+
+            for c in columns:
+                if adapter:
+                    c = adapter.columns[c]
+                column_collection.append(c)
+
+            fetch = columns[0]
+            if adapter:
+                fetch = adapter.columns[fetch]
+            memoized_populators[self.parent_property] = fetch
+
+    def create_row_processor(
+            self, context, path,
+            loadopt, mapper, result, adapter, populators):
+        # look through list of columns represented here
+        # to see which, if any, is present in the row.
+        if loadopt and "expression" in loadopt.local_opts:
+            columns = [loadopt.local_opts["expression"]]
+
+            for col in columns:
+                if adapter:
+                    col = adapter.columns[col]
+                getter = result._getter(col, False)
+                if getter:
+                    populators["quick"].append((self.key, getter))
+                    break
+            else:
+                populators["expire"].append((self.key, True))
+
+    def init_class_attribute(self, mapper):
+        self.is_class_level = True
+
+        _register_attribute(
+            self.parent_property, mapper, useobject=False,
+            compare_function=self.columns[0].type.compare_values,
+            accepts_scalar_loader=False
+        )
+
+
+@log.class_logger
 @properties.ColumnProperty.strategy_for(deferred=True, instrument=True)
+@properties.ColumnProperty.strategy_for(do_nothing=True)
 class DeferredColumnLoader(LoaderStrategy):
     """Provide loading behavior for a deferred :class:`.ColumnProperty`."""
 
@@ -336,6 +388,18 @@ class AbstractRelationshipLoader(LoaderStrategy):
 
 
 @log.class_logger
+@properties.RelationshipProperty.strategy_for(do_nothing=True)
+class DoNothingLoader(LoaderStrategy):
+    """Relationship loader that makes no change to the object's state.
+
+    Compared to NoLoader, this loader does not initialize the
+    collection/attribute to empty/none; the usual default LazyLoader will
+    take effect.
+
+    """
+
+
+@log.class_logger
 @properties.RelationshipProperty.strategy_for(lazy="noload")
 @properties.RelationshipProperty.strategy_for(lazy=None)
 class NoLoader(AbstractRelationshipLoader):
@@ -371,6 +435,7 @@ class NoLoader(AbstractRelationshipLoader):
 @properties.RelationshipProperty.strategy_for(lazy="select")
 @properties.RelationshipProperty.strategy_for(lazy="raise")
 @properties.RelationshipProperty.strategy_for(lazy="raise_on_sql")
+@properties.RelationshipProperty.strategy_for(lazy="baked_select")
 class LazyLoader(AbstractRelationshipLoader, util.MemoizedSlots):
     """Provide loading behavior for a :class:`.RelationshipProperty`
     with "lazy=True", that is loads when first accessed.
@@ -380,7 +445,8 @@ class LazyLoader(AbstractRelationshipLoader, util.MemoizedSlots):
     __slots__ = (
         '_lazywhere', '_rev_lazywhere', 'use_get', '_bind_to_col',
         '_equated_columns', '_rev_bind_to_col', '_rev_equated_columns',
-        '_simple_lazy_clause', '_raise_always', '_raise_on_sql')
+        '_simple_lazy_clause', '_raise_always', '_raise_on_sql',
+        '_bakery')
 
     def __init__(self, parent, strategy_key):
         super(LazyLoader, self).__init__(parent, strategy_key)
@@ -575,35 +641,78 @@ class LazyLoader(AbstractRelationshipLoader, util.MemoizedSlots):
             for pk in self.mapper.primary_key
         ]
 
-    @util.dependencies("sqlalchemy.orm.strategy_options")
+    @util.dependencies("sqlalchemy.ext.baked")
+    def _memoized_attr__bakery(self, baked):
+        return baked.bakery(size=50)
+
+    @util.dependencies(
+        "sqlalchemy.orm.strategy_options")
     def _emit_lazyload(
             self, strategy_options, session, state, ident_key, passive):
+        # emit lazy load now using BakedQuery, to cut way down on the overhead
+        # of generating queries.
+        # there are two big things we are trying to guard against here:
+        #
+        # 1. two different lazy loads that need to have a different result,
+        #    being cached on the same key.  The results between two lazy loads
+        #    can be different due to the options passed to the query, which
+        #    take effect for descendant objects.  Therefore we have to make
+        #    sure paths and load options generate good cache keys, and if they
+        #    don't, we don't cache.
+        # 2. a lazy load that gets cached on a key that includes some
+        #    "throwaway" object, like a per-query AliasedClass, meaning
+        #    the cache key will never be seen again and the cache itself
+        #    will fill up.   (the cache is an LRU cache, so while we won't
+        #    run out of memory, it will perform terribly when it's full.  A
+        #    warning is emitted if this occurs.)   We must prevent the
+        #    generation of a cache key that is including a throwaway object
+        #    in the key.
 
-        q = session.query(self.mapper)._adapt_all_clauses()
+        # note that "lazy='select'" and "lazy=True" make two separate
+        # lazy loaders.   Currently the LRU cache is local to the LazyLoader,
+        # however add ourselves to the initial cache key just to future
+        # proof in case it moves
+        q = self._bakery(lambda session: session.query(self.mapper), self)
+
+        q.add_criteria(
+            lambda q: q._adapt_all_clauses()._with_invoke_all_eagers(False),
+            self.parent_property)
+
+        if not self.parent_property.bake_queries:
+            q.spoil(full=True)
+
         if self.parent_property.secondary is not None:
-            q = q.select_from(self.mapper, self.parent_property.secondary)
-
-        q = q._with_invoke_all_eagers(False)
+            q.add_criteria(
+                lambda q:
+                q.select_from(self.mapper, self.parent_property.secondary))
 
         pending = not state.key
 
         # don't autoflush on pending
         if pending or passive & attributes.NO_AUTOFLUSH:
-            q = q.autoflush(False)
-
-        if state.load_path:
-            q = q._with_current_path(state.load_path[self.parent_property])
+            q.add_criteria(lambda q: q.autoflush(False))
 
         if state.load_options:
-            q = q._conditional_options(*state.load_options)
+            # here, if any of the options cannot return a cache key,
+            # the BakedQuery "spoils" and caching will not occur.  a path
+            # that features Cls.attribute.of_type(some_alias) will cancel
+            # caching, for example, since "some_alias" is user-defined and
+            # is usually a throwaway object.
+            effective_path = state.load_path[self.parent_property]
+            q._add_lazyload_options(
+                state.load_options, effective_path
+            )
 
         if self.use_get:
             if self._raise_on_sql:
                 self._invoke_raise_load(state, passive, "raise_on_sql")
-            return loading.load_on_ident(q, ident_key)
+            return q(session)._load_on_ident(
+                session.query(self.mapper), ident_key)
 
         if self.parent_property.order_by:
-            q = q.order_by(*util.to_list(self.parent_property.order_by))
+            q.add_criteria(
+                lambda q:
+                q.order_by(*util.to_list(self.parent_property.order_by)))
 
         for rev in self.parent_property._reverse_property:
             # reverse props that are MANYTOONE are loading *this*
@@ -611,28 +720,31 @@ class LazyLoader(AbstractRelationshipLoader, util.MemoizedSlots):
             if rev.direction is interfaces.MANYTOONE and \
                 rev._use_get and \
                     not isinstance(rev.strategy, LazyLoader):
-                q = q.options(
-                    strategy_options.Load.for_existing_path(
-                        q._current_path[rev.parent]
-                    ).lazyload(rev.key)
+
+                q.add_criteria(
+                    lambda q:
+                    q.options(
+                        strategy_options.Load.for_existing_path(
+                            q._current_path[rev.parent]
+                        ).lazyload(rev.key)
+                    )
                 )
 
-        lazy_clause, params = self._generate_lazy_clause(
-            state, passive=passive)
+        lazy_clause, params = self._generate_lazy_clause(state, passive)
 
         if pending:
             if util.has_intersection(
                     orm_util._none_set, params.values()):
                 return None
+
         elif util.has_intersection(orm_util._never_set, params.values()):
             return None
 
         if self._raise_on_sql:
             self._invoke_raise_load(state, passive, "raise_on_sql")
 
-        q = q.filter(lazy_clause).params(params)
-
-        result = q.all()
+        q.add_criteria(lambda q: q.filter(lazy_clause))
+        result = q(session).params(**params).all()
         if self.uselist:
             return result
         else:
@@ -652,6 +764,7 @@ class LazyLoader(AbstractRelationshipLoader, util.MemoizedSlots):
             self, context, path, loadopt,
             mapper, result, adapter, populators):
         key = self.key
+
         if not self.is_class_level:
             # we are not the primary manager for this attribute
             # on this class - set up a
@@ -768,7 +881,11 @@ class SubqueryLoader(AbstractRelationshipLoader):
         # a cycle
         if not path.contains(context.attributes, "loader"):
             if self.join_depth:
-                if path.length / 2 > self.join_depth:
+                if (
+                    (context.query._current_path.length
+                     if context.query._current_path else 0) +
+                    path.length
+                ) / 2 > self.join_depth:
                     return
             elif subq_path.contains_mapper(self.mapper):
                 return
@@ -1447,7 +1564,9 @@ class JoinedLoader(AbstractRelationshipLoader):
 
         attach_on_outside = (
             not chained_from_outerjoin or
-            not innerjoin or innerjoin == 'unnested')
+            not innerjoin or innerjoin == 'unnested' or
+            entity.entity_zero.represents_outer_join
+        )
 
         if attach_on_outside:
             # this is the "classic" eager join case.
@@ -1455,7 +1574,9 @@ class JoinedLoader(AbstractRelationshipLoader):
                 towrap,
                 clauses.aliased_class,
                 onclause,
-                isouter=not innerjoin or (
+                isouter=not innerjoin or
+                entity.entity_zero.represents_outer_join or
+                (
                     chained_from_outerjoin and isinstance(towrap, sql.Join)
                 ), _left_memo=self.parent, _right_memo=self.mapper
             )
@@ -1686,6 +1807,185 @@ class JoinedLoader(AbstractRelationshipLoader):
             (self.key, load_scalar_from_joined_existing_row))
         if context.invoke_all_eagers:
             populators["eager"].append((self.key, load_scalar_from_joined_exec))
+
+
+@log.class_logger
+@properties.RelationshipProperty.strategy_for(lazy="selectin")
+class SelectInLoader(AbstractRelationshipLoader, util.MemoizedSlots):
+    __slots__ = (
+        'join_depth', '_parent_alias', '_in_expr', '_parent_pk_cols',
+        '_zero_idx', '_bakery'
+    )
+
+    _chunksize = 500
+
+    def __init__(self, parent, strategy_key):
+        super(SelectInLoader, self).__init__(parent, strategy_key)
+        self.join_depth = self.parent_property.join_depth
+        self._parent_alias = aliased(self.parent.class_)
+        pa_insp = inspect(self._parent_alias)
+        self._parent_pk_cols = pk_cols = [
+            pa_insp._adapt_element(col) for col in self.parent.primary_key]
+        if len(pk_cols) > 1:
+            self._in_expr = sql.tuple_(*pk_cols)
+            self._zero_idx = False
+        else:
+            self._in_expr = pk_cols[0]
+            self._zero_idx = True
+
+    def init_class_attribute(self, mapper):
+        self.parent_property.\
+            _get_strategy((("lazy", "select"),)).\
+            init_class_attribute(mapper)
+
+    @util.dependencies("sqlalchemy.ext.baked")
+    def _memoized_attr__bakery(self, baked):
+        return baked.bakery(size=50)
+
+    def create_row_processor(
+            self, context, path, loadopt, mapper,
+            result, adapter, populators):
+        if not self.parent.class_manager[self.key].impl.supports_population:
+            raise sa_exc.InvalidRequestError(
+                "'%s' does not support object "
+                "population - eager loading cannot be applied." %
+                self
+            )
+
+        selectin_path = (
+            context.query._current_path or orm_util.PathRegistry.root) + path
+
+        if not orm_util._entity_isa(path[-1], self.parent):
+            return
+
+        if loading.PostLoad.path_exists(context, selectin_path, self.key):
+            return
+
+        path_w_prop = path[self.parent_property]
+        selectin_path_w_prop = selectin_path[self.parent_property]
+
+        # build up a path indicating the path from the leftmost
+        # entity to the thing we're subquery loading.
+        with_poly_info = path_w_prop.get(
+            context.attributes,
+            "path_with_polymorphic", None)
+
+        if with_poly_info is not None:
+            effective_entity = with_poly_info.entity
+        else:
+            effective_entity = self.mapper
+
+        if not path_w_prop.contains(context.attributes, "loader"):
+            if self.join_depth:
+                if selectin_path_w_prop.length / 2 > self.join_depth:
+                    return
+            elif selectin_path_w_prop.contains_mapper(self.mapper):
+                return
+
+        loading.PostLoad.callable_for_path(
+            context, selectin_path, self.parent, self.key,
+            self._load_for_path, effective_entity)
+
+    @util.dependencies("sqlalchemy.ext.baked")
+    def _load_for_path(
+            self, baked, context, path, states, load_only, effective_entity):
+
+        if load_only and self.key not in load_only:
+            return
+
+        our_states = [
+            (state.key[1], state, overwrite)
+            for state, overwrite in states
+        ]
+
+        pk_cols = self._parent_pk_cols
+        pa = self._parent_alias
+
+        q = self._bakery(
+            lambda session: session.query(
+                query.Bundle("pk", *pk_cols), effective_entity,
+            ), self
+        )
+
+        q.add_criteria(
+            lambda q: q.select_from(pa).join(
+                getattr(pa,
+                        self.parent_property.key).of_type(effective_entity)).
+            filter(
+                self._in_expr.in_(
+                    sql.bindparam('primary_keys', expanding=True))
+            ).order_by(*pk_cols)
+        )
+
+        orig_query = context.query
+
+        q._add_lazyload_options(
+            orig_query._with_options,
+            path[self.parent_property]
+        )
+
+        if orig_query._populate_existing:
+            q.add_criteria(
+                lambda q: q.populate_existing()
+            )
+
+        if self.parent_property.order_by:
+            def _setup_outermost_orderby(q):
+                # imitate the same method that
+                # subquery eager loading does it, looking for the
+                # adapted "secondary" table
+                eagerjoin = q._from_obj[0]
+                eager_order_by = \
+                    eagerjoin._target_adapter.\
+                    copy_and_process(
+                        util.to_list(
+                            self.parent_property.order_by
+                        )
+                    )
+                return q.order_by(*eager_order_by)
+
+            q.add_criteria(
+                _setup_outermost_orderby
+            )
+
+        uselist = self.uselist
+        _empty_result = () if uselist else None
+
+        while our_states:
+            chunk = our_states[0:self._chunksize]
+            our_states = our_states[self._chunksize:]
+
+            data = {
+                k: [vv[1] for vv in v]
+                for k, v in itertools.groupby(
+                    q(context.session).params(
+                        primary_keys=[
+                            key[0] if self._zero_idx else key
+                            for key, state, overwrite in chunk]
+                    ),
+                    lambda x: x[0]
+                )
+            }
+
+            for key, state, overwrite in chunk:
+
+                if not overwrite and self.key in state.dict:
+                    continue
+
+                collection = data.get(key, _empty_result)
+
+                if not uselist and collection:
+                    if len(collection) > 1:
+                        util.warn(
+                            "Multiple rows returned with "
+                            "uselist=False for eagerly-loaded "
+                            "attribute '%s' "
+                            % self)
+                    state.get_impl(self.key).set_committed_value(
+                        state, state.dict, collection[0])
+                else:
+                    state.get_impl(self.key).set_committed_value(
+                        state, state.dict, collection)
 
 
 def single_parent_validator(desc, prop):

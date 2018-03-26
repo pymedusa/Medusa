@@ -1,5 +1,5 @@
 # ext/serializer.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -146,7 +146,7 @@ def Deserializer(file, metadata=None, scoped_session=None, engine=None):
     return unpickler
 
 
-def dumps(obj, protocol=0):
+def dumps(obj, protocol=pickle.HIGHEST_PROTOCOL):
     buf = byte_buffer()
     pickler = Serializer(buf, protocol)
     pickler.dump(obj)

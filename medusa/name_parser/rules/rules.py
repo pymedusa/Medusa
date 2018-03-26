@@ -26,15 +26,19 @@ according to our needs.
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+from __future__ import unicode_literals
 
 import copy
 import logging
 import re
+from builtins import range
+from builtins import str
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
+
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
@@ -1212,8 +1216,8 @@ class AvoidMultipleValuesRule(Rule):
                     to_remove.extend(matches.named('title', predicate=lambda match: match.value != values[0].value))
                     continue
 
-                log.info(u"Guessed more than one '%s' for '%s': %s",
-                         name, matches.input_string, u','.join(unique_values), exc_info=False)
+                log.debug(u"Guessed more than one '%s' for '%s': %s",
+                          name, matches.input_string, u','.join(unique_values), exc_info=False)
                 to_remove.extend(values)
 
         return to_remove

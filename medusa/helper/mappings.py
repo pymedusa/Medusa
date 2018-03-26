@@ -1,5 +1,6 @@
 # coding=utf-8
 """Extended collections."""
+from __future__ import unicode_literals
 
 
 class NonEmptyDict(dict):

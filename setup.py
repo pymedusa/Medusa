@@ -1,12 +1,33 @@
-"""
-Use setup tools to install Medusa
-"""
+"""Use setup tools to install Medusa."""
 import os
+import sys
+
 from setuptools import find_packages, setup
+from setuptools.command.test import test as TestCommand
 
-ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
+here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(ROOT, 'readme.md'), 'r') as r:
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass into py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
+
+with open(os.path.join(here, 'readme.md'), 'r') as r:
     long_description = r.read()
 
 setup(
@@ -14,18 +35,19 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['six', 'profilehooks', 'contextlib2', 'gi', ],
-    test_suite="tests",
+    install_requires=['tornado==5.0.1', 'six', 'profilehooks', 'contextlib2', 'gi', ],
+    cmdclass={'test': PyTest},
     tests_require=[
-        'coveralls',
-        'flake8_docstrings',
+        'dredd_hooks',
+        'flake8',
+        'flake8-docstrings',
         'flake8-import-order',
+        'pep8-naming',
         'pytest',
         'pytest-cov',
-        'pytest-flake8',
-        'pytest-tornado',
+        'pytest-flake8==0.9.1',
+        'pytest-tornado5',
         'PyYAML',
-        'pep8-naming ',
         'mock',
     ],
     extras_require={

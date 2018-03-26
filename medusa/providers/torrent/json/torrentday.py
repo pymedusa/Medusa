@@ -6,13 +6,10 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
-
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -30,7 +27,7 @@ class TorrentDayProvider(TorrentProvider):
         self.url = 'https://www.torrentday.com'
         self.urls = {
             'login': urljoin(self.url, '/torrents/'),
-            'search': urljoin(self.url, '/V3/API/API.php'),
+            'search': urljoin(self.url, '/t.json'),
             'download': urljoin(self.url, '/download.php/')
         }
 
@@ -53,17 +50,20 @@ class TorrentDayProvider(TorrentProvider):
         # TV/x265 - 34
         # TV/XviD - 2
 
-        self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c7': 1, 'c24': 1, 'c26': 1, 'c31': 1, 'c32': 1, 'c33': 1, 'c34': 1, 'c46': 1},
-                           'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
+        self.categories = {
+            'Season': {'14': 1},
+            'Episode': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1},
+            'RSS': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1, '14': 1}
+        }
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -86,13 +86,9 @@ class TorrentDayProvider(TorrentProvider):
 
                 search_string = '+'.join(search_string.split())
 
-                post_data = dict({'/browse.php?': None, 'cata': 'yes', 'jxt': 8, 'jxw': 'b', 'search': search_string},
-                                 **self.categories[mode])
+                params = dict({'q': search_string}, **self.categories[mode])
 
-                if self.freeleech:
-                    post_data.update({'free': 'on'})
-
-                response = self.session.post(self.urls['search'], data=post_data)
+                response = self.session.get(self.urls['search'], params=params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
@@ -118,43 +114,40 @@ class TorrentDayProvider(TorrentProvider):
         """
         items = []
 
-        try:
-            initial_data = data.get('Fs', [dict()])[0].get('Cn', {})
-            torrent_rows = initial_data.get('torrents', []) if initial_data else None
-        except (AttributeError, TypeError, KeyError, ValueError, IndexError) as error:
-            # If TorrentDay changes their website issue will be opened so we can fix fast
-            # and not wait user notice it's not downloading torrents from there
-            log.error('TorrentDay response: {0}. Error: {1!r}', data, error)
-            torrent_rows = None
+        for row in data:
 
-        if not torrent_rows:
-            log.debug('Data returned from provider does not contain any torrents')
-            return items
-
-        for row in torrent_rows:
             try:
-                title = re.sub(r'\[.*=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
-                download_url = urljoin(self.urls['download'], '{}/{}'
-                                       .format(row['id'], row['fname'])) if row['id'] and row['fname'] else None
+                # Check if this is a freeleech torrent and if we've configured to only allow freeleech.
+                if self.freeleech and row['download-multiplier'] != 0:
+                    continue
+
+                title = re.sub(r'\[.*\=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
+                download_url = urljoin(self.urls['download'], '{0}/{1}.torrent'.format(
+                    row['t'], row['name']
+                )) if row['t'] and row['name'] else None
+
                 if not all([title, download_url]):
                     continue
 
-                seeders = int(row['seed']) if row['seed'] else 1
-                leechers = int(row['leech']) if row['leech'] else 0
+                seeders = int(row['seeders'])
+                leechers = int(row['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed or leechers < self.minleech:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
-                                  title, seeders)
+                                  " minimum seeders: {0}. Seeders: {1}", title, seeders)
                     continue
 
                 torrent_size = row['size']
                 size = convert_size(torrent_size) or -1
 
-                pubdate_raw = row['added']
-                pubdate = self.parse_pubdate(pubdate_raw)
+                if mode != 'RSS':
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
+
+                pubdate_raw = row['ctime']
+                pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
 
                 item = {
                     'title': title,
@@ -170,8 +163,7 @@ class TorrentDayProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

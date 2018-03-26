@@ -1,5 +1,5 @@
 # orm/dynamic.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -44,9 +44,10 @@ class DynaLoader(strategies.AbstractRelationshipLoader):
 
 class DynamicAttributeImpl(attributes.AttributeImpl):
     uses_objects = True
-    accepts_scalar_loader = False
+    default_accepts_scalar_loader = False
     supports_population = False
     collection = False
+    dynamic = True
 
     def __init__(self, class_, key, typecallable,
                  dispatch,

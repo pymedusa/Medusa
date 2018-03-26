@@ -1,8 +1,11 @@
 # coding=utf-8
 
 """All providers type init."""
+from __future__ import unicode_literals
 
 import pkgutil
+from builtins import next
+from builtins import zip
 from os import sys
 from random import shuffle
 
@@ -20,17 +23,16 @@ from medusa.providers.torrent import (
     bitcannon,
     bithdtv,
     btn,
+    cinemaz,
     danishbits,
     elitetorrent,
     elitetracker,
     gftracker,
-    hd4free,
     hdbits,
     hdspace,
     hdtorrents,
     hebits,
     horriblesubs,
-    hounddawgs,
     iptorrents,
     limetorrents,
     morethantv,
@@ -39,6 +41,7 @@ from medusa.providers.torrent import (
     norbits,
     nyaa,
     pretome,
+    privatehd,
     rarbg,
     scenetime,
     sdbits,
@@ -53,7 +56,6 @@ from medusa.providers.torrent import (
     torrentday,
     torrenting,
     torrentleech,
-    torrentproject,
     torrentz2,
     tvchaosuk,
     xthor,
@@ -62,19 +64,19 @@ from medusa.providers.torrent import (
 )
 
 __all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs',
+    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
     'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'nebulance', 'tvchaosuk', 'torrentproject', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
+    'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
 ]
 
 
 def sorted_provider_list(randomize=False):
     initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
-    provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
+    provider_dict = dict(list(zip([x.get_id() for x in initial_list], initial_list)))
 
     new_list = []
 
@@ -112,7 +114,7 @@ def get_provider_module(name):
         if name in __all__ and prefix + name in sys.modules:
             return sys.modules[prefix + name]
 
-    raise Exception("Can't find " + prefix + name + " in " + "Providers")
+    raise Exception("Can't find {prefix}{name} in Providers".format(prefix=prefix, name=name))
 
 
 def get_provider_class(provider_id):

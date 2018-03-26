@@ -1,5 +1,6 @@
 # coding=utf-8
 """Github client module."""
+from __future__ import unicode_literals
 
 import logging
 

@@ -22,7 +22,7 @@ from __future__ import print_function
 
 import threading
 
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class DBBasicTests(test.AppTestDBCase):

@@ -1,5 +1,5 @@
 # sqlalchemy/__init__.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -38,6 +38,8 @@ from .sql import (
     modifier,
     not_,
     null,
+    nullsfirst,
+    nullslast,
     or_,
     outerjoin,
     outparam,
@@ -128,7 +130,7 @@ from .schema import (
 from .inspection import inspect
 from .engine import create_engine, engine_from_config
 
-__version__ = '1.1.14'
+__version__ = '1.2.5'
 
 
 def __go(lcls):

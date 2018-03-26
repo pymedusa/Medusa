@@ -46,7 +46,7 @@ class Anizb(NZBProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Start searching for anime using the provided search_strings. Used for backlog and daily."""
         results = []
 

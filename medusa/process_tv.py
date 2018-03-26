@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import os
 import shutil
 import stat
+from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
@@ -17,17 +18,18 @@ from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 import shutil_custom
 
+from six import iteritems
+
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('@eaDir',)
+    IGNORED_FOLDERS = ('@eaDir', '#recycle',)
 
     def __init__(self, path, process_method=None):
 
@@ -38,6 +40,7 @@ class ProcessResult(object):
         self.result = True
         self.succeeded = True
         self.missedfiles = []
+        self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
 
     @property
@@ -133,33 +136,17 @@ class ProcessResult(object):
                 sync_files = (filename
                               for filename in filelist
                               if is_sync_file(filename))
+
                 # Don't process files if they are still being synced
                 postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
-
                 if not postpone:
 
                     self.log('Processing folder: {0}'.format(dir_path), logger.DEBUG)
 
                     self.prepare_files(dir_path, filelist, force)
-
                     self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
-
-                    # Always delete files if they are being moved or if it's explicitly wanted
-                    if not self.process_method == 'move' or (proc_type == 'manual' and not delete_on):
-                        continue
-
-                    for folder in self.IGNORED_FOLDERS:
-                        self.delete_folder(os.path.join(dir_path, folder))
-
-                    if self.unwanted_files:
-                        self.delete_files(dir_path, self.unwanted_files)
-
-                    if all([not app.NO_DELETE or proc_type == 'manual', self.process_method == 'move',
-                            os.path.normpath(dir_path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-
-                        if self.delete_folder(dir_path):
-                            self.log('Deleted folder: {0}'.format(dir_path), logger.DEBUG)
+                    self._clean_up(dir_path, proc_type, delete=delete_on)
 
                 else:
                     self.log('Found temporary sync files in folder: {0}'.format(dir_path))
@@ -183,12 +170,30 @@ class ProcessResult(object):
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
         if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            to_remove_hashes = app.RECENTLY_POSTPROCESSED.items()
-            for info_hash, release_names in to_remove_hashes:
+            for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
-                    app.RECENTLY_POSTPROCESSED.pop(info_hash)
+                    app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
 
         return self.output
+
+    def _clean_up(self, path, proc_type, delete=False):
+        """Clean up post-processed folder based on the checks below."""
+        # Always delete files if they are being moved or if it's explicitly wanted
+        clean_folder = proc_type == 'manual' and delete
+        if self.process_method == 'move' or clean_folder:
+
+            for folder in self.IGNORED_FOLDERS:
+                self.delete_folder(os.path.join(path, folder))
+
+            if self.unwanted_files:
+                self.delete_files(path, self.unwanted_files)
+
+            if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
+                    os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+
+                check_empty = False if self.process_method == 'copy' else True
+                if self.delete_folder(path, check_empty=check_empty):
+                    self.log('Deleted folder: {0}'.format(path), logger.DEBUG)
 
     def should_process(self, path, failed=False):
         """
@@ -616,10 +621,10 @@ class ProcessResult(object):
 
             try:
                 parse_result = NameParser().parse(name)
-                if parse_result.show.indexerid:
+                if parse_result.series.indexerid:
                     main_db_con = db.DBConnection()
-                    sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer_id = ? LIMIT 1",
-                                                     [parse_result.show.indexerid])
+                    sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1",
+                                                     [parse_result.series.indexer, parse_result.series.indexerid])
                     return bool(sql_results[0][b'subtitles']) if sql_results else False
 
                 logger.log('Empty indexer ID for: {name}'.format(name=name), logger.WARNING)

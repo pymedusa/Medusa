@@ -1,6 +1,6 @@
 # coding=utf-8
 """Module with common helper utils."""
-
+from __future__ import division
 from __future__ import unicode_literals
 
 import datetime
@@ -8,7 +8,9 @@ import logging
 import re
 import traceback
 from fnmatch import fnmatch
+
 from medusa import app
+
 from six import PY3, text_type
 
 
@@ -99,8 +101,32 @@ http_status_code = {
     599: 'Network connect timeout error',
 }
 media_extensions = [
-    '3gp', 'avi', 'divx', 'dvr-ms', 'f4v', 'flv', 'img', 'iso', 'm2ts', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg',
-    'ogm', 'ogv', 'rmvb', 'tp', 'ts', 'vob', 'webm', 'wmv', 'wtv',
+    '3gp',
+    'asf',
+    'avi',
+    'divx',
+    'dvr-ms',
+    'f4v',
+    'flv',
+    'img',
+    'iso',
+    'm2ts',
+    'm4v',
+    'mkv',
+    'mov',
+    'mp4',
+    'mpeg',
+    'mpg',
+    'ogm',
+    'ogv',
+    'rmvb',
+    'tp',
+    'ts',
+    'vob',
+    'webm',
+    'wma',
+    'wmv',
+    'wtv',
 ]
 subtitle_extensions = ['ass', 'idx', 'srt', 'ssa', 'sub', 'mpl', 'smi']
 timeFormat = '%A %I:%M %p'
@@ -222,7 +248,7 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
     finally:
         try:
             if result != default:
-                result = long(result)
+                result = int(result)
                 result = max(result, 0)
         except (TypeError, ValueError):
             pass
@@ -322,7 +348,7 @@ def enabled_providers(search_type):
     """
     Return providers based on search type: daily, backlog and manualsearch
     """
-    from .. import providers
+    from medusa import providers
     return [x for x in providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
             if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
             hasattr(x, 'enable_{}'.format(search_type)) and
@@ -363,8 +389,8 @@ def pretty_date(d):
     elif s < 120:
         return '1 minute ago'
     elif s < 3600:
-        return '{} minutes ago'.format(s / 60)
+        return '{} minutes ago'.format(s // 60)
     elif s < 7200:
         return '1 hour ago'
     else:
-        return '{} hours ago'.format(s / 3600)
+        return '{} hours ago'.format(s // 3600)

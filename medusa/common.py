@@ -16,14 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Common interface for Quality and Status."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import operator
 import os
 import platform
 import re
 import uuid
+from builtins import object
+from builtins import str
 from collections import namedtuple
-from os import path
+from functools import reduce
+
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
@@ -32,8 +37,7 @@ from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
-from six import PY3
-from six.moves import reduce
+from six import PY3, viewitems
 
 if PY3:
     long = int
@@ -46,11 +50,11 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.1.17'
+VERSION = '0.1.23'
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
+ua_settings.DB = os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -311,11 +315,11 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-        from .tagger.episode import EpisodeTags
+        from medusa.tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:
-            name = path.basename(name)
+            name = os.path.basename(name)
 
         result = None
         ep = EpisodeTags(name)
@@ -435,7 +439,7 @@ class Quality(object):
         height = int(height.magnitude)
 
         # TODO: Use knowledge information like 'resolution'
-        base_filename = path.basename(file_path)
+        base_filename = os.path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 
@@ -463,7 +467,7 @@ class Quality(object):
 
     @staticmethod
     def quality_downloaded(status):
-        return (status - DOWNLOADED) / 100
+        return (status - DOWNLOADED) // 100
 
     @staticmethod
     def split_composite_status(status):
@@ -473,11 +477,11 @@ class Quality(object):
         :param status: to split
         :returns: a namedtuple containing (status, quality)
         """
-        status = long(status)
+        status = int(status)
         if status == UNKNOWN:
             return Quality.composite_status_quality(UNKNOWN, Quality.UNKNOWN)
 
-        for q in sorted(Quality.qualityStrings.keys(), reverse=True):
+        for q in sorted(list(Quality.qualityStrings), reverse=True):
             if status > q * 100:
                 return Quality.composite_status_quality(status - q * 100, q)
 
@@ -790,7 +794,7 @@ class Quality(object):
         :return: guessit screen_size
         :rtype: str
         """
-        for key, value in Quality.to_guessit_screen_size_map.items():
+        for key, value in viewitems(Quality.to_guessit_screen_size_map):
             if quality & key:
                 return value
 
