@@ -45,7 +45,8 @@ const startVue = () => {
                 const initialDir = $('#new_root_dir_' + curIndex).val();
                 $(this).nFileBrowser(editRootDir, {
                     initialDir,
-                    whichId: curIndex
+                    whichId: curIndex,
+                    title: 'Select Show Location'
                 });
             });
 
@@ -53,10 +54,6 @@ const startVue = () => {
                 const curIndex = findDirIndex($(this).attr('id'));
                 $('#new_root_dir_' + curIndex).val(null);
                 $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
-            });
-
-            $('#location').fileBrowser({
-                title: 'Select Show Location'
             });
         }
     });
