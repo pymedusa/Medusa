@@ -109,7 +109,7 @@ const startVue = () => {
 <div class="row">
     <div class="col-md-12">
         <div class="key pull-left">
-        % if 'calendar' != layout:
+        % if layout != 'calendar':
             <b>Key:</b>
             <span class="listing-key listing-overdue">Missed</span>
             <span class="listing-key listing-current">Today</span>
@@ -143,7 +143,7 @@ const startVue = () => {
             <div class="show-option">
                 <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
             </div>
-            % else:
+            % elif layout != 'calendar':  # Calendar sorting is always by date
             <div class="show-option">
                 <span>Sort By:
                     <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
