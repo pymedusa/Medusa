@@ -93,8 +93,6 @@
         <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/schedule/index.js?${sbPID}"></script>
-
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
@@ -113,7 +111,6 @@
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
