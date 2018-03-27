@@ -7,7 +7,7 @@
     from medusa import sbdatetime
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<!-- start non list view //-->
+<!-- start poster view //-->
 <%
     cur_segment = None
     too_late_header = False
@@ -102,15 +102,11 @@
     <div class="tvshowDiv">
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
-            <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
+            <th rowspan="2" valign="top">
                 <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
+                    <img alt="" class="posterThumb" series="${cur_result['series_slug']}" asset="posterThumb"/>
                 </app-link>
             </th>
-% if 'banner' == layout:
-        </tr>
-        <tr>
-% endif
             <td class="next_episode">
                 <div class="clearfix">
                     <span class="tvshowTitle">
@@ -157,4 +153,4 @@
 </div>
 <!-- end ${cur_result['show_name']} //-->
 % endfor
-<!-- end non list view //-->
+<!-- end poster view //-->
