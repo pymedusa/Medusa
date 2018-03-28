@@ -800,12 +800,12 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
     $(this).showHideProviders();
 
-    $('#provider_order_list').sortable({
-        placeholder: 'ui-state-highlight',
-        update() {
-            $(this).refreshProviderList();
-        }
+    $(() => {
+        $('#provider_order_list').sortable({
+            placeholder: 'ui-state-highlight',
+            update() {
+                $(this).refreshProviderList();
+            }
+        });
     });
-
-    $('#provider_order_list').disableSelection();
 });
