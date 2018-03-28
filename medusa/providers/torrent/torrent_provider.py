@@ -177,12 +177,13 @@ class TorrentProvider(GenericProvider):
                 log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
                 return urls, filename
         else:
-            response = self.session.get(result.url, allow_redirects=False)
-            if response:
-                new_url = response.headers.get('Location')
-                if result.url != new_url:
-                    result.url = new_url
-                    return self._make_url(result)
+            if hasattr(self, 'cap_tv_search'):
+                response = self.session.get(result.url, allow_redirects=False)
+                if response:
+                    new_url = response.headers.get('Location')
+                    if result.url != new_url:
+                        result.url = new_url
+                        return self._make_url(result)
 
             urls = [result.url]
 
