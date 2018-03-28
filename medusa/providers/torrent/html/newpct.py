@@ -23,10 +23,6 @@ log.logger.addHandler(logging.NullHandler())
 class NewpctProvider(TorrentProvider):
     """Newpct Torrent provider."""
 
-    search_regex = re.compile(r'(.*) S0?(\d+)E0?(\d+)')
-    anime_search_regex = re.compile(r'(.*) (\d+)')
-    torrent_id = re.compile(r'\/(\d{6,7})_')
-
     def __init__(self):
         """Initialize the class."""
         super(NewpctProvider, self).__init__('Newpct')
@@ -36,25 +32,49 @@ class NewpctProvider(TorrentProvider):
 
         # URLs
         self.url = 'http://www.tvsinpagar.com'
-        self.urls = OrderedDict([
-            ('daily', urljoin(self.url, 'ultimas-descargas')),
-            ('torrent_url', urljoin(self.url, 'descargar-torrent/{0}_{1}.html')),
-            ('download_series', urljoin(self.url, 'descargar-serie/{0}/capitulo-{1}/hdtv/')),
-            ('download_series_hd', urljoin(self.url, 'descargar-seriehd/{0}/capitulo-{1}/hdtv-720p-ac3-5-1/')),
-            ('download_series_vo', urljoin(self.url, 'descargar-serievo/{0}/capitulo-{1}/')),
-        ])
+        self.urls = {'search': [ urljoin(self.url, '/series'),
+                                 urljoin(self.url, '/series-hd')],
+                     #'searchvo': urljoin(self.url, '/series-vo'),
+                     'daily':    urljoin(self.url, '/ultimas-descargas/pg/{0}'),
+                     'letter': [ urljoin(self.url, '/series/letter/{0}'),
+                                 urljoin(self.url, '/series-hd/letter/{0}')],
+                     #'lettervo': urljoin(self.url, '/series-vo/letter/{0}'),
+                     'downloadregex': r'[^\"]*/descargar-torrent/\d+_[^\"]*'}
 
         # Proper Strings
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.onlyspasearch = None
-        self.torrent_id_counter = None
+
+        self.recent_url = ''
+        self.max_daily_pages = 10
 
         # Torrent Stats
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
+
+    def _get_episode_search_strings(self, episode, add_string=''):
+        """Get episode search strings."""
+        if not episode:
+            return []
+
+        search_string = { 'Episode': [] }
+
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+            search_string['Episode'].append(show_name.strip())
+
+        return [search_string]
+
+    def _get_season_search_strings(self, episode):
+        """Get search search strings."""
+        search_string = { 'Season': [] }
+
+        for show_name in episode.series.get_all_possible_names(season=episode.season):
+            search_string['Season'].append(show_name.strip())
+
+        return [search_string]
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -80,46 +100,96 @@ class NewpctProvider(TorrentProvider):
                 log.debug('Show info is not Spanish, skipping provider search')
                 continue
 
+            items = []
+
             for search_string in search_strings[mode]:
 
-                search_urls = [self.urls['daily']]
+                if mode == 'RSS':
 
-                if mode != 'RSS':
-                    log.debug('Search string: {search}',
-                              {'search': search_string})
+                    recent_url = self.recent_url
+                    pg = 1
+                    while pg <= self.max_daily_pages:
+                        try:
+                            response = self.session.get(self.urls['daily'].format(pg))
+                            if not response or not response.text:
+                                break
 
-                    name, chapter = self._parse_title(search_string)
-                    search_urls = [self.urls[url].format(name, chapter) for url in self.urls
-                                   if url.startswith('download')]
+                            items = self._parse_daily_content(response.text)
+                            if not items or not len(items):
+                                break
+                            results += items
 
-                for url in search_urls:
-                    response = self.session.get(url)
-                    if not response or not response.text:
-                        log.debug('No data returned from provider')
-                        continue
+                            if pg == 1:
+                                self.recent_url = items[0]['link']
 
-                    results += self.parse(response.text, mode)
+                            item_found = [item for item in items if item['link'] == recent_url]
+                            if len(item_found):
+                                break
+
+                        except Exception as e:
+                            log.debug('Exception: {0}'.format(str(e)))
+                            break
+
+                        pg += 1
+
+                else:
+
+                    letters = []
+                    series_names_lower = [x.lower().strip() for x in search_strings[mode]]
+
+                    # search series name
+                    for series_name in series_names_lower:
+                        if series_name and (series_name[0] not in letters):
+                            letters.append(series_name[0])
+
+                    for letter in letters:
+                        for letter_url in self.urls['letter']:
+                            url = letter_url.format(letter) if not letter.isdigit() else letter_url.format('0-9')
+
+                            try:
+                                response = self.session.get(url)
+                                if not response or not response.text:
+                                    continue
+
+                                #get links to series episodes list
+                                series_parsed = self._parse_series_list_content(series_names_lower, response.text)
+                                if not len(series_parsed):
+                                    continue
+
+                                for series_parsed_item in series_parsed:
+                                    pg = 1
+                                    while pg < 100:
+                                        try:
+                                            response = self.session.get(series_parsed_item['url'] + '/pg/' + str(pg))
+                                            if not response or not response.text:
+                                                break
+
+                                            items = self._parse_episodes_list_content(response.text, mode)
+                                            if not len(items):
+                                                break
+                                            results += items
+                                        except Exception:
+                                            log.debug('No data returned from provider')
+                                            break
+
+                                        pg += 1
+
+                            except Exception as e:
+                                log.debug('No data returned from provider (letter) {0}'.format(str(e)))
+                                continue
+
 
         return results
 
-    def parse(self, data, mode):
-        """
-        Parse search results for items.
-
-        :param data: The raw response from a search
-        :param mode: The current mode used to search, e.g. RSS
-
-        :return: A list of items found
-        """
+    def _parse_daily_content(self, data):
         items = []
-        self.torrent_id_counter = 0
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('div', class_='content')
 
             torrent_rows = []
             if torrent_table:
-                torrent_rows = torrent_table('div', class_='info') if mode == 'RSS' else [torrent_table]
+                torrent_rows = torrent_table('div', class_='info')
 
             # Continue only if at least one release is found
             if not torrent_rows or not torrent_rows[0]:
@@ -128,111 +198,177 @@ class NewpctProvider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    if mode == 'RSS':
-                        quality = row.find('span', id='deco')
-                        if not quality.get_text(strip=True).startswith('HDTV'):
-                            if self.torrent_id_counter:
-                                self.torrent_id_counter -= 1
-                            continue
-
-                        anchor = row.find('a')
-                        if not self.torrent_id_counter:
-                            torrent_content = self._get_content(anchor.get('href'), mode)
-                            if not torrent_content:
-                                continue
-                            title, torrent_id, torrent_size, pubdate_raw = torrent_content
-                        else:
-                            self.torrent_id_counter -= 1
-                            h2 = anchor.h2.get_text(strip=True).replace('  ', ' ')
-                            title = '{0} {1}'.format(h2, quality.contents[0].strip())
-                            torrent_id = self.torrent_id_counter
-                            torrent_size = quality.contents[1].text.replace('Tamaño', '').strip()
-                    else:
-                        torrent_info = self._parse_download(row, mode)
-                        if not torrent_info:
-                            continue
-                        title, torrent_id, torrent_size, pubdate_raw = torrent_info
-
-                    if not all([title, torrent_id]):
+                    row_spans = row.find_all('span')
+                    #check if it's an episode
+                    if len(row_spans) < 3 or 'capitulo' not in row_spans[2].get_text().lower():
                         continue
 
-                    download_url = self.urls['torrent_url'].format(torrent_id, title)
+                    anchor_item = row.find('a')
+                    title = anchor_item.get_text().replace('\t','').strip()
+                    details_url = anchor_item.get('href', '')
+
+                    quality_text = row_spans[0].contents[0].strip()
+                    size_text = row_spans[0].contents[1].text.replace(u'Tama\u00f1o', '').strip()
+
+                    row_strongs = row.find_all('strong')
+                    language_text = row_strongs[1].get_text().strip()
+
+                    seeders = 1  # Provider does not provide seeders
+                    leechers = 0  # Provider does not provide leechers
+                    size = convert_size(size_text) or -1
+
+                    composed_title = 'Serie {0} - {1} Calidad [{2}]'.format(title, language_text, quality_text)
+
+                    title = self._parse_composed_title(composed_title, details_url)
+
+                    item = {
+                        'title': title,
+                        'link': details_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                    }
+
+                    items.append(item)
+
+                except Exception as e:
+                    log.exception('Failed parsing dailty item. Exception: {0}'.format(str(e)))
+                    continue
+
+        return items
+
+    def _parse_series_list_content(self, series_names, data):
+        results = []
+
+        with BS4Parser(data) as html:
+            series_table = html.find('ul', class_='pelilist')
+            series_rows = series_table('li') if series_table else []
+
+            # Continue only if at least one series is found
+            if not len(series_rows):
+                return results
+
+            for row in series_rows:
+                try:
+                    series_anchor = row.find_all('a')[0]
+                    title = series_anchor.get('title', '').strip().lower()
+                    url = series_anchor.get('href', '')
+                    if title and title in series_names:
+                        item = {
+                            'title': title,
+                            'url': url,
+                        }
+                        results.append(item)
+                except Exception as e:
+                    continue
+
+        return results
+
+    def _parse_episodes_list_content(self, data, mode):
+
+        items = []
+
+        with BS4Parser(data) as html:
+            torrent_table = html.find('ul', class_='buscar-list')
+            if torrent_table:
+                torrent_rows = torrent_table('div', class_='info')
+
+            # Continue only if at least one release is found
+            if not torrent_rows or not torrent_rows[0]:
+                log.debug('Data returned from provider does not contain any torrents')
+                return items
+
+            for row in torrent_rows:
+                try:
+                    anchor_item = row.find('a')
+                    title = anchor_item.get_text().replace('\t','').strip()
+                    details_url = anchor_item.get('href', '')
+
+                    if not all([title, details_url]):
+                        continue
+
+                    row_spans = row.find_all('span')
+                    size = convert_size(row_spans[3].get_text().strip()) if row_spans and len(row_spans) >= 4 else -1
+                    pubdate_text = row_spans[2].get_text().strip() if row_spans and len(row_spans) >= 3 else ''
 
                     seeders = 1  # Provider does not provide seeders
                     leechers = 0  # Provider does not provide leechers
 
-                    size = convert_size(torrent_size) or -1
-
-                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
+                    title = self._parse_composed_title(title, details_url)
 
                     item = {
                         'title': title,
-                        'link': download_url,
+                        'link': details_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
+                        'pubdate': pubdate_text,
                     }
-                    if mode != 'RSS':
-                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                  title, seeders, leechers)
 
                     items.append(item)
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.exception('Failed parsing provider.')
+
+                except (AttributeError, TypeError):
+                    continue
 
         return items
 
-    def _parse_title(self, search_string):
-        if self.series and self.series.is_anime:
-            search_matches = NewpctProvider.anime_search_regex.match(search_string)
-            name = search_matches.group(1)
-            chapter = '1{0}'.format(search_matches.group(2))
-        else:
-            search_matches = NewpctProvider.search_regex.match(search_string)
-            name = search_matches.group(1)
-            chapter = '{0}{1}'.format(search_matches.group(2), search_matches.group(3))
+    def _parse_composed_title(self, composed_title, url):
+        # Serie Juego De Tronos  Temporada 7 Capitulo 5 - Español Castellano Calidad [ HDTV ]
+        # Serie Juego De Tronos  Temporada [7] Capitulo [5] - Español Castellano Calidad [ HDTV ]
+        # Serie El Estrangulador De Rillington Place Capitulos 1 al 3 - Español Castellano Calidad [ HDTV 720p AC3 5.1 ]
+        # Serie Van Helsing - Temporada 2 Capitulos 9 al 13 - Español Castellano Calidad [ HDTV 720p AC3 5.1 ]
+        # The Big Bang Theory - Temporada 1 [HDTV][Cap.101][Spanish]
 
-        norm_name = re.sub(r'\W', '-', name)
-        title = norm_name.replace('--', '-').strip('-').lower()
+        result = composed_title
 
-        return title, chapter
+        regex = r'Serie(.+?)(Temporada ?\[?(\d+)\]?.*)?Capitulos? ?\[?(\d+)\]? ?(al ?\[?(\d+)\]?)?.*- ?(.*) ?Calidad ?(.+)'
 
-    def _get_content(self, torrent_url, mode):
-        response = self.session.get(torrent_url)
+        match = re.search(regex, composed_title, flags=re.I)
+        if match:
+            name = match.group(1).strip(' -')
+            season = match.group(3).strip() if match.group(3) else 1
+            episode = match.group(4).strip().zfill(2)
+            audio_quality = match.group(7).strip(' []')
+            video_quality = match.group(8).strip(' []')
+
+            if not match.group(5):
+                result = "{0} - Temporada {1} [{2}][Cap.{3}{4}][{5}]".format(name, season, video_quality, season, episode, audio_quality)
+            else:
+                episode_to = match.group(6).strip().zfill(2)
+                result = "{0} - Temporada {1} [{2}][Cap.{3}{4}_{5}{6}][{7}]".format(name, season, video_quality, season, episode, season, episode_to, audio_quality)
+
+        result = result + '[NEWPCT]'
+
+        return result
+
+    def _get_torrent_url(self, details_page_url):
+        if not details_page_url:
+            log.debug('Url empty')
+            return None
+
+        response = self.session.get(details_page_url)
         if not response or not response.text:
-            log.debug('No data returned for first item')
+            log.debug('No data returned. {}'.format(details_page_url))
             return
 
         with BS4Parser(response.text, 'html5lib') as html:
-            torrent_content = html.find('div', class_='content')
-            if not torrent_content:
-                log.debug('Wrong data returned for first item')
-                return
+            match = re.search(r'' + self.urls['downloadregex'], html.text, re.I)
+            if not match:
+                return None
+            return match.group()
 
-            return self._parse_download(torrent_content, mode)
+    def get_content(self, url, params=None, timeout=30, **kwargs):
+        torrent_url = self._get_torrent_url(url)
+        if not torrent_url:
+            torrent_url = url
 
-    def _parse_download(self, torrent_content, mode):
-        torrent_dl = torrent_content.find('div', id='tabs_content_container')
-        if not torrent_dl:
-            log.debug('No data returned for searched item')
-            return
+        return super(NewpctProvider, self).get_content(torrent_url, params=params, timeout=timeout, **kwargs)
 
-        torrent_h1 = torrent_content.find('h1')
-        title = torrent_h1.get_text(' ', strip=True).split('/')[-1].strip()
+    def download_result(self, result):
+        torrent_url = self._get_torrent_url(result.url)
+        if torrent_url:
+            result.url = torrent_url
 
-        torrent_info = torrent_content.find('div', class_='entry-left')
-        spans = torrent_info('span', class_='imp')
-        size = spans[0].contents[1].strip()
-        pubdate_raw = spans[1].contents[1].strip()
-
-        dl_script = torrent_dl.find('script', type='text/javascript').get_text(strip=True)
-        item_id = try_int(NewpctProvider.torrent_id.search(dl_script).group(1))
-
-        if mode == 'RSS' and not self.torrent_id_counter:
-            self.torrent_id_counter = item_id
-
-        return title, item_id, size, pubdate_raw
-
+        return super(NewpctProvider, self).download_result(result)
 
 provider = NewpctProvider()
