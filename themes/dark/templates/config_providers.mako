@@ -64,7 +64,7 @@ const startVue = () => {
                 * @param {Array} selectedProvider
                 * @return no return data. Function updateNewznabCaps() is run at callback
                 */
-                function getCategories(selectedProvider) {
+                function getCategories(kind, selectedProvider) {
                     const name = selectedProvider[0];
                     const url = selectedProvider[1];
                     const apiKey = selectedProvider[2];
@@ -84,8 +84,8 @@ const startVue = () => {
                         capabilities = updateCategories([], name);
                         dfd.resolve(capabilities);
                     } else {
-                        const params = { url, name, api_key: apiKey }; // eslint-disable-line camelcase
-                        const jqxhr = $.getJSON('config/providers/getNewznabCategories', params);
+                        const params = { kind, url, name, api_key: apiKey }; // eslint-disable-line camelcase
+                        const jqxhr = $.getJSON('config/providers/getZnabCategories', params);
                         jqxhr.always(function(data) {
                             $('.updating_categories').empty();
                             if (data.success === true) {
@@ -211,7 +211,7 @@ const startVue = () => {
 
                     // Get Categories Capabilities
                     if (id && url && apiKey) {
-                        const capabilities = getCategories(newznabProviders[id][1]);
+                        const capabilities = getCategories('newznab', newznabProviders[id][1]);
                         capabilities.done(function(data) {
                             if (data.categories) {
                                 $('#newznab_cap').replaceOptions(data.categories);
@@ -237,7 +237,7 @@ const startVue = () => {
 
                     // Get Categories Capabilities
                     if (id && url && apiKey) {
-                        const capabilities = getCategories(torznabProviders[id]);
+                        const capabilities = getCategories('torznab', torznabProviders[id]);
                         capabilities.done(function(data) {
                             if (data.categories) {
                                 $('#torznab_cap').replaceOptions(data.categories);

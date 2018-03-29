@@ -38,6 +38,27 @@ class ConfigProviders(Config):
                         controller='config', action='providers')
 
     @staticmethod
+    def canAddTorrentRssProvider(name, url, cookies, title_tag):
+        """See if a Torrent provider can be added."""
+        if not name:
+            return json.dumps({'error': 'Invalid name specified'})
+
+        provider_dict = dict(
+            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
+
+        temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
+
+        if temp_provider.get_id() in provider_dict:
+            return json.dumps({'error': 'Provider name already exists as {name}'.format(
+                              name=provider_dict[temp_provider.get_id()].name)})
+        else:
+            validate = temp_provider.validate_rss()
+            if validate['result']:
+                return json.dumps({'success': temp_provider.get_id()})
+            else:
+                return json.dumps({'error': validate['message']})
+
+    @staticmethod
     def canAddProvider(kind, name, url, api_key=None):
         """See if a Newznab or Torznab provider can be added."""
         if not name:
@@ -55,6 +76,35 @@ class ConfigProviders(Config):
                               name=provider_dict[temp_provider.get_id()].name)})
         else:
             return json.dumps({'success': temp_provider.get_id()})
+
+    @staticmethod
+    def getZnabCategories(kind, name, url, api_key):
+        """
+        Retrieve a list of possible categories with category ids.
+
+        Using the default url/api?cat
+        http://yournewznaburl.com/api?t=caps&apikey=yourapikey
+        """
+        error = ''
+
+        if not name:
+            error += '\nNo Provider Name specified'
+        if not url:
+            error += '\nNo Provider Url specified'
+        if not api_key:
+            error += '\nNo Provider Api key specified'
+
+        if error != '':
+            return json.dumps({'success': False, 'error': error})
+
+        if kind == 'newznab':
+            temp_provider = NewznabProvider(name, url, api_key)
+        elif kind == 'torznab':
+            temp_provider = TorznabProvider(name, url, api_key)
+
+        success, tv_categories, caps, error = temp_provider.get_capabilities()
+
+        return json.dumps({'success': success, 'tv_categories': tv_categories, 'caps': caps, 'error': error})
 
     @staticmethod
     def saveNewznabProvider(name, url, api_key=''):
@@ -84,36 +134,6 @@ class ConfigProviders(Config):
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
-    def getNewznabCategories(name, url, api_key):
-        """
-        Retrieve a list of possible categories with category ids.
-
-        Using the default url/api?cat
-        http://yournewznaburl.com/api?t=caps&apikey=yourapikey
-        """
-        error = ''
-
-        if not name:
-            error += '\nNo Provider Name specified'
-        if not url:
-            error += '\nNo Provider Url specified'
-        if not api_key:
-            error += '\nNo Provider Api key specified'
-
-        if error != '':
-            return json.dumps({'success': False, 'error': error})
-
-        # Get list with Newznabproviders
-        # providerDict = dict(zip([x.get_id() for x in api.newznabProviderList], api.newznabProviderList))
-
-        # Get newznabprovider obj with provided name
-        temp_provider = NewznabProvider(name, url, api_key)
-
-        success, tv_categories, caps, error = temp_provider.get_capabilities()
-
-        return json.dumps({'success': success, 'tv_categories': tv_categories, 'caps': caps, 'error': error})
-
-    @staticmethod
     def deleteNewznabProvider(nnid):
         """Delete a Newznab Provider."""
         provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
@@ -128,27 +148,6 @@ class ConfigProviders(Config):
             app.PROVIDER_ORDER.remove(nnid)
 
         return '1'
-
-    @staticmethod
-    def canAddTorrentRssProvider(name, url, cookies, title_tag):
-        """See if a Torrent provider can be added."""
-        if not name:
-            return json.dumps({'error': 'Invalid name specified'})
-
-        provider_dict = dict(
-            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
-
-        temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
-
-        if temp_provider.get_id() in provider_dict:
-            return json.dumps({'error': 'Provider name already exists as {name}'.format(
-                              name=provider_dict[temp_provider.get_id()].name)})
-        else:
-            validate = temp_provider.validate_rss()
-            if validate['result']:
-                return json.dumps({'success': temp_provider.get_id()})
-            else:
-                return json.dumps({'error': validate['message']})
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, title_tag):

@@ -28,7 +28,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
      * @param {Array} selectedProvider
      * @return no return data. Function updateNewznabCaps() is run at callback
      */
-    $.fn.getCategories = function(selectedProvider) {
+    $.fn.getCategories = function(kind, selectedProvider) {
         var name = selectedProvider[0];
         var url = selectedProvider[1];
         var apiKey = selectedProvider[2];
@@ -48,8 +48,8 @@ $(document).ready(function() { // eslint-disable-line max-lines
             capabilities = $(this).updateCategories([], name);
             dfd.resolve(capabilities);
         } else {
-            const params = { url, name, api_key: apiKey }; // eslint-disable-line camelcase
-            const jqxhr = $.getJSON('config/providers/getNewznabCategories', params);
+            const params = { kind, url, name, api_key: apiKey }; // eslint-disable-line camelcase
+            const jqxhr = $.getJSON('config/providers/getZnabCategories', params);
             jqxhr.always(function(data) {
                 $('.updating_categories').empty();
                 if (data.success === true) {
@@ -179,7 +179,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
         // Get Categories Capabilities
         if (id && url && apiKey) {
-            const capabilities = $(this).getCategories(newznabProviders[id][1]);
+            const capabilities = $(this).getCategories('newznab', newznabProviders[id][1]);
             capabilities.done(function(data) {
                 if (data.categories) {
                     $('#newznab_cap').replaceOptions(data.categories);
@@ -205,7 +205,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
         // Get Categories Capabilities
         if (id && url && apiKey) {
-            const capabilities = $(this).getCategories(torznabProviders[id]);
+            const capabilities = $(this).getCategories('torznab', torznabProviders[id]);
             capabilities.done(function(data) {
                 if (data.categories) {
                     $('#torznab_cap').replaceOptions(data.categories);

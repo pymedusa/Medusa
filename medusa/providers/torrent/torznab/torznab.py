@@ -320,9 +320,7 @@ class TorznabProvider(TorrentProvider):
             error_msg = 'Provider requires auth and your key is not set'
             return False, categories, supported_params, error_msg
 
-        url_params = {'t': 'caps'}
-        if self.needs_auth and self.api_key:
-            url_params['apikey'] = self.api_key
+        url_params = {'t': 'caps', 'apikey': self.api_key}
 
         response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
