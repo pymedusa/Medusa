@@ -1,5 +1,5 @@
 # orm/interfaces.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -348,6 +348,9 @@ class PropComparator(operators.ColumnOperators):
     def _query_clause_element(self):
         return self.__clause_element__()
 
+    def _bulk_update_tuples(self, value):
+        return [(self.__clause_element__(), value)]
+
     def adapt_to_entity(self, adapt_to_entity):
         """Return a copy of this PropComparator which will use the given
         :class:`.AliasedInsp` to produce corresponding expressions.
@@ -401,6 +404,9 @@ class PropComparator(operators.ColumnOperators):
         :param \class_: a class or mapper indicating that criterion will be
             against this specific subclass.
 
+        .. seealso::
+
+            :ref:`inheritance_of_type`
 
         """
 
@@ -589,6 +595,28 @@ class MapperOption(object):
         """
 
         self.process_query(query)
+
+    def _generate_cache_key(self, path):
+        """Used by the baked loader to see if this option can be cached.
+
+        A given MapperOption that returns a cache key must return a key
+        that uniquely identifies the complete state of this option, which
+        will match any other MapperOption that itself retains the identical
+        state.  This includes path options, flags, etc.
+
+        If the MapperOption does not apply to the given path and would
+        not affect query results on such a path, it should return None.
+
+        if the MapperOption **does** apply to the give path, however cannot
+        produce a safe cache key, it should return False; this will cancel
+        caching of the result.   An unsafe cache key is one that includes
+        an ad-hoc user object, typically an AliasedClass object.  As these
+        are usually created per-query, they don't work as cache keys.
+
+
+        """
+
+        return None
 
 
 class LoaderStrategy(object):

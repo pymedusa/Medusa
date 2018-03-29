@@ -1,6 +1,9 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 
 from medusa import app, logger
 from medusa.helper.exceptions import FailedPostProcessingFailedException
@@ -41,28 +44,28 @@ class FailedProcessor(object):
             raise FailedPostProcessingFailedException()
 
         try:
-            parsed = NameParser().parse(releaseName)
+            parse_result = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException):
             self.log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
                      u'Consider adding scene exceptions or improve naming for: {release}'.format
                      (release=releaseName))
             raise FailedPostProcessingFailedException()
 
-        self.log(logger.DEBUG, u'Parsed info: {result}'.format(result=parsed))
+        self.log(logger.DEBUG, u'Parsed info: {result}'.format(result=parse_result))
 
         segment = []
-        if not parsed.episode_numbers:
+        if not parse_result.episode_numbers:
             # Get all episode objects from that season
             self.log(logger.DEBUG, 'Detected as season pack: {release}'.format(release=releaseName))
-            segment.extend(parsed.show.get_all_episodes(parsed.season_number))
+            segment.extend(parse_result.series.get_all_episodes(parse_result.season_number))
         else:
             self.log(logger.DEBUG, u'Detected as single/multi episode: {release}'.format(release=releaseName))
-            for episode in parsed.episode_numbers:
-                segment.append(parsed.show.get_episode(parsed.season_number, episode))
+            for episode in parse_result.episode_numbers:
+                segment.append(parse_result.series.get_episode(parse_result.season_number, episode))
 
         if segment:
             self.log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=releaseName))
-            cur_failed_queue_item = FailedQueueItem(parsed.show, segment)
+            cur_failed_queue_item = FailedQueueItem(parse_result.series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
         return True

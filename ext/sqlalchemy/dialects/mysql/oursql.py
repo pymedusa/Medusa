@@ -1,5 +1,5 @@
 # mysql/oursql.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -219,17 +219,6 @@ class MySQLDialect_oursql(MySQLDialect):
             opts['ssl'] = ssl
 
         return [[], opts]
-
-    def _get_server_version_info(self, connection):
-        dbapi_con = connection.connection
-        version = []
-        r = re.compile(r'[.\-]')
-        for n in r.split(dbapi_con.server_info):
-            try:
-                version.append(int(n))
-            except ValueError:
-                version.append(n)
-        return tuple(version)
 
     def _extract_error_code(self, exception):
         return exception.errno

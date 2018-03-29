@@ -6,10 +6,14 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    db,
+)
+from medusa.server.web.core import PageTemplate, WebRoot
+from medusa.version_checker import CheckVersion
+
 from tornroutes import route
-from ..core import PageTemplate, WebRoot
-from .... import app, db
-from ....version_checker import CheckVersion
 
 
 @route('/config(/?.*)')
@@ -51,19 +55,19 @@ class Config(WebRoot):
             try:
                 import getpass
                 app_user = getpass.getuser()
-            except StandardError:
+            except Exception:
                 app_user = 'Unknown'
 
         try:
             import locale
             app_locale = locale.getdefaultlocale()
-        except StandardError:
+        except Exception:
             app_locale = 'Unknown', 'Unknown'
 
         try:
             import ssl
             ssl_version = ssl.OPENSSL_VERSION
-        except StandardError:
+        except Exception:
             ssl_version = 'Unknown'
 
         app_version = ''

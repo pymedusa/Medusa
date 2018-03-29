@@ -1,5 +1,5 @@
 # sql/base.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -517,6 +517,10 @@ class ColumnCollection(util.OrderedProperties):
             # columns collection
 
             existing = self[key]
+
+            if existing is value:
+                return
+
             if not existing.shares_lineage(value):
                 util.warn('Column %r on table %r being replaced by '
                           '%r, which has the same key.  Consider '

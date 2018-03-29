@@ -1,0 +1,144 @@
+{
+  "manifest_version": 1,
+  "version": "0.1.0",
+  "name": "dark",
+  "author": "p0psicles",
+  "scripts": {
+    "gulp": "gulp",
+    "lint": "gulp lint",
+    "build": "cross-env NODE_ENV=production gulp build",
+    "install": "yarn run lint"
+  },
+  "config": {
+    "cssThemes": {
+      "light": {
+        "name": "light",
+        "css": "light.css",
+        "dest": "../../themes/light"
+      },
+      "dark": {
+        "name": "dark",
+        "css": "dark.css",
+        "dest": "../../themes/dark"
+      }
+    }
+  },
+  "devDependencies": {
+    "autoprefixer": "^7.1.6",
+    "ava": "^0.23.0",
+    "axios": "^0.17.1",
+    "babel-core": "^6.26.0",
+    "babelify": "^8.0.0",
+    "browserify": "^14.5.0",
+    "concurrently": "^3.5.0",
+    "cssnano": "^3.10.0",
+    "eslint": "^4.16.0",
+    "eslint-config-xo": "^0.19.0",
+    "event-stream": "^3.3.4",
+    "glob": "^7.1.2",
+    "gulp": "^3.9.1",
+    "gulp-changed": "^3.2.0",
+    "gulp-changed-in-place": "^2.3.0",
+    "gulp-if": "^2.0.2",
+    "gulp-imagemin": "^3.4.0",
+    "gulp-livereload": "^3.8.1",
+    "gulp-postcss": "^7.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-rev": "^8.1.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-swagger-js-codegen": "^1.0.0",
+    "gulp-uglify-es": "^0.1.4",
+    "gulp-util": "^3.0.8",
+    "gulp-xo": "^0.16.1",
+    "imagemin-pngquant": "^5.0.1",
+    "jquery": "^3.2.1",
+    "nyc": "^11.3.0",
+    "postcss-reporter": "^5.0.0",
+    "run-sequence": "^2.2.0",
+    "snyk": "^1.9.1",
+    "url-parse": "^1.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "vue": "^2.5.5",
+    "xo": "^0.18.2",
+    "yargs": "^11.0.0"
+  },
+  "xo": {
+    "space": 4,
+    "rules": {
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ],
+      "space-before-function-paren": [
+        "error",
+        "never"
+      ]
+    },
+    "envs": [
+      "browser",
+      "node"
+    ],
+    "globals": [
+      "PNotify",
+      "LazyLoad",
+      "_",
+      "log",
+      "s",
+      "$",
+      "MEDUSA",
+      "api",
+      "jQuery",
+      "axios",
+      "apiRoot",
+      "apiKey"
+    ],
+    "ignores": [
+      "static/js/lib/**",
+      "static/js/*.min.js",
+      "static/js/vender.js",
+      "/**/*.spec.js",
+      "build/**"
+    ],
+    "esnext": true
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "rules": {
+      "indentation": [
+        4,
+        {
+          "ignore": [
+            "inside-parens"
+          ],
+          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
+          "severity": "error"
+        }
+      ]
+    },
+    "ignoreFiles": [
+      "static/css/lib/**",
+      "static/css/*.min.css",
+      "gulpfile.js"
+    ]
+  },
+  "dependencies": {
+    "stylelint": "^7.9.0"
+  },
+  "ava": {
+    "files": [
+      "vue/test/**/*.js"
+    ],
+    "source": [
+      "vue/src/**/*.{js,jsx}",
+      "!dist/**/*"
+    ],
+    "concurrency": 5,
+    "failFast": true,
+    "failWithoutAssertions": false,
+    "tap": true,
+    "powerAssert": false,
+    "babel": "inherit"
+  }
+}

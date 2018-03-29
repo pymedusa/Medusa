@@ -1,5 +1,5 @@
 # mssql/base.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -250,6 +250,7 @@ To set using per-connection execution options::
 
 Valid values for ``isolation_level`` include:
 
+* ``AUTOCOMMIT`` - pyodbc / pymssql-specific
 * ``READ COMMITTED``
 * ``READ UNCOMMITTED``
 * ``REPEATABLE READ``
@@ -259,6 +260,7 @@ Valid values for ``isolation_level`` include:
 .. versionadded:: 1.1 support for isolation level setting on Microsoft
    SQL Server.
 
+.. versionadded:: 1.2 added AUTOCOMMIT isolation level setting
 
 Nullability
 -----------
@@ -332,6 +334,65 @@ behavior of this flag is as follows:
   fixed and always output exactly that type.
 
 .. versionadded:: 1.0.0
+
+.. _multipart_schema_names:
+
+Multipart Schema Names
+----------------------
+
+SQL Server schemas sometimes require multiple parts to their "schema"
+qualifier, that is, including the database name and owner name as separate
+tokens, such as ``mydatabase.dbo.some_table``. These multipart names can be set
+at once using the :paramref:`.Table.schema` argument of :class:`.Table`::
+
+    Table(
+        "some_table", metadata,
+        Column("q", String(50)),
+        schema="mydatabase.dbo"
+    )
+
+When performing operations such as table or component reflection, a schema
+argument that contains a dot will be split into separate
+"database" and "owner"  components in order to correctly query the SQL
+Server information schema tables, as these two values are stored separately.
+Additionally, when rendering the schema name for DDL or SQL, the two
+components will be quoted separately for case sensitive names and other
+special characters.   Given an argument as below::
+
+    Table(
+        "some_table", metadata,
+        Column("q", String(50)),
+        schema="MyDataBase.dbo"
+    )
+
+The above schema would be rendered as ``[MyDataBase].dbo``, and also in
+reflection, would be reflected using "dbo" as the owner and "MyDataBase"
+as the database name.
+
+To control how the schema name is broken into database / owner,
+specify brackets (which in SQL Server are quoting characters) in the name.
+Below, the "owner" will be considered as ``MyDataBase.dbo`` and the
+"database" will be None::
+
+    Table(
+        "some_table", metadata,
+        Column("q", String(50)),
+        schema="[MyDataBase.dbo]"
+    )
+
+To individually specify both database and owner name with special characters
+or embedded dots, use two sets of brackets::
+
+    Table(
+        "some_table", metadata,
+        Column("q", String(50)),
+        schema="[MyDataBase.Period].[MyOwner.Dot]"
+    )
+
+
+.. versionchanged:: 1.2 the SQL Server dialect now treats brackets as
+   identifier delimeters splitting the schema into separate database
+   and owner tokens, to allow dots within either name itself.
 
 .. _legacy_schema_rendering:
 
@@ -499,17 +560,20 @@ This option can also be specified engine-wide using the
 Rowcount Support / ORM Versioning
 ---------------------------------
 
-The SQL Server drivers have very limited ability to return the number
-of rows updated from an UPDATE or DELETE statement.  In particular, the
-pymssql driver has no support, whereas the pyodbc driver can only return
-this value under certain conditions.
+The SQL Server drivers may have limited ability to return the number
+of rows updated from an UPDATE or DELETE statement.
 
-In particular, updated rowcount is not available when OUTPUT INSERTED
-is used.  This impacts the SQLAlchemy ORM's versioning feature when
-server-side versioning schemes are used.  When
-using pyodbc, the "implicit_returning" flag needs to be set to false
-for any ORM mapped class that uses a version_id column in conjunction with
-a server-side version generator::
+As of this writing, the PyODBC driver is not able to return a rowcount when
+OUTPUT INSERTED is used.  This impacts the SQLAlchemy ORM's versioning feature
+in many cases where server-side value generators are in use in that while the
+versioning operations can succeed, the ORM cannot always check that an UPDATE
+or DELETE statement matched the number of rows expected, which is how it
+verifies that the version identifier matched.   When this condition occurs, a
+warning will be emitted but the operation will proceed.
+
+The use of OUTPUT INSERTED can be disabled by setting the
+:paramref:`.Table.implicit_returning` flag to ``False`` on a particular
+:class:`.Table`, which in declarative looks like::
 
     class MyTable(Base):
         __tablename__ = 'mytable'
@@ -524,14 +588,10 @@ a server-side version generator::
             'implicit_returning': False
         }
 
-Without the implicit_returning flag above, the UPDATE statement will
-use ``OUTPUT inserted.timestamp`` and the rowcount will be returned as
--1, causing the versioning logic to fail.
-
 Enabling Snapshot Isolation
 ---------------------------
 
-Not necessarily specific to SQLAlchemy, SQL Server has a default transaction
+SQL Server has a default transaction
 isolation mode that locks entire tables, and causes even mildly concurrent
 applications to have long held locks and frequent deadlocks.
 Enabling snapshot isolation for the database as a whole is recommended
@@ -545,25 +605,20 @@ following ALTER DATABASE commands executed at the SQL prompt::
 Background on SQL Server snapshot isolation is available at
 http://msdn.microsoft.com/en-us/library/ms175095.aspx.
 
-Known Issues
-------------
-
-* No support for more than one ``IDENTITY`` column per table
-* reflection of indexes does not work with versions older than
-  SQL Server 2005
 
 """
+import codecs
 import datetime
 import operator
 import re
 
 from ... import sql, schema as sa_schema, exc, util
-from ...sql import compiler, expression, util as sql_util
+from ...sql import compiler, expression, util as sql_util, quoted_name
 from ... import engine
 from ...engine import reflection, default
 from ... import types as sqltypes
 from ...types import INTEGER, BIGINT, SMALLINT, DECIMAL, NUMERIC, \
-    FLOAT, TIMESTAMP, DATETIME, DATE, BINARY,\
+    FLOAT, DATETIME, DATE, BINARY, \
     TEXT, VARCHAR, NVARCHAR, CHAR, NCHAR
 
 
@@ -739,6 +794,75 @@ class _StringType(object):
         super(_StringType, self).__init__(collation=collation)
 
 
+class TIMESTAMP(sqltypes._Binary):
+    """Implement the SQL Server TIMESTAMP type.
+
+    Note this is **completely different** than the SQL Standard
+    TIMESTAMP type, which is not supported by SQL Server.  It
+    is a read-only datatype that does not support INSERT of values.
+
+    .. versionadded:: 1.2
+
+    .. seealso::
+
+        :class:`.mssql.ROWVERSION`
+
+    """
+
+    __visit_name__ = 'TIMESTAMP'
+
+    # expected by _Binary to be present
+    length = None
+
+    def __init__(self, convert_int=False):
+        """Construct a TIMESTAMP or ROWVERSION type.
+
+        :param convert_int: if True, binary integer values will
+         be converted to integers on read.
+
+        .. versionadded:: 1.2
+
+        """
+        self.convert_int = convert_int
+
+    def result_processor(self, dialect, coltype):
+        super_ = super(TIMESTAMP, self).result_processor(dialect, coltype)
+        if self.convert_int:
+            def process(value):
+                value = super_(value)
+                if value is not None:
+                    # https://stackoverflow.com/a/30403242/34549
+                    value = int(codecs.encode(value, 'hex'), 16)
+                return value
+            return process
+        else:
+            return super_
+
+
+class ROWVERSION(TIMESTAMP):
+    """Implement the SQL Server ROWVERSION type.
+
+    The ROWVERSION datatype is a SQL Server synonym for the TIMESTAMP
+    datatype, however current SQL Server documentation suggests using
+    ROWVERSION for new datatypes going forward.
+
+    The ROWVERSION datatype does **not** reflect (e.g. introspect) from the
+    database as itself; the returned datatype will be
+    :class:`.mssql.TIMESTAMP`.
+
+    This is a read-only datatype that does not support INSERT of values.
+
+    .. versionadded:: 1.2
+
+    .. seealso::
+
+        :class:`.mssql.TIMESTAMP`
+
+    """
+
+    __visit_name__ = 'ROWVERSION'
+
+
 class NTEXT(sqltypes.UnicodeText):
 
     """MSSQL NTEXT type, for variable-length unicode text up to 2^30
@@ -750,10 +874,9 @@ class NTEXT(sqltypes.UnicodeText):
 class VARBINARY(sqltypes.VARBINARY, sqltypes.LargeBinary):
     """The MSSQL VARBINARY type.
 
-    This type extends both :class:`.types.VARBINARY` and
-    :class:`.types.LargeBinary`.   In "deprecate_large_types" mode,
-    the :class:`.types.LargeBinary` type will produce ``VARBINARY(max)``
-    on SQL Server.
+    This type is present to support "deprecate_large_types" mode where
+    either ``VARBINARY(max)`` or IMAGE is rendered.   Otherwise, this type
+    object is redundant vs. :class:`.types.VARBINARY`.
 
     .. versionadded:: 1.0.0
 
@@ -905,6 +1028,12 @@ class MSTypeCompiler(compiler.GenericTypeCompiler):
             return "TIME(%s)" % precision
         else:
             return "TIME"
+
+    def visit_TIMESTAMP(self, type_, **kw):
+        return "TIMESTAMP"
+
+    def visit_ROWVERSION(self, type_, **kw):
+        return "ROWVERSION"
 
     def visit_DATETIME2(self, type_, **kw):
         precision = getattr(type_, 'precision', None)
@@ -1381,6 +1510,28 @@ class MSSQLCompiler(compiler.SQLCompiler):
                                  fromhints=from_hints, **kw)
             for t in [from_table] + extra_froms)
 
+    def delete_table_clause(self, delete_stmt, from_table,
+                            extra_froms):
+        """If we have extra froms make sure we render any alias as hint."""
+        ashint = False
+        if extra_froms:
+            ashint = True
+        return from_table._compiler_dispatch(
+            self, asfrom=True, iscrud=True, ashint=ashint
+        )
+
+    def delete_extra_from_clause(self, delete_stmt, from_table,
+                                 extra_froms, from_hints, **kw):
+        """Render the DELETE .. FROM clause specific to MSSQL.
+
+        Yes, it has the FROM keyword twice.
+
+        """
+        return "FROM " + ', '.join(
+            t._compiler_dispatch(self, asfrom=True,
+                                 fromhints=from_hints, **kw)
+            for t in [from_table] + extra_froms)
+
 
 class MSSQLStrictCompiler(MSSQLCompiler):
 
@@ -1562,15 +1713,24 @@ class MSIdentifierPreparer(compiler.IdentifierPreparer):
     reserved_words = RESERVED_WORDS
 
     def __init__(self, dialect):
-        super(MSIdentifierPreparer, self).__init__(dialect, initial_quote='[',
-                                                   final_quote=']')
+        super(MSIdentifierPreparer, self).__init__(
+            dialect, initial_quote='[',
+            final_quote=']', quote_case_sensitive_collations=False)
 
     def _escape_identifier(self, value):
         return value
 
     def quote_schema(self, schema, force=None):
         """Prepare a quoted table and schema name."""
-        result = '.'.join([self.quote(x, force) for x in schema.split('.')])
+
+        dbname, owner = _schema_elements(schema)
+        if dbname:
+            result = "%s.%s" % (
+                self.quote(dbname, force), self.quote(owner, force))
+        elif owner:
+            result = self.quote(owner, force)
+        else:
+            result = ""
         return result
 
 
@@ -1605,9 +1765,38 @@ def _owner_plus_db(dialect, schema):
     if not schema:
         return None, dialect.default_schema_name
     elif "." in schema:
-        return schema.split(".", 1)
+        return _schema_elements(schema)
     else:
         return None, schema
+
+
+def _schema_elements(schema):
+    if isinstance(schema, quoted_name) and schema.quote:
+        return None, schema
+
+    push = []
+    symbol = ""
+    bracket = False
+    for token in re.split(r"(\[|\]|\.)", schema):
+        if not token:
+            continue
+        if token == '[':
+            bracket = True
+        elif token == ']':
+            bracket = False
+        elif not bracket and token == ".":
+            push.append(symbol)
+            symbol = ""
+        else:
+            symbol += token
+    if symbol:
+        push.append(symbol)
+    if len(push) > 1:
+        return push[0], "".join(push[1:])
+    elif len(push):
+        return None, push[0]
+    else:
+        return None, None
 
 
 class MSDialect(default.DefaultDialect):
@@ -1631,7 +1820,7 @@ class MSDialect(default.DefaultDialect):
 
     ischema_names = ischema_names
 
-    supports_native_boolean = False
+    supports_native_boolean = True
     supports_unicode_binds = True
     postfetch_lastrowid = True
 
@@ -1840,7 +2029,7 @@ class MSDialect(default.DefaultDialect):
                      "join sys.schemas as sch on sch.schema_id=tab.schema_id "
                      "where tab.name = :tabname "
                      "and sch.name=:schname "
-                     "and ind.is_primary_key=0",
+                     "and ind.is_primary_key=0 and ind.type != 0",
                      bindparams=[
                          sql.bindparam('tabname', tablename,
                                        sqltypes.String(convert_unicode=True)),
@@ -2052,6 +2241,7 @@ class MSDialect(default.DefaultDialect):
                         RR.c.delete_rule],
                        sql.and_(C.c.table_name == tablename,
                                 C.c.table_schema == owner,
+                                R.c.table_schema == C.c.table_schema,
                                 C.c.constraint_name == RR.c.constraint_name,
                                 R.c.constraint_name ==
                                 RR.c.unique_constraint_name,

@@ -1,5 +1,5 @@
 # mysql/mysqlconnector.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -160,11 +160,6 @@ class MySQLDialect_mysqlconnector(MySQLDialect):
     @util.memoized_property
     def _mysqlconnector_double_percents(self):
         return not util.py3k and self._mysqlconnector_version_info < (2, 0)
-
-    def _get_server_version_info(self, connection):
-        dbapi_con = connection.connection
-        version = dbapi_con.get_server_version()
-        return tuple(version)
 
     def _detect_charset(self, connection):
         return connection.connection.charset

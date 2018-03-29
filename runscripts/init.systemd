@@ -44,6 +44,7 @@
 
 [Unit]
 Description=Medusa Daemon
+After=network.target
 
 [Service]
 User=medusa

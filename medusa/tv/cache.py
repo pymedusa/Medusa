@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 import itertools
 import logging
 import traceback
+from builtins import object
+from builtins import str
 from time import time
 
 from medusa import (
@@ -47,11 +49,13 @@ class CacheDBConnection(db.DBConnection):
                     b'   (name TEXT,'
                     b'    season NUMERIC,'
                     b'    episodes TEXT,'
+                    b'    indexer NUMERIC,'
                     b'    indexerid NUMERIC,'
                     b'    url TEXT,'
                     b'    time NUMERIC,'
                     b'    quality NUMERIC,'
-                    b'    release_group TEXT)'.format(name=provider_id))
+                    b'    release_group TEXT,'
+                    b'    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
                     b'SELECT url, COUNT(url) AS count '
@@ -86,6 +90,8 @@ class CacheDBConnection(db.DBConnection):
                 ('size', 'NUMERIC', -1),
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
+                ('date_added', 'NUMERIC', 0),
+                ('indexer', 'NUMERIC', None),
             )
             for column, data_type, default in table:
                 # add columns to table if missing
@@ -194,6 +200,7 @@ class Cache(object):
 
         try:
             data = self._get_rss_data()
+            data['entries'] = self.provider.remove_duplicate_mappings(data['entries'])
             if self._check_auth(data):
                 # clear cache
                 self._clear_cache()
@@ -405,19 +412,34 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
-            return [
-                b'INSERT OR REPLACE INTO [{name}] '
-                b'   (name, season, episodes, indexerid, url, '
-                b'    time, quality, release_group, version, '
-                b'    seeders, leechers, size, pubdate, proper_tags) '
-                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
-                    name=self.provider_id
-                ),
-                [name, season, episode_text, parse_result.show.indexerid, url,
-                 cur_timestamp, quality, release_group, version,
-                 seeders, leechers, size, pubdate, proper_tags]
-            ]
+            if not self.item_in_cache(url):
+                log.debug('Added RSS item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
+                return [
+                    b'INSERT INTO [{name}] '
+                    b'   (name, season, episodes, indexerid, url, time, quality, '
+                    b'    release_group, version, seeders, leechers, size, pubdate, '
+                    b'    proper_tags, date_added, indexer ) '
+                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.series.series_id, url,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
+                ]
+            else:
+                log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
+                return [
+                    b'UPDATE [{name}] '
+                    b'SET name=?, season=?, episodes=?, indexer=?, indexerid=?, '
+                    b'    time=?, quality=?, release_group=?, version=?, '
+                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
+                    b'WHERE url=?'.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags, url]
+                ]
 
     def search_cache(self, episode, forced_search=False,
                      down_cur_quality=False):
@@ -425,6 +447,15 @@ class Cache(object):
         needed_eps = self.find_needed_episodes(episode, forced_search,
                                                down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
+
+    def item_in_cache(self, url):
+        """Check if the url is already available for the specific provider."""
+        cache_db_con = self._get_db()
+        return cache_db_con.select(
+            b'SELECT COUNT(url) '
+            b'FROM [{provider}] '
+            b'WHERE url=?'.format(provider=self.provider_id), [url]
+        )[0][0]
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):
@@ -439,25 +470,27 @@ class Cache(object):
         elif not isinstance(episode, list):
             sql_results = cache_db_con.select(
                 b'SELECT * FROM [{name}] '
-                b'WHERE indexerid = ? AND'
-                b'     season = ? AND'
-                b'     episodes LIKE ?'.format(name=self.provider_id),
-                [episode.series.indexerid, episode.season,
+                b'WHERE indexer = ? AND'
+                b'      indexerid = ? AND'
+                b'      season = ? AND'
+                b'      episodes LIKE ?'.format(name=self.provider_id),
+                [episode.series.indexer, episode.series.series_id, episode.season,
                  b'%|{0}|%'.format(episode.episode)]
             )
         else:
             for ep_obj in episode:
                 results.append([
                     b'SELECT * FROM [{name}] '
-                    b'WHERE indexerid = ? AND'
-                    b'    season = ? AND'
-                    b'    episodes LIKE ? AND '
-                    b'    quality IN ({qualities})'.format(
+                    b'WHERE indexer = ? AND '
+                    b'      indexerid = ? AND'
+                    b'      season = ? AND'
+                    b'      episodes LIKE ? AND '
+                    b'      quality IN ({qualities})'.format(
                         name=self.provider_id,
                         qualities=','.join((str(x)
                                             for x in ep_obj.wanted_quality))
                     ),
-                    [ep_obj.series.indexerid, ep_obj.season,
+                    [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season,
                      b'%|{0}|%'.format(ep_obj.episode)]]
                 )
 
@@ -469,7 +502,7 @@ class Cache(object):
                 sql_results = []
                 log.debug(
                     '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
-                        'id': episode[0].series.indexerid,
+                        'id': episode[0].series.series_id,
                         'provider': self.provider.name,
                         'show_name': episode[0].series.name,
                         'ep': episode_num(episode[0].season, episode[0].episode),
@@ -478,6 +511,11 @@ class Cache(object):
 
         # for each cache entry
         for cur_result in sql_results:
+            if cur_result[b'indexer'] is None:
+                log.debug('Ignoring result: {0}, missing indexer. This is probably a result added'
+                          ' prior to medusa version 0.2.0', cur_result[b'name'])
+                continue
+
             search_result = self.provider.get_result()
 
             # ignored/required words, and non-tv junk
@@ -485,13 +523,13 @@ class Cache(object):
                 continue
 
             # get the show, or ignore if it's not one of our shows
-            show_obj = Show.find(app.showList, int(cur_result[b'indexerid']))
-            if not show_obj:
+            series_obj = Show.find_by_id(app.showList, int(cur_result[b'indexer']), int(cur_result[b'indexerid']))
+            if not series_obj:
                 continue
 
             # skip if provider is anime only and show is not anime
-            if self.provider.anime_only and not show_obj.is_anime:
-                log.debug('{0} is not an anime, skipping', show_obj.name)
+            if self.provider.anime_only and not series_obj.is_anime:
+                log.debug('{0} is not an anime, skipping', series_obj.name)
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
@@ -510,12 +548,12 @@ class Cache(object):
             search_result.version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not show_obj.want_episode(search_result.season, cur_ep, search_result.quality,
-                                         forced_search, down_cur_quality):
+            if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
+                                           forced_search, down_cur_quality):
                 log.debug('Ignoring {0}', cur_result[b'name'])
                 continue
 
-            search_result.episodes = [show_obj.get_episode(search_result.season, cur_ep)]
+            search_result.episodes = [series_obj.get_episode(search_result.season, cur_ep)]
 
             search_result.actual_episodes = [search_result.episodes[0].episode]
             search_result.actual_season = search_result.season
@@ -526,7 +564,7 @@ class Cache(object):
 
             log.debug(
                 '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
-                    'id': search_result.episodes[0].series.indexerid,
+                    'id': search_result.episodes[0].series.series_id,
                     'provider': self.provider.name,
                     'show_name': search_result.episodes[0].series.name,
                     'ep': episode_num(search_result.episodes[0].season, search_result.episodes[0].episode),
@@ -534,7 +572,7 @@ class Cache(object):
             )
 
             # Map the remaining attributes
-            search_result.show = show_obj
+            search_result.series = series_obj
             search_result.seeders = cur_result[b'seeders']
             search_result.leechers = cur_result[b'leechers']
             search_result.size = cur_result[b'size']

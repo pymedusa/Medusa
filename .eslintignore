@@ -1,0 +1,5 @@
+static/js/lib/**
+static/js/*.min.js
+static/js/vender.js
+static/js/api.js
+vue/**/*.js

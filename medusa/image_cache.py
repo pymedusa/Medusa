@@ -15,309 +15,387 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import division
 from __future__ import unicode_literals
 
+import logging
 import os.path
+import warnings
 
-from . import app, logger
-from .helper.exceptions import ShowDirectoryNotFoundException
-from .metadata.generic import GenericMetadata
+from medusa import app
+from medusa.helper.common import try_int
+from medusa.helper.exceptions import ShowDirectoryNotFoundException
+from medusa.helpers import copy_file, get_image_size
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.metadata.generic import GenericMetadata
+
+from six import itervalues, viewitems
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+BANNER = 1
+POSTER = 2
+BANNER_THUMB = 3
+POSTER_THUMB = 4
+FANART = 5
+
+IMAGE_TYPES = {
+    BANNER: 'banner',
+    POSTER: 'poster',
+    BANNER_THUMB: 'banner_thumb',
+    POSTER_THUMB: 'poster_thumb',
+    FANART: 'fanart',
+}
+
+# TMDB aspect ratios and image sizes:
+#   https://www.themoviedb.org/documentation/editing/images?language=en
+
+# TVDB aspect ratios and image sizes:
+#   https://www.thetvdb.com/wiki/index.php/Posters
+#   https://www.thetvdb.com/wiki/index.php/Series_Banners
+#   https://www.thetvdb.com/wiki/index.php/Fan_Art
 
 
-class ImageCache(object):
+# min, median, and max aspect ratios by type
+ASPECT_RATIOS = {
+    # most banner aspect ratios are ~5.4 (eg. 758/140)
+    BANNER: [5, 5.4, 6],
+    # most poster aspect ratios are ~0.68 (eg. 680/1000)
+    POSTER: [0.55, 0.68, 0.8],
+    # most fanart aspect ratios are ~1.777 (eg. 1280/720 and 1920/1080)
+    FANART: [1.2, 1.777, 2.5],
+}
 
-    BANNER = 1
-    POSTER = 2
-    BANNER_THUMB = 3
-    POSTER_THUMB = 4
-    FANART = 5
 
-    def __init__(self):
-        pass
+def _cache_dir(series_obj):
+    """Build path to the image cache directory."""
+    return os.path.abspath(os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name))
 
-    def __del__(self):
-        pass
 
-    @classmethod
-    def _cache_dir(cls):
-        """Build up the full path to the image cache directory."""
-        return os.path.abspath(os.path.join(app.CACHE_DIR, 'images'))
+def _thumbnails_dir(series_obj):
+    """Build path to the thumbnail image cache directory."""
+    return os.path.abspath(os.path.join(_cache_dir(series_obj), 'thumbnails'))
 
-    def _thumbnails_dir(self):
-        """Build up the full path to the thumbnails image cache directory."""
-        return os.path.abspath(os.path.join(self._cache_dir(), 'thumbnails'))
 
-    @classmethod
-    def poster_path(cls, indexer_id):
-        """
-        Build up the path to a poster cache for a given Indexer ID.
+def get_path(img_type, series_obj):
+    """
+    Build path to a series cached artwork.
 
-        :param indexer_id: ID of the show to use in the file name
-        :return: a full path to the cached poster file for the given Indexer ID
-        """
-        poster_file_name = '{0}.poster.jpg'.format(indexer_id)
-        return os.path.join(cls._cache_dir(), poster_file_name)
+    :param img_type: integer constant representing an image type
+    :param series_obj: the series object
 
-    @classmethod
-    def banner_path(cls, indexer_id):
-        """
-        Build up the path to a banner cache for a given Indexer ID.
+    :return: full path and filename for artwork
+    """
+    image = IMAGE_TYPES[img_type]
+    thumbnail = image.endswith('_thumb')
+    if thumbnail:
+        location = _thumbnails_dir(series_obj)
+        image = image[:-len('_thumb')]  # strip `_thumb` from the end
+    else:
+        location = _cache_dir(series_obj)
+    filename = '{series_obj.series_id}.{image}.jpg'.format(
+        series_obj=series_obj,
+        image=image,
+    )
+    return os.path.join(location, filename)
 
-        :param indexer_id: ID of the show to use in the file name
-        :return: a full path to the cached banner file for the given Indexer ID
-        """
-        banner_file_name = '{0}.banner.jpg'.format(indexer_id)
-        return os.path.join(cls._cache_dir(), banner_file_name)
 
-    def fanart_path(self, indexer_id):
-        """
-        Build up the path to a fanart cache for a given Indexer ID.
+def get_artwork(img_type, series_obj):
+    """
+    Get path to cached artwork for a series.
 
-        :param indexer_id: ID of the show to use in the file name
-        :return: a full path to the cached fanart file for the given Indexer ID
-        """
-        fanart_file_name = '{0}.fanart.jpg'.format(indexer_id)
-        return os.path.join(self._cache_dir(), fanart_file_name)
+    :param img_type: integer constant representing an image type
+    :param series_obj: the series object
 
-    def poster_thumb_path(self, indexer_id):
-        """
-        Build up the path to a poster thumb cache for a given Indexer ID.
+    :return: full path and filename for artwork if it exists
+    """
+    location = get_path(img_type, series_obj)
+    if os.path.isfile(location):
+        return location
 
-        :param indexer_id: ID of the show to use in the file name
-        :return: a full path to the cached poster thumb file for the given Indexer ID
-        """
-        posterthumb_file_name = '{0}.poster.jpg'.format(indexer_id)
-        return os.path.join(self._thumbnails_dir(), posterthumb_file_name)
 
-    def banner_thumb_path(self, indexer_id):
-        """
-        Build up the path to a banner thumb cache for a given Indexer ID.
+def which_type(path):
+    """
+    Analyze image and attempt to determine its type.
 
-        :param indexer_id: ID of the show to use in the file name
-        :return: a full path to the cached banner thumb file for the given Indexer ID
-        """
-        bannerthumb_file_name = '{0}.banner.jpg'.format(indexer_id)
-        return os.path.join(self._thumbnails_dir(), bannerthumb_file_name)
+    :param path: full path to the image
+    :return: artwork type if detected, or None
+    """
+    if not os.path.isfile(path):
+        log.warning('Could not check type, file does not exist: {0}', path)
+        return
 
-    def has_poster(self, indexer_id):
-        """Return true if a cached poster exists for the given Indexer ID."""
-        poster_path = self.poster_path(indexer_id)
-        bool_result = os.path.isfile(poster_path)
-        logger.log('Checking if file {0} exists: {1}'.format(poster_path, bool_result), logger.DEBUG)
-        return bool_result
-
-    def has_banner(self, indexer_id):
-        """Return true if a cached banner exists for the given Indexer ID."""
-        banner_path = self.banner_path(indexer_id)
-        bool_result = os.path.isfile(banner_path)
-        logger.log('Checking if file {0} exists: {1}'.format(banner_path, bool_result), logger.DEBUG)
-        return bool_result
-
-    def has_fanart(self, indexer_id):
-        """Return true if a cached fanart exists for the given Indexer ID."""
-        fanart_path = self.fanart_path(indexer_id)
-        bool_result = os.path.isfile(fanart_path)
-        logger.log('Checking if file {0} exists: {1}'.format(fanart_path, bool_result), logger.DEBUG)
-        return bool_result
-
-    def has_poster_thumbnail(self, indexer_id):
-        """Return true if a cached poster thumbnail exists for the given Indexer ID."""
-        poster_thumb_path = self.poster_thumb_path(indexer_id)
-        bool_result = os.path.isfile(poster_thumb_path)
-        logger.log('Checking if file {0} exists: {1}'.format(poster_thumb_path, bool_result), logger.DEBUG)
-        return bool_result
-
-    def has_banner_thumbnail(self, indexer_id):
-        """Return true if a cached banner exists for the given Indexer ID."""
-        banner_thumb_path = self.banner_thumb_path(indexer_id)
-        bool_result = os.path.isfile(banner_thumb_path)
-        logger.log('Checking if file {0} exists: {1}'.format(banner_thumb_path, bool_result), logger.DEBUG)
-        return bool_result
-
-    def which_type(self, image_path):
-        """
-        Analyze the image provided and attempt to determine whether it is a poster or a banner.
-
-        :param image_path: full path to the image
-        :return: BANNER, POSTER if it concluded one or the other, or None if the image was neither (or didn't exist)
-        """
-        from .helpers import get_image_size
-        from .helper.common import try_int
-
-        if not os.path.isfile(image_path):
-            logger.log("Couldn't check the type of {image_path} because it doesn't exist".format
-                       (image_path=image_path), logger.WARNING)
+    if not try_int(os.path.getsize(path)):
+        log.warning('Deleting 0 byte image: {0}', path)
+        try:
+            os.remove(path)
+        except OSError as error:
+            log.warning(
+                'Failed to delete file: {path}. Please delete it manually.'
+                ' Error: {msg}', {'path': path, 'msg': error})
             return
 
-        if try_int(os.path.getsize(image_path)) == 0:
-            logger.log('Image has 0 bytes size. Deleting it: {image_path}'.format
-                       (image_path=image_path), logger.WARNING)
-            try:
-                os.remove(image_path)
-            except OSError as e:
-                logger.log("Couldn't delete file: {image_path}. Please manually delete it. Error: {error_msg}".format
-                           (image_path=image_path, error_msg=e), logger.WARNING)
-            return
+    image_dimension = get_image_size(path)
+    if not image_dimension:
+        log.debug('Skipping image. Unable to get metadata from {0}', path)
+        return
 
-        image_dimension = get_image_size(image_path)
-        if not image_dimension:
-            logger.log('Unable to get metadata from {image_path}, not using your existing image'.format
-                       (image_path=image_path), logger.DEBUG)
-            return
+    height, width = image_dimension
+    aspect_ratio = width / height
+    log.debug('Image aspect ratio: {0}', aspect_ratio)
 
-        height, width = image_dimension
-        img_ratio = float(width) / float(height)
+    for img_type in ASPECT_RATIOS:
+        min_ratio, median_ratio, max_ratio = ASPECT_RATIOS[img_type]
+        if min_ratio < aspect_ratio < max_ratio:
+            log.debug('{image} detected based on aspect ratio.',
+                      {'image': IMAGE_TYPES[img_type]})
+            return img_type
+    else:
+        log.warning('Aspect ratio ({0}) does not match any known types.',
+                    aspect_ratio)
+        return
 
-        # most posters are around 0.68 width/height ratio (eg. 680/1000)
-        if 0.55 < img_ratio < 0.8:
-            return self.POSTER
 
-        # most banners are around 5.4 width/height ratio (eg. 758/140)
-        elif 5 < img_ratio < 6:
-            return self.BANNER
+def replace_images(series_obj):
+    """
+    Replace cached images for a series based on image type.
 
-        # most fanarts are around 1.77777 width/height ratio (eg. 1280/720 and 1920/1080)
-        elif 1.7 < img_ratio < 1.8:
-            return self.FANART
+    :param series_obj: Series object
+    """
+    remove_images(series_obj)
+    fill_cache(series_obj)
+
+
+def remove_images(series_obj, image_types=None):
+    """
+    Remove cached images for a series based on image type.
+
+    :param series_obj: Series object
+    :param image_types: iterable of integers for image types to remove
+        if no image types passed, remove all images
+    """
+    image_types = image_types or IMAGE_TYPES
+    series_name = series_obj.name
+
+    for image_type in image_types:
+        cur_path = get_path(image_type, series_obj)
+
+        # see if image exists
+        if not os.path.isfile(cur_path):
+            continue
+
+        # try to remove image
+        try:
+            os.remove(cur_path)
+        except OSError as error:
+            log.error(
+                'Could not remove {img} for series {name} from cache'
+                ' [{loc}]: {msg}', {
+                    'img': IMAGE_TYPES[image_type],
+                    'name': series_name,
+                    'loc': cur_path,
+                    'msg': error,
+                }
+            )
         else:
-            logger.log('Image has size ratio of {img_ratio}, unknown type'.format(img_ratio=img_ratio), logger.WARNING)
-            return
+            log.info('Removed {img} for series {name}',
+                     {'img': IMAGE_TYPES[image_type], 'name': series_name})
 
-    def _cache_image_from_file(self, image_path, img_type, indexer_id):
-        """
-        Take the image provided and copy it to the cache folder.
 
-        :param image_path: path to the image we're caching
-        :param img_type: BANNER or POSTER or FANART
-        :param indexer_id: id of the show this image belongs to
-        :return: bool representing success
-        """
-        from . import helpers
-        # generate the path based on the type and the indexer_id
-        if img_type == self.POSTER:
-            dest_path = self.poster_path(indexer_id)
-        elif img_type == self.BANNER:
-            dest_path = self.banner_path(indexer_id)
-        elif img_type == self.FANART:
-            dest_path = self.fanart_path(indexer_id)
-        else:
-            logger.log('Invalid cache image type: {0}'.format(img_type), logger.ERROR)
-            return False
+def _cache_image_from_file(image_path, img_type, series_obj):
+    """
+    Take the image provided and copy it to the cache folder.
 
-        # make sure the cache folder exists before we try copying to it
-        if not os.path.isdir(self._cache_dir()):
-            logger.log("Image cache dir doesn't exist, creating it at: {0}".format(self._cache_dir()))
-            os.makedirs(self._cache_dir())
+    :param image_path: path to the image we're caching
+    :param img_type: BANNER or POSTER or FANART
+    :param series_obj: Series object
+    :return: bool representing success
+    """
+    # generate the path based on the type and the indexer_id
+    if img_type in (POSTER, BANNER, FANART):
+        location = get_path(img_type, series_obj)
+    else:
+        type_name = IMAGE_TYPES.get(img_type, img_type)
+        log.error('Invalid cache image type: {0}', type_name)
+        return
 
-        if not os.path.isdir(self._thumbnails_dir()):
-            logger.log("Thumbnails cache dir didn't exist, creating it at: {0}".format(self._thumbnails_dir()))
-            os.makedirs(self._thumbnails_dir())
+    directories = {
+        'image': _cache_dir(series_obj),
+        'thumbnail': _thumbnails_dir(series_obj),
+    }
 
-        logger.log('Copying from {origin} to {dest}'.format(origin=image_path, dest=dest_path))
-        helpers.copy_file(image_path, dest_path)
+    for cache in directories:
+        cache_dir = directories[cache]
+        if not os.path.isdir(cache_dir):
+            log.info('Creating {0} cache directory: {1}', cache, cache_dir)
+            os.makedirs(cache_dir)
 
-        return True
+    log.info('Copying from {origin} to {dest}',
+             {'origin': image_path, 'dest': location})
 
-    def _cache_image_from_indexer(self, show_obj, img_type):
-        """
-        Retrieve an image of the type specified from the indexer and save it to the cache folder.
+    copy_file(image_path, location)
 
-        :param show_obj: Series object that we want to cache an image for
-        :param img_type: BANNER or POSTER or FANART
-        :return: bool representing success
-        """
-        # generate the path based on the type and the indexer_id
-        if img_type == self.POSTER:
-            img_type_name = 'poster'
-            dest_path = self.poster_path(show_obj.indexerid)
-        elif img_type == self.BANNER:
-            img_type_name = 'banner'
-            dest_path = self.banner_path(show_obj.indexerid)
-        elif img_type == self.POSTER_THUMB:
-            img_type_name = 'poster_thumb'
-            dest_path = self.poster_thumb_path(show_obj.indexerid)
-        elif img_type == self.BANNER_THUMB:
-            img_type_name = 'banner_thumb'
-            dest_path = self.banner_thumb_path(show_obj.indexerid)
-        elif img_type == self.FANART:
-            img_type_name = 'fanart'
-            dest_path = self.fanart_path(show_obj.indexerid)
-        else:
-            logger.log('Invalid cache image type: {0}'.format(img_type), logger.ERROR)
-            return False
+    return True
 
-        # retrieve the image from the indexer using the generic metadata class
-        # TODO: refactor
-        metadata_generator = GenericMetadata()
-        img_data = metadata_generator._retrieve_show_image(img_type_name, show_obj)
-        result = metadata_generator._write_image(img_data, dest_path)
 
-        return result
+def _cache_image_from_indexer(series_obj, img_type):
+    """
+    Retrieve specified artwork from the indexer and save to the cache folder.
 
-    def fill_cache(self, show_obj):
-        """
-        Cache all images for the given show.
+    :param series_obj: Series object that we want to cache an image for
+    :param img_type: BANNER or POSTER or FANART
+    :return: bool representing success
+    """
+    # generate the path based on the type and the indexer_id
+    try:
+        img_type_name = IMAGE_TYPES[img_type]
+    except KeyError:
+        log.error('Invalid cache image type: {0}', img_type)
+        return
 
-        Copies them from the show dir if possible, or downloads them from indexer if they aren't in the show dir.
+    location = get_path(img_type, series_obj)
 
-        :param show_obj: Series object to cache images for
-        """
-        logger.log('Checking if we need any cache images for show: {0}'.format(show_obj.name), logger.DEBUG)
+    # retrieve the image from the indexer using the generic metadata class
+    # TODO: refactor
+    metadata_generator = GenericMetadata()
+    img_data = metadata_generator._retrieve_show_image(img_type_name, series_obj)
+    result = metadata_generator._write_image(img_data, location)
 
-        # check if the images are already cached or not
-        need_images = {self.POSTER: not self.has_poster(show_obj.indexerid),
-                       self.BANNER: not self.has_banner(show_obj.indexerid),
-                       self.POSTER_THUMB: not self.has_poster_thumbnail(show_obj.indexerid),
-                       self.BANNER_THUMB: not self.has_banner_thumbnail(show_obj.indexerid),
-                       self.FANART: not self.has_fanart(show_obj.indexerid)}
+    return result
 
-        should_continue = None
-        for key in need_images:
-            if need_images.get(key):
-                should_continue = True
-                break
 
-        if not should_continue:
-            logger.log('No new cache images needed, not retrieving new ones', logger.DEBUG)
-            logger.log('Cache check done')
-            return
+def fill_cache(series_obj):
+    """
+    Cache artwork for the given show.
 
-        # check the show dir for poster, banner or fanart images and use them
-        if any([need_images[self.POSTER], need_images[self.BANNER], need_images[self.FANART]]):
-            try:
-                for cur_provider in app.metadata_provider_dict.values():
-                    logger.log('Checking if we can use the show image from the {provider} metadata'.format
-                               (provider=cur_provider.name), logger.DEBUG)
+    Copy artwork from series directory if possible, or download from indexer.
 
-                    if os.path.isfile(cur_provider.get_poster_path(show_obj)):
-                        cur_file_name = os.path.abspath(cur_provider.get_poster_path(show_obj))
-                        cur_file_type = self.which_type(cur_file_name)
+    :param series_obj: Series object to cache images for
+    """
+    # get expected paths for artwork
+    images = {
+        img_type: get_path(img_type, series_obj)
+        for img_type in IMAGE_TYPES
+    }
+    # check if artwork is cached
+    needed = {
+        img_type: location
+        for img_type, location in viewitems(images)
+        if not os.path.exists(location)
+    }
 
-                        if cur_file_type is None:
-                            logger.log('Unable to retrieve image type, not using the image from: {0}'.format
-                                       (cur_file_name), logger.WARNING)
-                            continue
+    if not needed:
+        log.debug('No new cache images needed')
+        log.info('Cache check completed')
+        return
 
-                        logger.log('Checking if image {0} (type {1}) needs metadata: {2}'.format
-                                   (cur_file_name, cur_file_type, need_images[cur_file_type]), logger.DEBUG)
+    log.debug('Searching for images for series id {0}', series_obj.series_id)
 
-                        if cur_file_type in need_images and need_images[cur_file_type]:
-                            logger.log("Found an image in the show dir that doesn't exist in the cache, "
-                                       "caching it: {0} (type {1})".format(cur_file_name, cur_file_type), logger.DEBUG)
+    # check the show for poster, banner or fanart
+    for img_type in BANNER, POSTER, FANART:
+        if not needed.get(img_type):
+            continue
+        try:
+            for provider in itervalues(app.metadata_provider_dict):
+                log.debug('Checking {provider.name} metadata for {img}',
+                          {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
-                            self._cache_image_from_file(cur_file_name, cur_file_type, show_obj.indexerid)
-                            need_images[cur_file_type] = False
+                if os.path.isfile(provider.get_poster_path(series_obj)):
+                    path = provider.get_poster_path(series_obj)
+                    filename = os.path.abspath(path)
+                    file_type = which_type(filename)
 
-            except ShowDirectoryNotFoundException:
-                logger.log("Unable to search for images in the show dir because it doesn't exist", logger.WARNING)
+                    if not file_type:
+                        log.warning('Unable to determine image type for {0}',
+                                    filename)
+                        continue
 
-        # download missing images from indexer
-        for cur_image_type in need_images:
-            logger.log('Seeing if we still need an image of type {0}: {1}'.format
-                       (cur_image_type, need_images[cur_image_type]), logger.DEBUG)
+                    desired = needed.get(file_type)
+                    type_name = IMAGE_TYPES[file_type]
+                    log.debug(
+                        'Wanted {img} {path}: {status}', {
+                            'img': type_name,
+                            'path': filename,
+                            'status': bool(desired)
+                        }
+                    )
 
-            if cur_image_type in need_images and need_images[cur_image_type]:
-                self._cache_image_from_indexer(show_obj, cur_image_type)
+                    if desired:
+                        # cache the image
+                        _cache_image_from_file(filename, file_type, series_obj)
+                        log.debug('Cached {img} from series folder: {path}',
+                                  {'img': type_name, 'path': filename})
+                        # remove it from the needed image types
+                        needed.pop(file_type)
 
-        logger.log('Cache check done')
+        except ShowDirectoryNotFoundException:
+            log.warning('Path does not exist. Unable to search it for images.')
+
+    # download missing images from indexer
+    for img_type in needed:
+        log.debug('Searching for {img} for series {x}',
+                  {'img': IMAGE_TYPES[img_type], 'x': series_obj})
+        _cache_image_from_indexer(series_obj, img_type)
+
+    log.info('Cache check completed')
+
+
+def banner_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER, indexer_id)
+
+
+def banner_thumb_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(BANNER_THUMB, indexer_id)
+
+
+def fanart_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(FANART, indexer_id)
+
+
+def poster_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(POSTER, indexer_id)
+
+
+def poster_thumb_path(indexer_id):
+    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    warnings.warn('Deprecated use get_path instead', DeprecationWarning)
+    return get_path(POSTER_THUMB, indexer_id)
+
+
+def has_poster(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER, indexer_id)
+
+
+def has_banner(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER, indexer_id)
+
+
+def has_fanart(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(FANART, indexer_id)
+
+
+def has_poster_thumbnail(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(POSTER_THUMB, indexer_id)
+
+
+def has_banner_thumbnail(indexer_id):
+    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
+    return get_artwork(BANNER_THUMB, indexer_id)

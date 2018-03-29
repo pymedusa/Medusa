@@ -16,22 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from .generic import GenericMedia
-from ..image_cache import ImageCache
+from __future__ import unicode_literals
+from medusa import image_cache
+from medusa.media.generic import GenericMedia
 
 
 class ShowBanner(GenericMedia):
     """Get the banner of a show."""
 
-    def get_default_media_name(self):
-        return 'banner.png'
+    default_media_name = 'banner.png'
 
-    def get_media_path(self):
-        if self.get_show():
-            if self.media_format == 'normal':
-                return ImageCache().banner_path(self.indexer_id)
-
-            if self.media_format == 'thumb':
-                return ImageCache().banner_thumb_path(self.indexer_id)
-
-        return ''
+    @property
+    def img_type(self):
+        """Get the image type (normal or thumbnail)."""
+        if self.media_format == 'normal':
+            return image_cache.BANNER
+        elif self.media_format == 'thumb':
+            return image_cache.BANNER_THUMB
+        else:
+            raise ValueError('Invalid media format')

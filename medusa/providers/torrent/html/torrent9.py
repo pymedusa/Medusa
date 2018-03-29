@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -24,6 +25,8 @@ log.logger.addHandler(logging.NullHandler())
 class Torrent9Provider(TorrentProvider):
     """Torrent9 Torrent provider."""
 
+    non_words = re.compile(r'\W')
+
     def __init__(self):
         """Initialize the class."""
         super(Torrent9Provider, self).__init__('Torrent9')
@@ -32,11 +35,11 @@ class Torrent9Provider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.torrents9.pe'
+        self.url = 'http://www.torrent9.red'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
-            'download': urljoin(self.url, '{link}.torrent'),
+            'download': urljoin(self.url, '/get_torrent/{name}.torrent'),
         }
 
         # Proper Strings
@@ -51,7 +54,7 @@ class Torrent9Provider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -70,7 +73,7 @@ class Torrent9Provider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_query = search_string.replace('.', '-').replace(' ', '-')
+                    search_query = Torrent9Provider.non_words.sub('-', search_string)
                     search_url = self.urls['search'].format(query=search_query)
                 else:
                     search_url = self.urls['daily']
@@ -121,8 +124,8 @@ class Torrent9Provider(TorrentProvider):
 
                     title = '{name} {codec}'.format(name=title, codec='x264')
 
-                    download_link = download_url.replace('/torrent', 'get_torrent')
-                    download_url = self.urls['download'].format(link=download_link)
+                    download_name = download_url.rsplit('/', 1)[1]
+                    download_url = self.urls['download'].format(name=download_name)
 
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True))

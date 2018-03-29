@@ -6,10 +6,15 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    ui,
+)
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, ui
 
 
 @route('/config/anime(/?.*)')
@@ -32,7 +37,7 @@ class ConfigAnime(Config):
                         controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
-                  split_home=None):
+                  split_home=None, split_home_in_tabs=None):
         """
         Save anime related settings
         """
@@ -44,6 +49,7 @@ class ConfigAnime(Config):
         app.ANIDB_PASSWORD = anidb_password
         app.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
         app.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
+        app.ANIME_SPLIT_HOME_IN_TABS = config.checkbox_to_value(split_home_in_tabs)
 
         app.instance.save_config()
 

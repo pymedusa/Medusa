@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Initialize all torrent providers."""
+from __future__ import unicode_literals
 
 from medusa.providers.torrent.html import (
     abnormal,
@@ -10,6 +11,7 @@ from medusa.providers.torrent.html import (
     animetorrents,
     archetorrent,
     bithdtv,
+    cinemaz,
     elitetorrent,
     elitetracker,
     gftracker,
@@ -17,13 +19,13 @@ from medusa.providers.torrent.html import (
     hdtorrents,
     hebits,
     horriblesubs,
-    hounddawgs,
     iptorrents,
     limetorrents,
     morethantv,
     nebulance,
     newpct,
     pretome,
+    privatehd,
     scenetime,
     sdbits,
     shanaproject,
@@ -35,7 +37,6 @@ from medusa.providers.torrent.html import (
     torrentbytes,
     torrenting,
     torrentleech,
-    torrentproject,
     tvchaosuk,
     yggtorrent,
     zooqle,
@@ -44,7 +45,6 @@ from medusa.providers.torrent.json import (
     bitcannon,
     btn,
     danishbits,
-    hd4free,
     hdbits,
     norbits,
     rarbg,
@@ -62,10 +62,10 @@ from medusa.providers.torrent.xml import (
 
 __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
-    'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
+    'gftracker', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
+    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
+    'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker'
+    'elitetracker', 'privatehd', 'cinemaz'
 ]

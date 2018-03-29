@@ -1,5 +1,5 @@
 # sqlalchemy/processors.py
-# Copyright (C) 2010-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2010-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 # Copyright (C) 2010 Gaetan de Menten gdementen@gmail.com
 #
@@ -47,13 +47,6 @@ def str_to_datetime_processor_factory(regexp, type_):
             else:
                 return type_(*list(map(int, m.groups(0))))
     return process
-
-
-def boolean_to_int(value):
-    if value is None:
-        return None
-    else:
-        return int(bool(value))
 
 
 def py_fallback():

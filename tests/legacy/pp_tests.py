@@ -25,7 +25,7 @@ from medusa import app
 from medusa.name_cache import addNameToCache
 from medusa.post_processor import PostProcessor
 from medusa.tv import Episode, Series
-from . import test_lib as test
+from tests.legacy import test_lib as test
 
 
 class PPInitTests(unittest.TestCase):
@@ -56,7 +56,7 @@ class PPBasicTests(test.AppTestDBCase):
         episode.name = "some episode name"
         episode.save_to_db()
 
-        addNameToCache('show name', 3)
+        addNameToCache('show name', 1, 3)
         app.PROCESS_METHOD = 'move'
 
         post_processor = PostProcessor(test.FILE_PATH)

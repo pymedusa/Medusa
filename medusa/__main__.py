@@ -59,34 +59,37 @@ import subprocess
 import sys
 import threading
 import time
+from builtins import object
+from builtins import str
 
 from configobj import ConfigObj
 
-from six import text_type
-
-from . import (
+from medusa import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
-from .common import SD, SKIPPED, WANTED
-from .config import (
+from medusa.common import SD, SKIPPED, WANTED
+from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
-from .databases import cache_db, failed_db, main_db
-from .event_queue import Events
-from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
-from .providers.generic_provider import GenericProvider
-from .providers.nzb.newznab import NewznabProvider
-from .providers.torrent.rss.rsstorrent import TorrentRssProvider
-from .search.backlog import BacklogSearchScheduler, BacklogSearcher
-from .search.daily import DailySearcher
-from .search.proper import ProperFinder
-from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .server.core import AppWebServer
-from .system.shutdown import Shutdown
-from .tv import Series
+from medusa.databases import cache_db, failed_db, main_db
+from medusa.event_queue import Events
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
+from medusa.search.daily import DailySearcher
+from medusa.search.proper import ProperFinder
+from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.server.core import AppWebServer
+from medusa.system.shutdown import Shutdown
+from medusa.themes import read_themes
+from medusa.tv import Series
+
+from six import text_type
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +136,41 @@ class Application(object):
         help_msg = help_msg.replace('Medusa directory', app.PROG_DIR)
 
         return help_msg
+
+    @staticmethod
+    def migrate_images():
+        """Migrate pre-multi-indexer images to their correct place."""
+        if hasattr(app, 'MIGRATE_IMAGES'):
+            for series_obj in app.showList:
+                try:
+                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                    images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
+
+                    # Create the cache/images/tvdb folder if not exists
+                    if not os.path.isdir(images_root_indexer):
+                        os.makedirs(images_root_indexer)
+
+                    if not os.path.isdir(images_root_indexer_thumbnails):
+                        os.makedirs(images_root_indexer_thumbnails)
+
+                    # Check for the different possible images and move them.
+                    for image_type in ('poster', 'fanart', 'banner'):
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        src = os.path.join(app.CACHE_DIR, 'images', image_name)
+                        dst = os.path.join(images_root_indexer, image_name)
+                        if os.path.isfile(src) and not os.path.isfile(dst):
+                            # image found, let's try to move it
+                            os.rename(src, dst)
+
+                        src_thumb = os.path.join(app.CACHE_DIR, 'images', 'thumbnails', image_name)
+                        dst_thumb = os.path.join(images_root_indexer_thumbnails, image_name)
+                        if os.path.isfile(src_thumb) and not os.path.isfile(dst_thumb):
+                            # image found, let's try to move it
+                            os.rename(src_thumb, dst_thumb)
+                except Exception as error:
+                    logger.warning('Error while trying to move the images for series {series}. '
+                                   'Try to refresh the show, or move the images manually if you know '
+                                   'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
     def start(self, args):
         """Start Application."""
@@ -305,9 +343,10 @@ class Application(object):
         # Build from the DB to start with
         self.load_shows_from_db()
 
-        logger.info("Starting Medusa [{branch}] using '{config}'", branch=app.BRANCH, config=app.CONFIG_FILE)
+        logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
+        self.migrate_images()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -331,7 +370,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'static'),
+            'data_root': os.path.join(app.PROG_DIR, 'themes'),
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -346,6 +385,9 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
+
+        # Initialize all available themes
+        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()
@@ -395,7 +437,7 @@ class Application(object):
             app.GIT_AUTH_TYPE = check_setting_int(app.CFG, 'General', 'git_auth_type', 0)
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
-            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low')
+            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
 
             # debugging
@@ -430,14 +472,16 @@ class Application(object):
             app.GIT_REMOTE = check_setting_str(app.CFG, 'General', 'git_remote', 'origin')
             app.GIT_REMOTE_URL = check_setting_str(app.CFG, 'General', 'git_remote_url', app.APPLICATION_URL)
 
-            repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
-            m = repo_url_re.match(app.GIT_REMOTE_URL)
-            if m:
-                groups = m.groupdict()
-                if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
-                    app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
-            else:
-                app.GIT_REMOTE_URL = app.APPLICATION_URL
+            if not app.DEVELOPER:
+                repo_url_re = re.compile(
+                    r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+                m = repo_url_re.match(app.GIT_REMOTE_URL)
+                if m:
+                    groups = m.groupdict()
+                    if groups['org'].lower() != app.GIT_ORG.lower() or groups['repo'].lower() != app.GIT_REPO.lower():
+                        app.GIT_REMOTE_URL = groups['prefix'] + app.GIT_ORG + '/' + app.GIT_REPO + '.git'
+                else:
+                    app.GIT_REMOTE_URL = app.APPLICATION_URL
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
@@ -482,7 +526,7 @@ class Application(object):
 
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
             app.WEB_IPV6 = bool(check_setting_int(app.CFG, 'General', 'web_ipv6', 0))
-            app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip("/")
+            app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip('/')
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
@@ -494,10 +538,12 @@ class Application(object):
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
+            app.SSL_CA_BUNDLE = check_setting_str(app.CFG, 'General', 'ssl_ca_bundle', '')
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
+            app.TVDB_DVD_ORDER_EP_IGNORE = bool(check_setting_int(app.CFG, 'General', 'tvdb_dvd_order_ep_ignore', 0))
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
-            app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', "")
+            app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
             app.LOCALHOST_IP = check_setting_str(app.CFG, 'General', 'localhost_ip', '')
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
@@ -705,8 +751,8 @@ class Application(object):
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
             app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsubtitledownload', 0))
             app.PROWL_API = check_setting_list(app.CFG, 'Prowl', 'prowl_api', '', censor_log='low')
-            app.PROWL_PRIORITY = check_setting_str(app.CFG, 'Prowl', 'prowl_priority', "0")
-            app.PROWL_MESSAGE_TITLE = check_setting_str(app.CFG, 'Prowl', 'prowl_message_title', "Medusa")
+            app.PROWL_PRIORITY = check_setting_str(app.CFG, 'Prowl', 'prowl_priority', '0')
+            app.PROWL_MESSAGE_TITLE = check_setting_str(app.CFG, 'Prowl', 'prowl_message_title', 'Medusa')
 
             app.USE_TWITTER = bool(check_setting_int(app.CFG, 'Twitter', 'use_twitter', 0))
             app.TWITTER_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Twitter', 'twitter_notify_onsnatch', 0))
@@ -802,7 +848,7 @@ class Application(object):
             app.NMA_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_ondownload', 0))
             app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsubtitledownload', 0))
             app.NMA_API = check_setting_list(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
-            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', "0")
+            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', '0')
 
             app.USE_PUSHALOT = bool(check_setting_int(app.CFG, 'Pushalot', 'use_pushalot', 0))
             app.PUSHALOT_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Pushalot', 'pushalot_notify_onsnatch', 0))
@@ -889,6 +935,7 @@ class Application(object):
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
+            app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -910,7 +957,7 @@ class Application(object):
             app.TRIM_ZERO = bool(check_setting_int(app.CFG, 'GUI', 'trim_zero', 0))
             app.DATE_PRESET = check_setting_str(app.CFG, 'GUI', 'date_preset', '%x')
             app.TIME_PRESET_W_SECONDS = check_setting_str(app.CFG, 'GUI', 'time_preset', '%I:%M:%S %p')
-            app.TIME_PRESET = app.TIME_PRESET_W_SECONDS.replace(u":%S", u"")
+            app.TIME_PRESET = app.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
@@ -923,6 +970,7 @@ class Application(object):
             app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
+            app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -939,18 +987,18 @@ class Application(object):
                 try:
                     import getpass
                     app.OS_USER = getpass.getuser()
-                except StandardError:
+                except Exception:
                     pass
 
             try:
                 app.LOCALE = locale.getdefaultlocale()
-            except StandardError:
+            except Exception:
                 app.LOCALE = None, None
 
             try:
                 import ssl
                 app.OPENSSL_VERSION = ssl.OPENSSL_VERSION
-            except StandardError:
+            except Exception:
                 pass
 
             if app.VERSION_NOTIFY:
@@ -984,6 +1032,8 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_daily', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
+                load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
+                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1020,7 +1070,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
-                logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
+                logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
                 self.save_config()
 
             if app.SUBTITLES_ERASE_CACHE:
@@ -1028,10 +1078,10 @@ class Application(object):
                     for cache_file in ['application.dbm', 'subliminal.dbm']:
                         file_path = os.path.join(app.CACHE_DIR, cache_file)
                         if os.path.isfile(file_path):
-                            logger.info(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
+                            logger.info(u'Removing subtitles cache file: {cache_file}', cache_file=file_path)
                             os.remove(file_path)
                 except OSError as e:
-                    logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
+                    logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
@@ -1080,42 +1130,42 @@ class Application(object):
             # updaters
             app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
-                                                              threadName="CHECKVERSION", silent=False)
+                                                              threadName='CHECKVERSION', silent=False)
 
             app.show_queue_scheduler = scheduler.Scheduler(show_queue.ShowQueue(),
                                                            cycleTime=datetime.timedelta(seconds=3),
-                                                           threadName="SHOWQUEUE")
+                                                           threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                             cycleTime=datetime.timedelta(hours=1),
-                                                            threadName="SHOWUPDATER",
+                                                            threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
 
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
                                                               cycleTime=datetime.timedelta(seconds=3),
-                                                              threadName="MANUALSNATCHQUEUE")
+                                                              threadName='MANUALSNATCHQUEUE')
             # searchers
             app.search_queue_scheduler = scheduler.Scheduler(SearchQueue(),
                                                              cycleTime=datetime.timedelta(seconds=3),
-                                                             threadName="SEARCHQUEUE")
+                                                             threadName='SEARCHQUEUE')
 
             app.forced_search_queue_scheduler = scheduler.Scheduler(ForcedSearchQueue(),
                                                                     cycleTime=datetime.timedelta(seconds=3),
-                                                                    threadName="FORCEDSEARCHQUEUE")
+                                                                    threadName='FORCEDSEARCHQUEUE')
 
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName="DAILYSEARCHER",
+                                                             threadName='DAILYSEARCHER',
                                                              run_delay=update_interval)
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName="BACKLOG",
+                                                                  threadName='BACKLOG',
                                                                   run_delay=update_interval)
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
@@ -1127,7 +1177,7 @@ class Application(object):
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName="FINDPROPERS",
+                                                              threadName='FINDPROPERS',
                                                               start_time=run_at,
                                                               run_delay=update_interval)
 
@@ -1135,27 +1185,27 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
                                                                     cycleTime=update_interval,
-                                                                    threadName="POSTPROCESSOR",
+                                                                    threadName='POSTPROCESSOR',
                                                                     silent=not app.PROCESS_AUTOMATICALLY,
                                                                     run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
-                                                              threadName="TRAKTCHECKER",
+                                                              threadName='TRAKTCHECKER',
                                                               run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
-                                                                 threadName="FINDSUBTITLES",
+                                                                 threadName='FINDSUBTITLES',
                                                                  run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName="TORRENTCHECKER",
+                                                                threadName='TORRENTCHECKER',
                                                                 run_delay=update_interval)
 
             app.__INITIALIZED__ = True
@@ -1190,9 +1240,9 @@ class Application(object):
                         shutil.move(dest_folder, os.path.join(os.path.dirname(dest_folder), bak_filename))
 
                     shutil.move(src_folder, dest_folder)
-                    logger.log(u"Restore: restoring cache successful", logger.INFO)
-                except OSError as e:
-                    logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
+                    logger.info(u'Restore: restoring cache successful')
+                except OSError as error:
+                    logger.error(u'Restore: restoring cache failed: {error!r}', error=error)
 
             restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
         finally:
@@ -1279,7 +1329,7 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
                 app.torrent_checker_scheduler.enable = True
             app.torrent_checker_scheduler.silent = False
             app.torrent_checker_scheduler.start()
@@ -1384,6 +1434,7 @@ class Application(object):
         new_config['General']['subliminal_log'] = int(app.SUBLIMINAL_LOG)
         new_config['General']['privacy_level'] = app.PRIVACY_LEVEL
         new_config['General']['ssl_verify'] = int(app.SSL_VERIFY)
+        new_config['General']['ssl_ca_bundle'] = app.SSL_CA_BUNDLE
         new_config['General']['download_url'] = app.DOWNLOAD_URL
         new_config['General']['localhost_ip'] = app.LOCALHOST_IP
         new_config['General']['cpu_preset'] = app.CPU_PRESET
@@ -1426,6 +1477,7 @@ class Application(object):
         new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
+        new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
@@ -1525,13 +1577,14 @@ class Application(object):
                     'name', 'url', 'api_key', 'username',
                     'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch',
+                    'enable_search_delay', 'search_delay',
                 ],
                 'encrypted': [
                     'password',
                 ],
                 GenericProvider.TORRENT: [
                     'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease', 'onlyspasearch',
-                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
+                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
                     'cat_ids'
@@ -1822,6 +1875,7 @@ class Application(object):
         new_config['GUI']['poster_sortby'] = app.POSTER_SORTBY
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
+        new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
@@ -1866,6 +1920,7 @@ class Application(object):
 
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
+        new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
 
         new_config.write()
 
@@ -1986,7 +2041,7 @@ class Application(object):
         try:
             logger.info('Shutting down Tornado')
             self.web_server.shutDown()
-            self.web_server.join(10)
+            self.web_server.join(5)
         except Exception as error:
             exception_handler.handle(error)
 
@@ -2007,7 +2062,7 @@ class Application(object):
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
             logger.info('Restarting Medusa with {options}', options=popen_list)
-            # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
+            # shutdown the logger to make sure it's released the logfile BEFORE it restarts Medusa.
             logging.shutdown()
             print(popen_list)
             subprocess.Popen(popen_list, cwd=os.getcwd())

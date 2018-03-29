@@ -8,11 +8,9 @@ import traceback
 
 import certifi
 
-import factory
-
 import medusa.common
 from medusa import app
-from medusa.session import hooks
+from medusa.session import factory, hooks
 
 import requests
 
@@ -57,9 +55,16 @@ class MedusaSession(BaseSession):
         Configure the ssl verification.
 
         We need to overwrite this in the request method. As it's not available in the session init.
+
         :param verify: SSL verification on or off.
         """
-        return certifi.old_where() if all([app.SSL_VERIFY, verify]) else False
+        if all([app.SSL_VERIFY, verify]):
+            if app.SSL_CA_BUNDLE:
+                return app.SSL_CA_BUNDLE
+            else:
+                return certifi.where()
+
+        return False
 
     def __init__(self, proxies=None, **kwargs):
         """Create base Medusa session instance."""

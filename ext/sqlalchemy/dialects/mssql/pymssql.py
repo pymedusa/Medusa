@@ -1,5 +1,5 @@
 # mssql/pymssql.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -17,8 +17,11 @@ pymssql is a Python module that provides a Python DBAPI interface around
 `FreeTDS <http://www.freetds.org/>`_.  Compatible builds are available for
 Linux, MacOSX and Windows platforms.
 
+Modern versions of this driver work very well with SQL Server and
+FreeTDS from Linux and is highly recommended.
+
 """
-from .base import MSDialect
+from .base import MSDialect, MSIdentifierPreparer
 from ... import types as sqltypes, util, processors
 import re
 
@@ -31,9 +34,20 @@ class _MSNumeric_pymssql(sqltypes.Numeric):
             return sqltypes.Numeric.result_processor(self, dialect, type_)
 
 
+class MSIdentifierPreparer_pymssql(MSIdentifierPreparer):
+
+    def __init__(self, dialect):
+        super(MSIdentifierPreparer_pymssql, self).__init__(dialect)
+        # pymssql has the very unusual behavior that it uses pyformat
+        # yet does not require that percent signs be doubled
+        self._double_percents = False
+
+
 class MSDialect_pymssql(MSDialect):
-    supports_sane_rowcount = False
+    supports_native_decimal = True
     driver = 'pymssql'
+
+    preparer = MSIdentifierPreparer_pymssql
 
     colspecs = util.update_copy(
         MSDialect.colspecs,
@@ -56,10 +70,6 @@ class MSDialect_pymssql(MSDialect):
             util.warn("The pymssql dialect expects at least "
                       "the 1.0 series of the pymssql DBAPI.")
         return module
-
-    def __init__(self, **params):
-        super(MSDialect_pymssql, self).__init__(**params)
-        self.use_scope_identity = True
 
     def _get_server_version_info(self, connection):
         vers = connection.scalar("select @@version")
@@ -93,5 +103,14 @@ class MSDialect_pymssql(MSDialect):
                 return True
         else:
             return False
+
+    def set_isolation_level(self, connection, level):
+        if level == 'AUTOCOMMIT':
+            connection.autocommit(True)
+        else:
+            connection.autocommit(False)
+            super(MSDialect_pymssql, self).set_isolation_level(connection,
+                                                               level)
+
 
 dialect = MSDialect_pymssql

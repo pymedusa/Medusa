@@ -9,6 +9,9 @@ import os
 import re
 import time
 import traceback
+from builtins import range
+from builtins import str
+from builtins import zip
 
 from medusa import (
     app,
@@ -26,12 +29,13 @@ from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
-    mappings,
 )
+from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -71,18 +75,29 @@ class NewznabProvider(NZBProvider):
 
         self.caps = False
         self.cap_tv_search = None
-        self.force_query = False
         self.providers_without_caps = ['gingadaddy', '6box']
+
+        # For now apply the additional season search string for all newznab providers.
+        # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
+        # construction.
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name S03'
+            'Season {season}',  # example: 'Series.Name Season 3'
+        )
 
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, force_query=False, manual_search=False, **kwargs):
         """
         Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
+        :param force_query: Newznab will by default search using the tvdb/tmdb/imdb id for a show. As a backup it
+        can also search using a query string, like the showtitle with the season/episode number. The force_query
+        parameter can be passed to force a search using the query string.
+        :param manual_search: If the search is started through a manual search, we're utilizing the force_query param.
         :returns: A list of search results (structure)
         """
         results = []
@@ -100,7 +115,7 @@ class NewznabProvider(NZBProvider):
             't': 'search',
             'limit': 100,
             'offset': 0,
-            'cat': self.cat_ids,
+            'cat': ','.join(self.cat_ids),
             'maxage': app.USENET_RETENTION
         }
 
@@ -113,7 +128,7 @@ class NewznabProvider(NZBProvider):
 
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
-                if match_indexer and not self.force_query:
+                if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
                     search_params.update(match_indexer)
 
@@ -165,10 +180,9 @@ class NewznabProvider(NZBProvider):
                 if 'tvdbid' in search_params:
                     break
 
-        # Reprocess but now use force_query = True
-        if not results and not self.force_query:
-            self.force_query = True
-            return self.search(search_strings, ep_obj=ep_obj)
+        # Reprocess but now use force_query = True if there are no results (backlog, daily, force) or if it's a manual search.
+        if (not results or manual_search) and not force_query:
+            return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
         return results
 
@@ -205,20 +219,27 @@ class NewznabProvider(NZBProvider):
                     title = item.title.get_text(strip=True)
                     download_url = None
 
-                    if item.link:
+                    if item.enclosure:
+                        url = item.enclosure.get('url', '').strip()
+                        if url.startswith('magnet:'):
+                            download_url = url
+                        elif validators.url(url):
+                            download_url = url
+                            # Jackett needs extension added (since v0.8.396)
+                            if not url.endswith('.torrent'):
+                                content_type = item.enclosure.get('type', '')
+                                if content_type == 'application/x-bittorrent':
+                                    download_url = '{0}{1}'.format(url, '.torrent')
+
+                    if not download_url and item.link:
                         url = item.link.get_text(strip=True)
-                        if validators.url(url) or url.startswith('magnet'):
+                        if validators.url(url) or url.startswith('magnet:'):
                             download_url = url
 
                         if not download_url:
                             url = item.link.next.strip()
-                            if validators.url(url) or url.startswith('magnet'):
+                            if validators.url(url) or url.startswith('magnet:'):
                                 download_url = url
-
-                    if not download_url and item.enclosure:
-                        url = item.enclosure.get('url', '').strip()
-                        if validators.url(url) or url.startswith('magnet'):
-                            download_url = url
 
                     if not (title and download_url):
                         continue
@@ -363,7 +384,7 @@ class NewznabProvider(NZBProvider):
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
+        providers_dict = dict(list(zip([provider.name for provider in providers_list], providers_list)))
 
         for default in default_list:
             if not default:
@@ -385,7 +406,7 @@ class NewznabProvider(NZBProvider):
 
         Returns found image or the default newznab image
         """
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
 
@@ -401,7 +422,7 @@ class NewznabProvider(NZBProvider):
 
         return_mapping = {}
 
-        if not self.show:
+        if not self.series:
             # If we don't have show, can't get tvdbid
             return return_mapping
 
@@ -419,13 +440,13 @@ class NewznabProvider(NZBProvider):
                 # Move to the configured capability / indexer mappings. To see if we can get a match.
                 for map_indexer in map_caps:
                     if map_caps[map_indexer] == search_type:
-                        if self.show.indexer == map_indexer:
+                        if self.series.indexer == map_indexer:
                             # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.show.indexerid
+                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
                             return return_mapping
-                        elif self.show.externals.get(mappings[map_indexer]):
+                        elif self.series.externals.get(mappings[map_indexer]):
                             # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
                             if mapped_external_indexer:
                                 return_mapping[map_caps[map_indexer]] = mapped_external_indexer
 
@@ -581,7 +602,7 @@ class NewznabProvider(NZBProvider):
             },
             {
                 'name': 'Usenet-Crawler',
-                'url': 'https://www.usenet-crawler.com/',
+                'url': 'https://api.usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,

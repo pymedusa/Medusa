@@ -1,7 +1,11 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import re
+from builtins import object
+from builtins import str
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
@@ -10,6 +14,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
 import requests
+
 from six import iteritems
 
 try:
@@ -48,7 +53,7 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-        from . import kodi_notifier
+        from medusa.notifiers import kodi_notifier
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_PLEX_CLIENT and not force:
             return False

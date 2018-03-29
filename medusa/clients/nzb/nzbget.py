@@ -5,22 +5,21 @@ from __future__ import unicode_literals
 import datetime
 import logging
 from base64 import standard_b64encode
+from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 from medusa import app
 from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 
-from six.moves.http_client import socket
-from six.moves.xmlrpc_client import ProtocolError, ServerProxy
-
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
 def NZBConnection(url):
-    """Method to connect to NZBget client
+    """Method to connect to NZBget client.
 
     :param url: nzb url to connect
     :return: True if connected, else False
@@ -34,16 +33,17 @@ def NZBConnection(url):
                         ' send a message')
         return True
 
-    except socket.error:
-        log.warning('Please check your NZBget host and port (if it is'
-                    ' running). NZBget is not responding to this combination')
-        return False
-
-    except ProtocolError as e:
-        if e.errmsg == 'Unauthorized':
+    except ProtocolError as error:
+        if error.errmsg == 'Unauthorized':
             log.warning('NZBget username or password is incorrect.')
         else:
-            log.error('Protocol Error: {msg}', {'msg': e.errmsg})
+            log.error('Protocol Error: {msg}', {'msg': error.errmsg})
+        return False
+
+    except Error as error:
+        log.warning('Please check your NZBget host and port (if it is'
+                    ' running). NZBget is not responding to this combination'
+                    ' Error: {msg}', {'msg': error.errmsg})
         return False
 
 
@@ -80,7 +80,7 @@ def sendNZB(nzb, proper=False):
     addToTop = False
     nzbgetprio = 0
     category = app.NZBGET_CATEGORY
-    if nzb.show.is_anime:
+    if nzb.series.is_anime:
         category = app.NZBGET_CATEGORY_ANIME
 
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
@@ -100,16 +100,16 @@ def sendNZB(nzb, proper=False):
     for cur_ep in nzb.episodes:
         if dupekey == '':
             if cur_ep.series.indexer == 1:
-                dupekey = 'Medusa-' + str(cur_ep.series.indexerid)
+                dupekey = 'Medusa-' + text_type(cur_ep.series.indexerid)
             elif cur_ep.series.indexer == 2:
-                dupekey = 'Medusa-tvr' + str(cur_ep.series.indexerid)
-        dupekey += '-' + str(cur_ep.season) + '.' + str(cur_ep.episode)
+                dupekey = 'Medusa-tvr' + text_type(cur_ep.series.indexerid)
+        dupekey += '-' + text_type(cur_ep.season) + '.' + text_type(cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
             addToTop = True
             nzbgetprio = app.NZBGET_PRIORITY
         else:
             category = app.NZBGET_CATEGORY_BACKLOG
-            if nzb.show.is_anime:
+            if nzb.series.is_anime:
                 category = app.NZBGET_CATEGORY_ANIME_BACKLOG
 
     if nzb.quality != Quality.UNKNOWN:
@@ -118,8 +118,8 @@ def sendNZB(nzb, proper=False):
         dupescore += 10
 
     nzbcontent64 = None
-    if nzb.resultType == 'nzbdata':
-        data = nzb.extraInfo[0]
+    if nzb.result_type == 'nzbdata':
+        data = nzb.extra_info[0]
         nzbcontent64 = standard_b64encode(data)
 
     log.info('Sending NZB to NZBget')
@@ -141,7 +141,7 @@ def sendNZB(nzb, proper=False):
                     nzbcontent64
                 )
             else:
-                if nzb.resultType == 'nzb':
+                if nzb.result_type == 'nzb':
                     if not nzb.provider.login():
                         return False
 

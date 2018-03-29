@@ -15,19 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
+from builtins import object
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-from six import text_type
-from ..common import Quality
-from ..helper.common import try_int
+from medusa.common import Quality
+from medusa.helper.common import try_int
+
+from six import itervalues, text_type
 
 
 class History(object):
     date_format = '%Y%m%d%H%M%S'
 
     def __init__(self):
-        from ..db import DBConnection
+        from medusa.db import DBConnection
         self.db = DBConnection()
 
     def clear(self):
@@ -56,10 +60,10 @@ class History(object):
         actions = History._get_actions(action)
         limit = max(try_int(limit), 0)
 
-        common_sql = 'SELECT show_name, showid, season, episode, h.quality, ' \
+        common_sql = 'SELECT show_name, h.indexer_id, showid, season, episode, h.quality, ' \
                      'action, provider, resource, date, h.proper_tags, h.manually_searched ' \
                      'FROM history h, tv_shows s ' \
-                     'WHERE h.showid = s.indexer_id '
+                     'WHERE h.showid = s.indexer_id AND h.indexer_id = s.indexer '
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
         order_sql = 'ORDER BY date DESC '
 
@@ -84,7 +88,7 @@ class History(object):
                 compact[row.index] = row.compacted()
 
         results = namedtuple('results', ['detailed', 'compact'])
-        return results(detailed, compact.values())
+        return results(detailed, list(itervalues(compact)))
 
     def trim(self, days=30):
         """
@@ -117,7 +121,7 @@ class History(object):
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
 
-    index_fields = ('show_id', 'season', 'episode', 'quality')
+    index_fields = ('indexer_id', 'show_id', 'season', 'episode', 'quality')
     # An index for an item or compact item from history
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)
@@ -145,6 +149,7 @@ class History(object):
             Create a look-up index for the item
             """
             return History.Index(
+                self.indexer_id,
                 self.show_id,
                 self.season,
                 self.episode,

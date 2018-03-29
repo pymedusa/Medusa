@@ -6,11 +6,17 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    ui,
+)
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, ui
-from ....helper.common import try_int
 
 
 @route('/config/search(/?.*)')
@@ -74,6 +80,11 @@ class ConfigSearch(Config):
         app.TORRENT_METHOD = torrent_method
         app.USENET_RETENTION = try_int(usenet_retention, 500)
 
+        if app.TORRENT_METHOD != 'blackhole' and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'):
+            config.change_remove_from_client(remove_from_client)
+        else:
+            config.change_remove_from_client('false')
+
         app.IGNORE_WORDS = [_.strip() for _ in ignore_words.split(',')] if ignore_words else []
         app.PREFERRED_WORDS = [_.strip() for _ in preferred_words.split(',')] if preferred_words else []
         app.UNDESIRED_WORDS = [_.strip() for _ in undesired_words.split(',')] if undesired_words else []
@@ -86,7 +97,6 @@ class ConfigSearch(Config):
 
         config.change_DOWNLOAD_PROPERS(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
-        app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
         config.change_PROPERS_FREQUENCY(check_propers_interval)
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)

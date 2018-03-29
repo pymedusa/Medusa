@@ -64,7 +64,7 @@ class EliteTrackerProvider(TorrentProvider):
         # Freeleech
         self.freeleech = False
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 

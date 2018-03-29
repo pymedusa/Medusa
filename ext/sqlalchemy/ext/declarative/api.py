@@ -1,5 +1,5 @@
 # ext/declarative/api.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -69,21 +69,36 @@ class DeclarativeMeta(type):
 
 
 def synonym_for(name, map_column=False):
-    """Decorator, make a Python @property a query synonym for a column.
+    """Decorator that produces an :func:`.orm.synonym` attribute in conjunction
+    with a Python descriptor.
 
-    A decorator version of :func:`~sqlalchemy.orm.synonym`. The function being
-    decorated is the 'descriptor', otherwise passes its arguments through to
-    synonym()::
+    The function being decorated is passed to :func:`.orm.synonym` as the
+    :paramref:`.orm.synonym.descriptor` parameter::
 
-      @synonym_for('col')
-      @property
-      def prop(self):
-          return 'special sauce'
+        class MyClass(Base):
+            __tablename__ = 'my_table'
 
-    The regular ``synonym()`` is also usable directly in a declarative setting
-    and may be convenient for read/write properties::
+            id = Column(Integer, primary_key=True)
+            _job_status = Column("job_status", String(50))
 
-      prop = synonym('col', descriptor=property(_read_prop, _write_prop))
+            @synonym_for("job_status")
+            @property
+            def job_status(self):
+                return "Status: %s" % self._job_status
+
+    The :ref:`hybrid properties <mapper_hybrids>` feature of SQLAlchemy
+    is typically preferred instead of synonyms, which is a more legacy
+    feature.
+
+    .. seealso::
+
+        :ref:`synonyms` - Overview of synonyms
+
+        :func:`.orm.synonym` - the mapper-level function
+
+        :ref:`mapper_hybrids` - The Hybrid Attribute extension provides an
+        updated approach to augmenting attribute behavior more flexibly than
+        can be achieved with synonyms.
 
     """
     def decorate(fn):
@@ -198,6 +213,25 @@ class declared_attr(interfaces._MappedAttribute, property):
         This is a special-use modifier which indicates that a column
         or MapperProperty-based declared attribute should be configured
         distinctly per mapped subclass, within a mapped-inheritance scenario.
+
+        .. warning::
+
+            The :attr:`.declared_attr.cascading` modifier has several
+            limitations:
+
+            * The flag **only** applies to the use of :class:`.declared_attr`
+              on declarative mixin classes and ``__abstract__`` classes; it
+              currently has no effect when used on a mapped class directly.
+
+            * The flag **only** applies to normally-named attributes, e.g.
+              not any special underscore attributes such as ``__tablename__``.
+              On these attributes it has **no** effect.
+
+            * The flag currently **does not allow further overrides** down
+              the class hierarchy; if a subclass tries to override the
+              attribute, a warning is emitted and the overridden attribute
+              is skipped.  This is a limitation that it is hoped will be
+              resolved at some point.
 
         Below, both MyClass as well as MySubClass will have a distinct
         ``id`` Column object established::

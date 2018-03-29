@@ -1,6 +1,9 @@
 # coding=utf-8
 """Monkey-patch logger functions to accept enhanced format styles."""
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 from inspect import getargspec
 
 from six import text_type
@@ -9,7 +12,8 @@ from six import text_type
 class StyleAdapter(logging.LoggerAdapter):
     """Logger Adapter with new string format style."""
 
-    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')}
+    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr)
+                       and not attr.startswith('__')}
     adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
     reserved_keywords = getargspec(logging.Logger._log).args[1:]
 
@@ -92,6 +96,7 @@ def initialize():
         return StyleAdapter(standard_logger(name))
 
     logging.getLogger = enhanced_get_logger
+
 
 # Keeps the standard logging.getLogger to be used by StyleAdapter
 standard_logger = logging.getLogger

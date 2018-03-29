@@ -1,5 +1,5 @@
 # connectors/pyodbc.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -9,19 +9,17 @@ from . import Connector
 from .. import util
 
 
-import sys
 import re
 
 
 class PyODBCConnector(Connector):
     driver = 'pyodbc'
 
+    supports_sane_rowcount_returning = False
     supports_sane_multi_rowcount = False
 
-    if util.py2k:
-        # PyODBC unicode is broken on UCS-4 builds
-        supports_unicode = sys.maxunicode == 65535
-        supports_unicode_statements = supports_unicode
+    supports_unicode_statements = True
+    supports_unicode_binds = True
 
     supports_native_decimal = True
     default_paramstyle = 'named'
@@ -30,21 +28,10 @@ class PyODBCConnector(Connector):
     # hold the desired driver name
     pyodbc_driver_name = None
 
-    # will be set to True after initialize()
-    # if the freetds.so is detected
-    freetds = False
-
-    # will be set to the string version of
-    # the FreeTDS driver if freetds is detected
-    freetds_driver_version = None
-
-    # will be set to True after initialize()
-    # if the libessqlsrv.so is detected
-    easysoft = False
-
     def __init__(self, supports_unicode_binds=None, **kw):
         super(PyODBCConnector, self).__init__(**kw)
-        self._user_supports_unicode_binds = supports_unicode_binds
+        if supports_unicode_binds is not None:
+            self.supports_unicode_binds = supports_unicode_binds
 
     @classmethod
     def dbapi(cls):
@@ -124,45 +111,11 @@ class PyODBCConnector(Connector):
         if isinstance(e, self.dbapi.ProgrammingError):
             return "The cursor's connection has been closed." in str(e) or \
                 'Attempt to use a closed connection.' in str(e)
-        elif isinstance(e, self.dbapi.Error):
-            return '[08S01]' in str(e)
         else:
             return False
 
-    def initialize(self, connection):
-        # determine FreeTDS first.   can't issue SQL easily
-        # without getting unicode_statements/binds set up.
-
-        pyodbc = self.dbapi
-
-        dbapi_con = connection.connection
-
-        _sql_driver_name = dbapi_con.getinfo(pyodbc.SQL_DRIVER_NAME)
-        self.freetds = bool(re.match(r".*libtdsodbc.*\.so", _sql_driver_name
-                                     ))
-        self.easysoft = bool(re.match(r".*libessqlsrv.*\.so", _sql_driver_name
-                                      ))
-
-        if self.freetds:
-            self.freetds_driver_version = dbapi_con.getinfo(
-                pyodbc.SQL_DRIVER_VER)
-
-        self.supports_unicode_statements = (
-            not util.py2k or
-            (not self.freetds and not self.easysoft)
-        )
-
-        if self._user_supports_unicode_binds is not None:
-            self.supports_unicode_binds = self._user_supports_unicode_binds
-        elif util.py2k:
-            self.supports_unicode_binds = (
-                not self.freetds or self.freetds_driver_version >= '0.91'
-            ) and not self.easysoft
-        else:
-            self.supports_unicode_binds = True
-
-        # run other initialization which asks for user name, etc.
-        super(PyODBCConnector, self).initialize(connection)
+    # def initialize(self, connection):
+    #   super(PyODBCConnector, self).initialize(connection)
 
     def _dbapi_version(self):
         if not self.dbapi:
@@ -194,3 +147,17 @@ class PyODBCConnector(Connector):
             except ValueError:
                 version.append(n)
         return tuple(version)
+
+    def set_isolation_level(self, connection, level):
+        # adjust for ConnectionFairy being present
+        # allows attribute set e.g. "connection.autocommit = True"
+        # to work properly
+        if hasattr(connection, 'connection'):
+            connection = connection.connection
+
+        if level == 'AUTOCOMMIT':
+            connection.autocommit = True
+        else:
+            connection.autocommit = False
+            super(PyODBCConnector, self).set_isolation_level(connection,
+                                                             level)

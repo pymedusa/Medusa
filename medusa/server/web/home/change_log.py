@@ -3,11 +3,13 @@
 from __future__ import unicode_literals
 
 import markdown2
+
+from medusa import app, logger
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+from medusa.session.core import MedusaSafeSession
+
 from tornroutes import route
-from .handler import Home
-from ..core import PageTemplate
-from .... import app, logger
-from ....session.core import MedusaSafeSession
 
 
 @route('/changes(/?.*)')

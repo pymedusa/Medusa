@@ -1,5 +1,5 @@
 # sql/types_api.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -93,6 +93,7 @@ class TypeEngine(Visitable):
             boolean comparison or special SQL keywords like MATCH or BETWEEN.
 
             """
+
             return op, self.type
 
         def __reduce__(self):
@@ -353,6 +354,10 @@ class TypeEngine(Visitable):
         return self.__class__.bind_expression.__code__ \
             is not TypeEngine.bind_expression.__code__
 
+    @staticmethod
+    def _to_instance(cls_or_self):
+        return to_instance(cls_or_self)
+
     def compare_values(self, x, y):
         """Compare two values for equality."""
 
@@ -471,6 +476,15 @@ class TypeEngine(Visitable):
             # grow unbounded.
             d[coltype] = rp = d['impl'].result_processor(dialect, coltype)
             return rp
+
+    def _cached_custom_processor(self, dialect, key, fn):
+        try:
+            return dialect._type_memos[self][key]
+        except KeyError:
+            d = self._dialect_info(dialect)
+            impl = d['impl']
+            d[key] = result = fn(impl)
+            return result
 
     def _dialect_info(self, dialect):
         """Return a dialect-specific registry which
@@ -634,7 +648,9 @@ class UserDefinedType(util.with_metaclass(VisitableCheckKWArg, TypeEngine)):
                 )
                 return self.type.adapt_operator(op), self.type
             else:
-                return op, self.type
+                return super(
+                    UserDefinedType.Comparator, self
+                )._adapt_expression(op, other_comparator)
 
     comparator_factory = Comparator
 
@@ -655,6 +671,73 @@ class UserDefinedType(util.with_metaclass(VisitableCheckKWArg, TypeEngine)):
         """
 
         return self
+
+
+class Emulated(object):
+    """Mixin for base types that emulate the behavior of a DB-native type.
+
+    An :class:`.Emulated` type will use an available database type
+    in conjunction with Python-side routines and/or database constraints
+    in order to approximate the behavior of a database type that is provided
+    natively by some backends.  When a native-providing backend is in
+    use, the native version of the type is used.  This native version
+    should include the :class:`.NativeForEmulated` mixin to allow it to be
+    distinguished from :class:`.Emulated`.
+
+    Current examples of :class:`.Emulated` are:  :class:`.Interval`,
+    :class:`.Enum`, :class:`.Boolean`.
+
+    .. versionadded:: 1.2.0b3
+
+    """
+
+    def adapt_to_emulated(self, impltype, **kw):
+        """Given an impl class, adapt this type to the impl assuming "emulated".
+
+        The impl should also be an "emulated" version of this type,
+        most likely the same class as this type itself.
+
+        e.g.: sqltypes.Enum adapts to the Enum class.
+
+        """
+        return super(Emulated, self).adapt(impltype, **kw)
+
+    def adapt(self, impltype, **kw):
+        if hasattr(impltype, "adapt_emulated_to_native"):
+
+            if self.native:
+                # native support requested, dialect gave us a native
+                # implementor, pass control over to it
+                return impltype.adapt_emulated_to_native(self, **kw)
+            else:
+                # impltype adapts to native, and we are not native,
+                # so reject the impltype in favor of "us"
+                impltype = self.__class__
+
+        if issubclass(impltype, self.__class__):
+            return self.adapt_to_emulated(impltype, **kw)
+        else:
+            return super(Emulated, self).adapt(impltype, **kw)
+
+
+class NativeForEmulated(object):
+    """Indicates DB-native types supported by an :class:`.Emulated` type.
+
+    .. versionadded:: 1.2.0b3
+
+    """
+
+    @classmethod
+    def adapt_emulated_to_native(cls, impl, **kw):
+        """Given an impl, adapt this type's class to the impl assuming "native".
+
+        The impl will be an :class:`.Emulated` class but not a
+        :class:`.NativeForEmulated`.
+
+        e.g.: postgresql.ENUM produces a type given an Enum instance.
+
+        """
+        return cls(**kw)
 
 
 class TypeDecorator(SchemaEventTarget, TypeEngine):
@@ -757,7 +840,6 @@ class TypeDecorator(SchemaEventTarget, TypeEngine):
        will cause the index value ``'foo'`` to be JSON encoded.
 
     """
-
     __visit_name__ = "type_decorator"
 
     def __init__(self, *args, **kwargs):
@@ -1187,6 +1269,8 @@ class TypeDecorator(SchemaEventTarget, TypeEngine):
 
     def __repr__(self):
         return util.generic_repr(self, to_inspect=self.impl)
+
+
 
 
 class Variant(TypeDecorator):

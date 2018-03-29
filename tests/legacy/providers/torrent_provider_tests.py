@@ -24,7 +24,7 @@ from medusa import app
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 from six import iteritems
-from .generic_provider_tests import GenericProviderTests
+from tests.legacy.providers.generic_provider_tests import GenericProviderTests
 
 
 class TorrentProviderTests(GenericProviderTests):

@@ -1,5 +1,5 @@
 # orm/attributes.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -150,6 +150,11 @@ class QueryableAttribute(interfaces._MappedAttribute,
         by :class:`.Query` to allow special behavior."""
 
         return self.comparator._query_clause_element()
+
+    def _bulk_update_tuples(self, value):
+        """Return setter tuples for a bulk UPDATE."""
+
+        return self.comparator._bulk_update_tuples(value)
 
     def adapt_to_entity(self, adapt_to_entity):
         assert not self._of_type
@@ -324,6 +329,8 @@ def create_proxied_attribute(descriptor):
 OP_REMOVE = util.symbol("REMOVE")
 OP_APPEND = util.symbol("APPEND")
 OP_REPLACE = util.symbol("REPLACE")
+OP_BULK_REPLACE = util.symbol("BULK_REPLACE")
+OP_MODIFIED = util.symbol("MODIFIED")
 
 
 class Event(object):
@@ -335,9 +342,9 @@ class Event(object):
     operations.
 
     The :class:`.Event` object is sent as the ``initiator`` argument
-    when dealing with the :meth:`.AttributeEvents.append`,
+    when dealing with events such as :meth:`.AttributeEvents.append`,
     :meth:`.AttributeEvents.set`,
-    and :meth:`.AttributeEvents.remove` events.
+    and :meth:`.AttributeEvents.remove`.
 
     The :class:`.Event` object is currently interpreted by the backref
     event handlers, and is used to control the propagation of operations
@@ -348,8 +355,9 @@ class Event(object):
     :var impl: The :class:`.AttributeImpl` which is the current event
      initiator.
 
-    :var op: The symbol :attr:`.OP_APPEND`, :attr:`.OP_REMOVE` or
-     :attr:`.OP_REPLACE`, indicating the source operation.
+    :var op: The symbol :attr:`.OP_APPEND`, :attr:`.OP_REMOVE`,
+     :attr:`.OP_REPLACE`, or :attr:`.OP_BULK_REPLACE`, indicating the
+     source operation.
 
     """
 
@@ -380,7 +388,7 @@ class AttributeImpl(object):
                  callable_, dispatch, trackparent=False, extension=None,
                  compare_function=None, active_history=False,
                  parent_token=None, expire_missing=True,
-                 send_modified_events=True,
+                 send_modified_events=True, accepts_scalar_loader=None,
                  **kwargs):
         r"""Construct an AttributeImpl.
 
@@ -441,6 +449,11 @@ class AttributeImpl(object):
         else:
             self.is_equal = compare_function
 
+        if accepts_scalar_loader is not None:
+            self.accepts_scalar_loader = accepts_scalar_loader
+        else:
+            self.accepts_scalar_loader = self.default_accepts_scalar_loader
+
         # TODO: pass in the manager here
         # instead of doing a lookup
         attr = manager_of_class(class_)[key]
@@ -452,10 +465,12 @@ class AttributeImpl(object):
             self.dispatch._active_history = True
 
         self.expire_missing = expire_missing
+        self._modified_token = Event(self, OP_MODIFIED)
 
     __slots__ = (
         'class_', 'key', 'callable_', 'dispatch', 'trackparent',
-        'parent_token', 'send_modified_events', 'is_equal', 'expire_missing'
+        'parent_token', 'send_modified_events', 'is_equal', 'expire_missing',
+        '_modified_token', 'accepts_scalar_loader'
     )
 
     def __str__(self):
@@ -643,27 +658,18 @@ class AttributeImpl(object):
 class ScalarAttributeImpl(AttributeImpl):
     """represents a scalar value-holding InstrumentedAttribute."""
 
-    accepts_scalar_loader = True
+    default_accepts_scalar_loader = True
     uses_objects = False
     supports_population = True
     collection = False
+    dynamic = False
 
     __slots__ = '_replace_token', '_append_token', '_remove_token'
 
     def __init__(self, *arg, **kw):
         super(ScalarAttributeImpl, self).__init__(*arg, **kw)
-        self._replace_token = self._append_token = None
-        self._remove_token = None
-
-    def _init_append_token(self):
         self._replace_token = self._append_token = Event(self, OP_REPLACE)
-        return self._replace_token
-
-    _init_append_or_replace_token = _init_append_token
-
-    def _init_remove_token(self):
         self._remove_token = Event(self, OP_REMOVE)
-        return self._remove_token
 
     def delete(self, state, dict_):
 
@@ -706,15 +712,12 @@ class ScalarAttributeImpl(AttributeImpl):
     def fire_replace_event(self, state, dict_, value, previous, initiator):
         for fn in self.dispatch.set:
             value = fn(
-                state, value, previous,
-                initiator or self._replace_token or
-                self._init_append_or_replace_token())
+                state, value, previous, initiator or self._replace_token)
         return value
 
     def fire_remove_event(self, state, dict_, value, initiator):
         for fn in self.dispatch.remove:
-            fn(state, value,
-               initiator or self._remove_token or self._init_remove_token())
+            fn(state, value, initiator or self._remove_token)
 
     @property
     def type(self):
@@ -729,7 +732,7 @@ class ScalarObjectAttributeImpl(ScalarAttributeImpl):
 
     """
 
-    accepts_scalar_loader = False
+    default_accepts_scalar_loader = False
     uses_objects = True
     supports_population = True
     collection = False
@@ -738,9 +741,7 @@ class ScalarObjectAttributeImpl(ScalarAttributeImpl):
 
     def delete(self, state, dict_):
         old = self.get(state, dict_)
-        self.fire_remove_event(
-            state, dict_, old,
-            self._remove_token or self._init_remove_token())
+        self.fire_remove_event(state, dict_, old, self._remove_token)
         del dict_[self.key]
 
     def get_history(self, state, dict_, passive=PASSIVE_OFF):
@@ -817,8 +818,7 @@ class ScalarObjectAttributeImpl(ScalarAttributeImpl):
             self.sethasparent(instance_state(value), state, False)
 
         for fn in self.dispatch.remove:
-            fn(state, value, initiator or
-               self._remove_token or self._init_remove_token())
+            fn(state, value, initiator or self._remove_token)
 
         state._modified_event(dict_, self, value)
 
@@ -830,8 +830,7 @@ class ScalarObjectAttributeImpl(ScalarAttributeImpl):
 
         for fn in self.dispatch.set:
             value = fn(
-                state, value, previous, initiator or
-                self._replace_token or self._init_append_or_replace_token())
+                state, value, previous, initiator or self._replace_token)
 
         state._modified_event(dict_, self, previous)
 
@@ -853,14 +852,15 @@ class CollectionAttributeImpl(AttributeImpl):
     semantics to the orm layer independent of the user data implementation.
 
     """
-    accepts_scalar_loader = False
+    default_accepts_scalar_loader = False
     uses_objects = True
     supports_population = True
     collection = True
+    dynamic = False
 
     __slots__ = (
         'copy', 'collection_factory', '_append_token', '_remove_token',
-        '_duck_typed_as'
+        '_bulk_replace_token', '_duck_typed_as'
     )
 
     def __init__(self, class_, key, callable_, dispatch,
@@ -879,8 +879,9 @@ class CollectionAttributeImpl(AttributeImpl):
             copy_function = self.__copy
         self.copy = copy_function
         self.collection_factory = typecallable
-        self._append_token = None
-        self._remove_token = None
+        self._append_token = Event(self, OP_APPEND)
+        self._remove_token = Event(self, OP_REMOVE)
+        self._bulk_replace_token = Event(self, OP_BULK_REPLACE)
         self._duck_typed_as = util.duck_type_collection(
             self.collection_factory())
 
@@ -893,14 +894,6 @@ class CollectionAttributeImpl(AttributeImpl):
             @event.listens_for(self, "dispose_collection")
             def unlink(target, collection, collection_adapter):
                 collection._sa_linker(None)
-
-    def _init_append_token(self):
-        self._append_token = Event(self, OP_APPEND)
-        return self._append_token
-
-    def _init_remove_token(self):
-        self._remove_token = Event(self, OP_REMOVE)
-        return self._remove_token
 
     def __copy(self, item):
         return [y for y in collections.collection_adapter(item)]
@@ -947,8 +940,7 @@ class CollectionAttributeImpl(AttributeImpl):
     def fire_append_event(self, state, dict_, value, initiator):
         for fn in self.dispatch.append:
             value = fn(
-                state, value,
-                initiator or self._append_token or self._init_append_token())
+                state, value, initiator or self._append_token)
 
         state._modified_event(dict_, self, NEVER_SET, True)
 
@@ -965,8 +957,7 @@ class CollectionAttributeImpl(AttributeImpl):
             self.sethasparent(instance_state(value), state, False)
 
         for fn in self.dispatch.remove:
-            fn(state, value,
-               initiator or self._remove_token or self._init_remove_token())
+            fn(state, value, initiator or self._remove_token)
 
         state._modified_event(dict_, self, NEVER_SET, True)
 
@@ -1062,6 +1053,10 @@ class CollectionAttributeImpl(AttributeImpl):
                     iterable = iter(iterable)
         new_values = list(iterable)
 
+        evt = self._bulk_replace_token
+
+        self.dispatch.bulk_replace(state, new_values, evt)
+
         old = self.get(state, dict_, passive=PASSIVE_ONLY_PERSISTENT)
         if old is PASSIVE_NO_RESULT:
             old = self.initialize(state, dict_)
@@ -1078,7 +1073,8 @@ class CollectionAttributeImpl(AttributeImpl):
         dict_[self.key] = user_data
 
         collections.bulk_replace(
-            new_values, old_collection, new_collection)
+            new_values, old_collection, new_collection,
+            initiator=evt)
 
         del old._sa_adapter
         self.dispatch.dispose_collection(state, old, old_collection)
@@ -1132,7 +1128,13 @@ class CollectionAttributeImpl(AttributeImpl):
 def backref_listeners(attribute, key, uselist):
     """Apply listeners to synchronize a two-way relationship."""
 
-    # use easily recognizable names for stack traces
+    # use easily recognizable names for stack traces.
+
+    # in the sections marked "tokens to test for a recursive loop",
+    # this is somewhat brittle and very performance-sensitive logic
+    # that is specific to how we might arrive at each event.  a marker
+    # that can target us directly to arguments being invoked against
+    # the impl might be simpler, but could interfere with other systems.
 
     parent_token = attribute.impl.parent_token
     parent_impl = attribute.impl
@@ -1162,24 +1164,35 @@ def backref_listeners(attribute, key, uselist):
                 instance_dict(oldchild)
             impl = old_state.manager[key].impl
 
-            if initiator.impl is not impl or \
-                    initiator.op not in (OP_REPLACE, OP_REMOVE):
+            # tokens to test for a recursive loop.
+            if not impl.collection and not impl.dynamic:
+                check_recursive_token = impl._replace_token
+            else:
+                check_recursive_token = impl._remove_token
+
+            if initiator is not check_recursive_token:
                 impl.pop(old_state,
                          old_dict,
                          state.obj(),
-                         parent_impl._append_token or
-                            parent_impl._init_append_token(),
+                         parent_impl._append_token,
                          passive=PASSIVE_NO_FETCH)
 
         if child is not None:
             child_state, child_dict = instance_state(child),\
                 instance_dict(child)
             child_impl = child_state.manager[key].impl
+
             if initiator.parent_token is not parent_token and \
                     initiator.parent_token is not child_impl.parent_token:
                 _acceptable_key_err(state, initiator, child_impl)
-            elif initiator.impl is not child_impl or \
-                    initiator.op not in (OP_APPEND, OP_REPLACE):
+
+            # tokens to test for a recursive loop.
+            check_append_token = child_impl._append_token
+            check_bulk_replace_token = child_impl._bulk_replace_token \
+                if child_impl.collection else None
+
+            if initiator is not check_append_token and \
+                    initiator is not check_bulk_replace_token:
                 child_impl.append(
                     child_state,
                     child_dict,
@@ -1199,8 +1212,14 @@ def backref_listeners(attribute, key, uselist):
         if initiator.parent_token is not parent_token and \
                 initiator.parent_token is not child_impl.parent_token:
             _acceptable_key_err(state, initiator, child_impl)
-        elif initiator.impl is not child_impl or \
-                initiator.op not in (OP_APPEND, OP_REPLACE):
+
+        # tokens to test for a recursive loop.
+        check_append_token = child_impl._append_token
+        check_bulk_replace_token = child_impl._bulk_replace_token \
+            if child_impl.collection else None
+
+        if initiator is not check_append_token and \
+                initiator is not check_bulk_replace_token:
             child_impl.append(
                 child_state,
                 child_dict,
@@ -1214,8 +1233,18 @@ def backref_listeners(attribute, key, uselist):
             child_state, child_dict = instance_state(child),\
                 instance_dict(child)
             child_impl = child_state.manager[key].impl
-            if initiator.impl is not child_impl or \
-                    initiator.op not in (OP_REMOVE, OP_REPLACE):
+
+            # tokens to test for a recursive loop.
+            if not child_impl.collection and not child_impl.dynamic:
+                check_remove_token = child_impl._remove_token
+                check_replace_token = child_impl._replace_token
+            else:
+                check_remove_token = child_impl._remove_token
+                check_replace_token = child_impl._bulk_replace_token \
+                    if child_impl.collection else None
+
+            if initiator is not check_remove_token and \
+                    initiator is not check_replace_token:
                 child_impl.pop(
                     child_state,
                     child_dict,
@@ -1563,7 +1592,7 @@ def set_committed_value(instance, key, value):
     state.manager[key].impl.set_committed_value(state, dict_, value)
 
 
-def set_attribute(instance, key, value):
+def set_attribute(instance, key, value, initiator=None):
     """Set the value of an attribute, firing history events.
 
     This function may be used regardless of instrumentation
@@ -1572,9 +1601,24 @@ def set_attribute(instance, key, value):
     of this method to establish attribute state as understood
     by SQLAlchemy.
 
+    :param instance: the object that will be modified
+
+    :param key: string name of the attribute
+
+    :param value: value to assign
+
+    :param initiator: an instance of :class:`.Event` that would have
+     been propagated from a previous event listener.  This argument
+     is used when the :func:`.set_attribute` function is being used within
+     an existing event listening function where an :class:`.Event` object
+     is being supplied; the object may be used to track the origin of the
+     chain of events.
+
+     .. versionadded:: 1.2.3
+
     """
     state, dict_ = instance_state(instance), instance_dict(instance)
-    state.manager[key].impl.set(state, dict_, value, None)
+    state.manager[key].impl.set(state, dict_, value, initiator)
 
 
 def get_attribute(instance, key):
@@ -1610,8 +1654,43 @@ def flag_modified(instance, key):
 
     This sets the 'modified' flag on the instance and
     establishes an unconditional change event for the given attribute.
+    The attribute must have a value present, else an
+    :class:`.InvalidRequestError` is raised.
+
+    To mark an object "dirty" without referring to any specific attribute
+    so that it is considered within a flush, use the
+    :func:`.attributes.flag_dirty` call.
+
+    .. seealso::
+
+        :func:`.attributes.flag_dirty`
 
     """
     state, dict_ = instance_state(instance), instance_dict(instance)
     impl = state.manager[key].impl
-    state._modified_event(dict_, impl, NO_VALUE, force=True)
+    impl.dispatch.modified(state, impl._modified_token)
+    state._modified_event(dict_, impl, NO_VALUE, is_userland=True)
+
+
+def flag_dirty(instance):
+    """Mark an instance as 'dirty' without any specific attribute mentioned.
+
+    This is a special operation that will allow the object to travel through
+    the flush process for interception by events such as
+    :meth:`.SessionEvents.before_flush`.   Note that no SQL will be emitted in
+    the flush process for an object that has no changes, even if marked dirty
+    via this method.  However, a :meth:`.SessionEvents.before_flush` handler
+    will be able to see the object in the :attr:`.Session.dirty` collection and
+    may establish changes on it, which will then be included in the SQL
+    emitted.
+
+    .. versionadded:: 1.2
+
+    .. seealso::
+
+        :func:`.attributes.flag_modified`
+
+    """
+
+    state, dict_ = instance_state(instance), instance_dict(instance)
+    state._modified_event(dict_, None, NO_VALUE, is_userland=True)

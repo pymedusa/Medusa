@@ -16,22 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Collection of generic used classes."""
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 
 from dateutil import parser
 
 from medusa import app
-from medusa.common import Quality, USER_AGENT
+from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
-from six.moves.urllib.request import FancyURLopener
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
-
-
-class ApplicationURLopener(FancyURLopener, object):
-    version = USER_AGENT
 
 
 class SearchResult(object):
@@ -44,20 +43,20 @@ class SearchResult(object):
         # the search provider
         self.provider = provider
 
-        # release show object
-        self.show = None
+        # release series object
+        self.series = None
 
         # URL to the NZB/torrent file
-        self.url = u''
+        self.url = ''
 
         # used by some providers to store extra info associated with the result
-        self.extraInfo = []
+        self.extra_info = []
 
         # quality of the release
         self.quality = Quality.UNKNOWN
 
         # release name
-        self.name = u''
+        self.name = ''
 
         # size of the release (-1 = n/a)
         self.size = -1
@@ -75,7 +74,7 @@ class SearchResult(object):
         self.pubdate = None
 
         # release group
-        self.release_group = u''
+        self.release_group = ''
 
         # version
         self.version = -1
@@ -84,7 +83,7 @@ class SearchResult(object):
         self.hash = None
 
         # proper_tags
-        self.proper_tags = u''
+        self.proper_tags = ''
 
         # manually_searched
         self.manually_searched = False
@@ -93,7 +92,7 @@ class SearchResult(object):
         self.content = None
 
         # Result type like: nzb, nzbdata, torrent
-        self.resultType = u''
+        self.result_type = ''
 
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
@@ -150,6 +149,22 @@ class SearchResult(object):
         if len(value) == 1:
             self._actual_episode = value[0]
 
+    @property
+    def show(self):
+        log.warning(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        return self.series
+
+    @show.setter
+    def show(self, value):
+        log.warning(
+            'Please use SearchResult.series and not show. Show has been deprecated.',
+            DeprecationWarning,
+        )
+        self.series = value
+
     def __str__(self):
 
         if self.provider is None:
@@ -157,7 +172,7 @@ class SearchResult(object):
 
         my_string = u'{0} @ {1}\n'.format(self.provider.name, self.url)
         my_string += u'Extra Info:\n'
-        for extra in self.extraInfo:
+        for extra in self.extra_info:
             my_string += u' {0}\n'.format(extra)
 
         my_string += u'Episodes:\n'
@@ -172,7 +187,7 @@ class SearchResult(object):
         return my_string
 
     def file_name(self):
-        return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.resultType)
+        return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
@@ -186,8 +201,8 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.actual_episodes and self.show:
-            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        if self.actual_season and self.actual_episodes and self.series:
+            self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
         return self.episodes
 
     def finish_search_result(self, provider):
@@ -200,15 +215,15 @@ class NZBSearchResult(SearchResult):
 
     def __init__(self, episodes, provider=None):
         super(NZBSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'nzb'
+        self.result_type = u'nzb'
 
 
 class NZBDataSearchResult(SearchResult):
-    """NZB result where the actual NZB XML data is stored in the extraInfo."""
+    """NZB result where the actual NZB XML data is stored in the extra_info."""
 
     def __init__(self, episodes, provider=None):
         super(NZBDataSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'nzbdata'
+        self.result_type = u'nzbdata'
 
 
 class TorrentSearchResult(SearchResult):
@@ -216,7 +231,7 @@ class TorrentSearchResult(SearchResult):
 
     def __init__(self, episodes, provider=None):
         super(TorrentSearchResult, self).__init__(episodes, provider=provider)
-        self.resultType = u'torrent'
+        self.result_type = u'torrent'
 
 
 class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
@@ -232,7 +247,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     def select_series(self, all_series):
-        from .helper.common import dateTimeFormat
+        from medusa.helper.common import dateTimeFormat
 
         search_results = []
         series_names = []
@@ -325,14 +340,7 @@ class Viewer(object):
         :return:
         :rtype: list of medusa.logger.LogLine
         """
-        return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
-
-
-try:
-    import urllib
-    urllib._urlopener = ApplicationURLopener()
-except ImportError:
-    log.debug(u'Unable to import _urlopener, not using user_agent for urllib')
+        return sorted(list(itervalues(self._errors)), key=lambda error: error.timestamp, reverse=True)
 
 
 # The warning viewer: TODO: Change CamelCase to snake_case
