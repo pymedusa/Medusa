@@ -686,6 +686,7 @@ class GenericProvider(object):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
         if not self.series:
             return None
+
         return self.series.indexerid if self.series.indexer == INDEXER_TVDBV2 else self.series.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):

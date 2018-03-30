@@ -22,7 +22,6 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
-from medusa.helper.encoding import ss
 from medusa.helpers.utils import split_and_strip
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
@@ -198,21 +197,18 @@ class NewznabProvider(NZBProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if not self._check_auth_from_data(html):
+
+            rows = html('item')
+            if not rows:
+                log.debug(
+                    'No results returned from provider. Check chosen Newznab search categories'
+                    ' in provider settings and/or usenet retention')
                 return items
 
             try:
                 self.torznab = 'xmlns:torznab' in html.rss.attrs
             except AttributeError:
                 self.torznab = False
-
-            rows = html('item')
-
-            if not rows:
-                log.debug(
-                    'No results returned from provider. Check chosen Newznab search categories'
-                    ' in provider settings and/or usenet retention')
-                return items
 
             for item in rows:
                 try:
@@ -301,26 +297,6 @@ class NewznabProvider(NZBProvider):
             return False
 
         return True
-
-    def _check_auth_from_data(self, data):
-        """
-        Check that the returned data is valid.
-
-        :return: _check_auth if valid otherwise False if there is an error
-        """
-        if data('categories') + data('item'):
-            return self._check_auth()
-
-        try:
-            err_desc = data.error.attrs['description']
-            if not err_desc:
-                raise Exception
-        except (AttributeError, TypeError):
-            return self._check_auth()
-
-        log.info(ss(err_desc))
-
-        return False
 
     def _get_size(self, item):
         """
@@ -418,39 +394,33 @@ class NewznabProvider(NZBProvider):
         and supported by this newznab provider.
         """
         # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
-        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
+        mapped_caps = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
 
-        return_mapping = {}
+        indexer_mapping = {}
 
         if not self.series:
-            # If we don't have show, can't get tvdbid
-            return return_mapping
+            return indexer_mapping
 
-        if not self.cap_tv_search:
-            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
-            return return_mapping
+        supported_params = self.cap_tv_search
+        if not supported_params:
+            # We didn't get back any supportedParams, lets return
+            # and continue with doing a search string search.
+            return indexer_mapping
 
-        for search_type in self.cap_tv_search:
-            if search_type == 'tvdbid' and self._get_tvdb_id():
-                return_mapping['tvdbid'] = self._get_tvdb_id()
-                # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
-                if return_mapping['tvdbid']:
-                    return return_mapping
-            else:
-                # Move to the configured capability / indexer mappings. To see if we can get a match.
-                for map_indexer in map_caps:
-                    if map_caps[map_indexer] == search_type:
-                        if self.series.indexer == map_indexer:
-                            # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
-                            return return_mapping
-                        elif self.series.externals.get(mappings[map_indexer]):
-                            # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
-                            if mapped_external_indexer:
-                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
+        indexer_params = ((x, v) for x, v in mapped_caps.items() if v in supported_params)
+        for indexer, indexer_param in indexer_params:
+            # We have a direct match on the indexer used, no need to try the externals.
+            if self.series.indexer == indexer:
+                indexer_mapping[indexer_param] = self.series.indexerid
+                break
 
-        return return_mapping
+            # No direct match, let's see if one of the externals provides a valid indexer_param.
+            external_indexerid = self.series.externals.get(mappings[indexer])
+            if external_indexerid:
+                indexer_mapping[indexer_param] = external_indexerid
+                break
+
+        return indexer_mapping
 
     @staticmethod
     def _make_provider(provider_config):
@@ -509,7 +479,7 @@ class NewznabProvider(NZBProvider):
         """
         Use the provider url and apikey to get the capabilities.
 
-        Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
+        Makes use of the default newznab caps param. e.a. http://yourznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """

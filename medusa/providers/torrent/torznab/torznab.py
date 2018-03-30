@@ -13,7 +13,6 @@ from medusa import (
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.helper.encoding import ss
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
@@ -46,7 +45,7 @@ class TorznabProvider(TorrentProvider):
         self.minseed = None
         self.minleech = None
 
-        # For now apply the additional season search string for all newznab providers.
+        # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
         # construction.
         self.season_templates = (
@@ -63,7 +62,7 @@ class TorznabProvider(TorrentProvider):
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
-        :param force_query: Newznab will by default search using the tvdb/tmdb/imdb id for a show. As a backup it
+        :param force_query: Torznab will by default search using the tvdb/tmdb/imdb id for a show. As a backup it
         can also search using a query string, like the showtitle with the season/episode number. The force_query
         parameter can be passed to force a search using the query string.
         :param manual_search: If the search is started through a manual search, we're utilizing the force_query param.
@@ -75,6 +74,7 @@ class TorznabProvider(TorrentProvider):
 
         # Search Params
         search_params = {
+            'apikey': self.api_key,
             't': 'search',
             'limit': 100,
             'offset': 0,
@@ -84,11 +84,8 @@ class TorznabProvider(TorrentProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            search_params['apikey'] = self.api_key
-
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
-                # log.warning('Invalid: {0}'.format(match_indexer))
 
                 if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
@@ -159,8 +156,6 @@ class TorznabProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if not self._check_auth_from_data(html):
-                return items
 
             rows = html('item')
             if not rows:
@@ -217,26 +212,6 @@ class TorznabProvider(TorrentProvider):
 
         return True
 
-    def _check_auth_from_data(self, data):
-        """
-        Check that the returned data is valid.
-
-        :return: _check_auth if valid otherwise False if there is an error
-        """
-        if data('categories') + data('item'):
-            return self._check_auth()
-
-        try:
-            err_desc = data.error.attrs['description']
-            if not err_desc:
-                raise Exception
-        except (AttributeError, TypeError):
-            return self._check_auth()
-
-        log.info(ss(err_desc))
-
-        return False
-
     @staticmethod
     def get_providers_list(providers):
         """Return custom rss torrent providers."""
@@ -255,44 +230,38 @@ class TorznabProvider(TorrentProvider):
     def _match_indexer(self):
         """Use the indexers id and externals, and return the most optimal indexer with value.
 
-        For newznab providers we prefer to use tvdb for searches, but if this is not available for shows that have
+        For torznab providers we prefer to use tvdb for searches, but if this is not available for shows that have
         been indexed using an alternative indexer, we could also try other indexers id's that are available
-        and supported by this newznab provider.
+        and supported by this torznab provider.
         """
-        # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
-        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
+        # The following mapping should map the torznab capabilities to our indexers or externals in indexer_config.
+        mapped_caps = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
 
-        return_mapping = {}
+        indexer_mapping = {}
 
         if not self.series:
-            # If we don't have show, can't get tvdbid
-            return return_mapping
+            return indexer_mapping
 
-        if not self.cap_tv_search:
-            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
-            return return_mapping
+        supported_params = self.cap_tv_search
+        if not supported_params:
+            # We didn't get back any supportedParams, lets return
+            # and continue with doing a search string search.
+            return indexer_mapping
 
-        for search_type in self.cap_tv_search:
-            if search_type == 'tvdbid' and self._get_tvdb_id():
-                return_mapping['tvdbid'] = self._get_tvdb_id()
-                # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
-                if return_mapping['tvdbid']:
-                    return return_mapping
-            else:
-                # Move to the configured capability / indexer mappings. To see if we can get a match.
-                for map_indexer in map_caps:
-                    if map_caps[map_indexer] == search_type:
-                        if self.series.indexer == map_indexer:
-                            # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
-                            return return_mapping
-                        elif self.series.externals.get(mappings[map_indexer]):
-                            # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
-                            if mapped_external_indexer:
-                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
+        indexer_params = ((x, v) for x, v in mapped_caps.items() if v in supported_params)
+        for indexer, indexer_param in indexer_params:
+            # We have a direct match on the indexer used, no need to try the externals.
+            if self.series.indexer == indexer:
+                indexer_mapping[indexer_param] = self.series.indexerid
+                break
 
-        return return_mapping
+            # No direct match, let's see if one of the externals provides a valid indexer_param.
+            external_indexerid = self.series.externals.get(mappings[indexer])
+            if external_indexerid:
+                indexer_mapping[indexer_param] = external_indexerid
+                break
+
+        return indexer_mapping
 
     def set_caps(self, data):
         """Set caps."""
@@ -309,7 +278,7 @@ class TorznabProvider(TorrentProvider):
         """
         Use the provider url and apikey to get the capabilities.
 
-        Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
+        Makes use of the default torznab caps param. e.a. http://yourznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """
