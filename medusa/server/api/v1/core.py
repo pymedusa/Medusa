@@ -30,6 +30,9 @@ from builtins import str
 from collections import OrderedDict
 from datetime import date, datetime
 
+from future import standard_library
+standard_library.install_aliases()
+
 from medusa import (
     app, classes, db, helpers, image_cache, network_timezones,
     process_tv, sbdatetime, subtitles, ui,

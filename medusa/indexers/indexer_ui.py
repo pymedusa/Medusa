@@ -10,7 +10,7 @@ from builtins import input
 from builtins import object
 from builtins import str
 
-from indexer_exceptions import IndexerUserAbort
+from medusa.indexer_exceptions import IndexerUserAbort
 
 log = logging.getLogger(__name__)
 log.logger.addHandler(logging.NullHandler())
@@ -78,7 +78,7 @@ class ConsoleUI(BaseUI):
         while True:  # return breaks this loop
             try:
                 print("Enter choice (first number, return for default, 'all', ? for help):")
-                ans = input()
+                ans = eval(input())
             except KeyboardInterrupt:
                 raise IndexerUserAbort('User aborted (^c keyboard interupt)')
             except EOFError:

@@ -270,7 +270,7 @@ class ConfigProviders(Config):
         providers = []
         settings = providers_settings.split('!!!')
         providers_dict = dict(
-            zip([x.get_id() for x in app.torznab_providers_list], app.torznab_providers_list))
+            list(zip([x.get_id() for x in app.torznab_providers_list], app.torznab_providers_list)))
 
         for provider_settings in settings:
             if not provider_settings:

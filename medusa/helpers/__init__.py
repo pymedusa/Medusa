@@ -28,12 +28,8 @@ import zipfile
 from builtins import chr
 from builtins import hex
 from builtins import str
+from builtins import zip
 from itertools import cycle
-
-try:
-    import itertools.izip as zip
-except ImportError:
-    pass
 
 import adba
 

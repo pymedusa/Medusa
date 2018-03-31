@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from builtins import str
 
 from medusa import (
     app,
@@ -23,6 +24,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
+from six import iteritems, itervalues
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -136,7 +139,7 @@ class TorznabProvider(TorrentProvider):
 
                 # Since we aren't using the search string,
                 # break out of the search string loop
-                if any(param in search_params for param in INDEXERS_PARAM.values()):
+                if any(param in search_params for param in itervalues(INDEXERS_PARAM)):
                     break
 
         # Reprocess but now use force_query = True if there are no results
@@ -247,7 +250,7 @@ class TorznabProvider(TorrentProvider):
             # and continue with doing a search string search.
             return indexer_mapping
 
-        indexer_params = ((x, v) for x, v in INDEXERS_PARAM.items() if v in supported_params)
+        indexer_params = ((x, v) for x, v in iteritems(INDEXERS_PARAM) if v in supported_params)
         for indexer, indexer_param in indexer_params:
             # We have a direct match on the indexer used, no need to try the externals.
             if self.series.indexer == indexer:
