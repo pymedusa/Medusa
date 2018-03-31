@@ -36,8 +36,11 @@ from requests.compat import urljoin
 
 import validators
 
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
 
 
 class NewznabProvider(NZBProvider):
@@ -175,7 +178,7 @@ class NewznabProvider(NZBProvider):
 
                 # Since we aren't using the search string,
                 # break out of the search string loop
-                if 'tvdbid' in search_params:
+                if any(param in search_params for param in INDEXERS_PARAM.values()):
                     break
 
         # Reprocess but now use force_query = True if there are no results
@@ -393,9 +396,6 @@ class NewznabProvider(NZBProvider):
         been indexed using an alternative indexer, we could also try other indexers id's that are available
         and supported by this newznab provider.
         """
-        # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
-        mapped_caps = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
-
         indexer_mapping = {}
 
         if not self.series:
@@ -407,7 +407,7 @@ class NewznabProvider(NZBProvider):
             # and continue with doing a search string search.
             return indexer_mapping
 
-        indexer_params = ((x, v) for x, v in mapped_caps.items() if v in supported_params)
+        indexer_params = ((x, v) for x, v in INDEXERS_PARAM.items() if v in supported_params)
         for indexer, indexer_param in indexer_params:
             # We have a direct match on the indexer used, no need to try the externals.
             if self.series.indexer == indexer:

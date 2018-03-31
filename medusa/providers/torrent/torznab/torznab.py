@@ -28,6 +28,8 @@ from requests.compat import urljoin
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
+
 
 class TorznabProvider(TorrentProvider):
     """Generic provider for built in and custom providers who expose a Torznab compatible api."""
@@ -234,9 +236,6 @@ class TorznabProvider(TorrentProvider):
         been indexed using an alternative indexer, we could also try other indexers id's that are available
         and supported by this torznab provider.
         """
-        # The following mapping should map the torznab capabilities to our indexers or externals in indexer_config.
-        mapped_caps = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
-
         indexer_mapping = {}
 
         if not self.series:
@@ -248,7 +247,7 @@ class TorznabProvider(TorrentProvider):
             # and continue with doing a search string search.
             return indexer_mapping
 
-        indexer_params = ((x, v) for x, v in mapped_caps.items() if v in supported_params)
+        indexer_params = ((x, v) for x, v in INDEXERS_PARAM.items() if v in supported_params)
         for indexer, indexer_param in indexer_params:
             # We have a direct match on the indexer used, no need to try the externals.
             if self.series.indexer == indexer:
