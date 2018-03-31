@@ -23,7 +23,6 @@ import os
 import re
 import stat
 import subprocess
-from builtins import filter
 from builtins import object
 from builtins import str
 from collections import OrderedDict
@@ -205,7 +204,7 @@ class PostProcessor(object):
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
-        processed_names += list(filter(None, (self._rar_basename(file_path, files),)))
+        processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
 
         associated_files = set()
         for found_file in files:
