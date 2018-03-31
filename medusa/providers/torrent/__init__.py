@@ -65,7 +65,7 @@ from medusa.providers.torrent.xml import (
 
 __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
-    'gftracker', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv',
+    'gftracker', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv', 'torznab',
     'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
