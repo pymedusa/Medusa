@@ -136,7 +136,7 @@ class TorznabProvider(TorrentProvider):
 
                 # Since we aren't using the search string,
                 # break out of the search string loop
-                if 'tvdbid' in search_params:
+                if any(param in search_params for param in INDEXERS_PARAM.values()):
                     break
 
         # Reprocess but now use force_query = True if there are no results
