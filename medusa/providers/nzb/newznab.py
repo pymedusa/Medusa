@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import logging
 import os
 import re
-import time
 from builtins import range
 from builtins import str
 from builtins import zip
@@ -17,7 +16,6 @@ from medusa import (
     tv,
 )
 from medusa.bs4_parser import BS4Parser
-from medusa.common import cpu_presets
 from medusa.helper.common import (
     convert_size,
     try_int,
@@ -128,6 +126,7 @@ class NewznabProvider(NZBProvider):
                 search_params['apikey'] = self.api_key
 
             if mode != 'RSS':
+
                 match_indexer = self._match_indexer()
                 if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
@@ -166,8 +165,6 @@ class NewznabProvider(NZBProvider):
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
-
-                time.sleep(cpu_presets[app.CPU_PRESET])
 
                 response = self.session.get(urljoin(self.url, 'api'), params=search_params)
                 if not response or not response.text:
