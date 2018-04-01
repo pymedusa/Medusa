@@ -1548,7 +1548,7 @@ const startVue = () => {
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">(if not required, type 0)</span>
+                                    <span class="component-desc">Type <b>0</b>, if not required.</span>
                                 </label>
                             </div>
                             <div class="field-pair" id="newznabcapdiv" style="display: none;">
@@ -1559,7 +1559,7 @@ const startVue = () => {
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">(select your Newznab categories on the left, and click the "update categories" button to use them for searching.) <b>don't forget to to save the form!</b></span>
+                                    <span class="component-desc">Select your Newznab categories on the left, and click the "select categories" button to use them for searching. <b>Don't forget to to save the form!</b></span>
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
@@ -1642,8 +1642,8 @@ const startVue = () => {
                 </div><!-- /component-group4 //-->
                 <div id="custom-torznab" class="component-group">
                     <div class="component-group-desc">
-                        <h3>Configure Custom Jackett Providers</h3>
-                        <p>Add and setup or remove custom Jackett providers.</p>
+                        <h3>Configure Jackett Providers</h3>
+                        <p>Add and setup or remove Jackett providers.</p>
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
@@ -1690,7 +1690,7 @@ const startVue = () => {
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">(select your Newznab categories on the left, and click the "update categories" button to use them for searching.) <b>don't forget to to save the form!</b></span>
+                                    <span class="component-desc">Select your Torznab categories on the left, and click the "select categories" button to use them for searching. <b>Don't forget to to save the form!</b></span>
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
