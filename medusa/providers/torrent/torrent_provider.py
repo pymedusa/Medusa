@@ -183,7 +183,7 @@ class TorrentProvider(GenericProvider):
                 response = self.session.get(result.url, allow_redirects=False)
                 if response:
                     new_url = response.headers.get('Location')
-                    if result.url != new_url:
+                    if new_url and new_url != result.url:
                         result.url = new_url
                         return self._make_url(result)
 

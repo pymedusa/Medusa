@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import warnings
 from builtins import map
 from builtins import object
 from builtins import str
@@ -170,8 +169,8 @@ class GenericProvider(object):
         if (result.url.endswith(GenericProvider.TORRENT) or
                 result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
-            warnings.warn('Using Jackett providers as Newznab providers is deprecated!'
-                          ' Switch them to Jackett providers as soon as possible.', DeprecationWarning)
+            log.warning('Using Jackett providers as Newznab providers is deprecated!'
+                        ' Switch them to Jackett providers as soon as possible.')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
