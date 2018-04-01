@@ -95,16 +95,16 @@ class ConfigProviders(Config):
             error += '\nNo Provider Api key specified'
 
         if error != '':
-            return json.dumps({'success': False, 'error': error})
+            return json.dumps({'success': False, 'message': error})
 
         if kind == 'newznab':
             temp_provider = NewznabProvider(name, url, api_key)
         elif kind == 'torznab':
             temp_provider = TorznabProvider(name, url, api_key)
 
-        success, tv_categories, caps, error = temp_provider.get_capabilities()
+        capabilities = temp_provider.get_capabilities()
 
-        return json.dumps({'success': success, 'tv_categories': tv_categories, 'caps': caps, 'error': error})
+        return json.dumps(capabilities._asdict())
 
     @staticmethod
     def saveNewznabProvider(name, url, api_key=''):
@@ -497,7 +497,7 @@ class ConfigProviders(Config):
         self._save_rsstorrent_providers(torrentrss_string)
         self._save_torznab_providers(torznab_string)
 
-        def provider_names(names, providers):
+        def ordered_providers(names, providers):
             reminder = {}
             for name in names:
                 for provider in providers:
@@ -520,7 +520,7 @@ class ConfigProviders(Config):
         providers_disabled = []
         all_providers = providers.sorted_provider_list()
 
-        for provider in provider_names(ordered_names, all_providers):
+        for provider in ordered_providers(ordered_names, all_providers):
             name = provider.get_id()
             if ordered_names.get(name):
                 provider.enabled = True

@@ -112,8 +112,8 @@ const startVue = () => {
                     if (newzNabCaps && !providerExists(znabProvidersCapabilities, providerName)) {
                         znabProvidersCapabilities.push({
                             name: providerName,
-                            categories: newzNabCaps.tv_categories, // eslint-disable-line camelcase
-                            params: newzNabCaps.caps
+                            categories: newzNabCaps.categories, // eslint-disable-line camelcase
+                            params: newzNabCaps.params
                         });
                     }
 

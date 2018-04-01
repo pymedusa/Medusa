@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 import os
 from builtins import str
+from collections import namedtuple
 
 from medusa import (
     app,
@@ -284,7 +285,7 @@ class TorznabProvider(TorrentProvider):
 
         self.cap_tv_search = _parse_cap('tv-search')
 
-    def get_capabilities(self, just_caps=False):
+    def get_capabilities(self, just_params=False):
         """
         Use the provider url and apikey to get the capabilities.
 
@@ -292,31 +293,32 @@ class TorznabProvider(TorrentProvider):
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """
-        categories = supported_params = []
-        error_msg = ''
+        Capabilities = namedtuple('Capabilities', 'success categories params message')
+        categories = params = []
 
         if not self._check_auth():
-            error_msg = 'Provider requires auth and your key is not set'
-            return False, categories, supported_params, error_msg
+            message = 'Provider requires auth and your key is not set'
+            return Capabilities(False, categories, params, message)
 
         url_params = {'t': 'caps', 'apikey': self.api_key}
 
         response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
-            error_msg = 'Error getting caps xml for: {0}'.format(self.name)
-            log.warning(error_msg)
-            return False, categories, supported_params, error_msg
+            message = 'Error getting caps xml for: {0}'.format(self.name)
+            log.warning(message)
+            return Capabilities(False, categories, params, message)
 
         with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
-                error_msg = 'Error parsing caps xml for: {0}'.format(self.name)
-                log.warning(error_msg)
-                return False, categories, supported_params, error_msg
+                message = 'Error parsing caps xml for: {0}'.format(self.name)
+                log.warning(message)
+                return Capabilities(False, categories, params, message)
 
             self.set_caps(html.find('searching'))
-            supported_params = self.cap_tv_search
-            if just_caps:
-                return True, categories, supported_params, error_msg
+            params = self.cap_tv_search
+            if just_params:
+                message = 'Success getting params for: {0}'.format(self.name)
+                return Capabilities(True, categories, params, message)
 
             for category in html('category'):
                 if 'TV' in category.get('name', '') and category.get('id'):
@@ -325,4 +327,5 @@ class TorznabProvider(TorrentProvider):
                         if 'TV' in subcat.get('name', '') and subcat.get('id'):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
 
-            return True, categories, supported_params, error_msg
+            message = 'Success getting categories and params for: {0}'.format(self.name)
+            return Capabilities(True, categories, params, message)

@@ -76,8 +76,8 @@ $(document).ready(function() { // eslint-disable-line max-lines
         if (newzNabCaps && !$(this).providerExists($.fn.newznabProvidersCapabilities, providerName)) {
             $.fn.newznabProvidersCapabilities.push({
                 name: providerName,
-                categories: newzNabCaps.tv_categories, // eslint-disable-line camelcase
-                params: newzNabCaps.caps
+                categories: newzNabCaps.categories, // eslint-disable-line camelcase
+                params: newzNabCaps.params
             });
         }
 
