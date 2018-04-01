@@ -181,6 +181,14 @@ class TorznabProvider(TorrentProvider):
                     seeders = int(seeders_attr.get('value', 0))
                     leechers = int(peers_attr.get('value', 0))
 
+                    # Filter unseeded torrent
+                    if seeders < min(self.minseed, 1):
+                        if mode != 'RSS':
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
+                        continue
+
                     torrent_size = item.size.get_text(strip=True)
                     size = convert_size(torrent_size, default=-1)
 

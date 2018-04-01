@@ -177,6 +177,8 @@ class TorrentProvider(GenericProvider):
                 log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
                 return urls, filename
         else:
+            # Required for Jackett providers that use magnet redirects
+            # See: https://github.com/pymedusa/Medusa/issues/3435
             if hasattr(self, 'cap_tv_search'):
                 response = self.session.get(result.url, allow_redirects=False)
                 if response:

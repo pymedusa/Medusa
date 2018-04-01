@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+import warnings
 from builtins import map
 from builtins import object
 from builtins import str
@@ -162,9 +163,17 @@ class GenericProvider(object):
             return urls, filename
 
         urls = [result.url]
-
         result_name = sanitize_filename(result.name)
-        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+
+        # TODO: Remove this in future versions, kept for the warning
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+            warnings.warn('Using Jackett providers as Newznab providers is deprecated!'
+                          ' Switch them to Jackett providers as soon as possible.', DeprecationWarning)
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
