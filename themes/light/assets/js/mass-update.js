@@ -1,10 +1,10 @@
 $(document).ready(() => {
-    $('.submitMassEdit').on('click', () => {
+    $(document.body).on('click', '.submitMassEdit', () => {
         const editArr = [];
 
-        $('.editCheck').each(function() {
-            if (this.checked === true) {
-                editArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.editCheck').each((index, element) => {
+            if (element.checked === true) {
+                editArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
@@ -22,7 +22,7 @@ $(document).ready(() => {
         submitForm.submit();
     });
 
-    $('.submitMassUpdate').on('click', function() {
+    $(document.body).on('click', '.submitMassUpdate', () => {
         const updateArr = [];
         const refreshArr = [];
         const renameArr = [];
@@ -32,49 +32,46 @@ $(document).ready(() => {
         const metadataArr = [];
         const imageUpdateArr = [];
 
-        const indexerName = $(this).attr('data-indexer-name');
-        const seriesId = $(this).attr('data-series-id');
-
-        $('.updateCheck').each(function() {
-            if (this.checked === true) {
-                updateArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.updateCheck').each((index, element) => {
+            if (element.checked === true) {
+                updateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
-        $('.refreshCheck').each(function() {
-            if (this.checked === true) {
-                refreshArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.refreshCheck').each((index, element) => {
+            if (element.checked === true) {
+                refreshArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
-        $('.renameCheck').each(function() {
-            if (this.checked === true) {
-                renameArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.renameCheck').each((index, element) => {
+            if (element.checked === true) {
+                renameArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
-        $('.subtitleCheck').each(function() {
-            if (this.checked === true) {
-                subtitleArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.subtitleCheck').each((index, element) => {
+            if (element.checked === true) {
+                subtitleArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
-        $('.removeCheck').each(function() {
-            if (this.checked === true) {
-                removeArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.removeCheck').each((index, element) => {
+            if (element.checked === true) {
+                removeArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
-        $('.imageCheck').each(function() {
-            if (this.checked === true) {
-                imageUpdateArr.push(`${$(this).attr('data-indexer-name')}${$(this).attr('data-series-id')}`);
+        $('.imageCheck').each((index, element) => {
+            if (element.checked === true) {
+                imageUpdateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
             }
         });
 
         let deleteCount = 0;
 
-        $('.deleteCheck').each(function() {
-            if (this.checked === true) {
+        $('.deleteCheck').each((index, element) => {
+            if (element.checked === true) {
                 deleteCount++;
             }
         });
@@ -90,9 +87,9 @@ $(document).ready(() => {
                 dialogClass: 'modal-dialog',
                 post: false,
                 confirm() {
-                    $('.deleteCheck').each(function() {
-                        if (this.checked === true) {
-                            deleteArr.push(`${indexerName}${seriesId}`);
+                    $('.deleteCheck').each((index, element) => {
+                        if (element.checked === true) {
+                            deleteArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
                         }
                     });
                     if (totalCount === 0) {
@@ -130,25 +127,25 @@ $(document).ready(() => {
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck', '.imageCheck'].forEach(name => {
         let lastCheck = null;
 
-        $(name).on('click', function(event) {
+        $(document.body).on('click', name, event => {
             if (!lastCheck || !event.shiftKey) {
-                lastCheck = this;
+                lastCheck = event.currentTarget;
                 return;
             }
 
-            const check = this;
+            const check = event.currentTarget;
             let found = 0;
 
-            $(name).each(function() {
+            $(name).each((index, element) => {
                 if (found === 1) {
-                    if (!this.disabled) {
-                        this.checked = lastCheck.checked;
+                    if (!element.disabled) {
+                        element.checked = lastCheck.checked;
                     }
                 }
                 if (found === 2) {
                     return false;
                 }
-                if (this === check || this === lastCheck) {
+                if (element === check || element === lastCheck) {
                     found++;
                 }
             });
