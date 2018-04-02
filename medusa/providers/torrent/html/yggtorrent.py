@@ -36,7 +36,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://yggtorrent.is'
+        self.url = 'https://ygg.is'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
@@ -49,7 +49,7 @@ class YggtorrentProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.translation = {
-			'à l\'instant': 'just now',
+            'à l\'instant': 'just now',
             'seconde': 'second',
             'secondes': 'seconds',
             'minute': 'minute',
@@ -75,8 +75,8 @@ class YggtorrentProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
-
-        :param search_strings: A dict with mode (key) and the search value (value)
+        :param search_strings: A dict with mode (key)
+        and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
@@ -87,8 +87,8 @@ class YggtorrentProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'category': 2145 ,
-			'do' : 'search'
+            'category': 2145,
+            'do': 'search'
         }
 
         for mode in search_strings:
@@ -156,21 +156,21 @@ class YggtorrentProvider(TorrentProvider):
                     torrent_size = cells[5].get_text()
                     size = convert_size(torrent_size, sep='') or -1
 
-                    pubdate = None
-					#THIS CODE DON'T WORK FOR, CAN SOMEONE LOOK AT THIS ???
-					#pubdate_match = re.match(r'(\d+)\s(\w+)', cells[4].get_text(strip=True))
-					#if pubdate_match:
-					#    translated = self.translation.get(pubdate_match.group(2))
-					#    if not translated:
-					#        log.exception('No translation mapping available for value: {0}', pubdate_match.group(2))
-					#    else:
-					#        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
-					#        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
-					#else:
-					#    log.warning('Could not translate publishing date with value: {0}',
-					#                cells[4].get_text(strip=True))
+                    # pubdate = None
+                    # pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
+                    # if pubdate_match:
+                    #    translated = self.translation.get(pubdate_match.group(2))
+                    #    if not translated:
+                    #        log.exception('No translation mapping available for value:
+                    #        {0}', pubdate_match.group(2))
+                    #    else:
+                    #        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
+                    #        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    # else:
+                    #    log.warning('Could not translate publishing date with value: {0}',
+                    #                cells[2].get_text(strip=True))
 
-					# Filter unseeded torrent
+                    # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
@@ -184,7 +184,7 @@ class YggtorrentProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
+                        'pubdate': None,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
