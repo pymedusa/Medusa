@@ -15,6 +15,7 @@ from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
@@ -530,7 +531,7 @@ class ConfigProviders(Config):
                 providers_disabled.append(name)
 
             self._set_common_settings(provider, **kwargs)
-            if isinstance(provider, (TorrentRssProvider, TorznabProvider)):
+            if isinstance(provider, TorrentProvider):
                 self._set_torrent_settings(provider, **kwargs)
 
         app.PROVIDER_ORDER = providers_enabled + providers_disabled
