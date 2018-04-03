@@ -434,7 +434,7 @@ def reflink_file(src_file, dest_file):
     try:
         if reflink is None:
             raise NotImplementedError()
-        reflink.reflink(src_file.encode('utf-8'), dest_file.encode('utf-8'))  # NOTE: remove when https://goo.gl/BMn8EC is merged.
+        reflink.reflink(src_file, dest_file)
     except reflink.ReflinkImpossibleError as msg:
         if msg.args[0] == 'EOPNOTSUPP':
             log.warning(
