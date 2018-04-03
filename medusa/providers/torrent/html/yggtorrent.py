@@ -36,11 +36,10 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://ygg.is'
+        self.url = 'https://yggtorrent.is'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
-            'daily': urljoin(self.url, 'torrents/today'),
             'download': urljoin(self.url, 'engine/download_torrent?id={0}')
         }
 
@@ -70,13 +69,13 @@ class YggtorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=30)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
-        :param search_strings: A dict with mode (key)
-        and the search value (value)
+
+        :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
@@ -101,12 +100,8 @@ class YggtorrentProvider(TorrentProvider):
                               {'search': search_string})
 
                     search_params['name'] = re.sub(r'[()]', '', search_string)
-                    url = self.urls['search']
-                else:
-                    search_params['per_page'] = 50
-                    url = self.urls['daily']
 
-                response = self.session.get(url, params=search_params)
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -138,8 +133,9 @@ class YggtorrentProvider(TorrentProvider):
             # Skip column headers
             for result in torrent_rows[1:]:
                 cells = result('td')
-                if len(cells) < 5:
+                if len(cells) < 9:
                     continue
+
                 try:
                     info = cells[1].find('a')
                     title = info.get_text(strip=True)
@@ -153,23 +149,6 @@ class YggtorrentProvider(TorrentProvider):
                     seeders = try_int(cells[7].get_text(strip=True), 0)
                     leechers = try_int(cells[8].get_text(strip=True), 0)
 
-                    torrent_size = cells[5].get_text()
-                    size = convert_size(torrent_size, sep='') or -1
-
-                    # pubdate = None
-                    # pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
-                    # if pubdate_match:
-                    #    translated = self.translation.get(pubdate_match.group(2))
-                    #    if not translated:
-                    #        log.exception('No translation mapping available for value:
-                    #        {0}', pubdate_match.group(2))
-                    #    else:
-                    #        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
-                    #        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
-                    # else:
-                    #    log.warning('Could not translate publishing date with value: {0}',
-                    #                cells[2].get_text(strip=True))
-
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
@@ -178,13 +157,30 @@ class YggtorrentProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
+                    torrent_size = cells[5].get_text()
+                    size = convert_size(torrent_size, sep='', default=-1)
+
+                    pubdate = None
+                    pubdate_match = re.search(r'-(\d+)\s(\w+)', cells[4].get_text('-', strip=True))
+                    if pubdate_match:
+                        translated = self.translation.get(pubdate_match.group(2))
+                        if not translated:
+                            log.exception('No translation mapping available for value: {0}',
+                                          pubdate_match.group(2))
+                        else:
+                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
+                            pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    else:
+                        log.warning('Could not translate publishing date with value: {0}',
+                                    cells[4].get_text('-', strip=True))
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -200,21 +196,20 @@ class YggtorrentProvider(TorrentProvider):
         """Login method used for logging in before doing search and torrent downloads."""
         login_params = {
             'id': self.username,
-            'pass': self.password,
-            'submit': ''
+            'pass': self.password
         }
 
-        self.session.post(self.urls['login'], data=login_params)
+        login_resp = self.session.post(self.urls['login'], data=login_params)
+        if not login_resp:
+            log.warning('Invalid username or password. Check your settings')
+            return False
+
         response = self.session.get(self.url)
         if not response:
             log.warning('Unable to connect to provider')
             return False
 
-        if 'Ces identifiants sont invalides' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        if 'Mes torrents' not in response.text:
+        if 'Bienvenue' not in response.text:
             log.warning('Unable to login to provider')
             return False
 
