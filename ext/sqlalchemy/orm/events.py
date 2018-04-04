@@ -1,5 +1,5 @@
 # orm/events.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -1882,14 +1882,18 @@ class AttributeEvents(event.Events):
             target.dispatch._active_history = True
 
         if not raw or not retval:
-            def wrap(target, value, *arg):
+            def wrap(target, *arg):
                 if not raw:
                     target = target.obj()
                 if not retval:
-                    fn(target, value, *arg)
+                    if arg:
+                        value = arg[0]
+                    else:
+                        value = None
+                    fn(target, *arg)
                     return value
                 else:
-                    return fn(target, value, *arg)
+                    return fn(target, *arg)
             event_key = event_key.with_wrapper(wrap)
 
         event_key.base_listen(propagate=propagate)
@@ -1904,6 +1908,10 @@ class AttributeEvents(event.Events):
     def append(self, target, value, initiator):
         """Receive a collection append event.
 
+        The append event is invoked for each element as it is appended
+        to the collection.  This occurs for single-item appends as well
+        as for a "bulk replace" operation.
+
         :param target: the object instance receiving the event.
           If the listener is registered with ``raw=True``, this will
           be the :class:`.InstanceState` object.
@@ -1914,15 +1922,62 @@ class AttributeEvents(event.Events):
         :param initiator: An instance of :class:`.attributes.Event`
           representing the initiation of the event.  May be modified
           from its original value by backref handlers in order to control
-          chained event propagation.
-
-          .. versionchanged:: 0.9.0 the ``initiator`` argument is now
-             passed as a :class:`.attributes.Event` object, and may be
-             modified by backref handlers within a chain of backref-linked
-             events.
-
+          chained event propagation, as well as be inspected for information
+          about the source of the event.
         :return: if the event was registered with ``retval=True``,
          the given value, or a new effective value, should be returned.
+
+        .. seealso::
+
+            :meth:`.AttributeEvents.bulk_replace`
+
+        """
+
+    def bulk_replace(self, target, values, initiator):
+        """Receive a collection 'bulk replace' event.
+
+        This event is invoked for a sequence of values as they are incoming
+        to a bulk collection set operation, which can be
+        modified in place before the values are treated as ORM objects.
+        This is an "early hook" that runs before the bulk replace routine
+        attempts to reconcile which objects are already present in the
+        collection and which are being removed by the net replace operation.
+
+        It is typical that this method be combined with use of the
+        :meth:`.AttributeEvents.append` event.    When using both of these
+        events, note that a bulk replace operation will invoke
+        the :meth:`.AttributeEvents.append` event for all new items,
+        even after :meth:`.AttributeEvents.bulk_replace` has been invoked
+        for the collection as a whole.  In order to determine if an
+        :meth:`.AttributeEvents.append` event is part of a bulk replace,
+        use the symbol :attr:`~.attributes.OP_BULK_REPLACE` to test the
+        incoming initiator::
+
+            from sqlalchemy.orm.attributes import OP_BULK_REPLACE
+
+            @event.listens_for(SomeObject.collection, "bulk_replace")
+            def process_collection(target, values, initiator):
+                values[:] = [_make_value(value) for value in values]
+
+            @event.listens_for(SomeObject.collection, "append", retval=True)
+            def process_collection(target, value, initiator):
+                # make sure bulk_replace didn't already do it
+                if initiator is None or initiator.op is not OP_BULK_REPLACE:
+                    return _make_value(value)
+                else:
+                    return value
+
+
+
+        .. versionadded:: 1.2
+
+        :param target: the object instance receiving the event.
+          If the listener is registered with ``raw=True``, this will
+          be the :class:`.InstanceState` object.
+        :param value: a sequence (e.g. a list) of the values being set.  The
+          handler can modify this list in place.
+        :param initiator: An instance of :class:`.attributes.Event`
+          representing the initiation of the event.
 
         """
 
@@ -2129,12 +2184,34 @@ class AttributeEvents(event.Events):
 
             u1.addresses = [a2, a3]  # <- old collection is disposed
 
-        The mechanics of the event will typically include that the given
-        collection is empty, even if it stored objects while being replaced.
+        The old collection received will contain its previous contents.
+
+        .. versionchanged:: 1.2 The collection passed to
+           :meth:`.AttributeEvents.dispose_collection` will now have its
+           contents before the dispose intact; previously, the collection
+           would be empty.
 
         .. versionadded:: 1.0.0 the :meth:`.AttributeEvents.init_collection`
            and :meth:`.AttributeEvents.dispose_collection` events supersede
            the :class:`.collection.linker` hook.
+
+        """
+
+    def modified(self, target, initiator):
+        """Receive a 'modified' event.
+
+        This event is triggered when the :func:`.attributes.flag_modified`
+        function is used to trigger a modify event on an attribute without
+        any specific value being set.
+
+        .. versionadded:: 1.2
+
+        :param target: the object instance receiving the event.
+          If the listener is registered with ``raw=True``, this will
+          be the :class:`.InstanceState` object.
+
+        :param initiator: An instance of :class:`.attributes.Event`
+          representing the initiation of the event.
 
         """
 

@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import threading
+from builtins import object
 from datetime import date, datetime, timedelta
 
 from medusa import app, common
@@ -59,42 +60,43 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         main_db_con = DBConnection()
         episodes_from_db = main_db_con.select(
-            b'SELECT showid, airdate, season, episode '
+            b'SELECT indexer, showid, airdate, season, episode '
             b'FROM tv_episodes '
             b'WHERE status = ? AND (airdate <= ? and airdate > 1)',
             [common.UNAIRED, cur_date]
         )
 
         new_releases = []
-        show = None
+        series_obj = None
 
         for db_episode in episodes_from_db:
-            show_id = int(db_episode[b'showid'])
+            indexer_id = db_episode[b'indexer']
+            series_id = db_episode[b'showid']
             try:
-                if not show or show_id != show.indexerid:
-                    show = Show.find(app.showList, show_id)
+                if not series_obj or series_id != series_obj.indexerid:
+                    series_obj = Show.find_by_id(app.showList, indexer_id, series_id)
 
                 # for when there is orphaned series in the database but not loaded into our show list
-                if not show or show.paused:
+                if not series_obj or series_obj.paused:
                     continue
 
             except MultipleShowObjectsException:
                 log.info('ERROR: expected to find a single show matching {id}',
-                         {'id': show_id})
+                         {'id': series_id})
                 continue
 
-            if show.airs and show.network:
+            if series_obj.airs and series_obj.network:
                 # This is how you assure it is always converted to local time
-                show_air_time = parse_date_time(db_episode[b'airdate'], show.airs, show.network)
-                end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(show.runtime, 60))
+                show_air_time = parse_date_time(db_episode[b'airdate'], series_obj.airs, series_obj.network)
+                end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(series_obj.runtime, 60))
 
                 # filter out any episodes that haven't finished airing yet,
                 if end_time > cur_time:
                     continue
 
-            cur_ep = show.get_episode(db_episode[b'season'], db_episode[b'episode'])
+            cur_ep = series_obj.get_episode(db_episode[b'season'], db_episode[b'episode'])
             with cur_ep.lock:
-                cur_ep.status = show.default_ep_status if cur_ep.season else common.SKIPPED
+                cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(
                     'Setting status ({status}) for show airing today: {name} {special}', {
                         'name': cur_ep.pretty_name(),

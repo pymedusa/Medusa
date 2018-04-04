@@ -1,5 +1,5 @@
 # sql/operators.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -104,7 +104,9 @@ class Operators(object):
         """
         return self.operate(inv)
 
-    def op(self, opstring, precedence=0, is_comparison=False):
+    def op(
+            self, opstring, precedence=0, is_comparison=False,
+            return_type=None):
         """produce a generic operator function.
 
         e.g.::
@@ -145,6 +147,16 @@ class Operators(object):
          .. versionadded:: 0.9.2 - added the
             :paramref:`.Operators.op.is_comparison` flag.
 
+        :param return_type: a :class:`.TypeEngine` class or object that will
+          force the return type of an expression produced by this operator
+          to be of that type.   By default, operators that specify
+          :paramref:`.Operators.op.is_comparison` will resolve to
+          :class:`.Boolean`, and those that do not will be of the same
+          type as the left-hand operand.
+
+          .. versionadded:: 1.2.0b3 - added the
+             :paramref:`.Operators.op.return_type` argument.
+
         .. seealso::
 
             :ref:`types_operators`
@@ -152,11 +164,28 @@ class Operators(object):
             :ref:`relationship_custom_operator`
 
         """
-        operator = custom_op(opstring, precedence, is_comparison)
+        operator = custom_op(opstring, precedence, is_comparison, return_type)
 
         def against(other):
             return operator(self, other)
         return against
+
+    def bool_op(self, opstring, precedence=0):
+        """Return a custom boolean operator.
+
+        This method is shorthand for calling
+        :meth:`.Operators.op` and passing the
+        :paramref:`.Operators.op.is_comparison`
+        flag with True.
+
+        .. versionadded:: 1.2.0b3
+
+        .. seealso::
+
+            :meth:`.Operators.op`
+
+        """
+        return self.op(opstring, precedence=precedence, is_comparison=True)
 
     def operate(self, op, *other, **kwargs):
         r"""Operate on an argument.
@@ -196,10 +225,10 @@ class Operators(object):
 class custom_op(object):
     """Represent a 'custom' operator.
 
-    :class:`.custom_op` is normally instantitated when the
-    :meth:`.ColumnOperators.op` method is used to create a
-    custom operator callable.  The class can also be used directly
-    when programmatically constructing expressions.   E.g.
+    :class:`.custom_op` is normally instantiated when the
+    :meth:`.Operators.op` or :meth:`.Operators.bool_op` methods
+    are used to create a custom operator callable.  The class can also be
+    used directly when programmatically constructing expressions.   E.g.
     to represent the "factorial" operation::
 
         from sqlalchemy.sql import UnaryExpression
@@ -210,17 +239,28 @@ class custom_op(object):
                 modifier=operators.custom_op("!"),
                 type_=Numeric)
 
+
+    .. seealso::
+
+        :meth:`.Operators.op`
+
+        :meth:`.Operators.bool_op`
+
     """
     __name__ = 'custom_op'
 
     def __init__(
             self, opstring, precedence=0, is_comparison=False,
-            natural_self_precedent=False, eager_grouping=False):
+            return_type=None, natural_self_precedent=False,
+            eager_grouping=False):
         self.opstring = opstring
         self.precedence = precedence
         self.is_comparison = is_comparison
         self.natural_self_precedent = natural_self_precedent
         self.eager_grouping = eager_grouping
+        self.return_type = (
+            return_type._to_instance(return_type) if return_type else None
+        )
 
     def __eq__(self, other):
         return isinstance(other, custom_op) and \
@@ -458,6 +498,17 @@ class ColumnOperators(Operators):
         "other" may be a tuple/list of column expressions,
         or a :func:`~.expression.select` construct.
 
+        In the case that ``other`` is an empty sequence, the compiler
+        produces an "empty in" expression.   This defaults to the
+        expression "1 != 1" to produce false in all cases.  The
+        :paramref:`.create_engine.empty_in_strategy` may be used to
+        alter this behavior.
+
+        .. versionchanged:: 1.2  The :meth:`.ColumnOperators.in_` and
+           :meth:`.ColumnOperators.notin_` operators
+           now produce a "static" expression for an empty IN sequence
+           by default.
+
         """
         return self.operate(in_op, other)
 
@@ -467,7 +518,16 @@ class ColumnOperators(Operators):
         This is equivalent to using negation with
         :meth:`.ColumnOperators.in_`, i.e. ``~x.in_(y)``.
 
-        .. versionadded:: 0.8
+        In the case that ``other`` is an empty sequence, the compiler
+        produces an "empty not in" expression.   This defaults to the
+        expression "1 = 1" to produce true in all cases.  The
+        :paramref:`.create_engine.empty_in_strategy` may be used to
+        alter this behavior.
+
+        .. versionchanged:: 1.2  The :meth:`.ColumnOperators.in_` and
+           :meth:`.ColumnOperators.notin_` operators
+           now produce a "static" expression for an empty IN sequence
+           by default.
 
         .. seealso::
 
@@ -537,25 +597,266 @@ class ColumnOperators(Operators):
         return self.operate(isnot, other)
 
     def startswith(self, other, **kwargs):
-        """Implement the ``startwith`` operator.
+        r"""Implement the ``startswith`` operator.
 
-        In a column context, produces the clause ``LIKE '<other>%'``
+        Produces a LIKE expression that tests against a match for the start
+        of a string value::
+
+            column LIKE <other> || '%'
+
+        E.g.::
+
+            stmt = select([sometable]).\
+                where(sometable.c.column.startswith("foobar"))
+
+        Since the operator uses ``LIKE``, wildcard characters
+        ``"%"`` and ``"_"`` that are present inside the <other> expression
+        will behave like wildcards as well.   For literal string
+        values, the :paramref:`.ColumnOperators.startswith.autoescape` flag
+        may be set to ``True`` to apply escaping to occurences of these
+        characters within the string value so that they match as themselves
+        and not as wildcard characters.  Alternatively, the
+        :paramref:`.ColumnOperators.startswith.escape` parameter will establish
+        a given character as an escape character which can be of use when
+        the target expression is not a literal string.
+
+        :param other: expression to be compared.   This is usually a plain
+          string value, but can also be an arbitrary SQL expression.  LIKE
+          wildcard characters ``%`` and ``_`` are not escaped by default unless
+          the :paramref:`.ColumnOperators.startswith.autoescape` flag is
+          set to True.
+
+        :param autoescape: boolean; when True, establishes an escape character
+          within the LIKE expression, then applies it to all occurrences of
+          ``"%"``, ``"_"`` and the escape character itself within the
+          comparison value, which is assumed to be a literal string and not a
+          SQL expression.
+
+          An expression such as::
+
+            somecolumn.startswith("foo%bar", autoescape=True)
+
+          Will render as::
+
+            somecolumn LIKE :param || '%' ESCAPE '/'
+
+          With the value of :param as ``"foo/%bar"``.
+
+          .. versionadded:: 1.2
+
+          .. versionchanged:: 1.2.0 The
+            :paramref:`.ColumnOperators.startswith.autoescape` parameter is
+             now a simple boolean rather than a character; the escape
+             character itself is also escaped, and defaults to a forwards
+             slash, which itself can be customized using the
+             :paramref:`.ColumnOperators.startswith.escape` parameter.
+
+        :param escape: a character which when given will render with the
+          ``ESCAPE`` keyword to establish that character as the escape
+          character.  This character can then be placed preceding occurrences
+          of ``%`` and ``_`` to allow them to act as themselves and not
+          wildcard characters.
+
+          An expression such as::
+
+            somecolumn.startswith("foo/%bar", escape="^")
+
+          Will render as::
+
+            somecolumn LIKE :param || '%' ESCAPE '^'
+
+          The parameter may also be combined with
+          :paramref:`.ColumnOperators.startswith.autoescape`::
+
+            somecolumn.startswith("foo%bar^bat", escape="^", autoescape=True)
+
+          Where above, the given literal parameter will be converted to
+          ``"foo^%bar^^bat"`` before being passed to the database.
+
+        .. seealso::
+
+            :meth:`.ColumnOperators.endswith`
+
+            :meth:`.ColumnOperators.contains`
+
+            :meth:`.ColumnOperators.like`
 
         """
         return self.operate(startswith_op, other, **kwargs)
 
     def endswith(self, other, **kwargs):
-        """Implement the 'endswith' operator.
+        r"""Implement the 'endswith' operator.
 
-        In a column context, produces the clause ``LIKE '%<other>'``
+        Produces a LIKE expression that tests against a match for the end
+        of a string value::
+
+            column LIKE '%' || <other>
+
+        E.g.::
+
+            stmt = select([sometable]).\
+                where(sometable.c.column.endswith("foobar"))
+
+        Since the operator uses ``LIKE``, wildcard characters
+        ``"%"`` and ``"_"`` that are present inside the <other> expression
+        will behave like wildcards as well.   For literal string
+        values, the :paramref:`.ColumnOperators.endswith.autoescape` flag
+        may be set to ``True`` to apply escaping to occurences of these
+        characters within the string value so that they match as themselves
+        and not as wildcard characters.  Alternatively, the
+        :paramref:`.ColumnOperators.endswith.escape` parameter will establish
+        a given character as an escape character which can be of use when
+        the target expression is not a literal string.
+
+        :param other: expression to be compared.   This is usually a plain
+          string value, but can also be an arbitrary SQL expression.  LIKE
+          wildcard characters ``%`` and ``_`` are not escaped by default unless
+          the :paramref:`.ColumnOperators.endswith.autoescape` flag is
+          set to True.
+
+        :param autoescape: boolean; when True, establishes an escape character
+          within the LIKE expression, then applies it to all occurrences of
+          ``"%"``, ``"_"`` and the escape character itself within the
+          comparison value, which is assumed to be a literal string and not a
+          SQL expression.
+
+          An expression such as::
+
+            somecolumn.endswith("foo%bar", autoescape=True)
+
+          Will render as::
+
+            somecolumn LIKE '%' || :param ESCAPE '/'
+
+          With the value of :param as ``"foo/%bar"``.
+
+          .. versionadded:: 1.2
+
+          .. versionchanged:: 1.2.0 The
+            :paramref:`.ColumnOperators.endswith.autoescape` parameter is
+             now a simple boolean rather than a character; the escape
+             character itself is also escaped, and defaults to a forwards
+             slash, which itself can be customized using the
+             :paramref:`.ColumnOperators.endswith.escape` parameter.
+
+        :param escape: a character which when given will render with the
+          ``ESCAPE`` keyword to establish that character as the escape
+          character.  This character can then be placed preceding occurrences
+          of ``%`` and ``_`` to allow them to act as themselves and not
+          wildcard characters.
+
+          An expression such as::
+
+            somecolumn.endswith("foo/%bar", escape="^")
+
+          Will render as::
+
+            somecolumn LIKE '%' || :param ESCAPE '^'
+
+          The parameter may also be combined with
+          :paramref:`.ColumnOperators.endswith.autoescape`::
+
+            somecolumn.endswith("foo%bar^bat", escape="^", autoescape=True)
+
+          Where above, the given literal parameter will be converted to
+          ``"foo^%bar^^bat"`` before being passed to the database.
+
+        .. seealso::
+
+            :meth:`.ColumnOperators.startswith`
+
+            :meth:`.ColumnOperators.contains`
+
+            :meth:`.ColumnOperators.like`
 
         """
         return self.operate(endswith_op, other, **kwargs)
 
     def contains(self, other, **kwargs):
-        """Implement the 'contains' operator.
+        r"""Implement the 'contains' operator.
 
-        In a column context, produces the clause ``LIKE '%<other>%'``
+        Produces a LIKE expression that tests against a match for the middle
+        of a string value::
+
+            column LIKE '%' || <other> || '%'
+
+        E.g.::
+
+            stmt = select([sometable]).\
+                where(sometable.c.column.contains("foobar"))
+
+        Since the operator uses ``LIKE``, wildcard characters
+        ``"%"`` and ``"_"`` that are present inside the <other> expression
+        will behave like wildcards as well.   For literal string
+        values, the :paramref:`.ColumnOperators.contains.autoescape` flag
+        may be set to ``True`` to apply escaping to occurences of these
+        characters within the string value so that they match as themselves
+        and not as wildcard characters.  Alternatively, the
+        :paramref:`.ColumnOperators.contains.escape` parameter will establish
+        a given character as an escape character which can be of use when
+        the target expression is not a literal string.
+
+        :param other: expression to be compared.   This is usually a plain
+          string value, but can also be an arbitrary SQL expression.  LIKE
+          wildcard characters ``%`` and ``_`` are not escaped by default unless
+          the :paramref:`.ColumnOperators.contains.autoescape` flag is
+          set to True.
+
+        :param autoescape: boolean; when True, establishes an escape character
+          within the LIKE expression, then applies it to all occurrences of
+          ``"%"``, ``"_"`` and the escape character itself within the
+          comparison value, which is assumed to be a literal string and not a
+          SQL expression.
+
+          An expression such as::
+
+            somecolumn.contains("foo%bar", autoescape=True)
+
+          Will render as::
+
+            somecolumn LIKE '%' || :param || '%' ESCAPE '/'
+
+          With the value of :param as ``"foo/%bar"``.
+
+          .. versionadded:: 1.2
+
+          .. versionchanged:: 1.2.0 The
+            :paramref:`.ColumnOperators.contains.autoescape` parameter is
+             now a simple boolean rather than a character; the escape
+             character itself is also escaped, and defaults to a forwards
+             slash, which itself can be customized using the
+             :paramref:`.ColumnOperators.contains.escape` parameter.
+
+        :param escape: a character which when given will render with the
+          ``ESCAPE`` keyword to establish that character as the escape
+          character.  This character can then be placed preceding occurrences
+          of ``%`` and ``_`` to allow them to act as themselves and not
+          wildcard characters.
+
+          An expression such as::
+
+            somecolumn.contains("foo/%bar", escape="^")
+
+          Will render as::
+
+            somecolumn LIKE '%' || :param || '%' ESCAPE '^'
+
+          The parameter may also be combined with
+          :paramref:`.ColumnOperators.contains.autoescape`::
+
+            somecolumn.contains("foo%bar^bat", escape="^", autoescape=True)
+
+          Where above, the given literal parameter will be converted to
+          ``"foo^%bar^^bat"`` before being passed to the database.
+
+        .. seealso::
+
+            :meth:`.ColumnOperators.startswith`
+
+            :meth:`.ColumnOperators.endswith`
+
+            :meth:`.ColumnOperators.like`
+
 
         """
         return self.operate(contains_op, other, **kwargs)
@@ -600,7 +901,13 @@ class ColumnOperators(Operators):
 
     def collate(self, collation):
         """Produce a :func:`~.expression.collate` clause against
-        the parent object, given the collation string."""
+        the parent object, given the collation string.
+
+        .. seealso::
+
+            :func:`~.expression.collate`
+
+        """
         return self.operate(collate, collation)
 
     def __radd__(self, other):
@@ -661,6 +968,22 @@ class ColumnOperators(Operators):
         """Produce a :func:`~.expression.any_` clause against the
         parent object.
 
+        This operator is only appropriate against a scalar subquery
+        object, or for some backends an column expression that is
+        against the ARRAY type, e.g.::
+
+            # postgresql '5 = ANY (somearray)'
+            expr = 5 == mytable.c.somearray.any_()
+
+            # mysql '5 = ANY (SELECT value FROM table)'
+            expr = 5 == select([table.c.value]).as_scalar().any_()
+
+        .. seealso::
+
+            :func:`~.expression.any_` - standalone version
+
+            :func:`~.expression.all_` - ALL operator
+
         .. versionadded:: 1.1
 
         """
@@ -669,6 +992,22 @@ class ColumnOperators(Operators):
     def all_(self):
         """Produce a :func:`~.expression.all_` clause against the
         parent object.
+
+        This operator is only appropriate against a scalar subquery
+        object, or for some backends an column expression that is
+        against the ARRAY type, e.g.::
+
+            # postgresql '5 = ALL (somearray)'
+            expr = 5 == mytable.c.somearray.all_()
+
+            # mysql '5 = ALL (SELECT value FROM table)'
+            expr = 5 == select([table.c.value]).as_scalar().all_()
+
+        .. seealso::
+
+            :func:`~.expression.all_` - standalone version
+
+            :func:`~.expression.any_` - ANY operator
 
         .. versionadded:: 1.1
 
@@ -824,28 +1163,50 @@ def all_op(a):
     return a.all_()
 
 
-def startswith_op(a, b, escape=None):
-    return a.startswith(b, escape=escape)
+def _escaped_like_impl(fn, other, escape, autoescape):
+    if autoescape:
+        if autoescape is not True:
+            util.warn(
+                "The autoescape parameter is now a simple boolean True/False")
+        if escape is None:
+            escape = '/'
+
+        if not isinstance(other, util.compat.string_types):
+            raise TypeError("String value expected when autoescape=True")
+
+        if escape not in ('%', '_'):
+            other = other.replace(escape, escape + escape)
+
+        other = (
+            other.replace('%', escape + '%').
+            replace('_', escape + '_')
+        )
+
+    return fn(other, escape=escape)
 
 
-def notstartswith_op(a, b, escape=None):
-    return ~a.startswith(b, escape=escape)
+def startswith_op(a, b, escape=None, autoescape=False):
+    return _escaped_like_impl(a.startswith, b, escape, autoescape)
 
 
-def endswith_op(a, b, escape=None):
-    return a.endswith(b, escape=escape)
+def notstartswith_op(a, b, escape=None, autoescape=False):
+    return ~_escaped_like_impl(a.startswith, b, escape, autoescape)
 
 
-def notendswith_op(a, b, escape=None):
-    return ~a.endswith(b, escape=escape)
+def endswith_op(a, b, escape=None, autoescape=False):
+    return _escaped_like_impl(a.endswith, b, escape, autoescape)
 
 
-def contains_op(a, b, escape=None):
-    return a.contains(b, escape=escape)
+def notendswith_op(a, b, escape=None, autoescape=False):
+    return ~_escaped_like_impl(a.endswith, b, escape, autoescape)
 
 
-def notcontains_op(a, b, escape=None):
-    return ~a.contains(b, escape=escape)
+def contains_op(a, b, escape=None, autoescape=False):
+    return _escaped_like_impl(a.contains, b, escape, autoescape)
+
+
+def notcontains_op(a, b, escape=None, autoescape=False):
+    return ~_escaped_like_impl(a.contains, b, escape, autoescape)
 
 
 def match_op(a, b, **kw):
@@ -857,6 +1218,14 @@ def notmatch_op(a, b, **kw):
 
 
 def comma_op(a, b):
+    raise NotImplementedError()
+
+
+def empty_in_op(a, b):
+    raise NotImplementedError()
+
+
+def empty_notin_op(a, b):
     raise NotImplementedError()
 
 
@@ -888,9 +1257,10 @@ def json_path_getitem_op(a, b):
     raise NotImplementedError()
 
 
-_commutative = set([eq, ne, add, mul])
+_commutative = {eq, ne, add, mul}
 
-_comparison = set([eq, ne, lt, gt, ge, le, between_op, like_op])
+_comparison = {eq, ne, lt, gt, ge, le, between_op, like_op, is_,
+               isnot, is_distinct_from, isnot_distinct_from}
 
 
 def is_comparison(op):
@@ -959,23 +1329,26 @@ _PRECEDENCE = {
     sub: 7,
 
     concat_op: 6,
-    match_op: 6,
-    notmatch_op: 6,
 
-    ilike_op: 6,
-    notilike_op: 6,
-    like_op: 6,
-    notlike_op: 6,
-    in_op: 6,
-    notin_op: 6,
+    match_op: 5,
+    notmatch_op: 5,
 
-    is_: 6,
-    isnot: 6,
+    ilike_op: 5,
+    notilike_op: 5,
+    like_op: 5,
+    notlike_op: 5,
+    in_op: 5,
+    notin_op: 5,
+
+    is_: 5,
+    isnot: 5,
 
     eq: 5,
     ne: 5,
     is_distinct_from: 5,
     isnot_distinct_from: 5,
+    empty_in_op: 5,
+    empty_notin_op: 5,
     gt: 5,
     lt: 5,
     ge: 5,

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Cache (dogpile) used by application."""
+from __future__ import unicode_literals
 
 import os
 from datetime import timedelta
@@ -37,8 +38,10 @@ class MutexLock(AbstractFileLock):
         """Default release_write_lock."""
         return self.mutex.release_write_lock()
 
+
 cache = make_region()
 memory_cache = make_region()
+recommended_series_cache = make_region()
 
 
 def configure(cache_dir):
@@ -60,6 +63,12 @@ def configure(cache_dir):
                     expiration_time=timedelta(days=1),
                     arguments={'filename': os.path.join(cache_dir, 'application.dbm'),
                                'lock_factory': MutexLock})
+
+    # recommended series cache
+    recommended_series_cache.configure('dogpile.cache.dbm',
+                                       expiration_time=timedelta(days=7),
+                                       arguments={'filename': os.path.join(cache_dir, 'recommended.dbm'),
+                                                  'lock_factory': MutexLock})
 
 
 def fallback():

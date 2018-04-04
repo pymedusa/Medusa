@@ -235,9 +235,7 @@ class AnimeTorrentsProvider(TorrentProvider):
         }
 
         season_scene_names = scene_exceptions.get_scene_exceptions(
-            episode.series.indexerid,
-            episode.series.indexer,
-            episode.scene_season
+            episode.series, episode.scene_season
         )
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):

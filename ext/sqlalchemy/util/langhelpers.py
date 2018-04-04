@@ -1,5 +1,5 @@
 # util/langhelpers.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -192,6 +192,9 @@ class PluginLoader(object):
         self.group = group
         self.impls = {}
         self.auto_fn = auto_fn
+
+    def clear(self):
+        self.impls.clear()
 
     def load(self, name):
         if name in self.impls:
@@ -573,7 +576,7 @@ def class_hierarchy(cls):
         if isinstance(cls, types.ClassType):
             return list()
 
-    hier = set([cls])
+    hier = {cls}
     process = list(cls.__mro__)
     while process:
         c = process.pop()

@@ -1,5 +1,5 @@
 # orm/util.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -91,10 +91,19 @@ def _validator_events(
 
     if include_removes:
         def append(state, value, initiator):
-            if include_backrefs or not detect_is_backref(state, initiator):
+            if (
+                initiator.op is not attributes.OP_BULK_REPLACE and
+                (include_backrefs or not detect_is_backref(state, initiator))
+            ):
                 return validator(state.obj(), key, value, False)
             else:
                 return value
+
+        def bulk_set(state, values, initiator):
+            if include_backrefs or not detect_is_backref(state, initiator):
+                obj = state.obj()
+                values[:] = [
+                    validator(obj, key, value, False) for value in values]
 
         def set_(state, value, oldvalue, initiator):
             if include_backrefs or not detect_is_backref(state, initiator):
@@ -108,10 +117,19 @@ def _validator_events(
 
     else:
         def append(state, value, initiator):
-            if include_backrefs or not detect_is_backref(state, initiator):
+            if (
+                initiator.op is not attributes.OP_BULK_REPLACE and
+                (include_backrefs or not detect_is_backref(state, initiator))
+            ):
                 return validator(state.obj(), key, value)
             else:
                 return value
+
+        def bulk_set(state, values, initiator):
+            if include_backrefs or not detect_is_backref(state, initiator):
+                obj = state.obj()
+                values[:] = [
+                    validator(obj, key, value) for value in values]
 
         def set_(state, value, oldvalue, initiator):
             if include_backrefs or not detect_is_backref(state, initiator):
@@ -120,6 +138,7 @@ def _validator_events(
                 return value
 
     event.listen(desc, 'append', append, raw=True, retval=True)
+    event.listen(desc, 'bulk_replace', bulk_set, raw=True)
     event.listen(desc, 'set', set_, raw=True, retval=True)
     if include_removes:
         event.listen(desc, "remove", remove, raw=True, retval=True)
@@ -195,7 +214,7 @@ def identity_key(*args, **kwargs):
 
     This function has several call styles:
 
-    * ``identity_key(class, ident)``
+    * ``identity_key(class, ident, identity_token=token)``
 
       This form receives a mapped class and a primary key scalar or
       tuple as an argument.
@@ -203,10 +222,13 @@ def identity_key(*args, **kwargs):
       E.g.::
 
         >>> identity_key(MyClass, (1, 2))
-        (<class '__main__.MyClass'>, (1, 2))
+        (<class '__main__.MyClass'>, (1, 2), None)
 
       :param class: mapped class (must be a positional argument)
       :param ident: primary key, may be a scalar or tuple argument.
+      ;param identity_token: optional identity token
+
+        .. versionadded:: 1.2 added identity_token
 
 
     * ``identity_key(instance=instance)``
@@ -220,7 +242,7 @@ def identity_key(*args, **kwargs):
 
         >>> instance = MyClass(1, 2)
         >>> identity_key(instance=instance)
-        (<class '__main__.MyClass'>, (1, 2))
+        (<class '__main__.MyClass'>, (1, 2), None)
 
       In this form, the given instance is ultimately run though
       :meth:`.Mapper.identity_key_from_instance`, which will have the
@@ -229,7 +251,7 @@ def identity_key(*args, **kwargs):
 
       :param instance: object instance (must be given as a keyword arg)
 
-    * ``identity_key(class, row=row)``
+    * ``identity_key(class, row=row, identity_token=token)``
 
       This form is similar to the class/tuple form, except is passed a
       database result row as a :class:`.RowProxy` object.
@@ -239,41 +261,50 @@ def identity_key(*args, **kwargs):
         >>> row = engine.execute("select * from table where a=1 and b=2").\
 first()
         >>> identity_key(MyClass, row=row)
-        (<class '__main__.MyClass'>, (1, 2))
+        (<class '__main__.MyClass'>, (1, 2), None)
 
       :param class: mapped class (must be a positional argument)
       :param row: :class:`.RowProxy` row returned by a :class:`.ResultProxy`
        (must be given as a keyword arg)
+      ;param identity_token: optional identity token
+
+        .. versionadded:: 1.2 added identity_token
 
     """
     if args:
-        if len(args) == 1:
+        row = None
+        largs = len(args)
+        if largs == 1:
             class_ = args[0]
             try:
                 row = kwargs.pop("row")
             except KeyError:
                 ident = kwargs.pop("ident")
-        elif len(args) == 2:
-            class_, ident = args
-        elif len(args) == 3:
+        elif largs in (2, 3):
             class_, ident = args
         else:
             raise sa_exc.ArgumentError(
                 "expected up to three positional arguments, "
-                "got %s" % len(args))
+                "got %s" % largs)
+
+        identity_token = kwargs.pop("identity_token", None)
         if kwargs:
             raise sa_exc.ArgumentError("unknown keyword arguments: %s"
                                        % ", ".join(kwargs))
         mapper = class_mapper(class_)
-        if "ident" in locals():
-            return mapper.identity_key_from_primary_key(util.to_list(ident))
-        return mapper.identity_key_from_row(row)
-    instance = kwargs.pop("instance")
-    if kwargs:
-        raise sa_exc.ArgumentError("unknown keyword arguments: %s"
-                                   % ", ".join(kwargs.keys))
-    mapper = object_mapper(instance)
-    return mapper.identity_key_from_instance(instance)
+        if row is None:
+            return mapper.identity_key_from_primary_key(
+                util.to_list(ident), identity_token=identity_token)
+        else:
+            return mapper.identity_key_from_row(
+                row, identity_token=identity_token)
+    else:
+        instance = kwargs.pop("instance")
+        if kwargs:
+            raise sa_exc.ArgumentError("unknown keyword arguments: %s"
+                                       % ", ".join(kwargs.keys))
+        mapper = object_mapper(instance)
+        return mapper.identity_key_from_instance(instance)
 
 
 class ORMAdapter(sql_util.ColumnAdapter):
@@ -357,7 +388,8 @@ class AliasedClass(object):
                  with_polymorphic_mappers=(),
                  with_polymorphic_discriminator=None,
                  base_alias=None,
-                 use_mapper_path=False):
+                 use_mapper_path=False,
+                 represents_outer_join=False):
         mapper = _class_to_mapper(cls)
         if alias is None:
             alias = mapper._with_polymorphic_selectable.alias(
@@ -376,7 +408,8 @@ class AliasedClass(object):
             else mapper.polymorphic_on,
             base_alias,
             use_mapper_path,
-            adapt_on_names
+            adapt_on_names,
+            represents_outer_join
         )
 
         self.__name__ = 'AliasedClass_%s' % mapper.class_.__name__
@@ -459,7 +492,8 @@ class AliasedInsp(InspectionAttr):
 
     def __init__(self, entity, mapper, selectable, name,
                  with_polymorphic_mappers, polymorphic_on,
-                 _base_alias, _use_mapper_path, adapt_on_names):
+                 _base_alias, _use_mapper_path, adapt_on_names,
+                 represents_outer_join):
         self.entity = entity
         self.mapper = mapper
         self.selectable = selectable
@@ -468,6 +502,7 @@ class AliasedInsp(InspectionAttr):
         self.polymorphic_on = polymorphic_on
         self._base_alias = _base_alias or self
         self._use_mapper_path = _use_mapper_path
+        self.represents_outer_join = represents_outer_join
 
         self._adapter = sql_util.ColumnAdapter(
             selectable, equivalents=mapper._equivalent_columns,
@@ -511,7 +546,8 @@ class AliasedInsp(InspectionAttr):
             'with_polymorphic_discriminator':
                 self.polymorphic_on,
             'base_alias': self._base_alias,
-            'use_mapper_path': self._use_mapper_path
+            'use_mapper_path': self._use_mapper_path,
+            'represents_outer_join': self.represents_outer_join
         }
 
     def __setstate__(self, state):
@@ -524,7 +560,8 @@ class AliasedInsp(InspectionAttr):
             state['with_polymorphic_discriminator'],
             state['base_alias'],
             state['use_mapper_path'],
-            state['adapt_on_names']
+            state['adapt_on_names'],
+            state['represents_outer_join']
         )
 
     def _adapt_element(self, elem):
@@ -753,7 +790,8 @@ def with_polymorphic(base, classes, selectable=False,
                         selectable,
                         with_polymorphic_mappers=mappers,
                         with_polymorphic_discriminator=polymorphic_on,
-                        use_mapper_path=_use_mapper_path)
+                        use_mapper_path=_use_mapper_path,
+                        represents_outer_join=not innerjoin)
 
 
 def _orm_annotate(element, exclude=None):
@@ -948,7 +986,7 @@ def outerjoin(left, right, onclause=None, full=False, join_to_left=None):
     return _ORMJoin(left, right, onclause, True, full)
 
 
-def with_parent(instance, prop):
+def with_parent(instance, prop, from_entity=None):
     """Create filtering criterion that relates this query's primary entity
     to the given related instance, using established :func:`.relationship()`
     configuration.
@@ -959,13 +997,6 @@ def with_parent(instance, prop):
     Python without the need to render joins to the parent table
     in the rendered statement.
 
-    .. versionchanged:: 0.6.4
-        This method accepts parent instances in all
-        persistence states, including transient, persistent, and detached.
-        Only the requisite primary key/foreign key attributes need to
-        be populated.  Previous versions didn't work with transient
-        instances.
-
     :param instance:
       An instance which has some :func:`.relationship`.
 
@@ -974,6 +1005,12 @@ def with_parent(instance, prop):
       what relationship from the instance should be used to reconcile the
       parent/child relationship.
 
+    :param from_entity:
+      Entity in which to consider as the left side.  This defaults to the
+      "zero" entity of the :class:`.Query` itself.
+
+      .. versionadded:: 1.2
+
     """
     if isinstance(prop, util.string_types):
         mapper = object_mapper(instance)
@@ -981,7 +1018,7 @@ def with_parent(instance, prop):
     elif isinstance(prop, attributes.QueryableAttribute):
         prop = prop.property
 
-    return prop._with_parent(instance)
+    return prop._with_parent(instance, from_entity=from_entity)
 
 
 def has_identity(object):
@@ -1017,6 +1054,40 @@ def was_deleted(object):
 
     state = attributes.instance_state(object)
     return state.was_deleted
+
+
+def _entity_corresponds_to(given, entity):
+    """determine if 'given' corresponds to 'entity', in terms
+    of an entity passed to Query that would match the same entity
+    being referred to elsewhere in the query.
+
+    """
+    if entity.is_aliased_class:
+        if given.is_aliased_class:
+            if entity._base_alias is given._base_alias:
+                return True
+        return False
+    elif given.is_aliased_class:
+        if given._use_mapper_path:
+            return entity in given.with_polymorphic_mappers
+        else:
+            return entity is given
+
+    return entity.common_parent(given)
+
+
+def _entity_isa(given, mapper):
+    """determine if 'given' "is a" mapper, in terms of the given
+    would load rows of type 'mapper'.
+
+    """
+    if given.is_aliased_class:
+        return mapper in given.with_polymorphic_mappers or \
+            given.mapper.isa(mapper)
+    elif given.with_polymorphic_mappers:
+        return mapper in given.with_polymorphic_mappers
+    else:
+        return given.isa(mapper)
 
 
 def randomize_unitofwork():

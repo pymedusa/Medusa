@@ -17,13 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """failed history code."""
+from __future__ import unicode_literals
+
 import re
+from builtins import str
 from datetime import datetime, timedelta
-from . import db, logger
-from .common import FAILED, Quality, WANTED, statusStrings
-from .helper.common import episode_num
-from .helper.exceptions import EpisodeNotFoundException
-from .show.history import History
+
+from medusa import db, logger
+from medusa.common import FAILED, Quality, WANTED, statusStrings
+from medusa.helper.common import episode_num
+from medusa.helper.exceptions import EpisodeNotFoundException
+from medusa.show.history import History
 
 
 def prepare_failed_name(release):
@@ -55,32 +59,32 @@ def log_failed(release):
     if not sql_results:
         logger.log(u'Release not found in snatch history: {0}'.format(release), logger.WARNING)
     elif len(sql_results) == 1:
-        size = sql_results[0]['size']
-        provider = sql_results[0]['provider']
+        size = sql_results[0][b'size']
+        provider = sql_results[0][b'provider']
     else:
         logger.log(u'Multiple logged snatches found for release',
                    logger.WARNING)
-        sizes = len(set(x['size'] for x in sql_results))
-        providers = len(set(x['provider'] for x in sql_results))
+        sizes = len(set(x[b'size'] for x in sql_results))
+        providers = len(set(x[b'provider'] for x in sql_results))
         if sizes == 1:
             logger.log(u'However, they are all the same size. '
                        u'Continuing with found size.', logger.WARNING)
-            size = sql_results[0]['size']
+            size = sql_results[0][b'size']
         else:
             logger.log(u'They also vary in size. '
                        u'Deleting the logged snatches and recording this '
                        u'release with no size/provider', logger.WARNING)
             for result in sql_results:
                 delete_logged_snatch(
-                    result['release'],
-                    result['size'],
-                    result['provider']
+                    result[b'release'],
+                    result[b'size'],
+                    result[b'provider']
                 )
 
         if providers == 1:
             logger.log(u'They are also from the same provider. '
                        u'Using it as well.')
-            provider = sql_results[0]['provider']
+            provider = sql_results[0][b'provider']
 
     if not has_failed(release, size, provider):
         failed_db_con = db.DBConnection('failed.db')
@@ -144,11 +148,12 @@ def revert_episode(ep_obj):
         'SELECT episode, old_status '
         'FROM history '
         'WHERE showid=?'
+        ' AND indexer_id=?'
         ' AND season=?',
-        [ep_obj.series.indexerid, ep_obj.season]
+        [ep_obj.series.indexerid, ep_obj.series.indexer, ep_obj.season]
     )
 
-    history_eps = {res['episode']: res for res in sql_results}
+    history_eps = {res[b'episode']: res for res in sql_results}
 
     try:
         logger.log(u'Reverting episode status for {show} {ep}. Checking if we have previous status'.format
@@ -216,10 +221,10 @@ def log_snatch(search_result):
         failed_db_con.action(
             'INSERT INTO history '
             '(date, size, release, provider, showid,'
-            ' season, episode, old_status)'
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            ' season, episode, old_status, indexer_id)'
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [log_date, search_result.size, release, provider, show_obj.indexerid,
-             episode.season, episode.episode, episode.status]
+             episode.season, episode.episode, episode.status, show_obj.indexer]
         )
 
 
@@ -274,13 +279,15 @@ def find_release(ep_obj):
         'WHERE showid = {0}'
         ' AND season = {1}'
         ' AND episode = {2}'
+        ' AND indexer_id = {3}'
         ' AND date < ( SELECT max(date)'
         '              FROM history'
         '              WHERE showid = {0}'
         '               AND season = {1}'
         '               AND episode = {2}'
+        '               AND indexer_id = {3}'
         '             )'.format
-        (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode)
+        (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer)
     )
 
     # Search for release in snatch history
@@ -289,14 +296,15 @@ def find_release(ep_obj):
         'FROM history '
         'WHERE showid=?'
         ' AND season=?'
-        ' AND episode=?',
-        [ep_obj.series.indexerid, ep_obj.season, ep_obj.episode]
+        ' AND episode=?'
+        ' AND indexer_id=?',
+        [ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer]
     )
 
     for result in results:
-        release = str(result['release'])
-        provider = str(result['provider'])
-        date = result['date']
+        release = str(result[b'release'])
+        provider = str(result[b'provider'])
+        date = result[b'date']
 
         # Clear any incomplete snatch records for this release if any exist
         failed_db_con.action(
@@ -309,7 +317,7 @@ def find_release(ep_obj):
         # Found a previously failed release
         logger.log(u'Failed release found for {show} {ep}: {release}'.format
                    (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode),
-                    release=result['release']), logger.DEBUG)
+                    release=result[b'release']), logger.DEBUG)
         return release, provider
 
     # Release was not found

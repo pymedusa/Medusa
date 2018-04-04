@@ -45,6 +45,9 @@ class RTorrentAPI(GenericClient):
 
         if not app.TORRENT_VERIFY_CERT:
             tp_kwargs['check_ssl_cert'] = False
+        else:
+            if app.SSL_CA_BUNDLE:
+                tp_kwargs['check_ssl_cert'] = app.SSL_CA_BUNDLE
 
         if self.username and self.password:
             self.auth = RTorrent(self.host, self.username, self.password, True, tp_kwargs=tp_kwargs)
@@ -59,7 +62,7 @@ class RTorrentAPI(GenericClient):
 
         # Set label
         label = app.TORRENT_LABEL
-        if result.show.is_anime:
+        if result.series.is_anime:
             label = app.TORRENT_LABEL_ANIME
         if label:
             params.append('d.custom1.set={0}'.format(label))

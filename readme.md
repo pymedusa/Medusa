@@ -1,4 +1,4 @@
-![Medusa](static/images/medusa-logo.png)
+![Medusa](themes-default/slim/static/images/medusa-logo.png)
 
 [![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=develop)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open") [![codebeat badge](https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0)](https://codebeat.co/projects/github-com-pymedusa-medusa-develop) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo) [![codecov](https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg)](https://codecov.io/gh/pymedusa/Medusa)
 
@@ -40,10 +40,6 @@
  - DupeKey/DupeScore for NZBGet 12+
  - Real SSL certificate validation
 
-#### Screenshots
-- [Desktop (Full-HD)](http://imgur.com/a/4fpBk)
-- [Mobile](http://imgur.com/a/WPyG6)
-
 #### Dependencies
  To run Medusa from source you will need Python 2.7.10
 
@@ -65,8 +61,6 @@ A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-S
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
-![image](https://torrentproject.se/favicon.ico)[TorrentProject](https://torrentproject.se/about)
-![image](https://thepiratebay.se/favicon.ico)[ThePirateBay](https://thepiratebay.se/)
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
 ![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/dognzb.png)[DOGnzb](https://dognzb.cr)
@@ -95,6 +89,4 @@ The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docke
 * armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
 * aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
 
-Now that the Dockerfile is native as of Dec 6 2017, there's also a direct build available here [Dockerhub](https://hub.docker.com/r/bobbysteel/medusa/), built directly from this repo on a daily basis.
-
-
+There's also a direct build available here [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit.

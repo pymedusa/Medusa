@@ -6,12 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
-from base64 import b16encode, b32decode
+from builtins import map
+from builtins import object
+from builtins import str
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
-from random import shuffle
 
 from dateutil import parser, tz
 
@@ -44,7 +45,7 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
-from medusa.scene_exceptions import get_scene_exceptions
+from medusa.scene_exceptions import get_season_scene_exceptions
 from medusa.search import PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
 from medusa.session.hooks import cloudflare
@@ -53,6 +54,8 @@ from medusa.show.show import Show
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+
+from six import itervalues, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -92,7 +95,7 @@ class GenericProvider(object):
         self.search_mode = None
         self.session = MedusaSafeSession(hooks=[cloudflare])
         self.session.headers.update(self.headers)
-        self.show = None
+        self.series = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
         self.url = ''
@@ -145,11 +148,70 @@ class GenericProvider(object):
                              {'result': result.name, 'location': filename})
                     return True
 
-        if urls:
-            log.warning('Failed to download any results for {result}',
-                        {'result': result.name})
+        log.warning('Failed to download any results for {result}',
+                    {'result': result.name})
 
         return False
+
+    def _make_url(self, result):
+        """Return url if result is a magnet link."""
+        urls = []
+        filename = ''
+
+        if not result or not result.url:
+            return urls, filename
+
+        urls = [result.url]
+        result_name = sanitize_filename(result.name)
+
+        # TODO: Remove this in future versions, kept for the warning
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+            log.warning('Using Jackett providers as Newznab providers is deprecated!'
+                        ' Switch them to Jackett providers as soon as possible.')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+
+        return urls, filename
+
+    @staticmethod
+    def get_url_hook(response, **kwargs):
+        """Get URL hook."""
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
+
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, text_type):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
+
+    def _verify_download(self, file_name=None):
+        return True
 
     def get_content(self, url, params=None, timeout=30, **kwargs):
         """Retrieve the torrent/nzb content."""
@@ -160,11 +222,11 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            show_obj = Show.find(app.showList,
-                                 int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
-            if show_obj:
-                self.show = show_obj
-                episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
+
+            if series_obj:
+                self.series = series_obj
+                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
@@ -183,7 +245,7 @@ class GenericProvider(object):
 
                         search_result.search_type = PROPER_SEARCH
                         search_result.date = datetime.today()
-                        search_result.show = show_obj
+                        search_result.series = series_obj
 
         return results
 
@@ -196,16 +258,19 @@ class GenericProvider(object):
         :param pk: Primary key for removing duplicates
         :return: An iterable of unique mappings
         """
-        return OrderedDict(
-            (item[pk], item)
-            for item in items
-        ).values()
+        return list(
+            itervalues(OrderedDict(
+                (item[pk], item)
+                for item in items
+                )
+            )
+        )
 
-    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
+    def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
         self._check_auth()
-        self.show = show
+        self.series = series
 
         results = {}
         items_list = []
@@ -249,7 +314,7 @@ class GenericProvider(object):
         # categorize the items into lists by quality
         categorized_items = defaultdict(list)
         for item in unique_items:
-            quality = self.get_quality(item, anime=show.is_anime)
+            quality = self.get_quality(item, anime=series.is_anime)
             categorized_items[quality].append(item)
 
         # sort qualities in descending order
@@ -297,7 +362,7 @@ class GenericProvider(object):
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
+                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',
@@ -308,7 +373,7 @@ class GenericProvider(object):
 
             # I don't know why i'm doing this. Maybe remove it later on all together, now i've added the parsed_result
             # to the search_result.
-            search_result.show = search_result.parsed_result.show
+            search_result.series = search_result.parsed_result.series
             search_result.quality = search_result.parsed_result.quality
             search_result.release_group = search_result.parsed_result.release_group
             search_result.version = search_result.parsed_result.version
@@ -316,7 +381,7 @@ class GenericProvider(object):
             search_result.actual_episodes = search_result.parsed_result.episode_numbers
 
             if not manual_search:
-                if not (search_result.show.air_by_date or search_result.show.sports):
+                if not (search_result.series.air_by_date or search_result.series.sports):
                     if search_mode == 'sponly':
                         if search_result.parsed_result.episode_numbers:
                             log.debug(
@@ -388,8 +453,8 @@ class GenericProvider(object):
                         air_date = search_result.parsed_result.air_date.toordinal()
                         db = DBConnection()
                         sql_results = db.select(
-                            'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?',
-                            [search_result.show.indexerid, air_date]
+                            'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+                            [search_result.series.indexer, search_result.series.series_id, air_date]
                         )
 
                         if len(sql_results) == 2:
@@ -472,52 +537,6 @@ class GenericProvider(object):
         """Get result."""
         return self._get_result(episodes)
 
-    @staticmethod
-    def get_url_hook(response, **kwargs):
-        """Get URL hook."""
-        request = response.request
-        log.debug(
-            '{method} URL: {url} [Status: {status}]', {
-                'method': request.method,
-                'url': request.url,
-                'status': response.status_code,
-            }
-        )
-        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
-
-        if request.method.upper() == 'POST':
-            body = request.body
-            # try to log post data using various codecs to decode
-            if isinstance(body, unicode):
-                log.debug('With post data: {0}', body)
-                return
-
-            codecs = ('utf-8', 'latin1', 'cp1252')
-            for codec in codecs:
-                try:
-                    data = body.decode(codec)
-                except UnicodeError as error:
-                    log.debug('Failed to decode post data as {codec}: {msg}',
-                              {'codec': codec, 'msg': error})
-                else:
-                    log.debug('With post data: {0}', data)
-                    break
-            else:
-                log.warning('Failed to decode post data with {codecs}',
-                            {'codecs': codecs})
-
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
-        """Load the given URL."""
-        log.info('providers.generic_provider.get_url() is deprecated, '
-                 'please rewrite your provider to make use of the MedusaSession session class.')
-        kwargs['hooks'] = {'response': self.get_url_hook}
-
-        if not post_data:
-            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
-        else:
-            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
-                                     timeout=timeout, **kwargs)
-
     def image_name(self):
         """Return provider image name."""
         return self.get_id() + '.png'
@@ -576,6 +595,7 @@ class GenericProvider(object):
 
         df = kwargs.pop('dayfirst', False)
         yf = kwargs.pop('yearfirst', False)
+        fromtimestamp = kwargs.pop('fromtimestamp', False)
 
         # This can happen from time to time
         if pubdate is None:
@@ -587,18 +607,30 @@ class GenericProvider(object):
                 if pubdate.lower() in now_alias:
                     seconds = 0
                 else:
-                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time'))
+                    match = re.search(r'(?P<time>[\d.]+\W*)(?P<granularity>\w+)', pubdate)
+                    matched_time = match.group('time')
+                    matched_granularity = match.group('granularity')
+
+                    # The parse method does not support decimals used with the month,
+                    # months, year or years granularities.
+                    if matched_granularity and matched_granularity in ('month', 'months', 'year', 'years'):
+                        matched_time = int(round(float(matched_time.strip())))
+
+                    seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
-            dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+            if fromtimestamp:
+                dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
+            else:
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
                 dt = dt.replace(tzinfo=tz.gettz('UTC'))
             if timezone:
                 dt = dt.astimezone(tz.gettz(timezone))
-            return dt
 
+            return dt
         except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
@@ -617,7 +649,9 @@ class GenericProvider(object):
 
         all_possible_show_names = episode.series.get_all_possible_names()
         if episode.scene_season:
-            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+            all_possible_show_names = all_possible_show_names.union(
+                episode.series.get_all_possible_names(season=episode.scene_season)
+            )
 
         for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
@@ -632,9 +666,7 @@ class GenericProvider(object):
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.series.indexerid,
-                                                          episode.series.indexer,
-                                                          episode.scene_season)):
+                        show_name in get_season_scene_exceptions(episode.series, episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:
@@ -660,9 +692,10 @@ class GenericProvider(object):
 
     def _get_tvdb_id(self):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
-        if not self.show:
+        if not self.series:
             return None
-        return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
+
+        return self.series.indexerid if self.series.indexer == INDEXER_TVDBV2 else self.series.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
         search_string = {
@@ -721,52 +754,6 @@ class GenericProvider(object):
             url = ''
 
         return title, url
-
-    def _make_url(self, result):
-        """Return url if result is a magnet link."""
-        if not result:
-            return '', ''
-
-        urls = []
-        filename = ''
-
-        if result.url.startswith('magnet:'):
-            try:
-                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
-
-                try:
-                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
-                except Exception:
-                    torrent_name = 'NO_DOWNLOAD_NAME'
-
-                if len(info_hash) == 32:
-                    info_hash = b16encode(b32decode(info_hash)).upper()
-
-                if not info_hash:
-                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
-                    return urls, filename
-
-                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
-                shuffle(urls)
-            except Exception:
-                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
-                return urls, filename
-        else:
-            urls = [result.url]
-
-        result_name = sanitize_filename(result.name)
-
-        # Some NZB providers (e.g. Jackett) can also download torrents
-        if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
-            filename = join(app.TORRENT_DIR, result_name + '.torrent')
-        else:
-            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
-
-        return urls, filename
-
-    def _verify_download(self, file_name=None):
-        return True
 
     @property
     def recent_results(self):

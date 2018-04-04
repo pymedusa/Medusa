@@ -1,5 +1,5 @@
 # ext/hybrid.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -183,6 +183,62 @@ The ``length(self, value)`` method is now called upon set::
     >>> i1.end
     17
 
+.. _hybrid_bulk_update:
+
+Allowing Bulk ORM Update
+------------------------
+
+A hybrid can define a custom "UPDATE" handler for when using the
+:meth:`.Query.update` method, allowing the hybrid to be used in the
+SET clause of the update.
+
+Normally, when using a hybrid with :meth:`.Query.update`, the SQL
+expression is used as the column that's the target of the SET.  If our
+``Interval`` class had a hybrid ``start_point`` that linked to
+``Interval.start``, this could be substituted directly::
+
+    session.query(Interval).update({Interval.start_point: 10})
+
+However, when using a composite hybrid like ``Interval.length``, this
+hybrid represents more than one column.   We can set up a handler that will
+accommodate a value passed to :meth:`.Query.update` which can affect
+this, using the :meth:`.hybrid_propery.update_expression` decorator.
+A handler that works similarly to our setter would be::
+
+    class Interval(object):
+        # ...
+
+        @hybrid_property
+        def length(self):
+            return self.end - self.start
+
+        @length.setter
+        def length(self, value):
+            self.end = self.start + value
+
+        @length.update_expression
+        def length(cls, value):
+            return [
+                (cls.end, cls.start + value)
+            ]
+
+Above, if we use ``Interval.length`` in an UPDATE expression as::
+
+    session.query(Interval).update(
+        {Interval.length: 25}, synchronize_session='fetch')
+
+We'll get an UPDATE statement along the lines of::
+
+    UPDATE interval SET end=start + :value
+
+In some cases, the default "evaluate" strategy can't perform the SET
+expression in Python; while the addition operator we're using above
+is supported, for more complex SET expressions it will usually be necessary
+to use either the "fetch" or False synchronization strategy as illustrated
+above.
+
+.. versionadded:: 1.2 added support for bulk updates to hybrid properties.
+
 Working with Relationships
 --------------------------
 
@@ -328,6 +384,10 @@ behavior of each SQLAlchemy expression operator individually.  They
 are useful when creating custom types that have some highly
 idiosyncratic behavior on the SQL side.
 
+.. note::  The :meth:`.hybrid_property.comparator` decorator introduced
+   in this section **replaces** the use of the
+   :meth:`.hybrid_property.expression` decorator.  They cannot be used together.
+
 The example class below allows case-insensitive comparisons on the attribute
 named ``word_insensitive``::
 
@@ -371,6 +431,67 @@ lowercasing can be applied to all comparison operations (i.e. ``eq``,
     class CaseInsensitiveComparator(Comparator):
         def operate(self, op, other):
             return op(func.lower(self.__clause_element__()), func.lower(other))
+
+.. _hybrid_reuse_subclass:
+
+Reusing Hybrid Properties across Subclasses
+-------------------------------------------
+
+A hybrid can be referred to from a superclass, to allow modifying
+methods like :meth:`.hybrid_property.getter`, :meth:`.hybrid_property.setter`
+to be used to redefine those methods on a subclass.  This is similar to
+how the standard Python ``@property`` object works::
+
+    class FirstNameOnly(Base):
+        # ...
+
+        first_name = Column(String)
+
+        @hybrid_property
+        def name(self):
+            return self.first_name
+
+        @name.setter
+        def name(self, value):
+            self.first_name = value
+
+    class FirstNameLastName(FirstNameOnly):
+        # ...
+
+        last_name = Column(String)
+
+        @FirstNameOnly.name.getter
+        def name(self):
+            return self.first_name + ' ' + self.last_name
+
+        @name.setter
+        def name(self, value):
+            self.first_name, self.last_name = value.split(' ', 1)
+
+Above, the ``FirstNameLastName`` class refers to the hybrid from
+``FirstNameOnly.name`` to repurpose its getter and setter for the subclass.
+
+When overriding :meth:`.hybrid_property.expression` and
+:meth:`.hybrid_property.comparator` alone as the first reference
+to the superclass, these names conflict
+with the same-named accessors on the class-level :class:`.QueryableAttribute`
+object returned at the class level.  To override these methods when
+referring directly to the parent class descriptor, add
+the special qualifier :attr:`.hybrid_property.overrides`, which will
+de-reference the instrumented attribute back to the hybrid object::
+
+    class FirstNameLastName(FirstNameOnly):
+        # ...
+
+        last_name = Column(String)
+
+        @FirstNameOnly.overrides.expression
+        def name(cls):
+            return func.concat(cls.first_name, ' ', cls.last_name)
+
+.. versionadded:: 1.2 Added :meth:`.hybrid_property.getter` as well as the
+   ability to redefine accessors per-subclass.
+
 
 Hybrid Value Objects
 --------------------
@@ -714,7 +835,9 @@ class hybrid_property(interfaces.InspectionAttrInfo):
     is_attribute = True
     extension_type = HYBRID_PROPERTY
 
-    def __init__(self, fget, fset=None, fdel=None, expr=None):
+    def __init__(
+            self, fget, fset=None, fdel=None,
+            expr=None, custom_comparator=None, update_expr=None):
         """Create a new :class:`.hybrid_property`.
 
         Usage is typically via decorator::
@@ -734,12 +857,14 @@ class hybrid_property(interfaces.InspectionAttrInfo):
         self.fget = fget
         self.fset = fset
         self.fdel = fdel
-        self.expression(expr or fget)
+        self.expr = expr
+        self.custom_comparator = custom_comparator
+        self.update_expr = update_expr
         util.update_wrapper(self, fget)
 
     def __get__(self, instance, owner):
         if instance is None:
-            return self.expr(owner)
+            return self._expr_comparator(owner)
         else:
             return self.fget(instance)
 
@@ -753,29 +878,96 @@ class hybrid_property(interfaces.InspectionAttrInfo):
             raise AttributeError("can't delete attribute")
         self.fdel(instance)
 
-    def setter(self, fset):
-        """Provide a modifying decorator that defines a value-setter method."""
+    def _copy(self, **kw):
+        defaults = {
+            key: value
+            for key, value in self.__dict__.items()
+            if not key.startswith("_")}
+        defaults.update(**kw)
+        return type(self)(**defaults)
 
-        self.fset = fset
+    @property
+    def overrides(self):
+        """Prefix for a method that is overriding an existing attribute.
+
+        The :attr:`.hybrid_property.overrides` accessor just returns
+        this hybrid object, which when called at the class level from
+        a parent class, will de-reference the "instrumented attribute"
+        normally returned at this level, and allow modifying decorators
+        like :meth:`.hybrid_property.expression` and
+        :meth:`.hybrid_property.comparator`
+        to be used without conflicting with the same-named attributes
+        normally present on the :class:`.QueryableAttribute`::
+
+            class SuperClass(object):
+                # ...
+
+                @hybrid_property
+                def foobar(self):
+                    return self._foobar
+
+            class SubClass(SuperClass):
+                # ...
+
+                @SuperClass.foobar.overrides.expression
+                def foobar(cls):
+                    return func.subfoobar(self._foobar)
+
+        .. versionadded:: 1.2
+
+        .. seealso::
+
+            :ref:`hybrid_reuse_subclass`
+
+         """
         return self
+
+    def getter(self, fget):
+        """Provide a modifying decorator that defines a getter method.
+
+        .. versionadded:: 1.2
+
+        """
+
+        return self._copy(fget=fget)
+
+    def setter(self, fset):
+        """Provide a modifying decorator that defines a setter method."""
+
+        return self._copy(fset=fset)
 
     def deleter(self, fdel):
-        """Provide a modifying decorator that defines a
-        value-deletion method."""
+        """Provide a modifying decorator that defines a deletion method."""
 
-        self.fdel = fdel
-        return self
+        return self._copy(fdel=fdel)
 
     def expression(self, expr):
         """Provide a modifying decorator that defines a SQL-expression
-        producing method."""
+        producing method.
 
-        def _expr(cls):
-            return ExprComparator(expr(cls), self)
-        util.update_wrapper(_expr, expr)
+        When a hybrid is invoked at the class level, the SQL expression given
+        here is wrapped inside of a specialized :class:`.QueryableAttribute`,
+        which is the same kind of object used by the ORM to represent other
+        mapped attributes.   The reason for this is so that other class-level
+        attributes such as docstrings and a reference to the hybrid itself may
+        be maintained within the structure that's returned, without any
+        modifications to the original SQL expression passed in.
 
-        self.expr = _expr
-        return self.comparator(_expr)
+        .. note::
+
+           when referring to a hybrid property  from an owning class (e.g.
+           ``SomeClass.some_hybrid``), an instance of
+           :class:`.QueryableAttribute` is returned, representing the
+           expression or comparator object as well as this  hybrid object.
+           However, that object itself has accessors called ``expression`` and
+           ``comparator``; so when attempting to override these decorators on a
+           subclass, it may be necessary to qualify it using the
+           :attr:`.hybrid_property.overrides` modifier first.  See that
+           modifier for details.
+
+        """
+
+        return self._copy(expr=expr)
 
     def comparator(self, comparator):
         """Provide a modifying decorator that defines a custom
@@ -784,17 +976,96 @@ class hybrid_property(interfaces.InspectionAttrInfo):
         The return value of the decorated method should be an instance of
         :class:`~.hybrid.Comparator`.
 
+        .. note::  The :meth:`.hybrid_property.comparator` decorator
+           **replaces** the use of the :meth:`.hybrid_property.expression`
+           decorator.  They cannot be used together.
+
+        When a hybrid is invoked at the class level, the
+        :class:`~.hybrid.Comparator` object given here is wrapped inside of a
+        specialized :class:`.QueryableAttribute`, which is the same kind of
+        object used by the ORM to represent other mapped attributes.   The
+        reason for this is so that other class-level attributes such as
+        docstrings and a reference to the hybrid itself may be maintained
+        within the structure that's returned, without any modifications to the
+        original comparator object passed in.
+
+        .. note::
+
+           when referring to a hybrid property  from an owning class (e.g.
+           ``SomeClass.some_hybrid``), an instance of
+           :class:`.QueryableAttribute` is returned, representing the
+           expression or comparator object as this  hybrid object.  However,
+           that object itself has accessors called ``expression`` and
+           ``comparator``; so when attempting to override these decorators on a
+           subclass, it may be necessary to qualify it using the
+           :attr:`.hybrid_property.overrides` modifier first.  See that
+           modifier for details.
+
         """
+        return self._copy(custom_comparator=comparator)
 
-        proxy_attr = attributes.\
-            create_proxied_attribute(self)
+    def update_expression(self, meth):
+        """Provide a modifying decorator that defines an UPDATE tuple
+        producing method.
 
-        def expr(owner):
+        The method accepts a single value, which is the value to be
+        rendered into the SET clause of an UPDATE statement.  The method
+        should then process this value into individual column expressions
+        that fit into the ultimate SET clause, and return them as a
+        sequence of 2-tuples.  Each tuple
+        contains a column expression as the key and a value to be rendered.
+
+        E.g.::
+
+            class Person(Base):
+                # ...
+
+                first_name = Column(String)
+                last_name = Column(String)
+
+                @hybrid_property
+                def fullname(self):
+                    return first_name + " " + last_name
+
+                @fullname.update_expression
+                def fullname(cls, value):
+                    fname, lname = value.split(" ", 1)
+                    return [
+                        (cls.first_name, fname),
+                        (cls.last_name, lname)
+                    ]
+
+        .. versionadded:: 1.2
+
+        """
+        return self._copy(update_expr=meth)
+
+    @util.memoized_property
+    def _expr_comparator(self):
+        if self.custom_comparator is not None:
+            return self._get_comparator(self.custom_comparator)
+        elif self.expr is not None:
+            return self._get_expr(self.expr)
+        else:
+            return self._get_expr(self.fget)
+
+    def _get_expr(self, expr):
+
+        def _expr(cls):
+            return ExprComparator(cls, expr(cls), self)
+        util.update_wrapper(_expr, expr)
+
+        return self._get_comparator(_expr)
+
+    def _get_comparator(self, comparator):
+
+        proxy_attr = attributes.create_proxied_attribute(self)
+
+        def expr_comparator(owner):
             return proxy_attr(
                 owner, self.__name__, self, comparator(owner),
                 doc=comparator.__doc__ or self.__doc__)
-        self.expr = expr
-        return self
+        return expr_comparator
 
 
 class Comparator(interfaces.PropComparator):
@@ -819,7 +1090,8 @@ class Comparator(interfaces.PropComparator):
 
 
 class ExprComparator(Comparator):
-    def __init__(self, expression, hybrid):
+    def __init__(self, cls, expression, hybrid):
+        self.cls = cls
         self.expression = expression
         self.hybrid = hybrid
 
@@ -829,6 +1101,14 @@ class ExprComparator(Comparator):
     @property
     def info(self):
         return self.hybrid.info
+
+    def _bulk_update_tuples(self, value):
+        if isinstance(self.expression, attributes.QueryableAttribute):
+            return self.expression._bulk_update_tuples(value)
+        elif self.hybrid.update_expr is not None:
+            return self.hybrid.update_expr(self.cls, value)
+        else:
+            return [(self.expression, value)]
 
     @property
     def property(self):

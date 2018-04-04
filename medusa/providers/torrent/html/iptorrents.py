@@ -132,13 +132,16 @@ class IPTorrentsProvider(TorrentProvider):
                     torrent_size = row('td')[5].text
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row('td')[1].find('div').get_text().split('|')[-1].strip()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

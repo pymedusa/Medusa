@@ -1,5 +1,6 @@
 # coding=utf-8
 """Replace core filesystem functions."""
+from __future__ import unicode_literals
 
 import glob
 import io
@@ -7,9 +8,14 @@ import os
 import shutil
 import sys
 import tarfile
+import tempfile # noqa # pylint: disable=unused-import
+from builtins import map
 
 import certifi
-from six import binary_type, text_type
+
+import rarfile
+
+from six import binary_type, text_type, viewitems
 
 
 fs_encoding = sys.getfilesystemencoding()
@@ -41,10 +47,10 @@ def _handle_output_u(result):
         return decode(result)
 
     if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_u, result)
+        return list(map(_handle_output_u, result))
 
     if isinstance(result, dict):
-        for k, v in result.items():
+        for k, v in viewitems(result):
             result[k] = _handle_output_u(v)
         return result
 
@@ -60,10 +66,10 @@ def _handle_output_b(result):
         return encode(result)
 
     if isinstance(result, list) or isinstance(result, tuple):
-        return map(_handle_output_b, result)
+        return list(map(_handle_output_b, result))
 
     if isinstance(result, dict):
-        for k, v in result.items():
+        for k, v in viewitems(result):
             result[k] = _handle_output_b(v)
         return result
 
@@ -77,12 +83,35 @@ def _varargs(*args):
 
 def _varkwargs(**kwargs):
     """Encode var keyword  arguments to utf-8."""
-    return {k: _handle_input(arg) for k, arg in kwargs.items()}
+    return {k: _handle_input(arg) for k, arg in viewitems(kwargs)}
 
 
-def make_closure(f, handle_arg, handle_output):
-    """Create a closure that encodes parameters to utf-8 and call original function."""
-    return lambda *args, **kwargs: handle_output(f(*[handle_arg(arg) for arg in args], **{k: handle_arg(arg) for k, arg in kwargs.items()}))
+def make_closure(f, handle_arg=None, handle_output=None):
+    """Apply an input handler and output handler to a function.
+
+    Used to ensure UTF-8 encoding at input and output.
+    """
+    return patch_output(patch_input(f, handle_arg), handle_output)
+
+
+def patch_input(f, handle_arg=None):
+    """Patch all args and kwargs of function f.
+
+    If handle_arg is None, just return the original function.
+    """
+    def patched_input(*args, **kwargs):
+        return f(*[handle_arg(arg) for arg in args], **{k: handle_arg(arg) for k, arg in viewitems(kwargs)})
+    return patched_input if callable(handle_arg) else f
+
+
+def patch_output(f, handle_output=None):
+    """Patch the output of function f with the handle_output function.
+
+    If handle_output is None, just return the original function.
+    """
+    def patched_output(*args, **kwargs):
+        return handle_output(f(*args, **kwargs))
+    return patched_output if callable(handle_output) else f
 
 
 def initialize():
@@ -101,6 +130,7 @@ def initialize():
                   'split', 'splitext'],
         shutil: ['copyfile', 'copymode', 'move', 'rmtree'],
         tarfile: ['is_tarfile'],
+        rarfile: ['is_rarfile'],
     }
 
     # pyOpenSSL 0.14-1 bug: it can't handle unicode input.
@@ -113,9 +143,12 @@ def initialize():
     if os.name != 'nt':
         affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
 
-    handle_arg = _handle_input if not fs_encoding or fs_encoding.lower() != 'utf-8' else lambda x: x
+    if not fs_encoding or fs_encoding.lower() not in ('utf-8', 'mbcs'):
+        handle_input = _handle_input
+    else:
+        handle_input = None
 
-    for k, v in affected_functions.items():
+    for k, v in viewitems(affected_functions):
         handle_output = handle_output_map.get(k, _handle_output_u)
         for f in v:
-            setattr(k, f, make_closure(getattr(k, f), handle_arg, handle_output))
+            setattr(k, f, make_closure(getattr(k, f), handle_input, handle_output))

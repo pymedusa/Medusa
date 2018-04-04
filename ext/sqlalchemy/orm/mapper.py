@@ -1,5 +1,5 @@
 # orm/mapper.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -106,6 +106,7 @@ class Mapper(InspectionAttr):
                  polymorphic_identity=None,
                  concrete=False,
                  with_polymorphic=None,
+                 polymorphic_load=None,
                  allow_partial_pks=True,
                  batch=True,
                  column_prefix=None,
@@ -381,6 +382,27 @@ class Mapper(InspectionAttr):
                :paramref:`.mapper.passive_deletes` - supporting ON DELETE
                CASCADE for joined-table inheritance mappers
 
+        :param polymorphic_load: Specifies "polymorphic loading" behavior
+          for a subclass in an inheritance hierarchy (joined and single
+          table inheritance only).   Valid values are:
+
+            * "'inline'" - specifies this class should be part of the
+              "with_polymorphic" mappers, e.g. its columns will be included
+              in a SELECT query against the base.
+
+            * "'selectin'" - specifies that when instances of this class
+              are loaded, an additional SELECT will be emitted to retrieve
+              the columns specific to this subclass.  The SELECT uses
+              IN to fetch multiple subclasses at once.
+
+         .. versionadded:: 1.2
+
+         .. seealso::
+
+            :ref:`with_polymorphic_mapper_config`
+
+            :ref:`polymorphic_selectin`
+
         :param polymorphic_on: Specifies the column, attribute, or
           SQL expression used to determine the target class for an
           incoming row, when inheriting classes are present.
@@ -622,8 +644,6 @@ class Mapper(InspectionAttr):
         else:
             self.confirm_deleted_rows = confirm_deleted_rows
 
-        self._set_with_polymorphic(with_polymorphic)
-
         if isinstance(self.local_table, expression.SelectBase):
             raise sa_exc.InvalidRequestError(
                 "When mapping against a select() construct, map against "
@@ -632,11 +652,8 @@ class Mapper(InspectionAttr):
                 "SELECT from a subquery that does not have an alias."
             )
 
-        if self.with_polymorphic and \
-            isinstance(self.with_polymorphic[1],
-                       expression.SelectBase):
-            self.with_polymorphic = (self.with_polymorphic[0],
-                                     self.with_polymorphic[1].alias())
+        self._set_with_polymorphic(with_polymorphic)
+        self.polymorphic_load = polymorphic_load
 
         # our 'polymorphic identity', a string name that when located in a
         #  result set row indicates this Mapper should be used to construct
@@ -686,6 +703,8 @@ class Mapper(InspectionAttr):
 
     is_mapper = True
     """Part of the inspection API."""
+
+    represents_outer_join = False
 
     @property
     def mapper(self):
@@ -1035,6 +1054,19 @@ class Mapper(InspectionAttr):
                     )
                 self.polymorphic_map[self.polymorphic_identity] = self
 
+            if self.polymorphic_load and self.concrete:
+                raise exc.ArgumentError(
+                    "polymorphic_load is not currently supported "
+                    "with concrete table inheritance")
+            if self.polymorphic_load == 'inline':
+                self.inherits._add_with_polymorphic_subclass(self)
+            elif self.polymorphic_load == 'selectin':
+                pass
+            elif self.polymorphic_load is not None:
+                raise sa_exc.ArgumentError(
+                    "unknown argument for polymorphic_load: %r" %
+                    self.polymorphic_load)
+
         else:
             self._all_tables = set()
             self.base_mapper = self
@@ -1075,8 +1107,21 @@ class Mapper(InspectionAttr):
                        expression.SelectBase):
             self.with_polymorphic = (self.with_polymorphic[0],
                                      self.with_polymorphic[1].alias())
+
         if self.configured:
             self._expire_memoizations()
+
+    def _add_with_polymorphic_subclass(self, mapper):
+        subcl = mapper.class_
+        if self.with_polymorphic is None:
+            self._set_with_polymorphic((subcl,))
+        elif self.with_polymorphic[0] != '*':
+            self._set_with_polymorphic(
+                (
+                    self.with_polymorphic[0] + (subcl, ),
+                    self.with_polymorphic[1]
+                )
+            )
 
     def _set_concrete_base(self, mapper):
         """Set the given :class:`.Mapper` as the 'inherits' for this
@@ -1098,6 +1143,7 @@ class Mapper(InspectionAttr):
         self.inherits._inheriting_mappers.append(self)
         self.passive_updates = self.inherits.passive_updates
         self._all_tables = self.inherits._all_tables
+
         for key, prop in mapper._props.items():
             if key not in self._props and \
                 not self._should_exclude(key, key, local=False,
@@ -1197,6 +1243,10 @@ class Mapper(InspectionAttr):
         event.listen(manager, 'init', _event_on_init, raw=True)
 
         for key, method in util.iterate_attributes(self.class_):
+            if key == '__init__' and hasattr(method, '_sa_original_init'):
+                method = method._sa_original_init
+                if isinstance(method, types.MethodType):
+                    method = method.im_func
             if isinstance(method, types.FunctionType):
                 if hasattr(method, '__sa_reconstructor__'):
                     self._reconstructor = method
@@ -1563,10 +1613,23 @@ class Mapper(InspectionAttr):
         if not self.concrete:
             self._configure_property(key, prop, init=False, setparent=False)
         elif key not in self._props:
-            self._configure_property(
-                key,
-                properties.ConcreteInheritedProperty(),
-                init=init, setparent=True)
+            # determine if the class implements this attribute; if not,
+            # or if it is implemented by the attribute that is handling the
+            # given superclass-mapped property, then we need to report that we
+            # can't use this at the instance level since we are a concrete
+            # mapper and we don't map this.  don't trip user-defined
+            # descriptors that might have side effects when invoked.
+            implementing_attribute = self.class_manager._get_class_attr_mro(
+                key, prop)
+            if implementing_attribute is prop or (isinstance(
+                    implementing_attribute,
+                    attributes.InstrumentedAttribute) and
+                implementing_attribute._parententity is prop.parent
+            ):
+                self._configure_property(
+                    key,
+                    properties.ConcreteInheritedProperty(),
+                    init=init, setparent=True)
 
     def _configure_property(self, key, prop, init=True, setparent=True):
         self._log("_configure_property(%s, %s)", key, prop.__class__.__name__)
@@ -2312,9 +2375,9 @@ class Mapper(InspectionAttr):
 
         {
             tablea.col1:
-                set([tableb.col1, tablec.col1]),
+                {tableb.col1, tablec.col1},
             tablea.col2:
-                set([tabled.col2])
+                {tabled.col2}
         }
 
         """
@@ -2363,9 +2426,8 @@ class Mapper(InspectionAttr):
                     self.class_.__dict__[assigned_name]):
                 return True
         else:
-            if getattr(self.class_, assigned_name, None) is not None \
-                    and self._is_userland_descriptor(
-                    getattr(self.class_, assigned_name)):
+            attr = self.class_manager._get_class_attr_mro(assigned_name, None)
+            if attr is not None and self._is_userland_descriptor(attr):
                 return True
 
         if self.include_properties is not None and \
@@ -2460,7 +2522,7 @@ class Mapper(InspectionAttr):
         else:
             return True
 
-    def identity_key_from_row(self, row, adapter=None):
+    def identity_key_from_row(self, row, identity_token=None, adapter=None):
         """Return an identity-map key for use in storing/retrieving an
         item from the identity map.
 
@@ -2476,16 +2538,16 @@ class Mapper(InspectionAttr):
             pk_cols = [adapter.columns[c] for c in pk_cols]
 
         return self._identity_class, \
-            tuple(row[column] for column in pk_cols)
+            tuple(row[column] for column in pk_cols), identity_token
 
-    def identity_key_from_primary_key(self, primary_key):
+    def identity_key_from_primary_key(self, primary_key, identity_token=None):
         """Return an identity-map key for use in storing/retrieving an
         item from an identity map.
 
         :param primary_key: A list of values indicating the identifier.
 
         """
-        return self._identity_class, tuple(primary_key)
+        return self._identity_class, tuple(primary_key), identity_token
 
     def identity_key_from_instance(self, instance):
         """Return the identity key for the given instance, based on
@@ -2500,17 +2562,18 @@ class Mapper(InspectionAttr):
         attribute name `key`.
 
         """
-        return self.identity_key_from_primary_key(
-            self.primary_key_from_instance(instance))
+        state = attributes.instance_state(instance)
+        return self._identity_key_from_state(state, attributes.PASSIVE_OFF)
 
-    def _identity_key_from_state(self, state):
+    def _identity_key_from_state(
+            self, state, passive=attributes.PASSIVE_RETURN_NEVER_SET):
         dict_ = state.dict
         manager = state.manager
         return self._identity_class, tuple([
-            manager[self._columntoproperty[col].key].
-            impl.get(state, dict_, attributes.PASSIVE_RETURN_NEVER_SET)
-            for col in self.primary_key
-        ])
+            manager[prop.key].
+            impl.get(state, dict_, passive)
+            for prop in self._identity_key_props
+        ]), state.identity_token
 
     def primary_key_from_instance(self, instance):
         """Return the list of primary key values for the given
@@ -2523,17 +2586,9 @@ class Mapper(InspectionAttr):
 
         """
         state = attributes.instance_state(instance)
-        return self._primary_key_from_state(state, attributes.PASSIVE_OFF)
-
-    def _primary_key_from_state(
-            self, state, passive=attributes.PASSIVE_RETURN_NEVER_SET):
-        dict_ = state.dict
-        manager = state.manager
-        return [
-            manager[prop.key].
-            impl.get(state, dict_, passive)
-            for prop in self._identity_key_props
-        ]
+        identity_key = self._identity_key_from_state(
+            state, attributes.PASSIVE_OFF)
+        return identity_key[1]
 
     @_memoized_configured_property
     def _identity_key_props(self):
@@ -2555,7 +2610,7 @@ class Mapper(InspectionAttr):
 
     @_memoized_configured_property
     def _primary_key_propkeys(self):
-        return set([prop.key for prop in self._all_pk_props])
+        return {prop.key for prop in self._all_pk_props}
 
     def _get_state_attr_by_column(
             self, state, dict_, column,
@@ -2660,6 +2715,108 @@ class Mapper(InspectionAttr):
         for key in attribute_names:
             cols.extend(props[key].columns)
         return sql.select(cols, cond, use_labels=True)
+
+    def _iterate_to_target_viawpoly(self, mapper):
+        if self.isa(mapper):
+            prev = self
+            for m in self.iterate_to_root():
+                yield m
+
+                if m is not prev and prev not in \
+                        m._with_polymorphic_mappers:
+                    break
+
+                prev = m
+                if m is mapper:
+                    break
+
+    def _should_selectin_load(self, enabled_via_opt, polymorphic_from):
+        if not enabled_via_opt:
+            # common case, takes place for all polymorphic loads
+            mapper = polymorphic_from
+            for m in self._iterate_to_target_viawpoly(mapper):
+                if m.polymorphic_load == 'selectin':
+                    return m
+        else:
+            # uncommon case, selectin load options were used
+            enabled_via_opt = set(enabled_via_opt)
+            enabled_via_opt_mappers = {e.mapper: e for e in enabled_via_opt}
+            for entity in enabled_via_opt.union([polymorphic_from]):
+                mapper = entity.mapper
+                for m in self._iterate_to_target_viawpoly(mapper):
+                    if m.polymorphic_load == 'selectin' or \
+                            m in enabled_via_opt_mappers:
+                        return enabled_via_opt_mappers.get(m, m)
+
+        return None
+
+    @util.dependencies(
+        "sqlalchemy.ext.baked",
+        "sqlalchemy.orm.strategy_options")
+    def _subclass_load_via_in(self, baked, strategy_options, entity):
+        """Assemble a BakedQuery that can load the columns local to
+        this subclass as a SELECT with IN.
+
+        """
+        assert self.inherits
+
+        polymorphic_prop = self._columntoproperty[
+            self.polymorphic_on]
+        keep_props = set(
+            [polymorphic_prop] + self._identity_key_props)
+
+        disable_opt = strategy_options.Load(entity)
+        enable_opt = strategy_options.Load(entity)
+
+        for prop in self.attrs:
+            if prop.parent is self or prop in keep_props:
+                # "enable" options, to turn on the properties that we want to
+                # load by default (subject to options from the query)
+                enable_opt.set_generic_strategy(
+                    (prop.key, ),
+                    dict(prop.strategy_key)
+                )
+            else:
+                # "disable" options, to turn off the properties from the
+                # superclass that we *don't* want to load, applied after
+                # the options from the query to override them
+                disable_opt.set_generic_strategy(
+                    (prop.key, ),
+                    {"do_nothing": True}
+                )
+
+        if len(self.primary_key) > 1:
+            in_expr = sql.tuple_(*self.primary_key)
+        else:
+            in_expr = self.primary_key[0]
+
+        if entity.is_aliased_class:
+            assert entity.mapper is self
+            q = baked.BakedQuery(
+                self._compiled_cache,
+                lambda session: session.query(entity).
+                select_entity_from(entity.selectable)._adapt_all_clauses(),
+                (self, )
+            )
+            q.spoil()
+        else:
+            q = baked.BakedQuery(
+                self._compiled_cache,
+                lambda session: session.query(self),
+                (self, )
+            )
+
+        q += lambda q: q.filter(
+            in_expr.in_(
+                sql.bindparam('primary_keys', expanding=True)
+            )
+        ).order_by(*self.primary_key)
+
+        return q, enable_opt, disable_opt
+
+    @_memoized_configured_property
+    def _subclass_load_via_in_mapper(self):
+        return self._subclass_load_via_in(self)
 
     def cascade_iterator(self, type_, state, halt_on=None):
         """Iterate each element and its mapper in an object graph,

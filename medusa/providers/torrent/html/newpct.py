@@ -35,10 +35,10 @@ class NewpctProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.newpct.com'
+        self.url = 'http://www.tvsinpagar.com'
         self.urls = OrderedDict([
             ('daily', urljoin(self.url, 'ultimas-descargas')),
-            ('torrent_url', urljoin(self.url, 'descargar-torrent/0{0}_{1}.html')),
+            ('torrent_url', urljoin(self.url, 'descargar-torrent/{0}_{1}.html')),
             ('download_series', urljoin(self.url, 'descargar-serie/{0}/capitulo-{1}/hdtv/')),
             ('download_series_hd', urljoin(self.url, 'descargar-seriehd/{0}/capitulo-{1}/hdtv-720p-ac3-5-1/')),
             ('download_series_vo', urljoin(self.url, 'descargar-serievo/{0}/capitulo-{1}/')),
@@ -71,7 +71,7 @@ class NewpctProvider(TorrentProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            if self.show and (self.show.air_by_date or self.show.is_sports):
+            if self.series and (self.series.air_by_date or self.series.is_sports):
                 log.debug("Provider doesn't support air by date or sports search")
                 continue
 
@@ -184,7 +184,7 @@ class NewpctProvider(TorrentProvider):
         return items
 
     def _parse_title(self, search_string):
-        if self.show and self.show.is_anime:
+        if self.series and self.series.is_anime:
             search_matches = NewpctProvider.anime_search_regex.match(search_string)
             name = search_matches.group(1)
             chapter = '1{0}'.format(search_matches.group(2))
@@ -223,11 +223,11 @@ class NewpctProvider(TorrentProvider):
 
         torrent_info = torrent_content.find('div', class_='entry-left')
         spans = torrent_info('span', class_='imp')
-        size = spans[1].contents[1].strip()
-        pubdate_raw = spans[2].contents[1].strip()
+        size = spans[0].contents[1].strip()
+        pubdate_raw = spans[1].contents[1].strip()
 
         dl_script = torrent_dl.find('script', type='text/javascript').get_text(strip=True)
-        item_id = try_int(NewpctProvider.torrent_id.search(dl_script).group(1)[1:])
+        item_id = try_int(NewpctProvider.torrent_id.search(dl_script).group(1))
 
         if mode == 'RSS' and not self.torrent_id_counter:
             self.torrent_id_counter = item_id

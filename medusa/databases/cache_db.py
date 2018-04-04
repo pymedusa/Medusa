@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 from medusa import db
 
 
@@ -131,3 +133,26 @@ class AddIndexerSceneExceptions(RemoveIndexerUpdateSchema):  # pylint:disable=to
             "INSERT INTO scene_exceptions SELECT exception_id, 1, indexer_id, show_name, season,"
             "custom FROM tmp_scene_exceptions;")
         self.connection.action("DROP TABLE tmp_scene_exceptions;")
+
+
+class AddIndexerIds(AddIndexerSceneExceptions):
+    """
+    Add the indexer_id to all table's that have a series_id already.
+
+    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + series_id in a later iteration.
+
+    For example in this case, the table scene_names has used the fieldname `indexer_id` for the series id.
+    This is unfortunate, but we can change that later.
+    """
+
+    def test(self):
+        """Test if the table history already has the indexer_id."""
+        return self.hasColumn('scene_names', 'indexer')
+
+    def execute(self):
+        # Add the indexer column to the scene_names table.
+        self.addColumn('scene_names', 'indexer', 'NUMERIC', -1)
+
+        # clean up null values from the scene_exceptions_table
+        self.connection.action("DELETE FROM scene_exceptions WHERE indexer = '' or indexer is null;")

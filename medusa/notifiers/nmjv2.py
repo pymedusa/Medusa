@@ -1,7 +1,10 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import time
+from builtins import object
 from xml.dom.minidom import parseString
 
 from medusa import app
@@ -55,7 +58,7 @@ class Notifier(object):
             handle1 = urlopen(req)
             response1 = handle1.read()
             xml = parseString(response1)
-            time.sleep(300.0 / 1000.0)
+            time.sleep(0.3)
             for node in xml.getElementsByTagName('path'):
                 xmlTag = node.toxml()
                 xmlData = xmlTag.replace('<path>', '').replace('</path>', '').replace('[=]', '')
@@ -103,7 +106,7 @@ class Notifier(object):
             req = Request(url_updatedb)
             handle1 = urlopen(prereq)
             response1 = handle1.read()
-            time.sleep(300.0 / 1000.0)
+            time.sleep(0.3)
             handle2 = urlopen(req)
             response2 = handle2.read()
         except IOError as error:

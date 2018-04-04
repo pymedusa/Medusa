@@ -1,5 +1,7 @@
 # coding=utf-8
 """First module to initialize."""
+from __future__ import unicode_literals
+
 import random
 from threading import Lock
 
@@ -90,6 +92,7 @@ showList = []
 providerList = []
 newznabProviderList = []
 torrentRssProviderList = []
+torznab_providers_list = []
 metadata_provider_dict = {}
 
 NEWEST_VERSION = None
@@ -151,6 +154,7 @@ HANDLE_REVERSE_PROXY = False
 PROXY_SETTING = None
 PROXY_INDEXERS = True
 SSL_VERIFY = True
+SSL_CA_BUNDLE = None
 
 LOCALHOST_IP = None
 
@@ -172,6 +176,7 @@ LAUNCH_BROWSER = False
 CACHE_DIR = None
 ACTUAL_CACHE_DIR = None
 ROOT_DIRS = []
+TVDB_DVD_ORDER_EP_IGNORE = False
 
 TRASH_REMOVE_SHOW = False
 TRASH_ROTATE_LOGS = False
@@ -181,7 +186,7 @@ DBDEBUG = False
 DISPLAY_ALL_SEASONS = True
 DEFAULT_PAGE = 'home'
 SEEDERS_LEECHERS_IN_NOTIFY = True
-
+SHOW_LIST_ORDER = ['Anime', 'Series']
 
 USE_LISTVIEW = False
 METADATA_KODI = []
@@ -425,6 +430,7 @@ ANIDB_PASSWORD = None
 ANIDB_USE_MYLIST = False
 ADBA_CONNECTION = None
 ANIME_SPLIT_HOME = False
+ANIME_SPLIT_HOME_IN_TABS = False
 
 USE_SYNOINDEX = False
 
@@ -517,7 +523,13 @@ DATE_PRESET = None
 TIME_PRESET = None
 TIME_PRESET_W_SECONDS = None
 TIMEZONE_DISPLAY = None
+
+# UI
 THEME_NAME = None
+AVAILABLE_THEMES = []
+THEME = 'dark'
+THEME_PATH = None
+THEME_DATA_ROOT = None
 POSTER_SORTBY = None
 POSTER_SORTDIR = None
 FANART_BACKGROUND = None
@@ -607,6 +619,8 @@ __INITIALIZED__ = False
 NEWZNAB_PROVIDERS = []
 
 TORRENTRSS_PROVIDERS = []
+
+TORZNAB_PROVIDERS = []
 
 RECENTLY_DELETED = set()
 

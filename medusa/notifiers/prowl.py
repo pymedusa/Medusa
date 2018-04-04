@@ -1,15 +1,19 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import ast
 import logging
 import socket
 import time
+from builtins import object
 
 from medusa import app, common, db
 from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.http_client import HTTPException, HTTPSConnection
 
 try:
@@ -93,9 +97,9 @@ class Notifier(object):
         if show is not None:
             for value in show:
                 for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs['notify_list']:
-                        if subs['notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs['notify_list']))
+                    if subs[b'notify_list']:
+                        if subs[b'notify_list'][0] == '{':               # legacy format handling
+                            entries = dict(ast.literal_eval(subs[b'notify_list']))
                             for api in entries['prowlAPIs'].split(','):
                                 if api.strip():
                                     apis.append(api)

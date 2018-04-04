@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+from builtins import str
 from medusa.helper.encoding import ss
 
 from six import text_type

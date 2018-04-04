@@ -9,11 +9,13 @@ import logging
 import os
 import re
 from base64 import b64encode
+from builtins import str
 from datetime import datetime, timedelta
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
+    get_extension,
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
@@ -290,10 +292,11 @@ class TransmissionAPI(GenericClient):
 
             to_remove = False
             for i in torrent['files']:
+                # Need to check only the media file or the .rar file to avoid checking all .r0* files in history
+                if not (is_media_file(i['name']) or get_extension(i['name']) == 'rar'):
+                    continue
                 # Check if media was processed
                 # OR check hash in case of RARed torrents
-                if not is_media_file(i['name']):
-                    continue
                 if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 

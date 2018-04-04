@@ -26,8 +26,7 @@ log.logger.addHandler(logging.NullHandler())
 class TorrentRssProvider(TorrentProvider):
     """Torrent RSS provider."""
 
-    def __init__(self, name, url='', cookies='',
-                 title_tag='title', search_mode='eponly', search_fallback=False,
+    def __init__(self, name, url='', cookies='', title_tag=None, search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(TorrentRssProvider, self).__init__(name)
@@ -49,7 +48,7 @@ class TorrentRssProvider(TorrentProvider):
         self.enable_cookies = True
         self.cookies = cookies
         self.required_cookies = ('uid', 'pass')
-        self.title_tag = title_tag
+        self.title_tag = title_tag or 'title'
 
         # Torrent Stats
 
@@ -100,7 +99,7 @@ class TorrentRssProvider(TorrentProvider):
 
     def image_name(self):
         """Return RSS torrent image."""
-        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
 

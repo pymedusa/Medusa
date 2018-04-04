@@ -1,5 +1,5 @@
 # ext/associationproxy.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -19,6 +19,7 @@ import weakref
 from .. import exc, orm, util
 from ..orm import collections, interfaces
 from ..sql import not_, or_
+from .. import inspect
 
 
 def association_proxy(target_collection, attr, **kw):
@@ -211,7 +212,12 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
         return (self.local_attr, self.remote_attr)
 
     def _get_property(self):
-        return (orm.class_mapper(self.owning_class).
+        owning_class = self.owning_class
+        if owning_class is None:
+            raise exc.InvalidRequestError(
+                "This association proxy has no mapped owning class; "
+                "can't locate a mapped property")
+        return (orm.class_mapper(owning_class).
                 get_property(self.target_collection))
 
     @util.memoized_property
@@ -243,9 +249,39 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
     def _target_is_object(self):
         return getattr(self.target_class, self.value_attr).impl.uses_objects
 
+    def _calc_owner(self, obj, class_):
+        if obj is not None and class_ is None:
+            target_cls = type(obj)
+        elif class_ is not None:
+            target_cls = class_
+        else:
+            return
+
+        # we might be getting invoked for a subclass
+        # that is not mapped yet, in some declarative situations.
+        # save until we are mapped
+        try:
+            insp = inspect(target_cls)
+        except exc.NoInspectionAvailable:
+            # can't find a mapper, don't set owner. if we are a not-yet-mapped
+            # subclass, we can also scan through __mro__ to find a mapped
+            # class, but instead just wait for us to be called again against a
+            # mapped class normally.
+            return
+
+        # note we can get our real .key here too
+        owner = insp.mapper.class_manager._locate_owning_manager(self)
+        if owner is not None:
+            self.owning_class = owner.class_
+        else:
+            # the proxy is attached to a class that is not mapped
+            # (like a mixin), we are mapped, so, it's us.
+            self.owning_class = target_cls
+
     def __get__(self, obj, class_):
         if self.owning_class is None:
-            self.owning_class = class_ and class_ or type(obj)
+            self._calc_owner(obj, class_)
+
         if obj is None:
             return self
 
@@ -267,7 +303,7 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
 
     def __set__(self, obj, values):
         if self.owning_class is None:
-            self.owning_class = type(obj)
+            self._calc_owner(obj, None)
 
         if self.scalar:
             creator = self.creator and self.creator or self.target_class
@@ -284,7 +320,8 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
 
     def __delete__(self, obj):
         if self.owning_class is None:
-            self.owning_class = type(obj)
+            self._calc_owner(obj, None)
+
         delattr(obj, self.key)
 
     def _initialize_scalar_accessors(self):
@@ -363,6 +400,41 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
     def _comparator(self):
         return self._get_property().comparator
 
+    @util.memoized_property
+    def _unwrap_target_assoc_proxy(self):
+        attr = getattr(self.target_class, self.value_attr)
+        if isinstance(attr, AssociationProxy):
+            return attr
+        return None
+
+    def _criterion_exists(self, criterion=None, **kwargs):
+        is_has = kwargs.pop('is_has', None)
+
+        target_assoc = self._unwrap_target_assoc_proxy
+        if target_assoc is not None:
+            inner = target_assoc._criterion_exists(
+                criterion=criterion, **kwargs)
+            return self._comparator._criterion_exists(inner)
+
+        if self._target_is_object:
+            prop = getattr(self.target_class, self.value_attr)
+            value_expr = prop._criterion_exists(criterion, **kwargs)
+        else:
+            if kwargs:
+                raise exc.ArgumentError(
+                    "Can't apply keyword arguments to column-targeted "
+                    "association proxy; use =="
+                )
+            elif is_has and criterion is not None:
+                raise exc.ArgumentError(
+                    "Non-empty has() not allowed for "
+                    "column-targeted association proxy; use =="
+                )
+
+            value_expr = criterion
+
+        return self._comparator._criterion_exists(value_expr)
+
     def any(self, criterion=None, **kwargs):
         """Produce a proxied 'any' expression using EXISTS.
 
@@ -372,29 +444,16 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
         operators of the underlying proxied attributes.
 
         """
-        if self._target_is_object:
-            if self._value_is_scalar:
-                value_expr = getattr(
-                    self.target_class, self.value_attr).has(
-                    criterion, **kwargs)
-            else:
-                value_expr = getattr(
-                    self.target_class, self.value_attr).any(
-                    criterion, **kwargs)
-        else:
-            value_expr = criterion
-
-        # check _value_is_scalar here, otherwise
-        # we're scalar->scalar - call .any() so that
-        # the "can't call any() on a scalar" msg is raised.
-        if self.scalar and not self._value_is_scalar:
-            return self._comparator.has(
-                value_expr
+        if self._unwrap_target_assoc_proxy is None and (
+            self.scalar and (
+                not self._target_is_object or self._value_is_scalar)
+        ):
+            raise exc.InvalidRequestError(
+                "'any()' not implemented for scalar "
+                "attributes. Use has()."
             )
-        else:
-            return self._comparator.any(
-                value_expr
-            )
+        return self._criterion_exists(
+            criterion=criterion, is_has=False, **kwargs)
 
     def has(self, criterion=None, **kwargs):
         """Produce a proxied 'has' expression using EXISTS.
@@ -405,18 +464,15 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
         operators of the underlying proxied attributes.
 
         """
-
-        if self._target_is_object:
-            return self._comparator.has(
-                getattr(self.target_class, self.value_attr).
-                has(criterion, **kwargs)
-            )
-        else:
-            if criterion is not None or kwargs:
-                raise exc.ArgumentError(
-                    "Non-empty has() not allowed for "
-                    "column-targeted association proxy; use ==")
-            return self._comparator.has()
+        if self._unwrap_target_assoc_proxy is None and (
+                not self.scalar or (
+                self._target_is_object and not self._value_is_scalar)
+        ):
+            raise exc.InvalidRequestError(
+                "'has()' not implemented for collections.  "
+                "Use any().")
+        return self._criterion_exists(
+            criterion=criterion, is_has=True, **kwargs)
 
     def contains(self, obj):
         """Produce a proxied 'contains' expression using EXISTS.
@@ -428,12 +484,24 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
         operators of the underlying proxied attributes.
         """
 
-        if self.scalar and not self._value_is_scalar:
+        target_assoc = self._unwrap_target_assoc_proxy
+        if target_assoc is not None:
+            return self._comparator._criterion_exists(
+                target_assoc.contains(obj)
+                if not target_assoc.scalar else target_assoc == obj
+            )
+        elif self._target_is_object and self.scalar and \
+                not self._value_is_scalar:
             return self._comparator.has(
                 getattr(self.target_class, self.value_attr).contains(obj)
             )
+        elif self._target_is_object and self.scalar and \
+                self._value_is_scalar:
+            raise exc.InvalidRequestError(
+                "contains() doesn't apply to a scalar endpoint; use ==")
         else:
-            return self._comparator.any(**{self.value_attr: obj})
+
+            return self._comparator._criterion_exists(**{self.value_attr: obj})
 
     def __eq__(self, obj):
         # note the has() here will fail for collections; eq_()
@@ -451,6 +519,9 @@ class AssociationProxy(interfaces.InspectionAttrInfo):
         # is only allowed with a scalar.
         return self._comparator.has(
             getattr(self.target_class, self.value_attr) != obj)
+
+    def __repr__(self):
+        return "AssociationProxy(%r, %r)" % (self.target_collection, self.value_attr)
 
 
 class _lazy_collection(object):
@@ -606,8 +677,9 @@ class _AssociationList(_AssociationCollection):
         return
 
     def append(self, value):
+        col = self.col
         item = self._create(value)
-        self.col.append(item)
+        col.append(item)
 
     def count(self, value):
         return sum([1 for _ in

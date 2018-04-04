@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import datetime
 import logging
@@ -26,11 +27,14 @@ import stat
 import subprocess
 import tarfile
 import time
+from builtins import object
+from builtins import str
 from logging import DEBUG, WARNING
+
 from medusa import app, db, helpers, notifiers, ui
 from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
+from medusa.session.core import MedusaSafeSession
 
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
@@ -53,7 +57,7 @@ class CheckVersion(object):
         elif self.install_type == 'source':
             self.updater = SourceUpdateManager()
 
-        self.session = MedusaSession()
+        self.session = MedusaSafeSession()
 
     def run(self, force=False):
 
@@ -306,32 +310,31 @@ class CheckVersion(object):
         :force: ignored
         """
         # Grab a copy of the news
-        log.debug(u'check_for_new_news: Checking GitHub for latest news.')
-        try:
-            news = self.session.get(app.NEWS_URL).text
-        except Exception:
-            log.warning(u'check_for_new_news: Could not load news from repo.')
-            news = ''
-
-        if not news:
-            return ''
+        log.debug(u'Checking GitHub for latest news.')
+        response = self.session.get(app.NEWS_URL)
+        if not response or not response.text:
+            log.debug(u'Could not load news from URL: %s', app.NEWS_URL)
+            return
 
         try:
             last_read = datetime.datetime.strptime(app.NEWS_LAST_READ, '%Y-%m-%d')
-        except Exception:
+        except ValueError:
+            log.warning(u'Invalid news last read date: %s', app.NEWS_LAST_READ)
             last_read = 0
 
+        news = response.text
         app.NEWS_UNREAD = 0
-        gotLatest = False
+        got_latest = False
         for match in re.finditer(r'^####\s*(\d{4}-\d{2}-\d{2})\s*####', news, re.M):
-            if not gotLatest:
-                gotLatest = True
+            if not got_latest:
+                got_latest = True
                 app.NEWS_LATEST = match.group(1)
 
             try:
                 if datetime.datetime.strptime(match.group(1), '%Y-%m-%d') > last_read:
                     app.NEWS_UNREAD += 1
-            except Exception:
+            except ValueError:
+                log.warning(u'Unable to match latest news date. Repository news date: %s', match.group(1))
                 pass
 
         return news
@@ -743,20 +746,7 @@ class GitUpdateManager(UpdateManager):
 
     def update_remote_origin(self):
         self._run_git(self._git_path, 'config remote.%s.url %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-        if app.GIT_AUTH_TYPE == 0:
-            if app.GIT_USERNAME:
-                if app.DEVELOPER:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-                else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
-                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
-        else:
-            if app.GIT_TOKEN:
-                if app.DEVELOPER:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-                else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
-                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+        self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
 
 
 class SourceUpdateManager(UpdateManager):
@@ -773,7 +763,7 @@ class SourceUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
-        self.session = MedusaSession()
+        self.session = MedusaSafeSession()
 
     @staticmethod
     def _find_installed_branch():

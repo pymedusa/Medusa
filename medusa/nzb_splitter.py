@@ -19,13 +19,14 @@
 
 # pylint: disable=line-too-long
 
+from __future__ import unicode_literals
 import re
 
-from . import classes, logger
-from .helper.encoding import ss
-from .helper.exceptions import ex
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .session.core import MedusaSession
+from medusa import classes, logger
+from medusa.helper.encoding import ss
+from medusa.helper.exceptions import ex
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.session.core import MedusaSession
 
 try:
     import xml.etree.cElementTree as ETree
@@ -160,7 +161,7 @@ def split_result(obj):
 
     # parse the season ep name
     try:
-        parsed_obj = NameParser(show=obj.show).parse(obj.name)
+        parsed_obj = NameParser(series=obj.series).parse(obj.name)
     except (InvalidNameException, InvalidShowException) as error:
         logger.log(u"{}".format(error), logger.DEBUG)
         return []
@@ -181,7 +182,7 @@ def split_result(obj):
 
         # parse the name
         try:
-            parsed_obj = NameParser(show=obj.show).parse(new_nzb)
+            parsed_obj = NameParser(series=obj.series).parse(new_nzb)
         except (InvalidNameException, InvalidShowException) as error:
             logger.log(u"{}".format(error), logger.DEBUG)
             return []

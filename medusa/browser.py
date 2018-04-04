@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 import logging
 import os
 import string
+from builtins import str
+
+from past.builtins import cmp
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

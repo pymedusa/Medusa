@@ -82,9 +82,15 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
         if xml.find('tags') is not None:
             self.tags = sorted([Tag(self, t) for t in xml.find('tags') if t.text.strip()])
         if xml.find('startdate') is not None:
-            self.start_date = date_to_date(xml.find('startdate').text)
+            try:
+                self.start_date = date_to_date(xml.find('startdate').text)
+            except TypeError:
+                self.start_date = None
         if xml.find('enddate') is not None:
-            self.end_date = date_to_date(xml.find('enddate').text)
+            try:
+                self.end_date = date_to_date(xml.find('enddate').text)
+            except TypeError:
+                self.end_data = None
         if xml.find('description') is not None:
             self.description = xml.find('description').text
 

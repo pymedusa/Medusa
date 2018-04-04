@@ -8,6 +8,7 @@ from tornado.concurrent import Future
 from tornado import gen
 from tornado.httpclient import HTTPError, HTTPRequest
 from tornado.log import gen_log, app_log
+from tornado.simple_httpclient import SimpleAsyncHTTPClient
 from tornado.template import DictLoader
 from tornado.testing import AsyncHTTPTestCase, gen_test, bind_unused_port, ExpectLog
 from tornado.test.util import unittest, skipBefore35, exec_test
@@ -24,7 +25,7 @@ except ImportError:
     traceback.print_exc()
     raise
 
-from tornado.websocket import WebSocketHandler, websocket_connect, WebSocketError
+from tornado.websocket import WebSocketHandler, websocket_connect, WebSocketError, WebSocketClosedError
 
 try:
     from tornado import speedups
@@ -49,8 +50,12 @@ class TestWebSocketHandler(WebSocketHandler):
 
 
 class EchoHandler(TestWebSocketHandler):
+    @gen.coroutine
     def on_message(self, message):
-        self.write_message(message, isinstance(message, bytes))
+        try:
+            yield self.write_message(message, isinstance(message, bytes))
+        except WebSocketClosedError:
+            pass
 
 
 class ErrorInOnMessageHandler(TestWebSocketHandler):
@@ -180,6 +185,10 @@ class WebSocketTest(WebSocketBaseTestCase):
             'message.html': '<b>{{ message }}</b>',
         }))
 
+    def get_http_client(self):
+        # These tests require HTTP/1; force the use of SimpleAsyncHTTPClient.
+        return SimpleAsyncHTTPClient()
+
     def tearDown(self):
         super(WebSocketTest, self).tearDown()
         RequestHandler._template_loaders.clear()
@@ -187,6 +196,13 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_http_request(self):
         # WS server, HTTP client.
         response = self.fetch('/echo')
+        self.assertEqual(response.code, 400)
+
+    def test_missing_websocket_key(self):
+        response = self.fetch('/echo',
+                              headers={'Connection': 'Upgrade',
+                                       'Upgrade': 'WebSocket',
+                                       'Sec-WebSocket-Version': '13'})
         self.assertEqual(response.code, 400)
 
     def test_bad_websocket_version(self):
@@ -207,7 +223,7 @@ class WebSocketTest(WebSocketBaseTestCase):
     def test_websocket_callbacks(self):
         websocket_connect(
             'ws://127.0.0.1:%d/echo' % self.get_http_port(),
-            io_loop=self.io_loop, callback=self.stop)
+            callback=self.stop)
         ws = self.wait().result()
         ws.write_message('hello')
         ws.read_message(self.stop)
@@ -269,7 +285,6 @@ class WebSocketTest(WebSocketBaseTestCase):
             with ExpectLog(gen_log, ".*"):
                 yield websocket_connect(
                     'ws://127.0.0.1:%d/' % port,
-                    io_loop=self.io_loop,
                     connect_timeout=3600)
 
     @gen_test
@@ -328,6 +343,14 @@ class WebSocketTest(WebSocketBaseTestCase):
         self.assertEqual(reason, 'goodbye')
 
     @gen_test
+    def test_write_after_close(self):
+        ws = yield self.ws_connect('/close_reason')
+        msg = yield ws.read_message()
+        self.assertIs(msg, None)
+        with self.assertRaises(WebSocketClosedError):
+            ws.write_message('hello')
+
+    @gen_test
     def test_async_prepare(self):
         # Previously, an async prepare method triggered a bug that would
         # result in a timeout on test shutdown (and a memory leak).
@@ -360,8 +383,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         url = 'ws://127.0.0.1:%d/echo' % port
         headers = {'Origin': 'http://127.0.0.1:%d' % port}
 
-        ws = yield websocket_connect(HTTPRequest(url, headers=headers),
-                                     io_loop=self.io_loop)
+        ws = yield websocket_connect(HTTPRequest(url, headers=headers))
         ws.write_message('hello')
         response = yield ws.read_message()
         self.assertEqual(response, 'hello')
@@ -374,8 +396,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         url = 'ws://127.0.0.1:%d/echo' % port
         headers = {'Origin': 'http://127.0.0.1:%d/something' % port}
 
-        ws = yield websocket_connect(HTTPRequest(url, headers=headers),
-                                     io_loop=self.io_loop)
+        ws = yield websocket_connect(HTTPRequest(url, headers=headers))
         ws.write_message('hello')
         response = yield ws.read_message()
         self.assertEqual(response, 'hello')
@@ -389,8 +410,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         headers = {'Origin': '127.0.0.1:%d' % port}
 
         with self.assertRaises(HTTPError) as cm:
-            yield websocket_connect(HTTPRequest(url, headers=headers),
-                                    io_loop=self.io_loop)
+            yield websocket_connect(HTTPRequest(url, headers=headers))
         self.assertEqual(cm.exception.code, 403)
 
     @gen_test
@@ -403,8 +423,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         headers = {'Origin': 'http://somewhereelse.com'}
 
         with self.assertRaises(HTTPError) as cm:
-            yield websocket_connect(HTTPRequest(url, headers=headers),
-                                    io_loop=self.io_loop)
+            yield websocket_connect(HTTPRequest(url, headers=headers))
 
         self.assertEqual(cm.exception.code, 403)
 
@@ -418,8 +437,7 @@ class WebSocketTest(WebSocketBaseTestCase):
         headers = {'Origin': 'http://subtenant.localhost'}
 
         with self.assertRaises(HTTPError) as cm:
-            yield websocket_connect(HTTPRequest(url, headers=headers),
-                                    io_loop=self.io_loop)
+            yield websocket_connect(HTTPRequest(url, headers=headers))
 
         self.assertEqual(cm.exception.code, 403)
 

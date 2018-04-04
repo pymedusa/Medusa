@@ -167,8 +167,6 @@ class HDSpaceProvider(TorrentProvider):
                         'leechers': leechers,
                         'pubdate': pubdate,
                     }
-                    if mode != 'RSS':
-                        pass
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
                               title, seeders, leechers)
 

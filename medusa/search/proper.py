@@ -10,6 +10,9 @@ import operator
 import re
 import threading
 import time
+from builtins import map
+from builtins import object
+from builtins import str
 
 from medusa import app, db, helpers
 from medusa.common import Quality, cpu_presets
@@ -19,6 +22,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.search.core import pick_best_result, snatch_episode
 from medusa.show.history import History
+
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -93,7 +98,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # Get the recently aired (last 2 days) shows from DB
             search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
             recently_aired = main_db_con.select(
-                b'SELECT showid, season, episode, status, airdate'
+                b'SELECT indexer, showid, season, episode, status, airdate'
                 b' FROM tv_episodes'
                 b' WHERE airdate >= ?'
                 b' AND status IN ({0})'.format(search_q_params),
@@ -103,7 +108,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # Get recently subtitled episodes (last 2 days) from DB
             # Episode status becomes downloaded only after found subtitles
             last_subtitled = search_date.strftime(History.date_format)
-            recently_aired = main_db_con.select(b'SELECT showid, season, episode FROM history '
+            recently_aired = main_db_con.select(b'SELECT indexer_id AS indexer, showid, season, episode FROM history '
                                                 b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
         if not recently_aired:
@@ -133,7 +138,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         threading.currentThread().name = original_thread_name
 
         # take the list of unique propers and get it sorted by
-        sorted_propers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
+        sorted_propers = sorted(list(itervalues(propers)), key=operator.attrgetter('date'), reverse=True)
         final_propers = []
 
         # Keep only items from last PROPER_SEARCH_DAYS setting in processed propers:
@@ -159,9 +164,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
-            if not cur_proper.show.episodes.get(cur_proper.parse_result.season_number) or \
+            if not cur_proper.series.episodes.get(cur_proper.parse_result.season_number) or \
                     any([ep for ep in cur_proper.parse_result.episode_numbers
-                         if not cur_proper.show.episodes[cur_proper.parse_result.season_number].get(ep)]):
+                         if not cur_proper.series.episodes[cur_proper.parse_result.season_number].get(ep)]):
                 log.info('Skipping proper for wrong season/episode: {name}', {'name': cur_proper.name})
                 continue
 
@@ -184,17 +189,17 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             log.debug('Successful match! Matched {original_name} to show {new_name}',
                       {'original_name': cur_proper.parse_result.original_name,
-                       'new_name': cur_proper.parse_result.show.name
+                       'new_name': cur_proper.parse_result.series.name
                        })
 
             # Map the indexerid in the db to the show's indexerid
-            cur_proper.indexerid = cur_proper.parse_result.show.indexerid
+            cur_proper.indexerid = cur_proper.parse_result.series.indexerid
 
             # Map the indexer in the db to the show's indexer
-            cur_proper.indexer = cur_proper.parse_result.show.indexer
+            cur_proper.indexer = cur_proper.parse_result.series.indexer
 
             # Map our Proper instance
-            cur_proper.show = cur_proper.parse_result.show
+            cur_proper.series = cur_proper.parse_result.series
             cur_proper.actual_season = cur_proper.parse_result.season_number \
                 if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
@@ -214,7 +219,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only get anime proper if it has release group and version
-            if best_result.show.is_anime:
+            if best_result.series.is_anime:
                 if not best_result.release_group and best_result.version == -1:
                     log.info('Ignoring proper without release group and version: {name}', {'name': best_result.name})
                     if cur_proper.name not in processed_propers_names:
@@ -223,9 +228,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
-                                             b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
-                                             [best_result.indexerid,
+            sql_results = main_db_con.select(b"SELECT status, release_name "
+                                             b"FROM tv_episodes WHERE indexer = ? "
+                                             b"AND showid = ? AND season = ? "
+                                             b"AND episode = ? AND status LIKE '%04'",
+                                             [best_result.indexer,
+                                              best_result.series.indexerid,
                                               best_result.actual_season,
                                               best_result.actual_episodes[0]])
             if not sql_results:
@@ -268,11 +276,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 })
 
             # check if we actually want this proper (if it's the right release group and a higher version)
-            if best_result.show.is_anime:
+            if best_result.series.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
-                    b'SELECT release_group, version FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
-                    [best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]])
+                    b'SELECT release_group, version '
+                    b'FROM tv_episodes WHERE indexer = ? AND showid = ? '
+                    b'AND season = ? AND episode = ?',
+                    [best_result.indexer, best_result.series.indexerid, best_result.actual_season,
+                     best_result.actual_episodes[0]])
 
                 old_version = int(sql_results[0][b'version'])
                 old_release_group = (sql_results[0][b'release_group'])
@@ -301,7 +312,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # then add it to our list of propers
             if best_result.indexerid != -1 and (
                 best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
-            ) not in map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers):
+            ) not in list(map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers)):
                 log.info('Found a desired proper: {name}', {'name': best_result.name})
                 final_propers.append(best_result)
 

@@ -2,13 +2,21 @@
 
 """Base class for indexer api's."""
 
+from __future__ import division
+from __future__ import unicode_literals
+
 import getpass
 import logging
 import os
 import tempfile
 import time
 import warnings
+from builtins import object
+from builtins import str
+from operator import itemgetter
 
+from medusa import statistics as stats
+from medusa.helpers.utils import gen_values_by_key
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerEpisodeNotFound,
@@ -18,9 +26,12 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.statistics import weights
 
 import requests
-from six import iteritems
+
+from six import integer_types, itervalues, string_types, viewitems
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -74,7 +85,7 @@ class BaseIndexer(object):
             self.config['cache_location'] = self._get_temp_dir()
         elif cache is False:
             self.config['cache_enabled'] = False
-        elif isinstance(cache, basestring):
+        elif isinstance(cache, string_types):
             self.config['cache_enabled'] = True
             self.config['cache_location'] = cache
         else:
@@ -202,24 +213,190 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
-    def _save_images(self, sid, images):
-        """Save the highest rated image (banner, poster, fanart) as show data."""
-        for image_type in images:
-            # get series data / add the base_url to the image urls
-            if image_type in ['banner', 'fanart', 'poster']:
-                # For each image type, where going to save one image based on the highest rating
-                if not len(images[image_type]):
-                    continue
-                # This will flatten all the images for all of the resolutions. Meaning it could pick a higher
-                # rated image that has a lower resolution.
-                merged_image_list = {image_id: image for image_id, image_value in iteritems(images[image_type])
-                                     for image_id, image in iteritems(image_value)}
-                highest_rated = sorted(merged_image_list.values(), key=lambda k: k['rating'], reverse=True)[0]
-                self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
+    def _save_images_by_type(self, image_type, series_id, images):
+        """
+        Save the highest rated images for a show by image type.
+
+        :param image_type: Image type being processed (e.g. `fanart`)
+        :param series: ID of series being processed
+        :param images: Images to be processed
+        """
+        def pop_stats(it, key):
+            """Get the population statistics for a key."""
+            values = list(gen_values_by_key(it, key))
+            num_values = len(values)
+            total = sum(values)
+            mean = total / num_values
+            std_dev = stats.population_standard_deviation(values)
+            return mean, std_dev, values
+
+        def result(item, threshold, mean):
+            """Calculate a score given a threshold and population mean."""
+            if not threshold:
+                threshold = 1  # Prevent division by zero
+            value = item['rating']
+            weight = item['ratingcount']
+            res_index = item['res_index']
+            score_rated = weights.bayesian(weight, value, threshold, mean)
+            weight_score = .5
+            weight_res = .5
+            score_weighted = weight_score * score_rated + weight_res * res_index
+            item['score_rated'] = score_rated
+            item['score_weighted'] = score_weighted
+            return score_weighted, value, weight, item
+
+        def format_result(item):
+            """Format result row for logging output."""
+            row = '{score:>10.3f} {rating:>10.3f} {votes:>6} {res:>15}\t{url}'
+            return row.format(
+                score=item[0],
+                rating=item[1],
+                votes=item[2],
+                res=item[3]['resolution'],
+                url=item[3]['_bannerpath'],
+            )
+
+        # Header for display of format results
+        column_header = '{:>10} {:>10} {:>6} {:>15}\t{}'.format(
+            'Score', 'Rating', 'Votes', 'Resolution', 'URL'
+        )
+
+        available_res = sorted(list(images), key=lambda x: int(x.split('x')[0]) * int(x.split('x')[1]))
+
+        # add resolution information to each image and flatten dict
+        merged_images = []
+        for resolution in images:
+            images_by_resolution = images[resolution]
+            for image in itervalues(images_by_resolution):
+                image['resolution'] = resolution
+                image['res_index'] = available_res.index(resolution) + 1
+            # add all current resolution images to the merged list
+            merged_images.extend(list(itervalues(images_by_resolution)))
+            log.debug(
+                u'Found {x} {image}s at {res} ({res_index}) resolution for series {id}', {
+                    'x': len(images_by_resolution),
+                    'image': image_type,
+                    'res': image['resolution'],
+                    'res_index': image['res_index'],
+                    'id': series_id,
+                }
+            )
+
+        # Get population statistics
+        num_items = len(merged_images)
+        log.debug(
+            u'Found {x} total {image}s for series {id}', {
+                'x': num_items,
+                'image': image_type,
+                'id': series_id,
+            }
+        )
+
+        # Get population rating statistics
+        rating_mean, rating_dev, ratings = pop_stats(merged_images, 'rating')
+
+        # Get population rating statistics
+        vote_mean, vote_dev, votes = pop_stats(merged_images, 'ratingcount')
+
+        # Set vote threshold to one standard deviation above the mean
+        # This would be the 84th percentile in a normal distribution
+        vote_threshold = vote_mean + vote_dev
+        log.debug(u'{image} threshold set to {x} votes',
+                  {'image': image_type.capitalize(), 'x': vote_threshold})
+
+        # create a list of results
+        rated_images = (
+            result(image, vote_threshold, rating_mean)
+            for image in merged_images
+        )
+        # sort results by score
+        sorted_results = sorted(rated_images, key=itemgetter(0), reverse=True)
+        log.debug(
+            u'Weighted {image} results for series {id}:'
+            u'\n{header}'
+            u'\n{items}', {
+                'image': image_type,
+                'id': series_id,
+                'header': column_header,
+                'items': '\n'.join(
+                    format_result(item)
+                    for item in sorted_results
+                )
+            }
+        )
+        # filter only highest rated results
+        best_result = sorted_results[0]
+        best_results = [
+            item for item in sorted_results
+            if item[0] >= best_result[0]
+        ]
+        if len(best_results) > 1:
+            log.debug(
+                u'Multiple {image}s at highest weighted score for series {id}:'
+                u'\n{header}'
+                u'\n{results}', {
+                    'image': image_type,
+                    'id': series_id,
+                    'header': column_header,
+                    'results': '\n'.join(
+                        format_result(item)
+                        for item in best_results
+                    )
+                }
+            )
+        img_score, img_rating, img_votes, img = best_result
+        img_url = img['_bannerpath']
+        img_res = img['resolution']
+        img_bay_score = img['score_rated']
+        log.info(
+            u'Selected {image} for series {id}'
+            u' (score={x}, score_bay={b}, rating={y}, votes={z}, res={r}): {url}', {
+                'image': image_type,
+                'id': series_id,
+                'x': img_score,
+                'b': img_bay_score,
+                'y': img_rating,
+                'z': img_votes,
+                'r': img_res,
+                'url': img_url,
+            }
+        )
+        log.debug(u'Full info for best {image} for series {id}: {info}',
+                  {'image': image_type, 'id': series_id, 'info': img})
+
+        self._set_show_data(series_id, image_type, img_url)
+
+    def _save_images(self, series_id, images):
+        """
+        Save the highest rated images for the show.
+
+        :param series_id: The series ID
+        :param images: A nested mapping of image info
+            images[type][res][id] = image_info_mapping
+                type: image type such as `banner`, `poster`, etc
+                res: resolution such as `1024x768`, `original`, etc
+                id: the image id
+        """
+        image_types = 'banner', 'fanart', 'poster'
+
+        # Iterate through desired image types
+        for img_type in image_types:
+            try:
+                images_by_type = images[img_type]
+            except KeyError:
+                log.debug(
+                    u'No {image}s found for {series}', {
+                        'image': img_type,
+                        'series': series_id,
+                    }
+                )
+                continue
+
+            self._save_images_by_type(img_type, series_id, images_by_type)
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
-        if isinstance(key, (int, long)):
+        if isinstance(key, (integer_types, int)):
             # Item is integer, treat as show id
             if key not in self.shows:
                 self._get_show_data(key, self.config['language'])
@@ -232,7 +409,7 @@ class BaseIndexer(object):
             selected_series = [selected_series]
 
         for show in selected_series:
-            for k, v in show.items():
+            for k, v in viewitems(show):
                 self._set_show_data(show['id'], k, v)
         return selected_series
 
@@ -313,7 +490,7 @@ class Show(dict):
             return dict.__getitem__(self.data, key)
 
         # Data wasn't found, raise appropriate error
-        if isinstance(key, int) or key.isdigit():
+        if isinstance(key, integer_types) or key.isdigit():
             # Episode number x was not found
             raise IndexerSeasonNotFound('Could not find season {0!r}'.format(key))
         else:
@@ -341,7 +518,7 @@ class Show(dict):
         first match.
         """
         results = []
-        for cur_season in self.values():
+        for cur_season in itervalues(self):
             searchresult = cur_season.search(term=term, key=key)
             if len(searchresult) != 0:
                 results.extend(searchresult)
@@ -359,7 +536,7 @@ class Season(dict):
     def __repr__(self):
         """Representation of a season object."""
         return '<Season instance (containing {0} episodes)>'.format(
-            len(self.keys())
+            len(list(self))
         )
 
     def __getattr__(self, episode_number):
@@ -387,7 +564,7 @@ class Season(dict):
 
         """
         results = []
-        for ep in self.values():
+        for ep in itervalues(self):
             searchresult = ep.search(term=term, key=key)
             if searchresult is not None:
                 results.append(
@@ -452,13 +629,13 @@ class Episode(dict):
         if term is None:
             raise TypeError('must supply string to search for (contents)')
 
-        term = unicode(term).lower()
-        for cur_key, cur_value in self.items():
-            cur_key, cur_value = unicode(cur_key).lower(), unicode(cur_value).lower()
+        term = str(term).lower()
+        for cur_key, cur_value in viewitems(self):
+            cur_key, cur_value = str(cur_key).lower(), str(cur_value).lower()
             if key is not None and cur_key != key:
                 # Do not search this key
                 continue
-            if cur_value.find(unicode(term).lower()) > -1:
+            if cur_value.find(str(term).lower()) > -1:
                 return self
 
 

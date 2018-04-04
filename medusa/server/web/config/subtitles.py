@@ -6,10 +6,17 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    subtitles,
+    ui,
+)
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, subtitles, ui
 
 
 @route('/config/subtitles(/?.*)')

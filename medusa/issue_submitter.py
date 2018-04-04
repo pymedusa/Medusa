@@ -7,9 +7,13 @@ import locale
 import logging
 import platform
 import sys
+from builtins import object
+from builtins import str
 from datetime import datetime, timedelta
+
 from github import InputFileContent
-from github.GithubException import GithubException, RateLimitExceededException
+from github.GithubException import GithubException, RateLimitExceededException, UnknownObjectException
+
 from medusa import app, db
 from medusa.classes import ErrorViewer
 from medusa.github_client import authenticate, get_github_repo, token_authenticate
@@ -37,14 +41,16 @@ _STAFF NOTIFIED_: @{org}/support @{org}/moderators
 class IssueSubmitter(object):
     """GitHub issue submitter."""
 
-    MISSING_CREDENTIALS = 'Please set your GitHub Username and Passowrd in the config.  Unable to submit issue ticket to GitHub.'
-    DEBUG_NOT_ENABLED = 'Please enable Debug mode in the config.  Unable to submit issue ticket to GitHub.'
+    MISSING_CREDENTIALS = 'Please set your GitHub Username and Password in the config. Unable to submit issue ticket to GitHub.'
+    MISSING_CREDENTIALS_TOKEN = 'Please set your GitHub personal access token in the config. Unable to submit issue ticket to GitHub.'
+    DEBUG_NOT_ENABLED = 'Please enable Debug mode in the config. Unable to submit issue ticket to GitHub.'
     NO_ISSUES = 'No issue to be submitted to GitHub.'
     UNSUPPORTED_VERSION = 'Please update Medusa, unable to submit issue ticket to GitHub with an outdated version.'
     ALREADY_RUNNING = 'An issue is already being submitted, please wait for it to complete.'
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
     GITHUB_EXCEPTION = 'Error trying to contact Github. Please try again'
+    GITHUB_UNKNOWNOBJECTEXCEPTION = 'GitHub returned an error "Not Found". If using a token, make sure the proper scopes are selected.'
     EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
     COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
     ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
@@ -127,7 +133,10 @@ class IssueSubmitter(object):
         if not app.DEBUG:
             return result(self.DEBUG_NOT_ENABLED)
 
-        if not (app.GIT_USERNAME and app.GIT_PASSWORD) or app.GIT_TOKEN:
+        if app.GIT_AUTH_TYPE == 1 and not app.GIT_TOKEN:
+            return result(self.MISSING_CREDENTIALS_TOKEN)
+
+        if app.GIT_AUTH_TYPE == 0 and not (app.GIT_USERNAME and app.GIT_PASSWORD):
             return result(self.MISSING_CREDENTIALS)
 
         if not ErrorViewer.errors:
@@ -155,7 +164,10 @@ class IssueSubmitter(object):
             return self.submit_issues(github, github_repo, loglines, similar_issues)
         except RateLimitExceededException:
             return result(self.RATE_LIMIT)
-        except (GithubException, IOError):
+        except (GithubException, IOError) as error:
+            # If the api return http status 404, authentication or permission issue(token right to create gists)
+            if isinstance(error, UnknownObjectException):
+                return result(self.GITHUB_UNKNOWNOBJECTEXCEPTION)
             return result(self.GITHUB_EXCEPTION)
         finally:
             self.running = False

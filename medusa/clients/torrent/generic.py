@@ -8,13 +8,18 @@ import re
 import time
 import traceback
 from base64 import b16encode, b32decode
+from builtins import object
+from builtins import str
 from hashlib import sha1
+
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
+
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
+
 import requests
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -318,3 +323,23 @@ class GenericClient(object):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
         except Exception as error:
             return False, 'Unable to connect to {name}. Error: {msg}'.format(name=self.name, msg=error)
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+        """
+        raise NotImplementedError

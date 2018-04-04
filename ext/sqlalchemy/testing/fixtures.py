@@ -1,5 +1,5 @@
 # testing/fixtures.py
-# Copyright (C) 2005-2017 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2018 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -223,9 +223,9 @@ class RemovesEvents(object):
     def _event_fns(self):
         return set()
 
-    def event_listen(self, target, name, fn):
+    def event_listen(self, target, name, fn, **kw):
         self._event_fns.add((target, name, fn))
-        event.listen(target, name, fn)
+        event.listen(target, name, fn, **kw)
 
     def teardown(self):
         for key in self._event_fns:

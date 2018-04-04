@@ -19,11 +19,14 @@
 from __future__ import print_function
 
 from medusa.media.fan_art import ShowFanArt
-from .generic_media_tests import GenericMediaTests
+from medusa.tv import Series
+
+from tests.legacy.media.generic_media_tests import GenericMediaTests
 
 
 class ShowFanArtTests(GenericMediaTests):
     """Test ShowFanArt."""
 
-    def test_get_default_media_name(self):
-        self.assertEqual(ShowFanArt(0, '').get_default_media_name(), 'fanart.png')
+    def test_default_media_name(self):
+        series_obj = Series(1, 70726)
+        self.assertEqual(ShowFanArt(series_obj, '').default_media_name, 'fanart.png')
