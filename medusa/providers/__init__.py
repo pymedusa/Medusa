@@ -75,7 +75,7 @@ __all__ = [
 
 
 def sorted_provider_list(randomize=False):
-    initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
+    initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
     provider_dict = dict(list(zip([x.get_id() for x in initial_list], initial_list)))
 
     new_list = []
@@ -118,5 +118,5 @@ def get_provider_module(name):
 
 
 def get_provider_class(provider_id):
-    provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
+    provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
     return next((provider for provider in provider_list if provider.get_id() == provider_id), None)

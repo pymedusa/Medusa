@@ -112,7 +112,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map(key => {  // eslint-disable-line array-callback-return
+            return Object.keys(MEDUSA.config.indexers.config).map(key => { // eslint-disable-line array-callback-return
                 if (MEDUSA.config.indexers.config[key] === name) {
                     return key;
                 }
@@ -150,10 +150,10 @@ function displayPNotify(type, title, message, id) {
         desktop: {
             tag: id
         },
-        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
-            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
-            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
-            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
+        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ') // eslint-disable-line unicorn/no-unsafe-regex
     });
 }
 
@@ -161,7 +161,7 @@ function wsCheckNotifications() {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const webRoot = MEDUSA.config.webRoot || '';
     const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
-    ws.onmessage = function(evt) {
+    ws.addEventListener('message', evt => {
         let msg;
         try {
             msg = JSON.parse(evt.data);
@@ -175,14 +175,14 @@ function wsCheckNotifications() {
         } else {
             displayPNotify('info', '', msg);
         }
-    };
+    });
 
-    ws.onerror = function() {
+    ws.addEventListener('error', () => {
         log.warn('Error connecting to websocket. Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
         displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
-    };
+    });
     console.log('Notifications library loaded.');
 }
 
