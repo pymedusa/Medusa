@@ -22,6 +22,8 @@ from medusa.server.web.core import PageTemplate
 
 from tornroutes import route
 
+INVALID_CHARS = ['||']
+
 
 @route('/config/providers(/?.*)')
 class ConfigProviders(Config):
@@ -44,9 +46,12 @@ class ConfigProviders(Config):
         if not name:
             return json.dumps({'error': 'Invalid name specified'})
 
-        provider_dict = dict(
-            list(zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList)))
+        found_chars = [c for c in INVALID_CHARS if c in name]
+        if found_chars:
+            return json.dumps({'error': 'Invalid character in provider name: {0}'.format(', '.join(found_chars))})
 
+        provider_dict = dict(list(zip([x.get_id() for x in app.torrentRssProviderList],
+                                      app.torrentRssProviderList)))
         temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
 
         if temp_provider.get_id() in provider_dict:
@@ -65,11 +70,17 @@ class ConfigProviders(Config):
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
-        provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList)))
+        found_chars = [c for c in INVALID_CHARS if c in name]
+        if found_chars:
+            return json.dumps({'error': 'Invalid character in provider name: {0}'.format(', '.join(found_chars))})
 
         if kind == 'newznab':
+            provider_dict = dict(list(zip([x.get_id() for x in app.newznabProviderList],
+                                          app.newznabProviderList)))
             temp_provider = NewznabProvider(name, url)
         elif kind == 'torznab':
+            provider_dict = dict(list(zip([x.get_id() for x in app.torznab_providers_list],
+                                          app.torznab_providers_list)))
             temp_provider = TorznabProvider(name, url, api_key)
 
         if temp_provider.get_id() in provider_dict:
