@@ -34,13 +34,22 @@ const startVue = () => {
                             1: node => $(node).find('a').text()
                         };
                     }
-                    return {
-                        // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded, 4: Quality
+                    // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
+                    const compactExtract = {
                         0: node => $(node).find('time').attr('datetime'),
                         1: node => $(node).find('a').text(),
                         2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        3: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        3: node => $(node).text()
                     };
+                    if ($.isMeta({ subtitles: 'enabled' }, [true])) {
+                        // 4: Subtitled, 5: Quality
+                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        compactExtract[5] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                    } else {
+                        // 4: Quality
+                        compactExtract[4] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                    }
+                    return compactExtract;
                 })(),
                 headers: (function() {
                     if ($.isMeta({ layout: 'history' }, ['detailed'])) {
