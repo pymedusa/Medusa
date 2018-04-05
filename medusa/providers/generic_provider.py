@@ -55,7 +55,7 @@ from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
-from six import itervalues, text_type
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -141,7 +141,7 @@ class GenericProvider(object):
             verify = False if self.public else None
 
             if download_file(url, filename, session=self.session, headers=self.headers,
-                             hooks={'response': self.get_url_hook}, verify=verify):
+                             verify=verify):
 
                 if self._verify_download(filename):
                     log.info('Saved {result} to {location}',
@@ -175,40 +175,6 @@ class GenericProvider(object):
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
-
-    @staticmethod
-    def get_url_hook(response, **kwargs):
-        """Get URL hook."""
-        request = response.request
-        log.debug(
-            '{method} URL: {url} [Status: {status}]', {
-                'method': request.method,
-                'url': request.url,
-                'status': response.status_code,
-            }
-        )
-        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
-
-        if request.method.upper() == 'POST':
-            body = request.body
-            # try to log post data using various codecs to decode
-            if isinstance(body, text_type):
-                log.debug('With post data: {0}', body)
-                return
-
-            codecs = ('utf-8', 'latin1', 'cp1252')
-            for codec in codecs:
-                try:
-                    data = body.decode(codec)
-                except UnicodeError as error:
-                    log.debug('Failed to decode post data as {codec}: {msg}',
-                              {'codec': codec, 'msg': error})
-                else:
-                    log.debug('With post data: {0}', data)
-                    break
-            else:
-                log.warning('Failed to decode post data with {codecs}',
-                            {'codecs': codecs})
 
     def _verify_download(self, file_name=None):
         return True

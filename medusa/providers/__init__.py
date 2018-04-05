@@ -27,7 +27,6 @@ from medusa.providers.torrent import (
     danishbits,
     elitetorrent,
     elitetracker,
-    gftracker,
     hdbits,
     hdspace,
     hdtorrents,
@@ -65,9 +64,9 @@ from medusa.providers.torrent import (
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
-    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
-    'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
+    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents',
+    'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor',
+    'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
     'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
