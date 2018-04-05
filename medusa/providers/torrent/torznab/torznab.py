@@ -281,7 +281,8 @@ class TorznabProvider(TorrentProvider):
 
         def _parse_cap(tag):
             elm = data.find(tag)
-            return elm.get('supportedparams').split(',') if elm and elm.get('available') == 'yes' else []
+            is_supported = elm and all([elm.get('supportedparams'), elm.get('available') == 'yes'])
+            return elm['supportedparams'].split(',') if is_supported else []
 
         self.cap_tv_search = _parse_cap('tv-search')
 
