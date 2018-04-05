@@ -161,18 +161,18 @@ class YggtorrentProvider(TorrentProvider):
                     size = convert_size(torrent_size, sep='', default=-1)
 
                     pubdate = None
-                    pubdate_match = re.search(r'-(\d+)\s(\w+)', cells[4].get_text('-', strip=True))
+                    pubdate_match = re.search(r'(\d+)\s(\d+)\s(\w+)', cells[4].get_text(strip=False))
                     if pubdate_match:
-                        translated = self.translation.get(pubdate_match.group(2))
+                        translated = self.translation.get(pubdate_match.group(3))
                         if not translated:
                             log.exception('No translation mapping available for value: {0}',
-                                          pubdate_match.group(2))
+                                          pubdate_match.group(3))
                         else:
-                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
+                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(2), translated)
                             pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
                     else:
                         log.warning('Could not translate publishing date with value: {0}',
-                                    cells[4].get_text('-', strip=True))
+                                    cells[4].get_text(strip=False))
 
                     item = {
                         'title': title,
