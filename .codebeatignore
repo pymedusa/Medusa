@@ -1,6 +1,3 @@
-static/js/vender.js
-static/js/lib/*
-
 ext/**
 lib/**
 
