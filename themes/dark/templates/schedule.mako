@@ -41,7 +41,7 @@ const startVue = () => {
                         4: { sorter: 'loadingNames' },
                         7: { sorter: 'quality' },
                         8: { sorter: 'text' },
-                        9: { sorter: false }
+                        9: { sorter: false, filter: false }
                     },
                     widgetOptions: {
                         filter_columnFilters: true, // eslint-disable-line camelcase
