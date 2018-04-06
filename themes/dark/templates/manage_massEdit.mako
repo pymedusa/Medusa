@@ -15,7 +15,6 @@
     allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
 %>
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-<script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
 <script>
 let app;
 const startVue = () => {
@@ -23,6 +22,39 @@ const startVue = () => {
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            function findDirIndex(which) {
+                const dirParts = which.split('_');
+                return dirParts[dirParts.length - 1];
+            }
+
+            function editRootDir(path, options) {
+                $('#new_root_dir_' + options.whichId).val(path);
+                $('#new_root_dir_' + options.whichId).change();
+            }
+
+            $('.new_root_dir').on('change', function() {
+                const curIndex = findDirIndex($(this).attr('id'));
+                $('#display_new_root_dir_' + curIndex).html('<b>' + $(this).val() + '</b>');
+            });
+
+            $('.edit_root_dir').on('click', function(event) {
+                event.preventDefault();
+                const curIndex = findDirIndex($(this).attr('id'));
+                const initialDir = $('#new_root_dir_' + curIndex).val();
+                $(this).nFileBrowser(editRootDir, {
+                    initialDir,
+                    whichId: curIndex,
+                    title: 'Select Show Location'
+                });
+            });
+
+            $('.delete_root_dir').on('click', function() {
+                const curIndex = findDirIndex($(this).attr('id'));
+                $('#new_root_dir_' + curIndex).val(null);
+                $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
+            });
         }
     });
 };
