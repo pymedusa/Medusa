@@ -7,21 +7,21 @@ $(document).ready(() => {
 
         $('#customQuality').hide();
 
-        $('#allowed_qualities option').each(function() {
-            const result = preset & $(this).val();
+        $('#allowed_qualities option').each((index, element) => {
+            const result = preset & $(element).val();
             if (result > 0) {
-                $(this).prop('selected', true);
+                $(element).prop('selected', true);
             } else {
-                $(this).prop('selected', false);
+                $(element).prop('selected', false);
             }
         });
 
-        $('#preferred_qualities option').each(function() {
-            const result = preset & ($(this).val() << 16);
+        $('#preferred_qualities option').each((index, element) => {
+            const result = preset & ($(element).val() << 16);
             if (result > 0) {
-                $(this).prop('selected', true);
+                $(element).prop('selected', true);
             } else {
-                $(this).prop('selected', false);
+                $(element).prop('selected', false);
             }
         });
     }
@@ -118,18 +118,18 @@ $(document).ready(() => {
         }
     }
 
-    $('#archiveEpisodes').on('click', function() {
-        $.get($(this).attr('href'));
-        $(this).val('Archiving...');
+    $(document.body).on('click', '#archiveEpisodes', event => {
+        $.get($(event.currentTarget).attr('href'));
+        $(event.currentTarget).val('Archiving...');
         archiveEpisodes();
         return false;
     });
 
-    $('#qualityPreset').on('change', () => {
+    $(document.body).on('change', '#qualityPreset', () => {
         setFromPresets($('#qualityPreset :selected').val());
     });
 
-    $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', () => {
+    $(document.body).on('change', '#qualityPreset, #preferred_qualities, #allowed_qualities', () => {
         setQualityText();
         backloggedEpisodes();
     });
