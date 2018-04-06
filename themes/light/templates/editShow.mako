@@ -25,6 +25,11 @@ const startVue = () => {
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            $('#location').fileBrowser({
+                title: 'Select Show Location'
+            });
         }
     });
 };
