@@ -3,3 +3,6 @@ static/js/lib/*
 
 ext/**
 lib/**
+
+themes/**
+themes-default/**
