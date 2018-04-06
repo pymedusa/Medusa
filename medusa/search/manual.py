@@ -220,7 +220,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
                 b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
-                b" url, time, proper_tags, quality, release_group, version,"
+                b" url, proper_tags, quality, release_group, version,"
                 b" seeders, leechers, size, time, pubdate, date_added "
                 b"FROM '{provider_id}' "
                 b"WHERE indexer = ? AND indexerid = ? AND quality > 0 ".format(
@@ -291,6 +291,9 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     else:
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:
+            threading.currentThread().name = '{thread} :: [{provider}]'.format(
+                thread=original_thread_name, provider=i['provider'])
+
             i['quality_name'] = Quality.split_quality(int(i['quality']))
             i['time'] = datetime.fromtimestamp(i['time'])
             i['release_group'] = i['release_group'] or 'None'
