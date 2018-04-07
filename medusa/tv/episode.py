@@ -1095,7 +1095,7 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
+            data['wantedQualities'] = [ep.identifier for ep in self.related_episodes]
 
         return data
 
