@@ -2,19 +2,16 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 from datetime import date
-import logging
 
 from medusa import db
 from medusa.common import (
     FAILED,
+    Quality,
     SKIPPED,
     UNAIRED,
-    WANTED,
-    Quality
+    WANTED
 )
 from medusa.server.api.v2.base import BaseRequestHandler
-
-log = logging.getLogger(__name__)
 
 
 class StatsHandler(BaseRequestHandler):
