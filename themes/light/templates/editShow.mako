@@ -18,7 +18,7 @@
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
-<%include file="/vue-components/inc_qualityChooser.mako"/>
+<%include file="/vue-components/quality-chooser.mako"/>
 <script>
 let app;
 const startVue = () => {
