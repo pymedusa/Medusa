@@ -89,7 +89,7 @@ class StatsHandler(BaseRequestHandler):
               (SELECT SUM(file_size) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
                      indexer=tv_eps.indexer
-              ) AS showSize
+              ) AS seriesSize
             FROM tv_episodes tv_eps
             GROUP BY showid, indexer
             """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
@@ -99,10 +99,10 @@ class StatsHandler(BaseRequestHandler):
         )
 
         stats_data = {}
-        stats_data['showStat'] = list()
+        stats_data['seriesStat'] = list()
         stats_data['maxDownloadCount'] = 1000
         for cur_result in sql_result:
-            stats_data['showStat'].append(dict(cur_result))
+            stats_data['seriesStat'].append(dict(cur_result))
             if cur_result[b'epTotal'] > stats_data['maxDownloadCount']:
                 stats_data['maxDownloadCount'] = cur_result[b'epTotal']
 
