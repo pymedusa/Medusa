@@ -15,8 +15,6 @@
 </%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-<script type="text/javascript" src="js/edit-show.js"></script>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
@@ -315,7 +313,6 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <select-list v-if="series.config.release.ignoredWords !== null" :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
                                     </div>
                                 </span>
@@ -327,7 +324,6 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <select-list v-if="series.config.release.requiredWords !== null" :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                     <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
                                     </div>
                                 </span>
