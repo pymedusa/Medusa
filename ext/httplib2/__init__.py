@@ -23,7 +23,7 @@ __contributors__ = ["Thomas Broyer (t.broyer@ltgt.net)",
                     "Louis Nyffenegger",
                     "Alex Yu"]
 __license__ = "MIT"
-__version__ = "0.11.0"
+__version__ = '0.11.3'
 
 import re
 import sys
@@ -847,6 +847,11 @@ class ProxyInfo(object):
             if hostname == '.' + skip_name:
                 return True
         return False
+
+    def __repr__(self):
+        return (
+            '<ProxyInfo type={p.proxy_type} host:port={p.proxy_host}:{p.proxy_port} rdns={p.proxy_rdns}' +
+            ' user={p.proxy_user} headers={p.proxy_headers}>').format(p=self)
 
 
 def proxy_info_from_environment(method='http'):

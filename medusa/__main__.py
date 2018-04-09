@@ -80,6 +80,7 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
@@ -1017,6 +1018,9 @@ class Application(object):
             app.TORRENTRSS_PROVIDERS = check_setting_list(app.CFG, 'TorrentRss', 'torrentrss_providers')
             app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_PROVIDERS)
 
+            app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
+            app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
+
             all_providers = providers.sorted_provider_list()
 
             # dynamically load provider settings
@@ -1058,8 +1062,13 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
                 if isinstance(provider, TorrentRssProvider):
-                    load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'title_tag', '')
+
+                if isinstance(provider, TorznabProvider):
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
@@ -1067,7 +1076,7 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
-                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -1574,21 +1583,19 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'name', 'url', 'api_key', 'username',
-                    'search_mode', 'search_fallback',
-                    'enable_daily', 'enable_backlog', 'enable_manualsearch',
-                    'enable_search_delay', 'search_delay',
+                    'name', 'url', 'cat_ids', 'api_key', 'username',
+                    'search_mode', 'search_fallback', 'enable_daily',
+                    'enable_backlog', 'enable_manualsearch',
                 ],
                 'encrypted': [
                     'password',
                 ],
                 GenericProvider.TORRENT: [
-                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease', 'onlyspasearch',
-                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech', 'cat', 'subtitle', 'cookies',
+                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease',
+                    'onlyspasearch', 'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech',
+                    'cat', 'subtitle', 'cookies', 'title_tag', 'cap_tv_search',
                 ],
-                GenericProvider.NZB: [
-                    'cat_ids'
-                ],
+                GenericProvider.NZB: [],
             }
 
             for attr in attributes['all']:
@@ -1854,6 +1861,9 @@ class Application(object):
 
         new_config['TorrentRss'] = {}
         new_config['TorrentRss']['torrentrss_providers'] = app.TORRENTRSS_PROVIDERS
+
+        new_config['Torznab'] = {}
+        new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
 
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME
