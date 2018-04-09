@@ -38,7 +38,6 @@ class HDBitsProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
-        self.session.hooks.update({'response': self.get_url_hook})  # Enable URL logging
 
         # Torrent Stats
         self.minseed = None

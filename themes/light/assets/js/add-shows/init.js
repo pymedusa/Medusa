@@ -161,7 +161,7 @@ MEDUSA.addShows.init = function() {
             $.get('config/general/saveAddShowDefaults', {
                 defaultStatus: $('#statusSelect').val(),
                 allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
-                preferred_qualities: bestQualArray.join(','),  // eslint-disable-line camelcase
+                preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
                 defaultFlattenFolders: $('#flatten_folders').prop('checked'),
                 subtitles: $('#subtitles').prop('checked'),
                 anime: $('#anime').prop('checked'),

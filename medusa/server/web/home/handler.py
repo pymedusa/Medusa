@@ -1436,7 +1436,6 @@ class Home(WebRoot):
         indexer = show_indexer.indexer(**params)
 
         if language in indexer.config['valid_languages']:
-            indexer[series_obj.indexerid]
             return True
 
     def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,

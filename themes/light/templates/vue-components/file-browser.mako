@@ -13,7 +13,7 @@
                     @click="fileClicked(file)"
                 >
                     <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}
-                </app-link>
+                </a>
             </li>
         </ul>
     </div>

@@ -93,7 +93,7 @@
                 elif 'nded' in display_status:
                     data_date = '5000000100.0'
         %>
-            <div class="show-container" id="show${cur_show.indexerid}" data-name="${cur_show.name}" data-date="${data_date}" data-network="${cur_show.network}" data-progress="${progressbar_percent}" data-indexer="${cur_show.indexer}">
+            <div class="show-container" id="show${cur_show.indexerid}" data-name="${cur_show.name | h}" data-date="${data_date}" data-network="${cur_show.network}" data-progress="${progressbar_percent}" data-indexer="${cur_show.indexer}">
                 <div class="aligner">
                     <div class="background-image">
                         <img src="images/poster-back-dark.png"/>
@@ -106,7 +106,7 @@
                     <div class="col-md-12">
                         <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                         <div class="show-title">
-                            <div class="ellipsis">${cur_show.name}</div>
+                            <div class="ellipsis">${cur_show.name | h}</div>
                             % if get_xem_numbering_for_show(cur_show, refresh_data=False):
                                 <div class="xem">
                                     <img src="images/xem.png" width="16" height="16" />

@@ -198,6 +198,11 @@ class TestCallback(utils.TestCase):
         result = em.map_method('get_args_and_data', 42)
         self.assertEqual(set(r[2] for r in result), set([42]))
 
+    def test_items(self):
+        em = extension.ExtensionManager('stevedore.test.extension')
+        expected_output = set([(name, em[name]) for name in ALL_NAMES])
+        self.assertEqual(expected_output, set(em.items()))
+
 
 class TestLoadRequirementsNewSetuptools(utils.TestCase):
     # setuptools 11.3 and later

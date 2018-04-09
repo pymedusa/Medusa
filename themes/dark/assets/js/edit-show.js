@@ -10,11 +10,11 @@ function metaToBool(pyVar) {
     return !(meta === 'false' || meta === 'none' || meta === '0');
 }
 
-$('#submit').on('click', () => {
+$(document.body).on('click', '#submit', () => {
     const allExceptions = [];
 
-    $('#exceptions_list option').each(function() {
-        allExceptions.push($(this).val());
+    $('#exceptions_list option').each((index, element) => {
+        allExceptions.push($(element).val());
     });
 
     $('#exceptions_list').val(allExceptions);
@@ -23,13 +23,13 @@ $('#submit').on('click', () => {
         generateBlackWhiteList(); // eslint-disable-line no-undef
     }
 });
-$('#addSceneName').on('click', () => {
+$(document.body).on('click', '#addSceneName', () => {
     const sceneEx = $('#SceneName').val();
     const option = $('<option>');
     allExceptions = [];
 
-    $('#exceptions_list option').each(function() {
-        allExceptions.push($(this).val());
+    $('#exceptions_list option').each((index, element) => {
+        allExceptions.push($(element).val());
     });
 
     $('#SceneName').val('');
@@ -45,17 +45,17 @@ $('#addSceneName').on('click', () => {
     return option.appendTo('#exceptions_list');
 });
 
-$('#removeSceneName').on('click', function() {
+$(document.body).on('click', '#removeSceneName', () => {
     $('#exceptions_list option:selected').remove();
 
-    $(this).toggleSceneException();
+    $(document.body).toggleSceneException();
 });
 
 $.fn.toggleSceneException = function() {
     allExceptions = [];
 
-    $('#exceptions_list option').each(function() {
-        allExceptions.push($(this).val());
+    $('#exceptions_list option').each((index, element) => {
+        allExceptions.push($(element).val());
     });
 
     if (allExceptions === '') {
@@ -65,4 +65,6 @@ $.fn.toggleSceneException = function() {
     }
 };
 
-$(this).toggleSceneException();
+$(document).ready(() => {
+    $(document.body).toggleSceneException();
+});

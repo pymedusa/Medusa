@@ -3,7 +3,9 @@
 """General utility functions."""
 from __future__ import unicode_literals
 
+from builtins import str
 from collections import Iterable
+from distutils.util import strtobool
 
 from six import string_types
 
@@ -49,3 +51,13 @@ def safe_get(dct, keys, default=''):
         except KeyError:
             return default
     return dct
+
+
+def truth_to_bool(value):
+    """
+    Convert a representation of truth to a boolean.
+
+    :param value: str, int or None
+    :return: boolean value, either True or False
+    """
+    return bool(strtobool(str(value))) if value else False
