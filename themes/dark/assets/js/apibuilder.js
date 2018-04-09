@@ -68,7 +68,7 @@ $(document).ready(() => {
             select.find('option:gt(0)').remove();
 
             for (const episode in episodes[show][season]) { // eslint-disable-line no-undef
-                if ({}.hasOwnProperty.call(episodes[show][season], episode)) {  // eslint-disable-line no-undef
+                if ({}.hasOwnProperty.call(episodes[show][season], episode)) { // eslint-disable-line no-undef
                     select.append($('<option>', {
                         value: episodes[show][season][episode], // eslint-disable-line no-undef
                         label: 'Episode ' + episodes[show][season][episode] // eslint-disable-line no-undef
@@ -89,7 +89,7 @@ $(document).ready(() => {
             select.find('option:gt(0)').remove();
 
             for (const season in episodes[show]) { // eslint-disable-line no-undef
-                if ({}.hasOwnProperty.call(episodes[show], season)) {  // eslint-disable-line no-undef
+                if ({}.hasOwnProperty.call(episodes[show], season)) { // eslint-disable-line no-undef
                     select.append($('<option>', {
                         value: season,
                         label: (season === 0) ? 'Specials' : 'Season ' + season

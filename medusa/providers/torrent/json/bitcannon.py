@@ -16,6 +16,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -33,6 +34,7 @@ class BitCannonProvider(TorrentProvider):
         self.api_key = None
 
         # URLs
+        self.url = 'http://localhost:3000/'
         self.custom_url = None
 
         # Proper Strings
@@ -57,13 +59,12 @@ class BitCannonProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        url = 'http://localhost:3000/'
 
         if self.custom_url:
             if not validators.url(self.custom_url):
                 log.warning('Invalid custom url: {0}', self.custom_url)
                 return results
-            url = self.custom_url
+            self.url = self.custom_url
 
         # Search Params
         search_params = {
@@ -80,7 +81,7 @@ class BitCannonProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_url = urljoin(url, 'api/search')
+                search_url = urljoin(self.url, 'api/search')
 
                 response = self.session.get(search_url, params=search_params)
                 if not response or not response.content:

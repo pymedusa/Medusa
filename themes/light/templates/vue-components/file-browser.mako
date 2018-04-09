@@ -6,14 +6,14 @@
         <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control input-sm fileBrowserSearchBox" style="display: none;"/>
         <ul class="fileBrowserFileList" style="display: hidden;">
             <li v-for="file in files" class="ui-state-default ui-corner-all">
-                <a
+                <app-link
                     @mouseover="file.isFile ? '' : addClass($event, 'ui-icon-folder-open')"
                     @mouseout="file.isFile ? '' : removeClass($event, 'ui-icon-folder-open')"
                     @click="fileClicked(file)"
                 ><span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}</app-link>
             </li>
         </ul>
-    </span>
+    </div>
 </script>
 <script>
 Vue.component('file-browser', {
