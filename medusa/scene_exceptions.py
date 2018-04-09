@@ -145,7 +145,8 @@ def get_scene_exceptions_by_name(show_name):
     scene_exceptions = cache_db_con.select(
         b'SELECT indexer, indexer_id, season '
         b'FROM scene_exceptions '
-        b'WHERE show_name = ? ORDER BY season ASC',
+        b'WHERE show_name = ? COLLATE NOCASE '
+        b'ORDER BY season ASC',
         [show_name])
     if scene_exceptions:
         # FIXME: Need to add additional layer indexer.
