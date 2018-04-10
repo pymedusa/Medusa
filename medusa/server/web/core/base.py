@@ -259,7 +259,23 @@ class WebHandler(BaseHandler):
             self.finish(results)
 
         except Exception:
-            logger.log(u'Failed doing web ui request {route!r}: {error}'.format
+            logger.log(u'Failed doing web ui get request {route!r}: {error}'.format
+                       (route=route, error=traceback.format_exc()), logger.DEBUG)
+            raise HTTPError(404)
+
+    @authenticated
+    @coroutine
+    def post(self, route, *args, **kwargs):
+        try:
+            # route -> method obj
+            route = route.strip('/').replace('.', '_') or 'index'
+            method = getattr(self, route)
+
+            results = yield self.async_call(method)
+            self.finish(results)
+
+        except Exception:
+            logger.log(u'Failed doing web ui post request {route!r}: {error}'.format
                        (route=route, error=traceback.format_exc()), logger.DEBUG)
             raise HTTPError(404)
 

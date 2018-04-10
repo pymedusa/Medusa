@@ -26,26 +26,26 @@ class Schedule(WebRoot):
             {
                 'title': 'Sort by:',
                 'path': {
-                    'Date': 'setScheduleSort/?sort=date',
-                    'Show': 'setScheduleSort/?sort=show',
-                    'Network': 'setScheduleSort/?sort=network',
+                    'Date': 'schedule/setScheduleSort/?sort=date',
+                    'Show': 'schedule/setScheduleSort/?sort=show',
+                    'Network': 'schedule/setScheduleSort/?sort=network',
                 }
             },
             {
                 'title': 'Layout:',
                 'path': {
-                    'Banner': 'setScheduleLayout/?layout=banner',
-                    'Poster': 'setScheduleLayout/?layout=poster',
-                    'List': 'setScheduleLayout/?layout=list',
-                    'Calendar': 'setScheduleLayout/?layout=calendar',
+                    'Banner': 'schedule/setScheduleLayout/?layout=banner',
+                    'Poster': 'schedule/setScheduleLayout/?layout=poster',
+                    'List': 'schedule/setScheduleLayout/?layout=list',
+                    'Calendar': 'schedule/setScheduleLayout/?layout=calendar',
                 }
             },
             {
                 'title': 'View Paused:',
                 'path': {
-                    'Hide': 'toggleScheduleDisplayPaused'
+                    'Hide': 'schedule/toggleScheduleDisplayPaused'
                 } if app.COMING_EPS_DISPLAY_PAUSED else {
-                    'Show': 'toggleScheduleDisplayPaused'
+                    'Show': 'schedule/toggleScheduleDisplayPaused'
                 }
             },
         ]
