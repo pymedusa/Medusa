@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import json
 import os
 import re
@@ -23,11 +22,9 @@ from medusa import (
     exception_handler,
     helpers,
     logger,
-    network_timezones,
     ui,
 )
 from medusa.server.api.v1.core import function_mapper
-from medusa.show.coming_episodes import ComingEpisodes
 
 from past.builtins import cmp
 
@@ -272,17 +269,12 @@ class WebHandler(BaseHandler):
             kwargs = self.request.arguments
             for arg, value in iteritems(kwargs):
                 if len(value) == 1:
-                    kwargs[arg] = value[0]
-                if isinstance(kwargs[arg], binary_type):
-                    kwargs[arg] = text_type(kwargs[arg], 'utf-8')
+                    kwargs[arg] = self.get_argument(arg)
 
             result = function(**kwargs)
             return result
         except Exception as e:
             exception_handler.handle(e)
-
-    # post uses get method
-    post = get
 
 
 @route('(.*)(/?)')
@@ -346,58 +338,6 @@ class WebRoot(WebHandler):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
-
-    def toggleScheduleDisplayPaused(self):
-        app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
-
-        return self.redirect('/schedule/')
-
-    def setScheduleSort(self, sort):
-        if sort not in ('date', 'network', 'show') or app.COMING_EPS_LAYOUT == 'calendar':
-            sort = 'date'
-
-        app.COMING_EPS_SORT = sort
-
-        return self.redirect('/schedule/')
-
-    def schedule(self):
-        next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
-        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
-
-        submenu = [
-            {
-                'title': 'Sort by:',
-                'path': {
-                    'Date': 'setScheduleSort/?sort=date',
-                    'Show': 'setScheduleSort/?sort=show',
-                    'Network': 'setScheduleSort/?sort=network',
-                }
-            },
-            {
-                'title': 'Layout:',
-                'path': {
-                    'Banner': 'setScheduleLayout/?layout=banner',
-                    'Poster': 'setScheduleLayout/?layout=poster',
-                    'List': 'setScheduleLayout/?layout=list',
-                    'Calendar': 'setScheduleLayout/?layout=calendar',
-                }
-            },
-            {
-                'title': 'View Paused:',
-                'path': {
-                    'Hide': 'toggleScheduleDisplayPaused'
-                } if app.COMING_EPS_DISPLAY_PAUSED else {
-                    'Show': 'toggleScheduleDisplayPaused'
-                }
-            },
-        ]
-
-        t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results,
-                        layout=app.COMING_EPS_LAYOUT, title='Schedule', header='Schedule',
-                        topmenu='schedule', controller='schedule', action='index')
 
 
 @route('/ui(/?.*)')

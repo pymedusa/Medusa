@@ -17,6 +17,7 @@ from medusa.server.web.core import (
     CalendarHandler,
     ErrorLogs,
     History,
+    Schedule,
     KeyHandler,
     LoginHandler,
     LogoutHandler,
