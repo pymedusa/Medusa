@@ -31,9 +31,7 @@ from past.builtins import cmp
 from requests.compat import urljoin
 
 from six import (
-    binary_type,
     iteritems,
-    text_type,
     viewitems,
 )
 
