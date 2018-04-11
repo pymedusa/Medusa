@@ -15,6 +15,7 @@
 </%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
+<%include file="/vue-components/quality-chooser.mako"/>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
@@ -190,8 +191,7 @@ const startVue = () => {
                                 <span class="component-title">Preferred Quality</span>
                                 <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
-                                    <%include file="/inc_qualityChooser.mako"/>
+                                    <quality-chooser></quality-chooser>
                                 </span>
                             </label>
                         </div>
