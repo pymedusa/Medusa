@@ -21,6 +21,7 @@ from medusa import app
 from six import string_types, text_type, viewitems
 
 from tornado.httpclient import HTTPError
+from tornado.httputil import url_concat
 from tornado.web import RequestHandler
 
 log = logging.getLogger(__name__)
@@ -272,15 +273,21 @@ class BaseRequestHandler(RequestHandler):
             if last_page <= arg_page:
                 last_page = None
 
+        # Reconstruct the base URI
+        bare_uri = self.request.protocol + '://' + self.request.host + self.request.path
+        # Reconstruct the query arguments - always use the last value
+        query_args = {arg: values[-1] for arg, values in viewitems(self.request.query_arguments)
+                      if arg not in ('page', 'limit')}
+        bare_uri = url_concat(bare_uri, query_args)
+
         links = []
         for rel, page in (('next', next_page), ('last', last_page),
                           ('first', first_page), ('previous', previous_page)):
             if page is None:
                 continue
 
-            delimiter = '&' if self.request.query_arguments else '?'
-            link = '<{uri}{delimiter}page={page}&limit={limit}>; rel="{rel}"'.format(
-                uri=self.request.uri, delimiter=delimiter, page=page, limit=arg_limit, rel=rel)
+            uri = url_concat(bare_uri, dict(page=page, limit=arg_limit))
+            link = '<{uri}>; rel="{rel}"'.format(uri=uri, rel=rel)
             links.append(link)
 
         self.set_header('Link', ', '.join(links))
