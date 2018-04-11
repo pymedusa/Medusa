@@ -190,8 +190,7 @@ const startVue = () => {
                                 <span class="component-title">Preferred Quality</span>
                                 <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
-                                    <%include file="/inc_qualityChooser.mako"/>
+                                    <quality-chooser></quality-chooser>
                                 </span>
                             </label>
                         </div>
