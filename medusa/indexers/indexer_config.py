@@ -3,12 +3,15 @@
 """Indexer config module."""
 from __future__ import unicode_literals
 
-from six import text_type
+from builtins import str
+
 from medusa.app import BASE_PYMEDUSA_URL
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
 from medusa.indexers.tvmaze.tvmaze_api import TVmaze
 from medusa.session.core import MedusaSession
+
+from six import iteritems
 
 
 initConfig = {
@@ -118,12 +121,11 @@ indexerConfig = {
 
 
 def create_config_json(indexer):
-    """Create a json (pickable) conpatible dict, for using as an apiv2 resource."""
+    """Create a json (pickable) compatible dict, for using as an apiv2 resource."""
     return {
         'enabled': indexer['enabled'],
         'id': indexer['id'],
         'name': indexer['name'],
-        'module': text_type(indexer['module']),
         'apiParams': {
             'language': indexer['api_params']['language'],
             'useZip': indexer['api_params']['use_zip'],
@@ -136,20 +138,18 @@ def create_config_json(indexer):
         'showUrl': indexer.get('show_url'),
         'mappedTo': indexer.get('mapped_to'),  # The attribute to which other indexers can map there thetvdb id to
         'identifier': indexer.get('identifier'),  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
-        'validLanguages': initConfig['valid_languages'],
-        'langabbvToId': initConfig['langabbv_to_id'],
     }
 
 
 def get_indexer_config():
     indexers = {
-        indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig.keys()
+        indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig
     }
 
     main = {
         'validLanguages': initConfig['valid_languages'],
         'langabbvToId': initConfig['langabbv_to_id'],
-        'externalMappings': EXTERNAL_MAPPINGS,
+        'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
         'traktIndexers': TRAKT_INDEXERS,
         'statusMap': STATUS_MAP
     }
