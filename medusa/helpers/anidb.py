@@ -1,14 +1,15 @@
 """Helper for anidb communications."""
 
 
-from six import binary_type
+import logging
+
 import adba
 from adba.aniDBerrors import AniDBCommandTimeoutError
-import logging
+
 from medusa import app
 from medusa.cache import anidb_cache
-from medusa.logger.adapters.style import BraceAdapter
 from medusa.helper.exceptions import AnidbAdbaConnectionException
+from medusa.logger.adapters.style import BraceAdapter
 
 
 log = BraceAdapter(logging.getLogger(__name__))

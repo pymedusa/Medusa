@@ -15,14 +15,10 @@ from medusa import (
     db,
     helpers,
     logger,
-    name_cache,
     notifiers,
     providers,
     subtitles,
     ui,
-)
-from medusa.black_and_white_list import (
-    BlackAndWhiteList,
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -48,28 +44,21 @@ from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
     pretty_file_size,
-    try_int,
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
-    CantRefreshShowException,
     CantUpdateShowException,
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
+from medusa.helpers.anidb import get_release_groups_for_anime
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
-    IndexerException,
-    IndexerShowNotFoundInLanguage,
-)
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
-    update_scene_exceptions,
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
@@ -79,7 +68,6 @@ from medusa.scene_numbering import (
     get_xem_absolute_numbering_for_show,
     get_xem_numbering_for_show,
     set_scene_numbering,
-    xem_refresh,
 )
 from medusa.search.manual import (
     SEARCH_STATUS_FINISHED,

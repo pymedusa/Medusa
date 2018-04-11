@@ -98,7 +98,6 @@ from medusa.name_parser.parser import (
 )
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
-
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -568,7 +567,7 @@ class Series(TV):
 
     @property
     def blacklist(self):
-        """return the anime's blacklisted release groups."""
+        """Return the anime's blacklisted release groups."""
         bw_list = self.release_groups or BlackAndWhiteList(self)
         return bw_list.blacklist
 
@@ -583,7 +582,7 @@ class Series(TV):
 
     @property
     def whitelist(self):
-        """return the anime's whitelisted release groups."""
+        """Return the anime's whitelisted release groups."""
         bw_list = self.release_groups or BlackAndWhiteList(self)
         return bw_list.whitelist
 
