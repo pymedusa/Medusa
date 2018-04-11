@@ -334,8 +334,6 @@ const startVue = () => {
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
                                     <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
-
-                                    <!-- <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
                                     <div class="pull-left">
                                         <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
                                             <option v-for="exception in exceptions" :value="exception.series_name">
