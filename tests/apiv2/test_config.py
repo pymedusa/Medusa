@@ -1,5 +1,7 @@
 # coding=utf-8
 """Test /config route."""
+from __future__ import unicode_literals
+
 import json
 import platform
 import sys
@@ -9,8 +11,6 @@ from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
-
-from six import iteritems, text_type
 
 from tornado.httpclient import HTTPError
 
