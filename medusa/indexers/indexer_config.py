@@ -123,7 +123,6 @@ def create_config_json(indexer):
         'enabled': indexer['enabled'],
         'id': indexer['id'],
         'name': indexer['name'],
-        'module': text_type(indexer['module']),
         'apiParams': {
             'language': indexer['api_params']['language'],
             'useZip': indexer['api_params']['use_zip'],
