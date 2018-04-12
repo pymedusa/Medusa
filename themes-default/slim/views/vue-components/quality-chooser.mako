@@ -1,7 +1,7 @@
 <script type="text/x-template" id="quality-chooser-template">
     <div id="quality_chooser_wrapper">
         <select v-model="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
-            <option :value="0" :selected="0 === overallQuality" >Custom</option>
+            <option :value="0" :selected="0 === overallQuality">Custom</option>
             <option v-for="preset in qualityPresets" :value="preset" :selected="preset === overallQuality" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
         </select>
         <div id="customQualityWrapper">
@@ -28,7 +28,7 @@
                 <h5>But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">{{preferredExplanation.join(', ')}}</label></h5>
                 </template>
             </div>
-            <div v-f="seriesSlug">
+            <div v-if="seriesSlug">
                 <h5 class="red-text" id="backloggedEpisodes" v-html="backloggedEpisodes"></h5>
             </div>
             <div id="archive" v-if="archive">
@@ -184,10 +184,8 @@ Vue.component('quality-chooser', {
         setQualityFromPreset(preset) {
             this.customQuality = parseInt(preset, 10) === 0;
 
-            this.selectedAllowed = Object.keys(this.qualityStrings)
-                .filter(quality => (preset & quality) > 0);
-            this.selectedPreffered = Object.keys(this.qualityStrings)
-                .filter(quality => (preset & (quality << 16)) > 0);
+            this.selectedAllowed = Object.keys(this.qualityStrings).filter(quality => (preset & quality) > 0);
+            this.selectedPreffered = Object.keys(this.qualityStrings).filter(quality => (preset & (quality << 16)) > 0);
         }
     },
     watch: {
