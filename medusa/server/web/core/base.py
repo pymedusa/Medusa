@@ -240,7 +240,7 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
-    executor = ThreadPoolExecutor(cpu_count())
+    executor = ThreadPoolExecutor(cpu_count(), thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
