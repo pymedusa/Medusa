@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 
 import logging
 import re
+# Rafi: we need os for show sub-folder  extraction
+import os
+
 from collections import OrderedDict
 
 from medusa import app
@@ -54,17 +57,63 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
-        return self._request(params={
+            # Rafi: set proper subfoler destination for uTorrent 
+            series_id = result.series.series_id
+            series_name = result.series.name
+ 
+			# Rafi: get the sub-folder the user has assigned to that series
+            root_dirs = app.ROOT_DIRS
+            root_location = root_dirs[int(root_dirs[0]) + 1]
+            torrent_path = result.series._location
+
+            torrent_subfolder = None;
+            if not root_location == torrent_path:
+                torrent_subfolder = os.path.basename(torrent_path)
+	        # Rafi: always provide a sub-folder per series? Maybe use the label, which can now be set as the name too (see below). TBD
+            else:
+                torrent_subfolder = series_name
+
+            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+
+            return self._request(params={
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
+			# Rafi: add torrent path to request
+			#   
+			'path': torrent_subfolder,
         })
 
     def _add_torrent_file(self, result):
-        return self._request(
-            method='post',
-            params={
-                'action': 'add-file',
+            # Rafi: set proper subfoler destination for uTorrent 
+            series_id = result.series.series_id
+            series_name = result.series.name
+ 
+			# Rafi: get the sub-folder the user has assigned to that series
+            root_dirs = app.ROOT_DIRS
+            root_location = root_dirs[int(root_dirs[0]) + 1]
+            torrent_path = result.series._location
+
+            torrent_subfolder = None;
+            if not root_location == torrent_path:
+                torrent_subfolder = os.path.basename(torrent_path)
+	        # Rafi: always provide a sub-folder per series? Maybe use the label, which can now be set as the name too (see below). TBD
+            else:
+                torrent_subfolder = series_name
+
+            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+
+            return self._request(
+                method = 'post',
+                params ={
+                        'action': 'add-file',
+				# Rafi: add torrent path to request
+				#   
+				'path': torrent_subfolder,
             },
             files={
                 'torrent_file': (
@@ -75,17 +124,33 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
+        torrent_new_label = result.series.name
+
         if result.series.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
             label = app.TORRENT_LABEL
 
-        return self._request(params={
-            'action': 'setprops',
-            'hash': result.hash,
-            's': 'label',
-            'v': label,
-        })
+        log.info('torrent label was {path}',
+                    {'path': label})
+
+        label = label.replace("%N",torrent_new_label)
+
+        log.info('torrent label is now set to {path}',
+                    {'path': label})
+		
+		# Rafi: always use show name as label? TBD.
+        # if not label:
+        #    label = torrent_new_label
+
+        return self._request(
+		    params={
+				'action': 'setprops',
+				'hash': result.hash,
+				's': 'label',
+				'v': label,
+		    }
+		)
 
     def _set_torrent_ratio(self, result):
         ratio = result.ratio or None
