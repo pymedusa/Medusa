@@ -200,7 +200,8 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-            'action': 'pause' if app.TORRENT_PAUSED else 'start',
+		# Rafi: "pause" changed to "stop" since pause is unhealthy to the swarm, and now removed from uTorrent toolbar...
+            'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
 
