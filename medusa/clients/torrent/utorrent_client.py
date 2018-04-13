@@ -174,7 +174,8 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-        if app.TORRENT_SEED_TIME:
+		# Rafi - "-1" is used to - disable 
+        if app.TORRENT_SEED_TIME > 0:
             if self._request(params={
                 'action': 'setprops',
                 'hash': result.hash,
