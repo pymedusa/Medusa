@@ -1088,7 +1088,7 @@ class Application(object):
                 except OSError as e:
                     logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
-                app.SUBTITLES_ERASE_CACHE = 0
+                app.SUBTITLES_ERASE_CACHE = False
 
             # Check if we need to perform a restore of the cache folder
             Application.restore_cache_folder(app.CACHE_DIR)
