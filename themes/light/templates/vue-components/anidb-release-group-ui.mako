@@ -35,33 +35,33 @@
 <script type="text/x-template" id="anidb-release-group-ui">
     <div id="anidb-release-group-ui-wrapper" class="top-10">
         <div class="row">
-                <div class="col-sm-4 left-whitelist" >
-                    <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
-                    <ul>
-                        <li @click="toggleItem(item)" v-for="item in itemsWhitelist" v-bind:class="{active: item.toggled}">{{ item.name }}</li>
-                        <div class="arrow" @click="moveToList('whitelist')">
-                                <img src="images/curved-arrow-left.png"/>
-                        </div>
-                    </ul>
-                </div>
-                <div class="col-sm-4 center-available">
-                    <span>Release groups</span>
-                    <ul>
-                        <li v-for="release in itemsReleaseGroups" class="initial " v-bind:class="{active: release.toggled}" @click="toggleItem(release)">{{ release.name }}</li>
-                        <div class="arrow" @click="moveToList('releasegroups')">
-                            <img src="images/curved-arrow-left.png"/>
-                        </div>
-                    </ul>
-                </div>
-                <div class="col-sm-4 right-blacklist">
-                    <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')"/>
-                    <ul>
-                        <li @click="toggleItem(release)" v-for="release in itemsBlacklist" v-bind:class="{active: release.toggled}">{{ release.name }}</li>
-                        <div class="arrow" @click="moveToList('blacklist')">
-                            <img src="images/curved-arrow-left.png"/>
-                        </div>
-                    </ul>
-                </div>
+            <div class="col-sm-4 left-whitelist" >
+                <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
+                <ul>
+                    <li @click="item.toggled = !item.toggled" v-for="item in itemsWhitelist" v-bind:class="{active: item.toggled}">{{ item.name }}</li>
+                    <div class="arrow" @click="moveToList('whitelist')">
+                        <img src="images/curved-arrow-left.png"/>
+                    </div>
+                </ul>
+            </div>
+            <div class="col-sm-4 center-available">
+                <span>Release groups</span>
+                <ul>
+                    <li v-for="release in itemsReleaseGroups" class="initial" v-bind:class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
+                    <div class="arrow" @click="moveToList('releasegroups')">
+                        <img src="images/curved-arrow-left.png"/>
+                    </div>
+                </ul>
+            </div>
+            <div class="col-sm-4 right-blacklist">
+                <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')"/>
+                <ul>
+                    <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" v-bind:class="{active: release.toggled}">{{ release.name }}</li>
+                    <div class="arrow" @click="moveToList('blacklist')">
+                        <img src="images/curved-arrow-left.png"/>
+                    </div>
+                </ul>
+            </div>
         </div>
         <div id="add-new-release-group">
             <input type="text" v-model="newGroup" />
@@ -71,11 +71,29 @@
 <script>
 Vue.component('anidb-release-group-ui', {
     name: 'anidb-release-group-ui',
-    template: `#anidb-release-group-ui`,
-    props: ['series', 'blacklist', 'whitelist', 'allGroups'],
+    template: '#anidb-release-group-ui',
+    props: [
+        series: {
+            type: Object,
+            required: true
+        },
+        blacklist: {
+            type: Array,
+            default: []
+        },
+        whitelist: {
+            type: Array,
+            default: []
+        },
+        allGroups: {
+            type: Array,
+            default: []
+        }
+    },
     data() {
         return {
             index: 0,
+            releaseSeries: {},
             allReleaseGroups: [],
             newGroup: ''
         };
@@ -87,10 +105,7 @@ Vue.component('anidb-release-group-ui', {
         this.createIndexedObjects(this.allGroups, 'releasegroups');
     },
     methods: {
-        sendValues: function() {
-            this.$emit('change', this.allReleaseGroups);
-        },
-        toggleItem: function(release) {
+        toggleItem(release) {
             this.allReleaseGroups = this.allReleaseGroups.map(x => {
                 if (x.id === release.id) {
                     x.toggled = !x.toggled;
@@ -98,7 +113,7 @@ Vue.component('anidb-release-group-ui', {
                 return x;
             });
         },
-        createIndexedObjects: function(releaseGroups, list) {
+        createIndexedObjects(releaseGroups, list) {
             newList = [];
             for (release of releaseGroups) {
 
@@ -116,17 +131,17 @@ Vue.component('anidb-release-group-ui', {
                 this.index += 1; // increment the counter for our next item.
             }
         },
-        moveToList: function(list) {
+        moveToList(list) {
             // Only move items that have been toggled and that are not yet in that list.
             // It's matching them by item.name.
             for (group of this.allReleaseGroups) {
-                const allReadyInList = this.allReleaseGroups.map(releaseGroup => {
+                const aleadyInList = this.allReleaseGroups.map(releaseGroup => {
                     if (releaseGroup.memberOf == list) {
                         return releaseGroup.name;
                     }
                 }).includes(group.name);
 
-                if (group.toggled && !allReadyInList) {
+                if (group.toggled && !aleadyInList) {
                     group.toggled = false;
                     group.memberOf = list;
                 }
@@ -145,33 +160,33 @@ Vue.component('anidb-release-group-ui', {
 
             this.sendValues();
         },
-        deleteFromList: function(list) {
-            this.allReleaseGroups = this.allReleaseGroups.filter(x => {
-                if (x.memberOf !== list || !x.toggled) {
-                    return x;
-                }
-            })
+        deleteFromList(list) {
+            this.allReleaseGroups = this.allReleaseGroups.filter(x => x.memberOf !== list || !x.toggled);
 
             this.sendValues();
         }
     },
     computed: {
-        itemsWhitelist: function() {
+        itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf == 'whitelist');
         },
-        itemsBlacklist: function() {
+        itemsBlacklist() {
             return this.allReleaseGroups.filter(x => x.memberOf == 'blacklist');
         },
-        itemsReleaseGroups: function() {
+        itemsReleaseGroups() {
             return this.allReleaseGroups.filter(x => x.memberOf == 'releasegroups');
         },
-        showDeleteFromWhitelist: function() {
+        showDeleteFromWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf == 'whitelist' && x.toggled == true).length !== 0;
         },
-        showDeleteFromBlacklist: function() {
+        showDeleteFromBlacklist() {
             return this.allReleaseGroups.filter(x => x.memberOf == 'blacklist' && x.toggled == true).length !== 0;
         }
-
+    },
+    watch: {
+        allReleaseGroups() {
+            this.$emit('change', this.allReleaseGroups);
+        }
     }
 });
 </script>
