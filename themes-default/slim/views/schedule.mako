@@ -6,7 +6,9 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+## Plot Info component is used only in 'list' layout!
+## Should be in `partials/schedule/list.mako` if possible.
+<%include file="/vue-components/plot-info.mako"/>
 <script>
 let app;
 const startVue = () => {
