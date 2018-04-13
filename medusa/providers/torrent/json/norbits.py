@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.helper.common import (
