@@ -135,13 +135,13 @@ Vue.component('anidb-release-group-ui', {
             // Only move items that have been toggled and that are not yet in that list.
             // It's matching them by item.name.
             for (group of this.allReleaseGroups) {
-                const aleadyInList = this.allReleaseGroups.map(releaseGroup => {
+                const inList = this.allReleaseGroups.map(releaseGroup => {
                     if (releaseGroup.memberOf == list) {
                         return releaseGroup.name;
                     }
                 }).includes(group.name);
 
-                if (group.toggled && !aleadyInList) {
+                if (group.toggled && !inList) {
                     group.toggled = false;
                     group.memberOf = list;
                 }
