@@ -14,7 +14,6 @@
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
-<%include file="/vue-components/plot-info.mako"/>
 <script>
 let app;
 const startVue = () => {
