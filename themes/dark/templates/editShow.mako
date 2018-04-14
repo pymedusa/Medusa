@@ -18,6 +18,8 @@
 <%include file="/vue-components/quality-chooser.mako"/>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
+<%include file="/vue-components/saved-animation.mako"/>
+
 <script>
 const startVue = () => {
     const app = new Vue({
@@ -58,9 +60,10 @@ const startVue = () => {
                     {text: 'Skipped', value: 'Skipped'},
                     {text: 'Ignored', value: 'Ignored'}
                 ],
-                saveStatus: '',
                 seriesLoaded: false,
-                location: ''
+                location: '',
+                saveMessage: '',
+                showSave: false
             }
         },
         async mounted() {
@@ -111,10 +114,16 @@ const startVue = () => {
                         }
                     };
                     try {
+                        this.showSave = true;
+                        this.saveMessage = "saving";
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.saveStatus = 'Successfully patched series';
+                        this.saveMessage = "Testing a longer message";
+                        this.$refs.$forceUpdate();
+                        this.$refs.saveUi.update();
                     } catch (error) {
-                        this.saveStatus = 'Problem trying to save series with error' + error + ', sending data: ' + data;
+                        this.saveMessage = 'Problem trying to save series with error' + error + ', sending data: ' + data;
+                    } finally {
+                        this.showSave = false;
                     }
                 };
             },
@@ -163,6 +172,7 @@ const startVue = () => {
 % else:
     <h1 class="title">${title}</h1>
 % endif
+<saved-animation ref="saveUi" :state="saveMessage" :hide="!showSave"></saved-animation>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
         <form @submit.prevent="saveSeries('all')">
