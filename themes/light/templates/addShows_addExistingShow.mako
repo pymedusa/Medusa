@@ -45,14 +45,6 @@ const startVue = () => {
                 this.rootDirStaticList();
                 this.loadContent();
             });
-            // Copied over from `add-shows/add-existing-show.js`, doesn't seem to have a purpose.
-            /*
-            $('#tableDiv').on('click', '.showManage', event => {
-                event.preventDefault();
-                $('#tabs').tabs('option', 'active', 0);
-                $('html,body').animate({ scrollTop: 0 }, 1000);
-            });
-            */
         },
         methods: {
             rootDirStaticList() {
