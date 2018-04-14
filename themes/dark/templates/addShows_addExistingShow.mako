@@ -14,8 +14,99 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Existing Show'
+                header: 'Existing Show',
+                lastTxt: ''
             };
+        },
+        mounted() {
+            // Need to delay that a bit
+            this.$nextTick(() => {
+                // Hide the black/whitelist, because it can only be used for a single anime show
+                $.updateBlackWhiteList(undefined);
+            });
+            this.rootDirStaticList();
+            this.loadContent();
+
+            $('#tableDiv').on('click', '#checkAll', event => {
+                $('.showDirCheck').each((index, element) => {
+                    element.checked = event.currentTarget.checked;
+                });
+            });
+            $('#rootDirStaticList').on('click', '.rootDirCheck', this.loadContent);
+            /* @TODO: Fix this.
+             * It should reload root dirs after changing them, without needing to refresh the page.
+             * Currently doesn't work.
+             */
+            $(document.body).on('change', '#rootDirText', () => {
+                if (this.lastTxt === $('#rootDirText').val()) {
+                    return false;
+                }
+                this.lastTxt = $('#rootDirText').val();
+                this.rootDirStaticList();
+                this.loadContent();
+            });
+            // Copied over from `add-shows/add-existing-show.js`, doesn't seem to have a purpose.
+            /*
+            $('#tableDiv').on('click', '.showManage', event => {
+                event.preventDefault();
+                $('#tabs').tabs('option', 'active', 0);
+                $('html,body').animate({ scrollTop: 0 }, 1000);
+            });
+            */
+        },
+        methods: {
+            rootDirStaticList() {
+                $('#rootDirStaticList').html('');
+                $('#rootDirs option').each((index, element) => {
+                    $('#rootDirStaticList').append('<li class="ui-state-default ui-corner-all"><input type="checkbox" class="rootDirCheck" id="' + $(element).val() + '" checked="checked"> <label for="' + $(element).val() + '"><b>' + $(element).val() + '</b></label></li>');
+                });
+            },
+            loadContent() {
+                let url_query = '';
+                $('.rootDirCheck').each((index, element) => {
+                    if ($(element).is(':checked')) {
+                        if (url_query.length !== 0) {
+                            url_query += '&';
+                        }
+                        url_query += 'rootDir=' + encodeURIComponent($(element).attr('id'));
+                    }
+                });
+
+                $('#tableDiv').html('<img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...');
+                $.get('addShows/massAddTable/', url_query, data => {
+                    $('#tableDiv').html(data);
+                    $('#addRootDirTable').tablesorter({
+                        // SortList: [[1,0]],
+                        widgets: ['zebra'],
+                        headers: {
+                            0: { sorter: false }
+                        }
+                    });
+                });
+            },
+            submitShowDirs() {
+                const dirArr = [];
+                $('.showDirCheck').each((index, element) => {
+                    if (element.checked === true) {
+                        const originalIndexer = $(element).attr('data-indexer');
+                        let indexerId = '|' + $(element).attr('data-indexer-id');
+                        const showName = $(element).attr('data-show-name');
+                        const showDir = $(element).attr('data-show-dir');
+
+                        const indexer = $(element).closest('tr').find('select').val();
+                        if (originalIndexer !== indexer || originalIndexer === '0') {
+                            indexerId = '';
+                        }
+                        dirArr.push(encodeURIComponent(indexer + '|' + showDir + indexerId + '|' + showName));
+                    }
+                });
+
+                if (dirArr.length === 0) {
+                    return false;
+                }
+
+                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?promptForSettings=' + ($('#promptForSettings').prop('checked') ? 'on' : 'off') + '&shows_to_add=' + dirArr.join('&shows_to_add=');
+            }
         }
     });
 };
@@ -51,7 +142,7 @@ const startVue = () => {
                 <div id="tableDiv"></div>
                 <br>
                 <br>
-                <input class="btn" type="button" value="Submit" id="submitShowDirs" />
+                <input class="btn" type="button" value="Submit" id="submitShowDirs" @click="submitShowDirs" />
             </form>
         </div>
     </div>

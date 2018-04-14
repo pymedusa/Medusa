@@ -5,7 +5,7 @@
 <table id="addRootDirTable" class="defaultTable tablesorter">
     <thead>
         <tr>
-            <th class="col-checkbox"><input type="checkbox" id="checkAll" checked=checked></th>
+            <th class="col-checkbox"><input type="checkbox" id="checkAll" checked="checked"></th>
             <th>Directory</th>
             <th width="20%">Show Name (tvshow.nfo)</th>
             <th width="20%">Indexer</th>
@@ -25,7 +25,7 @@
     %>
     <tr>
         <td class="col-checkbox"><input type="checkbox" id="${series_id}" data-indexer="${indexer_id}" data-indexer-id="${series_id}"
-            data-show-dir="${show_dir}" data-show-name="${curDir['existing_info'][1]}" class="dirCheck" checked=checked></td>
+            data-show-dir="${show_dir}" data-show-name="${curDir['existing_info'][1]}" class="showDirCheck" checked="checked"></td>
         <td><label for="${series_id}">${curDir['display_dir']}</label></td>
         % if curDir['existing_info'][1] and indexer_id > 0:
             <td><app-link href="${indexerApi(indexer_id).config['show_url']}${curDir['existing_info'][0]}">${curDir['existing_info'][1]}</app-link></td>
