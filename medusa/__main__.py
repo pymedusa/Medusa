@@ -505,10 +505,6 @@ class Application(object):
                 logger.error(u'Creating local cache dir failed, using system default')
                 app.CACHE_DIR = None
 
-            # Check if we need to perform a restore of the cache folder
-            Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR)
-
             app.FANART_BACKGROUND = bool(check_setting_int(app.CFG, 'GUI', 'fanart_background', 1))
             app.FANART_BACKGROUND_OPACITY = check_setting_float(app.CFG, 'GUI', 'fanart_background_opacity', 0.4)
 
@@ -1092,7 +1088,11 @@ class Application(object):
                 except OSError as e:
                     logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
-                app.SUBTITLES_ERASE_CACHE = 0
+                app.SUBTITLES_ERASE_CACHE = False
+
+            # Check if we need to perform a restore of the cache folder
+            Application.restore_cache_folder(app.CACHE_DIR)
+            cache.configure(app.CACHE_DIR)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
