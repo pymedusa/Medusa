@@ -594,18 +594,16 @@ class Home(WebRoot):
         return json.dumps(data)
 
     @staticmethod
-    def saveShowNotifyList(indexername=None, seriesid=None, emails=None, prowlAPIs=None):
+    def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
         entries = {'emails': '', 'prowlAPIs': ''}
         main_db_con = db.DBConnection()
-
-        indexer_id = indexer_name_to_id(indexername)
 
         # Get current data
         sql_results = main_db_con.select(
             b'SELECT notify_list '
             b'FROM tv_shows '
-            b'WHERE indexer = ? AND show_id = ?',
-            [indexer_id, seriesid]
+            b'WHERE show_id = ?',
+            [show]
         )
         for subs in sql_results:
             if subs[b'notify_list']:
@@ -620,8 +618,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
@@ -630,8 +628,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
