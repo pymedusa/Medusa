@@ -314,7 +314,7 @@ class Tmdb(BaseIndexer):
         bid = images['id']
         for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
-                if image_type not in _images:
+                if images and image_type not in _images:
                     _images[image_type] = {}
 
                 for image in images:
