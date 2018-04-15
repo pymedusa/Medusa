@@ -7,7 +7,7 @@ This module implements the base class of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2014 by Celia Oakley
+:copyright: (c) 2013-2018 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -27,11 +27,9 @@ class TMDB(object):
     URLS = {}
 
     def __init__(self):
-        from . import API_VERSION, REQUESTS_SESSION, __version__
+        from . import API_VERSION
         self.base_uri = 'https://api.themoviedb.org'
         self.base_uri += '/{version}'.format(version=API_VERSION)
-        self.session = REQUESTS_SESSION or requests.Session()
-        self.session.headers.setdefault('user-agent', 'tmdb_api/{}.{}.{}'.format(*__version__))
 
     def _get_path(self, key):
         return self.BASE_PATH + self.URLS[key]
@@ -42,12 +40,12 @@ class TMDB(object):
     def _get_guest_session_id_path(self, key):
         return self._get_path(key).format(
             guest_session_id=self.guest_session_id)
-
+    
     def _get_credit_id_path(self, key):
         return self._get_path(key).format(credit_id=self.credit_id)
 
-    def _get_id_season_number_path(self, key):
-        return self._get_path(key).format(id=self.id,
+    def _get_series_id_season_number_path(self, key):
+        return self._get_path(key).format(series_id=self.series_id,
             season_number=self.season_number)
 
     def _get_series_id_season_number_episode_number_path(self, key):
@@ -74,8 +72,8 @@ class TMDB(object):
         url = self._get_complete_url(path)
         params = self._get_params(params)
 
-        response = self.session.request(
-            method, url, params=params,
+        response = requests.request(
+            method, url, params=params, 
             data=json.dumps(payload) if payload else payload,
             headers=self.headers)
 
@@ -104,5 +102,6 @@ class TMDB(object):
         """
         if isinstance(response, dict):
             for key in response.keys():
-                setattr(self, key, response[key])
+                if not hasattr(self, key) or not callable(getattr(self, key)):
+                    setattr(self, key, response[key])
 
