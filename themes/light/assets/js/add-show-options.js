@@ -14,6 +14,7 @@ $(document).ready(() => {
             allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
             preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
             defaultFlattenFolders: !$('#season_folders').prop('checked'), // Flatten folders is the contrary of season folders!
+            subtitles: $('#subtitles').prop('checked'),
             anime: $('#anime').prop('checked'),
             scene: $('#scene').prop('checked'),
             defaultStatusAfter: $('#statusSelectAfter').val()
