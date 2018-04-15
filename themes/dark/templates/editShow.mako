@@ -113,14 +113,10 @@ const startVue = () => {
                         }
                     };
                     try {
-                        this.saveMessage = "saving";
+                        this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        await setTimeout(() => {
-                            this.saveMessage = "Testing a longer message";
-                        }, 5000)
-                        
-                        // this.$refs.$forceUpdate();
-                        // this.$refs.saveUi.update();
+                        this.saveMessage = 'saved';
+                        debugger;
                     } catch (error) {
                         this.saveMessage = 'Problem trying to save series with error' + error + ', sending data: ' + data;
                     } finally {

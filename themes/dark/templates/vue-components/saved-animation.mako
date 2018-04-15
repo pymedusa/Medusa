@@ -42,8 +42,8 @@
     <div class="saved-animation">
         <div class="fade-animation">
             <transition-group  name="fade">
-                <div ref="stateDiv" v-if="sState" class="animation-background" key="background">
-                    <p ref="stateText">{{sState}}</p>
+                <div ref="stateDiv" v-if="state" class="animation-background" key="background">
+                    <p ref="stateText">{{state}}</p>
                 </div>
             </transition-group>
         </div>
@@ -54,22 +54,25 @@
     const animation = Vue.component('saved-animation', {
         name: 'saved-animation',
         template: `#saved-animation`,
-        props: ['state', 'error'],
-        mounted() {
-            this.sState = this.state;
-            this.sError = this.error;
-        },
-        data: function() {
-            return {
-                sState: '',
-                sError: ''
+        props: {
+            state: {
+                type: String,
+                default: 'saving'
+            },
+            error: {
+                type: String,
+                default: ''
+            },
+            timeout: {
+                type: Number,
+                default: 5000
             }
         },
         watch: {
-            // Monitor the state prop. Required as where using basic variables (boolean and string)
-            // and we want to have the local variables updated.
             state() {
-                this.sState = this.state;
+                setTimeout(() => {
+                    this.sate = ''
+                }, this.timeout)
             }
         }
     });
