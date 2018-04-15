@@ -62,8 +62,7 @@ const startVue = () => {
                 ],
                 seriesLoaded: false,
                 location: '',
-                saveMessage: '',
-                showSave: false
+                saveMessage: ''
             }
         },
         async mounted() {
@@ -114,16 +113,18 @@ const startVue = () => {
                         }
                     };
                     try {
-                        this.showSave = true;
                         this.saveMessage = "saving";
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.saveMessage = "Testing a longer message";
-                        this.$refs.$forceUpdate();
-                        this.$refs.saveUi.update();
+                        await setTimeout(() => {
+                            this.saveMessage = "Testing a longer message";
+                        }, 5000)
+                        
+                        // this.$refs.$forceUpdate();
+                        // this.$refs.saveUi.update();
                     } catch (error) {
                         this.saveMessage = 'Problem trying to save series with error' + error + ', sending data: ' + data;
                     } finally {
-                        this.showSave = false;
+                        this.saveMessage = '';
                     }
                 };
             },
@@ -172,7 +173,7 @@ const startVue = () => {
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<saved-animation ref="saveUi" :state="saveMessage" :hide="!showSave"></saved-animation>
+<saved-animation ref="saveUi" :state="saveMessage"></saved-animation>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
         <form @submit.prevent="saveSeries('all')">
