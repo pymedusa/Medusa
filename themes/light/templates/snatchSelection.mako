@@ -123,7 +123,7 @@ const startVue = () => {
                     </thead>
                     <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
-                        <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
+                        <tr id="${hItem['name'] | h}" class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">
                                 <span data-qtip-my="top left" data-qtip-at="bottom left" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
                             </td>
