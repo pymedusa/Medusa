@@ -1,11 +1,37 @@
-$(document).ready(() => {
-    $('.plotInfo').each((index, element) => {
-        const match = $(element).attr('id').match(/^plot_info_([\da-z]+)_(\d+)_(\d+)$/);
-        // http://localhost:8081/api/v2/series/tvdb83462/episode/s01e01/description?api_key=xxx
-        $(element).qtip({
+<script type="text/x-template" id="plot-info-template">
+    <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
+</script>
+<script>
+Vue.component('plot-info', {
+    props: {
+        hasPlot: Boolean,
+        seriesSlug: {
+            type: String,
+            required: true
+        },
+        season: {
+            type: String,
+            required: true
+        },
+        episode: {
+            type: String,
+            required: true
+        }
+    },
+    computed: {
+        plotInfoClass() {
+            return this.hasPlot ? 'plotInfo' : 'plotInfoNone';
+        }
+    },
+    mounted() {
+        const {hasPlot, seriesSlug, season, episode} = this;
+        if (!hasPlot) {
+            return false;
+        }
+        $(this.$el).qtip({
             content: {
                 text(event, qt) {
-                    api.get('series/' + match[1] + '/episode/s' + match[2] + 'e' + match[3] + '/description').then(response => {
+                    api.get('series/' + seriesSlug + '/episode/s' + season + 'e' + episode + '/description').then(response => {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
                     }, xhr => {
@@ -33,5 +59,7 @@ $(document).ready(() => {
                 classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
             }
         });
-    });
+    },
+    template: `#plot-info-template`
 });
+</script>

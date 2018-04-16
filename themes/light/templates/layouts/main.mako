@@ -125,6 +125,7 @@
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
+        <%include file="/vue-components/plot-info.mako"/>
         <%block name="scripts" />
     </body>
 </html>
