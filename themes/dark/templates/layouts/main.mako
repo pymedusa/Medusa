@@ -123,6 +123,7 @@
         <script src="js/lib/vue.js"></script>
         <script src="js/lib/vue-async-computed@3.3.0.js"></script>
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
+        <script src="js/lib/vue-meta.min.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
