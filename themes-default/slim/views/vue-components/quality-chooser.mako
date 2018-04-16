@@ -1,11 +1,11 @@
 <script type="text/x-template" id="quality-chooser-template">
     <div id="quality_chooser_wrapper">
-        <select v-model="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
-            <option :value="0" :selected="0 === overallQuality" >Custom</option>
-            <option v-for="preset in qualityPresets" :value="preset" :selected="preset === overallQuality" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
+        <select v-model.number="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
+            <option :value.number="0">Custom</option>
+            <option v-for="preset in qualityPresets" :value.number="preset" :selected="overallQuality === preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
         </select>
         <div id="customQualityWrapper">
-            <div style="padding-left: 0;" v-if="customQuality">
+            <div style="padding-left: 0;" v-if="selectedQualityPreset === 0">
                 <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
                 <div style="padding-right: 40px; text-align: left; float: left;">
                     <h5>Allowed</h5>
@@ -15,20 +15,22 @@
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model="selectedPreffered" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
+                    <select v-model="selectedPreferred" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
                         <option v-for="quality in preferredQualityList" :selected="quality in preferredQualities" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
             </div>
-            <div id="qualityExplanation">
+            <div style="clear:both;"></div>
+            <div v-if="(selectedAllowed.length + selectedPreferred.length) >= 1" id="qualityExplanation">
                 <h5><b>Quality setting explanation:</b></h5>
-                <h5 v-if="selectedPreffered.length === 0">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">{{allowedExplanation.join(', ')}}</label></h5>
+                <h5 v-if="selectedPreferred.length === 0">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">{{allowedExplanation.join(', ')}}</label></h5>
                 <template v-else>
                 <h5>Downloads <b>any</b> of these qualities: <label id="allowedPreferredExplanation">{{allowedExplanation.join(', ')}}</label></h5>
                 <h5>But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">{{preferredExplanation.join(', ')}}</label></h5>
                 </template>
             </div>
-            <div v-f="seriesSlug">
+            <div v-else>Please select at least one allowed quality.</div>
+            <div v-if="seriesSlug && (selectedAllowed.length + selectedPreferred.length) >= 1">
                 <h5 class="red-text" id="backloggedEpisodes" v-html="backloggedEpisodes"></h5>
             </div>
             <div id="archive" v-if="archive">
@@ -85,6 +87,7 @@ Vue.component('quality-chooser', {
             qualityStrings: ${convert(Quality.qualityStrings)},
             qualityPresets: ${convert(qualityPresets)},
             qualityPresetStrings: ${convert(qualityPresetStrings)},
+            selectedQualityPreset: ${convert(overall_quality) if overall_quality in qualityPresets else '0'},
 
             // JS only
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -92,8 +95,7 @@ Vue.component('quality-chooser', {
             archive: false,
             archivedStatus: '',
             selectedAllowed: [],
-            selectedPreffered: [],
-            selectedQualityPreset: ${overall_quality}
+            selectedPreferred: []
         };
     },
     computed: {
@@ -102,7 +104,7 @@ Vue.component('quality-chooser', {
             return allowed.map(quality => this.qualityStrings[quality])
         },
         preferredExplanation() {
-            const preferred = this.selectedPreffered;
+            const preferred = this.selectedPreferred;
             return preferred.map(quality => this.qualityStrings[quality])
         },
         allowedPreferredExplanation() {
@@ -116,7 +118,7 @@ Vue.component('quality-chooser', {
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val >= ${Quality.SDTV} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
         }
     },
     asyncComputed: {
@@ -125,12 +127,12 @@ Vue.component('quality-chooser', {
             if (!this.seriesSlug) return;
 
             const selectedAllowed = this.selectedAllowed;
-            const selectedPreffered = this.selectedPreffered;
+            const selectedPreferred = this.selectedPreferred;
             // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
             const url = 'series/' + this.seriesSlug +
                       '/legacy/backlogged' +
                       '?allowed=' + selectedAllowed +
-                      '&preferred=' + selectedPreffered;
+                      '&preferred=' + selectedPreferred;
             const response = await api.get(url);
             const newBacklogged = response.data.new;
             const existingBacklogged = response.data.existing;
@@ -159,8 +161,7 @@ Vue.component('quality-chooser', {
         }
     },
     mounted() {
-        // Set initial quality
-        this.setQualityFromPreset(this.selectedQualityPreset);
+        this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
     },
     methods: {
         async archiveEpisodes() {
@@ -181,18 +182,24 @@ Vue.component('quality-chooser', {
             $('#archiveEpisodes').val('Finished');
             $('#archiveEpisodes').prop('disabled', true);
         },
-        setQualityFromPreset(preset) {
-            this.customQuality = parseInt(preset, 10) === 0;
+        setQualityFromPreset(preset, oldPreset) {
+            // If empty skip
+            if (preset === undefined || preset === null) return;
+
+            this.customQuality = parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset));
+
+            // If custom set to last preset
+            if (this.customQuality) preset = oldPreset;
 
             this.selectedAllowed = Object.keys(this.qualityStrings)
                 .filter(quality => (preset & quality) > 0);
-            this.selectedPreffered = Object.keys(this.qualityStrings)
+            this.selectedPreferred = Object.keys(this.qualityStrings)
                 .filter(quality => (preset & (quality << 16)) > 0);
         }
     },
     watch: {
-        selectedQualityPreset(preset) {
-            this.setQualityFromPreset(preset);
+        selectedQualityPreset(preset, oldPreset) {
+            this.setQualityFromPreset(preset, oldPreset);
         }
     }
 });
