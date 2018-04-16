@@ -16,19 +16,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Failed Downloads'
+        },
         data() {
-            return {};
+            return {
+                header: 'Failed Downloads'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="limit" id="limit" class="form-control form-control-inline input-sm">
         <option value="100" ${'selected="selected"' if limit == '100' else ''}>100</option>

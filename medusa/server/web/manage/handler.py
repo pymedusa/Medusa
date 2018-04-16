@@ -822,6 +822,5 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_failedDownloads.mako')
 
         return t.render(limit=limit, failedResults=sql_results,
-                        title='Failed Downloads', header='Failed Downloads',
                         topmenu='manage', controller='manage',
                         action='failedDownloads')
