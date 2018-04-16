@@ -584,7 +584,7 @@ class Manage(Home, WebRoot):
         return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
-                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
+                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, topmenu='manage')
 
     def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,

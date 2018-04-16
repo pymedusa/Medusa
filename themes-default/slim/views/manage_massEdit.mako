@@ -20,8 +20,8 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
-        data() {
-            return {};
+        metaInfo: {
+            title: 'Mass Edit'
         },
         mounted() {
             function findDirIndex(which) {
