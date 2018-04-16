@@ -12,8 +12,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Schedule'
+        },
         data() {
-            return {};
+            return {
+                header: 'Schedule'
+            };
         },
         mounted() {
             if ($.isMeta({ layout: 'schedule' }, ['list'])) {
@@ -102,7 +107,7 @@ const startVue = () => {
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="header">${header}</h1>
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 

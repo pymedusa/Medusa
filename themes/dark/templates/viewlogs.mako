@@ -11,8 +11,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Logs'
+        },
         data() {
-            return {};
+            return {
+                header: 'Log File'
+            };
         },
         mounted() {
             function getParams() {
@@ -72,11 +77,7 @@ pre {
 
 <div class="row">
         <div class="col-md-12">
-            % if not header is UNDEFINED:
-                <h1 class="header">${header}</h1>
-            % else:
-                <h1 class="title">${title}</h1>
-            % endif
+            <h1 class="header">{{header}}</h1>
         </div>
         <div class="col-md-12 pull-right ">
             <div class="logging-filter-controll pull-right">
