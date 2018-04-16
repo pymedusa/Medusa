@@ -52,7 +52,7 @@ class Manage(Home, WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='manage.mako')
-        return t.render(title='Mass Update', header='Mass Update', topmenu='manage', controller='manage', action='index')
+        return t.render(topmenu='manage', controller='manage', action='index')
 
     @staticmethod
     def showEpisodeStatuses(indexername, seriesid, whichStatus):
