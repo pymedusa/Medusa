@@ -7,7 +7,7 @@ This module implements the Genres functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2014 by Celia Oakley
+:copyright: (c) 2013-2018 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -18,11 +18,12 @@ class Genres(TMDB):
     """
     Genres functionality.
 
-    See: http://docs.themoviedb.apiary.io/#genres
+    See: https://developers.themoviedb.org/3/genres
     """
     BASE_PATH = 'genre'
     URLS = {
-        'list': '/list',
+        'movie_list': '/movie/list',
+        'tv_list': '/tv/list',
         'movies': '/{id}/movies',
     }
 
@@ -30,9 +31,9 @@ class Genres(TMDB):
         super(Genres, self).__init__()
         self.id = id
 
-    def list(self, **kwargs):
+    def movie_list(self, **kwargs):
         """
-        Get the list of genres.
+        Get the list of Movie genres.
 
         Args:
             language: (optional) ISO 639-1 code.
@@ -40,7 +41,23 @@ class Genres(TMDB):
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
-        path = self._get_path('list')
+        path = self._get_path('movie_list')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
+    def tv_list(self, **kwargs):
+        """
+        Get the list of TV genres.
+
+        Args:
+            language: (optional) ISO 639-1 code.
+
+        Returns:
+            A dict respresentation of the JSON returned from the API.
+        """
+        path = self._get_path('tv_list')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
