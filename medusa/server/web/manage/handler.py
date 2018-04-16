@@ -450,8 +450,7 @@ class Manage(Home, WebRoot):
         return t.render(
             showCounts=show_counts, showCats=show_cats,
             showSQLResults=show_sql_results, controller='manage',
-            action='backlogOverview', title='Backlog Overview',
-            header='Backlog Overview', topmenu='manage')
+            action='backlogOverview', topmenu='manage')
 
     def massEdit(self, toEdit=None):
         t = PageTemplate(rh=self, filename='manage_massEdit.mako')
