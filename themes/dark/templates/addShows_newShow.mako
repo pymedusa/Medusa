@@ -12,19 +12,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'New Show'
+        },
         data() {
-            return {};
+            return {
+                header: 'New Show'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
