@@ -21,7 +21,7 @@ const startVue = () => {
         el: '#vue-wrap',
         metaInfo: {
             title: 'History'
-        }
+        },
         data() {
             return {
                 header: 'History'
