@@ -2110,8 +2110,7 @@ class Home(WebRoot):
         }]
 
         return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj, title='Preview Rename',
-                        header='Preview Rename',
+                        show=series_obj,
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):

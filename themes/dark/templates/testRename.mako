@@ -16,8 +16,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Preview Rename'
+        },
         data() {
-            return {};
+            return {
+                header: 'Preview Rename'
+            };
         }
     });
 };
@@ -34,11 +39,7 @@ const startVue = () => {
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:
