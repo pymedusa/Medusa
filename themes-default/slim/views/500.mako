@@ -5,15 +5,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: '500'
+        },
         data() {
-            return {};
+            return {
+                header: 'Mako Error'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">${header}</h1>
+<h1 class="header">{{header}}</h1>
 <p>
 A mako error has occured.<br>
 If this happened during an update a simple page refresh may be the solution.<br>

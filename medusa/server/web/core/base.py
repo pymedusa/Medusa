@@ -146,8 +146,6 @@ class PageTemplate(MakoTemplate):
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
-            kwargs['title'] = '500'
-            kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
