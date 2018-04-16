@@ -65,8 +65,8 @@ class UTorrentAPI(GenericClient):
             root_dirs = app.ROOT_DIRS
             root_location = root_dirs[int(root_dirs[0]) + 1]
             torrent_path = result.series._location
+            torrent_subfolder = None
 
-            torrent_subfolder = None;
             if not root_location == torrent_path:
                 torrent_subfolder = os.path.basename(torrent_path)
 	        # Rafi: always provide a sub-folder per series? Maybe use the label, which can now be set as the name too (see below). TBD
