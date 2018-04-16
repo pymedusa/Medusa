@@ -355,8 +355,7 @@ class Manage(Home, WebRoot):
                                            'age_unit': age_unit, 'date': video_date,
                                            'indexername': tv_episode.series.indexer_name})
 
-        return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
-                        header='Missing Subtitles in Post Process folder', topmenu='manage',
+        return t.render(releases_in_pp=app.RELEASES_IN_PP, topmenu='manage',
                         controller='manage', action='subtitleMissedPP')
 
     def backlogShow(self, indexername, seriesid):
