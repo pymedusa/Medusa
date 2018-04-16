@@ -168,7 +168,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
