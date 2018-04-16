@@ -107,8 +107,8 @@ class ErrorLogs(WebRoot):
             level = logging.ERROR
 
         t = PageTemplate(rh=self, filename='errorlogs.mako')
-        return t.render(header='Logs &amp; Errors', title='Logs &amp; Errors', topmenu='system',
-                        submenu=self._create_menu(level), logLevel=level, controller='errorlogs', action='index')
+        return t.render(topmenu='system', submenu=self._create_menu(level), logLevel=level,
+                        controller='errorlogs', action='index')
 
     @staticmethod
     def _has_errors():
