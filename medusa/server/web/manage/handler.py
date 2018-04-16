@@ -215,8 +215,7 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_subtitleMissed.mako')
 
         if not whichSubs:
-            return t.render(whichSubs=whichSubs, title='Missing Subtitles',
-                            header='Missing Subtitles', topmenu='manage',
+            return t.render(whichSubs=whichSubs, topmenu='manage',
                             show_names=None, ep_counts=None, sorted_show_ids=None,
                             controller='manage', action='subtitleMissed')
 

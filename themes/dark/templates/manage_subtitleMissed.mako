@@ -11,8 +11,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Missing Subtitles'
+        },
         data() {
-            return {};
+            return {
+                header: 'Missing Subtitles'
+            };
         }
     });
 };
