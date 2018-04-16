@@ -36,8 +36,7 @@ class ConfigProviders(Config):
         """Render the Provider configuration page."""
         t = PageTemplate(rh=self, filename='config_providers.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Providers',
-                        header='Search Providers', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='providers')
 
     @staticmethod
