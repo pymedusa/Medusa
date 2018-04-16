@@ -112,8 +112,6 @@
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
-
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
         <%
