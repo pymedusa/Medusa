@@ -25,11 +25,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
     <div id="content960">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+    <h1 class="header">{{header}}</h1>
     <% subsLanguage = subtitles.name_from_code(whichSubs) if whichSubs and whichSubs != 'all' else 'All' %>
     <% wanted_languages = subtitles.wanted_languages() %>
     <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
