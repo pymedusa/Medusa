@@ -177,7 +177,7 @@ class BaseHandler(RequestHandler):
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
-                return self.finish(t.render(title='404', header='Oops'))
+                return self.finish(t.render())
             else:
                 self.finish('Wrong API key used')
 
