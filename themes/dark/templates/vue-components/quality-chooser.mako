@@ -5,7 +5,7 @@
             <option v-for="preset in qualityPresets" :value.number="preset" :selected="overallQuality === preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
         </select>
         <div id="customQualityWrapper">
-            <div style="padding-left: 0;" v-if="customQuality">
+            <div style="padding-left: 0;" v-if="selectedQualityPreset === 0">
                 <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
                 <div style="padding-right: 40px; text-align: left; float: left;">
                     <h5>Allowed</h5>
@@ -87,7 +87,7 @@ Vue.component('quality-chooser', {
             qualityStrings: ${convert(Quality.qualityStrings)},
             qualityPresets: ${convert(qualityPresets)},
             qualityPresetStrings: ${convert(qualityPresetStrings)},
-            selectedQualityPreset: ${convert(overall_quality)},
+            selectedQualityPreset: ${convert(overall_quality) if overall_quality in qualityPresets else '0'},
 
             // JS only
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -118,7 +118,7 @@ Vue.component('quality-chooser', {
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val >= ${Quality.SDTV} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
         }
     },
     asyncComputed: {
@@ -161,7 +161,7 @@ Vue.component('quality-chooser', {
         }
     },
     mounted() {
-        this.setQualityFromPreset(this.selectedQualityPreset);
+        this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
     },
     methods: {
         async archiveEpisodes() {
@@ -186,7 +186,7 @@ Vue.component('quality-chooser', {
             // If empty skip
             if (preset === undefined || preset === null) return;
 
-            this.customQuality = parseInt(preset, 10) === 0;
+            this.customQuality = parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset));
 
             // If custom set to last preset
             if (this.customQuality) preset = oldPreset;
