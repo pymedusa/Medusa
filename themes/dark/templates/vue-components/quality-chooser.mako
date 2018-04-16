@@ -15,22 +15,22 @@
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model="selectedPreffered" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
+                    <select v-model="selectedPreferred" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
                         <option v-for="quality in preferredQualityList" :selected="quality in preferredQualities" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
             </div>
             <div style="clear:both;"></div>
-            <div v-if="(selectedAllowed.length + selectedPreffered.length) >= 1" id="qualityExplanation">
+            <div v-if="(selectedAllowed.length + selectedPreferred.length) >= 1" id="qualityExplanation">
                 <h5><b>Quality setting explanation:</b></h5>
-                <h5 v-if="selectedPreffered.length === 0">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">{{allowedExplanation.join(', ')}}</label></h5>
+                <h5 v-if="selectedPreferred.length === 0">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">{{allowedExplanation.join(', ')}}</label></h5>
                 <template v-else>
                 <h5>Downloads <b>any</b> of these qualities: <label id="allowedPreferredExplanation">{{allowedExplanation.join(', ')}}</label></h5>
                 <h5>But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">{{preferredExplanation.join(', ')}}</label></h5>
                 </template>
             </div>
             <div v-else>Please select at least one allowed quality.</div>
-            <div v-if="seriesSlug && (selectedAllowed.length + selectedPreffered.length) >= 1">
+            <div v-if="seriesSlug && (selectedAllowed.length + selectedPreferred.length) >= 1">
                 <h5 class="red-text" id="backloggedEpisodes" v-html="backloggedEpisodes"></h5>
             </div>
             <div id="archive" v-if="archive">
@@ -95,7 +95,7 @@ Vue.component('quality-chooser', {
             archive: false,
             archivedStatus: '',
             selectedAllowed: [],
-            selectedPreffered: []
+            selectedPreferred: []
         };
     },
     computed: {
@@ -104,7 +104,7 @@ Vue.component('quality-chooser', {
             return allowed.map(quality => this.qualityStrings[quality])
         },
         preferredExplanation() {
-            const preferred = this.selectedPreffered;
+            const preferred = this.selectedPreferred;
             return preferred.map(quality => this.qualityStrings[quality])
         },
         allowedPreferredExplanation() {
@@ -127,12 +127,12 @@ Vue.component('quality-chooser', {
             if (!this.seriesSlug) return;
 
             const selectedAllowed = this.selectedAllowed;
-            const selectedPreffered = this.selectedPreffered;
+            const selectedPreferred = this.selectedPreferred;
             // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
             const url = 'series/' + this.seriesSlug +
                       '/legacy/backlogged' +
                       '?allowed=' + selectedAllowed +
-                      '&preferred=' + selectedPreffered;
+                      '&preferred=' + selectedPreferred;
             const response = await api.get(url);
             const newBacklogged = response.data.new;
             const existingBacklogged = response.data.existing;
@@ -193,7 +193,7 @@ Vue.component('quality-chooser', {
 
             this.selectedAllowed = Object.keys(this.qualityStrings)
                 .filter(quality => (preset & quality) > 0);
-            this.selectedPreffered = Object.keys(this.qualityStrings)
+            this.selectedPreferred = Object.keys(this.qualityStrings)
                 .filter(quality => (preset & (quality << 16)) > 0);
         }
     },
