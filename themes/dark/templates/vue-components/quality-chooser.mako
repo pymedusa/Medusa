@@ -35,13 +35,11 @@
             </div>
             <div id="archive" v-if="archive">
                 <h5>
-                    <b>
-                        Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
-                    </b>
-                        <br />Avoids unnecessarily increasing your backlog
+                    <b>Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/" style="color: blue;">backlog</a>.</b>
+                    <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
-                <button @click="archiveEpisodes" class="btn btn-inline" type="button" value="Archive episodes">
+                <button @click="archiveEpisodes" id="archiveEpisodes" class="btn btn-inline">Archive episodes</button>
                 <h5>{{archivedStatus}}</h5>
             </div>
         </div>
@@ -168,18 +166,18 @@ Vue.component('quality-chooser', {
             this.archivedStatus = 'Archiving...';
 
             const url = 'series/' + this.seriesSlug + '/operation';
-            const respsonse = await api.post(url, { type: 'ARCHIVE_EPISODES' });
+            const response = await api.post(url, { type: 'ARCHIVE_EPISODES' });
 
             if (response.status === 201) {
                 this.archivedStatus = 'Successfully archived episodes';
                 // Recalculate backlogged episodes after we archive it
-                this.backloggedEpisodes();
+                this.$forceUpdate();
             } else if (response.status === 204) {
                 this.archivedStatus = 'No episodes to be archived';
             }
             // Restore button text
             // @TODO: Replace these with vue
-            $('#archiveEpisodes').val('Finished');
+            $('#archiveEpisodes').text('Finished');
             $('#archiveEpisodes').prop('disabled', true);
         },
         setQualityFromPreset(preset, oldPreset) {
