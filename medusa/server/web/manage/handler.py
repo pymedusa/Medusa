@@ -95,7 +95,6 @@ class Manage(Home, WebRoot):
         # if we have no status then this is as far as we need to go
         if not status_list:
             return t.render(
-                title='Episode Overview', header='Episode Overview',
                 topmenu='manage', show_names=None, whichStatus=whichStatus,
                 ep_counts=None, sorted_show_ids=None,
                 controller='manage', action='episodeStatuses')
