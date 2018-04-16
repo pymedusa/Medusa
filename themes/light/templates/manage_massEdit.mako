@@ -14,7 +14,6 @@
         initial_quality = common.SD
     allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
 %>
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script>
 let app;
 const startVue = () => {

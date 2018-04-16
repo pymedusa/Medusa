@@ -13,7 +13,6 @@
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
 <%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/edit-show.js"></script>
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
