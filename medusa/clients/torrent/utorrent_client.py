@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-# Rafi: we need os for show sub-folder  extraction
 import os
 
 from collections import OrderedDict
@@ -57,11 +56,11 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
-            # Rafi: set proper subfoler destination for uTorrent 
+            ## Set proper subfoler as destination for uTorrent 
             series_id = result.series.series_id
             series_name = result.series.name
  
-			# Rafi: get the sub-folder the user has assigned to that series
+			# Get the sub-folder the user has assigned to that series
             root_dirs = app.ROOT_DIRS
             root_location = root_dirs[int(root_dirs[0]) + 1]
             torrent_path = result.series._location
@@ -69,7 +68,7 @@ class UTorrentAPI(GenericClient):
 
             if not root_location == torrent_path:
                 torrent_subfolder = os.path.basename(torrent_path)
-	        # Rafi: always provide a sub-folder per series? Maybe use the label, which can now be set as the name too (see below). TBD
+	        ## Use the label if tyhere is no subfolder
             else:
                 torrent_subfolder = series_name
 
@@ -81,17 +80,17 @@ class UTorrentAPI(GenericClient):
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
-			# Rafi: add torrent path to request
+			## add torrent path to request
 			#   
 			'path': torrent_subfolder,
         })
 
     def _add_torrent_file(self, result):
-            # Rafi: set proper subfoler destination for uTorrent 
+            ##Set the series subfoler as  download destination for uTorrent 
             series_id = result.series.series_id
             series_name = result.series.name
  
-			# Rafi: get the sub-folder the user has assigned to that series
+			##Get the sub-folder the user has assigned to that series
             root_dirs = app.ROOT_DIRS
             root_location = root_dirs[int(root_dirs[0]) + 1]
             torrent_path = result.series._location
@@ -99,7 +98,7 @@ class UTorrentAPI(GenericClient):
             torrent_subfolder = None;
             if not root_location == torrent_path:
                 torrent_subfolder = os.path.basename(torrent_path)
-	        # Rafi: always provide a sub-folder per series? Maybe use the label, which can now be set as the name too (see below). TBD
+	        ## Use the label if tyhere is no subfolder
             else:
                 torrent_subfolder = series_name
 
@@ -111,7 +110,7 @@ class UTorrentAPI(GenericClient):
                 method = 'post',
                 params ={
                         'action': 'add-file',
-				# Rafi: add torrent path to request
+				## Add torrent path to request
 				#   
 				'path': torrent_subfolder,
             },
@@ -139,7 +138,7 @@ class UTorrentAPI(GenericClient):
         log.info('torrent label is now set to {path}',
                     {'path': label})
 		
-		# Rafi: always use show name as label? TBD.
+		## Always use show name as label? TBD.
         # if not label:
         #    label = torrent_new_label
 
@@ -174,7 +173,7 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-		# Rafi - allow 0 - as unlimitted, and "-1" - used to - disable 
+		## Allow 0 - as unlimitted, and "-1" - that is used to disable 
         if float(app.TORRENT_SEED_TIME) >= 0:
             if self._request(params={
                 'action': 'setprops',
@@ -201,7 +200,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-		# Rafi: "pause" changed to "stop" since pause is unhealthy to the swarm, and now removed from uTorrent toolbar...
+		## "stop" torrent, can be resulmed
             'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
