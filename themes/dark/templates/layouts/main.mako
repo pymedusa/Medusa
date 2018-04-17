@@ -126,6 +126,7 @@
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
+        <%include file="/vue-components/saved-message.mako"/>
         <%block name="scripts" />
     </body>
 </html>
