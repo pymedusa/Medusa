@@ -4342,7 +4342,7 @@ CSS helper classes
     overflow: hidden;
     text-align: center;
     font-size: 20px;
-    z-index: 50;
+    z-index: 999;
     background-color: #777;
     color: #eee;
     width: 50px;
