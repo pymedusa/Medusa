@@ -3,7 +3,6 @@
     from medusa import app
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script>
 let app;

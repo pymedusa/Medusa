@@ -115,7 +115,7 @@
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
         <%
-            ## Add Global Vue component x-templates here
+            ## Add Vue component x-templates here
             ## @NOTE: These will be usable on all pages
         %>
         <script src="js/lib/vue.js"></script>
@@ -126,6 +126,7 @@
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
+        <%include file="/vue-components/quality-chooser.mako"/>
         <%block name="scripts" />
     </body>
 </html>

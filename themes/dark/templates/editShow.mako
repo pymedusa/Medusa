@@ -17,7 +17,6 @@
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
-<%include file="/vue-components/quality-chooser.mako"/>
 <script>
 let app;
 const startVue = () => {
@@ -71,7 +70,7 @@ const startVue = () => {
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <quality-chooser></quality-chooser>
+                                    <quality-chooser/>
                                 </span>
                             </label>
                         </div>
