@@ -4,9 +4,12 @@
     from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
+<script src="js/lib/Frisbee.min.js"></script>
+<script src="js/lib/vue-frisbee.min.js"></script>
+<script src="js/vue-submit-form.js"></script>
+<%include file="/vue-components/quality-chooser.mako"/>
 <script>
 let app;
 const startVue = () => {
@@ -19,6 +22,9 @@ const startVue = () => {
             return {
                 header: 'New Show'
             };
+        },
+        methods: {
+            vueSubmitForm
         }
     });
 };
@@ -32,7 +38,7 @@ const startVue = () => {
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
-            <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
+            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="/" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
@@ -90,7 +96,7 @@ const startVue = () => {
             </form>
             <br>
             <div style="width: 100%; text-align: center;">
-                <input class="btn" type="button" id="addShowButton" value="Add Show" disabled="disabled" />
+                <input @click.prevent="vueSubmitForm('addShowForm')" id="addShowButton" class="btn" type="button" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:
                 <input class="btn" type="button" id="skipShowButton" value="Skip Show" />
                 % endif
