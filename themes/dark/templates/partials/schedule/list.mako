@@ -3,7 +3,7 @@
 
     from medusa import app, sbdatetime
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import indexer_id_to_name, mappings
+    from medusa.indexers.utils import indexer_id_to_name
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <!-- start list view //-->
@@ -61,11 +61,8 @@
                 ${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))}
             </td>
             <td class="triggerhighlight">
-% if cur_result['description']:
-                <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${str(mappings.get(cur_indexer).replace('_id', '')) + str(cur_result['showid'])}_${str(cur_result["season"])}_${str(cur_result["episode"])}" />
-% else:
-                <img alt="" src="images/info32.png" width="16" height="16" class="plotInfoNone"  />
-% endif
+                <% has_plot = 'has-plot' if cur_result['description'] else '' %>
+                <plot-info ${has_plot} series-slug="${indexer_id_to_name(cur_indexer) + str(cur_result['showid'])}" season="${str(cur_result['season'])}" episode="${str(cur_result['episode'])}"></plot-info>
                 ${cur_result['name']}
             </td>
             <td align="center" class="triggerhighlight">

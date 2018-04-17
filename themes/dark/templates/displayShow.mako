@@ -11,7 +11,6 @@
     from medusa.indexers.utils import mappings
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
@@ -233,12 +232,9 @@ const startVue = () => {
                                 style="padding: 0; text-align: center; max-width: 60px;"/>
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">
-                    % if epResult["description"] != "" and epResult["description"] is not None:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${show.indexer_slug}_${str(epResult["season"])}_${str(epResult["episode"])}" />
-                    % else:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
-                    % endif
-                    ${epResult["name"]}
+                        <% has_plot = 'has-plot' if epResult['description'] else '' %>
+                        <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
+                        ${epResult["name"]}
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
                     <td class="col-ep triggerhighlight">

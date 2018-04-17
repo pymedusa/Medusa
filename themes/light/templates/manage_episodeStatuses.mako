@@ -9,8 +9,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Episode Overview'
+        },
         data() {
-            return {};
+            return {
+                header: 'Episode Overview'
+            };
         }
     });
 };
@@ -18,11 +23,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content960">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
 % if whichStatus:
 <h2>None of your episodes have status ${common.statusStrings[whichStatus]}</h2>

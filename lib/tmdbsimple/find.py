@@ -7,7 +7,7 @@ This module implements the Find functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2014 by Celia Oakley
+:copyright: (c) 2013-2018 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -17,7 +17,7 @@ class Find(TMDB):
     """
     Find functionality.
 
-    See: http://docs.themoviedb.apiary.io/#find
+    See: https://developers.themoviedb.org/3/find
     """
     BASE_PATH = 'find'
     URLS = {

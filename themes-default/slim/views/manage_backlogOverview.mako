@@ -10,8 +10,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Backlog Overview'
+        },
         data() {
-            return {};
+            return {
+                header: 'Backlog Overview'
+            };
         }
     });
 };
@@ -23,11 +28,7 @@ const startVue = () => {
 <div class="row">
 <div id="content-col" class="col-md-12">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 

@@ -9,8 +9,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Subtitles'
+        },
         data() {
-            return {};
+            return {
+                header: 'Subtitles'
+            };
         },
         mounted() {
             $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {
@@ -29,11 +34,7 @@ const startVue = () => {
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="config">
 <div id="config-content">
     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">

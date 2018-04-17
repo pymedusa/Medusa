@@ -10,20 +10,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Add Recommended Shows'
+        },
         data() {
-            return {};
+            return {
+                header: 'Add Recommended Shows'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
-
+<h1 class="header">{{header}}</h1>
 <div id="addShowPortal">
     <br><br>
     <app-link href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">

@@ -6,14 +6,18 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script>
 let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Schedule'
+        },
         data() {
-            return {};
+            return {
+                header: 'Schedule'
+            };
         },
         mounted() {
             if ($.isMeta({ layout: 'schedule' }, ['list'])) {
@@ -102,7 +106,7 @@ const startVue = () => {
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="header">${header}</h1>
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 
@@ -124,8 +128,8 @@ const startVue = () => {
             <div class="show-option">
                 <span>View Paused:
                     <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+                        <option value="schedule/toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+                        <option value="schedule/toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
                     </select>
                 </span>
             </div>
@@ -147,9 +151,9 @@ const startVue = () => {
             <div class="show-option">
                 <span>Sort By:
                     <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-                        <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-                        <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                        <option value="schedule/setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
+                        <option value="schedule/setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
+                        <option value="schedule/setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
                     </select>
                 </span>
             </div>

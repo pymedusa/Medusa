@@ -24,6 +24,8 @@ from builtins import object
 from medusa import app
 from medusa.clients import torrent
 
+from requests import RequestException
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +46,9 @@ class TorrentChecker(object):
         except NotImplementedError:
             logger.warning('Feature not currently implemented for this torrent client({torrent_client})',
                            torrent_client=app.TORRENT_METHOD)
+        except RequestException as e:
+            logger.warning('Unable to connect to {torrent_client}. Error: {error}',
+                           torrent_client=app.TORRENT_METHOD, error=e)
         except Exception:
             logger.exception('Exception while checking torrent status.')
         finally:
