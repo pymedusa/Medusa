@@ -128,6 +128,7 @@ class SeriesHandler(BaseRequestHandler):
             'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
+            'language': StringField(series, 'lang'),
         }
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
