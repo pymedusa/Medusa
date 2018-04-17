@@ -9,7 +9,6 @@ import sys
 import tarfile
 import tempfile # noqa # pylint: disable=unused-import
 
-import tempfile # noqa # pylint: disable=unused-import
 import certifi
 
 import rarfile
