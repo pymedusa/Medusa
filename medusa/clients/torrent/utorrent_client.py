@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import logging
 import re
+import os
+
 from collections import OrderedDict
 
 from medusa import app
@@ -54,17 +56,63 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
-        return self._request(params={
+            ## Set proper subfoler as destination for uTorrent 
+            series_id = result.series.series_id
+            series_name = result.series.name
+ 
+			# Get the sub-folder the user has assigned to that series
+            root_dirs = app.ROOT_DIRS
+            root_location = root_dirs[int(root_dirs[0]) + 1]
+            torrent_path = result.series._location
+            torrent_subfolder = None
+
+            if not root_location == torrent_path:
+                torrent_subfolder = os.path.basename(torrent_path)
+	        ## Use the label if tyhere is no subfolder
+            else:
+                torrent_subfolder = series_name
+
+            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+
+            return self._request(params={
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
+			## add torrent path to request
+			#   
+			'path': torrent_subfolder,
         })
 
     def _add_torrent_file(self, result):
-        return self._request(
-            method='post',
-            params={
-                'action': 'add-file',
+            ##Set the series subfoler as  download destination for uTorrent 
+            series_id = result.series.series_id
+            series_name = result.series.name
+ 
+			##Get the sub-folder the user has assigned to that series
+            root_dirs = app.ROOT_DIRS
+            root_location = root_dirs[int(root_dirs[0]) + 1]
+            torrent_path = result.series._location
+
+            torrent_subfolder = None;
+            if not root_location == torrent_path:
+                torrent_subfolder = os.path.basename(torrent_path)
+	        ## Use the label if tyhere is no subfolder
+            else:
+                torrent_subfolder = series_name
+
+            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+
+            return self._request(
+                method = 'post',
+                params ={
+                        'action': 'add-file',
+				## Add torrent path to request
+				#   
+				'path': torrent_subfolder,
             },
             files={
                 'torrent_file': (
@@ -75,17 +123,33 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
+        torrent_new_label = result.series.name
+
         if result.series.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
             label = app.TORRENT_LABEL
 
-        return self._request(params={
-            'action': 'setprops',
-            'hash': result.hash,
-            's': 'label',
-            'v': label,
-        })
+        log.info('torrent label was {path}',
+                    {'path': label})
+
+        label = label.replace("%N",torrent_new_label)
+
+        log.info('torrent label is now set to {path}',
+                    {'path': label})
+		
+		## Always use show name as label? TBD.
+        # if not label:
+        #    label = torrent_new_label
+
+        return self._request(
+		    params={
+				'action': 'setprops',
+				'hash': result.hash,
+				's': 'label',
+				'v': label,
+		    }
+		)
 
     def _set_torrent_ratio(self, result):
         ratio = result.ratio or None
@@ -109,7 +173,8 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-        if app.TORRENT_SEED_TIME:
+		## Allow 0 - as unlimitted, and "-1" - that is used to disable 
+        if float(app.TORRENT_SEED_TIME) >= 0:
             if self._request(params={
                 'action': 'setprops',
                 'hash': result.hash,
@@ -135,7 +200,8 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-            'action': 'pause' if app.TORRENT_PAUSED else 'start',
+		## "stop" torrent, can be resulmed
+            'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
 
