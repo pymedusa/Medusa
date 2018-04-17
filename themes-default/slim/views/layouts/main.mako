@@ -126,6 +126,8 @@
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
+        <%include file="/vue-components/saved-message.mako"/>
+        <%include file="/vue-components/language-select.mako"/>
         <%block name="scripts" />
     </body>
 </html>

@@ -1,0 +1,886 @@
+From d9b688fb423bac5e0daceeedca66ae44b6f447d3 Mon Sep 17 00:00:00 2001
+From: p0ps <p0psicles@users.noreply.github.com>
+Date: Thu, 1 Mar 2018 12:51:32 +0100
+Subject: [PATCH 4/9] Feature/anime parsing (#3809)
+
+* Fix some anime shows not returning any results because of xem and
+indexer mismatch.
+E.g: Cardcaptor Sakura Clear Card - thexem S02, thetvdb S04
+
+* Separate the _parse_string method into smaller methods.
+
+* Add testing structure.
+
+* Renamed to test_test_name
+* Added initial tests for anime shows Cardcaptor Sakura and Jojo's Bizarre adventures.
+* Created mock functions with parameterized return values.
+
+* Moved part of the anime parsing (for when it maps a geussit result to an anime show, but guessit can't parse any absolute episode numbers).
+* Added tests for testing anime with a S0xE0x format. Ajin in this case.
+
+* Added test for _parse_series.
+Using the series: `Regular Show`
+
+* Added is_scene param to the anime shows.
+Might want to also start using anime shows where scene is disabled.
+
+* updated initial testing structure for air by date.
+* Replaced the a,b,c params with an empty *_.
+
+* Used lambda to shorten the code a little.
+
+* Added test for series `inside west coast customs`.
+
+* Update test_parse_series.py
+
+* Create fixture monkeypatch_function_return, that will allow you to monkey patch functions, using a list of tuples.
+* Added documentation to test and fixture.
+* Added a parse_series test, that does not have scene numbering enabled.
+* Changed test function name of parse_anime.
+
+* Weird flake warnings.
+
+* Added one more test for anime.
+
+* Added test for american dad.
+
+* Renamed air_by_date test case, as that still needs to be implemented.
+---
+ medusa/name_parser/parser.py           | 313 ++++++++++++++++++++-------------
+ medusa/scene_exceptions.py             |   4 +-
+ medusa/scene_numbering.py              |  21 ++-
+ medusa/server/web/home/handler.py      |   6 +-
+ tests/conftest.py                      |  28 +++
+ tests/name_parser/__init__.py          |   1 +
+ tests/name_parser/parse_air_by_date.py |  29 +++
+ tests/name_parser/test_parse_anime.py  | 186 ++++++++++++++++++++
+ tests/name_parser/test_parse_series.py |  81 +++++++++
+ 9 files changed, 539 insertions(+), 130 deletions(-)
+ create mode 100644 tests/name_parser/__init__.py
+ create mode 100644 tests/name_parser/parse_air_by_date.py
+ create mode 100644 tests/name_parser/test_parse_anime.py
+ create mode 100644 tests/name_parser/test_parse_series.py
+
+diff --git a/medusa/name_parser/parser.py b/medusa/name_parser/parser.py
+index efd3550..a9724ab 100644
+--- a/medusa/name_parser/parser.py
++++ b/medusa/name_parser/parser.py
+@@ -57,138 +57,165 @@ class NameParser(object):
+         self.allow_multi_season = allow_multi_season
+         self.show_type = parse_method or ('anime' if series and series.is_anime else ('normal' if series else None))
+ 
+-    def _parse_string(self, name):
+-        guess = guessit.guessit(name, dict(show_type=self.show_type))
+-        result = self.to_parse_result(name, guess)
++    @staticmethod
++    def _get_episodes_by_air_date(result):
++        airdate = result.air_date.toordinal()
++        main_db_con = db.DBConnection()
++        sql_result = main_db_con.select(
++            b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
++            [result.series.indexer, result.series.series_id, airdate])
+ 
+-        search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
++        return sql_result
+ 
+-        # confirm passed in show object indexer id matches result show object indexer id
+-        series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
+-        result.series = series_obj or self.series
++    def _parse_air_by_date(self, result):
++        """
++        Parse anime season episode results.
+ 
+-        # if this is a naming pattern test or result doesn't have a show object then return best result
+-        if not result.series or self.naming_pattern:
+-            return result
++        Translate scene episode and season numbering to indexer numbering,
++        using an air date to indexer season/episode translation.
++
++        :param result: Guessit parse result object.
++        :return: tuple of found indexer episode numbers and indexer season numbers
++        """
++        log.debug('Series {name} is air by date', {'name': result.series.name})
+ 
+         new_episode_numbers = []
+         new_season_numbers = []
+-        new_absolute_numbers = []
+ 
+-        # if we have an air-by-date show and the result is air-by-date,
+-        # then get the real season/episode numbers
+-        if result.series.air_by_date and result.is_air_by_date:
+-            log.debug('Series {name} is air by date', {'name': result.series.name})
+-            airdate = result.air_date.toordinal()
+-            main_db_con = db.DBConnection()
+-            sql_result = main_db_con.select(
+-                b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+-                [result.series.indexer, result.series.series_id, airdate])
+-
+-            season_number = None
+-            episode_numbers = []
+-
+-            if sql_result:
+-                season_number = int(sql_result[0][0])
+-                episode_numbers = [int(sql_result[0][1])]
+-
+-                # Use the next query item if we have multiple results
+-                # and the current one is a special episode (season 0)
+-                if season_number == 0 and len(sql_result) > 1:
+-                    season_number = int(sql_result[1][0])
+-                    episode_numbers = [int(sql_result[1][1])]
++        episode_by_air_date = self._get_episodes_by_air_date(result)
++
++        season_number = None
++        episode_numbers = []
++
++        if episode_by_air_date:
++            season_number = int(episode_by_air_date[0][0])
++            episode_numbers = [int(episode_by_air_date[0][1])]
++
++            # Use the next query item if we have multiple results
++            # and the current one is a special episode (season 0)
++            if season_number == 0 and len(episode_by_air_date) > 1:
++                season_number = int(episode_by_air_date[1][0])
++                episode_numbers = [int(episode_by_air_date[1][1])]
++
++            log.debug(
++                'Database info for series {name}: Season: {season} Episode(s): {episodes}', {
++                    'name': result.series.name,
++                    'season': season_number,
++                    'episodes': episode_numbers
++                }
++            )
++
++        if season_number is None or not episode_numbers:
++            log.debug('Series {name} has no season or episodes, using indexer',
++                      {'name': result.series.name})
++
++            indexer_api_params = indexerApi(result.series.indexer).api_params.copy()
++            indexer_api = indexerApi(result.series.indexer).indexer(**indexer_api_params)
++            try:
++                if result.series.lang:
++                    indexer_api_params['language'] = result.series.lang
+ 
++                tv_episode = indexer_api[result.series.indexerid].aired_on(result.air_date)[0]
++
++                season_number = int(tv_episode['seasonnumber'])
++                episode_numbers = [int(tv_episode['episodenumber'])]
+                 log.debug(
+-                    'Database info for series {name}: Season: {season} Episode(s): {episodes}', {
++                    'Indexer info for series {name}: {ep}', {
+                         'name': result.series.name,
+-                        'season': season_number,
+-                        'episodes': episode_numbers
++                        'ep': episode_num(season_number, episode_numbers[0]),
+                     }
+                 )
++            except IndexerEpisodeNotFound:
++                log.warning(
++                    'Unable to find episode with date {date} for series {name}. Skipping',
++                    {'date': result.air_date, 'name': result.series.name}
++                )
++                episode_numbers = []
++            except IndexerError as error:
++                log.warning(
++                    'Unable to contact {indexer_api.name}: {error}',
++                    {'indexer_api': indexer_api, 'error': error.message}
++                )
++                episode_numbers = []
++            except IndexerException as error:
++                log.warning(
++                    'Indexer exception: {indexer_api.name}: {error}',
++                    {'indexer_api': indexer_api, 'error': error.message}
++                )
++                episode_numbers = []
+ 
+-            if season_number is None or not episode_numbers:
+-                log.debug('Series {name} has no season or episodes, using indexer',
+-                          {'name': result.series.name})
+-                try:
+-                    indexer_api_params = indexerApi(result.series.indexer).api_params.copy()
++        for episode_number in episode_numbers:
++            season = season_number
++            episode = episode_number
+ 
+-                    if result.series.lang:
+-                        indexer_api_params['language'] = result.series.lang
++            if result.series.is_scene:
++                (season, episode) = scene_numbering.get_indexer_numbering(
++                    result.series,
++                    season_number,
++                    episode_number,
++                )
++                log.debug(
++                    'Scene numbering enabled series {name}, using indexer numbering: {ep}',
++                    {'name': result.series.name, 'ep': episode_num(season, episode)}
++                )
++            new_episode_numbers.append(episode)
++            new_season_numbers.append(season)
+ 
+-                    indexer_api = indexerApi(result.series.indexer).indexer(**indexer_api_params)
+-                    tv_episode = indexer_api[result.series.indexerid].aired_on(result.air_date)[0]
++        return new_episode_numbers, new_season_numbers
+ 
+-                    season_number = int(tv_episode['seasonnumber'])
+-                    episode_numbers = [int(tv_episode['episodenumber'])]
+-                    log.debug(
+-                        'Indexer info for series {name}: {ep}', {
+-                            'name': result.series.name,
+-                            'ep': episode_num(season_number, episode_numbers[0]),
+-                        }
+-                    )
+-                except IndexerEpisodeNotFound:
+-                    log.warning(
+-                        'Unable to find episode with date {date} for series {name}. Skipping',
+-                        {'date': result.air_date, 'name': result.series.name}
+-                    )
+-                    episode_numbers = []
+-                except IndexerError as error:
+-                    log.warning(
+-                        'Unable to contact {indexer_api.name}: {error}',
+-                        {'indexer_api': indexer_api, 'error': error.message}
+-                    )
+-                    episode_numbers = []
+-                except IndexerException as error:
+-                    log.warning(
+-                        'Indexer exception: {indexer_api.name}: {error}',
+-                        {'indexer_api': indexer_api, 'error': error.message}
+-                    )
+-                    episode_numbers = []
++    @staticmethod
++    def _parse_anime(result):
++        """
++        Parse anime season episode results.
+ 
+-            for episode_number in episode_numbers:
+-                season = season_number
+-                episode = episode_number
++        Translate scene episode and season numbering to indexer numbering,
++        using anime scen episode/season translation tables to indexer episode/season.
+ 
+-                if result.series.is_scene:
+-                    (season, episode) = scene_numbering.get_indexer_numbering(
+-                        result.series,
+-                        season_number,
+-                        episode_number,
+-                    )
+-                    log.debug(
+-                        'Scene numbering enabled series {name}, using indexer numbering: {ep}',
+-                        {'name': result.series.name, 'ep': episode_num(season, episode)}
+-                    )
+-                new_episode_numbers.append(episode)
+-                new_season_numbers.append(season)
++        :param result: Guessit parse result object.
++        :return: tuple of found indexer episode numbers and indexer season numbers
++        """
++        log.debug('Scene numbering enabled series {name} is anime',
++                  {'name': result.series.name})
+ 
+-        elif result.series.is_anime and result.is_anime:
+-            log.debug('Scene numbering enabled series {name} is anime',
+-                      {'name': result.series.name})
+-            scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
++        new_episode_numbers = []
++        new_season_numbers = []
++        new_absolute_numbers = []
+ 
++        # Try to translate the scene series name to a scene number.
++        # For example Jojo's bizarre Adventure - Diamond is unbreakable, will use xem, to translate the
++        # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
++        # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
++        # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
++        scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
++
++        if result.ab_episode_numbers:
+             for absolute_episode in result.ab_episode_numbers:
+                 a = absolute_episode
+ 
+                 # Apparently we got a scene_season using the season scene exceptions. If we also do not have a season
+                 # parsed, guessit made a 'mistake' and it should have set the season with the value.
+                 # This is required for titles like: '[HorribleSubs].Kekkai.Sensen.&.Beyond.-.01.[1080p].mkv'
++                #
++                # Don't assume that scene_exceptions season is the same as indexer season.
++                # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
++                if result.series.is_scene or (result.season_number is None and scene_season > 0):
++                    a = scene_numbering.get_indexer_absolute_numbering(
++                        result.series, absolute_episode, True, scene_season
++                    )
++
++                # Translate the absolute episode number, back to the indexers season and episode.
++                (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
++
+                 if result.season_number is None and scene_season > 0:
+-                    season = scene_season
+-                    episode = [a]
+                     log.debug(
+                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
+                         'season number in the title, '
+-                        'assuming the episode # [{scene_absolute}] is the scene_absolute #.',
+-                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a}
++                        'translating the episode absolute # [{scene_absolute}] to season #[{absolute_season}] and '
++                        'episode #[{absolute_episode}].',
++                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a,
++                         'absolute_season': season, 'absolute_episode': episode}
+                     )
+                 else:
+-                    if result.series.is_scene:
+-                        a = scene_numbering.get_indexer_absolute_numbering(result.series, absolute_episode,
+-                                                                           True, scene_season)
+-
+-                    # Translate the absolute episode number, back to the indexers season and episode.
+-                    (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
+                     log.debug(
+                         'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
+                         {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+@@ -198,35 +225,81 @@ class NameParser(object):
+                 new_episode_numbers.extend(episode)
+                 new_season_numbers.append(season)
+ 
+-        elif result.season_number and result.episode_numbers:
++        # It's possible that we map a parsed result to an anime series,
++        # but the result is not detected/parsed as an anime. In that case, we're using the result.episode_numbers.
++        else:
+             for episode_number in result.episode_numbers:
+                 season = result.season_number
+                 episode = episode_number
+-
+-                if result.series.is_scene:
+-                    (season, episode) = scene_numbering.get_indexer_numbering(
+-                        result.series,
+-                        result.season_number,
+-                        episode_number
+-                    )
++                a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
++                if a:
++                    new_absolute_numbers.append(a)
+                     log.debug(
+-                        'Scene numbering enabled series {name} using indexer numbering: {ep}',
+-                        {'name': result.series.name, 'ep': episode_num(season, episode)}
++                        'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
++                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                     )
+ 
+-                if result.series.is_anime:
+-                    a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
+-                    if a:
+-                        new_absolute_numbers.append(a)
+-                        log.debug(
+-                            'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
+-                            {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+-                        )
+-
+                 new_episode_numbers.append(episode)
+                 new_season_numbers.append(season)
+ 
+-        # need to do a quick sanity check heregex.  It's possible that we now have episodes
++        return new_episode_numbers, new_season_numbers, new_absolute_numbers
++
++    @staticmethod
++    def _parse_series(result):
++        new_episode_numbers = []
++        new_season_numbers = []
++        new_absolute_numbers = []
++
++        for episode_number in result.episode_numbers:
++            season = result.season_number
++            episode = episode_number
++
++            if result.series.is_scene:
++                (season, episode) = scene_numbering.get_indexer_numbering(
++                    result.series,
++                    result.season_number,
++                    episode_number
++                )
++                log.debug(
++                    'Scene numbering enabled series {name} using indexer numbering: {ep}',
++                    {'name': result.series.name, 'ep': episode_num(season, episode)}
++                )
++
++            new_episode_numbers.append(episode)
++            new_season_numbers.append(season)
++
++        return new_episode_numbers, new_season_numbers, new_absolute_numbers
++
++    def _parse_string(self, name):
++        guess = guessit.guessit(name, dict(show_type=self.show_type))
++        result = self.to_parse_result(name, guess)
++
++        search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
++
++        # confirm passed in show object indexer id matches result show object indexer id
++        series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
++        result.series = series_obj or self.series
++
++        # if this is a naming pattern test or result doesn't have a show object then return best result
++        if not result.series or self.naming_pattern:
++            return result
++
++        new_episode_numbers = []
++        new_season_numbers = []
++        new_absolute_numbers = []
++
++        # if we have an air-by-date show and the result is air-by-date,
++        # then get the real season/episode numbers
++        if result.series.air_by_date and result.is_air_by_date:
++            new_episode_numbers, new_season_numbers = self._parse_air_by_date(result)
++
++        elif result.series.is_anime or result.is_anime:
++            new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
++
++        elif result.season_number and result.episode_numbers:
++            new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
++
++        # need to do a quick sanity check here ex. It's possible that we now have episodes
+         # from more than one season (by tvdb numbering), and this is just too much
+         # for the application, so we'd need to flag it.
+         new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
+diff --git a/medusa/scene_exceptions.py b/medusa/scene_exceptions.py
+index 3b8134c..bd6efb3 100644
+--- a/medusa/scene_exceptions.py
++++ b/medusa/scene_exceptions.py
+@@ -136,8 +136,10 @@ def get_all_scene_exceptions(series_obj):
+ 
+ 
+ def get_scene_exceptions_by_name(show_name):
+-    """Get the indexer_id and season of the scene exception."""
++    """Look for a series_id, season and indexer for a given series scene exception."""
+     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
++    # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
++    # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
+     # Try the obvious case first
+     cache_db_con = db.DBConnection('cache.db')
+     scene_exceptions = cache_db_con.select(
+diff --git a/medusa/scene_numbering.py b/medusa/scene_numbering.py
+index 201b936..28a72aa 100644
+--- a/medusa/scene_numbering.py
++++ b/medusa/scene_numbering.py
+@@ -132,8 +132,10 @@ def get_indexer_numbering(series_obj, sceneSeason, sceneEpisode, fallback_to_xem
+ 
+     main_db_con = db.DBConnection()
+     rows = main_db_con.select(
+-        "SELECT season, episode FROM scene_numbering WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
+-        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode])
++        "SELECT season, episode FROM scene_numbering "
++        "WHERE indexer = ? and indexer_id = ? and scene_season = ? and scene_episode = ?",
++        [series_obj.indexer, series_obj.series_id, sceneSeason, sceneEpisode]
++    )
+ 
+     if rows:
+         return int(rows[0]["season"]), int(rows[0]["episode"])
+@@ -344,8 +346,10 @@ def get_xem_numbering_for_show(series_obj, refresh_data=True):
+ 
+     main_db_con = db.DBConnection()
+     rows = main_db_con.select(
+-        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
+-        [series_obj.indexer, series_obj.series_id])
++        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes '
++        'WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
++        [series_obj.indexer, series_obj.series_id]
++    )
+ 
+     result = {}
+     for row in rows:
+@@ -465,21 +469,24 @@ def xem_refresh(series_obj, force=False):
+             for entry in parsed_json['data']:
+                 if 'scene' in entry:
+                     cl.append([
+-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
++                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
++                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                         [entry['scene']['season'], entry['scene']['episode'],
+                          entry['scene']['absolute'], indexer_id, series_id,
+                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
+                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
+                     ])
+                     cl.append([
+-                        "UPDATE tv_episodes SET absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
++                        "UPDATE tv_episodes SET absolute_number = ? "
++                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
+                         [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id, series_id,
+                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
+                          entry[indexerApi(indexer_id).config['xem_origin']]['episode']]
+                     ])
+                 if 'scene_2' in entry:  # for doubles
+                     cl.append([
+-                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
++                        "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? "
++                        "WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?",
+                         [entry['scene_2']['season'], entry['scene_2']['episode'],
+                          entry['scene_2']['absolute'], indexer_id, series_id,
+                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
+diff --git a/medusa/server/web/home/handler.py b/medusa/server/web/home/handler.py
+index 1ddd2b7..9d1075b 100644
+--- a/medusa/server/web/home/handler.py
++++ b/medusa/server/web/home/handler.py
+@@ -2384,8 +2384,10 @@ class Home(WebRoot):
+             if sceneEpisode is not None:
+                 sceneEpisode = int(sceneEpisode)
+ 
+-            set_scene_numbering(series_obj, season=forSeason, episode=forEpisode,
+-                                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode)
++            set_scene_numbering(
++                series_obj, season=forSeason, episode=forEpisode,
++                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
++            )
+ 
+         if series_obj.is_anime:
+             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
+diff --git a/tests/conftest.py b/tests/conftest.py
+index b8cd7b1..7ac687d 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -286,3 +286,31 @@ def raise_github_exception():
+         raise exception_type(http_status, {})
+ 
+     return raise_ex
++
++
++@pytest.fixture
++def monkeypatch_function_return(monkeypatch):
++    def mock_function(mocks):
++        """
++        Mock one or more functions passing a list of two value tuples
++        with the full function import path and the return value.
++
++        Example: The following structure will mock two functions with their expected return values.
++        [
++            ('medusa.scene_numbering.get_indexer_numbering', (None, None)),
++            ('get_scene_exceptions_by_name': [(70668, 2, 1)]),
++        ]
++        :mocks: A list of two value tuples.
++        """
++
++        for function_to_mock, return_value in mocks:
++            def create_function(return_value):
++                def create_return(*args):
++                    return return_value
++                return create_return
++
++            monkeypatch.setattr(
++                function_to_mock,
++                create_function(return_value)
++            )
++    return mock_function
+diff --git a/tests/name_parser/__init__.py b/tests/name_parser/__init__.py
+new file mode 100644
+index 0000000..a467eff
+--- /dev/null
++++ b/tests/name_parser/__init__.py
+@@ -0,0 +1 @@
++"""Name parser tests."""
+diff --git a/tests/name_parser/parse_air_by_date.py b/tests/name_parser/parse_air_by_date.py
+new file mode 100644
+index 0000000..c56f5d9
+--- /dev/null
++++ b/tests/name_parser/parse_air_by_date.py
+@@ -0,0 +1,29 @@
++# coding=utf-8
++"""Tests for medusa/test_list_associated_files.py."""
++
++from medusa import helpers
++import medusa.scene_numbering
++import medusa.scene_exceptions
++from medusa.name_parser.parser import NameParser
++import guessit
++import pytest
++
++
++# FIXME: Create meaningful test parameters for air by date shows.
++@pytest.mark.parametrize('p', [
++])
++def test_air_by_date_parsing(p, monkeypatch_function_return, create_tvshow):
++    monkeypatch_function_return(p['mocks'])
++    parser = NameParser()
++    guess = guessit.guessit(p['name'])
++    result = parser.to_parse_result(p['name'], guess)
++
++    # confirm passed in show object indexer id matches result show object indexer id
++    result.series = create_tvshow(name=p['series_info']['name'])
++
++    actual = parser._parse_anime(result)
++
++    expected = p['expected']
++
++    assert expected == actual
++
+diff --git a/tests/name_parser/test_parse_anime.py b/tests/name_parser/test_parse_anime.py
+new file mode 100644
+index 0000000..5496fb7
+--- /dev/null
++++ b/tests/name_parser/test_parse_anime.py
+@@ -0,0 +1,186 @@
++# coding=utf-8
++"""Tests for medusa/test_list_associated_files.py."""
++
++from medusa.name_parser.parser import NameParser
++import guessit
++import pytest
++
++
++@pytest.mark.parametrize('p', [
++    {
++        'name': u'[HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv',
++        'indexer_id': 1,
++        'indexer': 70668,
++        'indexer_ep_season': 4,
++        'indexer_ep_episodes': 8,
++        'indexer_incorrect_absolute_ep_season': 1,
++        'indexer_incorrect_absolute_ep_episodes': 8,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
++        ],
++        'series_info':{
++            'name': u'Cardcaptor Sakura',
++            'is_scene': True
++        },
++        'expected': ([8], [4], [78]),
++    },
++    {
++        'name': u'[BakedFish].Cardcaptor.Sakura:.Clear.Card-hen.-.08.[720p][AAC]',
++        'indexer_id': 1,
++        'indexer': 70668,
++        'indexer_ep_season': 4,
++        'indexer_ep_episodes': 8,
++        'indexer_incorrect_absolute_ep_season': 1,
++        'indexer_incorrect_absolute_ep_episodes': 8,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
++        ],
++        'series_info': {
++            'name': u'Cardcaptor Sakura',
++            'is_scene': True
++        },
++        'expected': ([8], [4], [78]),
++    },
++    {
++        'name': u'(Hi10).Cardcaptor.Sakura.-.08.(BD.1080p).(deanzel).(DualA).(4410B9A7)',
++        'indexer_id': 1,
++        'indexer': 70668,
++        'indexer_ep_season': 4,
++        'indexer_ep_episodes': 8,
++        'indexer_incorrect_absolute_ep_season': 1,
++        'indexer_incorrect_absolute_ep_episodes': 8,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 8),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [8]))
++        ],
++        'series_info': {
++            'name': u'Cardcaptor Sakura',
++            'is_scene': True
++        },
++        'expected': ([8], [1], [8]),
++    },
++    # Jojo last episode of tvdb season 1. episode 26.
++    {
++        'name': u"JoJo's.Bizarre.Adventure.(2012).EP.26.The.Ascendant.One.(BD.AVC.1080p.FLAC.AC3).[Dual.Audio].[ACD1301E]",
++        'indexer_id': 1,
++        'indexer': 262954,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 26),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [26]))
++        ],
++        'series_info': {
++            'name': u"JoJo's.Bizarre.Adventure.(2012)",
++            'is_scene': True
++        },
++        'expected': ([26], [1], [26]),
++    },
++    # Jojo last episode of tvdb season 1. episode 26.
++    {
++        'name': u"[HorribleSubs].JoJo's.Bizarre.Adventure.-.Stardust.Crusaders.Egypt.Arc.-.26.[1080p]",
++        'indexer_id': 1,
++        'indexer': 262954,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 3, 1)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [26]))
++        ],
++        'series_info': {
++            'name': u"JoJo's Bizarre Adventure",
++            'is_scene': True
++        },
++        'expected': ([26], [2], [52]),
++    },
++    # Jojo last episode of tvdb season 1. episode 26.
++    {
++        'name': u"[HorribleSubs].JoJo's.Bizarre.Adventure.-.Diamond.is.Unbreakable.-.26.[1080p]",
++        'indexer_id': 1,
++        'indexer': 262954,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 4, 1)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (3, [26]))
++        ],
++        'series_info': {
++            'name': u"JoJo's Bizarre Adventure",
++            'is_scene': True
++        },
++        'expected': ([26], [3], [100]),
++    },
++    # Ajin season 2, ep 13 using a S0xE0x format.
++    {
++        'name': u'[Ajin2.com].Ajin.Season.2.Episode.13.[End].[720p].[Subbed]',
++        'indexer_id': 1,
++        'indexer': 300835,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
++            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
++        ],
++        'series_info': {
++            'name': u"Ajin",
++            'is_scene': True
++        },
++        'expected': ([13], [2], [26]),
++    },
++    # Ajin season 2, ep 13 using a S0xE0x format.
++    {
++        'name': u'[DragsterPS].AJIN.Demi-Human.S02E13.[1080p].[Multi-Audio].[Multi-Subs].[B2041D7E]',
++        'indexer_id': 1,
++        'indexer': 300835,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
++            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
++        ],
++        'series_info': {
++            'name': u"Ajin",
++            'is_scene': True
++        },
++        'expected': ([13], [2], [26]),
++    },
++    # Anime show, no scene names, no scene numbering.
++    {
++        'name': u'[Chotab].Dragon.Ball.Super.-.002.(BD.Hi10P.1080p).-.To.the.Promised.Resort!.Vegeta.Goes.on.a.Family.Trip!.[3814D4D3]',
++        'indexer_id': 1,
++        'indexer': 295068,
++        'mocks': [
++            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
++            ('medusa.scene_numbering.get_indexer_absolute_numbering', 2),
++            ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [2]))
++        ],
++        'series_info': {
++            'name': u"Dragon Ball Super",
++            'is_scene': False
++        },
++        'expected': ([2], [1], [2]),
++    },
++
++])
++def test_anime_parsing(p, create_tvshow, monkeypatch_function_return):
++    """Test the function medusa.name_parser.NameParser().parser, for a number of (scene/non-scene) numbered
++    anime shows.
++
++    :p: List of parameters to test with.
++    :create_tvshow: Fixture injected for creating a mock TvShow object. Found in conftest.py.
++    :monkeypatch_function_return: Fixture to monkeypatch a list of tuples (configured through
++    the pytest.mark.parameterize config)
++    """
++    monkeypatch_function_return(p['mocks'])
++
++    parser = NameParser()
++    guess = guessit.guessit(p['name'], dict(show_type='anime'))
++    result = parser.to_parse_result(p['name'], guess)
++
++    # confirm passed in show object indexer id matches result show object indexer id
++    result.series = create_tvshow(name=p['series_info']['name'])
++    result.scene = p['series_info']['is_scene']
++
++    actual = parser._parse_anime(result)
++
++    expected = p['expected']
++
++    assert expected == actual
+diff --git a/tests/name_parser/test_parse_series.py b/tests/name_parser/test_parse_series.py
+new file mode 100644
+index 0000000..33e0432
+--- /dev/null
++++ b/tests/name_parser/test_parse_series.py
+@@ -0,0 +1,81 @@
++# coding=utf-8
++"""Tests for medusa/test_list_associated_files.py."""
++
++from medusa.name_parser.parser import NameParser
++from six import iteritems
++import guessit
++import pytest
++
++
++@pytest.mark.parametrize('p', [
++    # The regular Show uses xem data. To map scene S06E29 to indexer S06E28
++    {
++        'name': u'Regular.Show.S06E29.Dumped.at.the.Altar.720p.HDTV.x264-W4F',
++        'indexer_id': 1,
++        'indexer': 188401,
++        'mocks': [
++            ('medusa.scene_numbering.get_indexer_numbering', (6, 28))
++        ],
++        'series_info': {
++            'name': u'Regular Show',
++            'is_scene': True
++        },
++        'expected': ([28], [6], []),
++    },
++    {
++        'name': u'Inside.West.Coast.Customs.S06E04.720p.WEB.x264-TBS',
++        'indexer_id': 1,
++        'indexer': 307007,
++        'mocks': [
++            ('medusa.scene_numbering.get_indexer_numbering', (8, 4))
++        ],
++        'series_info': {
++            'name': u'Inside West Coast Customs',
++            'is_scene': True
++        },
++        'expected': ([4], [8], []),
++    },
++    {
++        'name': u'The.100.S04E13.1080p.BluRay.x264-SPRINTER-Scrambled',
++        'indexer_id': 1,
++        'indexer': 307007,
++        'mocks': [
++            ('medusa.scene_numbering.get_indexer_numbering', (None, None))
++        ],
++        'series_info': {
++            'name': u'The 100',
++            'is_scene': False
++        },
++        'expected': ([13], [4], []),
++    },
++    {
++        'name': u'American.Dad.S14E02.XviD-AFG',
++        'indexer_id': 1,
++        'indexer': 73141,
++        'mocks': [
++            ('medusa.scene_numbering.get_indexer_numbering', (15, 1))
++        ],
++        'series_info': {
++            'name': u'American Dad',
++            'is_scene': True
++        },
++        'expected': ([1], [15], []),
++    },
++])
++def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
++
++    monkeypatch_function_return(p['mocks'])
++
++    parser = NameParser()
++    guess = guessit.guessit(p['name'])
++    result = parser.to_parse_result(p['name'], guess)
++
++    # confirm passed in show object indexer id matches result show object indexer id
++    result.series = create_tvshow(name=p['series_info']['name'])
++    result.series.scene = p['series_info']['is_scene']
++
++    actual = parser._parse_series(result)
++
++    expected = p['expected']
++
++    assert expected == actual
+-- 
+2.6.3.windows.1
+

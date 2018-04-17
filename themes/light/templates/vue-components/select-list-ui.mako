@@ -17,7 +17,7 @@
     <div class="select-list">
         <ul>
             <li v-for="item of editItems">
-                <input style="display: inline-block" type="text" @change="sendValues" v-model="item.value"/>
+                <input style="display: inline-block" type="text" v-model="item.value"/>
                 <img style="display: inline-block" src="images/no16.png" alt="N" width="16" height="16" @click="deleteItem(item)">
             </li>
             <div class="new-item">

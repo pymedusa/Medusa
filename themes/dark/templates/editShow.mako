@@ -18,7 +18,6 @@
 <%include file="/vue-components/quality-chooser.mako"/>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
-<%include file="/vue-components/saved-animation.mako"/>
 
 <script>
 const startVue = () => {
@@ -53,7 +52,7 @@ const startVue = () => {
                             allgroups: []
                         }
                     },
-                    language: ''
+                    language: 'en'
                 },
                 defaultEpisodeStatusOptions: [
                     {text: 'Wanted', value: 'Wanted'},
@@ -62,7 +61,9 @@ const startVue = () => {
                 ],
                 seriesLoaded: false,
                 location: '',
-                saveMessage: ''
+                saveMessage: '',
+                saveError: '',
+                mounted: false
             }
         },
         async mounted() {
@@ -70,7 +71,8 @@ const startVue = () => {
             const url = 'series/' + seriesSlug;
             try {
                 const response = await api.get('series/' + this.seriesSlug);
-                this.series = response.data;
+                this.series = Object.assign({}, this.series, response.data);
+                this.series.language = response.data.language;
                 this.location = this.series.config.location;
             } catch (error) {
                 console.debug('Could not get series info for: '+ seriesSlug);
@@ -80,7 +82,7 @@ const startVue = () => {
             $('#location').fileBrowser({
 	            title: 'Select Show Location'
             });
-
+            this.mounted = true;
         },
         methods: {
             anonRedirect: function(e) {
@@ -91,6 +93,11 @@ const startVue = () => {
                 return JSON.stringify(x, undefined, 4)
             },
             saveSeries: async function(subject) {
+                // We want to wait until the page has been fully loaded, before starting to save stuff.
+                if (!this.mounted) {
+                    return;
+                }
+
                 if (['series', 'all'].includes(subject)) {
                     const data = {
                         config: {
@@ -110,17 +117,16 @@ const startVue = () => {
                                 blacklist: this.series.config.release.blacklist,
                                 whitelist: this.series.config.release.whitelist
                             }
-                        }
+                        },
+                        language: this.series.language
                     };
                     try {
                         this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
                         this.saveMessage = 'saved';
-                        debugger;
+
                     } catch (error) {
-                        this.saveMessage = 'Problem trying to save series with error' + error + ', sending data: ' + data;
-                    } finally {
-                        this.saveMessage = '';
+                        this.saveError = 'Problem trying to save the config: ' + error.message || '';
                     }
                 };
             },
@@ -144,6 +150,9 @@ const startVue = () => {
             },
             saveLocation: function(value) {
                 this.series.config.location = value;
+            },
+            updateLanguage: function(value) {
+                this.series.language = value;
             }
         },
         computed: {
@@ -169,7 +178,7 @@ const startVue = () => {
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<saved-animation ref="saveUi" :state="saveMessage"></saved-animation>
+<saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
         <form @submit.prevent="saveSeries('all')">
@@ -218,9 +227,8 @@ const startVue = () => {
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages"
-                                        data-blank="false" :data-language="series.language" :data-available="availableLanguages" @change="saveSeries('series')">
-                                    </select>
+                                    <language-select @update-language="updateLanguage" v-if="series.language" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm">
+                                    </language-select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -341,14 +349,6 @@ const startVue = () => {
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
                                     <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
-                                    <div class="pull-left">
-                                        <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
-                                            <option v-for="exception in exceptions" :value="exception.series_name">
-                                                {{exception.series_name}} ({{exception.episode_search_template}})
-                                            </option>
-                                        </select>
-                                        <div><input id="removeSceneName" value="Remove" class="btn float-left" type="button" style="margin-top: 10px;"/></div>
-                                    </div> -->
                                     <div class="clear-left"><p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p></div>
                                 </span>
                             </label>

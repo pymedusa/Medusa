@@ -1,0 +1,262 @@
+From 1ad51d7aa7fffe0cbd0821fcf06308e7f831ca3d Mon Sep 17 00:00:00 2001
+From: P0psicles <rogier@headshots.nl>
+Date: Fri, 2 Mar 2018 22:03:01 +0100
+Subject: [PATCH 8/9] Styled the anidbReleaseGroupUi.mako component. Connected
+ anidbReleaseGroupUi component properly to editShow.mako.
+
+---
+ themes/dark/assets/css/style.css                   | 17 ++++
+ themes/dark/templates/editShow.mako                | 90 ++++++++++++----------
+ .../vue-components/anidbReleaseGroupUi.mako        |  7 +-
+ 3 files changed, 70 insertions(+), 44 deletions(-)
+
+diff --git a/themes/dark/assets/css/style.css b/themes/dark/assets/css/style.css
+index c9ef151..0ae72c0 100644
+--- a/themes/dark/assets/css/style.css
++++ b/themes/dark/assets/css/style.css
+@@ -4399,3 +4399,20 @@ CSS helper classes
+     position: fixed;
+     right: 90px;
+ }
++
++
++/* =========================================================================
++ Style for the anidbReleaseGroupUi.mako.
++ Should be moved from here, when moving the .vue files.
++ ========================================================================== */
++
++div#anidb_release_group_ui_wrapper {
++    clear: both;
++}
++
++div#anidb_release_group_ui_wrapper ul {
++    border-style: solid;
++    border-width: thin;
++    padding: 5px 2px 2px 5px;
++    list-style: none;
++}
+\ No newline at end of file
+diff --git a/themes/dark/templates/editShow.mako b/themes/dark/templates/editShow.mako
+index c7e9060..3709623 100644
+--- a/themes/dark/templates/editShow.mako
++++ b/themes/dark/templates/editShow.mako
+@@ -24,7 +24,7 @@
+ % endif
+ <div id="config-content">
+     <div id="config" v-bind:class="{ summaryFanArt: config.fanartBackground }">
+-        <form v-on:submit.prevent="storeConfig">
++        <form @submit.prevent="storeConfig('all')">
+         <div id="config-components">
+             <ul>
+                 <li><a href="${full_url}#core-component-group1">Main</a></li>
+@@ -60,8 +60,8 @@
+                                 <span class="component-title">Default Episode Status</span>
+                                 <span class="component-desc">
+                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm" 
+-                                    v-model="seriesObj.config.defaultEpisodeStatus"  @change="storeConfig($event)">
+-                                        <option v-for="option in defaultEpisodeStatusOptions" v-bind:value="option.value">{{ option.text }}</option>
++                                    v-model="seriesObj.config.defaultEpisodeStatus"  @change="storeConfig('seriesObj')">
++                                        <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
+                                     </select>
+                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
+                                 </span>
+@@ -72,7 +72,7 @@
+                                 <span class="component-title">Info Language</span>
+                                 <span class="component-desc">
+                                     <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" 
+-                                        data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguages" @change="storeConfig($event)">
++                                        data-blank="false" :data-language="seriesObj.language" :data-available="availableLanguages" @change="storeConfig('seriesObj')">
+                                     </select>
+                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
+                                 </span>
+@@ -82,7 +82,7 @@
+                             <label for="subtitles">
+                                 <span class="component-title">Subtitles</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="seriesObj.config.subtitlesEnabled" @change="storeConfig($event)"/> search for subtitles
++                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="seriesObj.config.subtitlesEnabled" @change="storeConfig('seriesObj')"/> search for subtitles
+                                 </span>
+                             </label>
+                         </div>
+@@ -90,7 +90,7 @@
+                             <label for="paused">
+                                 <span class="component-title">Paused</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="paused" name="paused" v-model="seriesObj.config.paused" @change="storeConfig($event)"/> pause this show (Medusa will not download episodes)
++                                    <input type="checkbox" id="paused" name="paused" v-model="seriesObj.config.paused" @change="storeConfig('seriesObj')"/> pause this show (Medusa will not download episodes)
+                                 </span>
+                             </label>
+                         </div>
+@@ -105,7 +105,7 @@
+                             <label for="airbydate">
+                                 <span class="component-title">Air by date</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="seriesObj.config.paused" @change="storeConfig($event)" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
++                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="seriesObj.config.paused" @change="storeConfig('seriesObj')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                 </span>
+                             </label>
+@@ -114,19 +114,23 @@
+                             <label for="anime">
+                                 <span class="component-title">Anime</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="anime" name="anime" v-model="seriesObj.config.anime" @change="storeConfig($event)"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+-                                    % if show.is_anime:
+-                                        <!-- <%include file="/inc_blackwhitelist.mako"/> -->
+-                                        <anidb-release-group-ui></anidb-release-group-ui>
+-                                    % endif
++                                    <input type="checkbox" id="anime" name="anime" v-model="seriesObj.config.anime" @change="storeConfig('seriesObj')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                 </span>
+                             </label>
+                         </div>
++                        
++                        <div v-if="seriesObj.config.anime" class="field-pair">
++                            <span class="component-title">Release Groups</span>
++                            <span class="component-desc">
++                                <anidb-release-group-ui :series="seriesSlug" :blacklist="seriesObj.config.release.blacklist" :whitelist="seriesObj.config.release.whitelist" :all-groups="['group1', 'group2']"></anidb-release-group-ui>
++                            </span>
++                        </div>
++
+                         <div class="field-pair">
+                             <label for="sports">
+                                 <span class="component-title">Sports</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="sports" name="sports" v-model="seriesObj.config.sports" @change="storeConfig($event)"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
++                                    <input type="checkbox" id="sports" name="sports" v-model="seriesObj.config.sports" @change="storeConfig('seriesObj')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                 </span>
+                             </label>
+@@ -135,7 +139,7 @@
+                             <label for="season_folders">
+                                 <span class="component-title">Season folders</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="seriesObj.config.flattenFolders" @change="storeConfig($event)"/> group episodes by season folder (uncheck to store in a single folder)
++                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="seriesObj.config.flattenFolders" @change="storeConfig('seriesObj')"/> group episodes by season folder (uncheck to store in a single folder)
+                                 </span>
+                             </label>
+                         </div>
+@@ -143,7 +147,7 @@
+                             <label for="scene">
+                                 <span class="component-title">Scene Numbering</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="scene" name="scene" v-model="seriesObj.config.scene" @change="storeConfig($event)"/> search by scene numbering (uncheck to search by indexer numbering)
++                                    <input type="checkbox" id="scene" name="scene" v-model="seriesObj.config.scene" @change="storeConfig('seriesObj')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                 </span>
+                             </label>
+                         </div>
+@@ -151,7 +155,7 @@
+                             <label for="dvdorder">
+                                 <span class="component-title">DVD Order</span>
+                                 <span class="component-desc">
+-                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="seriesObj.config.dvdOrder" @change="storeConfig($event)"/> use the DVD order instead of the air order<br>
++                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="seriesObj.config.dvdOrder" @change="storeConfig('seriesObj')"/> use the DVD order instead of the air order<br>
+                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
+                                 </span>
+                             </label>
+@@ -279,40 +283,42 @@ var startVue = function() {
+             loadSeries: async function() {
+ 
+             },
+-            storeConfig: async function() {
+-                const data = {
+-                    config: {
+-                        dvdOrder: this.seriesObj.config.dvdOrder,
+-                        flattenFolders: this.seriesObj.config.flattenFolders,
+-                        anime: this.seriesObj.config.anime,
+-                        scene: this.seriesObj.config.scene,
+-                        sports: this.seriesObj.config.sports,
+-                        paused: this.seriesObj.config.paused,
+-                        location: this.seriesObj.config.location,
+-                        airByDate: this.seriesObj.config.airByDate,
+-                        subtitlesEnabled: this.seriesObj.config.subtitlesEnabled,
+-                        release: {
+-                            requiredWords: this.seriesObj.config.release.requiredWords,
+-                            ignoredWords: this.seriesObj.config.release.ignoredWords
+-                            // blacklist: this.seriesObj.config.release.blacklist,
+-                            // whitelist: this.seriesObj.config.release.whitelist
++            storeConfig: async function(subject) {
++                if (['seriesObj', 'all'].includes(subject)) {
++                    const data = {
++                        config: {
++                            dvdOrder: this.seriesObj.config.dvdOrder,
++                            flattenFolders: this.seriesObj.config.flattenFolders,
++                            anime: this.seriesObj.config.anime,
++                            scene: this.seriesObj.config.scene,
++                            sports: this.seriesObj.config.sports,
++                            paused: this.seriesObj.config.paused,
++                            location: this.seriesObj.config.location,
++                            airByDate: this.seriesObj.config.airByDate,
++                            subtitlesEnabled: this.seriesObj.config.subtitlesEnabled,
++                            release: {
++                                requiredWords: this.seriesObj.config.release.requiredWords,
++                                ignoredWords: this.seriesObj.config.release.ignoredWords
++                                // blacklist: this.seriesObj.config.release.blacklist,
++                                // whitelist: this.seriesObj.config.release.whitelist
++                            }
+                         }
++                    };
++                    const response = await api.patch('series/' + this.seriesSlug, data);
++                    if (response.status === 200) {
++                        this.saveStatus = 'Successfully patched series';
++                    } else {
++                        this.saveStatus = 'Problem trying to archive using payload: ' + data;
+                     }
+-                }
+-                const response = await api.patch('series/' + this.seriesSlug, data);
+-                if (response.status === 200) {
+-                    this.saveStatus = 'Successfully patched series';
+-                } else {
+-                    this.saveStatus = 'Problem trying to archive using payload: ' + data;
+-                }
++                };
+             },
+             onChangeIgnoredWords: function(items) {
+ 		        console.log('Event from child component emitted', items);
+-                this.seriesObj.config.release.ignoredWords = items.map(item => {return item.value});
++                this.seriesObj.config.release.ignoredWords = items.map(item => item.value);
+             },
+             onChangeRequiredWords: function(items) {
+ 		        console.log('Event from child component emitted', items);
+-                this.seriesObj.config.release.requiredWords = items.map(item => {return item.value});
++                this.seriesObj.config.release.requiredWords = items.map(item => item.value);
+             },
+             transformToIndexedObject: arrayOfStrings => {
+                 arrayOfObjects = [];
+diff --git a/themes/dark/templates/vue-components/anidbReleaseGroupUi.mako b/themes/dark/templates/vue-components/anidbReleaseGroupUi.mako
+index ea79df4..8b8b94e 100644
+--- a/themes/dark/templates/vue-components/anidbReleaseGroupUi.mako
++++ b/themes/dark/templates/vue-components/anidbReleaseGroupUi.mako
+@@ -1,17 +1,20 @@
+ <script type="text/x-template" id="anidb-release-group-ui">
+-    <div id="anidb_release_group_ui_wrapper">
++    <div id="anidb_release_group_ui_wrapper" class="top-10">
+         <div class="row">
+                 <div class="col-sm-4 left-whitelist" >
++                    <span>Whitelist</span>
+                     <ul>
+                         <li v-for="item in releaseWhitelist">{{ item }}</li>
+                     </ul>
+                 </div>
+                 <div class="col-sm-4 center-available">
++                    <span>Release groups</span>
+                     <ul>
+                         <li v-for="item in releaseGroups">{{ item }}</li>
+                     </ul>
+                 </div>
+                 <div class="col-sm-4 right-blacklist">
++                    <span>Blacklist</span>
+                     <ul>
+                         <li v-for="item in releaseblacklist">{{ item }}</li>
+                     </ul>
+@@ -27,7 +30,7 @@ Vue.component('anidb-release-group-ui', {
+     data() {
+         return {
+             // JS only
+-            series: '',
++            defSeries: '12345',
+             releaseblacklist: [],
+             releaseWhitelist: [],
+             releaseGroups: []
+-- 
+2.6.3.windows.1
+

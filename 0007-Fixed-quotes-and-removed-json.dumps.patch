@@ -1,0 +1,35 @@
+From b17638d3bedc4dfef58cbc0f3d76c07ebac77a7a Mon Sep 17 00:00:00 2001
+From: P0psicles <rogier@headshots.nl>
+Date: Fri, 2 Mar 2018 12:11:18 +0100
+Subject: [PATCH 7/9] Fixed quotes and removed json.dumps.
+
+---
+ themes/dark/templates/editShow.mako | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/themes/dark/templates/editShow.mako b/themes/dark/templates/editShow.mako
+index f972920..8e335f5 100644
+--- a/themes/dark/templates/editShow.mako
++++ b/themes/dark/templates/editShow.mako
+@@ -41,7 +41,7 @@
+                                 <span class="component-title">Show Location</span>
+                                 <span class="component-desc">
+                                     <input type="hidden" name="indexername" id="form-indexername" :value="getSafe(seriesObj.indexer, '')" />
+-                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], ''/>
++                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="getSafe(seriesObj.id[seriesObj.indexer], '')"/>
+                                     <input type="text" name="location" id="location" :value="seriesObj.config.location" class="form-control form-control-inline input-sm input350" @change="storeConfig($event)"/>
+                                 </span>
+                             </label>
+@@ -223,9 +223,6 @@
+ <script src="js/lib/vue.js"></script>
+ <%include file="/vue-components/selectListUi.mako"/>
+ <%include file="/vue-components/anidbReleaseGroupUi.mako"/>
+-<%
+-    seriesObj = json.dumps(show.to_json());
+-%>
+ <script>
+ var startVue = function() {
+     const app = new Vue({
+-- 
+2.6.3.windows.1
+

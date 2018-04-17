@@ -1,0 +1,26 @@
+From f011d943c9880a42c0f6efbac50920b5e5664d94 Mon Sep 17 00:00:00 2001
+From: p0ps <p0psicles@users.noreply.github.com>
+Date: Tue, 27 Feb 2018 10:47:16 +0100
+Subject: [PATCH 1/9] Update indexer_base.py (#3813)
+
+Change verbosity logging to debug.
+---
+ medusa/indexers/indexer_base.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/medusa/indexers/indexer_base.py b/medusa/indexers/indexer_base.py
+index 7d36e6d..acd6db5 100644
+--- a/medusa/indexers/indexer_base.py
++++ b/medusa/indexers/indexer_base.py
+@@ -327,7 +327,7 @@ class BaseIndexer(object):
+             if item[0] >= best_result[0]
+         ]
+         if len(best_results) > 1:
+-            log.warning(
++            log.debug(
+                 u'Multiple {image}s at highest weighted score for series {id}:'
+                 u'\n{header}'
+                 u'\n{results}', {
+-- 
+2.6.3.windows.1
+

@@ -1,0 +1,1110 @@
+From 50a4b6f33dfaed2aea82f60b1ff7ced565e43f24 Mon Sep 17 00:00:00 2001
+From: Alexis Tyler <xo@wvvw.me>
+Date: Wed, 28 Feb 2018 23:12:01 +1030
+Subject: [PATCH 3/9] Feature/fix tabs (#3815)
+
+* add full_url to pages
+
+* replace document.write with full_url
+
+* fix tabs and reverse proxy
+
+* Break down long line
+---
+ medusa/server/web/core/base.py                            | 7 +++++--
+ themes-default/legacy/views/addShows_addExistingShow.mako | 3 +--
+ themes-default/legacy/views/addShows_newShow.mako         | 3 +--
+ themes-default/legacy/views/config_anime.mako             | 5 ++---
+ themes-default/legacy/views/config_backuprestore.mako     | 5 ++---
+ themes-default/legacy/views/config_general.mako           | 7 +++----
+ themes-default/legacy/views/config_notifications.mako     | 7 +++----
+ themes-default/legacy/views/config_postProcessing.mako    | 7 +++----
+ themes-default/legacy/views/config_providers.mako         | 7 +++----
+ themes-default/legacy/views/config_search.mako            | 7 +++----
+ themes-default/legacy/views/config_subtitles.mako         | 7 +++----
+ themes-default/legacy/views/editShow.mako                 | 7 +++----
+ themes-default/legacy/views/manage_massEdit.mako          | 3 +--
+ themes-default/slim/views/addShows_addExistingShow.mako   | 3 +--
+ themes-default/slim/views/addShows_newShow.mako           | 3 +--
+ themes-default/slim/views/config_anime.mako               | 5 ++---
+ themes-default/slim/views/config_backuprestore.mako       | 5 ++---
+ themes-default/slim/views/config_general.mako             | 7 +++----
+ themes-default/slim/views/config_notifications.mako       | 7 +++----
+ themes-default/slim/views/config_postProcessing.mako      | 7 +++----
+ themes-default/slim/views/config_providers.mako           | 7 +++----
+ themes-default/slim/views/config_search.mako              | 7 +++----
+ themes-default/slim/views/config_subtitles.mako           | 7 +++----
+ themes-default/slim/views/editShow.mako                   | 7 +++----
+ themes-default/slim/views/manage_massEdit.mako            | 3 +--
+ themes/dark/templates/addShows_addExistingShow.mako       | 3 +--
+ themes/dark/templates/addShows_newShow.mako               | 3 +--
+ themes/dark/templates/config_anime.mako                   | 5 ++---
+ themes/dark/templates/config_backuprestore.mako           | 5 ++---
+ themes/dark/templates/config_general.mako                 | 7 +++----
+ themes/dark/templates/config_notifications.mako           | 7 +++----
+ themes/dark/templates/config_postProcessing.mako          | 7 +++----
+ themes/dark/templates/config_providers.mako               | 7 +++----
+ themes/dark/templates/config_search.mako                  | 7 +++----
+ themes/dark/templates/config_subtitles.mako               | 7 +++----
+ themes/dark/templates/editShow.mako                       | 7 +++----
+ themes/dark/templates/manage_massEdit.mako                | 3 +--
+ themes/legacy/templates/addShows_addExistingShow.mako     | 3 +--
+ themes/legacy/templates/addShows_newShow.mako             | 3 +--
+ themes/legacy/templates/config_anime.mako                 | 5 ++---
+ themes/legacy/templates/config_backuprestore.mako         | 5 ++---
+ themes/legacy/templates/config_general.mako               | 7 +++----
+ themes/legacy/templates/config_notifications.mako         | 7 +++----
+ themes/legacy/templates/config_postProcessing.mako        | 7 +++----
+ themes/legacy/templates/config_providers.mako             | 7 +++----
+ themes/legacy/templates/config_search.mako                | 7 +++----
+ themes/legacy/templates/config_subtitles.mako             | 7 +++----
+ themes/legacy/templates/editShow.mako                     | 7 +++----
+ themes/legacy/templates/manage_massEdit.mako              | 3 +--
+ themes/light/templates/addShows_addExistingShow.mako      | 3 +--
+ themes/light/templates/addShows_newShow.mako              | 3 +--
+ themes/light/templates/config_anime.mako                  | 5 ++---
+ themes/light/templates/config_backuprestore.mako          | 5 ++---
+ themes/light/templates/config_general.mako                | 7 +++----
+ themes/light/templates/config_notifications.mako          | 7 +++----
+ themes/light/templates/config_postProcessing.mako         | 7 +++----
+ themes/light/templates/config_providers.mako              | 7 +++----
+ themes/light/templates/config_search.mako                 | 7 +++----
+ themes/light/templates/config_subtitles.mako              | 7 +++----
+ themes/light/templates/editShow.mako                      | 7 +++----
+ themes/light/templates/manage_massEdit.mako               | 3 +--
+ 61 files changed, 145 insertions(+), 202 deletions(-)
+
+diff --git a/medusa/server/web/core/base.py b/medusa/server/web/core/base.py
+index 585f87f..e1ad261 100644
+--- a/medusa/server/web/core/base.py
++++ b/medusa/server/web/core/base.py
+@@ -82,6 +82,9 @@ class PageTemplate(MakoTemplate):
+         lookup = get_lookup()
+         self.template = lookup.get_template(filename)
+ 
++        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
++                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
++
+         self.arguments = {
+             'sbHttpPort': app.WEB_PORT,
+             'sbHttpsPort': app.WEB_PORT,
+@@ -104,9 +107,9 @@ class PageTemplate(MakoTemplate):
+             'newsBadge': '',
+             'toolsBadge': '',
+             'toolsBadgeClass': '',
+-            'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
+-            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
++            'base_url': base_url + app.WEB_ROOT + '/',
+             'realpage': '',
++            'full_url': base_url + rh.request.uri
+         }
+ 
+         if rh.request.headers['Host'][0] == '[':
+diff --git a/themes-default/legacy/views/addShows_addExistingShow.mako b/themes-default/legacy/views/addShows_addExistingShow.mako
+index 0440d6b..f219da5 100644
+--- a/themes-default/legacy/views/addShows_addExistingShow.mako
++++ b/themes-default/legacy/views/addShows_addExistingShow.mako
+@@ -14,8 +14,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                 <div id="tabs">
+diff --git a/themes-default/legacy/views/addShows_newShow.mako b/themes-default/legacy/views/addShows_newShow.mako
+index cfbc5cc..beb6c2a 100644
+--- a/themes-default/legacy/views/addShows_newShow.mako
++++ b/themes-default/legacy/views/addShows_newShow.mako
+@@ -17,8 +17,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add New Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <div id="displayText"></div>
+             <br>
+diff --git a/themes-default/legacy/views/config_anime.mako b/themes-default/legacy/views/config_anime.mako
+index e04172c..2b860cb 100644
+--- a/themes-default/legacy/views/config_anime.mako
++++ b/themes-default/legacy/views/config_anime.mako
+@@ -11,9 +11,8 @@
+             <form id="configForm" action="config/anime/saveAnime" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
++                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
++                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                     </ul>
+                     <div id="animedb-settings" class="tab-pane active component-group">
+                         <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_backuprestore.mako b/themes-default/legacy/views/config_backuprestore.mako
+index edadfc4..2aa94cd 100644
+--- a/themes-default/legacy/views/config_backuprestore.mako
++++ b/themes-default/legacy/views/config_backuprestore.mako
+@@ -25,9 +25,8 @@
+         <form name="configForm" method="post" action="config/backuprestore">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
++                    <li><a href="${full_url}#backup">Backup</a></li>
++                    <li><a href="${full_url}#restore">Restore</a></li>
+                 </ul>
+                 <div id="backup" class="component-group clearfix">
+                     <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_general.mako b/themes-default/legacy/views/config_general.mako
+index 67c1fed..dfcdc85 100644
+--- a/themes-default/legacy/views/config_general.mako
++++ b/themes-default/legacy/views/config_general.mako
+@@ -26,10 +26,9 @@
+         <form id="configForm" action="config/general/saveGeneral" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
++                    <li><a href="${full_url}#misc">Misc</a></li>
++                    <li><a href="${full_url}#interface">Interface</a></li>
++                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                 </ul>
+                 <div id="misc">
+                     <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_notifications.mako b/themes-default/legacy/views/config_notifications.mako
+index 548bad6..62dda89 100644
+--- a/themes-default/legacy/views/config_notifications.mako
++++ b/themes-default/legacy/views/config_notifications.mako
+@@ -19,10 +19,9 @@
+         <form id="configForm" action="config/notifications/saveNotifications" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
++                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
++                    <li><a href="${full_url}#devices">Devices</a></li>
++                    <li><a href="${full_url}#social">Social</a></li>
+                 </ul>
+                 <div id="home-theater-nas">
+                     <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_postProcessing.mako b/themes-default/legacy/views/config_postProcessing.mako
+index d26e534..5606e8f 100644
+--- a/themes-default/legacy/views/config_postProcessing.mako
++++ b/themes-default/legacy/views/config_postProcessing.mako
+@@ -22,10 +22,9 @@
+             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
++                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
++                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
++                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                     </ul>
+                     <div id="post-processing" class="component-group">
+                         <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_providers.mako b/themes-default/legacy/views/config_providers.mako
+index 5742ecf..4b39466 100644
+--- a/themes-default/legacy/views/config_providers.mako
++++ b/themes-default/legacy/views/config_providers.mako
+@@ -36,11 +36,10 @@ $('#config-components').tabs();
+         <form id="configForm" action="config/providers/saveProviders" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
++                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
++                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                   % if app.USE_NZBS:
+-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
++                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                   % endif
+                   % if app.USE_TORRENTS:
+                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+diff --git a/themes-default/legacy/views/config_search.mako b/themes-default/legacy/views/config_search.mako
+index 2308ecb..2175f5b 100644
+--- a/themes-default/legacy/views/config_search.mako
++++ b/themes-default/legacy/views/config_search.mako
+@@ -14,10 +14,9 @@
+         <form id="configForm" action="config/search/saveSearch" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
++                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
++                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
++                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                 </ul>
+                 <div id="episode-search">
+                         <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/config_subtitles.mako b/themes-default/legacy/views/config_subtitles.mako
+index e01f39e..f1f3ee3 100644
+--- a/themes-default/legacy/views/config_subtitles.mako
++++ b/themes-default/legacy/views/config_subtitles.mako
+@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
+     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
++                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
++                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
++                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                 </ul>
+                 <div id="subtitles-search" class="component-group">
+                     <div class="component-group-desc">
+diff --git a/themes-default/legacy/views/editShow.mako b/themes-default/legacy/views/editShow.mako
+index 5fb7253..b519d0e 100644
+--- a/themes-default/legacy/views/editShow.mako
++++ b/themes-default/legacy/views/editShow.mako
+@@ -33,10 +33,9 @@
+         <form action="home/editShow" method="post">
+         <div id="config-components">
+             <ul>
+-                ## @TODO: Fix this stupid hack
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
++                <li><a href="${full_url}#core-component-group1">Main</a></li>
++                <li><a href="${full_url}#core-component-group2">Format</a></li>
++                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+             </ul>
+             <div id="core-component-group1">
+                 <div class="component-group">
+diff --git a/themes-default/legacy/views/manage_massEdit.mako b/themes-default/legacy/views/manage_massEdit.mako
+index 8a7b46f..c21f8ec 100644
+--- a/themes-default/legacy/views/manage_massEdit.mako
++++ b/themes-default/legacy/views/manage_massEdit.mako
+@@ -26,8 +26,7 @@
+                 <form action="manage/massEditSubmit" method="post">
+                     <input type="hidden" name="toEdit" value="${showList}" />
+                     <div id="config-components">
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
++                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                         <div id="core-component-group1">
+                             <div class="component-group">
+                                 <h3>Main Settings</h3>
+diff --git a/themes-default/slim/views/addShows_addExistingShow.mako b/themes-default/slim/views/addShows_addExistingShow.mako
+index 0440d6b..f219da5 100644
+--- a/themes-default/slim/views/addShows_addExistingShow.mako
++++ b/themes-default/slim/views/addShows_addExistingShow.mako
+@@ -14,8 +14,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                 <div id="tabs">
+diff --git a/themes-default/slim/views/addShows_newShow.mako b/themes-default/slim/views/addShows_newShow.mako
+index cfbc5cc..beb6c2a 100644
+--- a/themes-default/slim/views/addShows_newShow.mako
++++ b/themes-default/slim/views/addShows_newShow.mako
+@@ -17,8 +17,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add New Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <div id="displayText"></div>
+             <br>
+diff --git a/themes-default/slim/views/config_anime.mako b/themes-default/slim/views/config_anime.mako
+index e04172c..2b860cb 100644
+--- a/themes-default/slim/views/config_anime.mako
++++ b/themes-default/slim/views/config_anime.mako
+@@ -11,9 +11,8 @@
+             <form id="configForm" action="config/anime/saveAnime" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
++                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
++                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                     </ul>
+                     <div id="animedb-settings" class="tab-pane active component-group">
+                         <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_backuprestore.mako b/themes-default/slim/views/config_backuprestore.mako
+index edadfc4..2aa94cd 100644
+--- a/themes-default/slim/views/config_backuprestore.mako
++++ b/themes-default/slim/views/config_backuprestore.mako
+@@ -25,9 +25,8 @@
+         <form name="configForm" method="post" action="config/backuprestore">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
++                    <li><a href="${full_url}#backup">Backup</a></li>
++                    <li><a href="${full_url}#restore">Restore</a></li>
+                 </ul>
+                 <div id="backup" class="component-group clearfix">
+                     <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_general.mako b/themes-default/slim/views/config_general.mako
+index 67c1fed..dfcdc85 100644
+--- a/themes-default/slim/views/config_general.mako
++++ b/themes-default/slim/views/config_general.mako
+@@ -26,10 +26,9 @@
+         <form id="configForm" action="config/general/saveGeneral" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
++                    <li><a href="${full_url}#misc">Misc</a></li>
++                    <li><a href="${full_url}#interface">Interface</a></li>
++                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                 </ul>
+                 <div id="misc">
+                     <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_notifications.mako b/themes-default/slim/views/config_notifications.mako
+index 548bad6..62dda89 100644
+--- a/themes-default/slim/views/config_notifications.mako
++++ b/themes-default/slim/views/config_notifications.mako
+@@ -19,10 +19,9 @@
+         <form id="configForm" action="config/notifications/saveNotifications" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
++                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
++                    <li><a href="${full_url}#devices">Devices</a></li>
++                    <li><a href="${full_url}#social">Social</a></li>
+                 </ul>
+                 <div id="home-theater-nas">
+                     <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_postProcessing.mako b/themes-default/slim/views/config_postProcessing.mako
+index d26e534..5606e8f 100644
+--- a/themes-default/slim/views/config_postProcessing.mako
++++ b/themes-default/slim/views/config_postProcessing.mako
+@@ -22,10 +22,9 @@
+             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
++                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
++                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
++                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                     </ul>
+                     <div id="post-processing" class="component-group">
+                         <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_providers.mako b/themes-default/slim/views/config_providers.mako
+index 5742ecf..4b39466 100644
+--- a/themes-default/slim/views/config_providers.mako
++++ b/themes-default/slim/views/config_providers.mako
+@@ -36,11 +36,10 @@ $('#config-components').tabs();
+         <form id="configForm" action="config/providers/saveProviders" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
++                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
++                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                   % if app.USE_NZBS:
+-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
++                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                   % endif
+                   % if app.USE_TORRENTS:
+                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+diff --git a/themes-default/slim/views/config_search.mako b/themes-default/slim/views/config_search.mako
+index 2308ecb..2175f5b 100644
+--- a/themes-default/slim/views/config_search.mako
++++ b/themes-default/slim/views/config_search.mako
+@@ -14,10 +14,9 @@
+         <form id="configForm" action="config/search/saveSearch" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
++                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
++                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
++                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                 </ul>
+                 <div id="episode-search">
+                         <div class="component-group-desc">
+diff --git a/themes-default/slim/views/config_subtitles.mako b/themes-default/slim/views/config_subtitles.mako
+index e01f39e..f1f3ee3 100644
+--- a/themes-default/slim/views/config_subtitles.mako
++++ b/themes-default/slim/views/config_subtitles.mako
+@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
+     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
++                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
++                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
++                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                 </ul>
+                 <div id="subtitles-search" class="component-group">
+                     <div class="component-group-desc">
+diff --git a/themes-default/slim/views/editShow.mako b/themes-default/slim/views/editShow.mako
+index 5fb7253..b519d0e 100644
+--- a/themes-default/slim/views/editShow.mako
++++ b/themes-default/slim/views/editShow.mako
+@@ -33,10 +33,9 @@
+         <form action="home/editShow" method="post">
+         <div id="config-components">
+             <ul>
+-                ## @TODO: Fix this stupid hack
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
++                <li><a href="${full_url}#core-component-group1">Main</a></li>
++                <li><a href="${full_url}#core-component-group2">Format</a></li>
++                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+             </ul>
+             <div id="core-component-group1">
+                 <div class="component-group">
+diff --git a/themes-default/slim/views/manage_massEdit.mako b/themes-default/slim/views/manage_massEdit.mako
+index 8a7b46f..c21f8ec 100644
+--- a/themes-default/slim/views/manage_massEdit.mako
++++ b/themes-default/slim/views/manage_massEdit.mako
+@@ -26,8 +26,7 @@
+                 <form action="manage/massEditSubmit" method="post">
+                     <input type="hidden" name="toEdit" value="${showList}" />
+                     <div id="config-components">
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
++                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                         <div id="core-component-group1">
+                             <div class="component-group">
+                                 <h3>Main Settings</h3>
+diff --git a/themes/dark/templates/addShows_addExistingShow.mako b/themes/dark/templates/addShows_addExistingShow.mako
+index 0440d6b..f219da5 100644
+--- a/themes/dark/templates/addShows_addExistingShow.mako
++++ b/themes/dark/templates/addShows_addExistingShow.mako
+@@ -14,8 +14,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                 <div id="tabs">
+diff --git a/themes/dark/templates/addShows_newShow.mako b/themes/dark/templates/addShows_newShow.mako
+index cfbc5cc..beb6c2a 100644
+--- a/themes/dark/templates/addShows_newShow.mako
++++ b/themes/dark/templates/addShows_newShow.mako
+@@ -17,8 +17,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add New Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <div id="displayText"></div>
+             <br>
+diff --git a/themes/dark/templates/config_anime.mako b/themes/dark/templates/config_anime.mako
+index e04172c..2b860cb 100644
+--- a/themes/dark/templates/config_anime.mako
++++ b/themes/dark/templates/config_anime.mako
+@@ -11,9 +11,8 @@
+             <form id="configForm" action="config/anime/saveAnime" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
++                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
++                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                     </ul>
+                     <div id="animedb-settings" class="tab-pane active component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_backuprestore.mako b/themes/dark/templates/config_backuprestore.mako
+index edadfc4..2aa94cd 100644
+--- a/themes/dark/templates/config_backuprestore.mako
++++ b/themes/dark/templates/config_backuprestore.mako
+@@ -25,9 +25,8 @@
+         <form name="configForm" method="post" action="config/backuprestore">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
++                    <li><a href="${full_url}#backup">Backup</a></li>
++                    <li><a href="${full_url}#restore">Restore</a></li>
+                 </ul>
+                 <div id="backup" class="component-group clearfix">
+                     <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_general.mako b/themes/dark/templates/config_general.mako
+index 67c1fed..dfcdc85 100644
+--- a/themes/dark/templates/config_general.mako
++++ b/themes/dark/templates/config_general.mako
+@@ -26,10 +26,9 @@
+         <form id="configForm" action="config/general/saveGeneral" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
++                    <li><a href="${full_url}#misc">Misc</a></li>
++                    <li><a href="${full_url}#interface">Interface</a></li>
++                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                 </ul>
+                 <div id="misc">
+                     <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_notifications.mako b/themes/dark/templates/config_notifications.mako
+index 548bad6..62dda89 100644
+--- a/themes/dark/templates/config_notifications.mako
++++ b/themes/dark/templates/config_notifications.mako
+@@ -19,10 +19,9 @@
+         <form id="configForm" action="config/notifications/saveNotifications" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
++                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
++                    <li><a href="${full_url}#devices">Devices</a></li>
++                    <li><a href="${full_url}#social">Social</a></li>
+                 </ul>
+                 <div id="home-theater-nas">
+                     <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_postProcessing.mako b/themes/dark/templates/config_postProcessing.mako
+index d26e534..5606e8f 100644
+--- a/themes/dark/templates/config_postProcessing.mako
++++ b/themes/dark/templates/config_postProcessing.mako
+@@ -22,10 +22,9 @@
+             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
++                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
++                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
++                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                     </ul>
+                     <div id="post-processing" class="component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_providers.mako b/themes/dark/templates/config_providers.mako
+index 5742ecf..4b39466 100644
+--- a/themes/dark/templates/config_providers.mako
++++ b/themes/dark/templates/config_providers.mako
+@@ -36,11 +36,10 @@ $('#config-components').tabs();
+         <form id="configForm" action="config/providers/saveProviders" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
++                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
++                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                   % if app.USE_NZBS:
+-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
++                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                   % endif
+                   % if app.USE_TORRENTS:
+                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+diff --git a/themes/dark/templates/config_search.mako b/themes/dark/templates/config_search.mako
+index 2308ecb..2175f5b 100644
+--- a/themes/dark/templates/config_search.mako
++++ b/themes/dark/templates/config_search.mako
+@@ -14,10 +14,9 @@
+         <form id="configForm" action="config/search/saveSearch" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
++                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
++                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
++                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                 </ul>
+                 <div id="episode-search">
+                         <div class="component-group-desc">
+diff --git a/themes/dark/templates/config_subtitles.mako b/themes/dark/templates/config_subtitles.mako
+index e01f39e..f1f3ee3 100644
+--- a/themes/dark/templates/config_subtitles.mako
++++ b/themes/dark/templates/config_subtitles.mako
+@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
+     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
++                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
++                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
++                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                 </ul>
+                 <div id="subtitles-search" class="component-group">
+                     <div class="component-group-desc">
+diff --git a/themes/dark/templates/editShow.mako b/themes/dark/templates/editShow.mako
+index 5fb7253..b519d0e 100644
+--- a/themes/dark/templates/editShow.mako
++++ b/themes/dark/templates/editShow.mako
+@@ -33,10 +33,9 @@
+         <form action="home/editShow" method="post">
+         <div id="config-components">
+             <ul>
+-                ## @TODO: Fix this stupid hack
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
++                <li><a href="${full_url}#core-component-group1">Main</a></li>
++                <li><a href="${full_url}#core-component-group2">Format</a></li>
++                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+             </ul>
+             <div id="core-component-group1">
+                 <div class="component-group">
+diff --git a/themes/dark/templates/manage_massEdit.mako b/themes/dark/templates/manage_massEdit.mako
+index 8a7b46f..c21f8ec 100644
+--- a/themes/dark/templates/manage_massEdit.mako
++++ b/themes/dark/templates/manage_massEdit.mako
+@@ -26,8 +26,7 @@
+                 <form action="manage/massEditSubmit" method="post">
+                     <input type="hidden" name="toEdit" value="${showList}" />
+                     <div id="config-components">
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
++                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                         <div id="core-component-group1">
+                             <div class="component-group">
+                                 <h3>Main Settings</h3>
+diff --git a/themes/legacy/templates/addShows_addExistingShow.mako b/themes/legacy/templates/addShows_addExistingShow.mako
+index 0440d6b..f219da5 100644
+--- a/themes/legacy/templates/addShows_addExistingShow.mako
++++ b/themes/legacy/templates/addShows_addExistingShow.mako
+@@ -14,8 +14,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                 <div id="tabs">
+diff --git a/themes/legacy/templates/addShows_newShow.mako b/themes/legacy/templates/addShows_newShow.mako
+index cfbc5cc..beb6c2a 100644
+--- a/themes/legacy/templates/addShows_newShow.mako
++++ b/themes/legacy/templates/addShows_newShow.mako
+@@ -17,8 +17,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add New Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <div id="displayText"></div>
+             <br>
+diff --git a/themes/legacy/templates/config_anime.mako b/themes/legacy/templates/config_anime.mako
+index e04172c..2b860cb 100644
+--- a/themes/legacy/templates/config_anime.mako
++++ b/themes/legacy/templates/config_anime.mako
+@@ -11,9 +11,8 @@
+             <form id="configForm" action="config/anime/saveAnime" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
++                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
++                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                     </ul>
+                     <div id="animedb-settings" class="tab-pane active component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_backuprestore.mako b/themes/legacy/templates/config_backuprestore.mako
+index edadfc4..2aa94cd 100644
+--- a/themes/legacy/templates/config_backuprestore.mako
++++ b/themes/legacy/templates/config_backuprestore.mako
+@@ -25,9 +25,8 @@
+         <form name="configForm" method="post" action="config/backuprestore">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
++                    <li><a href="${full_url}#backup">Backup</a></li>
++                    <li><a href="${full_url}#restore">Restore</a></li>
+                 </ul>
+                 <div id="backup" class="component-group clearfix">
+                     <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_general.mako b/themes/legacy/templates/config_general.mako
+index 67c1fed..dfcdc85 100644
+--- a/themes/legacy/templates/config_general.mako
++++ b/themes/legacy/templates/config_general.mako
+@@ -26,10 +26,9 @@
+         <form id="configForm" action="config/general/saveGeneral" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
++                    <li><a href="${full_url}#misc">Misc</a></li>
++                    <li><a href="${full_url}#interface">Interface</a></li>
++                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                 </ul>
+                 <div id="misc">
+                     <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_notifications.mako b/themes/legacy/templates/config_notifications.mako
+index 548bad6..62dda89 100644
+--- a/themes/legacy/templates/config_notifications.mako
++++ b/themes/legacy/templates/config_notifications.mako
+@@ -19,10 +19,9 @@
+         <form id="configForm" action="config/notifications/saveNotifications" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
++                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
++                    <li><a href="${full_url}#devices">Devices</a></li>
++                    <li><a href="${full_url}#social">Social</a></li>
+                 </ul>
+                 <div id="home-theater-nas">
+                     <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_postProcessing.mako b/themes/legacy/templates/config_postProcessing.mako
+index d26e534..5606e8f 100644
+--- a/themes/legacy/templates/config_postProcessing.mako
++++ b/themes/legacy/templates/config_postProcessing.mako
+@@ -22,10 +22,9 @@
+             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
++                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
++                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
++                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                     </ul>
+                     <div id="post-processing" class="component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_providers.mako b/themes/legacy/templates/config_providers.mako
+index 5742ecf..4b39466 100644
+--- a/themes/legacy/templates/config_providers.mako
++++ b/themes/legacy/templates/config_providers.mako
+@@ -36,11 +36,10 @@ $('#config-components').tabs();
+         <form id="configForm" action="config/providers/saveProviders" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
++                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
++                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                   % if app.USE_NZBS:
+-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
++                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                   % endif
+                   % if app.USE_TORRENTS:
+                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+diff --git a/themes/legacy/templates/config_search.mako b/themes/legacy/templates/config_search.mako
+index 2308ecb..2175f5b 100644
+--- a/themes/legacy/templates/config_search.mako
++++ b/themes/legacy/templates/config_search.mako
+@@ -14,10 +14,9 @@
+         <form id="configForm" action="config/search/saveSearch" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
++                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
++                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
++                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                 </ul>
+                 <div id="episode-search">
+                         <div class="component-group-desc">
+diff --git a/themes/legacy/templates/config_subtitles.mako b/themes/legacy/templates/config_subtitles.mako
+index e01f39e..f1f3ee3 100644
+--- a/themes/legacy/templates/config_subtitles.mako
++++ b/themes/legacy/templates/config_subtitles.mako
+@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
+     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
++                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
++                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
++                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                 </ul>
+                 <div id="subtitles-search" class="component-group">
+                     <div class="component-group-desc">
+diff --git a/themes/legacy/templates/editShow.mako b/themes/legacy/templates/editShow.mako
+index 5fb7253..b519d0e 100644
+--- a/themes/legacy/templates/editShow.mako
++++ b/themes/legacy/templates/editShow.mako
+@@ -33,10 +33,9 @@
+         <form action="home/editShow" method="post">
+         <div id="config-components">
+             <ul>
+-                ## @TODO: Fix this stupid hack
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
++                <li><a href="${full_url}#core-component-group1">Main</a></li>
++                <li><a href="${full_url}#core-component-group2">Format</a></li>
++                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+             </ul>
+             <div id="core-component-group1">
+                 <div class="component-group">
+diff --git a/themes/legacy/templates/manage_massEdit.mako b/themes/legacy/templates/manage_massEdit.mako
+index 8a7b46f..c21f8ec 100644
+--- a/themes/legacy/templates/manage_massEdit.mako
++++ b/themes/legacy/templates/manage_massEdit.mako
+@@ -26,8 +26,7 @@
+                 <form action="manage/massEditSubmit" method="post">
+                     <input type="hidden" name="toEdit" value="${showList}" />
+                     <div id="config-components">
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
++                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                         <div id="core-component-group1">
+                             <div class="component-group">
+                                 <h3>Main Settings</h3>
+diff --git a/themes/light/templates/addShows_addExistingShow.mako b/themes/light/templates/addShows_addExistingShow.mako
+index 0440d6b..f219da5 100644
+--- a/themes/light/templates/addShows_addExistingShow.mako
++++ b/themes/light/templates/addShows_addExistingShow.mako
+@@ -14,8 +14,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                 <div id="tabs">
+diff --git a/themes/light/templates/addShows_newShow.mako b/themes/light/templates/addShows_newShow.mako
+index cfbc5cc..beb6c2a 100644
+--- a/themes/light/templates/addShows_newShow.mako
++++ b/themes/light/templates/addShows_newShow.mako
+@@ -17,8 +17,7 @@
+ % endif
+ <div id="newShowPortal">
+     <div id="config-components">
+-        ## @TODO: Fix this stupid hack
+-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
++        <ul><li><a href="${full_url}#core-component-group1">Add New Show</a></li></ul>
+         <div id="core-component-group1" class="tab-pane active component-group">
+             <div id="displayText"></div>
+             <br>
+diff --git a/themes/light/templates/config_anime.mako b/themes/light/templates/config_anime.mako
+index e04172c..2b860cb 100644
+--- a/themes/light/templates/config_anime.mako
++++ b/themes/light/templates/config_anime.mako
+@@ -11,9 +11,8 @@
+             <form id="configForm" action="config/anime/saveAnime" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
++                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
++                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                     </ul>
+                     <div id="animedb-settings" class="tab-pane active component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/light/templates/config_backuprestore.mako b/themes/light/templates/config_backuprestore.mako
+index edadfc4..2aa94cd 100644
+--- a/themes/light/templates/config_backuprestore.mako
++++ b/themes/light/templates/config_backuprestore.mako
+@@ -25,9 +25,8 @@
+         <form name="configForm" method="post" action="config/backuprestore">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
++                    <li><a href="${full_url}#backup">Backup</a></li>
++                    <li><a href="${full_url}#restore">Restore</a></li>
+                 </ul>
+                 <div id="backup" class="component-group clearfix">
+                     <div class="component-group-desc">
+diff --git a/themes/light/templates/config_general.mako b/themes/light/templates/config_general.mako
+index 67c1fed..dfcdc85 100644
+--- a/themes/light/templates/config_general.mako
++++ b/themes/light/templates/config_general.mako
+@@ -26,10 +26,9 @@
+         <form id="configForm" action="config/general/saveGeneral" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
++                    <li><a href="${full_url}#misc">Misc</a></li>
++                    <li><a href="${full_url}#interface">Interface</a></li>
++                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                 </ul>
+                 <div id="misc">
+                     <div class="component-group-desc">
+diff --git a/themes/light/templates/config_notifications.mako b/themes/light/templates/config_notifications.mako
+index 548bad6..62dda89 100644
+--- a/themes/light/templates/config_notifications.mako
++++ b/themes/light/templates/config_notifications.mako
+@@ -19,10 +19,9 @@
+         <form id="configForm" action="config/notifications/saveNotifications" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
++                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
++                    <li><a href="${full_url}#devices">Devices</a></li>
++                    <li><a href="${full_url}#social">Social</a></li>
+                 </ul>
+                 <div id="home-theater-nas">
+                     <div class="component-group-desc">
+diff --git a/themes/light/templates/config_postProcessing.mako b/themes/light/templates/config_postProcessing.mako
+index d26e534..5606e8f 100644
+--- a/themes/light/templates/config_postProcessing.mako
++++ b/themes/light/templates/config_postProcessing.mako
+@@ -22,10 +22,9 @@
+             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
+                 <div id="config-components">
+                     <ul>
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
++                        <li><a href="${full_url}#post-processing">Post Processing</a></li>
++                        <li><a href="${full_url}#episode-naming">Episode Naming</a></li>
++                        <li><a href="${full_url}#metadata">Metadata</a></li>
+                     </ul>
+                     <div id="post-processing" class="component-group">
+                         <div class="component-group-desc">
+diff --git a/themes/light/templates/config_providers.mako b/themes/light/templates/config_providers.mako
+index 5742ecf..4b39466 100644
+--- a/themes/light/templates/config_providers.mako
++++ b/themes/light/templates/config_providers.mako
+@@ -36,11 +36,10 @@ $('#config-components').tabs();
+         <form id="configForm" action="config/providers/saveProviders" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
++                    <li><a href="${full_url}#provider-priorities">Provider Priorities</a></li>
++                    <li><a href="${full_url}#provider-options">Provider Options</a></li>
+                   % if app.USE_NZBS:
+-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
++                    <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
+                   % endif
+                   % if app.USE_TORRENTS:
+                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+diff --git a/themes/light/templates/config_search.mako b/themes/light/templates/config_search.mako
+index 2308ecb..2175f5b 100644
+--- a/themes/light/templates/config_search.mako
++++ b/themes/light/templates/config_search.mako
+@@ -14,10 +14,9 @@
+         <form id="configForm" action="config/search/saveSearch" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
++                    <li><a href="${full_url}#episode-search">Episode Search</a></li>
++                    <li><a href="${full_url}#nzb-search">NZB Search</a></li>
++                    <li><a href="${full_url}#torrent-search">Torrent Search</a></li>
+                 </ul>
+                 <div id="episode-search">
+                         <div class="component-group-desc">
+diff --git a/themes/light/templates/config_subtitles.mako b/themes/light/templates/config_subtitles.mako
+index e01f39e..f1f3ee3 100644
+--- a/themes/light/templates/config_subtitles.mako
++++ b/themes/light/templates/config_subtitles.mako
+@@ -31,10 +31,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
+     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
+             <div id="config-components">
+                 <ul>
+-                    ## @TODO: Fix this stupid hack
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+-                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
++                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
++                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
++                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                 </ul>
+                 <div id="subtitles-search" class="component-group">
+                     <div class="component-group-desc">
+diff --git a/themes/light/templates/editShow.mako b/themes/light/templates/editShow.mako
+index 5fb7253..b519d0e 100644
+--- a/themes/light/templates/editShow.mako
++++ b/themes/light/templates/editShow.mako
+@@ -33,10 +33,9 @@
+         <form action="home/editShow" method="post">
+         <div id="config-components">
+             <ul>
+-                ## @TODO: Fix this stupid hack
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
++                <li><a href="${full_url}#core-component-group1">Main</a></li>
++                <li><a href="${full_url}#core-component-group2">Format</a></li>
++                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+             </ul>
+             <div id="core-component-group1">
+                 <div class="component-group">
+diff --git a/themes/light/templates/manage_massEdit.mako b/themes/light/templates/manage_massEdit.mako
+index 8a7b46f..c21f8ec 100644
+--- a/themes/light/templates/manage_massEdit.mako
++++ b/themes/light/templates/manage_massEdit.mako
+@@ -26,8 +26,7 @@
+                 <form action="manage/massEditSubmit" method="post">
+                     <input type="hidden" name="toEdit" value="${showList}" />
+                     <div id="config-components">
+-                        ## @TODO: Fix this stupid hack
+-                        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
++                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                         <div id="core-component-group1">
+                             <div class="component-group">
+                                 <h3>Main Settings</h3>
+-- 
+2.6.3.windows.1
+

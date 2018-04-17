@@ -72,7 +72,7 @@
 Vue.component('anidb-release-group-ui', {
     name: 'anidb-release-group-ui',
     template: '#anidb-release-group-ui',
-    props: [
+    props: {
         series: {
             type: Object,
             required: true
@@ -157,13 +157,9 @@ Vue.component('anidb-release-group-ui', {
                 this.index += 1;
                 this.newGroup = '';
             }
-
-            this.sendValues();
         },
         deleteFromList(list) {
             this.allReleaseGroups = this.allReleaseGroups.filter(x => x.memberOf !== list || !x.toggled);
-
-            this.sendValues();
         }
     },
     computed: {
