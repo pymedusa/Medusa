@@ -14,7 +14,7 @@
         % elif app.THEME_NAME == "light":
         <meta name="theme-color" content="#333333">
         % endif
-        <title>Medusa - ${title}</title>
+        <title>Medusa${(' - ' + title) if title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
         <link rel="shortcut icon" href="images/ico/favicon.ico?v=2">
