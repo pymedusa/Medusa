@@ -105,7 +105,9 @@ def send_nzb_post(params, nzb):
     # Empty session.params, because else these are added to the url.
     session.params = {}
 
-    response = session.get_json(url, params=params, verify=False)
+    response = session.post(url, data=data, files=files, verify=False)
+    if response:
+        data = response.json()
     log.debug('Result text from SAB: {0}', data)
     result, text = _check_sab_response(response)
     del text
