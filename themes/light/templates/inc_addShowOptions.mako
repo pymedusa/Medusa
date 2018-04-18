@@ -52,7 +52,7 @@
             <label for="season_folders" class="clearfix">
                 <span class="component-title">Season Folders</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="flatten_folders" id="season_folders" ${'' if app.FLATTEN_FOLDERS_DEFAULT and not app.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/>
+                    <input type="checkbox" name="flatten_folders" id="season_folders" ${'checked="checked"' if not app.FLATTEN_FOLDERS_DEFAULT or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/>
                     <p>Group episodes by season folder?</p>
                 </span>
             </label>
