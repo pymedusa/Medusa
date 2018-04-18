@@ -10,7 +10,6 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/test-rename.js"></script>
 <script>
 let app;
 const startVue = () => {
