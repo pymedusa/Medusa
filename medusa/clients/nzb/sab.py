@@ -83,7 +83,6 @@ def send_nzb_get(params, nzb):
         result, text = _check_sab_response(data)
         del text
         return result
-        
 
 
 def send_nzb_post(params, nzb):
@@ -109,13 +108,12 @@ def send_nzb_post(params, nzb):
     # Empty session.params, because else these are added to the url.
     session.params = {}
 
-    response = session.post(url, data=data, files=files, verify=False)
-    if not response:
+    data = session.get_json(url, method='POST', data=data, files=files, verify=False)
+    if not data:
         log.info('Error connecting to sab, no data returned')
     else:
-        data = response.json()
         log.debug('Result text from SAB: {0}', data)
-        result, text = _check_sab_response(response)
+        result, text = _check_sab_response(data)
         del text
         return result
 
