@@ -73,6 +73,16 @@ const startVue = () => {
                     testStatus: 'Click below to test',
                     authType: '${app.TORRENT_AUTH_TYPE}'
                 },
+                nzb: {
+                    method: '${app.NZB_METHOD}',
+                    nzbget: {
+                        host: '${app.NZBGET_HOST}',
+                        username: '${app.NZBGET_USERNAME}',
+                        password: '${app.NZBGET_PASSWORD}',
+                        useHttps: '${app.NZBGET_USE_HTTPS}',
+                        testStatus: 'Click below to test'
+                    }
+                },
                 httpAuthTypes: {
                     none: 'None',
                     basic: 'Basic',
@@ -86,46 +96,6 @@ const startVue = () => {
             $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
             $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
             $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
-
-            $.fn.nzbMethodHandler = function() {
-                const selectedProvider = $('#nzb_method :selected').val();
-                const blackholeSettings = '#blackhole_settings';
-                const sabnzbdSettings = '#sabnzbd_settings';
-                const testSABnzbd = '#testSABnzbd';
-                const testSABnzbdResult = '#testSABnzbd_result';
-                const testNZBget = '#testNZBget';
-                const testNZBgetResult = '#testNZBgetResult';
-                const nzbgetSettings = '#nzbget_settings';
-
-                $('#nzb_method_icon').removeClass((index, css) => {
-                    return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
-                });
-                $('#nzb_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
-
-                $(blackholeSettings).hide();
-                $(sabnzbdSettings).hide();
-                $(testSABnzbd).hide();
-                $(testSABnzbdResult).hide();
-                $(nzbgetSettings).hide();
-                $(testNZBget).hide();
-                $(testNZBgetResult).hide();
-
-                if (selectedProvider.toLowerCase() === 'blackhole') {
-                    $(blackholeSettings).show();
-                } else if (selectedProvider.toLowerCase() === 'nzbget') {
-                    $(nzbgetSettings).show();
-                    $(testNZBget).show();
-                    $(testNZBgetResult).show();
-                } else {
-                    $(sabnzbdSettings).show();
-                    $(testSABnzbd).show();
-                    $(testSABnzbdResult).show();
-                }
-            };
-
-            $('#nzb_method').on('change', $(this).nzbMethodHandler);
-
-            $(this).nzbMethodHandler();
 
             $('#testSABnzbd').on('click', () => {
                 const sab = {};
@@ -144,24 +114,6 @@ const startVue = () => {
                     $('#testSABnzbd_result').html(data);
                 });
             });
-
-            $('#testNZBget').on('click', () => {
-                const nzbget = {};
-                $('#testNZBget_result').html(MEDUSA.config.loading);
-                nzbget.host = $('#nzbget_host').val();
-                nzbget.username = $('#nzbget_username').val();
-                nzbget.password = $('#nzbget_password').val();
-                nzbget.useHttps = $('#nzbget_use_https').prop('checked');
-
-                $.get('home/testNZBget', {
-                    host: nzbget.host,
-                    username: nzbget.username,
-                    password: nzbget.password,
-                    use_https: nzbget.useHttps // eslint-disable-line camelcase
-                }, data => {
-                    $('#testNZBget_result').html(data);
-                });
-            });
         },
         methods: {
             async testTorrentClient() {
@@ -178,6 +130,22 @@ const startVue = () => {
                 }));
 
                 this.torrent.testStatus = await data.text();
+            },
+            async testNzbGet() {
+                const { nzb } = this;
+                const { nzbget } = nzb;
+                const { host, username, password } = nzbget;
+
+                this.nzb.nzbget.testStatus = MEDUSA.config.loading;
+
+                const data = await fetch('home/testNZBget?' + queryString.stringify({
+                    host,
+                    username,
+                    password,
+                    user_https: useHttps
+                }));
+
+                this.nzb.nzbget.testStatus = await data.text();
             }
         },
         watch: {
@@ -463,7 +431,7 @@ const startVue = () => {
                     <div class="component-group-desc">
                         <h3>NZB Search</h3>
                         <p>How to handle NZB search results.</p>
-                        <div id="nzb_method_icon" class="add-client-icon-${app.NZB_METHOD}"></div>
+                        <div id="nzb_method_icon" :class="'add-client-icon-' + nzb.method"></div>
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
@@ -488,7 +456,7 @@ const startVue = () => {
                                 </span>
                             </label>
                         </div>
-                        <div id="blackhole_settings">
+                        <div v-show="nzb.method === 'blackhole'" id="blackhole_settings">
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Black hole folder location</span>
@@ -499,7 +467,7 @@ const startVue = () => {
                                 </label>
                             </div>
                         </div>
-                        <div id="sabnzbd_settings">
+                        <div v-show="nzb.method === 'sabnzd'" id="sabnzbd_settings">
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">SABnzbd server URL</span>
@@ -587,12 +555,12 @@ const startVue = () => {
                             <input class="btn-medusa" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </div>
-                        <div id="nzbget_settings">
+                        <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
                             <div class="field-pair">
                                 <label for="nzbget_use_https">
                                     <span class="component-title">Connect using HTTPS</span>
                                     <span class="component-desc">
-                                        <input id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https" ${'checked="checked"' if app.NZBGET_USE_HTTPS else ''}/>
+                                        <input v-model="nzb.nzbget.useHttps" id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https" :checked="nzb.nzbget.useHttps"/>
                                         <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                     </span>
                                 </label>
@@ -601,7 +569,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">NZBget host:port</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_host" id="nzbget_host" value="${app.NZBGET_HOST}" class="form-control input-sm input350"/>
+                                        <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
                                         <p>(e.g. localhost:6789)</p>
                                         <div class="clear-left"><p>NZBget RPC host name and port number (not NZBgetweb!)</p></div>
                                     </span>
@@ -611,7 +579,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">NZBget username</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_username" id="nzbget_username" value="${app.NZBGET_USERNAME}" class="form-control input-sm input200"
+                                        <input type="text" name="nzbget_username" id="nzbget_username" v-model="nzb.nzbget.username" class="form-control input-sm input200"
                                                autocomplete="no" />
                                         <p>locate in nzbget.conf (default:nzbget)</p>
                                     </span>
@@ -678,10 +646,10 @@ const startVue = () => {
                                     </span>
                                 </label>
                             </div>
-                            <div class="testNotification" id="testNZBget_result">Click below to test</div>
-                                <input class="btn-medusa" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                            <div class="testNotification" id="testNZBget_result">{{nzb.nzbget.testStatus}}</div>
+                                <input @click="testNZBget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
-                        </div>
+                            </div>
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
                 </div><!-- /component-group2 //-->
