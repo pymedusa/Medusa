@@ -14,8 +14,191 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Search Settings'
+                header: 'Search Settings',
+                clients: {
+                    blackhole: {
+                        title: 'Black hole'
+                    },
+                    utorrent: {
+                        title: 'uTorrent',
+                        description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
+                        animeOption: true,
+                        seedTimeOption: true
+                    },
+                    transmission: {
+                        title: 'Transmission',
+                        description: 'URL to your Transmission client (e.g. http://localhost:9091)',
+                        seedLocationOption: true,
+                        seedTimeOption: true
+                    },
+                    deluge: {
+                        title: 'Deluge (via WebUI)',
+                        shortTitle: 'Deluge',
+                        description: 'URL to your Deluge client (e.g. http://localhost:8112)',
+                        animeOption: true,
+                        seedLocationOption: true
+                    },
+                    deluged: {
+                        title: 'Deluge (via Daemon)',
+                        shortTitle: 'Deluge',
+                        description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
+                        animeOption: true,
+                        seedLocationOption: true
+                    },
+                    download_station: {
+                        title: 'Synology DS',
+                        description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
+                    },
+                    rtorrent: {
+                        title: 'rTorrent',
+                        description: 'URL to your rTorrent client (e.g. scgi://localhost:5000 <br> or https://localhost/rutorrent/plugins/httprpc/action.php)',
+                        animeOption: true
+                    },
+                    qbittorrent: {
+                        title: 'qbittorrent',
+                        description: 'URL to your qbittorrent client (e.g. http://localhost:8080)',
+                        animeOption: true
+                    },
+                    mlnet: {
+                        title: 'MLDonkey',
+                        description: 'URL to your MLDonkey (e.g. http://localhost:4080)'
+                    }
+                },
+                torrent: {
+                    method: '${app.TORRENT_METHOD}',
+                    host: '${app.TORRENT_HOST}',
+                    username: '${app.TORRENT_USERNAME}',
+                    password: '${app.TORRENT_PASSWORD}',
+                    seedLocation: '${app.TORRENT_SEED_LOCATION}',
+                    testStatus: 'Click below to test',
+                    authType: '${app.TORRENT_AUTH_TYPE}'
+                },
+                httpAuthTypes: {
+                    none: 'None',
+                    basic: 'Basic',
+                    digest: 'Digest'
+                }
             };
+        },
+        mounted() {
+            $('#config-components').tabs();
+            $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
+            $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
+            $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
+            $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
+
+            $.fn.nzbMethodHandler = function() {
+                const selectedProvider = $('#nzb_method :selected').val();
+                const blackholeSettings = '#blackhole_settings';
+                const sabnzbdSettings = '#sabnzbd_settings';
+                const testSABnzbd = '#testSABnzbd';
+                const testSABnzbdResult = '#testSABnzbd_result';
+                const testNZBget = '#testNZBget';
+                const testNZBgetResult = '#testNZBgetResult';
+                const nzbgetSettings = '#nzbget_settings';
+
+                $('#nzb_method_icon').removeClass((index, css) => {
+                    return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
+                });
+                $('#nzb_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
+
+                $(blackholeSettings).hide();
+                $(sabnzbdSettings).hide();
+                $(testSABnzbd).hide();
+                $(testSABnzbdResult).hide();
+                $(nzbgetSettings).hide();
+                $(testNZBget).hide();
+                $(testNZBgetResult).hide();
+
+                if (selectedProvider.toLowerCase() === 'blackhole') {
+                    $(blackholeSettings).show();
+                } else if (selectedProvider.toLowerCase() === 'nzbget') {
+                    $(nzbgetSettings).show();
+                    $(testNZBget).show();
+                    $(testNZBgetResult).show();
+                } else {
+                    $(sabnzbdSettings).show();
+                    $(testSABnzbd).show();
+                    $(testSABnzbdResult).show();
+                }
+            };
+
+            $('#nzb_method').on('change', $(this).nzbMethodHandler);
+
+            $(this).nzbMethodHandler();
+
+            $('#testSABnzbd').on('click', () => {
+                const sab = {};
+                $('#testSABnzbd_result').html(MEDUSA.config.loading);
+                sab.host = $('#sab_host').val();
+                sab.username = $('#sab_username').val();
+                sab.password = $('#sab_password').val();
+                sab.apiKey = $('#sab_apikey').val();
+
+                $.get('home/testSABnzbd', {
+                    host: sab.host,
+                    username: sab.username,
+                    password: sab.password,
+                    apikey: sab.apiKey
+                }, data => {
+                    $('#testSABnzbd_result').html(data);
+                });
+            });
+
+            $('#testNZBget').on('click', () => {
+                const nzbget = {};
+                $('#testNZBget_result').html(MEDUSA.config.loading);
+                nzbget.host = $('#nzbget_host').val();
+                nzbget.username = $('#nzbget_username').val();
+                nzbget.password = $('#nzbget_password').val();
+                nzbget.useHttps = $('#nzbget_use_https').prop('checked');
+
+                $.get('home/testNZBget', {
+                    host: nzbget.host,
+                    username: nzbget.username,
+                    password: nzbget.password,
+                    use_https: nzbget.useHttps // eslint-disable-line camelcase
+                }, data => {
+                    $('#testNZBget_result').html(data);
+                });
+            });
+        },
+        methods: {
+            async testTorrentClient() {
+                const {torrent} = this;
+                const {method, host, username, password} = torrent;
+
+                this.torrent.testStatus = MEDUSA.config.loading;
+
+                const data = await fetch('home/testTorrent?' + queryString.stringify({
+                    torrent_method: method,
+                    host,
+                    username,
+                    password
+                }));
+
+                this.torrent.testStatus = await data.text();
+            }
+        },
+        watch: {
+            'torrent.host'(host) {
+                const { torrent } = this;
+                const { method } = torrent;
+
+                if (method === 'rtorrent') {
+                    const isMatch = host.startsWith('scgi://');
+
+                    if (isMatch) {
+                        this.torrent.username = '';
+                        this.torrent.password = '';
+                        this.torrent.authType = 'none';
+                    }
+                }
+
+                if (method === 'deluge') {
+                    this.torrent.username = '';
+                }
+            }
         }
     });
 };
@@ -506,7 +689,7 @@ const startVue = () => {
                     <div class="component-group-desc">
                         <h3>Torrent Search</h3>
                         <p>How to handle Torrent search results.</p>
-                        <div id="torrent_method_icon" class="add-client-icon-${app.TORRENT_METHOD}"></div>
+                        <div id="torrent_method_icon" :class="'add-client-icon-' + torrent.method"></div>
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
@@ -523,15 +706,12 @@ const startVue = () => {
                                 <label for="torrent_method">
                                     <span class="component-title">Send .torrent files to:</span>
                                     <span class="component-desc">
-                                    <select name="torrent_method" id="torrent_method" class="form-control input-sm">
-    <% torrent_method_text = {'blackhole': "Black hole", 'utorrent': "uTorrent", 'transmission': "Transmission", 'deluge': "Deluge (via WebUI)", 'deluged': "Deluge (via Daemon)", 'download_station': "Synology DS", 'rtorrent': "rTorrent", 'qbittorrent': "qbittorrent", 'mlnet': "MLDonkey"} %>
-    % for cur_action in ('blackhole', 'utorrent', 'transmission', 'deluge', 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'):
-                                    <option value="${cur_action}" ${'selected="selected"' if app.TORRENT_METHOD == cur_action else ''}>${torrent_method_text[cur_action]}</option>
-    % endfor
+                                    <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
+                                        <option v-for="(client, name) in clients" :value="name" :selected="torrent.method === name">{{client.title}}</option>
                                     </select>
                                     </span>
                                 </label>
-                                <div id="options_torrent_blackhole">
+                                <div v-show="torrent.method === 'blackhole'">
                                     <div class="field-pair">
                                         <label>
                                             <span class="component-title">Black hole folder location</span>
@@ -544,21 +724,21 @@ const startVue = () => {
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>
-                            <div id="options_torrent_clients">
+                            <div v-show="torrent.method !== 'blackhole'">
                                 <div class="field-pair">
                                     <label>
-                                        <span class="component-title" id="host_title">Torrent host:port</span>
+                                        <span class="component-title" id="host_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} host:port</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_host" id="torrent_host" value="${app.TORRENT_HOST}" class="form-control input-sm input350"/>
+                                            <input type="text" name="torrent_host" id="torrent_host" v-model="torrent.host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p id="host_desc_torrent">URL to your torrent client (e.g. http://localhost:8000/)</p>
+                                                <p>{{clients[torrent.method].description}}</p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_rpcurl_option">
+                                <div v-show="torrent.method === 'transmission'" class="field-pair" id="torrent_rpcurl_option">
                                     <label>
-                                        <span class="component-title" id="rpcurl_title">Torrent RPC URL</span>
+                                        <span class="component-title" id="rpcurl_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} RPC URL</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" value="${app.TORRENT_RPCURL}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
@@ -567,95 +747,91 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_auth_type_option">
+                                <div v-show="torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://')" class="field-pair" id="torrent_auth_type_option">
                                     <label>
                                         <span class="component-title">Http Authentication</span>
                                         <span class="component-desc">
-                                            <select name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
-                                            <% http_authtype = {'none': "None", 'basic': "Basic", 'digest': "Digest"} %>
-                                            % for authvalue, authname in http_authtype.iteritems():
-                                                <option id="torrent_auth_type_value" value="${authvalue}" ${'selected="selected"' if app.TORRENT_AUTH_TYPE == authvalue else ''}>${authname}</option>
-                                            % endfor
+                                            <select v-model="torrent.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
+                                                <option v-for="(title, name) in httpAuthTypes" :value="name" :selected="torrent.authType === name">{{title}}</option>
                                             </select>
                                             <p></p>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_verify_cert_option">
+                                <div v-show="['deluge', 'deluged', 'rtorrent', 'mlnet'].includes(torrent.method)" class="field-pair">
                                     <label for="torrent_verify_cert">
                                         <span class="component-title">Verify certificate</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="torrent_verify_cert" class="enabler" id="torrent_verify_cert" ${'checked="checked"' if app.TORRENT_VERIFY_CERT else ''}/>
-                                            <p id="torrent_verify_deluge">disable if you get "Deluge: Authentication Error" in your log</p>
-                                            <p id="torrent_verify_rtorrent">Verify SSL certificates for HTTPS requests</p>
+                                            <p v-show="torrent.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
+                                            <p v-show="torrent.method === 'rtorrent'">Verify SSL certificates for HTTPS requests</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_username_option">
+                                <div v-show="!['rtorrent', 'deluge'].includes(torrent.method) || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_username_option">
                                     <label>
-                                        <span class="component-title" id="username_title">Client username</span>
+                                        <span class="component-title" id="username_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} username</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_username" id="torrent_username" value="${app.TORRENT_USERNAME}" class="form-control input-sm input200"
-                                                   autocomplete="no" />
+                                            <input type="text" name="torrent_username" id="torrent_username" v-model="torrent.username" class="form-control input-sm input200" autocomplete="no" />
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_password_option">
+                                <div v-show="torrent.method !== 'rtorrent' || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_password_option">
                                     <label>
-                                        <span class="component-title" id="password_title">Client password</span>
+                                        <span class="component-title" id="password_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} password</span>
                                         <span class="component-desc">
-                                            <input type="password" name="torrent_password" id="torrent_password" value="${app.TORRENT_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
+                                            <input type="password" name="torrent_password" id="torrent_password" v-model="torrent.password" class="form-control input-sm input200" autocomplete="no"/>
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_label_option">
+                                <div v-show="!['transmission', 'download_stations', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_label_option">
                                     <label>
                                         <span class="component-title">Add label to torrent</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_label" id="torrent_label" value="${app.TORRENT_LABEL}" class="form-control input-sm input200"/>
-                                            <span id="label_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span id="label_warning_qbittorrent" style="display:none;"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up</p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_label_anime_option">
+                                <div v-show="clients[torrent.method].animeOption" class="field-pair">
                                     <label>
                                         <span class="component-title">Add label to torrent for anime</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_label_anime" id="torrent_label_anime" value="${app.TORRENT_LABEL_ANIME}" class="form-control input-sm input200"/>
-                                            <span id="label_anime_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span id="label_anime_warning_qbittorrent" style="display:none;"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="torrent.method === 'qbittorrent'" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up </p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_path_option">
+                                <div v-show="!['utorrent', 'download_station', 'qbittorrent', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_path_option">
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_path" id="torrent_path" value="${app.TORRENT_PATH}" class="form-control input-sm input350"/>
-                                            <div class="clear-left"><p>where <span id="torrent_client">the torrent client</span> will save downloaded files (blank for client default)
-                                                <span id="path_synology"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                            <div class="clear-left"><p>where <span id="torrent_client">{{clients[torrent.method].shortTitle || clients[torrent.method].title}}</span> will save downloaded files (blank for client default)
+                                                <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_seed_location_option">
+                                <div v-show="clients[torrent.method].seedLocationOption" class="field-pair">
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" v-model="torrent.seedLocation" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>where <span id="torrent_client_seed_path">the torrent client</span> will move Torrents after Post-Processing<br/>
+                                                <p>where <span id="torrent_client_seed_path">{{clients[torrent.method].shortTitle || clients[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
                                                    <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
                                                    to another location after Post-Processor to prevent reprocessing the same file over and over.
                                                    This feature does a "Set Torrent location" or "Move Torrent" like in client
@@ -664,14 +840,14 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_seed_time_option">
+                                <div v-show="clients[torrent.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
                                     <label>
-                                        <span class="component-title" id="torrent_seed_time_label">Minimum seeding time is</span>
+                                        <span class="component-title" id="torrent_seed_time_label">{{torrent.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
                                         <span class="component-desc"><input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" value="${app.TORRENT_SEED_TIME}" class="form-control input-sm input100" />
                                         <p>hours. (default:'0' passes blank to client and '-1' passes nothing)</p></span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_paused_option">
+                                <div v-show="!['download_station', 'rtorrent', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_paused_option">
                                     <label>
                                         <span class="component-title">Start torrent paused</span>
                                         <span class="component-desc">
@@ -680,7 +856,7 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" id="torrent_high_bandwidth_option">
+                                <div v-show="torrent.method === 'transmission'" class="field-pair">
                                     <label>
                                         <span class="component-title">Allow high bandwidth</span>
                                         <span class="component-desc">
@@ -689,10 +865,10 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div class="testNotification" id="test_torrent_result">Click below to test</div>
-                                    <input class="btn-medusa" type="button" value="Test Connection" id="test_torrent" class="btn-medusa test-button"/>
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
-                                </div>
+                                <div class="testNotification" v-show="torrent.testStatus" v-html="torrent.testStatus"></div>
+                                <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button"/>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
+                            </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
                 </div><!-- /component-group3 //-->
