@@ -198,6 +198,18 @@ Vue.component('quality-chooser', {
     watch: {
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
+        },
+        selectedAllowed(newQuality, oldQuality) {
+            this.$emit('update', {
+                allowed: this.selectedAllowed.map(Number),
+                preferred: this.selectedPreferred.map(Number)
+            });
+        },
+        selectedPreferred(newQuality, oldQuality) {
+            this.$emit('update', {
+                allowed: this.selectedAllowed.map(Number),
+                preferred: this.selectedPreferred.map(Number)
+            });
         }
     }
 });
