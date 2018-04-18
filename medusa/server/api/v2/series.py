@@ -7,6 +7,7 @@ import logging
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
+    IntegerField,
     ListField,
     StringField,
     iter_nested_items,
@@ -129,6 +130,9 @@ class SeriesHandler(BaseRequestHandler):
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
             'language': StringField(series, 'lang'),
+            'config.qualities.allowed': ListField(series, 'qualities_allowed'),
+            'config.qualities.preferred': ListField(series, 'qualities_preferred'),
+            'config.qualities.combined': IntegerField(series, 'quality'),
         }
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)

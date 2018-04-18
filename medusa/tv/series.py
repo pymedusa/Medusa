@@ -2075,8 +2075,8 @@ class Series(TV):
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
         data['config']['qualities'] = NonEmptyDict()
-        data['config']['qualities']['allowed'] = self.get_allowed_qualities()
-        data['config']['qualities']['preferred'] = self.get_preferred_qualities()
+        data['config']['qualities']['allowed'] = self.qualities_allowed
+        data['config']['qualities']['preferred'] = self.qualities_preferred
         data['config']['paused'] = bool(self.paused)
         data['config']['airByDate'] = bool(self.air_by_date)
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
@@ -2107,16 +2107,26 @@ class Series(TV):
         return data
 
     def get_allowed_qualities(self):
-        """Return allowed qualities."""
+        """Return allowed qualities descriptions."""
         allowed = Quality.split_quality(self.quality)[0]
 
         return [Quality.qualityStrings[v] for v in allowed]
 
     def get_preferred_qualities(self):
-        """Return preferred qualities."""
+        """Return preferred qualities descriptions."""
         preferred = Quality.split_quality(self.quality)[1]
 
         return [Quality.qualityStrings[v] for v in preferred]
+
+    @property
+    def qualities_allowed(self):
+        """Return allowed qualities."""
+        return Quality.split_quality(self.quality)[0]
+
+    @property
+    def qualities_preferred(self):
+        """Return preferred qualities."""
+        return Quality.split_quality(self.quality)[1]
 
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.

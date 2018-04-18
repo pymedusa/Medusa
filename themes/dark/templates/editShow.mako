@@ -50,6 +50,10 @@ const startVue = () => {
                             blacklist: [],
                             whitelist: [],
                             allgroups: []
+                        },
+                        qualities: {
+                            preferred: [],
+                            allowed: []
                         }
                     },
                     language: 'en'
@@ -116,6 +120,11 @@ const startVue = () => {
                                 ignoredWords: this.series.config.release.ignoredWords,
                                 blacklist: this.series.config.release.blacklist,
                                 whitelist: this.series.config.release.whitelist
+                            },
+                            qualities: {
+                                preferred: this.series.config.qualities.preferred,
+                                allowed: this.series.config.qualities.allowed,
+                                combined: this.combineQualities()
                             }
                         },
                         language: this.series.language
@@ -153,6 +162,18 @@ const startVue = () => {
             },
             updateLanguage: function(value) {
                 this.series.language = value;
+            },
+            saveQualities: function(qualities) {
+                this.series.config.qualities.preferred = qualities.preferred;
+                this.series.config.qualities.allowed = qualities.allowed;
+            },
+            combineQualities() {
+                const reducer = (accumulator, currentValue) => accumulator + currentValue;
+                
+                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+
+                return  allowed | preferred << 16
             }
         },
         computed: {
@@ -207,7 +228,7 @@ const startVue = () => {
                                 <span class="component-title">Preferred Quality</span>
                                 <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <quality-chooser></quality-chooser>
+                                    <quality-chooser @update="saveQualities"></quality-chooser>
                                 </span>
                             </label>
                         </div>
