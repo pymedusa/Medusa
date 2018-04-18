@@ -75,11 +75,15 @@ def send_nzb_get(params, nzb):
     params.update({'name': nzb.url, 'mode': 'addurl'})
     url = urljoin(app.SAB_HOST, 'api')
 
-    response = session.get_json(url, params=params, verify=False)
-    log.debug('Result text from SAB: {0}', response)
-    result, text = _check_sab_response(data)
-    del text
-    return result
+    data = session.get_json(url, params=params, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        log.debug('Result text from SAB: {0}', data)
+        result, text = _check_sab_response(data)
+        del text
+        return result
+        
 
 
 def send_nzb_post(params, nzb):
@@ -106,12 +110,14 @@ def send_nzb_post(params, nzb):
     session.params = {}
 
     response = session.post(url, data=data, files=files, verify=False)
-    if response:
+    if not response:
+        log.info('Error connecting to sab, no data returned')
+    else:
         data = response.json()
-    log.debug('Result text from SAB: {0}', data)
-    result, text = _check_sab_response(response)
-    del text
-    return result
+        log.debug('Result text from SAB: {0}', data)
+        result, text = _check_sab_response(response)
+        del text
+        return result
 
 
 def _check_sab_response(jdata):
@@ -145,8 +151,11 @@ def get_sab_access_method(host=None):
         'apikey': app.SAB_APIKEY,
     })
     url = urljoin(host, 'api')
-    response = session.get_json(url, params={'mode': 'auth'}, verify=False)
-    return _check_sab_response(response)
+    data = session.get_json(url, params={'mode': 'auth'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        return _check_sab_response(data)
 
 
 def test_authentication(host=None, username=None, password=None, apikey=None):
@@ -166,7 +175,10 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     })
     url = urljoin(host, 'api')
 
-    response = session.get_json(url, params={'mode': 'queue'}, verify=False)
-    # check the result and determine if it's good or not
-    result, sab_text = _check_sab_response(response)
-    return result, 'success' if result else sab_text
+    data = session.get_json(url, params={'mode': 'queue'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        # check the result and determine if it's good or not
+        result, sab_text = _check_sab_response(data)
+        return result, 'success' if result else sab_text
