@@ -75,17 +75,11 @@ def send_nzb_get(params, nzb):
     params.update({'name': nzb.url, 'mode': 'addurl'})
     url = urljoin(app.SAB_HOST, 'api')
 
-    response = session.get(url, params=params, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
-        log.info('Error connecting to sab, no data returned')
-    else:
-        log.debug('Result text from SAB: {0}', data)
-        result, text = _check_sab_response(data)
-        del text
-        return result
+    response = session.get_json(url, params=params, verify=False)
+    log.debug('Result text from SAB: {0}', response)
+    result, text = _check_sab_response(data)
+    del text
+    return result
 
 
 def send_nzb_post(params, nzb):
@@ -111,17 +105,11 @@ def send_nzb_post(params, nzb):
     # Empty session.params, because else these are added to the url.
     session.params = {}
 
-    response = session.post(url, data=data, files=files, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
-        log.info('Error connecting to sab, no data returned')
-    else:
-        log.debug('Result text from SAB: {0}', data)
-        result, text = _check_sab_response(data)
-        del text
-        return result
+    response = session.get_json(url, params=params, verify=False)
+    log.debug('Result text from SAB: {0}', data)
+    result, text = _check_sab_response(response)
+    del text
+    return result
 
 
 def _check_sab_response(jdata):
@@ -155,14 +143,8 @@ def get_sab_access_method(host=None):
         'apikey': app.SAB_APIKEY,
     })
     url = urljoin(host, 'api')
-    response = session.get(url, params={'mode': 'auth'}, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
-    else:
-        return _check_sab_response(data)
+    response = session.get_json(url, params={'mode': 'auth'}, verify=False)
+    return _check_sab_response(response)
 
 
 def test_authentication(host=None, username=None, password=None, apikey=None):
@@ -182,12 +164,7 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     })
     url = urljoin(host, 'api')
 
-    response = session.get(url, params={'mode': 'queue'}, verify=False)
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
-    else:
-        # check the result and determine if it's good or not
-        result, sab_text = _check_sab_response(data)
-        return result, 'success' if result else sab_text
+    response = session.get_json(url, params={'mode': 'queue'}, verify=False)
+    # check the result and determine if it's good or not
+    result, sab_text = _check_sab_response(response)
+    return result, 'success' if result else sab_text
