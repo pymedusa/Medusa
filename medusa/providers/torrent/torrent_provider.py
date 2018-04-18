@@ -147,6 +147,17 @@ class TorrentProvider(GenericProvider):
 
         return pubdate
 
+    def get_redirect_url(self, url):
+        """Get the address that the provided URL redirects to."""
+        log.debug('Retrieving redirect URL for {url}', {'url': url})
+
+        response = self.session.get(url, allow_redirects=False)
+        if response and response.headers.get('Location'):
+            return response.headers['Location']
+
+        log.debug('Unable to retrieve redirect URL for {url}', {'url': url})
+        return url
+
     def _make_url(self, result):
         """Return url if result is a magnet link."""
         urls = []
@@ -179,13 +190,11 @@ class TorrentProvider(GenericProvider):
         else:
             # Required for Jackett providers that use magnet redirects
             # See: https://github.com/pymedusa/Medusa/issues/3435
-            if hasattr(self, 'cap_tv_search'):
-                response = self.session.get(result.url, allow_redirects=False)
-                if response:
-                    new_url = response.headers.get('Location')
-                    if new_url and new_url != result.url:
-                        result.url = new_url
-                        return self._make_url(result)
+            if self.kind() == 'TorznabProvider':
+                redirect_url = self.get_redirect_url(result.url)
+                if redirect_url != result.url:
+                    result.url = redirect_url
+                    return self._make_url(result)
 
             urls = [result.url]
 

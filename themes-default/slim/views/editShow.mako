@@ -152,7 +152,7 @@ const startVue = () => {
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not app.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'checked="checked"' if show.flatten_folders == 0 or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>
