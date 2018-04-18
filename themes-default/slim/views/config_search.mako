@@ -1,5 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
     from medusa import app
     from medusa.clients import torrent
 %>
@@ -81,13 +82,23 @@ const startVue = () => {
                         password: '${app.NZBGET_PASSWORD}',
                         useHttps: '${app.NZBGET_USE_HTTPS}',
                         testStatus: 'Click below to test'
+                    },
+                    sabnzbd: {
+                        host: '${app.SAB_HOST}',
+                        username: '${app.SAB_USERNAME}',
+                        password: '${app.SAB_PASSWORD}',
+                        apiKey: '${app.SAB_APIKEY}',
+                        testStatus: 'Click below to test'
                     }
                 },
                 httpAuthTypes: {
                     none: 'None',
                     basic: 'Basic',
                     digest: 'Digest'
-                }
+                },
+                searchIntervals: JSON.parse('${json.dumps(app.PROPERS_SEARCH_INTERVAL)}'),
+                propersIntervalLabels: JSON.parse('${json.dumps(app.PROPERS_INTERVAL_LABELS)}'),
+                propersInterval: '${app.CHECK_PROPERS_INTERVAL}'
             };
         },
         mounted() {
@@ -96,24 +107,6 @@ const startVue = () => {
             $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
             $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
             $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
-
-            $('#testSABnzbd').on('click', () => {
-                const sab = {};
-                $('#testSABnzbd_result').html(MEDUSA.config.loading);
-                sab.host = $('#sab_host').val();
-                sab.username = $('#sab_username').val();
-                sab.password = $('#sab_password').val();
-                sab.apiKey = $('#sab_apikey').val();
-
-                $.get('home/testSABnzbd', {
-                    host: sab.host,
-                    username: sab.username,
-                    password: sab.password,
-                    apikey: sab.apiKey
-                }, data => {
-                    $('#testSABnzbd_result').html(data);
-                });
-            });
         },
         methods: {
             async testTorrentClient() {
@@ -131,7 +124,7 @@ const startVue = () => {
 
                 this.torrent.testStatus = await data.text();
             },
-            async testNzbGet() {
+            async testNzbget() {
                 const { nzb } = this;
                 const { nzbget } = nzb;
                 const { host, username, password } = nzbget;
@@ -146,6 +139,22 @@ const startVue = () => {
                 }));
 
                 this.nzb.nzbget.testStatus = await data.text();
+            },
+            async testSabnzbd() {
+                const { nzb } = this;
+                const { sabnzbd } = nzb;
+                const { host, username, password, apiKey } = nzbget;
+
+                this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
+
+                const data = await fetch('home/testSABnzbd?' + queryString.stringify({
+                    host,
+                    username,
+                    password,
+                    apikey: apiKey
+                }));
+
+                this.nzb.sabnzbd.testStatus = await data.text();
             }
         },
         watch: {
@@ -214,9 +223,7 @@ const startVue = () => {
                                         <span class="component-title">Check propers every:</span>
                                         <span class="component-desc">
                                             <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
-    % for curInterval in app.PROPERS_SEARCH_INTERVAL.keys():
-                                                <option value="${curInterval}" ${'selected="selected"' if app.CHECK_PROPERS_INTERVAL == curInterval else ''}>${app.PROPERS_INTERVAL_LABELS[curInterval]}</option>
-    % endfor
+                                                <option v-for="(interval, label) in searchIntervals" :v-model="propersInterval">{{propersIntervalLabels[label]}}</option>
                                             </select>
                                         </span>
                                     </label>
@@ -467,12 +474,12 @@ const startVue = () => {
                                 </label>
                             </div>
                         </div>
-                        <div v-show="nzb.method === 'sabnzd'" id="sabnzbd_settings">
+                        <div v-show="nzb.method === 'sabnzbd'" id="sabnzbd_settings">
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">SABnzbd server URL</span>
                                     <span class="component-desc">
-                                        <input type="text" id="sab_host" name="sab_host" value="${app.SAB_HOST}" class="form-control input-sm input350"/>
+                                        <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
                                         <div class="clear-left"><p>URL to your SABnzbd server (e.g. http://localhost:8080/)</p></div>
                                     </span>
                                 </label>
@@ -481,8 +488,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">SABnzbd username</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_username" id="sab_username" value="${app.SAB_USERNAME}" class="form-control input-sm input200"
-                                               autocomplete="no" />
+                                        <input v-model="nzb.sabnzbd.username" type="text" name="sab_username" id="sab_username" class="form-control input-sm input200" autocomplete="no" />
                                         <p>(blank for none)</p>
                                     </span>
                                 </label>
@@ -491,7 +497,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">SABnzbd password</span>
                                     <span class="component-desc">
-                                        <input type="password" name="sab_password" id="sab_password" value="${app.SAB_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
+                                        <input v-model="nzb.sabnzbd.password" type="password" name="sab_password" id="sab_password" class="form-control input-sm input200" autocomplete="no"/>
                                         <p>(blank for none)</p>
                                     </span>
                                 </label>
@@ -500,7 +506,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">SABnzbd API key</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_apikey" id="sab_apikey" value="${app.SAB_APIKEY}" class="form-control input-sm input350"/>
+                                        <input v-model="nzb.sabnzbd.apiKey" type="text" name="sab_apikey" id="sab_apikey" class="form-control input-sm input350"/>
                                         <div class="clear-left"><p>locate at... SABnzbd Config -> General -> API Key</p></div>
                                     </span>
                                 </label>
@@ -551,8 +557,8 @@ const startVue = () => {
                                 </label>
                             </div>
                             % endif
-                        <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
-                            <input class="btn-medusa" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
+                        <div class="testNotification" id="testSABnzbd_result">{{nzb.sabnzbd.testStatus}}</div>
+                            <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </div>
                         <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
@@ -560,7 +566,7 @@ const startVue = () => {
                                 <label for="nzbget_use_https">
                                     <span class="component-title">Connect using HTTPS</span>
                                     <span class="component-desc">
-                                        <input v-model="nzb.nzbget.useHttps" id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https" :checked="nzb.nzbget.useHttps"/>
+                                        <input v-model="nzb.nzbget.useHttps" id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https"/>
                                         <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                     </span>
                                 </label>
@@ -647,7 +653,7 @@ const startVue = () => {
                                 </label>
                             </div>
                             <div class="testNotification" id="testNZBget_result">{{nzb.nzbget.testStatus}}</div>
-                                <input @click="testNZBget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
                         </div><!-- /content_use_nzbs //-->
@@ -675,7 +681,7 @@ const startVue = () => {
                                     <span class="component-title">Send .torrent files to:</span>
                                     <span class="component-desc">
                                     <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
-                                        <option v-for="(client, name) in clients" :value="name" :selected="torrent.method === name">{{client.title}}</option>
+                                        <option v-for="(client, name) in clients" :value="name">{{client.title}}</option>
                                     </select>
                                     </span>
                                 </label>
@@ -720,7 +726,7 @@ const startVue = () => {
                                         <span class="component-title">Http Authentication</span>
                                         <span class="component-desc">
                                             <select v-model="torrent.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
-                                                <option v-for="(title, name) in httpAuthTypes" :value="name" :selected="torrent.authType === name">{{title}}</option>
+                                                <option v-for="(title, name) in httpAuthTypes" :value="name">{{title}}</option>
                                             </select>
                                             <p></p>
                                         </span>
