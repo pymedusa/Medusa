@@ -5,7 +5,7 @@
             <option v-for="preset in qualityPresets" :value.number="preset" :selected="overallQuality === preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
         </select>
         <div id="customQualityWrapper">
-            <div style="padding-left: 0;" v-if="selectedQualityPreset === 0">
+            <div style="padding-left: 0;" v-show="selectedQualityPreset === 0">
                 <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
                 <div style="padding-right: 40px; text-align: left; float: left;">
                     <h5>Allowed</h5>
