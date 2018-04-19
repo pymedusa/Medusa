@@ -145,9 +145,9 @@ Vue.component('quality-chooser', {
 
             // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
             const url = 'series/' + this.seriesSlug +
-                    '/legacy/backlogged' +
-                    '?allowed=' + allowedQualities +
-                    '&preferred=' + preferredQualities;
+                        '/legacy/backlogged' +
+                        '?allowed=' + allowedQualities +
+                        '&preferred=' + preferredQualities;
             const response = await api.get(url);
             const newBacklogged = response.data.new;
             const existingBacklogged = response.data.existing;
