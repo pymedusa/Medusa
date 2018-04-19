@@ -298,7 +298,7 @@ const startVue = () => {
                         <div v-if="series.config.anime" class="field-pair">
                             <span class="component-title">Release Groups</span>
                             <span class="component-desc">
-                                <anidb-release-group-ui :series="seriesSlug" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                                <anidb-release-group-ui :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </span>
                         </div>
 
