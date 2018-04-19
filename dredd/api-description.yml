@@ -968,11 +968,13 @@ definitions:
               allowed:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
               prefered:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
           paused:
             type: boolean
             description: Whether series is paused
