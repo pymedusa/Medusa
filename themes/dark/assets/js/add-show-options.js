@@ -9,17 +9,19 @@ $(document).ready(() => {
             bestQualArray.push($(d).val());
         });
 
-        // @TODO: Move this to API
-        $.get('config/general/saveAddShowDefaults', {
+        const data = {
             defaultStatus: $('#statusSelect').val(),
             allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
             preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
-            defaultFlattenFolders: $('#flatten_folders').prop('checked'),
+            defaultFlattenFolders: !$('#season_folders').prop('checked'), // Flatten folders is the contrary of season folders!
             subtitles: $('#subtitles').prop('checked'),
             anime: $('#anime').prop('checked'),
             scene: $('#scene').prop('checked'),
             defaultStatusAfter: $('#statusSelectAfter').val()
-        });
+        };
+
+        // @TODO: Move this to API
+        $.get('config/general/saveAddShowDefaults', data);
 
         $(event.currentTarget).prop('disabled', true);
         new PNotify({ // eslint-disable-line no-new
@@ -29,7 +31,7 @@ $(document).ready(() => {
         });
     });
 
-    $(document.body).on('change', '#statusSelect, select[name="quality_preset"], #flatten_folders, select[name="allowed_qualities"], select[name="preferred_qualities"], #subtitles, #scene, #anime, #statusSelectAfter', () => {
+    $(document.body).on('change', '#statusSelect, #qualityPreset, #season_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 

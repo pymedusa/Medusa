@@ -111,11 +111,13 @@ def snatch_episode(result):
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
     is_proper = False
+
     if app.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for cur_ep in result.episodes:
             if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
+
     if result.proper_tags:
         log.debug(u'Found proper tags for {0}. Snatching as PROPER', result.name)
         is_proper = True
@@ -123,11 +125,8 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
-        result.result_type = u'torrent'
-
     # Binsearch.info requires you to download the nzb through a post.
-    if hasattr(result.provider, 'download_nzb_for_post'):
+    if result.provider.kind() == 'BinSearchProvider':
         result.result_type = 'nzbdata'
         nzb_data = result.provider.download_nzb_for_post(result)
         result.extra_info.append(nzb_data)
@@ -156,7 +155,11 @@ def snatch_episode(result):
         else:
             if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
-                    result.content = result.provider.get_content(result.url)
+                    if result.provider.kind() == 'TorznabProvider':
+                        result.url = result.provider.get_redirect_url(result.url)
+
+                    if not result.url.startswith(u'magnet:'):
+                        result.content = result.provider.get_content(result.url)
 
             if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
