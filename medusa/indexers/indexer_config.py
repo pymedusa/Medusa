@@ -129,7 +129,6 @@ def create_config_json(indexer):
         'apiParams': {
             'language': indexer['api_params']['language'],
             'useZip': indexer['api_params']['use_zip'],
-            'session': '',
         },
         'xemOrigin': indexer.get('xem_origin'),
         'icon': indexer.get('icon'),
