@@ -1511,8 +1511,7 @@ class Series(TV):
             if not self.imdb_id:
                 self.imdb_id = sql_results[0][b'imdb_id']
 
-            if self.is_anime:
-                self.release_groups = BlackAndWhiteList(self)
+            self.release_groups = BlackAndWhiteList(self)
 
             self.plot = sql_results[0][b'plot']
 
