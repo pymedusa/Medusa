@@ -13,7 +13,6 @@
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
 <%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/edit-show.js"></script>
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
@@ -71,8 +70,7 @@ const startVue = () => {
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
-                                    <%include file="/inc_qualityChooser.mako"/>
+                                    <quality-chooser/>
                                 </span>
                             </label>
                         </div>
