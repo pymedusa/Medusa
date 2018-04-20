@@ -8,8 +8,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Anime'
+        },
         data() {
-            return {};
+            return {
+                header: 'Anime'
+            };
         }
     });
 };
@@ -17,7 +22,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content960">
-    <h1 class="header">${header}</h1>
+    <h1 class="header">{{header}}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/anime/saveAnime" method="post">

@@ -6,14 +6,18 @@
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script>
 let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Manage Searches'
+        },
         data() {
-            return {};
+            return {
+                header: 'Manage Searches'
+            };
         }
     });
 };
@@ -21,11 +25,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content800">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="summary2" class="align-left">
 
 <h3>Backlog Search:</h3>

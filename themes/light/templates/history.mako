@@ -19,8 +19,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'History'
+        },
         data() {
-            return {};
+            return {
+                header: 'History'
+            };
         },
         mounted() {
             $('#historyTable:has(tbody tr)').tablesorter({
@@ -91,12 +96,8 @@ const startVue = () => {
 <input type="hidden" id="background-series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
 
 <div class="row">
-    <div class="col-md-6"> <!-- Title -->
-        % if not header is UNDEFINED:
-            <h1 class="header">${header}</h1>
-        % else:
-            <h1 class="title">${title}</h1>
-        % endif
+    <div class="col-md-6">
+        <h1 class="header">{{header}}</h1>
     </div> <!-- layout title -->
     <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">

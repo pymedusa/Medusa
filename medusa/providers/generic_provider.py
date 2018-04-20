@@ -119,6 +119,11 @@ class GenericProvider(object):
         self.enable_search_delay = False
         self.search_delay = 480  # minutes
 
+    @classmethod
+    def kind(cls):
+        """Return the name of the current class."""
+        return cls.__name__
+
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():

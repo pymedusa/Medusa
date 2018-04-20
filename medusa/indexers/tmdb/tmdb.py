@@ -65,7 +65,7 @@ class Tmdb(BaseIndexer):
             'last_air_date': 'airs_dayofweek',
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
-            'vote_average': 'contentrating',
+            'vote_average': 'rating',
             'poster_path': 'poster',
             'genres': 'genre',
             'type': 'classification',
@@ -81,7 +81,7 @@ class Tmdb(BaseIndexer):
             'episode_run_time': 'runtime',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'vote_average': 'contentrating',
+            'vote_average': 'rating',
             'still_path': 'filename'
         }
 
@@ -314,7 +314,7 @@ class Tmdb(BaseIndexer):
         bid = images['id']
         for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
-                if image_type not in _images:
+                if images and image_type not in _images:
                     _images[image_type] = {}
 
                 for image in images:
@@ -440,6 +440,14 @@ class Tmdb(BaseIndexer):
         if not series_info:
             log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
+
+        # Get MPAA rating if available
+        content_ratings = self.tmdb.TV(sid).content_ratings()
+        if content_ratings and content_ratings.get('results'):
+            mpaa_rating = next((r['rating'] for r in content_ratings['results']
+                                if r['iso_3166_1'].upper() == 'US'), None)
+            if mpaa_rating:
+                self._set_show_data(sid, 'contentrating', mpaa_rating)
 
         # get series data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.

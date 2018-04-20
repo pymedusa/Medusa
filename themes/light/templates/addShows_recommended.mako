@@ -3,7 +3,6 @@
     from medusa import app
 %>
 <%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif

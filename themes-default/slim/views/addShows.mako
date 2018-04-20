@@ -10,19 +10,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Add Shows'
+        },
         data() {
-            return {};
+            return {
+                header: 'Add Shows'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="addShowPortal">
     <app-link href="addShows/newShow/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addnewshow"></div></div>

@@ -11,8 +11,13 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Mass Update'
+        },
         data() {
-            return {};
+            return {
+                header: 'Mass Update'
+            };
         }
     });
 };
@@ -27,11 +32,7 @@ const startVue = () => {
             <table style="width: 100%;" class="home-header">
                 <tr>
                     <td nowrap>
-                        % if not header is UNDEFINED:
-                        <h1 class="header" style="margin: 0;">${header}</h1>
-                        % else:
-                        <h1 class="title" style="margin: 0;">${title}</h1>
-                        % endif
+                        <h1 class="header" style="margin: 0;">{{header}}</h1>
                     </td>
                     <td align="right">
                         <div>

@@ -10,14 +10,61 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/test-rename.js"></script>
 <script>
 let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Preview Rename'
+        },
         data() {
-            return {};
+            return {
+                header: 'Preview Rename'
+            };
+        },
+        mounted() {
+            $('.seriesCheck').on('click', function() {
+                const serCheck = this;
+
+                $('.seasonCheck:visible').each(function() {
+                    this.checked = serCheck.checked;
+                });
+
+                $('.epCheck:visible').each(function() {
+                    this.checked = serCheck.checked;
+                });
+            });
+
+            $('.seasonCheck').on('click', function() {
+                const seasCheck = this;
+                const seasNo = $(seasCheck).attr('id');
+
+                $('.epCheck:visible').each(function() {
+                    const epParts = $(this).attr('id').split('x');
+
+                    if (epParts[0] === seasNo) {
+                        this.checked = seasCheck.checked;
+                    }
+                });
+            });
+
+            $('input[type=submit]').on('click', () => {
+                const epArr = [];
+
+                $('.epCheck').each(function() {
+                    if (this.checked === true) {
+                        epArr.push($(this).attr('id'));
+                    }
+                });
+
+                if (epArr.length === 0) {
+                    return false;
+                }
+
+                window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
+                    '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+            });
         }
     });
 };
@@ -34,11 +81,7 @@ const startVue = () => {
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:

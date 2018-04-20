@@ -107,8 +107,8 @@ class ErrorLogs(WebRoot):
             level = logging.ERROR
 
         t = PageTemplate(rh=self, filename='errorlogs.mako')
-        return t.render(header='Logs &amp; Errors', title='Logs &amp; Errors', topmenu='system',
-                        submenu=self._create_menu(level), logLevel=level, controller='errorlogs', action='index')
+        return t.render(topmenu='system', submenu=self._create_menu(level), logLevel=level,
+                        controller='errorlogs', action='index')
 
     @staticmethod
     def _has_errors():
@@ -145,7 +145,7 @@ class ErrorLogs(WebRoot):
                                                                                   search_query=log_search))]
 
         if not text_view:
-            return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+            return t.render(topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
                             min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
                             controller='errorlogs', action='viewlogs')
         else:

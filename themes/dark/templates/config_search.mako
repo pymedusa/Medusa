@@ -9,19 +9,20 @@ let app;
 const startVue = () => {
     app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Episode Search'
+        },
         data() {
-            return {};
+            return {
+                header: 'Search Settings'
+            };
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-<h1 class="header">${header}</h1>
-% else:
-<h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/search/saveSearch" method="post">
