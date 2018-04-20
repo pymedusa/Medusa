@@ -31,7 +31,7 @@ $(document).ready(() => {
         });
     });
 
-    $(document.body).on('change', '#statusSelect, #qualityPreset, #season_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter', () => {
+    $(document.body).on('change', '#statusSelect, select[name="quality_preset"], #season_folders, select[name="allowed_qualities"], select[name="preferred_qualities"], #subtitles, #scene, #anime, #statusSelectAfter', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 

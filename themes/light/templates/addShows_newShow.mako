@@ -9,7 +9,6 @@
 <script src="js/lib/Frisbee.min.js"></script>
 <script src="js/lib/vue-frisbee.min.js"></script>
 <script src="js/vue-submit-form.js"></script>
-<%include file="/vue-components/quality-chooser.mako"/>
 <script>
 let app;
 const startVue = () => {
