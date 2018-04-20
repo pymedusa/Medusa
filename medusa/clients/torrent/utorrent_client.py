@@ -94,8 +94,8 @@ class UTorrentAPI(GenericClient):
         torrent_subfolder = get_torrent_subfolder(result)
 
         return self._request(
-            method = 'post',
-            params ={
+            method='post',
+            params={
                 'action': 'add-file',
                 # add torrent path to request
                 'path': torrent_subfolder,
@@ -185,7 +185,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-        #  "stop" torrent, can be resulmed
+        #  "stop" torrent, can always be resumed!
             'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
