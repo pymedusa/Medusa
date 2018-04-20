@@ -639,9 +639,9 @@ const startVue = () => {
                                             <span id="label_anime_warning_qbittorrent" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up </p></div>
                                             </span>
-					    <span id="label_anime_warning_utorrent" style="display:none;"><p> (<b>%N</b> can be used with other text)</p>
+                                            <span id="label_anime_warning_utorrent" style="display:none;"><p> (<b>%N</b> can be used with other text)</p>
                                                 <div class="clear-left"><p>Global label for torrents. <br>
-						<b>%N:</b> use Series-Name as label</p></div>
+                                                <b>%N:</b> use Series-Name as label</p></div>
                                             </span>
                                         </span>
                                     </label>
