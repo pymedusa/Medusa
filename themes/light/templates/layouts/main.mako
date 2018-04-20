@@ -78,7 +78,6 @@
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
