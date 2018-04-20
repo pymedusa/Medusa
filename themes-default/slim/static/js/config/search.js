@@ -79,6 +79,8 @@ MEDUSA.config.search = function() {
 
             if (selectedProvider.toLowerCase() === 'utorrent') {
                 client = 'uTorrent';
+                $('#label_warning_utorrent').show();
+                $('#label_anime_warning_utorrent').show();
                 $('#torrent_path_option').hide();
                 $('#torrent_seed_time_label').text('Minimum seeding time is');
                 $('#torrent_seed_time_option').show();
