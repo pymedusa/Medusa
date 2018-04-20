@@ -19,6 +19,24 @@ from requests.compat import urljoin
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+def get_torrent_subfolder(result):
+            # Get the sub-folder name the user has assigned to that series
+            root_dirs = app.ROOT_DIRS
+            root_location = root_dirs[int(root_dirs[0]) + 1]
+            torrent_path = result.series._location
+            torrent_subfolder = None
+
+            if not root_location == torrent_path:
+                torrent_subfolder = os.path.basename(torrent_path)
+            # Use the series name if there is no subfolder defined
+            else:
+                torrent_subfolder = series_name
+
+            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                    {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+            return(torrent_subfolder)
+
 
 class UTorrentAPI(GenericClient):
     """uTorrent API class."""
@@ -55,64 +73,32 @@ class UTorrentAPI(GenericClient):
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
             return self.auth
 
+
+            
     def _add_torrent_uri(self, result):
-            ## Set proper subfoler as destination for uTorrent 
-            series_id = result.series.series_id
-            series_name = result.series.name
- 
-			# Get the sub-folder the user has assigned to that series
-            root_dirs = app.ROOT_DIRS
-            root_location = root_dirs[int(root_dirs[0]) + 1]
-            torrent_path = result.series._location
-            torrent_subfolder = None
 
-            if not root_location == torrent_path:
-                torrent_subfolder = os.path.basename(torrent_path)
-	        ## Use the label if tyhere is no subfolder
-            else:
-                torrent_subfolder = series_name
+        # Set proper subfolder as download destination for uTorrent torrent 
+        torrent_subfolder = get_torrent_subfolder(result)
 
-            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
-                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
-
-
-            return self._request(params={
+        return self._request(params={
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
-			## add torrent path to request
-			#   
-			'path': torrent_subfolder,
+            # add torrent path to request
+            'path': torrent_subfolder,
         })
 
     def _add_torrent_file(self, result):
-            ##Set the series subfoler as  download destination for uTorrent 
-            series_id = result.series.series_id
-            series_name = result.series.name
- 
-			##Get the sub-folder the user has assigned to that series
-            root_dirs = app.ROOT_DIRS
-            root_location = root_dirs[int(root_dirs[0]) + 1]
-            torrent_path = result.series._location
 
-            torrent_subfolder = None;
-            if not root_location == torrent_path:
-                torrent_subfolder = os.path.basename(torrent_path)
-	        ## Use the label if tyhere is no subfolder
-            else:
-                torrent_subfolder = series_name
+        # Set proper subfolder as download destination for uTorrent torrent 
+        torrent_subfolder = get_torrent_subfolder(result)
 
-            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
-                    {'name': series_name, 'path': torrent_path, 'sub': torrent_subfolder})
-
-
-            return self._request(
-                method = 'post',
-                params ={
-                        'action': 'add-file',
-				## Add torrent path to request
-				#   
-				'path': torrent_subfolder,
+        return self._request(
+            method = 'post',
+            params ={
+                'action': 'add-file',
+                # add torrent path to request
+                'path': torrent_subfolder,
             },
             files={
                 'torrent_file': (
@@ -133,23 +119,22 @@ class UTorrentAPI(GenericClient):
         log.info('torrent label was {path}',
                     {'path': label})
 
-        label = label.replace("%N",torrent_new_label)
+        label = label.replace('%N',torrent_new_label)
 
-        log.info('torrent label is now set to {path}',
-                    {'path': label})
-		
-		## Always use show name as label? TBD.
+        log.info('torrent label is now set to {path}', {'path': label})
+
+        #  Always use show name as label? TBD.
         # if not label:
         #    label = torrent_new_label
 
         return self._request(
-		    params={
-				'action': 'setprops',
-				'hash': result.hash,
-				's': 'label',
-				'v': label,
-		    }
-		)
+            params={
+                'action': 'setprops',
+                'hash': result.hash,
+                's': 'label',
+                'v': label,
+            }
+        )
 
     def _set_torrent_ratio(self, result):
         ratio = result.ratio or None
@@ -173,7 +158,7 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-		## Allow 0 - as unlimitted, and "-1" - that is used to disable 
+        #  Allow 0 - as unlimitted, and "-1" - that is used to disable 
         if float(app.TORRENT_SEED_TIME) >= 0:
             if self._request(params={
                 'action': 'setprops',
@@ -200,7 +185,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-		## "stop" torrent, can be resulmed
+        #  "stop" torrent, can be resulmed
             'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
