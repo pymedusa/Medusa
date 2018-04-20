@@ -81,7 +81,6 @@
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
