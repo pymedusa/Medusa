@@ -73,10 +73,6 @@ Vue.component('anidb-release-group-ui', {
     name: 'anidb-release-group-ui',
     template: '#anidb-release-group-ui',
     props: {
-        series: {
-            type: Object,
-            required: true
-        },
         blacklist: {
             type: Array,
             default: []
@@ -93,13 +89,11 @@ Vue.component('anidb-release-group-ui', {
     data() {
         return {
             index: 0,
-            releaseSeries: {},
             allReleaseGroups: [],
             newGroup: ''
         };
     },
     mounted() {
-        this.releaseSeries = this.series;
         this.createIndexedObjects(this.blacklist, 'blacklist');
         this.createIndexedObjects(this.whitelist, 'whitelist');
         this.createIndexedObjects(this.allGroups, 'releasegroups');

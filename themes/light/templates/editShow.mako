@@ -1,6 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import adba
+    import json
     from medusa import app, common
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import statusStrings
@@ -12,23 +13,178 @@
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
+<link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-    <script type="text/javascript" src="js/edit-show.js"></script>
-% if show.is_anime:
-    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-% endif
+<%include file="/vue-components/quality-chooser.mako"/>
+<%include file="/vue-components/select-list-ui.mako"/>
+<%include file="/vue-components/anidb-release-group-ui.mako"/>
+
 <script>
-let app;
 const startVue = () => {
-    app = new Vue({
+    const app = new Vue({
         el: '#vue-wrap',
         data() {
-            return {};
+            // Python conversions
+            // JS only
+            const exceptions = [];
+            return {
+                seriesSlug: $('#series-slug').attr('value'),
+                seriesId: $('#series-id').attr('value'),
+                indexerName: $('#indexer-name').attr('value'),
+                config: MEDUSA.config,
+                exceptions: exceptions,
+                series: {
+                    config: {
+                        dvdOrder: false,
+                        flattenFolders: false,
+                        anime: false,
+                        scene: false,
+                        sports: false,
+                        paused: false,
+                        location: '',
+                        airByDate: false,
+                        subtitlesEnabled: false,
+                        release: {
+                            requiredWords: null,
+                            ignoredWords: null,
+                            blacklist: [],
+                            whitelist: [],
+                            allgroups: []
+                        },
+                        qualities: {
+                            preferred: [],
+                            allowed: []
+                        }
+                    },
+                    language: 'en'
+                },
+                defaultEpisodeStatusOptions: [
+                    {text: 'Wanted', value: 'Wanted'},
+                    {text: 'Skipped', value: 'Skipped'},
+                    {text: 'Ignored', value: 'Ignored'}
+                ],
+                seriesLoaded: false,
+                location: '',
+                saveMessage: '',
+                saveError: '',
+                mounted: false
+            }
         },
-        mounted() {
+        async mounted() {
+            const seriesSlug = $('#series-slug').attr('value');
+            const url = 'series/' + seriesSlug;
+            try {
+                const response = await api.get('series/' + this.seriesSlug);
+                this.series = Object.assign({}, this.series, response.data);
+                this.series.language = response.data.language;
+                this.location = this.series.config.location;
+            } catch (error) {
+                console.debug('Could not get series info for: '+ seriesSlug);
+            }
+
+            // Add the Browse.. button after the show location input.
             $('#location').fileBrowser({
-                title: 'Select Show Location'
+	            title: 'Select Show Location'
             });
+            this.mounted = true;
+        },
+        methods: {
+            anonRedirect: function(e) {
+                e.preventDefault();
+                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
+            },
+            prettyPrintJSON: function(x) {
+                return JSON.stringify(x, undefined, 4)
+            },
+            saveSeries: async function(subject) {
+                // We want to wait until the page has been fully loaded, before starting to save stuff.
+                if (!this.mounted) {
+                    return;
+                }
+
+                if (['series', 'all'].includes(subject)) {
+                    const data = {
+                        config: {
+                            aliases: this.series.config.aliases,
+                            dvdOrder: this.series.config.dvdOrder,
+                            flattenFolders: this.series.config.flattenFolders,
+                            anime: this.series.config.anime,
+                            scene: this.series.config.scene,
+                            sports: this.series.config.sports,
+                            paused: this.series.config.paused,
+                            location: this.series.config.location,
+                            airByDate: this.series.config.airByDate,
+                            subtitlesEnabled: this.series.config.subtitlesEnabled,
+                            release: {
+                                requiredWords: this.series.config.release.requiredWords,
+                                ignoredWords: this.series.config.release.ignoredWords,
+                                blacklist: this.series.config.release.blacklist,
+                                whitelist: this.series.config.release.whitelist
+                            },
+                            qualities: {
+                                preferred: this.series.config.qualities.preferred,
+                                allowed: this.series.config.qualities.allowed,
+                                combined: this.combineQualities()
+                            }
+                        },
+                        language: this.series.language
+                    };
+                    try {
+                        this.saveMessage = 'saving';
+                        const response = await api.patch('series/' + this.seriesSlug, data);
+                        this.saveMessage = 'saved';
+
+                    } catch (error) {
+                        this.saveError = 'Problem trying to save the config: ' + error.message || '';
+                    }
+                };
+            },
+            onChangeIgnoredWords: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.ignoredWords = items.map(item => item.value);
+            },
+            onChangeRequiredWords: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.release.requiredWords = items.map(item => item.value);
+            },
+            onChangeAliases: function(items) {
+		        console.debug('Event from child component emitted', items);
+                this.series.config.aliases = items.map(item => item.value);
+            },
+            onChangeReleaseGroupsAnime: function(items) {
+                this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+                this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+                this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+
+            },
+            saveLocation: function(value) {
+                this.series.config.location = value;
+            },
+            updateLanguage: function(value) {
+                this.series.language = value;
+            },
+            saveQualities: function(qualities) {
+                this.series.config.qualities.preferred = qualities.preferred;
+                this.series.config.qualities.allowed = qualities.allowed;
+            },
+            combineQualities() {
+                const reducer = (accumulator, currentValue) => accumulator + currentValue;
+                
+                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+
+                return  allowed | preferred << 16
+            }
+        },
+        computed: {
+            availableLanguages: function() {
+                if (this.config.indexers.config.main.validLanguages) {
+                    return this.config.indexers.config.main.validLanguages.join(',');
+                }
+            },
+            location: function() {
+                return this.series.config.location;
+            }
         }
     });
 };
@@ -43,9 +199,10 @@ const startVue = () => {
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<div id="config" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
-    <div id="config-content">
-        <form action="home/editShow" method="post">
+<saved-message :state="saveMessage" :error="saveError"></saved-message>
+<div id="config-content">
+    <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <form @submit.prevent="saveSeries('all')">
         <div id="config-components">
             <ul>
                 <li><app-link href="#core-component-group1">Main</app-link></li>
@@ -60,17 +217,18 @@ const startVue = () => {
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="indexername" id="form-indexername" value="${show.indexer_name}" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" value="${show.series_id}" />
-                                    <input type="text" name="location" id="location" value="${show._location}" class="form-control form-control-inline input-sm input350"/>
+                                    <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
+                                    <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
+                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location"></file-browser>
                                 </span>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
+                                <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <quality-chooser/>
+                                    <quality-chooser @update="saveQualities"></quality-chooser>
                                 </span>
                             </label>
                         </div>
@@ -78,10 +236,9 @@ const startVue = () => {
                             <label for="defaultEpStatusSelect">
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
-                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
-                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == show.default_ep_status else ''}>${statusStrings[cur_status]}</option>
-                                        % endfor
+                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
+                                        v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
+                                        <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
                                 </span>
@@ -91,7 +248,8 @@ const startVue = () => {
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                    <language-select @update-language="updateLanguage" v-if="series.language" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm">
+                                    </language-select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -100,7 +258,7 @@ const startVue = () => {
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and app.USE_SUBTITLES is True else ''} ${'' if app.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" @change="saveSeries('series')"/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -108,7 +266,7 @@ const startVue = () => {
                             <label for="paused">
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" ${'checked="checked"' if show.paused == 1 else ''} /> pause this show (Medusa will not download episodes)
+                                    <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
                                 </span>
                             </label>
                         </div>
@@ -123,7 +281,7 @@ const startVue = () => {
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.paused" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -132,18 +290,23 @@ const startVue = () => {
                             <label for="anime">
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
-                                    % if show.is_anime:
-                                        <%include file="/inc_blackwhitelist.mako"/>
-                                    % endif
+                                    <input type="checkbox" id="anime" name="anime" v-model="series.config.anime" @change="saveSeries('series')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                                 </span>
                             </label>
                         </div>
+
+                        <div v-if="series.config.anime" class="field-pair">
+                            <span class="component-title">Release Groups</span>
+                            <span class="component-desc">
+                                <anidb-release-group-ui :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                            </span>
+                        </div>
+
                         <div class="field-pair">
                             <label for="sports">
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="sports" name="sports" v-model="series.config.sports" @change="saveSeries('series')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -152,7 +315,7 @@ const startVue = () => {
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'checked="checked"' if show.flatten_folders == 0 or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" v-model="series.config.flattenFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>
@@ -160,7 +323,7 @@ const startVue = () => {
                             <label for="scene">
                                 <span class="component-title">Scene Numbering</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="scene" name="scene" ${'checked="checked"' if show.scene == 1 else ''} /> search by scene numbering (uncheck to search by indexer numbering)
+                                    <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
                                 </span>
                             </label>
                         </div>
@@ -168,7 +331,7 @@ const startVue = () => {
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>
@@ -184,9 +347,8 @@ const startVue = () => {
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350"/><br>
+                                    <select-list v-if="series.config.release.ignoredWords !== null" :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                     <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
                                     </div>
                                 </span>
@@ -196,9 +358,8 @@ const startVue = () => {
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_require_words" name="rls_require_words" id="rls_require_words" value="${show.rls_require_words}" class="form-control form-control-inline input-sm input350"/><br>
+                                    <select-list v-if="series.config.release.requiredWords !== null" :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                     <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
                                     </div>
                                 </span>
@@ -208,15 +369,7 @@ const startVue = () => {
                             <label for="SceneName">
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
-                                    <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
-                                    <div class="pull-left">
-                                        <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
-                                        % for cur_exception in show.exceptions:
-                                            <option value="${cur_exception}">${cur_exception}</option>
-                                        % endfor
-                                        </select>
-                                        <div><input id="removeSceneName" value="Remove" class="btn float-left" type="button" style="margin-top: 10px;"/></div>
-                                    </div>
+                                    <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
                                     <div class="clear-left"><p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p></div>
                                 </span>
                             </label>
