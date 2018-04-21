@@ -18,6 +18,7 @@ from requests.compat import urljoin
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+
 def get_torrent_subfolder(result):
     """Retrieve the series destination-subfolder required for uTorrent WebUI 'start' action."""
     # Get the subfolder name the user has assigned to that series
@@ -29,7 +30,7 @@ def get_torrent_subfolder(result):
     if not root_location == torrent_path:
         # Subfolder is under root, but possibly not directly under
         if torrent_path.startswith(root_location):
-            torrent_subfolder = torrent_path.replace(root_location,'')
+            torrent_subfolder = torrent_path.replace(root_location, '')
         # Subfolder is NOT under root, use it too (WebUI limitation)
         else:
             torrent_subfolder = os.path.basename(torrent_path)
@@ -38,7 +39,7 @@ def get_torrent_subfolder(result):
         torrent_subfolder = result.series.name
 
     log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
-                {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+            {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
 
     return(torrent_subfolder)
 
