@@ -124,10 +124,6 @@ class UTorrentAPI(GenericClient):
 
         log.info('torrent label is now set to {path}', {'path': label})
 
-        #  Always use show name as label? TBD.
-        # if not label:
-        #    label = torrent_new_label
-
         return self._request(
             params={
                 'action': 'setprops',
