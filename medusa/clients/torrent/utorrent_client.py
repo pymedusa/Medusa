@@ -88,7 +88,6 @@ class UTorrentAPI(GenericClient):
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
-            # add torrent path to request
             'path': torrent_subfolder,
         })
 
@@ -101,7 +100,6 @@ class UTorrentAPI(GenericClient):
             method='post',
             params={
                 'action': 'add-file',
-                # add torrent path to request
                 'path': torrent_subfolder,
             },
             files={
