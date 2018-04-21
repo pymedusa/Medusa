@@ -362,13 +362,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // Season to Show Episodes or Hide Episodes.
     $(() => {
         $('.collapse.toggle').on('hide.bs.collapse', function() {
-            const reg = /collapseSeason-([0-9]+)/g;
+            const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
             $('#season-' + result[1] + '-cols').addClass('shadow');
         });
         $('.collapse.toggle').on('show.bs.collapse', function() {
-            const reg = /collapseSeason-([0-9]+)/g;
+            const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');
             $('#season-' + result[1] + '-cols').removeClass('shadow');

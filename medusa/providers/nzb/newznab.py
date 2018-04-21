@@ -7,20 +7,20 @@ from __future__ import unicode_literals
 import logging
 import os
 import re
-import time
-import traceback
+from builtins import range
+from builtins import str
+from builtins import zip
+from collections import namedtuple
 
 from medusa import (
     app,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
-from medusa.common import cpu_presets
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
-from medusa.helper.encoding import ss
 from medusa.helpers.utils import split_and_strip
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
@@ -32,17 +32,23 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
+from six import iteritems, itervalues
+
 import validators
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
 
 
 class NewznabProvider(NZBProvider):
     """
     Generic provider for built in and custom providers who expose a newznab compatible api.
 
-    Tested with: newznab, nzedb, spotweb, torznab
+    Tested with: newznab, nzedb, spotweb
     """
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
@@ -69,8 +75,8 @@ class NewznabProvider(NZBProvider):
 
         self.torznab = False
 
-        self.caps = False
-        self.cap_tv_search = None
+        self.params = False
+        self.cap_tv_search = []
         self.providers_without_caps = ['gingadaddy', '6box']
 
         # For now apply the additional season search string for all newznab providers.
@@ -101,9 +107,9 @@ class NewznabProvider(NZBProvider):
             return results
 
         # For providers that don't have caps, or for which the t=caps is not working.
-        if not self.caps and all(provider not in self.url for provider in self.providers_without_caps):
-            self.get_newznab_categories(just_caps=True)
-            if not self.caps:
+        if not self.params and all(provider not in self.url for provider in self.providers_without_caps):
+            self.get_capabilities(just_params=True)
+            if not self.params:
                 return results
 
         # Search Params
@@ -123,6 +129,7 @@ class NewznabProvider(NZBProvider):
                 search_params['apikey'] = self.api_key
 
             if mode != 'RSS':
+
                 match_indexer = self._match_indexer()
                 if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
@@ -162,8 +169,6 @@ class NewznabProvider(NZBProvider):
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
 
-                time.sleep(cpu_presets[app.CPU_PRESET])
-
                 response = self.session.get(urljoin(self.url, 'api'), params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -173,10 +178,11 @@ class NewznabProvider(NZBProvider):
 
                 # Since we aren't using the search string,
                 # break out of the search string loop
-                if 'tvdbid' in search_params:
+                if any(param in search_params for param in itervalues(INDEXERS_PARAM)):
                     break
 
-        # Reprocess but now use force_query = True if there are no results (backlog, daily, force) or if it's a manual search.
+        # Reprocess but now use force_query = True if there are no results
+        # (backlog, daily, force) or if it's a manual search.
         if (not results or manual_search) and not force_query:
             return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
@@ -194,21 +200,18 @@ class NewznabProvider(NZBProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if not self._check_auth_from_data(html):
+
+            rows = html('item')
+            if not rows:
+                log.debug(
+                    'No results returned from provider. Check chosen Newznab search categories'
+                    ' in provider settings and/or usenet retention')
                 return items
 
             try:
                 self.torznab = 'xmlns:torznab' in html.rss.attrs
             except AttributeError:
                 self.torznab = False
-
-            rows = html('item')
-
-            if not rows:
-                log.debug(
-                    'No results returned from provider. Check chosen Newznab search categories'
-                    ' in provider settings and/or usenet retention')
-                return items
 
             for item in rows:
                 try:
@@ -279,10 +282,10 @@ class NewznabProvider(NZBProvider):
                         else:
                             log.debug('Found result: {0} with {1} seeders and {2} leechers',
                                       title, seeders, leechers)
+
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -297,26 +300,6 @@ class NewznabProvider(NZBProvider):
             return False
 
         return True
-
-    def _check_auth_from_data(self, data):
-        """
-        Check that the returned data is valid.
-
-        :return: _check_auth if valid otherwise False if there is an error
-        """
-        if data('categories') + data('item'):
-            return self._check_auth()
-
-        try:
-            err_desc = data.error.attrs['description']
-            if not err_desc:
-                raise Exception
-        except (AttributeError, TypeError):
-            return self._check_auth()
-
-        log.info(ss(err_desc))
-
-        return False
 
     def _get_size(self, item):
         """
@@ -347,7 +330,7 @@ class NewznabProvider(NZBProvider):
         return default_list + custom_newznab_providers
 
     @staticmethod
-    def save_newnab_providers():
+    def save_newznab_providers():
         """Update the app.NEWZNAB_PROVIDERS list with provider names."""
         app.NEWZNAB_PROVIDERS = [provider.name for provider in app.newznabProviderList if not provider.default]
 
@@ -380,7 +363,7 @@ class NewznabProvider(NZBProvider):
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
+        providers_dict = dict(list(zip([provider.name for provider in providers_list], providers_list)))
 
         for default in default_list:
             if not default:
@@ -413,40 +396,31 @@ class NewznabProvider(NZBProvider):
         been indexed using an alternative indexer, we could also try other indexers id's that are available
         and supported by this newznab provider.
         """
-        # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
-        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
-
-        return_mapping = {}
+        indexer_mapping = {}
 
         if not self.series:
-            # If we don't have show, can't get tvdbid
-            return return_mapping
+            return indexer_mapping
 
-        if not self.cap_tv_search or self.cap_tv_search == 'True':
-            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
-            return return_mapping
+        supported_params = self.cap_tv_search
+        if not supported_params:
+            # We didn't get back any supportedParams, lets return
+            # and continue with doing a search string search.
+            return indexer_mapping
 
-        for search_type in self.cap_tv_search.split(','):
-            if search_type == 'tvdbid' and self._get_tvdb_id():
-                return_mapping['tvdbid'] = self._get_tvdb_id()
-                # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
-                if return_mapping['tvdbid']:
-                    return return_mapping
-            else:
-                # Move to the configured capability / indexer mappings. To see if we can get a match.
-                for map_indexer in map_caps:
-                    if map_caps[map_indexer] == search_type:
-                        if self.series.indexer == map_indexer:
-                            # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] = self.series.indexerid
-                            return return_mapping
-                        elif self.series.externals.get(mappings[map_indexer]):
-                            # No direct match, let's see if one of the externals provides a valid search_type.
-                            mapped_external_indexer = self.series.externals.get(mappings[map_indexer])
-                            if mapped_external_indexer:
-                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
+        indexer_params = ((x, v) for x, v in iteritems(INDEXERS_PARAM) if v in supported_params)
+        for indexer, indexer_param in indexer_params:
+            # We have a direct match on the indexer used, no need to try the externals.
+            if self.series.indexer == indexer:
+                indexer_mapping[indexer_param] = self.series.indexerid
+                break
 
-        return return_mapping
+            # No direct match, let's see if one of the externals provides a valid indexer_param.
+            external_indexerid = self.series.externals.get(mappings[indexer])
+            if external_indexerid:
+                indexer_mapping[indexer_param] = external_indexerid
+                break
+
+        return indexer_mapping
 
     @staticmethod
     def _make_provider(provider_config):
@@ -491,28 +465,28 @@ class NewznabProvider(NZBProvider):
 
         def _parse_cap(tag):
             elm = data.find(tag)
-            return elm.get('supportedparams', 'True') if elm and elm.get('available') else ''
+            is_supported = elm and all([elm.get('supportedparams'), elm.get('available') == 'yes'])
+            return elm['supportedparams'].split(',') if is_supported else []
 
         self.cap_tv_search = _parse_cap('tv-search')
         # self.cap_search = _parse_cap('search')
-        # self.cap_movie_search = _parse_cap('movie-search')
-        # self.cap_audio_search = _parse_cap('audio-search')
 
-        # self.caps = any([self.cap_tv_search, self.cap_search, self.cap_movie_search, self.cap_audio_search])
-        self.caps = any([self.cap_tv_search])
+        self.params = any(self.cap_tv_search)
 
-    def get_newznab_categories(self, just_caps=False):
+    def get_capabilities(self, just_params=False):
         """
-        Use the newznab provider url and apikey to get the capabilities.
+        Use the provider url and apikey to get the capabilities.
 
-        Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
+        Makes use of the default newznab caps param. e.a. http://yourznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
         """
-        return_categories = []
+        Capabilities = namedtuple('Capabilities', 'success categories params message')
+        categories = params = []
 
         if not self._check_auth():
-            return False, return_categories, 'Provider requires auth and your key is not set'
+            message = 'Provider requires auth and your key is not set'
+            return Capabilities(False, categories, params, message)
 
         url_params = {'t': 'caps'}
         if self.needs_auth and self.api_key:
@@ -520,28 +494,31 @@ class NewznabProvider(NZBProvider):
 
         response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
-            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
-            log.warning(error_string)
-            return False, return_categories, error_string
+            message = 'Error getting caps xml for: {0}'.format(self.name)
+            log.warning(message)
+            return Capabilities(False, categories, params, message)
 
         with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
-                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
-                log.debug(error_string)
-                return False, return_categories, error_string
+                message = 'Error parsing caps xml for: {0}'.format(self.name)
+                log.warning(message)
+                return Capabilities(False, categories, params, message)
 
             self.set_caps(html.find('searching'))
-            if just_caps:
-                return
+            params = self.cap_tv_search
+            if just_params:
+                message = 'Success getting params for: {0}'.format(self.name)
+                return Capabilities(True, categories, params, message)
 
             for category in html('category'):
-                if 'TV' in category.get('name', '') and category.get('id', ''):
-                    return_categories.append({'id': category['id'], 'name': category['name']})
+                if 'TV' in category.get('name', '') and category.get('id'):
+                    categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
-                        if subcat.get('name', '') and subcat.get('id', ''):
-                            return_categories.append({'id': subcat['id'], 'name': subcat['name']})
+                        if subcat.get('name', '') and subcat.get('id'):
+                            categories.append({'id': subcat['id'], 'name': subcat['name']})
 
-            return True, return_categories, ''
+            message = 'Success getting categories and params for: {0}'.format(self.name)
+            return Capabilities(True, categories, params, message)
 
     @staticmethod
     def _create_default_provider(config):
@@ -598,7 +575,7 @@ class NewznabProvider(NZBProvider):
             },
             {
                 'name': 'Usenet-Crawler',
-                'url': 'https://api.usenet-crawler.com/',
+                'url': 'https://usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,

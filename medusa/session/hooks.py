@@ -11,6 +11,8 @@ from medusa.logger.adapters.style import BraceAdapter
 import requests
 from requests.utils import dict_from_cookiejar
 
+from six import text_type
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -37,7 +39,7 @@ def log_url(response, **kwargs):
             body = ''
 
         # try to log post data using various codecs to decode
-        if isinstance(body, unicode):
+        if isinstance(body, text_type):
             log.debug('With post data: {0}', body)
             return
 

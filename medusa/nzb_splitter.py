@@ -19,6 +19,7 @@
 
 # pylint: disable=line-too-long
 
+from __future__ import unicode_literals
 import re
 
 from medusa import classes, logger

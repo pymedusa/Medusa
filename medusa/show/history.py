@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
+from builtins import object
 from collections import namedtuple
 from datetime import datetime, timedelta
 
 from medusa.common import Quality
 from medusa.helper.common import try_int
 
-from six import text_type
+from six import itervalues, text_type
 
 
 class History(object):
@@ -85,7 +88,7 @@ class History(object):
                 compact[row.index] = row.compacted()
 
         results = namedtuple('results', ['detailed', 'compact'])
-        return results(detailed, compact.values())
+        return results(detailed, list(itervalues(compact)))
 
     def trim(self, days=30):
         """

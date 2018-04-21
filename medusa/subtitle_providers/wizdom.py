@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import bisect
 import io
 import logging
 import os
 import zipfile
+from builtins import str
 
 from babelfish import Language
+
 from guessit import guessit
+
 from requests import Session
+
+from six import itervalues
 
 from subliminal import Provider
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
@@ -166,7 +173,7 @@ class WizdomProvider(Provider):
             logger.debug('Found subtitle %r', subtitle)
             subtitles[subtitle_id] = subtitle
 
-        return subtitles.values()
+        return list(itervalues(subtitles))
 
     def list_subtitles(self, video, languages):
         season = episode = None

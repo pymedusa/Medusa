@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
 from medusa.server.web.core.authentication import (
     KeyHandler,
     LoginHandler,
@@ -20,4 +21,5 @@ from medusa.server.web.core.calendar import CalendarHandler
 from medusa.server.web.core.error_logs import ErrorLogs
 from medusa.server.web.core.file_browser import WebFileBrowser
 from medusa.server.web.core.history import History
+from medusa.server.web.core.schedule import Schedule
 from medusa.server.web.core.token import TokenHandler

@@ -14,7 +14,7 @@
         % elif app.THEME_NAME == "light":
         <meta name="theme-color" content="#333333">
         % endif
-        <title>Medusa - ${title}</title>
+        <title>Medusa${(' - ' + title) if title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
         <link rel="shortcut icon" href="images/ico/favicon.ico?v=2">
@@ -86,14 +86,11 @@
         <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/add-shows/add-existing-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/schedule/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
@@ -110,15 +107,26 @@
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
+
+        <%
+            ## Add Vue component x-templates here
+            ## @NOTE: These will be usable on all pages
+        %>
+        <script src="js/lib/vue.js"></script>
+        <script src="js/lib/vue-async-computed@3.3.0.js"></script>
+        <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
+        <script src="js/lib/vue-meta.min.js"></script>
+        <%include file="/vue-components/app-link.mako"/>
+        <%include file="/vue-components/asset.mako"/>
+        <%include file="/vue-components/file-browser.mako"/>
+        <%include file="/vue-components/plot-info.mako"/>
+        <%include file="/vue-components/saved-message.mako"/>
+        <%include file="/vue-components/quality-chooser.mako"/>
         <%block name="scripts" />
     </body>
 </html>

@@ -8,6 +8,24 @@
     from random import choice
     import re
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Home'
+        },
+        data() {
+            return {
+                header: 'Show List'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
@@ -52,11 +70,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        % if not header is UNDEFINED:
-        <h1 class="header pull-left" style="margin: 0;">${header}</h1>
-        % else:
-        <h1 class="title pull-left" style="margin: 0;">${title}</h1>
-        % endif
+        <h1 class="header pull-left" style="margin: 0;">{{header}}</h1>
     </div>
 </div>
 
@@ -99,7 +113,7 @@
             <!-- Nav tabs -->
             <ul>
                 % for cur_show_list in show_lists:
-                    <li><a href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</a></li>
+                    <li><app-link href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
                 % endfor
             </ul>
             <!-- Tab panes -->

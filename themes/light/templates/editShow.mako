@@ -13,11 +13,26 @@
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
 <%block name="scripts">
-    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/edit-show.js"></script>
 % if show.is_anime:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        },
+        mounted() {
+            $('#location').fileBrowser({
+                title: 'Select Show Location'
+            });
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
@@ -33,9 +48,9 @@
         <form action="home/editShow" method="post">
         <div id="config-components">
             <ul>
-                <li><a href="${full_url}#core-component-group1">Main</a></li>
-                <li><a href="${full_url}#core-component-group2">Format</a></li>
-                <li><a href="${full_url}#core-component-group3">Advanced</a></li>
+                <li><app-link href="#core-component-group1">Main</app-link></li>
+                <li><app-link href="#core-component-group2">Format</app-link></li>
+                <li><app-link href="#core-component-group3">Advanced</app-link></li>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">
@@ -55,8 +70,7 @@
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
-                                    <%include file="/inc_qualityChooser.mako"/>
+                                    <quality-chooser/>
                                 </span>
                             </label>
                         </div>
@@ -138,7 +152,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not app.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'checked="checked"' if show.flatten_folders == 0 or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>

@@ -1,11 +1,11 @@
 # coding=utf-8
 
 """Parser module which contains NameParser class."""
-
 from __future__ import unicode_literals
 
 import logging
 import time
+from builtins import object
 from collections import OrderedDict
 
 import guessit

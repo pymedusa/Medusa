@@ -1,8 +1,11 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import cgi
 import logging
 import os
+from builtins import object
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter

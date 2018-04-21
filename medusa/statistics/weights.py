@@ -1,6 +1,7 @@
 # coding=utf-8
 """Statistics module."""
 from __future__ import division
+from __future__ import unicode_literals
 
 
 def simple(weight, value):

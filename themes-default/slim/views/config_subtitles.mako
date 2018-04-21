@@ -2,38 +2,47 @@
 <%!
     from medusa import subtitles
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script>
-$(document).ready(function() {
-    $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {
-        method: "POST",
-        hintText: "Write to search a language and select it",
-        preventDuplicates: true,
-        prePopulate: [${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.wanted_languages())}],
-        resultsFormatter: function(item){ return "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
-        tokenFormatter: function(item)  { return "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" }
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Subtitles'
+        },
+        data() {
+            return {
+                header: 'Subtitles'
+            };
+        },
+        mounted() {
+            $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {
+                method: "POST",
+                hintText: "Write to search a language and select it",
+                preventDuplicates: true,
+                prePopulate: [${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.wanted_languages())}],
+                resultsFormatter: (item) => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>",
+                tokenFormatter: (item) => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>"
+            });
+            $('#config-components').tabs();
+            $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
+        }
     });
-});
-$('#config-components').tabs();
-$('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
+};
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="config">
 <div id="config-content">
     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#subtitles-search">Subtitles Search</a></li>
-                    <li><a href="${full_url}#subtitles-plugin">Subtitles Plugin</a></li>
-                    <li><a href="${full_url}#plugin-settings">Plugin Settings</a></li>
+                    <li><app-link href="#subtitles-search">Subtitles Search</app-link></li>
+                    <li><app-link href="#subtitles-plugin">Subtitles Plugin</app-link></li>
+                    <li><app-link href="#plugin-settings">Plugin Settings</app-link></li>
                 </ul>
                 <div id="subtitles-search" class="component-group">
                     <div class="component-group-desc">
@@ -185,7 +194,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                         </label>
                                         <label>
                                         <span class="component-desc">
-                                            <li>See the <a href="${app.SUBTITLES_URL}" class="wiki"><strong>Wiki</strong></a> for a script arguments description.</li>
+                                            <li>See the <app-link href="${app.SUBTITLES_URL}" class="wiki"><strong>Wiki</strong></app-link> for a script arguments description.</li>
                                             <li>Additional scripts separated by <b>|</b>.</li>
                                             <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
                                             <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
@@ -212,9 +221,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                             <% provider_name = curService['name'] %>
                             <li class="ui-state-default" id="${provider_name}">
                                 <input type="checkbox" id="enable_${provider_name}" class="service_enabler" ${'checked="checked"' if curService['enabled'] else ''}/>
-                                <a href="${anon_url(curService['url'])}" class="imgLink" target="_new">
+                                <app-link href="${curService['url']}" class="imgLink" target="_new">
                                     <img src="images/subtitles/${curService['image']}" alt="${curService['url']}" title="${curService['url']}" width="16" height="16" style="vertical-align:middle;"/>
-                                </a>
+                                </app-link>
                             <span style="vertical-align:middle;">${provider_name.capitalize()}</span>
                             <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;"></span>
                           </li>

@@ -6,13 +6,16 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from builtins import zip
 from os.path import join
+
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
+
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -127,7 +130,7 @@ class BinSearchProvider(NZBProvider):
             rows = rows[row_offset:]
             for row in rows:
                 try:
-                    col = dict(zip(labels, row('td')))
+                    col = dict(list(zip(labels, row('td'))))
                     nzb_id_input = col[0 if mode == 'RSS' else 1].find('input')
                     if not nzb_id_input:
                         continue

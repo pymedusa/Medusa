@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-# pylint: disable=too-many-lines
+from __future__ import unicode_literals
 
 from medusa import app
 from medusa.init import initialize

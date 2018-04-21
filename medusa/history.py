@@ -16,10 +16,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import datetime
 
-import db
+from medusa import db
 from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
 from medusa.helper.encoding import ss
 from medusa.show.history import History

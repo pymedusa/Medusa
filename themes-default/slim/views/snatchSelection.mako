@@ -2,12 +2,21 @@
 <%!
     from datetime import datetime
     from medusa import app
-    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -113,9 +122,9 @@
                     </thead>
                     <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
-                        <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
+                        <tr id="${hItem['name'] | h}" class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">
-                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
                             </td>
                             <td class="col-group break-word triggerhighlight">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
@@ -141,17 +150,22 @@
                             <td class="col-date triggerhighlight">
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
-                            <td class="col-date triggerhighlight">${hItem["pubdate"]}</td>
-                            <td class="col-date triggerhighlight">${datetime.fromtimestamp(float(hItem["date_added"])) if hItem["date_added"] else 'NA'}</td>
-                            <td class="col-search triggerhighlight"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                            <% user_preset = app.DATE_PRESET + ' ' + app.TIME_PRESET %>
+                            <td class="col-date triggerhighlight" data-datetime="${hItem['pubdate'].isoformat('T') if hItem['pubdate'] else datetime.min}">
+                                ${hItem['pubdate'].strftime(user_preset) if hItem['pubdate'] else 'N/A'}
+                            </td>
+                            <td class="col-date triggerhighlight" data-datetime="${hItem['date_added'].isoformat('T') if hItem['date_added'] else datetime.min}">
+                                ${hItem['date_added'].strftime(user_preset) if hItem['date_added'] else 'N/A'}
+                            </td>
+                            <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                         </tr>
                     % endfor
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan="11"></td>
+                        <th class="tablesorter-no-sort" colspan="12"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="12"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->

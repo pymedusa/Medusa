@@ -17,18 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
 import logging
 import os.path
 import re
+from builtins import object
+from builtins import str
 
 from contextlib2 import suppress
+
 from medusa import app, common, db, helpers, logger, naming, scheduler
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.version_checker import CheckVersion
+
 from requests.compat import urlsplit
+
 from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 
@@ -63,7 +70,7 @@ naming_sep_type_text = (' - ', 'space')
 
 def change_HTTPS_CERT(https_cert):
     """
-    Replace HTTPS Certificate file path
+    Replace HTTPS Certificate file path.
 
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
@@ -84,7 +91,7 @@ def change_HTTPS_CERT(https_cert):
 
 def change_HTTPS_KEY(https_key):
     """
-    Replace HTTPS Key file path
+    Replace HTTPS Key file path.
 
     :param https_key: path to the new key file
     :return: True on success, False on failure
@@ -105,7 +112,7 @@ def change_HTTPS_KEY(https_key):
 
 def change_LOG_DIR(log_dir):
     """
-    Change logging directory for application and webserver
+    Change logging directory for application and webserver.
 
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
@@ -667,15 +674,15 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 # Check_setting_str                                                            #
 ################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
-    # For passwords you must include the word `password` in the item_name
+def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None, encrypted=False):
+    # For passwords you must include the word `password` in the item_name or pass `encrypted=True`
     # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
-    if bool(item_name.find('password') + 1):
+    if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:
         encryption_version = 0
@@ -708,7 +715,8 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 ################################################################################
 # Check_setting_list                                                           #
 ################################################################################
-def check_setting_list(config, cfg_name, item_name, default=None, silent=True, censor_log=False, transform=None, transform_default=0, split_value=False):
+def check_setting_list(config, cfg_name, item_name, default=None, silent=True, censor_log=False, transform=None,
+                       transform_default=0, split_value=False):
     """Check a setting, using the settings section and item name. Expect to return a list."""
     default = default or []
 
@@ -790,7 +798,7 @@ def load_provider_setting(config, provider, attr_type, attr, default=None, silen
 
 
 ################################################################################
-# Load Provider Setting                                                        #
+# Save Provider Setting                                                        #
 ################################################################################
 def save_provider_setting(config, provider, attr, **kwargs):
     if hasattr(provider, attr):
@@ -1113,8 +1121,8 @@ class ConfigMigrator(object):
         app.KODI_UPDATE_FULL = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_full', 0))
         app.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_onlyfirst', 0))
         app.KODI_HOST = check_setting_str(self.config_obj, 'XBMC', 'xbmc_host', '')
-        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log=True)
-        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log=True)
+        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log='low')
+        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log='low')
         app.METADATA_KODI = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0|0|0|0|0')
         app.METADATA_KODI_12PLUS = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0|0|0|0|0')
 
@@ -1124,8 +1132,8 @@ class ConfigMigrator(object):
 
     def _migrate_v8(self):
         app.PLEX_CLIENT_HOST = check_setting_str(self.config_obj, 'Plex', 'plex_host', '')
-        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
-        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
+        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log='low')
+        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log='low')
         app.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
 
     def _migrate_v9(self):

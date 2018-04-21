@@ -1,11 +1,11 @@
 # coding=utf-8
 
 """TMDB module."""
-
-
+from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from builtins import range
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -17,7 +17,8 @@ from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, I
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
-from six import integer_types, string_types, text_type
+
+from six import integer_types, string_types, text_type, viewitems
 
 import tmdbsimple as tmdb
 
@@ -64,7 +65,7 @@ class Tmdb(BaseIndexer):
             'last_air_date': 'airs_dayofweek',
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
-            'vote_average': 'contentrating',
+            'vote_average': 'rating',
             'poster_path': 'poster',
             'genres': 'genre',
             'type': 'classification',
@@ -80,7 +81,7 @@ class Tmdb(BaseIndexer):
             'episode_run_time': 'runtime',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'vote_average': 'contentrating',
+            'vote_average': 'rating',
             'still_path': 'filename'
         }
 
@@ -103,7 +104,7 @@ class Tmdb(BaseIndexer):
         for item in tmdb_response:
             return_dict = {}
             try:
-                for key, value in item.items():
+                for key, value in viewitems(item):
                     if value is None or value == []:
                         continue
 
@@ -282,7 +283,7 @@ class Tmdb(BaseIndexer):
             ep_no = int(epno)
 
             image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
-            for k, v in cur_ep.items():
+            for k, v in viewitems(cur_ep):
                 k = k.lower()
 
                 if v is not None:
@@ -311,9 +312,9 @@ class Tmdb(BaseIndexer):
 
         images = self.tmdb.TV(sid).images(params=params)
         bid = images['id']
-        for image_type, images in {'poster': images['posters'], 'fanart': images['backdrops']}.iteritems():
+        for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
-                if image_type not in _images:
+                if images and image_type not in _images:
                     _images[image_type] = {}
 
                 for image in images:
@@ -335,7 +336,7 @@ class Tmdb(BaseIndexer):
                         if bid not in _images[image_type][resolution]:
                             _images[image_type][resolution][bid] = {}
 
-                        for k, v in image_mapped.items():
+                        for k, v in viewitems(image_mapped):
                             if k is None or v is None:
                                 continue
 
@@ -414,7 +415,7 @@ class Tmdb(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language='en'):
         """Take a series ID, gets the epInfo URL and parses the TMDB json response.
 
         into the shows dict in layout:
@@ -440,13 +441,21 @@ class Tmdb(BaseIndexer):
             log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
+        # Get MPAA rating if available
+        content_ratings = self.tmdb.TV(sid).content_ratings()
+        if content_ratings and content_ratings.get('results'):
+            mpaa_rating = next((r['rating'] for r in content_ratings['results']
+                                if r['iso_3166_1'].upper() == 'US'), None)
+            if mpaa_rating:
+                self._set_show_data(sid, 'contentrating', mpaa_rating)
+
         # get series data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.
         # possitlbe widths can also be retrieved from self.configuration.images['poster_sizes'] and
         # self.configuration.images['still_sizes']
         image_width = {'fanart': 'w1280', 'poster': 'w500'}
 
-        for k, v in series_info['series'].items():
+        for k, v in viewitems(series_info['series']):
             if v is not None:
                 if k in ['fanart', 'banner', 'poster']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
@@ -585,7 +594,7 @@ class Tmdb(BaseIndexer):
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
                     externals = {tmdb_external_id: external_value
                                  for tmdb_external_id, external_value
-                                 in externals.items()
+                                 in viewitems(externals)
                                  if external_value and tmdb_external_id in wanted_externals}
                     externals['tmdb_id'] = result['tv_results'][0]['id']
                     return externals

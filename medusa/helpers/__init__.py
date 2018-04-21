@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Various helper methods."""
+from __future__ import unicode_literals
 
 import base64
 import ctypes
@@ -22,10 +23,13 @@ import struct
 import time
 import traceback
 import uuid
-import warnings
 import xml.etree.ElementTree as ET
 import zipfile
-from itertools import cycle, izip
+from builtins import chr
+from builtins import hex
+from builtins import str
+from builtins import zip
+from itertools import cycle
 
 import adba
 
@@ -53,17 +57,16 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type
+from six import binary_type, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-
 try:
-    from urllib.parse import splittype
+    import reflink
 except ImportError:
-    from urllib2 import splittype
+    reflink = None
 
 
 def indent_xml(elem, level=0):
@@ -418,6 +421,68 @@ def move_and_symlink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
+
+
+def reflink_file(src_file, dest_file):
+    """Copy a file from source to destination with a reference link.
+
+    :param src_file: Source file
+    :type src_file: str
+    :param dest_file: Destination file
+    :type dest_file: str
+    """
+    try:
+        if reflink is None:
+            raise NotImplementedError()
+        reflink.reflink(src_file, dest_file)
+    except reflink.ReflinkImpossibleError as msg:
+        if msg.args[0] == 'EOPNOTSUPP':
+            log.warning(
+                u'Failed to create reference link of {source} at {destination}.'
+                u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                }
+            )
+            copy_file(src_file, dest_file)
+        elif msg.args[0] == 'EXDEV':
+            log.warning(
+                u'Failed to create reference link of {source} at {destination}.'
+                u' Error: Can not reflink between two devices. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                }
+            )
+            copy_file(src_file, dest_file)
+        else:
+            log.warning(
+                u'Failed to create reflink of {source} at {destination}.'
+                u' Error: {error!r}. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                    'error': msg,
+                }
+            )
+            copy_file(src_file, dest_file)
+    except NotImplementedError:
+        log.warning(
+            u'Failed to create reference link of {source} at {destination}.'
+            u' Error: Filesystem does not support reflink or reflink is not installed. Copying instead', {
+                'source': src_file,
+                'destination': dest_file,
+            }
+        )
+        copy_file(src_file, dest_file)
+    except IOError as msg:
+        log.warning(
+            u'Failed to create reflink of {source} at {destination}.'
+            u' Error: {error!r}. Copying instead', {
+                'source': src_file,
+                'destination': dest_file,
+                'error': msg,
+            }
+        )
+        copy_file(src_file, dest_file)
 
 
 def make_dirs(path):
@@ -938,7 +1003,7 @@ def check_url(url):
         conn = http_client.HTTPConnection(host)
         conn.request('HEAD', path)
         return conn.getresponse().status in good_codes
-    except StandardError:
+    except Exception:
         return None
 
 
@@ -971,18 +1036,18 @@ def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 1: Simple XOR encryption (this is not very secure, but works)
     if encryption_version == 1:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data), cycle(unique_key1)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(unique_key1)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
     # Version 2: Simple XOR encryption (this is not very secure, but works)
     elif encryption_version == 2:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data),
-                                                                   cycle(app.ENCRYPTION_SECRET)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
+                                                                  cycle(app.ENCRYPTION_SECRET)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
     else:
         return data
@@ -1024,7 +1089,8 @@ def get_show(name, try_indexers=False):
 
         # try indexers
         if not series and try_indexers:
-            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)
+            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name),
+                                                                              ui=classes.ShowListUI)
             series = Show.find_by_id(app.showList, found_indexer_id, found_series_id)
 
         # try scene exceptions
@@ -1037,7 +1103,7 @@ def get_show(name, try_indexers=False):
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
-                               series_name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
+                               series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
                 log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
                             (name=series_name, series=found_series))
@@ -1226,63 +1292,7 @@ def request_defaults(**kwargs):
     cookies = kwargs.pop(u'cookies', None)
     verify = certifi.where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
-    # request session proxies
-    if app.PROXY_SETTING:
-        log.debug(u'Using global proxy: {0}', app.PROXY_SETTING)
-        scheme, address = splittype(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
-        proxies = {
-            "http": address,
-            "https": address,
-        }
-    else:
-        proxies = None
-
-    return hooks, cookies, verify, proxies
-
-
-def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
-    """Return data retrieved from the url provider."""
-    log.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
-                'please make use of the PolicedRequest session for all of your requests.')
-    response_type = kwargs.pop(u'returns', u'response')
-    stream = kwargs.pop(u'stream', False)
-    hooks, cookies, verify, proxies = request_defaults(**kwargs)
-    method = u'POST' if post_data else u'GET'
-
-    try:
-        req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
-                               headers=headers, cookies=cookies)
-        prepped = session.prepare_request(req)
-        resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
-                            allow_redirects=True)
-
-    except requests.exceptions.RequestException as e:
-        log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
-        return None
-    except Exception as error:
-        if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-            log.warning(u'Connection reset by peer accessing url {url}.'
-                        u' Error: {msg}', {'url': url, 'msg': error})
-        else:
-            log.info(u'Unknown exception in url {url}.'
-                     u' Error: {msg}', {'url': url, 'msg': error})
-            log.debug(traceback.format_exc())
-        return None
-
-    if not response_type or response_type == u'response':
-        return resp
-    else:
-        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the'
-                      u' near future!'.format(response_type, 'response'),
-                      PendingDeprecationWarning)
-        if response_type == u'json':
-            try:
-                return resp.json()
-            except ValueError:
-                return {}
-        else:
-            return getattr(resp, response_type, None)
+    return hooks, cookies, verify
 
 
 def download_file(url, filename, session, method='GET', data=None, headers=None, **kwargs):
@@ -1297,12 +1307,11 @@ def download_file(url, filename, session, method='GET', data=None, headers=None,
     :return: True on success, False on failure
     """
     try:
-        hooks, cookies, verify, proxies = request_defaults(**kwargs)
+        hooks, cookies, verify = request_defaults(**kwargs)
 
         with session as s:
             resp = s.request(method, url, data=data, allow_redirects=True, stream=True,
-                             verify=verify, headers=headers, cookies=cookies,
-                             hooks=hooks, proxies=proxies)
+                             verify=verify, headers=headers, cookies=cookies, hooks=hooks)
 
             if not resp:
                 log.debug(
@@ -1765,7 +1774,7 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
     return text_type(
         text_type(separator).join(
             [text_type(fmt).format(key=unicodify(k), value=unicodify(v))
-             for k, v in guess.items() if k not in ignore_list]))
+             for k, v in viewitems(guess) if k not in ignore_list]))
 
 
 def get_broken_providers():

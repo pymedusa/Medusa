@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 import itertools
 import logging
 import traceback
+from builtins import object
+from builtins import str
 from time import time
 
 from medusa import (
@@ -361,7 +363,7 @@ class Cache(object):
         # if we've updated recently then skip the update
         if time() - self.updated < self.minTime * 60:
             log.debug('Last update was too soon, using old cache: {0}.'
-                      ' Updated less then {1} minutes ago',
+                      ' Updated less than {1} minutes ago',
                       self.updated, self.minTime)
             return False
         log.debug('Updating providers cache')
@@ -510,7 +512,8 @@ class Cache(object):
         # for each cache entry
         for cur_result in sql_results:
             if cur_result[b'indexer'] is None:
-                log.debug('Ignoring result: {0}, missing indexer. This is probably a result added prior to medusa version 0.2.0', cur_result[b'name'])
+                log.debug('Ignoring result: {0}, missing indexer. This is probably a result added'
+                          ' prior to medusa version 0.2.0', cur_result[b'name'])
                 continue
 
             search_result = self.provider.get_result()

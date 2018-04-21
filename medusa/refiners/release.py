@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Release refiner."""
+from __future__ import unicode_literals
 
 import logging
 import os
@@ -7,6 +8,8 @@ import os
 from guessit import guessit
 
 from medusa.logger.adapters.style import BraceAdapter
+
+from six import viewitems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -81,7 +84,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
     guess = guessit(release_path)
     attributes = MOVIE_ATTRIBUTES if guess.get('type') == 'movie' else EPISODE_ATTRIBUTES
-    for key, value in attributes.items():
+    for key, value in viewitems(attributes):
         old_value = getattr(video, key)
         new_value = guess.get(value)
 

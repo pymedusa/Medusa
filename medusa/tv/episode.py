@@ -10,6 +10,7 @@ import re
 import time
 import traceback
 import warnings
+from builtins import str
 from datetime import date, datetime
 
 import knowit
@@ -74,6 +75,8 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import Identifier, TV
 
+from six import itervalues, viewitems
+
 try:
     import xml.etree.cElementTree as ETree
 except ImportError:
@@ -98,7 +101,7 @@ class EpisodeNumber(Identifier):
         if match:
             try:
                 result = {k: int(v) if k != 'air_date' else datetime.strptime(v, cls.date_fmt)
-                          for k, v in match.groupdict().items() if v is not None}
+                          for k, v in viewitems(match.groupdict()) if v is not None}
                 if result:
                     if 'air_date' in result:
                         return AirByDateNumber(**result)
@@ -124,7 +127,7 @@ class RelativeNumber(Identifier):
         self.season = season
         self.episode = episode
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method."""
         return self.season is not None and self.episode is not None
 
@@ -157,7 +160,7 @@ class AbsoluteNumber(EpisodeNumber):
         """
         self.episode = abs_episode
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method."""
         return self.episode is not None
 
@@ -189,7 +192,7 @@ class AirByDateNumber(EpisodeNumber):
         """
         self.air_date = air_date
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Magic method."""
         return self.air_date is not None
 
@@ -514,7 +517,7 @@ class Episode(TV):
         if not self.is_location_valid():
             return False
 
-        for metadata_provider in app.metadata_provider_dict.values():
+        for metadata_provider in itervalues(app.metadata_provider_dict):
             if metadata_provider.episode_metadata:
                 new_result = metadata_provider.has_episode_metadata(self)
             else:
@@ -1092,7 +1095,7 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
+            data['wantedQualities'] = [ep.identifier for ep in self.related_episodes]
 
         return data
 
@@ -1103,7 +1106,7 @@ class Episode(TV):
                         {'id': self.series.series_id})
             return
 
-        for metadata_provider in app.metadata_provider_dict.values():
+        for metadata_provider in itervalues(app.metadata_provider_dict):
             self.__create_nfo(metadata_provider)
             self.__create_thumbnail(metadata_provider)
 
@@ -1534,7 +1537,7 @@ class Episode(TV):
         result_name = pattern
 
         # do the replacements
-        for cur_replacement in sorted(replace_map.keys(), reverse=True):
+        for cur_replacement in sorted(list(replace_map), reverse=True):
             result_name = result_name.replace(cur_replacement, sanitize_filename(replace_map[cur_replacement]))
             result_name = result_name.replace(cur_replacement.lower(),
                                               sanitize_filename(replace_map[cur_replacement].lower()))

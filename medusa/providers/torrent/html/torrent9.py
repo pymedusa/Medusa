@@ -102,21 +102,20 @@ class Torrent9Provider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            table_header = html.find('thead')
+            table_body = html.find('tbody')
+
             # Continue only if at least one release is found
-            if not table_header:
+            if not table_body:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # Nom du torrent, Taille, Seed, Leech
-            labels = [label.get_text() for label in table_header('th')]
-
-            table_body = html.find('tbody')
             for row in table_body('tr'):
                 cells = row('td')
+                if len(cells) < 4:
+                    continue
 
                 try:
-                    info_cell = cells[labels.index('Nom du torrent')].a
+                    info_cell = cells[0].a
                     title = info_cell.get_text()
                     download_url = info_cell.get('href')
                     if not all([title, download_url]):
@@ -127,8 +126,8 @@ class Torrent9Provider(TorrentProvider):
                     download_name = download_url.rsplit('/', 1)[1]
                     download_url = self.urls['download'].format(name=download_name)
 
-                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leech')].get_text(strip=True))
+                    seeders = try_int(cells[2].get_text(strip=True))
+                    leechers = try_int(cells[3].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -138,7 +137,7 @@ class Torrent9Provider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[labels.index('Taille')].get_text()
+                    torrent_size = cells[1].get_text()
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {

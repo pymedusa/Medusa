@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import logging
 import os.path
+from builtins import object
 
 from medusa import app
 
@@ -40,7 +41,7 @@ class PostProcessor(object):
         :param force: Forces postprocessing run
         :type force: bool
         """
-        import process_tv
+        from medusa import process_tv
         self.amActive = True
         try:
             if not os.path.isdir(app.TV_DOWNLOAD_DIR):

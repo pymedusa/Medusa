@@ -16,12 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Post processor module."""
+from __future__ import unicode_literals
 
 import fnmatch
 import os
 import re
 import stat
 import subprocess
+from builtins import object
+from builtins import str
 from collections import OrderedDict
 
 import adba
@@ -59,7 +62,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type
+from six import text_type, viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags
@@ -201,7 +204,7 @@ class PostProcessor(object):
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
-        processed_names += filter(None, (self._rar_basename(file_path, files),))
+        processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
 
         associated_files = set()
         for found_file in files:
@@ -601,8 +604,8 @@ class PostProcessor(object):
                 [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
-                season = int(sql_result[0]['season'])
-                episodes = [int(sql_result[0]['episode'])]
+                season = int(sql_result[0][b'season'])
+                episodes = [int(sql_result[0][b'episode'])]
             else:
                 # Found no result, trying with season 0
                 sql_result = main_db_con.select(
@@ -614,8 +617,8 @@ class PostProcessor(object):
                     [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
-                    season = int(sql_result[0]['season'])
-                    episodes = [int(sql_result[0]['episode'])]
+                    season = int(sql_result[0][b'season'])
+                    episodes = [int(sql_result[0][b'episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
                              (episodes[0], series_obj.indexerid), logger.DEBUG)
@@ -759,7 +762,7 @@ class PostProcessor(object):
         :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
-        for resource_name, cur_name in self.item_resources.items():
+        for resource_name, cur_name in viewitems(self.item_resources):
 
             # Skip names that are falsey
             if not cur_name:
@@ -818,15 +821,15 @@ class PostProcessor(object):
                     'ORDER BY date DESC',
                     [series_obj.indexer, series_obj.series_id, season, episode])
 
-                if history_result and history_result[0]['quality'] == quality:
+                if history_result and history_result[0][b'quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
                     # Check if the last snatch was a manual snatch
-                    if history_result[0]['manually_searched']:
+                    if history_result[0][b'manually_searched']:
                         self.manually_searched = True
                     # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0]['info_hash'] or None
+                    self.info_hash = history_result[0][b'info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -841,7 +844,7 @@ class PostProcessor(object):
                         [series_obj.indexer, series_obj.series_id, season, episode, quality])
 
                     if download_result:
-                        download_name = os.path.basename(download_result[0]['resource'])
+                        download_name = os.path.basename(download_result[0][b'resource'])
                         # If the file name we are processing differs from the file
                         # that was previously processed, we want this file
                         if self.file_name != download_name:

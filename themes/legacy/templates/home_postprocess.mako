@@ -1,5 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import pkgutil
     from medusa import app
 %>
 <%block name="content">
@@ -32,10 +33,17 @@
                 </td>
                 <td>
                     <select name="process_method" id="process_method" class="form-control form-control-inline input-sm" >
-                    <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                    % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
-                        <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
-                    % endfor
+                    % if pkgutil.find_loader('reflink') is not None:
+                        <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link"} %>
+                        % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
+                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                        % endfor
+                    % else:
+                        <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
+                        % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                        % endfor
+                    % endif
                     </select>
                 </td>
             </tr>

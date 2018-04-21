@@ -1,15 +1,16 @@
 # coding=utf-8
 
 """Contains included user interface for TVmaze show selection."""
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import warnings
+from builtins import input
+from builtins import object
+from builtins import str
 
-from indexer_exceptions import IndexerUserAbort
-
-__author__ = 'p0psicles'
-__version__ = '1.0'
-
+from medusa.indexers.indexer_exceptions import IndexerUserAbort
 
 log = logging.getLogger(__name__)
 log.logger.addHandler(logging.NullHandler())
@@ -42,7 +43,7 @@ class ConsoleUI(BaseUI):
         else:
             toshow = all_series
 
-        print 'Show Search Results:'
+        print('Show Search Results:')
         for i, cshow in enumerate(toshow):
             i_show = i + 1  # Start at more human readable number 1 (not 0)
             log.debug('Showing all_series[{0}], series {1})', i_show, all_series[i]['seriesname'])
@@ -52,14 +53,14 @@ class ConsoleUI(BaseUI):
                 extra = ''
 
             # TODO: Change into something more generic.
-            print '{0} -> {1} [{2}] # http://thetvdb.com/?tab=series&id={3}&lid={4}{5}'.format(
+            print('{0} -> {1} [{2}] # http://thetvdb.com/?tab=series&id={3}&lid={4}{5}'.format(
                 i_show,
                 cshow['seriesname'].encode('UTF-8', 'ignore'),
                 cshow['language'].encode('UTF-8', 'ignore'),
                 str(cshow['id']),
                 cshow['lid'],
                 extra
-            )
+            ))
 
     def select_series(self, all_series):
         """Select and return shows, based on users input."""
@@ -67,17 +68,17 @@ class ConsoleUI(BaseUI):
 
         if len(all_series) == 1:
             # Single result, return it!
-            print 'Automatically selecting only result'
+            print('Automatically selecting only result')
             return all_series[0]
 
         if self.config['select_first'] is True:
-            print 'Automatically returning first search result'
+            print('Automatically returning first search result')
             return all_series[0]
 
         while True:  # return breaks this loop
             try:
-                print "Enter choice (first number, return for default, 'all', ? for help):"
-                ans = raw_input()
+                print("Enter choice (first number, return for default, 'all', ? for help):")
+                ans = eval(input())
             except KeyboardInterrupt:
                 raise IndexerUserAbort('User aborted (^c keyboard interupt)')
             except EOFError:
@@ -95,13 +96,13 @@ class ConsoleUI(BaseUI):
                     log.debug('Got quit command (q)')
                     raise IndexerUserAbort("User aborted ('q' quit command)")
                 elif ans == '?':
-                    print '## Help'
-                    print '# Enter the number that corresponds to the correct show.'
-                    print '# a - display all results'
-                    print '# all - display all results'
-                    print '# ? - this help'
-                    print '# q - abort tvnamer'
-                    print '# Press return with no input to select first result'
+                    print('## Help')
+                    print('# Enter the number that corresponds to the correct show.')
+                    print('# a - display all results')
+                    print('# all - display all results')
+                    print('# ? - this help')
+                    print('# q - abort tvnamer')
+                    print('# Press return with no input to select first result')
                 elif ans.lower() in ['a', 'all']:
                     self._display_series(all_series, limit=None)
                 else:
@@ -112,5 +113,5 @@ class ConsoleUI(BaseUI):
                     return all_series[selected_id]
                 except IndexError:
                     log.debug('Invalid show number entered!')
-                    print 'Invalid number (%s) selected!'
+                    print('Invalid number (%s) selected!')
                     self._display_series(all_series)

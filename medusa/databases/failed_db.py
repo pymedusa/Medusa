@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 
 from medusa import db
@@ -20,7 +22,9 @@ class InitialSchema(db.SchemaUpgrade):
     def execute(self):
         queries = [
             ('CREATE TABLE failed (release TEXT, size NUMERIC, provider TEXT);',),
-            ('CREATE TABLE history (date NUMERIC, size NUMERIC, release TEXT, provider TEXT, old_status NUMERIC DEFAULT 0, showid NUMERIC DEFAULT -1, season NUMERIC DEFAULT -1, episode NUMERIC DEFAULT -1);',),
+            ('CREATE TABLE history (date NUMERIC, size NUMERIC, release TEXT, provider TEXT,'
+             ' old_status NUMERIC DEFAULT 0, showid NUMERIC DEFAULT -1, season NUMERIC DEFAULT -1,'
+             ' episode NUMERIC DEFAULT -1);',),
             ('CREATE TABLE db_version (db_version INTEGER);',),
             ('INSERT INTO db_version (db_version) VALUES (1);',),
         ]
@@ -86,8 +90,8 @@ class AddIndexerIds(HistoryStatus):
         series_dict = {}
         # check for double
         for series in all_series:
-            if series['indexer_id'] not in series_dict:
-                series_dict[series['indexer_id']] = series['indexer']
+            if series[b'indexer_id'] not in series_dict:
+                series_dict[series[b'indexer_id']] = series[b'indexer']
 
         query = 'SELECT showid FROM history WHERE indexer_id is null'
         results = self.connection.select(query)

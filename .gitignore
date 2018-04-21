@@ -26,6 +26,7 @@ medusa.egg-info
 /tests/cache.db*
 /tests/failed.db
 /tests/data/
+.pytest_cache
 
 #  Compiled source   #
 ######################

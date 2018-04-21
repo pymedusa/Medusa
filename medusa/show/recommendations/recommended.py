@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
+from builtins import object
 
 from imdbpie import imdbpie
 

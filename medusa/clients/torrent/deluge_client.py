@@ -1,12 +1,12 @@
 # coding=utf-8
 
 """Deluge Web Client."""
-
 from __future__ import unicode_literals
 
 import json
 import logging
 from base64 import b64encode
+from builtins import str
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -21,6 +21,8 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
+from six import viewitems
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -29,7 +31,7 @@ def read_torrent_status(torrent_data):
     """Read torrent status from Deluge and Deluged client."""
     found_torrents = False
     info_hash_to_remove = []
-    for torrent in torrent_data.items():
+    for torrent in viewitems(torrent_data):
         info_hash = str(torrent[0])
         details = torrent[1]
         if not is_info_hash_in_history(info_hash):
@@ -69,8 +71,8 @@ def read_torrent_status(torrent_data):
                 ' seed idle limit'
                 ' Removing it: [{name}]',
                 ratio=details['ratio'],
-                ratio_limit=torrent['stop_ratio'],
-                name=torrent['name']
+                ratio_limit=details['stop_ratio'],
+                name=details['name']
             )
             info_hash_to_remove.append(info_hash)
         elif status == 'seeding':
@@ -79,9 +81,9 @@ def read_torrent_status(torrent_data):
                     'Torrent did not reach minimum'
                     ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
                     ' Keeping it: [{name}]',
-                    ratio=torrent['ratio'],
-                    ratio_limit=torrent['stop_ratio'],
-                    name=torrent['name']
+                    ratio=details['ratio'],
+                    ratio_limit=details['stop_ratio'],
+                    name=details['name']
                 )
             else:
                 log.info(
@@ -89,9 +91,9 @@ def read_torrent_status(torrent_data):
                     ' was force started again. Current'
                     ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
                     ' Keeping it: [{name}]',
-                    ratio=torrent['uploadRatio'],
-                    ratio_limit=torrent['seedRatioLimit'],
-                    name=torrent['name']
+                    ratio=details['ratio'],
+                    ratio_limit=details['stop_ratio'],
+                    name=details['name']
                 )
         else:
             log.info('Torrent is {status}. Keeping it: [{name}]', status=status, name=details['name'])

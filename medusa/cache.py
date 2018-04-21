@@ -1,5 +1,6 @@
 # coding=utf-8
 """Cache (dogpile) used by application."""
+from __future__ import unicode_literals
 
 import os
 from datetime import timedelta

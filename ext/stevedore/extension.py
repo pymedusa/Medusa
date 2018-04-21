@@ -153,7 +153,16 @@ class ExtensionManager(object):
 
     def _init_plugins(self, extensions):
         self.extensions = extensions
-        self._extensions_by_name = None
+        self._extensions_by_name_cache = None
+
+    @property
+    def _extensions_by_name(self):
+        if self._extensions_by_name_cache is None:
+            d = {}
+            for e in self.extensions:
+                d[e.name] = e
+            self._extensions_by_name_cache = d
+        return self._extensions_by_name_cache
 
     ENTRY_POINT_CACHE = {}
 
@@ -291,6 +300,14 @@ class ExtensionManager(object):
                 LOG.error('error calling %r: %s', e.name, err)
                 LOG.exception(err)
 
+    def items(self):
+        """
+        Return an iterator of tuples of the form (name, extension).
+
+        This is analogous to the Mapping.items() method.
+        """
+        return self._extensions_by_name.items()
+
     def __iter__(self):
         """Produce iterator for the manager.
 
@@ -306,11 +323,6 @@ class ExtensionManager(object):
         produces the :class:`Extension` instance with the
         specified name.
         """
-        if self._extensions_by_name is None:
-            d = {}
-            for e in self.extensions:
-                d[e.name] = e
-            self._extensions_by_name = d
         return self._extensions_by_name[name]
 
     def __contains__(self, name):

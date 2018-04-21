@@ -10,6 +10,9 @@ import operator
 import re
 import threading
 import time
+from builtins import map
+from builtins import object
+from builtins import str
 
 from medusa import app, db, helpers
 from medusa.common import Quality, cpu_presets
@@ -19,6 +22,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.search.core import pick_best_result, snatch_episode
 from medusa.show.history import History
+
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -133,7 +138,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         threading.currentThread().name = original_thread_name
 
         # take the list of unique propers and get it sorted by
-        sorted_propers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
+        sorted_propers = sorted(list(itervalues(propers)), key=operator.attrgetter('date'), reverse=True)
         final_propers = []
 
         # Keep only items from last PROPER_SEARCH_DAYS setting in processed propers:
@@ -307,7 +312,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # then add it to our list of propers
             if best_result.indexerid != -1 and (
                 best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
-            ) not in map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers):
+            ) not in list(map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers)):
                 log.info('Found a desired proper: {name}', {'name': best_result.name})
                 final_propers.append(best_result)
 

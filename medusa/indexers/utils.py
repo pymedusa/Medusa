@@ -1,10 +1,12 @@
 # coding=utf-8
 """Generic utils for indexers."""
+from __future__ import unicode_literals
 
 import re
 
 from medusa.indexers.indexer_config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
 
+from six import viewitems
 
 # For example: {1: 'tvdb_id', 3: 'tvmaze_id', 4: 'tmdb_id'}
 mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
@@ -12,7 +14,7 @@ mappings.update(EXTERNAL_MAPPINGS)
 
 # For example: {'tvdb_id': 1, 'tvmaze_id': 3, 'tmdb_id': 4}
 reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
-reverse_mappings.update({v: k for k, v in EXTERNAL_MAPPINGS.items()})
+reverse_mappings.update({v: k for k, v in viewitems(EXTERNAL_MAPPINGS)})
 
 
 def indexer_name_to_id(indexer_name):
@@ -21,7 +23,7 @@ def indexer_name_to_id(indexer_name):
     :param indexer_name: Identifier of the indexer. Example: will return 1 for 'tvdb'.
     :return: The indexer id.
     """
-    return {v['identifier']: k for k, v in indexerConfig.items()}.get(indexer_name)
+    return {v['identifier']: k for k, v in viewitems(indexerConfig)}.get(indexer_name)
 
 
 def indexer_id_to_name(indexer):

@@ -25,7 +25,7 @@ from medusa.show.show import Show
 from requests import RequestException
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
-from six import iteritems
+from six import iteritems, itervalues
 from tornroutes import route
 from traktor import TraktApi
 
@@ -37,7 +37,7 @@ class HomeAddShows(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='addShows.mako')
-        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller='addShows', action='index')
+        return t.render(topmenu='home', controller='addShows', action='index')
 
     @staticmethod
     def getIndexerLanguages():
@@ -166,7 +166,7 @@ class HomeAddShows(Home):
                 indexer_id = show_name = indexer = None
                 # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
                 # is reset. This will prevent errors, when using multiple indexers and caching.
-                for cur_provider in app.metadata_provider_dict.values():
+                for cur_provider in itervalues(app.metadata_provider_dict):
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
@@ -216,8 +216,7 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            title='New Show', header='New Show', topmenu='home',
-            controller='addShows', action='newShow'
+            topmenu='home', controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -309,7 +308,7 @@ class HomeAddShows(Home):
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
-        except (RequestException, StandardError) as e:
+        except (RequestException, Exception) as e:
             recommended_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",
@@ -363,8 +362,7 @@ class HomeAddShows(Home):
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        title='Existing Show', header='Existing Show', topmenu='home',
-                        controller='addShows', action='addExistingShow')
+                        topmenu='home', controller='addShows', action='addExistingShow')
 
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,

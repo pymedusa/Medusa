@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
 from medusa.server.web.config import (
     Config,
     ConfigAnime,
@@ -20,6 +21,7 @@ from medusa.server.web.core import (
     LoginHandler,
     LogoutHandler,
     PageTemplate,
+    Schedule,
     TokenHandler,
     UI,
     WebFileBrowser,

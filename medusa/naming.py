@@ -16,8 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
 import os
+from builtins import object
+from builtins import str
 
 from medusa import app, common, logger, tv
 from medusa.common import DOWNLOADED, Quality

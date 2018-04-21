@@ -1,24 +1,41 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.helpers import anon_url
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Anime'
+        },
+        data() {
+            return {
+                header: 'Anime'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 <div id="content960">
-    <h1 class="header">${header}</h1>
+    <h1 class="header">{{header}}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/anime/saveAnime" method="post">
                 <div id="config-components">
                     <ul>
-                        <li><a href="${full_url}#animedb-settings">AnimeDB Settings</a></li>
-                        <li><a href="${full_url}#anime-look-feel">Look &amp; Feel</a></li>
+                        <li><app-link href="#animedb-settings">AnimeDB Settings</app-link></li>
+                        <li><app-link href="#anime-look-feel">Look &amp; Feel</app-link></li>
                     </ul>
                     <div id="animedb-settings" class="tab-pane active component-group">
                         <div class="component-group-desc">
                             <span class="icon-notifiers-anime" title="AniDB"></span>
                             <h3>
-                                <a href="${anon_url('http://anidb.info')}" onclick="window.open(this.href, '_blank'); return false;">AniDB</a>
+                                <app-link href="http://anidb.info">AniDB</app-link>
                             </h3>
                             <p>AniDB is non-profit database of anime information that is freely open to the public</p>
                         </div><!-- .component-group-desc //-->

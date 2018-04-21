@@ -22,8 +22,10 @@
 from __future__ import unicode_literals
 
 import logging
+from builtins import object
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
+
 from medusa import app, db, helpers
 
 

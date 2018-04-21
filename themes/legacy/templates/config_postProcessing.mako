@@ -2,6 +2,7 @@
 <%!
     import os.path
     import datetime
+    import pkgutil
     from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
@@ -62,10 +63,17 @@
                                     <span class="component-title">Processing Method:</span>
                                     <span class="component-desc">
                                         <select name="process_method" id="process_method" class="form-control input-sm">
-                                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
-                                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
-                                            % endfor
+                                            % if pkgutil.find_loader('reflink') is not None:
+                                                <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link"} %>
+                                                % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
+                                                    <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                                                % endfor
+                                            % else:
+                                                <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
+                                                % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                                                    <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                                                % endfor
+                                            % endif
                                         </select>
                                     </span>
                                 </label>
@@ -76,6 +84,7 @@
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc"><b>NOTE:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</span>
+                                    <span class="component-desc">To use reference linking, the <a href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</a> needs to be installed.</span>
                                 </label>
                             </div>
                             <div class="field-pair">

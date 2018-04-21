@@ -9,6 +9,7 @@ import logging
 import os
 import re
 from base64 import b64encode
+from builtins import str
 from datetime import datetime, timedelta
 
 from medusa import app

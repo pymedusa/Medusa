@@ -27,6 +27,8 @@ import os
 import pkgutil
 import re
 import sys
+from builtins import object
+from builtins import range
 from collections import OrderedDict
 from logging import (
     CRITICAL,
@@ -45,7 +47,7 @@ from medusa.init.logconfig import standard_logger
 
 from requests.compat import quote
 
-from six import itervalues, string_types, text_type
+from six import itervalues, string_types, text_type, viewitems
 
 import subliminal
 
@@ -292,9 +294,10 @@ class LogLine(object):
     # log regular expression:
     #   2016-08-06 15:58:34 ERROR    DAILYSEARCHER :: [d4ea5af] Exception generated in thread DAILYSEARCHER
     #   2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [d4ea5af] Performing episode search for Show Name
+    #   2018-04-14 23:32:37 INFO     Thread_5 :: [6d54662] Broken providers found: [u'']
     log_re = re.compile(r'^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})\s+'
                         r'(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(?:,(?P<microsecond>\d{3}))?\s+'
-                        r'(?P<level_name>[A-Z]+)\s+(?P<thread_name>.+?)(?:-(?P<thread_id>\d+))?\s+'
+                        r'(?P<level_name>[A-Z]+)\s+(?P<thread_name>.+?)(?:[-_](?P<thread_id>\d+))?\s+'
                         r'(?:::\s+\[(?P<extra>.+?)\]\s+)?::\s+\[(?P<curhash>[a-f0-9]{7})?\]\s+(?P<message>.*)$')
 
     tracebackline_re = re.compile(r'(?P<before>\s*File ")(?P<file>.+)(?P<middle>", line )(?P<line>\d+)(?P<after>, in .+)')
@@ -653,7 +656,7 @@ class Logger(object):
             'tornado': app.WEB_LOG
         }
 
-        for modname, active in modules_config.items():
+        for modname, active in viewitems(modules_config):
             if not active:
                 mapping.update({modname: CRITICAL})
 

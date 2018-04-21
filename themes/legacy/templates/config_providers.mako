@@ -4,6 +4,7 @@
     from medusa.helpers import anon_url
     from medusa.providers import sorted_provider_list
     from medusa.providers.generic_provider import GenericProvider
+    from medusa.providers.torrent.torznab.torznab import TorznabProvider
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/config-providers.js"></script>
@@ -11,14 +12,16 @@
 $(document).ready(function(){
     // @TODO: This needs to be moved to an API function
     % if app.USE_NZBS:
-        var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
         % for cur_newznab_provider in app.newznabProviderList:
-        $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)}, show_nzb_providers);
+            $(this).addNewznabProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)});
         % endfor
     % endif
     % if app.USE_TORRENTS:
         % for cur_torrent_rss_provider in app.torrentRssProviderList:
-        $(this).addTorrentRssProvider('${cur_torrent_rss_provider.get_id()}', '${cur_torrent_rss_provider.name}', '${cur_torrent_rss_provider.url}', '${cur_torrent_rss_provider.cookies}', '${cur_torrent_rss_provider.title_tag}');
+            $(this).addTorrentRssProvider('${cur_torrent_rss_provider.get_id()}', '${cur_torrent_rss_provider.name}', '${cur_torrent_rss_provider.url}', '${cur_torrent_rss_provider.cookies}', '${cur_torrent_rss_provider.title_tag}');
+        % endfor
+        % for torznab_provider in app.torznab_providers_list:
+            $(this).addTorznabProvider('${torznab_provider.get_id()}', '${torznab_provider.name}', '${torznab_provider.url}', '${torznab_provider.api_key}', '${",".join(torznab_provider.cat_ids)}', '${",".join(torznab_provider.cap_tv_search)}');
         % endfor
     % endif
 });
@@ -42,7 +45,8 @@ $('#config-components').tabs();
                     <li><a href="${full_url}#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if app.USE_TORRENTS:
-                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><a href="${full_url}#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><a href="${full_url}#custom-torznab">Configure Jackett Providers</a></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
@@ -109,7 +113,7 @@ $('#config-components').tabs();
                                         for cur_provider in sorted_provider_list():
                                             if cur_provider.provider_type == GenericProvider.NZB and (not app.USE_NZBS or not cur_provider.is_enabled()):
                                                 continue
-                                            elif cur_provider.provider_type == GenericProvider.TORRENT and ( not app.USE_TORRENTS or not cur_provider.is_enabled()):
+                                            elif cur_provider.provider_type == GenericProvider.TORRENT and (not app.USE_TORRENTS or not cur_provider.is_enabled()):
                                                 continue
                                             provider_config_list.append(cur_provider)
                                     %>
@@ -260,7 +264,7 @@ $('#config-components').tabs();
                             <label for="${cur_nzb_provider.get_id()}_api_key">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${cur_nzb_provider.get_id()}_api_key" value="${cur_nzb_provider.api_key}" class="form-control input-sm input350"/>
+                                    <input type="password" name="${cur_nzb_provider.get_id()}_api_key" value="${cur_nzb_provider.api_key}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -379,12 +383,12 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-                        % if hasattr(cur_torrent_provider, 'api_key'):
+                        % if hasattr(cur_torrent_provider, 'api_key') and not isinstance(cur_torrent_provider, TorznabProvider):
                         <div class="field-pair">
                             <label for="${cur_torrent_provider.get_id()}_api_key">
                                 <span class="component-title">Api key:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${cur_torrent_provider.get_id()}_api_key" id="${cur_torrent_provider.get_id()}_api_key" value="${cur_torrent_provider.api_key}" class="form-control input-sm input350"/>
+                                    <input type="password" name="${cur_torrent_provider.get_id()}_api_key" id="${cur_torrent_provider.get_id()}_api_key" value="${cur_torrent_provider.api_key}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -475,7 +479,7 @@ $('#config-components').tabs();
                             <label for="${cur_torrent_provider.get_id()}_ratio">
                                 <span class="component-title" id="${cur_torrent_provider.get_id()}_ratio_desc">Seed ratio:</span>
                                 <span class="component-desc">
-                                    <input type="number" min="-1" step="0.1" name="${cur_torrent_provider.get_id()}_ratio" id="${cur_torrent_provider.get_id()}_ratio" value="${'' if cur_torrent_provider.ratio is None else cur_torrent_provider.ratio}" class="form-control input-sm input75" />
+                                    <input type="number" min="-1" step="0.1" name="${cur_torrent_provider.get_id()}_ratio" id="${cur_torrent_provider.get_id()}_ratio" value="${cur_torrent_provider.ratio}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>
@@ -703,7 +707,7 @@ $('#config-components').tabs();
                 % if app.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
                     <div class="component-group-desc">
-                        <h3>Configure Custom<br>Newznab Providers</h3>
+                        <h3>Configure Custom Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
                     <fieldset class="component-group-list">
@@ -718,121 +722,190 @@ $('#config-components').tabs();
                                 </span>
                             </label>
                         </div>
-                    <div class="newznabProviderDiv" id="addNewznab">
-                        <div class="field-pair">
-                            <label for="newznab_name">
-                                <span class="component-title">Provider name:</span>
-                                <input type="text" id="newznab_name" class="form-control input-sm input200"/>
-                            </label>
+                        <div class="newznabProviderDiv" id="addNewznab">
+                            <div class="field-pair">
+                                <label for="newznab_name">
+                                    <span class="component-title">Provider name:</span>
+                                    <input type="text" id="newznab_name" class="form-control input-sm input200"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="newznab_url">
+                                    <span class="component-title">Site URL:</span>
+                                    <input type="text" id="newznab_url" class="form-control input-sm input350"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="newznab_api_key">
+                                    <span class="component-title">API key:</span>
+                                    <input type="password" id="newznab_api_key" class="form-control input-sm input350"/>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">Type <b>0</b>, if not required.</span>
+                                </label>
+                            </div>
+                            <div class="field-pair" id="newznabcapdiv" style="display: none;">
+                                <label>
+                                    <span class="component-title">Newznab search categories:</span>
+                                    <select id="newznab_cap" multiple="multiple" style="min-width:10em;" ></select>
+                                    <select id="newznab_cat" multiple="multiple" style="min-width:10em;" ></select>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">Select your Newznab categories on the left, and click the "select categories" button to use them for searching. <b>Don't forget to to save the form!</b></span>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">
+                                        <input class="btn" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="newznab_cat_select" id="newznab_cat_select" value="Select Categories" />
+                                        <span class="updating_categories"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="newznab_add_div">
+                                <input class="btn" type="button" class="newznab_save" id="newznab_add" value="Add" />
+                            </div>
+                            <div id="newznab_update_div" style="display: none;">
+                                <input class="btn btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="newznab_url">
-                                <span class="component-title">Site URL:</span>
-                                <input type="text" id="newznab_url" class="form-control input-sm input350"/>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="newznab_key">
-                                <span class="component-title">API key:</span>
-                                <input type="password" id="newznab_api_key" class="form-control input-sm input350"/>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">(if not required, type 0)</span>
-                            </label>
-                        </div>
-                        <div class="field-pair" id="newznabcapdiv">
-                            <label>
-                                <span class="component-title">Newznab search categories:</span>
-                                <select id="newznab_cap" multiple="multiple" style="min-width:10em;" ></select>
-                                <select id="newznab_cat" multiple="multiple" style="min-width:10em;" ></select>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">(select your Newznab categories on the left, and click the "update categories" button to use them for searching.) <b>don't forget to to save the form!</b></span>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc"><input class="btn" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
-                                    <span class="updating_categories"></span>
-                                </span>
-                            </label>
-                        </div>
-                        <div id="newznab_add_div">
-                            <input class="btn" type="button" class="newznab_save" id="newznab_add" value="Add" />
-                        </div>
-                        <div id="newznab_update_div" style="display: none;">
-                            <input class="btn btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
-                        </div>
-                    </div>
                     </fieldset>
                 </div><!-- /component-group3 //-->
                 % endif
                 % if app.USE_TORRENTS:
                 <div id="custom-torrent" class="component-group">
-                <div class="component-group-desc">
-                    <h3>Configure Custom Torrent Providers</h3>
-                    <p>Add and setup or remove custom RSS providers.</p>
-                </div>
-                <fieldset class="component-group-list">
-                    <div class="field-pair">
-                        <label for="torrentrss_string">
-                            <span class="component-title">Select provider:</span>
-                            <span class="component-desc">
-                            <input type="hidden" name="torrentrss_string" id="torrentrss_string" />
-                                <select id="editATorrentRssProvider" class="form-control input-sm">
-                                    <option value="addTorrentRss">-- add new provider --</option>
-                                </select>
-                            </span>
-                        </label>
-                        <label>
-                            <span class="component-desc">Note: Jackett must be configured as custom Newznab providers: <a target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa')}"><font color="blue">Wiki</font></a></span>
-                        </label>
+                    <div class="component-group-desc">
+                        <h3>Configure Custom Torrent Providers</h3>
+                        <p>Add and setup or remove custom RSS providers.</p>
                     </div>
-                    <div class="torrentRssProviderDiv" id="addTorrentRss">
+                    <fieldset class="component-group-list">
                         <div class="field-pair">
-                            <label for="torrentrss_name">
-                                <span class="component-title">Provider name:</span>
-                                <input type="text" id="torrentrss_name" class="form-control input-sm input200"/>
+                            <label for="torrentrss_string">
+                                <span class="component-title">Select provider:</span>
+                                <span class="component-desc">
+                                <input type="hidden" name="torrentrss_string" id="torrentrss_string" />
+                                    <select id="editATorrentRssProvider" class="form-control input-sm">
+                                        <option value="addTorrentRss">-- add new provider --</option>
+                                    </select>
+                                </span>
                             </label>
                         </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_url">
-                                <span class="component-title">RSS URL:</span>
-                                <input type="text" id="torrentrss_url" class="form-control input-sm input350"/>
-                            </label>
+                        <div class="torrentRssProviderDiv" id="addTorrentRss">
+                            <div class="field-pair">
+                                <label for="torrentrss_name">
+                                    <span class="component-title">Provider name:</span>
+                                    <input type="text" id="torrentrss_name" class="form-control input-sm input200"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_url">
+                                    <span class="component-title">RSS URL:</span>
+                                    <input type="text" id="torrentrss_url" class="form-control input-sm input350"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_cookies">
+                                    <span class="component-title">Cookies (optional):</span>
+                                    <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" />
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_title_tag">
+                                    <span class="component-title">Search element:</span>
+                                    <input type="text" id="torrentrss_title_tag" class="form-control input-sm input200" value="title"/>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">eg: title</span>
+                                </label>
+                            </div>
+                            <div id="torrentrss_add_div">
+                                <input type="button" class="btn torrentrss_save" id="torrentrss_add" value="Add" />
+                            </div>
+                            <div id="torrentrss_update_div" style="display: none;">
+                                <input type="button" class="btn btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_cookies">
-                                <span class="component-title">Cookies (optional):</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" />
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_title_tag">
-                                <span class="component-title">Search element:</span>
-                                <input type="text" id="torrentrss_title_tag" class="form-control input-sm input200" value="title"/>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg: title</span>
-                            </label>
-                        </div>
-                        <div id="torrentrss_add_div">
-                            <input type="button" class="btn torrentrss_save" id="torrentrss_add" value="Add" />
-                        </div>
-                        <div id="torrentrss_update_div" style="display: none;">
-                            <input type="button" class="btn btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
-                        </div>
+                    </fieldset>
+                </div><!-- /component-group4 //-->
+                <div id="custom-torznab" class="component-group">
+                    <div class="component-group-desc">
+                        <h3>Configure Jackett Providers</h3>
+                        <p>Add and setup or remove Jackett providers.</p>
                     </div>
-                </fieldset>
-            </div><!-- /component-group4 //-->
-            % endif
-            <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
+                    <fieldset class="component-group-list">
+                        <div class="field-pair">
+                            <label for="torznab_string">
+                                <span class="component-title">Select provider:</span>
+                                <span class="component-desc">
+                                    <input type="hidden" name="torznab_string" id="torznab_string" />
+                                    <select id="editATorznabProvider" class="form-control input-sm">
+                                        <option value="addTorznab">-- add new provider --</option>
+                                    </select>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="torznabProviderDiv" id="addTorznab">
+                            <div class="field-pair">
+                                <label for="torznab_name">
+                                    <span class="component-title">Provider name:</span>
+                                    <input type="text" id="torznab_name" class="form-control input-sm input200"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torznab_url">
+                                    <span class="component-title">Site URL:</span>
+                                    <input type="text" id="torznab_url" class="form-control input-sm input350"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torznab_api_key">
+                                    <span class="component-title">API key:</span>
+                                    <input type="password" id="torznab_api_key" class="form-control input-sm input350"/>
+                                </label>
+                            </div>
+                            <div class="field-pair" id="torznabcapsdiv" style="display: none;">
+                                <label for="torznab_caps">
+                                    <span class="component-title">Supported params:</span>
+                                    <input type="text" id="torznab_caps" class="form-control input-sm input350" disabled/>
+                                </label>
+                            </div>
+                            <div class="field-pair" id="torznabcapdiv" style="display: none;">
+                                <label>
+                                    <span class="component-title">Torznab search categories:</span>
+                                    <select id="torznab_cap" multiple="multiple" style="min-width:10em;" ></select>
+                                    <select id="torznab_cat" multiple="multiple" style="min-width:10em;" ></select>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">Select your Torznab categories on the left, and click the "select categories" button to use them for searching. <b>Don't forget to to save the form!</b></span>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">
+                                        <input class="btn" type="button" class="torznab_cat_update" id="torznab_cat_update" value="Update Categories" />
+                                        <input class="btn" type="button" class="torznab_cat_select" id="torznab_cat_select" value="Select Categories" />
+                                        <span class="updating_categories"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="torznab_add_div">
+                                <input class="btn" type="button" class="torznab_save" id="torznab_add" value="Add" />
+                            </div>
+                            <div id="torznab_update_div" style="display: none;">
+                                <input class="btn btn-danger torznab_delete" type="button" class="torznab_delete" id="torznab_delete" value="Delete" />
+                            </div>
+                        </div>
+                    </fieldset>
+                </div><!-- /component-group5 //-->
+                % endif
+                <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>
