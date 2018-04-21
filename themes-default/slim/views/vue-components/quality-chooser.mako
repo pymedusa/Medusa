@@ -84,8 +84,11 @@ Vue.component('quality-chooser', {
             default: ${overall_quality}
         },
         keep: {
-            type: Boolean,
-            default: false
+            type: String,
+            default: null,
+            validator(value) {
+                return ['keep', 'show'].includes(value);
+            }
         }
     },
     data() {
@@ -100,7 +103,7 @@ Vue.component('quality-chooser', {
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
-            selectedQualityPreset: this.keep ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
+            selectedQualityPreset: this.keep === 'keep' ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
             archive: false,
             archivedStatus: '',
             archiveButton: {
