@@ -5,9 +5,8 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import os
-
+import re
 from collections import OrderedDict
 
 from medusa import app
@@ -20,22 +19,28 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 def get_torrent_subfolder(result):
-            # Get the sub-folder name the user has assigned to that series
-            root_dirs = app.ROOT_DIRS
-            root_location = root_dirs[int(root_dirs[0]) + 1]
-            torrent_path = result.series._location
-            torrent_subfolder = None
+    """Retrieve the series destination-subfolder required for uTorrent WebUI 'start' action."""
+    # Get the subfolder name the user has assigned to that series
+    root_dirs = app.ROOT_DIRS
+    root_location = root_dirs[int(root_dirs[0]) + 1]
+    torrent_path = result.series._location
+    torrent_subfolder = ''
 
-            if not root_location == torrent_path:
-                torrent_subfolder = os.path.basename(torrent_path)
-            # Use the series name if there is no subfolder defined
-            else:
-                torrent_subfolder = series_name
+    if not root_location == torrent_path:
+        # Subfolder is under root, but possibly not directly under
+        if torrent_path.startswith(root_location):
+            torrent_subfolder = torrent_path.replace(root_location,'')
+        # Subfolder is NOT under root, use it too (WebUI limitation)
+        else:
+            torrent_subfolder = os.path.basename(torrent_path)
+    # Use the series name if there is no subfolder defined
+    else:
+        torrent_subfolder = result.series.name
 
-            log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
-                    {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+    log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+                {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
 
-            return(torrent_subfolder)
+    return(torrent_subfolder)
 
 
 class UTorrentAPI(GenericClient):
@@ -73,11 +78,9 @@ class UTorrentAPI(GenericClient):
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
             return self.auth
 
-
-            
     def _add_torrent_uri(self, result):
 
-        # Set proper subfolder as download destination for uTorrent torrent 
+        # Set proper subfolder as download destination for uTorrent torrent
         torrent_subfolder = get_torrent_subfolder(result)
 
         return self._request(params={
@@ -90,7 +93,7 @@ class UTorrentAPI(GenericClient):
 
     def _add_torrent_file(self, result):
 
-        # Set proper subfolder as download destination for uTorrent torrent 
+        # Set proper subfolder as download destination for uTorrent torrent
         torrent_subfolder = get_torrent_subfolder(result)
 
         return self._request(
@@ -116,10 +119,9 @@ class UTorrentAPI(GenericClient):
         else:
             label = app.TORRENT_LABEL
 
-        log.info('torrent label was {path}',
-                    {'path': label})
+        log.info('torrent label was {path}', {'path': label})
 
-        label = label.replace('%N',torrent_new_label)
+        label = label.replace('%N', torrent_new_label)
 
         log.info('torrent label is now set to {path}', {'path': label})
 
@@ -158,7 +160,7 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-        #  Allow 0 - as unlimitted, and "-1" - that is used to disable 
+        #  Allow 0 - as unlimitted, and "-1" - that is used to disable
         if float(app.TORRENT_SEED_TIME) >= 0:
             if self._request(params={
                 'action': 'setprops',
@@ -185,7 +187,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-        #  "stop" torrent, can always be resumed!
+            #  "stop" torrent, can always be resumed!
             'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
