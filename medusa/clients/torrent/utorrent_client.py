@@ -39,7 +39,7 @@ def get_torrent_subfolder(result):
         torrent_subfolder = result.series.name
 
     log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
-                {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+             {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
 
     return(torrent_subfolder)
 
