@@ -163,10 +163,6 @@ const startVue = () => {
             updateLanguage: function(value) {
                 this.series.language = value;
             },
-            saveQualities: function(qualities) {
-                this.series.config.qualities.preferred = qualities.preferred;
-                this.series.config.qualities.allowed = qualities.allowed;
-            },
             combineQualities() {
                 const reducer = (accumulator, currentValue) => accumulator + currentValue;
                 
@@ -181,9 +177,6 @@ const startVue = () => {
                 if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
-            },
-            location: function() {
-                return this.series.config.location;
             }
         }
     });
@@ -228,7 +221,7 @@ const startVue = () => {
                                 <span class="component-title">Preferred Quality</span>
                                 <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <quality-chooser @update="saveQualities"></quality-chooser>
+                                    <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
                                 </span>
                             </label>
                         </div>
