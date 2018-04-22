@@ -146,6 +146,8 @@ class PageTemplate(MakoTemplate):
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
+            kwargs['title'] = '500'
+            kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
@@ -175,7 +177,7 @@ class BaseHandler(RequestHandler):
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
-                return self.finish(t.render())
+                return self.finish(t.render(title='404', header='Oops'))
             else:
                 self.finish('Wrong API key used')
 

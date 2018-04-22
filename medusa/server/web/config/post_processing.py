@@ -35,7 +35,8 @@ class ConfigPostProcessing(Config):
         """
         t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
-        return t.render(submenu=self.ConfigMenu(), topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
+                        header='Post Processing', topmenu='config',
                         controller='config', action='postProcessing')
 
     def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,
