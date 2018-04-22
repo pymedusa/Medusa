@@ -105,6 +105,7 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
+            'floatingMenuBadge': '',
             'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
             'full_url': base_url + rh.request.uri
@@ -134,6 +135,8 @@ class PageTemplate(MakoTemplate):
             elif warning_count:
                 self.arguments['toolsBadgeClass'] = ' btn-warning'
             self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
+                type=self.arguments['toolsBadgeClass'], number=num_combined)
+            self.arguments['floatingMenuBadge'] = '<span class="floating-badge{type}">{number}</span>'.format(
                 type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
