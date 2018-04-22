@@ -28,12 +28,8 @@ import zipfile
 from builtins import chr
 from builtins import hex
 from builtins import str
+from builtins import zip
 from itertools import cycle
-
-try:
-    import itertools.izip as zip
-except ImportError:
-    pass
 
 import adba
 
@@ -438,7 +434,7 @@ def reflink_file(src_file, dest_file):
     try:
         if reflink is None:
             raise NotImplementedError()
-        reflink.reflink(src_file.encode('utf-8'), dest_file.encode('utf-8'))  # NOTE: remove when https://goo.gl/BMn8EC is merged.
+        reflink.reflink(src_file, dest_file)
     except reflink.ReflinkImpossibleError as msg:
         if msg.args[0] == 'EOPNOTSUPP':
             log.warning(

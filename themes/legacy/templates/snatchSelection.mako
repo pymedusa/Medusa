@@ -113,9 +113,9 @@
                     </thead>
                     <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
-                        <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
+                        <tr id="${hItem['name'] | h}" class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">
-                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
                             </td>
                             <td class="col-group break-word triggerhighlight">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
@@ -149,9 +149,9 @@
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan="11"></td>
+                        <th class="tablesorter-no-sort" colspan="12"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="12"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->

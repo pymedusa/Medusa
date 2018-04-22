@@ -1,21 +1,56 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
     from medusa import app
-    from medusa import common
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
+    from medusa.common import SKIPPED, WANTED, IGNORED, statusStrings
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings
     from medusa.helper import exceptions
 %>
 <%block name="scripts">
-<%
-    if quality_value is not None:
-        initial_quality = int(quality_value)
-    else:
-        initial_quality = common.SD
-    allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
-%>
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
-<script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Mass Edit'
+        },
+        mounted() {
+            function findDirIndex(which) {
+                const dirParts = which.split('_');
+                return dirParts[dirParts.length - 1];
+            }
+
+            function editRootDir(path, options) {
+                $('#new_root_dir_' + options.whichId).val(path);
+                $('#new_root_dir_' + options.whichId).change();
+            }
+
+            $('.new_root_dir').on('change', function() {
+                const curIndex = findDirIndex($(this).attr('id'));
+                $('#display_new_root_dir_' + curIndex).html('<b>' + $(this).val() + '</b>');
+            });
+
+            $('.edit_root_dir').on('click', function(event) {
+                event.preventDefault();
+                const curIndex = findDirIndex($(this).attr('id'));
+                const initialDir = $('#new_root_dir_' + curIndex).val();
+                $(this).nFileBrowser(editRootDir, {
+                    initialDir,
+                    whichId: curIndex,
+                    title: 'Select Show Location'
+                });
+            });
+
+            $('.delete_root_dir').on('click', function() {
+                const curIndex = findDirIndex($(this).attr('id'));
+                $('#new_root_dir_' + curIndex).val(null);
+                $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
+            });
+        }
+    });
+};
+</script>
 </%block>
 
 <%block name="content">
@@ -26,7 +61,7 @@
                 <form action="manage/massEditSubmit" method="post">
                     <input type="hidden" name="toEdit" value="${showList}" />
                     <div id="config-components">
-                        <ul><li><a href="${full_url}#core-component-group1">Main</a></li></ul>
+                        <ul><li><app-link href="#core-component-group1">Main</app-link></li></ul>
                         <div id="core-component-group1">
                             <div class="component-group">
                                 <h3>Main Settings</h3>
@@ -60,8 +95,8 @@
                                                         <td align="center">${cur_dir}</td>
                                                         <td align="center" id="display_new_root_dir_${cur_index}">${cur_dir}</td>
                                                         <td>
-                                                            <a href="#" class="btn edit_root_dir" class="edit_root_dir" id="edit_root_dir_${cur_index}">Edit</a>
-                                                            <a href="#" class="btn delete_root_dir" class="delete_root_dir" id="delete_root_dir_${cur_index}">Delete</a>
+                                                            <app-link href="#" class="btn edit_root_dir" class="edit_root_dir" id="edit_root_dir_${cur_index}">Edit</app-link>
+                                                            <app-link href="#" class="btn delete_root_dir" class="delete_root_dir" id="delete_root_dir_${cur_index}">Delete</app-link>
                                                             <input type="hidden" name="orig_root_dir_${cur_index}" value="${cur_dir}" />
                                                             <input type="text" style="display: none;" name="new_root_dir_${cur_index}" id="new_root_dir_${cur_index}" class="new_root_dir" value="${cur_dir}"/>
                                                         </td>
@@ -77,40 +112,16 @@
                                         <span class="component-title">Preferred Quality</span>
                                         <span class="component-desc">
                                             <%
+                                                ## quality_value is None when the qualities of the edited shows differ
                                                 if quality_value is not None:
                                                     initial_quality = int(quality_value)
                                                 else:
-                                                    initial_quality = common.SD
-                                                allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
+                                                    initial_quality = int(app.QUALITY_DEFAULT)
+                                                allowed_qualities, preferred_qualities = Quality.split_quality(initial_quality)
+                                                overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
                                             %>
-                                            <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
-                                                <option value="keep">&lt; Keep &gt;</option>
-                                                <% selected = None %>
-                                                <option value="0" ${'selected="selected"' if quality_value is not None and quality_value not in common.qualityPresets else ''}>Custom</option>
-                                                % for curPreset in sorted(common.qualityPresets):
-                                                <option value="${curPreset}" ${'selected="selected"' if quality_value == curPreset else ''}>${common.qualityPresetStrings[curPreset]}</option>
-                                                % endfor
-                                            </select>
-                                            <div id="customQuality" style="padding-left: 0;">
-                                                <div style="padding-right: 40px; text-align: left; float: left;">
-                                                    <h5>Allowed</h5>
-                                                    <% anyQualityList = filter(lambda x: x > common.Quality.NONE, common.Quality.qualityStrings) %>
-                                                    <select id="allowed_qualities" name="allowed_qualities" multiple="multiple" size="${len(anyQualityList)}" class="form-control form-control-inline input-sm">
-                                                        % for curQuality in sorted(anyQualityList):
-                                                        <option value="${curQuality}" ${'selected="selected"' if curQuality in allowed_qualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
-                                                        % endfor
-                                                    </select>
-                                                </div>
-                                                <div style="text-align: left; float: left;">
-                                                    <h5>Preferred</h5>
-                                                    <% bestQualityList = filter(lambda x: x >= common.Quality.SDTV, common.Quality.qualityStrings) %>
-                                                    <select id="preferred_qualities" name="preferred_qualities" multiple="multiple" size="${len(bestQualityList)}" class="form-control form-control-inline input-sm">
-                                                        % for curQuality in sorted(bestQualityList):
-                                                        <option value="${curQuality}" ${'selected="selected"' if curQuality in preferred_qualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
-                                                        % endfor
-                                                    </select>
-                                                </div>
-                                            </div>
+                                            <quality-chooser keep="${('show', 'keep')[quality_value is None]}"
+                                                             :overall-quality.number="${overall_quality}" />
                                         </span>
                                     </label>
                                 </div>

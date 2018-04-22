@@ -163,10 +163,6 @@ MEDUSA.addShows.newShow = function() {
         $('#addShowForm').submit();
     });
 
-    $('#qualityPreset').on('change', () => {
-        myform.loadsection(2); // eslint-disable-line no-use-before-define
-    });
-
     /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
     *  This notice MUST stay intact for legal use
     *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
@@ -205,6 +201,10 @@ MEDUSA.addShows.newShow = function() {
     $('#anime').change(() => {
         updateSampleText();
         myform.loadsection(2);
+    });
+
+    $(document.body).on('change', 'select[name="quality_preset"]', () => {
+        setTimeout(() => myform.loadsection(2), 100);
     });
 
     $('#rootDirs').on('change', () => {

@@ -168,7 +168,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
@@ -594,18 +594,16 @@ class Home(WebRoot):
         return json.dumps(data)
 
     @staticmethod
-    def saveShowNotifyList(indexername=None, seriesid=None, emails=None, prowlAPIs=None):
+    def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
         entries = {'emails': '', 'prowlAPIs': ''}
         main_db_con = db.DBConnection()
-
-        indexer_id = indexer_name_to_id(indexername)
 
         # Get current data
         sql_results = main_db_con.select(
             b'SELECT notify_list '
             b'FROM tv_shows '
-            b'WHERE indexer = ? AND show_id = ?',
-            [indexer_id, seriesid]
+            b'WHERE show_id = ?',
+            [show]
         )
         for subs in sql_results:
             if subs[b'notify_list']:
@@ -620,8 +618,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
@@ -630,8 +628,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
@@ -1437,7 +1435,6 @@ class Home(WebRoot):
         indexer = show_indexer.indexer(**params)
 
         if language in indexer.config['valid_languages']:
-            indexer[series_obj.indexerid]
             return True
 
     def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
@@ -2113,8 +2110,7 @@ class Home(WebRoot):
         }]
 
         return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj, title='Preview Rename',
-                        header='Preview Rename',
+                        show=series_obj,
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):

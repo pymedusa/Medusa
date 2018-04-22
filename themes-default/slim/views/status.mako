@@ -6,6 +6,19 @@
     from medusa.helper.common import dateTimeFormat
     from random import choice
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        data() {
+            return {};
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 <%
     schedulerList = {

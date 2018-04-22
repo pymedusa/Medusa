@@ -80,6 +80,7 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
@@ -437,7 +438,7 @@ class Application(object):
             app.GIT_AUTH_TYPE = check_setting_int(app.CFG, 'General', 'git_auth_type', 0)
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
-            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low')
+            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
 
             # debugging
@@ -503,10 +504,6 @@ class Application(object):
             if not helpers.make_dir(app.CACHE_DIR):
                 logger.error(u'Creating local cache dir failed, using system default')
                 app.CACHE_DIR = None
-
-            # Check if we need to perform a restore of the cache folder
-            Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR)
 
             app.FANART_BACKGROUND = bool(check_setting_int(app.CFG, 'GUI', 'fanart_background', 1))
             app.FANART_BACKGROUND_OPACITY = check_setting_float(app.CFG, 'GUI', 'fanart_background_opacity', 0.4)
@@ -1017,6 +1014,9 @@ class Application(object):
             app.TORRENTRSS_PROVIDERS = check_setting_list(app.CFG, 'TorrentRss', 'torrentrss_providers')
             app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_PROVIDERS)
 
+            app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
+            app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
+
             all_providers = providers.sorted_provider_list()
 
             # dynamically load provider settings
@@ -1058,8 +1058,13 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
                 if isinstance(provider, TorrentRssProvider):
-                    load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'title_tag', '')
+
+                if isinstance(provider, TorznabProvider):
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
@@ -1067,7 +1072,7 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
-                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -1083,7 +1088,11 @@ class Application(object):
                 except OSError as e:
                     logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
-                app.SUBTITLES_ERASE_CACHE = 0
+                app.SUBTITLES_ERASE_CACHE = False
+
+            # Check if we need to perform a restore of the cache folder
+            Application.restore_cache_folder(app.CACHE_DIR)
+            cache.configure(app.CACHE_DIR)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
@@ -1574,21 +1583,19 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'name', 'url', 'api_key', 'username',
-                    'search_mode', 'search_fallback',
-                    'enable_daily', 'enable_backlog', 'enable_manualsearch',
-                    'enable_search_delay', 'search_delay',
+                    'name', 'url', 'cat_ids', 'api_key', 'username',
+                    'search_mode', 'search_fallback', 'enable_daily',
+                    'enable_backlog', 'enable_manualsearch',
                 ],
                 'encrypted': [
                     'password',
                 ],
                 GenericProvider.TORRENT: [
-                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease', 'onlyspasearch',
-                    'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech', 'cat', 'subtitle', 'cookies',
+                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease',
+                    'onlyspasearch', 'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech',
+                    'cat', 'subtitle', 'cookies', 'title_tag', 'cap_tv_search',
                 ],
-                GenericProvider.NZB: [
-                    'cat_ids'
-                ],
+                GenericProvider.NZB: [],
             }
 
             for attr in attributes['all']:
@@ -1855,6 +1862,9 @@ class Application(object):
         new_config['TorrentRss'] = {}
         new_config['TorrentRss']['torrentrss_providers'] = app.TORRENTRSS_PROVIDERS
 
+        new_config['Torznab'] = {}
+        new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
+
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME
         new_config['GUI']['fanart_background'] = app.FANART_BACKGROUND
@@ -2041,7 +2051,7 @@ class Application(object):
         try:
             logger.info('Shutting down Tornado')
             self.web_server.shutDown()
-            self.web_server.join(10)
+            self.web_server.join(5)
         except Exception as error:
             exception_handler.handle(error)
 

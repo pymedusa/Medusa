@@ -493,8 +493,19 @@ class CacheRegion(object):
         a value.  Any retrieved value whose creation
         time is prior to this timestamp
         is considered to be stale.  It does not
-        affect the data in the cache in any way, and is also
-        local to this instance of :class:`.CacheRegion`.
+        affect the data in the cache in any way, and is
+        **local to this instance of :class:`.CacheRegion`.**
+
+        .. warning::
+
+            The :meth:`.CacheRegion.invalidate` method's default mode of
+            operation is to set a timestamp **local to this CacheRegion
+            in this Python process only**.   It does not impact other Python
+            processes or regions as the timestamp is **only stored locally in
+            memory**.  To implement invalidation where the
+            timestamp is stored in the cache or similar so that all Python
+            processes can be affected by an invalidation timestamp, implement a
+            custom :class:`.RegionInvalidationStrategy`.
 
         Once set, the invalidation time is honored by
         the :meth:`.CacheRegion.get_or_create`,
@@ -1084,6 +1095,14 @@ class CacheRegion(object):
             newvalue = generate_something.refresh(5, 6)
 
         .. versionadded:: 0.5.0 Added ``refresh()`` method to decorated
+           function.
+
+        ``original()`` on other hand will invoke the decorated function
+        without any caching::
+
+            newvalue = generate_something.original(5, 6)
+
+        .. versionadded:: 0.6.0 Added ``original()`` method to decorated
            function.
 
         Lastly, the ``get()`` method returns either the value cached

@@ -3,24 +3,118 @@
     from medusa import app
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Existing Show'
+        },
+        data() {
+            return {
+                header: 'Existing Show',
+                lastTxt: ''
+            };
+        },
+        mounted() {
+            // Need to delay that a bit
+            this.$nextTick(() => {
+                // Hide the black/whitelist, because it can only be used for a single anime show
+                $.updateBlackWhiteList(undefined);
+            });
+            this.rootDirStaticList();
+            this.loadContent();
+
+            $('#tableDiv').on('click', '#checkAll', event => {
+                $('.showDirCheck').each((index, element) => {
+                    element.checked = event.currentTarget.checked;
+                });
+            });
+            $('#rootDirStaticList').on('click', '.rootDirCheck', this.loadContent);
+            /* @TODO: Fix this.
+             * It should reload root dirs after changing them, without needing to refresh the page.
+             * Currently doesn't work.
+             */
+            $(document.body).on('change', '#rootDirText', () => {
+                if (this.lastTxt === $('#rootDirText').val()) {
+                    return false;
+                }
+                this.lastTxt = $('#rootDirText').val();
+                this.rootDirStaticList();
+                this.loadContent();
+            });
+        },
+        methods: {
+            rootDirStaticList() {
+                $('#rootDirStaticList').html('');
+                $('#rootDirs option').each((index, element) => {
+                    $('#rootDirStaticList').append('<li class="ui-state-default ui-corner-all"><input type="checkbox" class="rootDirCheck" id="' + $(element).val() + '" checked="checked"> <label for="' + $(element).val() + '"><b>' + $(element).val() + '</b></label></li>');
+                });
+            },
+            loadContent() {
+                let url_query = '';
+                $('.rootDirCheck').each((index, element) => {
+                    if ($(element).is(':checked')) {
+                        if (url_query.length !== 0) {
+                            url_query += '&';
+                        }
+                        url_query += 'rootDir=' + encodeURIComponent($(element).attr('id'));
+                    }
+                });
+
+                $('#tableDiv').html('<img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...');
+                $.get('addShows/massAddTable/', url_query, data => {
+                    $('#tableDiv').html(data);
+                    $('#addRootDirTable').tablesorter({
+                        // SortList: [[1,0]],
+                        widgets: ['zebra'],
+                        headers: {
+                            0: { sorter: false }
+                        }
+                    });
+                });
+            },
+            submitShowDirs() {
+                const dirArr = [];
+                $('.showDirCheck').each((index, element) => {
+                    if (element.checked === true) {
+                        const originalIndexer = $(element).attr('data-indexer');
+                        let indexerId = '|' + $(element).attr('data-indexer-id');
+                        const showName = $(element).attr('data-show-name');
+                        const showDir = $(element).attr('data-show-dir');
+
+                        const indexer = $(element).closest('tr').find('select').val();
+                        if (originalIndexer !== indexer || originalIndexer === '0') {
+                            indexerId = '';
+                        }
+                        dirArr.push(encodeURIComponent(indexer + '|' + showDir + indexerId + '|' + showName));
+                    }
+                });
+
+                if (dirArr.length === 0) {
+                    return false;
+                }
+
+                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?promptForSettings=' + ($('#promptForSettings').prop('checked') ? 'on' : 'off') + '&shows_to_add=' + dirArr.join('&shows_to_add=');
+            }
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="newShowPortal">
     <div id="config-components">
-        <ul><li><a href="${full_url}#core-component-group1">Add Existing Show</a></li></ul>
+        <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
-                        <li><a href="${base_url}addShows/existingShows/#tabs-1">Manage Directories</a></li>
-                        <li><a href="${base_url}addShows/existingShows/#tabs-2">Customize Options</a></li>
+                        <li><app-link href="addShows/existingShows/#tabs-1">Manage Directories</app-link></li>
+                        <li><app-link href="addShows/existingShows/#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
                         <%include file="/inc_rootDirs.mako"/>
@@ -40,7 +134,7 @@
                 <div id="tableDiv"></div>
                 <br>
                 <br>
-                <input class="btn" type="button" value="Submit" id="submitShowDirs" />
+                <input class="btn" type="button" value="Submit" id="submitShowDirs" @click="submitShowDirs" />
             </form>
         </div>
     </div>

@@ -7,15 +7,27 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Missing Subtitles in Post-Process folder'
+        },
+        data() {
+            return {
+                header: 'Missing Subtitles in Post-Process folder'
+            };
+        }
+    });
+};
+</script>
 </%block>
 <%block name="content">
 <div class="row">
 <div class="col-md-12">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 </div>
 </div>
 <div class="row">
@@ -38,7 +50,7 @@
            % endif
             <tr class="snatched" role="row" release_id=${index}>
                 <td class="tvShow" align="left">
-                    <a href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</a>
+                    <app-link href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}
@@ -54,7 +66,7 @@
                 </span>
                 </td>
                 <td class="col-search" align="center">
-                    <a class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
+                    <app-link class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
                 </td>
             </tr>
         % endfor
@@ -98,7 +110,7 @@
            % endif
             <tr class="downloaded" role="row" release_id=${index}>
                 <td class="tvShow" align="left">
-                    <a href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</a>
+                    <app-link href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}

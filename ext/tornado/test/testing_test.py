@@ -1,15 +1,20 @@
-#!/usr/bin/env python
-
 from __future__ import absolute_import, division, print_function
 
 from tornado import gen, ioloop
 from tornado.log import app_log
-from tornado.testing import AsyncTestCase, gen_test, ExpectLog
 from tornado.test.util import unittest, skipBefore35, exec_test
+from tornado.testing import AsyncHTTPTestCase, AsyncTestCase, bind_unused_port, gen_test, ExpectLog
+from tornado.web import Application
 import contextlib
 import os
+import platform
 import traceback
 import warnings
+
+try:
+    import asyncio
+except ImportError:
+    asyncio = None
 
 
 @contextlib.contextmanager
@@ -75,6 +80,40 @@ class AsyncTestCaseTest(AsyncTestCase):
         self.assertEqual(str(cm.exception), "error one")
 
 
+class AsyncHTTPTestCaseTest(AsyncHTTPTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(AsyncHTTPTestCaseTest, cls).setUpClass()
+        # An unused port is bound so we can make requests upon it without
+        # impacting a real local web server.
+        cls.external_sock, cls.external_port = bind_unused_port()
+
+    def get_app(self):
+        return Application()
+
+    def test_fetch_segment(self):
+        path = '/path'
+        response = self.fetch(path)
+        self.assertEqual(response.request.url, self.get_url(path))
+
+    def test_fetch_full_http_url(self):
+        path = 'http://localhost:%d/path' % self.external_port
+
+        response = self.fetch(path, request_timeout=0.1)
+        self.assertEqual(response.request.url, path)
+
+    def test_fetch_full_https_url(self):
+        path = 'https://localhost:%d/path' % self.external_port
+
+        response = self.fetch(path, request_timeout=0.1)
+        self.assertEqual(response.request.url, path)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.external_sock.close()
+        super(AsyncHTTPTestCaseTest, cls).tearDownClass()
+
+
 class AsyncTestCaseWrapperTest(unittest.TestCase):
     def test_undecorated_generator(self):
         class Test(AsyncTestCase):
@@ -87,6 +126,8 @@ class AsyncTestCaseWrapperTest(unittest.TestCase):
         self.assertIn("should be decorated", result.errors[0][1])
 
     @skipBefore35
+    @unittest.skipIf(platform.python_implementation() == 'PyPy',
+                     'pypy destructor warnings cannot be silenced')
     def test_undecorated_coroutine(self):
         namespace = exec_test(globals(), locals(), """
         class Test(AsyncTestCase):
@@ -272,6 +313,31 @@ class GenTest(AsyncTestCase):
             self.fail("did not get expected exception")
         except ioloop.TimeoutError:
             self.finished = True
+
+
+@unittest.skipIf(asyncio is None, "asyncio module not present")
+class GetNewIOLoopTest(AsyncTestCase):
+    def get_new_ioloop(self):
+        # Use the current loop instead of creating a new one here.
+        return ioloop.IOLoop.current()
+
+    def setUp(self):
+        # This simulates the effect of an asyncio test harness like
+        # pytest-asyncio.
+        self.orig_loop = asyncio.get_event_loop()
+        self.new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.new_loop)
+        super(GetNewIOLoopTest, self).setUp()
+
+    def tearDown(self):
+        super(GetNewIOLoopTest, self).tearDown()
+        # AsyncTestCase must not affect the existing asyncio loop.
+        self.assertFalse(asyncio.get_event_loop().is_closed())
+        asyncio.set_event_loop(self.orig_loop)
+        self.new_loop.close()
+
+    def test_loop(self):
+        self.assertIs(self.io_loop.asyncio_loop, self.new_loop)
 
 
 if __name__ == '__main__':

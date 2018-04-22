@@ -112,7 +112,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map(key => {  // eslint-disable-line array-callback-return
+            return Object.keys(MEDUSA.config.indexers.config).map(key => { // eslint-disable-line array-callback-return
                 if (MEDUSA.config.indexers.config[key] === name) {
                     return key;
                 }
@@ -150,10 +150,10 @@ function displayPNotify(type, title, message, id) {
         desktop: {
             tag: id
         },
-        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
-            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
-            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
-            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
+        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']') // eslint-disable-line unicorn/no-unsafe-regex
+            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ') // eslint-disable-line unicorn/no-unsafe-regex
     });
 }
 
@@ -161,7 +161,7 @@ function wsCheckNotifications() {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const webRoot = MEDUSA.config.webRoot || '';
     const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
-    ws.onmessage = function(evt) {
+    ws.addEventListener('message', evt => {
         let msg;
         try {
             msg = JSON.parse(evt.data);
@@ -175,14 +175,14 @@ function wsCheckNotifications() {
         } else {
             displayPNotify('info', '', msg);
         }
-    };
+    });
 
-    ws.onerror = function() {
+    ws.addEventListener('error', () => {
         log.warn('Error connecting to websocket. Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
         displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
-    };
+    });
     console.log('Notifications library loaded.');
 }
 
@@ -190,25 +190,6 @@ function wsCheckNotifications() {
 // Listen for the config loaded event.
 window.addEventListener('build', e => {
     if (e.detail === 'medusa config loaded') {
-        /**
-         * Search for anchors with the attribute indexer-to-name and translate the indexer id to a name using the helper
-         * function MEDUSA.config.indexers.indexerIdToName().
-         *
-         * The anchor is rebuild using the indexer name.
-         */
-        $('[data-indexer-to-name]').each((index, target) => {
-            const indexerId = $(target).attr('data-indexer-to-name');
-            const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
-
-            const re = /indexer-to-name/gi;
-
-            $.each(target.attributes, (index, attr) => {
-                if (attr.name !== 'data-indexer-to-name' && target[attr.name]) {
-                    target[attr.name] = target[attr.name].replace(re, indexerName);
-                }
-            });
-        });
-
         wsCheckNotifications();
         if (test) {
             displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');

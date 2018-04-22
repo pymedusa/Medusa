@@ -3,15 +3,29 @@
     import pkgutil
     from medusa import app
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Post Processing'
+        },
+        data() {
+            return {
+                header: 'Post Processing'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 
 <div class="row">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 <div class="row">

@@ -5,6 +5,58 @@
     from medusa.logger import LOGGING_LEVELS
     from random import choice
 %>
+<%block name="scripts">
+<script>
+let app;
+const startVue = () => {
+    app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Logs'
+        },
+        data() {
+            return {
+                header: 'Log File'
+            };
+        },
+        mounted() {
+            function getParams() {
+                return $.param({
+                    min_level: $('select[name=min_level]').val(), // eslint-disable-line camelcase
+                    log_filter: $('select[name=log_filter]').val(), // eslint-disable-line camelcase
+                    log_period: $('select[name=log_period]').val(), // eslint-disable-line camelcase
+                    log_search: $('#log_search').val() // eslint-disable-line camelcase
+                });
+            }
+
+            $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(() => {
+                const params = getParams();
+                $('#min_level').prop('disabled', true);
+                $('#log_filter').prop('disabled', true);
+                $('#log_period').prop('disabled', true);
+                document.body.style.cursor = 'wait';
+
+                $.get('errorlogs/viewlog/?' + params, data => {
+                    history.pushState('data', '', 'errorlogs/viewlog/?' + params);
+                    $('pre').html($(data).find('pre').html());
+                    $('#min_level').prop('disabled', false);
+                    $('#log_filter').prop('disabled', false);
+                    $('#log_period').prop('disabled', false);
+                    document.body.style.cursor = 'default';
+                });
+            }, 500));
+
+            $(document.body).on('click', '#viewlog-text-view', e => {
+                e.preventDefault();
+                const params = getParams();
+                const win = window.open('errorlogs/viewlog/?' + params + '&text_view=1', '_blank');
+                win.focus();
+            });
+        }
+    });
+};
+</script>
+</%block>
 <%block name="css">
 <style>
 pre {
@@ -25,11 +77,7 @@ pre {
 
 <div class="row">
         <div class="col-md-12">
-            % if not header is UNDEFINED:
-                <h1 class="header">${header}</h1>
-            % else:
-                <h1 class="title">${title}</h1>
-            % endif
+            <h1 class="header">{{header}}</h1>
         </div>
         <div class="col-md-12 pull-right ">
             <div class="logging-filter-controll pull-right">
@@ -83,7 +131,7 @@ pre {
 </div> <!-- row -->
 <div class="row">
     <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
-        <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
+        <pre><div class="notepad"><app-link id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></app-link></div>${log_lines}</pre>
     </div>
 </div>
 </%block>
