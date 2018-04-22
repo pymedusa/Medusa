@@ -24,9 +24,7 @@ from __future__ import unicode_literals
 import logging
 from builtins import object
 
-from adba.aniDBerrors import AniDBCommandTimeoutError
-
-from medusa import app, db, helpers
+from medusa import db
 
 
 logger = logging.getLogger(__name__)
@@ -153,31 +151,3 @@ class BlackAndWhiteList(object):
 
 class BlackWhitelistNoShowIDException(Exception):
     """No show_id was given."""
-
-
-def short_group_names(groups):
-    """Find AniDB short group names for release groups.
-
-    :param groups: list of groups to find short group names for
-    :return: list of shortened group names
-    """
-    groups = groups.split(',')
-    short_group_list = []
-    if helpers.set_up_anidb_connection():
-        for group_name in groups:
-            try:
-                group = app.ADBA_CONNECTION.group(gname=group_name)
-            except AniDBCommandTimeoutError:
-                logger.debug('Timeout while loading group from AniDB. Trying next group')
-            except Exception:
-                logger.debug('Failed while loading group from AniDB. Trying next group')
-            else:
-                for line in group.datalines:
-                    if line[b'shortname']:
-                        short_group_list.append(line[b'shortname'])
-                    else:
-                        if group_name not in short_group_list:
-                            short_group_list.append(group_name)
-    else:
-        short_group_list = groups
-    return short_group_list
