@@ -38,10 +38,10 @@ def get_torrent_subfolder(result):
     else:
         torrent_subfolder = result.series.name
 
-    log.info('Show {name}: torrent snatched, download destination folder is: {path} (sub-folder: {sub})',
+    log.debug('Show {name}: torrent download destination folder is: {path} (sub-folder: {sub})',
              {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
 
-    return(torrent_subfolder)
+    return torrent_subfolder
 
 
 class UTorrentAPI(GenericClient):
@@ -118,11 +118,9 @@ class UTorrentAPI(GenericClient):
         else:
             label = app.TORRENT_LABEL
 
-        log.info('torrent label was {path}', {'path': label})
-
         label = label.replace('%N', torrent_new_label)
 
-        log.info('torrent label is now set to {path}', {'path': label})
+        log.debug('torrent label is now set to {path}', {'path': label})
 
         return self._request(
             params={
