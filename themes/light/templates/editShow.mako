@@ -153,8 +153,7 @@ const startVue = () => {
                 this.series.language = value;
             },
             combineQualities() {
-                const reducer = (accumulator, currentValue) => accumulator + currentValue;
-                
+                const reducer = (accumulator, currentValue) => accumulator | currentValue;
                 const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
@@ -210,7 +209,7 @@ const startVue = () => {
                                 <span class="component-title">Preferred Quality</span>
                                 <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                                    <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                                 </span>
                             </label>
                         </div>
