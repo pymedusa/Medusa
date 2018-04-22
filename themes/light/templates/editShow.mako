@@ -15,13 +15,12 @@
 </%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<%include file="/vue-components/quality-chooser.mako"/>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
-
 <script>
+let app;
 const startVue = () => {
-    const app = new Vue({
+    app = new Vue({
         el: '#vue-wrap',
         data() {
             // Python conversions
