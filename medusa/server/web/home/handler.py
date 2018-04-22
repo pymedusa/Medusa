@@ -155,7 +155,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
@@ -1845,7 +1845,8 @@ class Home(WebRoot):
         }]
 
         return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj,
+                        show=series_obj, title='Preview Rename',
+                        header='Preview Rename',
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):

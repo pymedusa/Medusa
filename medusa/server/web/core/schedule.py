@@ -52,7 +52,7 @@ class Schedule(WebRoot):
 
         t = PageTemplate(rh=self, filename='schedule.mako')
         return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results,
-                        layout=app.COMING_EPS_LAYOUT,
+                        layout=app.COMING_EPS_LAYOUT, title='Schedule', header='Schedule',
                         topmenu='schedule', controller='schedule', action='index')
 
     def toggleScheduleDisplayPaused(self):

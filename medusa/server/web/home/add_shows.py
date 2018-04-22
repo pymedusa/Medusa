@@ -37,7 +37,7 @@ class HomeAddShows(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='addShows.mako')
-        return t.render(topmenu='home', controller='addShows', action='index')
+        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller='addShows', action='index')
 
     @staticmethod
     def getIndexerLanguages():
@@ -216,7 +216,8 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            topmenu='home', controller='addShows', action='newShow'
+            title='New Show', header='New Show', topmenu='home',
+            controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -362,7 +363,8 @@ class HomeAddShows(Home):
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        topmenu='home', controller='addShows', action='addExistingShow')
+                        title='Existing Show', header='Existing Show', topmenu='home',
+                        controller='addShows', action='addExistingShow')
 
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,

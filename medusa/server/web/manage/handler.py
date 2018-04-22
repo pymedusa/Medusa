@@ -52,7 +52,7 @@ class Manage(Home, WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='manage.mako')
-        return t.render(topmenu='manage', controller='manage', action='index')
+        return t.render(title='Mass Update', header='Mass Update', topmenu='manage', controller='manage', action='index')
 
     @staticmethod
     def showEpisodeStatuses(indexername, seriesid, whichStatus):
@@ -95,6 +95,7 @@ class Manage(Home, WebRoot):
         # if we have no status then this is as far as we need to go
         if not status_list:
             return t.render(
+                title='Episode Overview', header='Episode Overview',
                 topmenu='manage', show_names=None, whichStatus=whichStatus,
                 ep_counts=None, sorted_show_ids=None,
                 controller='manage', action='episodeStatuses')
@@ -215,7 +216,8 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_subtitleMissed.mako')
 
         if not whichSubs:
-            return t.render(whichSubs=whichSubs, topmenu='manage',
+            return t.render(whichSubs=whichSubs, title='Missing Subtitles',
+                            header='Missing Subtitles', topmenu='manage',
                             show_names=None, ep_counts=None, sorted_show_ids=None,
                             controller='manage', action='subtitleMissed')
 
@@ -355,7 +357,8 @@ class Manage(Home, WebRoot):
                                            'age_unit': age_unit, 'date': video_date,
                                            'indexername': tv_episode.series.indexer_name})
 
-        return t.render(releases_in_pp=app.RELEASES_IN_PP, topmenu='manage',
+        return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
+                        header='Missing Subtitles in Post Process folder', topmenu='manage',
                         controller='manage', action='subtitleMissedPP')
 
     def backlogShow(self, indexername, seriesid):
@@ -447,7 +450,8 @@ class Manage(Home, WebRoot):
         return t.render(
             showCounts=show_counts, showCats=show_cats,
             showSQLResults=show_sql_results, controller='manage',
-            action='backlogOverview', topmenu='manage')
+            action='backlogOverview', title='Backlog Overview',
+            header='Backlog Overview', topmenu='manage')
 
     def massEdit(self, toEdit=None):
         t = PageTemplate(rh=self, filename='manage_massEdit.mako')
@@ -582,7 +586,7 @@ class Manage(Home, WebRoot):
         return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
-                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, topmenu='manage')
+                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
 
     def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
@@ -820,5 +824,6 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_failedDownloads.mako')
 
         return t.render(limit=limit, failedResults=sql_results,
+                        title='Failed Downloads', header='Failed Downloads',
                         topmenu='manage', controller='manage',
                         action='failedDownloads')

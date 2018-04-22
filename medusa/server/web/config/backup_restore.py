@@ -23,7 +23,8 @@ class ConfigBackupRestore(Config):
     def index(self):
         t = PageTemplate(rh=self, filename='config_backuprestore.mako')
 
-        return t.render(submenu=self.ConfigMenu(), topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), title='Config - Backup/Restore',
+                        header='Backup/Restore', topmenu='config',
                         controller='config', action='backupRestore')
 
     @staticmethod
