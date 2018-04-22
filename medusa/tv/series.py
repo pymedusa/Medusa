@@ -2136,7 +2136,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = {exception.series_name for exception in get_scene_exceptions(self, season)}
+        show_names = get_scene_exceptions(self, season)
         show_names.add(self.name)
 
         new_show_names = set()
