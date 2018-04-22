@@ -287,7 +287,7 @@ gulp.task('build', done => {
     });
 });
 
-const callbackSequence = (theme, sequence) => {
+const syncTheme = (theme, sequence) => {
     return new Promise(function(resolve) {
         console.log(`Starting syncing for theme: ${theme[0]}`);
         setCsstheme(theme[0]);
@@ -307,7 +307,7 @@ gulp.task('sync', async() => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (let theme of Object.entries(config.cssThemes)) {
-        await callbackSequence(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
+        await syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
     }
 });
 
