@@ -63,7 +63,6 @@ const startVue = () => {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 seriesLoaded: false,
-                location: '',
                 saveMessage: '',
                 saveError: '',
                 mounted: false
@@ -76,15 +75,9 @@ const startVue = () => {
                 const response = await api.get('series/' + this.seriesSlug);
                 this.series = Object.assign({}, this.series, response.data);
                 this.series.language = response.data.language;
-                this.location = this.series.config.location;
             } catch (error) {
                 console.debug('Could not get series info for: '+ seriesSlug);
             }
-
-            // Add the Browse.. button after the show location input.
-            $('#location').fileBrowser({
-	            title: 'Select Show Location'
-            });
             this.mounted = true;
         },
         methods: {
@@ -156,9 +149,6 @@ const startVue = () => {
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
 
             },
-            saveLocation: function(value) {
-                this.series.config.location = value;
-            },
             updateLanguage: function(value) {
                 this.series.language = value;
             },
@@ -211,7 +201,7 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
-                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location"></file-browser>
+                                    <file-browser name="location" ref="locationBrowser" id="location" title="Select Show Location" :initial-dir="series.config.location" @update:location="series.config.location = $event"/>
                                 </span>
                             </label>
                         </div>
