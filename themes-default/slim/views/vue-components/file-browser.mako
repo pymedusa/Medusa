@@ -1,6 +1,6 @@
 <script type="text/x-template" id="file-browser-template">
     <div>
-        <input v-model="currentPath" ref="locationInput" :name="name" @keyup.enter="browse($event.target.value)" type="text" class="input-sm form-control fileBrowserField" style="width: 70%;" />
+        <input v-model="currentPath" ref="locationInput" :name="name" @keyup.enter.prevent="" type="text" class="input-sm form-control fileBrowserField" style="width: 70%;" />
         <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn fileBrowserButton"/>
         <div class="fileBrowserDialog" style="display: none;"></div>
         <!-- <file-list files="files"></file-list> -->
