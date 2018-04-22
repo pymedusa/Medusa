@@ -128,6 +128,20 @@
         <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
+        <script>window.routes = [];</script>
         <%block name="scripts" />
+        <script>
+            if (!window.app) {
+                const router = new vueRouter({
+                    base: document.getElementsByTagName('base')[0].getAttribute('href'),
+                    mode: 'history',
+                    routes
+                });
+                window.app = new Vue({
+                    el: '#vue-wrap',
+                    router
+                });
+            }
+        </script>
     </body>
 </html>
