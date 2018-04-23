@@ -12,17 +12,39 @@
         list-style-type: none;
         display: flex;
     }
+
+    div.select-list .new-item {
+        display: flex;
+    }
+
+    div.select-list input, div.select-list img {
+        display: inline-block;
+        box-sizing: border-box;
+    }
 </style>
 <script type="text/x-template" id="select-list">
     <div class="select-list">
         <ul>
             <li v-for="item of editItems">
-                <input style="display: inline-block" type="text" v-model="item.value"/>
-                <img style="display: inline-block" src="images/no16.png" alt="N" width="16" height="16" @click="deleteItem(item)">
+                <div class="input-group">
+                    <input class="form-control" type="text" v-model="item.value"/>
+                    <div class="input-group-btn" @click="deleteItem(item)">
+                        <div style="font-size: 14px" class="btn btn-default">
+                            <i class="glyphicon glyphicon-remove"></i>
+                        </div>
+                    </div>
+                </div>
             </li>
             <div class="new-item">
-                <input style="display: inline-block" type="text" v-model="newItem"/>
-                <img style="display: inline-block" src="images/pencil_add.png" alt="N" width="16" height="16" @click="addItem">
+                <div class="input-group">
+                    <input class="form-control" type="text" v-model="newItem"/>
+                    <div class="input-group-btn" @click="addItem(item)">
+                            <div style="font-size: 14px" class="btn btn-default">
+                                <i class="glyphicon glyphicon-plus"></i>
+                            </div>
+                    </div>
+                </div>
+                <!-- <img src="images/pencil_add.png" alt="N" width="16" height="16" @click="addItem"> -->
             </div>
         </ul>
     </div>
