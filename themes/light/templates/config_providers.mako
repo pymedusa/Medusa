@@ -620,6 +620,7 @@ const startVue = () => {
                 $(document.body).on('click', '#newznab_cat_select', () => {
                     const selectedProvider = $('#editANewznabProvider :selected').val();
                     const newOptions = [];
+                    const newValues = [];
                     // When the update botton is clicked, loop through the capabilities list
                     // and copy the selected category id's to the category list on the right.
                     $('#newznab_cap option:selected').each((index, element) => {
@@ -628,9 +629,12 @@ const startVue = () => {
                             text: selectedCat,
                             value: selectedCat
                         });
+                        newValues.push(selectedCat);
                     });
                     if (newOptions.length > 0) {
                         $('#newznab_cat').replaceOptions(newOptions);
+                        const cats = newValues.join(',');
+                        newznabProviders[selectedProvider][1][3] = cats;
                     }
 
                     makeNewznabProviderString();
@@ -639,6 +643,7 @@ const startVue = () => {
                 $(document.body).on('click', '#torznab_cat_select', () => {
                     const selectedProvider = $('#editATorznabProvider :selected').val();
                     const newOptions = [];
+                    const newValues = [];
                     // When the update botton is clicked, loop through the capabilities list
                     // and copy the selected category id's to the category list on the right.
                     $('#torznab_cap option:selected').each((index, element) => {
@@ -647,9 +652,12 @@ const startVue = () => {
                             text: selectedCat,
                             value: selectedCat
                         });
+                        newValues.push(selectedCat);
                     });
                     if (newOptions.length > 0) {
                         $('#torznab_cat').replaceOptions(newOptions);
+                        const cats = newValues.join(',');
+                        torznabProviders[selectedProvider][3] = cats;
                     }
 
                     makeTorznabProviderString();
