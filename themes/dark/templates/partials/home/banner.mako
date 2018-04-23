@@ -75,7 +75,7 @@
             <tbody>
             <%
                 def titler(x):
-                   return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
+                   return (remove_article(x), x)[not x or app.SORT_ARTICLE]
 
                 my_show_list.sort(key=lambda x: titler(x.name).lower())
             %>
