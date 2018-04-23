@@ -18,10 +18,10 @@
             continue
         show_dir = curDir['dir']
         series_id = show_dir
+        indexer_id = 0
         if curDir['existing_info'][0]:
             series_id = show_dir + '|' + str(curDir['existing_info'][0]) + '|' + str(curDir['existing_info'][1])
             indexer_id = curDir['existing_info'][2]
-        indexer_id = 0
     %>
     <tr>
         <td class="col-checkbox"><input type="checkbox" id="${series_id}" data-indexer="${indexer_id}" data-indexer-id="${series_id}"
