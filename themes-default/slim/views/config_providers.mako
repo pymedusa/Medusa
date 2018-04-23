@@ -148,10 +148,7 @@ const startVue = () => {
                     trailingSlash = (trailingSlash !== undefined) ? trailingSlash : true; // eslint-disable-line no-negated-condition
 
                     url = $.trim(url);
-                    if (!url) {
-                        alert('Invalid URL specified!'); // eslint-disable-line no-alert
-                        return;
-                    }
+                    if (!url) return;
 
                     if (!/^https?:\/\//i.test(url)) {
                         url = 'http://' + url;
@@ -166,6 +163,10 @@ const startVue = () => {
 
                 function addNewznabProvider(id, name, url, apiKey, cats, isDefault) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Newznab provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [isDefault, [name, verifiedUrl, apiKey, cats]];
                     newznabProviders[id] = newData;
 
@@ -181,6 +182,10 @@ const startVue = () => {
 
                 function addTorrentRssProvider(id, name, url, cookies, titleTag) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url, false);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Torrent RSS provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [name, verifiedUrl, cookies, titleTag];
                     torrentRssProviders[id] = newData;
 
@@ -196,6 +201,10 @@ const startVue = () => {
 
                 function addTorznabProvider(id, name, url, apiKey, cats, caps) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Jackett/Torznab provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [name, verifiedUrl, apiKey, cats, caps];
                     torznabProviders[id] = newData;
 
