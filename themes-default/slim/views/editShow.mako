@@ -35,6 +35,7 @@ const startVue = () => {
                 series: {
                     config: {
                         dvdOrder: false,
+                        defaultEpisodeStatus: '',
                         flattenFolders: false,
                         anime: false,
                         scene: false,
@@ -98,6 +99,7 @@ const startVue = () => {
                     const data = {
                         config: {
                             aliases: this.series.config.aliases,
+                            defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
                             dvdOrder: this.series.config.dvdOrder,
                             flattenFolders: this.series.config.flattenFolders,
                             anime: this.series.config.anime,
@@ -218,7 +220,7 @@ const startVue = () => {
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                        v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
+                                        v-model="series.config.defaultEpisodeStatus" @change="saveSeries('series')"/>
                                         <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
