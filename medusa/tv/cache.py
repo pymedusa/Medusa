@@ -310,7 +310,7 @@ class Cache(object):
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
                       ' this result is unusable', self.provider.name)
-        return False
+        return None
 
     @property
     def updated(self):
