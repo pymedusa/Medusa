@@ -116,6 +116,7 @@ class SeriesHandler(BaseRequestHandler):
         ignored = {}
         patches = {
             'config.aliases': ListField(series, 'aliases'),
+            'config.defaultEpisodeStatus': StringField(series, 'default_ep_status_name'),
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
             'config.flattenFolders': BooleanField(series, 'flatten_folders'),
             'config.anime': BooleanField(series, 'anime'),
