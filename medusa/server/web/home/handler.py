@@ -93,8 +93,6 @@ from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
 
-from past.builtins import cmp
-
 from requests.compat import (
     quote_plus,
     unquote_plus,
@@ -940,12 +938,12 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
             ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
             ]
 
         bwl = None
@@ -1236,11 +1234,13 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
+            ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
+            ]
 
         bwl = None
         if series_obj.is_anime:
