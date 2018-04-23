@@ -2127,6 +2127,16 @@ class Series(TV):
         """Return preferred qualities."""
         return Quality.split_quality(self.quality)[1]
 
+    @qualities_allowed.setter
+    def qualities_allowed(self, qualities_allowed):
+        """Configure qualities (combined) by adding the allowed qualities to it."""
+        self.quality = Quality.combine_qualities(qualities_allowed, self.qualities_preferred)
+
+    @qualities_preferred.setter
+    def qualities_preferred(self, qualities_preferred):
+        """Configure qualities (combined) by adding the preferred qualities to it."""
+        self.quality = Quality.combine_qualities(self.qualities_allowed, qualities_preferred)
+
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.
 
