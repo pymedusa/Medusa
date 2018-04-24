@@ -54,7 +54,7 @@
                 <span>Release groups</span>
                 <ul>
                     <li v-for="release in itemsReleaseGroups" class="initial" v-bind:class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
-                    <div v-if="newGroup === ''" class="arrow" @click="moveToList('releasegroups')">
+                    <div v-if="!newGroup" class="arrow" @click="moveToList('releasegroups')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
                 </ul>

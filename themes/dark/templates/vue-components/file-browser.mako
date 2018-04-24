@@ -275,9 +275,10 @@ Vue.component('file-browser', {
             return resultField;
         };
 
+        const { title, localStorageKey } = this;
         $(this.$refs.locationInput).fileBrowser({
-            title: this.title,
-            localStorageKey: this.localStorageKey
+            title: title,
+            localStorageKey: localStorageKey
         });
     },
     watch: {
