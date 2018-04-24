@@ -98,8 +98,7 @@ const startVue = () => {
                             },
                             qualities: {
                                 preferred: this.series.config.qualities.preferred,
-                                allowed: this.series.config.qualities.allowed,
-                                combined: this.combineQualities()
+                                allowed: this.series.config.qualities.allowed
                             }
                         },
                         language: this.series.language
@@ -134,13 +133,6 @@ const startVue = () => {
             },
             updateLanguage: function(value) {
                 this.series.language = value;
-            },
-            combineQualities() {
-                const reducer = (accumulator, currentValue) => accumulator | currentValue;
-                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
-                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
-
-                return  allowed | preferred << 16
             }
         },
         computed: {
@@ -148,6 +140,13 @@ const startVue = () => {
                 if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
+            },
+            combinedQualities() {
+                const reducer = (accumulator, currentValue) => accumulator | currentValue;
+                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+
+                return allowed | preferred << 16
             }
         }
     });
@@ -187,7 +186,7 @@ const startVue = () => {
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
+                                    <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                                 </span>
                             </label>
                         </div>
