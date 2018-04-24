@@ -20,8 +20,9 @@
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
 
 <script>
+window.app = {};
 const startVue = () => {
-    const app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             // Python conversions

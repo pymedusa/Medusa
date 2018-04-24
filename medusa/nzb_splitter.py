@@ -20,11 +20,13 @@
 # pylint: disable=line-too-long
 
 from __future__ import unicode_literals
+import logging
 import re
 
-from medusa import classes, logger
+from medusa import classes
 from medusa.helper.encoding import ss
 from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.session.core import MedusaSession
 
@@ -33,6 +35,9 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ETree
 
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSession()
 
@@ -60,7 +65,7 @@ def get_season_nzbs(name, url_data, season):
     try:
         show_xml = ETree.ElementTree(ETree.XML(url_data))
     except SyntaxError:
-        logger.log(u"Unable to parse the XML of " + name + ", not splitting it", logger.ERROR)  # pylint: disable=no-member
+        log.error(u'Unable to parse the XML of {0}, not splitting it', name)
         return {}, ''
 
     nzb_element = show_xml.getroot()
@@ -70,7 +75,7 @@ def get_season_nzbs(name, url_data, season):
         show_name = scene_name_match.groups()[0]
     else:  # Make sure we aren't missing valid results after changing name_parser and the quality detection
         # Most of these will likely be invalid shows
-        logger.log(u"Unable to parse " + name + " into a scene name.", logger.DEBUG)   # pylint: disable=no-member
+        log.debug(u'Unable to parse {0} into a scene name.', name)
         return {}, ''
 
     regex = '(' + re.escape(show_name) + regex_string['episode'] % season + ')'
@@ -128,7 +133,7 @@ def save_nzb(nzb_name, nzb_string):
             nzb_fh.write(nzb_string)
 
     except EnvironmentError as error:
-        logger.log(u"Unable to save NZB: " + ex(error), logger.ERROR)  # pylint: disable=no-member
+        log.error(u'Unable to save NZB: {0}', ex(error))
 
 
 def strip_xmlns(element, xmlns):
@@ -156,14 +161,14 @@ def split_result(obj):
     # TODO: Check if this needs exception handling.
     url_data = session.get(obj.url).content
     if url_data is None:
-        logger.log(u"Unable to load url " + obj.url + ", can't download season NZB", logger.ERROR)
+        log.error(u'Unable to load url {0}, can\'t download season NZB', obj.url)
         return []
 
     # parse the season ep name
     try:
         parsed_obj = NameParser(series=obj.series).parse(obj.name)
     except (InvalidNameException, InvalidShowException) as error:
-        logger.log(u"{}".format(error), logger.DEBUG)
+        log.debug(u'{}', error)
         return []
 
     # bust it up
@@ -178,31 +183,31 @@ def split_result(obj):
     #   Maybe we should return the results found or possibly continue with the next iteration of the loop
     #   Also maybe turn this into a function and generate the results_list with a list comprehension instead
     for new_nzb in separate_nzbs:
-        logger.log(u"Split out " + new_nzb + " from " + obj.name, logger.DEBUG)  # pylint: disable=no-member
+        log.debug(u'Split out {new_nzb} from {name}', {'new_nzb': new_nzb, 'name': obj.name})
 
         # parse the name
         try:
             parsed_obj = NameParser(series=obj.series).parse(new_nzb)
         except (InvalidNameException, InvalidShowException) as error:
-            logger.log(u"{}".format(error), logger.DEBUG)
+            log.debug(u'{}', error)
             return []
 
         # make sure the result is sane
         if (parsed_obj.season_number != season) or (parsed_obj.season_number is None and season != 1):
             # pylint: disable=no-member
-            logger.log(u"Found " + new_nzb + " inside " + obj.name + " but it doesn't seem to belong to the same season, ignoring it",
-                       logger.WARNING)
+            log.warning(u'Found {new_nzb} inside {name} but it doesn\'t seem to belong to the same season, ignoring it',
+                        {'new_nzb': new_nzb, 'name': obj.name})
             continue
         elif not parsed_obj.episode_numbers:
             # pylint: disable=no-member
-            logger.log(u"Found " + new_nzb + " inside " + obj.name + " but it doesn't seem to be a valid episode NZB, ignoring it",
-                       logger.WARNING)
+            log.warning(u'Found {new_nzb} inside {name} but it doesn\'t seem to be a valid episode NZB, ignoring it',
+                        {'new_nzb': new_nzb, 'name': obj.name})
             continue
 
         want_ep = True
         for ep_num in parsed_obj.episode_numbers:
             if not obj.extraInfo[0].want_episode(season, ep_num, obj.quality):
-                logger.log(u"Ignoring result: " + new_nzb, logger.DEBUG)
+                log.debug(u'Ignoring result: {0}', new_nzb)
                 want_ep = False
                 break
         if not want_ep:

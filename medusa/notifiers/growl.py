@@ -7,7 +7,7 @@ import logging
 import socket
 from builtins import object
 
-import gntp
+import gntp.core
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
