@@ -57,6 +57,11 @@ class IssueSubmitter(object):
 
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
+    TITLE_DIFF_RATIO_OVERRIDES = [
+        # "Missing time zone for network" errors should match
+        ('missing time zone for network', 1.0),
+    ]
+
     def __init__(self):
         """Initialize class with the default constructor."""
         self.running = False
@@ -111,7 +116,12 @@ class IssueSubmitter(object):
 
             for logline in loglines:
                 log_title = logline.issue_title
-                if cls.similar(log_title, issue_title):
+
+                # Apply diff ratio overrides on first-matched basis, default = 0.9
+                diff_ratio = next((override[1] for override in cls.TITLE_DIFF_RATIO_OVERRIDES
+                                   if override[0] in log_title.lower()), 0.9)
+
+                if cls.similar(log_title, issue_title, diff_ratio):
                     results[logline.key] = issue
 
             if len(results) >= len(loglines):
