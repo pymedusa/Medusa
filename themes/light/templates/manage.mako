@@ -7,9 +7,9 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/mass-update.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Mass Update'

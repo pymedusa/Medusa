@@ -7,9 +7,9 @@
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};
