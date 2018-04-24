@@ -70,7 +70,7 @@ const startVue = () => {
             this.mounted = true;
         },
         methods: {
-            saveSeries: async function(subject) {
+            async saveSeries(subject) {
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
                 if (!this.mounted) {
                     return;
@@ -113,30 +113,30 @@ const startVue = () => {
                     }
                 };
             },
-            onChangeIgnoredWords: function(items) {
+            onChangeIgnoredWords(items) {
 		        console.debug('Event from child component emitted', items);
                 this.series.config.release.ignoredWords = items.map(item => item.value);
             },
-            onChangeRequiredWords: function(items) {
+            onChangeRequiredWords(items) {
 		        console.debug('Event from child component emitted', items);
                 this.series.config.release.requiredWords = items.map(item => item.value);
             },
-            onChangeAliases: function(items) {
+            onChangeAliases(items) {
 		        console.debug('Event from child component emitted', items);
                 this.series.config.aliases = items.map(item => item.value);
             },
-            onChangeReleaseGroupsAnime: function(items) {
+            onChangeReleaseGroupsAnime(items) {
                 this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
                 this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
 
             },
-            updateLanguage: function(value) {
+            updateLanguage(value) {
                 this.series.language = value;
             }
         },
         computed: {
-            availableLanguages: function() {
+            availableLanguages() {
                 if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
