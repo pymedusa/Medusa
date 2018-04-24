@@ -174,11 +174,8 @@ Vue.component('anidb-release-group-ui', {
         }
     },
     watch: {
-        allReleaseGroups: {
-            handler: function() {
-                this.$emit('change', this.allReleaseGroups);
-            },
-            deep: true
+        allReleaseGroups() {
+            this.$emit('change', this.allReleaseGroups);
         }
     }
 });

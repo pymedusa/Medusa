@@ -129,6 +129,23 @@
         <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
+        <script>window.routes = [];</script>
         <%block name="scripts" />
+        <script>
+            if (!window.app) {
+                console.info('Loading Vue with router since window.app is missing.');
+                const router = new vueRouter({
+                    base: document.getElementsByTagName('base')[0].getAttribute('href'),
+                    mode: 'history',
+                    routes
+                });
+                window.app = new Vue({
+                    el: '#vue-wrap',
+                    router
+                });
+            } else {
+                console.info('Loading local Vue since we found a window.app');
+            }
+        </script>
     </body>
 </html>

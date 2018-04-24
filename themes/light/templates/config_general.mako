@@ -12,20 +12,15 @@
 %>
 <%block name="scripts">
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - General'
-        },
-        data() {
-            return {
-                header: 'General Configuration'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - General'
+    },
+    data: {
+        header: 'General Configuration'
+    }
+});
 </script>
 </%block>
 <%block name="content">
