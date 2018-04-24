@@ -38,6 +38,9 @@
 <script>
 const component = {
     name: 'config',
+    metaInfo: {
+        title: 'Help & Info'
+    },
     template: '#config-route-template',
     data() {
         return {
