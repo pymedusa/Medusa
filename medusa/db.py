@@ -218,7 +218,7 @@ class DBConnection(object):
                                 logger.log(qu[0] + " with args " + str(qu[1]), logger.DEBUG)
                             sql_results.append(self._execute(qu[0], qu[1], fetchall=fetchall))
                     self.connection.commit()
-                    logger.log(u"Transaction with " + str(len(querylist)) + u" queries executed", logger.DEBUG)
+                    logger.log(u"Transaction with " + str(len(sql_results)) + u" queries executed", logger.DEBUG)
 
                     # finished
                     break
