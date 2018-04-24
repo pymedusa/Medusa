@@ -3,13 +3,13 @@
         <div class="input-group">
             <input v-model="currentPath" ref="locationInput" :name="name" @keyup.enter.prevent="" type="text" class="form-control fileBrowserField"/>
             <div class="input-group-btn fileBrowserButton">
-                <div style="font-size: 14px" class="btn btn-default">
+                <div style="font-size: 14px" class="btn-medusa btn-default">
                     <i class="glyphicon glyphicon-open"></i>
                 </div>
             </div>
         </div>
         
-        <!-- <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn fileBrowserButton"/> -->
+        <!-- <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn-medusa fileBrowserButton"/> -->
         <div class="fileBrowserDialog" style="display: none;"></div>
         <!-- <file-list files="files"></file-list> -->
         <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control input-sm fileBrowserSearchBox" style="display: none;"/>

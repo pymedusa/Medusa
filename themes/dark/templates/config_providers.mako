@@ -909,7 +909,7 @@ const startVue = () => {
                         % endfor
                         </ul>
                         <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in sorted_provider_list()])}"/>
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="provider-options" class="component-group">
@@ -1516,7 +1516,7 @@ const startVue = () => {
                     </div>
                     % endfor
                     <!-- end div for editing providers -->
-                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 % if app.USE_NZBS:
@@ -1573,17 +1573,17 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
-                                        <input class="btn" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
-                                        <input class="btn" type="button" class="newznab_cat_select" id="newznab_cat_select" value="Select Categories" />
+                                        <input class="btn-medusa" type="button" class="newznab_cat_update" id="newznab_cat_update" value="Update Categories" />
+                                        <input class="btn-medusa" type="button" class="newznab_cat_select" id="newznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>
                             </div>
                             <div id="newznab_add_div">
-                                <input class="btn" type="button" class="newznab_save" id="newznab_add" value="Add" />
+                                <input class="btn-medusa" type="button" class="newznab_save" id="newznab_add" value="Add" />
                             </div>
                             <div id="newznab_update_div" style="display: none;">
-                                <input class="btn btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
+                                <input class="btn-medusa btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
                             </div>
                         </div>
                     </fieldset>
@@ -1641,10 +1641,10 @@ const startVue = () => {
                                 </label>
                             </div>
                             <div id="torrentrss_add_div">
-                                <input type="button" class="btn torrentrss_save" id="torrentrss_add" value="Add" />
+                                <input type="button" class="btn-medusa torrentrss_save" id="torrentrss_add" value="Add" />
                             </div>
                             <div id="torrentrss_update_div" style="display: none;">
-                                <input type="button" class="btn btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
+                                <input type="button" class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
                             </div>
                         </div>
                     </fieldset>
@@ -1704,23 +1704,23 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">
-                                        <input class="btn" type="button" class="torznab_cat_update" id="torznab_cat_update" value="Update Categories" />
-                                        <input class="btn" type="button" class="torznab_cat_select" id="torznab_cat_select" value="Select Categories" />
+                                        <input class="btn-medusa" type="button" class="torznab_cat_update" id="torznab_cat_update" value="Update Categories" />
+                                        <input class="btn-medusa" type="button" class="torznab_cat_select" id="torznab_cat_select" value="Select Categories" />
                                         <span class="updating_categories"></span>
                                     </span>
                                 </label>
                             </div>
                             <div id="torznab_add_div">
-                                <input class="btn" type="button" class="torznab_save" id="torznab_add" value="Add" />
+                                <input class="btn-medusa" type="button" class="torznab_save" id="torznab_add" value="Add" />
                             </div>
                             <div id="torznab_update_div" style="display: none;">
-                                <input class="btn btn-danger torznab_delete" type="button" class="torznab_delete" id="torznab_delete" value="Delete" />
+                                <input class="btn-medusa btn-danger torznab_delete" type="button" class="torznab_delete" id="torznab_delete" value="Delete" />
                             </div>
                         </div>
                     </fieldset>
                 </div><!-- /component-group5 //-->
                 % endif
-                <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
+                <br><input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>

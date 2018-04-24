@@ -51,7 +51,7 @@ const startVue = () => {
   </thead>
   <tfoot>
     <tr>
-      <td rowspan="1" colspan="4"><input type="button" class="btn pull-right" value="Submit" id="submitMassRemove"></td>
+      <td rowspan="1" colspan="4"><input type="button" class="btn-medusa pull-right" value="Submit" id="submitMassRemove"></td>
     </tr>
   </tfoot>
   <tbody>

@@ -134,7 +134,7 @@ const startVue = () => {
                 <div id="tableDiv"></div>
                 <br>
                 <br>
-                <input class="btn" type="button" value="Submit" id="submitShowDirs" @click="submitShowDirs" />
+                <input class="btn-medusa" type="button" value="Submit" id="submitShowDirs" @click="submitShowDirs" />
             </form>
         </div>
     </div>

@@ -79,7 +79,7 @@
         <br>
         <div class="field-pair alt">
             <label for="saveDefaultsButton" class="nocheck clearfix">
-                <span class="component-title"><input class="btn btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
+                <span class="component-title"><input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
                 <span class="component-desc">
                     <p>Use current values as the defaults</p>
                 </span>

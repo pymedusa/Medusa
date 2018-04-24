@@ -36,13 +36,13 @@ const startVue = () => {
                     </td>
                     <td align="right">
                         <div>
-                            <input class="btn btn-inline submitMassEdit" type="button" value="Edit Selected" />
-                            <input class="btn btn-inline submitMassUpdate" type="button" value="Submit" />
+                            <input class="btn-medusa btn-inline submitMassEdit" type="button" value="Edit Selected" />
+                            <input class="btn-medusa btn-inline submitMassUpdate" type="button" value="Submit" />
                             <span class="show-option">
-                                <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+                                <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
                             </span>
                             <span class="show-option">
-                                <button type="button" class="resetsorting btn btn-inline">Clear Filter(s)</button>
+                                <button type="button" class="resetsorting btn-medusa btn-inline">Clear Filter(s)</button>
                             </span>
                         </div>
                     </td>
@@ -82,8 +82,8 @@ const startVue = () => {
                 </thead>
                 <tfoot>
                     <tr>
-                        <td rowspan="1" colspan="2" class="align-center alt"><input class="btn pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-                        <td rowspan="1" colspan="${(16, 17)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
+                        <td rowspan="1" colspan="2" class="align-center alt"><input class="btn-medusa pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
+                        <td rowspan="1" colspan="${(16, 17)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn-medusa pull-right submitMassUpdate" type="button" value="Submit" /></td>
                     </tr>
                 </tfoot>
                 <tbody>

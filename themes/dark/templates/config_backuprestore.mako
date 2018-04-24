@@ -52,7 +52,7 @@ const startVue = () => {
                             Select the folder you wish to save your backup file to:
                             <br><br>
                             <input type="text" name="backupDir" id="backupDir" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Backup" id="Backup" />
+                            <input class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>
                         </div>
                         <div class="Backup" id="Backup-result"></div>
@@ -68,7 +68,7 @@ const startVue = () => {
                             Select the backup file you wish to restore:
                             <br><br>
                             <input type="text" name="backupFile" id="backupFile" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Restore" id="Restore" />
+                            <input class="btn-medusa btn-inline" type="button" value="Restore" id="Restore" />
                             <br>
                         </div>
                         <div class="Restore" id="Restore-result"></div>

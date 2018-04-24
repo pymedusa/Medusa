@@ -44,7 +44,7 @@
                     <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
-                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn btn-inline">{{archiveButton.text}}</button>
+                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn-medusa btn-inline">{{archiveButton.text}}</button>
                 <h5>{{archivedStatus}}</h5>
             </div>
         </div>

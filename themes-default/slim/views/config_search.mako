@@ -197,7 +197,7 @@ const startVue = () => {
                                     </span>
                                 </label>
                             </div><!-- max cache age -->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div><!-- general settings -->
                         <div class="component-group-desc">
@@ -272,7 +272,7 @@ const startVue = () => {
                                     </span>
                                 </label>
                             </div><!-- ignore unknown subs -->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                         </div><!-- search filters -->
                 </div><!-- /component-group1 //-->
@@ -401,8 +401,8 @@ const startVue = () => {
                             </div>
                             % endif
                         <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
-                            <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input class="btn-medusa" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </div>
                         <div id="nzbget_settings">
                             <div class="field-pair">
@@ -496,8 +496,8 @@ const startVue = () => {
                                 </label>
                             </div>
                             <div class="testNotification" id="testNZBget_result">Click below to test</div>
-                                <input class="btn" type="button" value="Test NZBget" id="testNZBget" class="btn test-button"/>
-                                <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                <input class="btn-medusa" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </div>
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
@@ -541,7 +541,7 @@ const startVue = () => {
                                             </span>
                                         </label>
                                     </div>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>
                             <div id="options_torrent_clients">
@@ -690,15 +690,15 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="test_torrent_result">Click below to test</div>
-                                    <input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                    <input class="btn-medusa" type="button" value="Test Connection" id="test_torrent" class="btn-medusa test-button"/>
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                 </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
                 </div><!-- /component-group3 //-->
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components //-->
         </form>
     </div>

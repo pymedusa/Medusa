@@ -107,7 +107,7 @@ const startVue = () => {
     </table>
     </div>
     <div class="col-md-10">
-        <input type="submit" value="Rename Selected" class="btn btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</app-link>
+        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
     </div>
 </div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
@@ -155,5 +155,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</app-link>
+<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
 </%block>

@@ -29,7 +29,7 @@
                 <div class="input-group">
                     <input class="form-control" type="text" v-model="item.value"/>
                     <div class="input-group-btn" @click="deleteItem(item)">
-                        <div style="font-size: 14px" class="btn btn-default">
+                        <div style="font-size: 14px" class="btn-medusa btn-default">
                             <i class="glyphicon glyphicon-remove"></i>
                         </div>
                     </div>
@@ -39,7 +39,7 @@
                 <div class="input-group">
                     <input class="form-control" type="text" v-model="newItem"/>
                     <div class="input-group-btn" @click="addItem(item)">
-                            <div style="font-size: 14px" class="btn btn-default">
+                            <div style="font-size: 14px" class="btn-medusa btn-default">
                                 <i class="glyphicon glyphicon-plus"></i>
                             </div>
                     </div>

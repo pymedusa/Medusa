@@ -118,7 +118,7 @@ const startVue = () => {
             </tr>
             % endif
         </table>
-            <input id="submit" class="btn" type="submit" value="Process" />
+            <input id="submit" class="btn-medusa" type="submit" value="Process" />
         </form>
     </div>
 </div>

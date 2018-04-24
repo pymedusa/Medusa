@@ -85,7 +85,7 @@ const startVue = () => {
     <input type="hidden" id="failed" name="failed" value="0">
     <input type="hidden" id="ignore_subs" name="ignore_subs" value="0">
 </table>
-    <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
+    <input id="submit" class="btn-medusa" type="submit" value="Run Manual Post-Process" />
 </form>
 </div><!-- Releases missed subtitles -->
 </div><!-- col -->
