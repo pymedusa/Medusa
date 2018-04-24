@@ -1,7 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%block name="metas">
-<meta data-var="show.is_anime" data-content="${show.is_anime}">
-</%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
 <%include file="/vue-components/select-list-ui.mako"/>
@@ -11,18 +8,20 @@ window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Edit Show'
+        },
         data() {
             // Python conversions
             // JS only
-            const exceptions = [];
             return {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
                 indexerName: $('#indexer-name').attr('value'),
                 config: MEDUSA.config,
-                exceptions: exceptions,
                 series: {
                     config: {
+                        aliases: [],
                         dvdOrder: false,
                         defaultEpisodeStatus: '',
                         flattenFolders: false,
@@ -71,13 +70,6 @@ const startVue = () => {
             this.mounted = true;
         },
         methods: {
-            anonRedirect: function(e) {
-                e.preventDefault();
-                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
-            },
-            prettyPrintJSON: function(x) {
-                return JSON.stringify(x, undefined, 4)
-            },
             saveSeries: async function(subject) {
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
                 if (!this.mounted) {
@@ -166,11 +158,7 @@ const startVue = () => {
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">Edit Show</h1>
 <saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -198,7 +186,6 @@ const startVue = () => {
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
-                                <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
                                     <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                                 </span>
