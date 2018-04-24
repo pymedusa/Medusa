@@ -171,6 +171,7 @@ class GenericProvider(object):
 
         # TODO: Remove this in future versions, kept for the warning
         # Some NZB providers (e.g. Jackett) can also download torrents
+        # A similar check is performed for NZB splitting in medusa/search/core.py @ search_providers()
         if (result.url.endswith(GenericProvider.TORRENT) or
                 result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')

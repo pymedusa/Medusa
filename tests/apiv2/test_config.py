@@ -1,16 +1,16 @@
 # coding=utf-8
 """Test /config route."""
+from __future__ import unicode_literals
+
 import json
 import platform
 import sys
 
 from medusa import app, db
 from medusa.helper.mappings import NonEmptyDict
-from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
-
-from six import iteritems, text_type
 
 from tornado.httpclient import HTTPError
 
@@ -125,8 +125,7 @@ def config(monkeypatch, app_config):
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
     config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
     config_data['indexers'] = NonEmptyDict()
-    config_data['indexers']['config'] = {text_type(indexer_id): indexer['identifier'] for indexer_id,
-                                         indexer in iteritems(indexerConfig)}
+    config_data['indexers']['config'] = get_indexer_config()
 
     return config_data
 

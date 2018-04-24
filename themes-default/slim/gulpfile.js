@@ -56,7 +56,7 @@ const staticAssets = [
  */
 const getCssTheme = theme => {
     // Using the --csstheme is mandatory.
-    if (argv.csstheme === undefined) {
+    if (argv.csstheme === undefined && !theme) {
         console.log('You need to pass a csstheme to build with the param --csstheme');
         process.exit(1);
     }
@@ -72,8 +72,8 @@ const getCssTheme = theme => {
 /**
  * Attemt to get the cssTheme config object from the package.json.
  */
-const setCsstheme = () => {
-    cssTheme = getCssTheme(cssTheme);
+const setCsstheme = theme => {
+    cssTheme = getCssTheme(theme || cssTheme);
     if (cssTheme) {
         buildDest = cssTheme.dest;
     }
@@ -215,6 +215,7 @@ const rootFiles = [
 ];
 
 const moveRoot = () => {
+    console.log(`Moving root files to: ${buildDest}`);
     return gulp
         .src(rootFiles)
         .pipe(changed(buildDest))
@@ -279,11 +280,35 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root'], async() => {
+    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', async() => {
         if (!PROD) {
             done();
         }
     });
+});
+
+const syncTheme = (theme, sequence) => {
+    return new Promise(function(resolve) {
+        console.log(`Starting syncing for theme: ${theme[0]}`);
+        setCsstheme(theme[0]);
+        runSequence(sequence, resolve);
+    });
+};
+
+/**
+ * Build the current theme and copy all files to the location configured in the package.json config attribute.
+ * It's required to pass the theme name through the `--csstheme` parameter.
+ * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
+ * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
+ *
+ * Do not run the xo build, as this takes allot of time.
+ */
+gulp.task('sync', async() => {
+    // Whe're building the light and dark theme. For this we need to run two sequences.
+    // If we need a yargs parameter name csstheme.
+    for (let theme of Object.entries(config.cssThemes)) {
+        await syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
+    }
 });
 
 /**

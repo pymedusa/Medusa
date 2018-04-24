@@ -128,6 +128,7 @@
         <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
+        <%include file="/vue-components/language-select.mako"/>
         <script>window.routes = [];</script>
         <%block name="scripts" />
         <script>

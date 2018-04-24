@@ -148,10 +148,7 @@ const startVue = () => {
                     trailingSlash = (trailingSlash !== undefined) ? trailingSlash : true; // eslint-disable-line no-negated-condition
 
                     url = $.trim(url);
-                    if (!url) {
-                        alert('Invalid URL specified!'); // eslint-disable-line no-alert
-                        return;
-                    }
+                    if (!url) return;
 
                     if (!/^https?:\/\//i.test(url)) {
                         url = 'http://' + url;
@@ -166,6 +163,10 @@ const startVue = () => {
 
                 function addNewznabProvider(id, name, url, apiKey, cats, isDefault) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Newznab provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [isDefault, [name, verifiedUrl, apiKey, cats]];
                     newznabProviders[id] = newData;
 
@@ -181,6 +182,10 @@ const startVue = () => {
 
                 function addTorrentRssProvider(id, name, url, cookies, titleTag) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url, false);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Torrent RSS provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [name, verifiedUrl, cookies, titleTag];
                     torrentRssProviders[id] = newData;
 
@@ -196,6 +201,10 @@ const startVue = () => {
 
                 function addTorznabProvider(id, name, url, apiKey, cats, caps) { // eslint-disable-line max-params
                     const verifiedUrl = verifyUrl(url);
+                    if (verifiedUrl === undefined) {
+                        alert('Invalid URL specified for the "' + name + '" Jackett/Torznab provider!'); // eslint-disable-line no-alert
+                    }
+
                     const newData = [name, verifiedUrl, apiKey, cats, caps];
                     torznabProviders[id] = newData;
 
@@ -620,6 +629,7 @@ const startVue = () => {
                 $(document.body).on('click', '#newznab_cat_select', () => {
                     const selectedProvider = $('#editANewznabProvider :selected').val();
                     const newOptions = [];
+                    const newValues = [];
                     // When the update botton is clicked, loop through the capabilities list
                     // and copy the selected category id's to the category list on the right.
                     $('#newznab_cap option:selected').each((index, element) => {
@@ -628,9 +638,12 @@ const startVue = () => {
                             text: selectedCat,
                             value: selectedCat
                         });
+                        newValues.push(selectedCat);
                     });
                     if (newOptions.length > 0) {
                         $('#newznab_cat').replaceOptions(newOptions);
+                        const cats = newValues.join(',');
+                        newznabProviders[selectedProvider][1][3] = cats;
                     }
 
                     makeNewznabProviderString();
@@ -639,6 +652,7 @@ const startVue = () => {
                 $(document.body).on('click', '#torznab_cat_select', () => {
                     const selectedProvider = $('#editATorznabProvider :selected').val();
                     const newOptions = [];
+                    const newValues = [];
                     // When the update botton is clicked, loop through the capabilities list
                     // and copy the selected category id's to the category list on the right.
                     $('#torznab_cap option:selected').each((index, element) => {
@@ -647,9 +661,12 @@ const startVue = () => {
                             text: selectedCat,
                             value: selectedCat
                         });
+                        newValues.push(selectedCat);
                     });
                     if (newOptions.length > 0) {
                         $('#torznab_cat').replaceOptions(newOptions);
+                        const cats = newValues.join(',');
+                        torznabProviders[selectedProvider][3] = cats;
                     }
 
                     makeTorznabProviderString();
