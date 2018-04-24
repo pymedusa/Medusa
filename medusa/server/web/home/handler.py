@@ -9,6 +9,7 @@ import time
 from builtins import str
 from datetime import date, datetime
 
+import adba
 from medusa import (
     app,
     config,
@@ -104,8 +105,6 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
-
-import adba
 
 from past.builtins import cmp
 
