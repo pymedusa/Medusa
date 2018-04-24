@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import adba
 import ast
 import json
 import os
@@ -105,6 +104,8 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
+
+import adba
 
 from past.builtins import cmp
 
