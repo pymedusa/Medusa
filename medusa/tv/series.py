@@ -107,7 +107,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import itervalues, string_types, text_type, viewitems
+from six import iteritems, itervalues, string_types, text_type, viewitems
 
 try:
     from send2trash import send2trash
@@ -415,6 +415,13 @@ class Series(TV):
     def default_ep_status_name(self):
         """Get the default episode status name."""
         return statusStrings[self.default_ep_status]
+
+    @default_ep_status_name.setter
+    def default_ep_status_name(self, status_name):
+        """Set the default episode status using its name."""
+        self.default_ep_status = next((status for status, name in iteritems(statusStrings)
+                                       if name.lower() == status_name.lower()),
+                                      self.default_ep_status)
 
     @property
     def size(self):
