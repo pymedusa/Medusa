@@ -1,6 +1,6 @@
 <script type="text/x-template" id="file-browser-template">
     <div>
-        <input v-model="currentPath" ref="locationInput" :name="name" @keyup.enter.prevent="" type="text" class="input-sm form-control fileBrowserField" style="width: 70%;" />
+        <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="input-sm form-control fileBrowserField" style="width: 70%;" />
         <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn fileBrowserButton"/>
         <div class="fileBrowserDialog" style="display: none;"></div>
         <!-- <file-list files="files"></file-list> -->
@@ -59,6 +59,7 @@ Vue.component('file-browser', {
     },
     data() {
         return {
+            lock: false,
             files: [],
             currentPath: '',
             lastPath: '',
@@ -270,6 +271,8 @@ Vue.component('file-browser', {
         $(this.$refs.locationInput).fileBrowser({
             title: this.title,
             localStorageKey: this.localStorageKey
+        }).on('autocompleteselect', (e, ui) => {
+            this.currentPath = ui.item.value;
         });
     },
     watch: {
@@ -278,10 +281,14 @@ Vue.component('file-browser', {
          * @TODO: Maybe we can remove this in the future.
          */
         initialDir(newValue, oldValue) {
+            this.lock = true;
             this.currentPath = this.currentPath || newValue;
+            this.$nextTick(() => this.lock = false);
         },
         currentPath(newValue, oldValue) {
-            this.$emit('update:location', this.currentPath);
+            if (!this.lock) {
+                this.$emit('update:location', this.currentPath);
+            }
         }
     }
 });
