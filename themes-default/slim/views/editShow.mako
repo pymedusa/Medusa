@@ -1,15 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import adba
-    import json
-    from medusa import app, common
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import statusStrings
-    from medusa.helper import exceptions
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import mappings
-    from medusa import scene_exceptions
-%>
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
