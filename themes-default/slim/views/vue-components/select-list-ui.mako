@@ -39,10 +39,13 @@ Vue.component('select-list', {
         }
     },
     mounted() {
+        this.lock = true;
         this.editItems = this.sanitize(this.listItems);
+        this.$nextTick(() => this.lock = false);
     },
     data() {
         return {
+            lock: false,
             editItems: [],
             newItem: '',
             indexCounter: 0
@@ -83,7 +86,9 @@ Vue.component('select-list', {
     },
     watch: {
         editItems() {
-            this.$emit('change', this.editItems);
+            if (!this.lock) {
+                this.$emit('change', this.editItems);
+            }
         }
     }
 });

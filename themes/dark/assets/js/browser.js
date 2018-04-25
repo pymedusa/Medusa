@@ -113,10 +113,6 @@
                 // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
                 $(this).dialog('close');
-
-                // We need this hack, to send the location back to the vue model.
-                // As no event is triggered, Vue doesn't know to update it's value.
-                $.eventBus.$emit('locationEvt', currentBrowserPath);
             }
         }, {
             text: 'Cancel',

@@ -1,42 +1,29 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import adba
-    import json
-    from medusa import app, common
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import statusStrings
-    from medusa.helper import exceptions
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import mappings
-    from medusa import scene_exceptions
-%>
-<%block name="metas">
-<meta data-var="show.is_anime" data-content="${show.is_anime}">
-</%block>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<%include file="/vue-components/quality-chooser.mako"/>
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
-
 <script>
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Edit Show'
+        },
         data() {
             // Python conversions
             // JS only
-            const exceptions = [];
             return {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
                 indexerName: $('#indexer-name').attr('value'),
                 config: MEDUSA.config,
-                exceptions: exceptions,
                 series: {
                     config: {
+                        aliases: [],
                         dvdOrder: false,
+                        defaultEpisodeStatus: '',
                         flattenFolders: false,
                         anime: false,
                         scene: false,
@@ -65,7 +52,6 @@ const startVue = () => {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 seriesLoaded: false,
-                location: '',
                 saveMessage: '',
                 saveError: '',
                 mounted: false
@@ -78,26 +64,13 @@ const startVue = () => {
                 const response = await api.get('series/' + this.seriesSlug);
                 this.series = Object.assign({}, this.series, response.data);
                 this.series.language = response.data.language;
-                this.location = this.series.config.location;
             } catch (error) {
                 console.debug('Could not get series info for: '+ seriesSlug);
             }
-
-            // Add the Browse.. button after the show location input.
-            $('#location').fileBrowser({
-	            title: 'Select Show Location'
-            });
             this.mounted = true;
         },
         methods: {
-            anonRedirect: function(e) {
-                e.preventDefault();
-                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
-            },
-            prettyPrintJSON: function(x) {
-                return JSON.stringify(x, undefined, 4)
-            },
-            saveSeries: async function(subject) {
+            async saveSeries(subject) {
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
                 if (!this.mounted) {
                     return;
@@ -107,6 +80,7 @@ const startVue = () => {
                     const data = {
                         config: {
                             aliases: this.series.config.aliases,
+                            defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
                             dvdOrder: this.series.config.dvdOrder,
                             flattenFolders: this.series.config.flattenFolders,
                             anime: this.series.config.anime,
@@ -124,8 +98,7 @@ const startVue = () => {
                             },
                             qualities: {
                                 preferred: this.series.config.qualities.preferred,
-                                allowed: this.series.config.qualities.allowed,
-                                combined: this.combineQualities()
+                                allowed: this.series.config.qualities.allowed
                             }
                         },
                         language: this.series.language
@@ -140,44 +113,37 @@ const startVue = () => {
                     }
                 };
             },
-            onChangeIgnoredWords: function(items) {
-		        console.debug('Event from child component emitted', items);
+            onChangeIgnoredWords(items) {
                 this.series.config.release.ignoredWords = items.map(item => item.value);
             },
-            onChangeRequiredWords: function(items) {
-		        console.debug('Event from child component emitted', items);
+            onChangeRequiredWords(items) {
                 this.series.config.release.requiredWords = items.map(item => item.value);
             },
-            onChangeAliases: function(items) {
-		        console.debug('Event from child component emitted', items);
+            onChangeAliases(items) {
                 this.series.config.aliases = items.map(item => item.value);
             },
-            onChangeReleaseGroupsAnime: function(items) {
+            onChangeReleaseGroupsAnime(items) {
                 this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
                 this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
 
             },
-            saveLocation: function(value) {
-                this.series.config.location = value;
-            },
-            updateLanguage: function(value) {
+            updateLanguage(value) {
                 this.series.language = value;
-            },
-            combineQualities() {
-                const reducer = (accumulator, currentValue) => accumulator + currentValue;
-                
-                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
-                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
-
-                return  allowed | preferred << 16
             }
         },
         computed: {
-            availableLanguages: function() {
+            availableLanguages() {
                 if (this.config.indexers.config.main.validLanguages) {
                     return this.config.indexers.config.main.validLanguages.join(',');
                 }
+            },
+            combinedQualities() {
+                const reducer = (accumulator, currentValue) => accumulator | currentValue;
+                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+
+                return allowed | preferred << 16
             }
         }
     });
@@ -188,11 +154,7 @@ const startVue = () => {
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">Edit Show</h1>
 <saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -213,16 +175,15 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <input type="hidden" name="indexername" id="form-indexername" :value="indexerName" />
                                     <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
-                                    <file-browser name="location" ref="locationBtn" id="location" v-model="location"></file-browser>
+                                    <file-browser name="location" ref="locationBrowser" id="location" title="Select Show Location" :initial-dir="series.config.location" @update:location="series.config.location = $event"/>
                                 </span>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
-                                <!-- TODO: replace these with a vue component -->
                                 <span class="component-desc">
-                                    <quality-chooser @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                                    <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                                 </span>
                             </label>
                         </div>
@@ -231,7 +192,7 @@ const startVue = () => {
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                        v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
+                                        v-model="series.config.defaultEpisodeStatus" @change="saveSeries('series')"/>
                                         <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -275,7 +236,7 @@ const startVue = () => {
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.paused" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>

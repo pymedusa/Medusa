@@ -100,6 +100,7 @@ Vue.component('quality-chooser', {
             qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
+            lock: false,
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -217,14 +218,28 @@ Vue.component('quality-chooser', {
         }
     },
     watch: {
+        /* overallQuality property might recieve values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        overallQuality(newValue, oldValue) {
+            this.lock = true;
+            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
+            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
+            this.$nextTick(() => this.lock = false);
+        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
         allowedQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
+            if (!this.lock) {
+                this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
+            }
         },
         preferredQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
+            if (!this.lock) {
+                this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
+            }
         }
     }
 });
