@@ -114,15 +114,12 @@ const startVue = () => {
                 };
             },
             onChangeIgnoredWords(items) {
-		        console.debug('Event from child component emitted', items);
                 this.series.config.release.ignoredWords = items.map(item => item.value);
             },
             onChangeRequiredWords(items) {
-		        console.debug('Event from child component emitted', items);
                 this.series.config.release.requiredWords = items.map(item => item.value);
             },
             onChangeAliases(items) {
-		        console.debug('Event from child component emitted', items);
                 this.series.config.aliases = items.map(item => item.value);
             },
             onChangeReleaseGroupsAnime(items) {
