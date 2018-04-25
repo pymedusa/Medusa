@@ -176,7 +176,7 @@ pre {
 <div class="row">
     <div :class="{fanartOpacity: fanartOpacity}" class="col-md-12">
         <div class="notepad"><span @click="viewLogAsText"><img src="images/notepad.png"/></span></div>
-        <pre v-html="logs">${log_lines}</pre>
+        <pre v-html="logs"></pre>
     </div>
 </div>
 </%block>
