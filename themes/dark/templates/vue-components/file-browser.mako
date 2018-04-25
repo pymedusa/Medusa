@@ -1,7 +1,7 @@
 <script type="text/x-template" id="file-browser-template">
     <div>
         <div class="input-group">
-            <input v-model="currentPath" ref="locationInput" :name="name" @keyup.enter.prevent="" type="text" class="form-control fileBrowserField"/>
+            <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="input-sm form-control fileBrowserField"/>
             <div class="input-group-btn fileBrowserButton">
                 <div style="font-size: 14px" class="btn-medusa btn-default">
                     <i class="glyphicon glyphicon-open"></i>
@@ -67,6 +67,7 @@ Vue.component('file-browser', {
     },
     data() {
         return {
+            lock: false,
             files: [],
             currentPath: '',
             lastPath: '',
@@ -279,6 +280,8 @@ Vue.component('file-browser', {
         $(this.$refs.locationInput).fileBrowser({
             title: title,
             localStorageKey: localStorageKey
+        }).on('autocompleteselect', (e, ui) => {
+            this.currentPath = ui.item.value;
         });
     },
     watch: {
@@ -287,10 +290,14 @@ Vue.component('file-browser', {
          * @TODO: Maybe we can remove this in the future.
          */
         initialDir(newValue, oldValue) {
+            this.lock = true;
             this.currentPath = this.currentPath || newValue;
+            this.$nextTick(() => this.lock = false);
         },
         currentPath(newValue, oldValue) {
-            this.$emit('update:location', this.currentPath);
+            if (!this.lock) {
+                this.$emit('update:location', this.currentPath);
+            }
         }
     }
 });
