@@ -27,9 +27,9 @@
         <ul>
             <li v-for="item of editItems">
                 <div class="input-group">
-                    <input class="form-control" type="text" v-model="item.value"/>
+                    <input class="form-control input-sm" type="text" v-model="item.value"/>
                     <div class="input-group-btn" @click="deleteItem(item)">
-                        <div style="font-size: 14px" class="btn-medusa btn-default">
+                        <div style="font-size: 14px" class="btn btn-default input-sm">
                             <i class="glyphicon glyphicon-remove"></i>
                         </div>
                     </div>
@@ -37,9 +37,9 @@
             </li>
             <div class="new-item">
                 <div class="input-group">
-                    <input class="form-control" type="text" v-model="newItem"/>
+                    <input class="form-control input-sm" type="text" v-model="newItem"/>
                     <div class="input-group-btn" @click="addItem(item)">
-                            <div style="font-size: 14px" class="btn-medusa btn-default">
+                            <div style="font-size: 14px" class="btn btn-default input-sm">
                                 <i class="glyphicon glyphicon-plus"></i>
                             </div>
                     </div>

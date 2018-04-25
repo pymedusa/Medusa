@@ -1,18 +1,16 @@
 <script type="text/x-template" id="file-browser-template">
     <div>
         <div class="input-group">
-            <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="input-sm form-control fileBrowserField"/>
+            <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
             <div class="input-group-btn fileBrowserButton">
-                <div style="font-size: 14px" class="btn-medusa btn-default">
+                <div style="font-size: 14px" class="btn btn-default input-sm">
                     <i class="glyphicon glyphicon-open"></i>
                 </div>
             </div>
         </div>
         
-        <!-- <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn-medusa fileBrowserButton"/> -->
         <div class="fileBrowserDialog" style="display: none;"></div>
-        <!-- <file-list files="files"></file-list> -->
-        <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control input-sm fileBrowserSearchBox" style="display: none;"/>
+        <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control fileBrowserSearchBox" style="display: none;"/>
         <ul class="fileBrowserFileList" style="display: none;">
             <li v-for="file in files" class="ui-state-default ui-corner-all">
                 <a

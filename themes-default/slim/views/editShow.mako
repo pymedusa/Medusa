@@ -192,7 +192,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
-                                <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline"
+                                <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
                                     v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
@@ -203,7 +203,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="indexerLangSelect" class="col-sm-2 control-label">Info Language</label>
                             <div class="col-sm-10 content">
-                                <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline"></language-select>
+                                <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm"></language-select>
                                 <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                             </div>
                         </div>
@@ -218,7 +218,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="paused" class="col-sm-2 control-label">Paused</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
+                                <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
                             </div>
                         </div>
                     </fieldset>

@@ -32,11 +32,16 @@
         float: right;
     }
 
-    #add-new-release-group > p > img {
+    #add-new-release-group p > img {
         height: 16px;
         width: 16px;
         background-color: rgb(204, 204, 204);
     }
+
+    .placeholder {
+        height: 32px;
+    }
+
 </style>
 <script type="text/x-template" id="anidb-release-group-ui">
     <div id="anidb-release-group-ui-wrapper" class="top-10">
@@ -54,7 +59,7 @@
                 <span>Release groups</span>
                 <ul>
                     <li v-for="release in itemsReleaseGroups" class="initial" v-bind:class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
-                    <div v-if="!newGroup" class="arrow" @click="moveToList('releasegroups')">
+                    <div class="arrow" @click="moveToList('releasegroups')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
                 </ul>
@@ -69,9 +74,13 @@
                 </ul>
             </div>
         </div>
-        <div id="add-new-release-group">
-            <input type="text" v-model="newGroup" />
-            <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"/> to add it to the correct list.</p>
+        <div id="add-new-release-group" class="row">
+            <div class="col-md-4">
+                <input class="form-control input-sm" type="text" v-model="newGroup" placeholder="add custom group"/>
+            </div>
+            <div class="col-md-8">
+                <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"/> to add it to the correct list.</p>
+            </div>
         </div>
     </div>
 </script>
@@ -148,7 +157,11 @@ Vue.component('anidb-release-group-ui', {
                 }
             }
 
-            if (this.newGroup) {
+            /* 
+            * Check if there is a value in the custom release group input box,
+            * and move this to the selected group (whitelist or blacklist)
+            */
+            if (this.newGroup && list !== 'releasegroups') {
                 this.allReleaseGroups.push({
                     id: this.index,
                     name: this.newGroup,
