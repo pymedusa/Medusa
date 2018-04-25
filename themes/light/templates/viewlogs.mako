@@ -1,12 +1,27 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
     from medusa import app
-    from medusa import classes
     from medusa.logger import LOGGING_LEVELS
     from random import choice
 %>
 <%block name="scripts">
 <script>
+const sortObject = list => {
+    const sortable = [];
+    for (let key in list) {
+        sortable.push([key, list[key]]);
+    }
+
+    sortable.sort((a, b) => a[1] > b[1] ? -1 : (a[1] < b[1] ? 1 : 0));
+
+    const orderedList = {};
+    for (let i = 0; i < sortable.length; i++) {
+        orderedList[sortable[i][0]] = sortable[i][1];
+    }
+
+    return orderedList;
+};
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
@@ -15,43 +30,86 @@ const startVue = () => {
             title: 'Logs'
         },
         data() {
+            const filters = sortObject(JSON.parse('${json.dumps(log_name_filters)}'));
+            const noFilter = filters['null'];
+            filters['None'] = noFilter;
+            delete filters['null'];
+
             return {
-                header: 'Log File'
+                header: 'Log File',
+                fanartOpacity: '${app.FANART_BACKGROUND}' === 'True',
+                // pick a random series to show as background
+                <% random_show = choice(app.showList) if app.showList else None %>
+                randomShow: {indexerId: '${getattr(random_show, "indexerid", "")}', slug: '${getattr(random_show, "slug", "")}'},
+                log: {
+                    minLevel: Number('${min_level}'),
+                    filter: '${log_filter}',
+                    period: '${log_period}',
+                    search: '${log_search}' === 'None' ? '' : '${log_search}'
+                },
+                logs: ${json.dumps(log_lines)},
+                disabled: false,
+                filters,
+                periods: {
+                    all: 'All',
+                    one_day: 'Last 24h',
+                    three_days: 'Last 3 days',
+                    one_week: 'Last 7 days'
+                },
+                <%
+                    levels = LOGGING_LEVELS.keys()
+                    levels.sort(lambda x, y: cmp(LOGGING_LEVELS[x], LOGGING_LEVELS[y]))
+                    if not app.DEBUG:
+                        levels.remove('DEBUG')
+                    if not app.DBDEBUG:
+                        levels.remove('DB')
+                %>
+                LoggingLevelLabels: JSON.parse('${json.dumps(LOGGING_LEVELS)}'),
+                loggingLevels: JSON.parse('${json.dumps(levels)}')
             };
         },
-        mounted() {
-            function getParams() {
+        computed: {
+            params() {
+                const { log } = this;
+                const { minLevel, filter, period, search } = log;
+
                 return $.param({
-                    min_level: $('select[name=min_level]').val(), // eslint-disable-line camelcase
-                    log_filter: $('select[name=log_filter]').val(), // eslint-disable-line camelcase
-                    log_period: $('select[name=log_period]').val(), // eslint-disable-line camelcase
-                    log_search: $('#log_search').val() // eslint-disable-line camelcase
+                    min_level: minLevel,
+                    log_filter: filter,
+                    log_period: period,
+                    log_search: search
                 });
             }
+        },
+        methods: {
+            viewLogAsText() {
+                const { params } = this;
 
-            $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(() => {
-                const params = getParams();
-                $('#min_level').prop('disabled', true);
-                $('#log_filter').prop('disabled', true);
-                $('#log_period').prop('disabled', true);
-                document.body.style.cursor = 'wait';
-
-                $.get('errorlogs/viewlog/?' + params, data => {
-                    history.pushState('data', '', 'errorlogs/viewlog/?' + params);
-                    $('pre').html($(data).find('pre').html());
-                    $('#min_level').prop('disabled', false);
-                    $('#log_filter').prop('disabled', false);
-                    $('#log_period').prop('disabled', false);
-                    document.body.style.cursor = 'default';
-                });
-            }, 500));
-
-            $(document.body).on('click', '#viewlog-text-view', e => {
-                e.preventDefault();
-                const params = getParams();
                 const win = window.open('errorlogs/viewlog/?' + params + '&text_view=1', '_blank');
                 win.focus();
-            });
+            },
+            async getLogs() {
+                const { params } = this;
+
+                this.disabled = true;
+
+                const data = await $.get('errorlogs/viewlog/?' + params);
+                history.pushState('data', '', 'errorlogs/viewlog/?' + params);
+
+                this.logs = $(data).find('pre').html();
+                this.disabled = false;
+            }
+        },
+        watch: {
+            disabled(disabled) {
+                document.body.style.cursor = disabled ? 'wait' : 'default';
+            },
+            log: {
+                async handler() {
+                    await this.getLogs();
+                },
+                deep: true
+            }
         }
     });
 };
@@ -64,74 +122,61 @@ pre {
   word-wrap: normal;
   white-space: pre;
 }
+.notepad {
+    top: 10px;
+}
+.notepad:hover {
+    cursor: pointer;
+}
 </style>
 </%block>
 <%block name="content">
-
-<%
-    # pick a random series to show as background
-    random_show = choice(app.showList) if app.showList else None
-%>
-<input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
-<input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+<input type="hidden" id="series-id" :value="randomShow.indexerId" />
+<input type="hidden" id="series-slug" :value="randomShow.slug" />
 
 <div class="row">
-        <div class="col-md-12">
-            <h1 class="header">{{header}}</h1>
-        </div>
-        <div class="col-md-12 pull-right ">
-            <div class="logging-filter-controll pull-right">
-                <!-- Select Loglevel -->
-                <div class="show-option">
-                    <span>Logging level:
-                        <select name="min_level" id="min_level" class="form-control form-control-inline input-sm">
-                            <%
-                                levels = LOGGING_LEVELS.keys()
-                                levels.sort(lambda x, y: cmp(LOGGING_LEVELS[x], LOGGING_LEVELS[y]))
-                                if not app.DEBUG:
-                                    levels.remove('DEBUG')
-                                if not app.DBDEBUG:
-                                    levels.remove('DB')
-                            %>
-                        % for level in levels:
-                            <option value="${LOGGING_LEVELS[level]}" ${('', 'selected="selected"')[min_level == LOGGING_LEVELS[level]]}>${level.title()}</option>
-                        % endfor
-                        </select>
-                    </span>
-                </div>
-                <div class="show-option">
-                    <!-- Filter log -->
-                    <span>Filter log by:
-                        <select name="log_filter" id="log_filter" class="form-control form-control-inline input-sm">
-                        % for log_name_filter in sorted(log_name_filters):
-                            <option value="${log_name_filter}" ${'selected="selected"' if log_filter == log_name_filter else ''}>${log_name_filters[log_name_filter]}</option>
-                        % endfor
-                        </select>
-                    </span>
-                </div>
-                <div class="show-option">
-                    <!-- Select period -->
-                    <span>Period:
-                        <select name="log_period" id="log_period" class="form-control form-control-inline input-sm">
-                            <option value="all" ${'selected="selected"' if log_period == 'all' else ''}>All</option>
-                            <option value="one_day" ${'selected="selected"' if log_period == 'one_day' else ''}>Last 24h</option>
-                            <option value="three_days" ${'selected="selected"' if log_period == 'three_days' else ''}>Last 3 days</option>
-                            <option value="one_week" ${'selected="selected"' if log_period == 'one_week' else ''}>Last 7 days</option>
-                        </select>
-                    </span>
-                </div>
-                <div class="show-option">
-                    <!-- Search Log -->
-                    <span>Search log by:
-                        <input type="text" name="log_search" placeholder="clear to reset" id="log_search" value="${('', log_search)[bool(log_search)]}" class="form-control form-control-inline input-sm"/>
-                    </span>
-                </div>
+    <div class="col-md-12">
+        <h1 class="header">{{header}}</h1>
+    </div>
+    <div class="col-md-12 pull-right ">
+        <div class="logging-filter-controll pull-right">
+            <!-- Select Loglevel -->
+            <div class="show-option">
+                <span>Logging level:
+                    <select v-model.number="log.minLevel" name="min_level" id="min_level" class="form-control form-control-inline input-sm">
+                        <option v-for="level in loggingLevels" :value="LoggingLevelLabels[level]" selected="log.minLevel === LoggingLevelLabels[level]">{{level.toLowerCase().replace(/^[a-z]/g, txt => txt.toUpperCase())}}</option>
+                    </select>
+                </span>
             </div>
-        </div> <!-- End form group -->
+            <div class="show-option">
+                <!-- Filter log -->
+                <span>Filter log by:
+                    <select v-model="log.filter" name="log_filter" id="log_filter" class="form-control form-control-inline input-sm">
+                        <option v-for="filter in Object.keys(filters).slice().reverse()" :value="filter" v-html="filters[filter]" selected="log.filter === filter"></option>
+                    </select>
+                </span>
+            </div>
+            <div class="show-option">
+                <!-- Select period -->
+                <span>Period:
+                    <select v-model="log.period" name="log_period" id="log_period" class="form-control form-control-inline input-sm">
+                        <option v-for="(title, period) in periods" :value="period" selected="log.period == period">{{title}}</option>
+                    </select>
+                </span>
+            </div>
+            <div class="show-option">
+                <!-- Search Log -->
+                <span>Search log by:
+                    <input v-model="log.search" type="text" name="log_search" placeholder="clear to reset" id="log_search" class="form-control form-control-inline input-sm"/>
+                </span>
+            </div>
+        </div>
+    </div> <!-- End form group -->
 </div> <!-- row -->
 <div class="row">
-    <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
-        <pre><div class="notepad"><app-link id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></app-link></div>${log_lines}</pre>
+    <div :class="{fanartOpacity: fanartOpacity}" class="col-md-12">
+        <div class="notepad"><span @click="viewLogAsText"><img src="images/notepad.png"/></span></div>
+        <pre v-html="logs">${log_lines}</pre>
     </div>
 </div>
 </%block>
