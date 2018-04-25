@@ -3,13 +3,14 @@
     from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import statusStrings
+    from medusa.helpers import remove_article
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/mass-update.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Mass Update'
@@ -88,8 +89,11 @@ const startVue = () => {
                 </tfoot>
                 <tbody>
             <%
+                def titler(x):
+                    return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
                 my_show_list = app.showList
-                my_show_list.sort(lambda x, y: cmp(x.name, y.name))
+                my_show_list.sort(key=lambda x: titler(x.name).lower())
             %>
                 % for cur_show in my_show_list:
                 <%

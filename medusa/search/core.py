@@ -729,7 +729,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                           best_season_result.provider.provider_type,
                           best_season_result.name)
             else:
-                if best_season_result.provider.provider_type == GenericProvider.NZB:
+                # Some NZB providers (e.g. Jackett) can also download torrents, but torrents cannot be split like NZB
+                if (best_season_result.provider.provider_type == GenericProvider.NZB and
+                        not best_season_result.url.endswith(GenericProvider.TORRENT)):
                     log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
 
                     # if not, break it apart and add them as the lowest priority results
