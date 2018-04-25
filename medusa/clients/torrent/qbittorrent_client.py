@@ -4,10 +4,16 @@
 
 from __future__ import unicode_literals
 
+import logging
+
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.auth import HTTPDigestAuth
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class QBittorrentAPI(GenericClient):
@@ -105,7 +111,14 @@ class QBittorrentAPI(GenericClient):
         data = {
             'hashes': result.hash.lower(),
         }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        ok = self._request(method='post', data=data, cookies=self.session.cookies)
+
+        if self.response.status_code == 403:
+            log.info('{name}: Unable to set torrent priority because torrent queueing'
+                     ' is disabled in {name} settings.', {'name': self.name})
+            ok = True
+
+        return ok
 
     def _set_torrent_pause(self, result):
         self.url = '{host}command/{state}'.format(host=self.host,
