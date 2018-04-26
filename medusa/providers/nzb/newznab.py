@@ -8,7 +8,6 @@ import logging
 import os
 import re
 from builtins import range
-from builtins import str
 from builtins import zip
 from collections import namedtuple
 
@@ -33,7 +32,7 @@ from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 
-from six import iteritems, itervalues
+from six import iteritems, itervalues, text_type as str
 
 import validators
 
