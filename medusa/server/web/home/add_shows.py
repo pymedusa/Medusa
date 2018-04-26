@@ -408,7 +408,6 @@ class HomeAddShows(Home):
             # prepare the inputs for passing along
             scene = config.checkbox_to_value(scene)
             anime = config.checkbox_to_value(anime)
-            drama = config.checkbox_to_value(drama)
             flatten_folders = config.checkbox_to_value(flatten_folders)
             subtitles = config.checkbox_to_value(subtitles)
 
@@ -556,7 +555,6 @@ class HomeAddShows(Home):
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
         anime = config.checkbox_to_value(anime)
-        drama = config.checkbox_to_value(drama)
         flatten_folders = config.checkbox_to_value(flatten_folders)
         subtitles = config.checkbox_to_value(subtitles)
 
