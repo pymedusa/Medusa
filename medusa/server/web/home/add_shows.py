@@ -457,7 +457,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
-                                                flatten_folders, indexer_lang, subtitles, anime, drama, scene, None,
+                                                flatten_folders, indexer_lang, subtitles, anime, scene, None,
                                                 blacklist, whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
@@ -575,7 +575,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                                flatten_folders, indexer_lang, subtitles, anime, drama,
+                                                flatten_folders, indexer_lang, subtitles, anime,
                                                 scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 

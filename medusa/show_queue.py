@@ -234,14 +234,14 @@ class ShowQueue(generic_queue.GenericQueue):
         return queueItemObj
 
     def addShow(self, indexer, indexer_id, showDir, default_status=None, quality=None, flatten_folders=None,
-                lang=None, subtitles=None, anime=None, drama=None, scene=None, paused=None,
+                lang=None, subtitles=None, anime=None, scene=None, paused=None,
                 blacklist=None, whitelist=None, default_status_after=None, root_dir=None):
 
         if lang is None:
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
         queueItemObj = QueueItemAdd(indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang,
-                                    subtitles, anime, drama, scene, paused, blacklist, whitelist, default_status_after,
+                                    subtitles, anime, scene, paused, blacklist, whitelist, default_status_after,
                                     root_dir)
 
         self.add_item(queueItemObj)
@@ -308,7 +308,7 @@ class ShowQueueItem(generic_queue.QueueItem):
 
 class QueueItemAdd(ShowQueueItem):
     def __init__(self, indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang, subtitles, anime,
-                 drama, scene, paused, blacklist, whitelist, default_status_after, root_dir):
+                scene, paused, blacklist, whitelist, default_status_after, root_dir):
 
         if isinstance(showDir, binary_type):
             self.showDir = text_type(showDir, 'utf-8')
@@ -323,7 +323,6 @@ class QueueItemAdd(ShowQueueItem):
         self.lang = lang
         self.subtitles = subtitles
         self.anime = anime
-        self.drama = drama
         self.scene = scene
         self.paused = paused
         self.blacklist = blacklist
