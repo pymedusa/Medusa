@@ -40,6 +40,7 @@ from medusa.providers.torrent import (
     nyaa,
     pretome,
     privatehd,
+    avistaz,
     rarbg,
     scenetime,
     sdbits,
@@ -68,7 +69,7 @@ __all__ = [
     'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
     'hdspace', 'newpct', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz', 'avistaz'
 ]
 
 
