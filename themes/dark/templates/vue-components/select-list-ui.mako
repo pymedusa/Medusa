@@ -148,10 +148,13 @@ Vue.component('select-list', {
         }
     },
     watch: {
-        editItems() {
-            if (!this.lock) {
-                this.$emit('change', this.editItems);
-            }
+        editItems: {
+            handler: function() {
+                if (!this.lock) {
+                    this.$emit('change', this.editItems);
+                }
+            },
+            deep: true
         },
         csv(value) {
             const splitValues = value.split(',').map(x => x.trim());
