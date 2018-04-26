@@ -134,7 +134,7 @@
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 const router = new vueRouter({
-                    base: '${app.WEB_ROOT}/',
+                    base: document.body.getAttribute('api-root').replace('api/v2/', ''),
                     mode: 'history',
                     routes
                 });
