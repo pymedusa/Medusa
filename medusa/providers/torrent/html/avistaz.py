@@ -58,7 +58,6 @@ class AvistaZProvider(TorrentProvider):
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
-
         results = []
         if not self.login():
             return results
