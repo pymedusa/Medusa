@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from builtins import str
 from collections import namedtuple
 
 from medusa import (
@@ -26,7 +25,7 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
-from six import iteritems, itervalues
+from six import iteritems, itervalues, text_type as str
 
 
 log = BraceAdapter(logging.getLogger(__name__))
