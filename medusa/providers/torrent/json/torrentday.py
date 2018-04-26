@@ -133,10 +133,11 @@ class TorrentDayProvider(TorrentProvider):
                 leechers = int(row['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < self.minseed or leechers < self.minleech:
+                if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}", title, seeders)
+                                  " minimum seeders: {0}. Seeders: {1}",
+                                  title, seeders)
                     continue
 
                 torrent_size = row['size']
