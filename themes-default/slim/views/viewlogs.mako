@@ -58,7 +58,7 @@ const startVue = () => {
                 },
                 <%
                     levels = LOGGING_LEVELS.keys()
-                    levels.sort(lambda x: LOGGING_LEVELS[x])
+                    levels.sort(key=lambda x: LOGGING_LEVELS[x])
                     if not app.DEBUG:
                         levels.remove('DEBUG')
                     if not app.DBDEBUG:
