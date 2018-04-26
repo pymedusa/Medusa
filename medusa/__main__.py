@@ -1583,9 +1583,9 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'name', 'url', 'cat_ids', 'api_key', 'username',
-                    'search_mode', 'search_fallback', 'enable_daily',
-                    'enable_backlog', 'enable_manualsearch',
+                    'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
+                    'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
+                    'search_delay',
                 ],
                 'encrypted': [
                     'password',
