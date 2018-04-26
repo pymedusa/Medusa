@@ -4,47 +4,51 @@
     Should be moved from here, when moving the .vue files.
     ========================================================================== */
 
-    div#anidb-release-group-ui-wrapper {
+    div.anidb-release-group-ui-wrapper {
         clear: both;
     }
 
-    div#anidb-release-group-ui-wrapper ul {
+    div.anidb-release-group-ui-wrapper ul {
         border-style: solid;
         border-width: thin;
         padding: 5px 2px 2px 5px;
         list-style: none;
     }
 
-    div#anidb-release-group-ui-wrapper li.active {
+    div.anidb-release-group-ui-wrapper li.active {
         background-color: cornflowerblue;
     }
 
-    div#anidb-release-group-ui-wrapper div.arrow img {
+    div.anidb-release-group-ui-wrapper div.arrow img {
         height: 32px;
         width: 32px;
     }
 
-    div#anidb-release-group-ui-wrapper {
+    div.anidb-release-group-ui-wrapper {
         margin-bottom: 20px;
     }
 
-    img.deleteFromWhitelist, img.deleteFromBlacklist {
+    div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
         float: right;
     }
 
-    #add-new-release-group p > img {
+    div.anidb-release-group-ui-wrapper #add-new-release-group p > img {
         height: 16px;
         width: 16px;
         background-color: rgb(204, 204, 204);
     }
 
-    .placeholder {
+    div.anidb-release-group-ui-wrapper.placeholder {
         height: 32px;
+    }
+
+    div.anidb-release-group-ui-wrapper.max-width {
+        max-width: 960px;
     }
 
 </style>
 <script type="text/x-template" id="anidb-release-group-ui">
-    <div id="anidb-release-group-ui-wrapper" class="top-10">
+    <div class="anidb-release-group-ui-wrapper top-10 max-width">
         <div class="row">
             <div class="col-sm-4 left-whitelist" >
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>

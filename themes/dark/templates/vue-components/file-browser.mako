@@ -1,5 +1,17 @@
-<script type="text/x-template" id="file-browser-template">
-    <div>
+<style scoped>
+    /* =========================================================================
+    Style for the file-browser.mako.
+    Should be moved from here, when moving the .vue files.
+    ========================================================================== */
+
+
+    div.file-browser.max-width {
+        max-width: 450px;
+    }
+    
+</style>    
+<script type="text/x-template" id="file-browser">
+    <div class="file-browser max-width">
         <div class="input-group">
             <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
             <div class="input-group-btn fileBrowserButton">
@@ -27,7 +39,7 @@
 <script>
 Vue.component('file-browser', {
     name: 'file-browser',
-    template: `#file-browser-template`,
+    template: `#file-browser`,
     props: {
         title: {
             type: String,

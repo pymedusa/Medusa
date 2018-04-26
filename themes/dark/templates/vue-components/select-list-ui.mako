@@ -21,32 +21,55 @@
         display: inline-block;
         box-sizing: border-box;
     }
+
+    div.select-list.max-width {
+        max-width: 450px;
+    }
+
+    div.select-list .switch-input {
+        height: 18px;
+        width: 18px;
+        left: -8px;
+        top: 4px;
+        position: absolute;
+        z-index: 10;
+        opacity: 0.6;
+    }
+
 </style>
 <script type="text/x-template" id="select-list">
-    <div class="select-list">
-        <ul>
-            <li v-for="item of editItems">
-                <div class="input-group">
-                    <input class="form-control input-sm" type="text" v-model="item.value"/>
-                    <div class="input-group-btn" @click="deleteItem(item)">
-                        <div style="font-size: 14px" class="btn btn-default input-sm">
-                            <i class="glyphicon glyphicon-remove"></i>
+    <div class="select-list max-width">
+        <img class="switch-input" src="images/refresh.png" @click="syncValues()"/>
+
+        <div class="default" v-if="!csvEnabled">
+            <ul>
+                <li v-for="item of editItems">
+                    <div class="input-group">
+                        <input class="form-control input-sm" type="text" v-model="item.value"/>
+                        <div class="input-group-btn" @click="deleteItem(item)">
+                            <div style="font-size: 14px" class="btn btn-default input-sm">
+                                <i class="glyphicon glyphicon-remove"></i>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <div class="new-item">
+                    <div class="input-group">
+                        <input class="form-control input-sm" type="text" v-model="newItem" placeholder="add new values per line" />
+                        <div class="input-group-btn" @click="addNewItem()">
+                                <div style="font-size: 14px" class="btn btn-default input-sm">
+                                    <i class="glyphicon glyphicon-plus"></i>
+                                </div>
                         </div>
                     </div>
                 </div>
-            </li>
-            <div class="new-item">
-                <div class="input-group">
-                    <input class="form-control input-sm" type="text" v-model="newItem"/>
-                    <div class="input-group-btn" @click="addItem(item)">
-                            <div style="font-size: 14px" class="btn btn-default input-sm">
-                                <i class="glyphicon glyphicon-plus"></i>
-                            </div>
-                    </div>
-                </div>
-                <!-- <img src="images/pencil_add.png" alt="N" width="16" height="16" @click="addItem"> -->
-            </div>
-        </ul>
+            </ul>
+        </div>
+
+        <div class="csv" v-if="csvEnabled">
+            <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated "/>
+        </div>
+
     </div>
 </script>
 <script>
@@ -60,23 +83,30 @@ Vue.component('select-list', {
             required: true
         }
     },
-    mounted() {
-        this.lock = true;
-        this.editItems = this.sanitize(this.listItems);
-        this.$nextTick(() => this.lock = false);
-    },
     data() {
         return {
             lock: false,
             editItems: [],
             newItem: '',
-            indexCounter: 0
+            indexCounter: 0,
+            csv: '',
+            csvEnabled: false,
+            csvValid: true
         }
     },
+    mounted() {
+        this.lock = true;
+        this.editItems = this.sanitize(this.listItems);
+        this.$nextTick(() => this.lock = false);
+        this.csv = this.editItems.map(x => x.value).join(', ');
+    },
     methods: {
-        addItem: function(evt) {
-            this.editItems.push({id: this.indexCounter, value: this.newItem});
+        addItem: function(item) {
+            this.editItems.push({id: this.indexCounter, value: item});
             this.indexCounter += 1;
+        },
+        addNewItem: function(evt) {
+            this.addItem(this.newItem);
             this.newItem = '';
         },
         deleteItem: function(item) {
@@ -104,12 +134,34 @@ Vue.component('select-list', {
                     return value;
                 }
             })
+        },
+        syncValues: function() {
+            if (this.csvEnabled) {
+                this.editItems = [];
+                this.csv.split(',').forEach((value => {
+                    this.addItem(value.trim());
+                }));
+            } else {
+                this.csv = this.editItems.map(x => x.value).join(', ');
+            }
+            this.csvEnabled = !this.csvEnabled;
         }
     },
     watch: {
         editItems() {
             if (!this.lock) {
                 this.$emit('change', this.editItems);
+            }
+        },
+        csv(value) {
+            const splitValues = value.split(',').map(x => x.trim());
+            if (!splitValues) {
+                csvValid = false;
+            } else {
+                this.editItems = [];
+                splitValues.forEach((value => {
+                    this.addItem(value);
+                }));
             }
         }
     }

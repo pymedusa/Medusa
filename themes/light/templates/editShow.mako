@@ -247,7 +247,7 @@ const startVue = () => {
                         <div v-if="series.config.anime" class="form-group">
                             <label for="anidbReleaseGroup" class="col-sm-2 control-label">Release Groups</label>
                             <div class="col-sm-10 content">
-                                <anidb-release-group-ui :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                                <anidb-release-group-ui class="max-width" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </div>
                         </div>
 
