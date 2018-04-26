@@ -73,6 +73,9 @@ def to_timestamp(dt):
     :return: seconds since epoch as float
     """
     epoch = datetime(1970, 1, 1, tzinfo=tz.gettz('UTC'))
-    dt_utc = dt.astimezone(tz.gettz('UTC'))
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        dt_utc = dt.replace(tzinfo=tz.gettz('UTC'))
+    else:
+        dt_utc = dt.astimezone(tz.gettz('UTC'))
 
     return (dt_utc - epoch).total_seconds()
