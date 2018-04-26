@@ -120,6 +120,7 @@ class SeriesHandler(BaseRequestHandler):
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
             'config.flattenFolders': BooleanField(series, 'flatten_folders'),
             'config.anime': BooleanField(series, 'anime'),
+            'config.drama': BooleanField(series, 'drama'),
             'config.scene': BooleanField(series, 'scene'),
             'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),

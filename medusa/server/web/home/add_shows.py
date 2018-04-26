@@ -408,6 +408,7 @@ class HomeAddShows(Home):
             # prepare the inputs for passing along
             scene = config.checkbox_to_value(scene)
             anime = config.checkbox_to_value(anime)
+            drama = config.checkbox_to_value(drama)
             flatten_folders = config.checkbox_to_value(flatten_folders)
             subtitles = config.checkbox_to_value(subtitles)
 
@@ -457,8 +458,8 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
-                                                flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
-                                                whitelist, int(default_status_after), root_dir=location)
+                                                flatten_folders, indexer_lang, subtitles, anime, drama, scene, None,
+                                                blacklist, whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 
@@ -555,6 +556,7 @@ class HomeAddShows(Home):
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
         anime = config.checkbox_to_value(anime)
+        drama = config.checkbox_to_value(drama)
         flatten_folders = config.checkbox_to_value(flatten_folders)
         subtitles = config.checkbox_to_value(subtitles)
 
@@ -575,7 +577,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                                flatten_folders, indexer_lang, subtitles, anime,
+                                                flatten_folders, indexer_lang, subtitles, anime, drama,
                                                 scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
@@ -652,6 +654,7 @@ class HomeAddShows(Home):
                     flatten_folders=app.FLATTEN_FOLDERS_DEFAULT,
                     subtitles=app.SUBTITLES_DEFAULT,
                     anime=app.ANIME_DEFAULT,
+                    drama=app.DRAMA_DEFAULT,
                     scene=app.SCENE_DEFAULT,
                     default_status_after=app.STATUS_DEFAULT_AFTER
                 )

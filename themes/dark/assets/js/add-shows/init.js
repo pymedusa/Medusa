@@ -141,6 +141,7 @@ MEDUSA.addShows.init = function() {
                 default_flatten_folders: !$('#season_folders').prop('checked'), // eslint-disable-line camelcase
                 subtitles: $('#subtitles').prop('checked'),
                 anime: $('#anime').prop('checked'),
+                drama: $('#drama').prop('checked'),
                 scene: $('#scene').prop('checked'),
                 default_status_after: $('#statusSelectAfter').val() // eslint-disable-line camelcase
             });

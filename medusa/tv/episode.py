@@ -368,6 +368,8 @@ class Episode(TV):
             return self.airdate.strftime(dateFormat)
         if self.series.is_anime and self.absolute_number is not None:
             return 'e{0:02d}'.format(self.absolute_number)
+        if self.series.is_drama:
+            return 'e{0:02d'.format(self.episode.episode)
 
         return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
 

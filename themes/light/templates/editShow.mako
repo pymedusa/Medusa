@@ -84,6 +84,7 @@ const startVue = () => {
                             dvdOrder: this.series.config.dvdOrder,
                             flattenFolders: this.series.config.flattenFolders,
                             anime: this.series.config.anime,
+                            drama: this.series.config.drama,
                             scene: this.series.config.scene,
                             sports: this.series.config.sports,
                             paused: this.series.config.paused,
@@ -238,6 +239,14 @@ const startVue = () => {
                                 <span class="component-desc">
                                     <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
+                            <label for="drama">
+                                <span class="component-title">Drama</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" id="drama" name="drama" v-model="series.config.drama" @change="saveSeries('series')"> check if the show is a drama and episodes are released as Show.E01 rather than Show.S01E01<br>
                                 </span>
                             </label>
                         </div>

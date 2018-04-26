@@ -706,3 +706,21 @@ class AddIndexerIds(AddIndexerInteger):
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
+
+
+class AddDramaSupport(AddIndexerIds):
+
+    def test(self):
+        """
+        Test if the version is at least 44.10
+        """
+        return self.connection.version >= (44, 10)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Adding column drama in tv_shows')
+        if not self.hasColumn('tv_shows', 'drama'):
+            self.addColumn('tv_shows', 'drama', 'NUMERIC', False)
+
+        self.inc_minor_version()
