@@ -648,7 +648,7 @@ body {
     border-color: rgb(62, 63, 58);
 }
 
-.btn {
+.btn-medusa {
     color: rgb(255, 255, 255);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-color: rgb(97, 97, 97);
@@ -669,22 +669,22 @@ body {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn:hover,
-.btn:active,
-.btn.active,
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa:hover,
+.btn-medusa:active,
+.btn-medusa.active,
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
-.btn:active,
-.btn.active {
+.btn-medusa:active,
+.btn-medusa.active {
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
-.btn:hover {
+.btn-medusa:hover {
     text-decoration: none;
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
@@ -696,15 +696,15 @@ body {
     transition: background-position 0s linear;
 }
 
-.btn:focus {
+.btn-medusa:focus {
     outline: thin dotted rgb(51, 51, 51);
     outline: 5px auto -webkit-focus-ring-color;
     outline-offset: -2px;
     color: rgb(255, 255, 255);
 }
 
-.btn.active,
-.btn:active {
+.btn-medusa.active,
+.btn-medusa:active {
     background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
@@ -712,8 +712,8 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     cursor: default;
     background-color: rgb(97, 97, 97);
     color: rgb(255, 255, 255);

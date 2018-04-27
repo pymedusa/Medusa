@@ -109,8 +109,8 @@ const startVue = () => {
                                     % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
-                                    <app-link class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>

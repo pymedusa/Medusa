@@ -119,7 +119,7 @@ window.app = new Vue({
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
                     <div class="component-group-desc">
@@ -245,7 +245,7 @@ window.app = new Vue({
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
                 </div><!-- /component-group1 //-->
@@ -396,7 +396,7 @@ window.app = new Vue({
                             <span class="component-desc">URL where the shows can be downloaded.</span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
                     <div class="component-group-desc">
@@ -411,7 +411,7 @@ window.app = new Vue({
                                 <span class="component-title">API key</span>
                                 <span class="component-desc">
                                     <input type="text" name="api_key" id="api_key" value="${app.API_KEY}" class="form-control input-sm input300" readonly="readonly"/>
-                                    <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
+                                    <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
                                         <p>you can try all the features of the API <app-link href="apibuilder/">here</app-link></p>
@@ -524,7 +524,7 @@ window.app = new Vue({
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 </div>
@@ -673,7 +673,7 @@ window.app = new Vue({
                             </label>
                         </div>
 
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                     <div class="component-group-desc">
@@ -727,7 +727,7 @@ window.app = new Vue({
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                     <div class="component-group-desc">
@@ -754,9 +754,9 @@ window.app = new Vue({
                                     % endif
                                     </select>
                                     % if not gh_branch:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
                                     % else:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
                                     % endif
                                     % if not gh_branch:
                                        <div class="clear-left" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></div>
@@ -810,9 +810,9 @@ window.app = new Vue({
                                     <span class="component-desc">
                                         <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
                                          % if not app.GIT_TOKEN:
-                                            <input class="btn btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                            <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
                                          % else:
-                                            <input class="btn btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                            <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
                                          % endif
                                         <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
                                     </span>
@@ -862,20 +862,20 @@ window.app = new Vue({
                                             % endfor
                                         % endif
                                     </select>
-                                    <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
+                                    <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
                                 </span>
                                 <div class="clear-left">
                                     <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
                                 </div>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->
         </form>
     </div>

@@ -4,36 +4,51 @@
     Should be moved from here, when moving the .vue files.
     ========================================================================== */
 
-    div#anidb-release-group-ui-wrapper {
+    div.anidb-release-group-ui-wrapper {
         clear: both;
     }
 
-    div#anidb-release-group-ui-wrapper ul {
+    div.anidb-release-group-ui-wrapper ul {
         border-style: solid;
         border-width: thin;
         padding: 5px 2px 2px 5px;
         list-style: none;
     }
 
-    div#anidb-release-group-ui-wrapper li.active {
+    div.anidb-release-group-ui-wrapper li.active {
         background-color: cornflowerblue;
     }
 
-    div#anidb-release-group-ui-wrapper div.arrow img {
+    div.anidb-release-group-ui-wrapper div.arrow img {
         height: 32px;
         width: 32px;
     }
 
-    div#anidb-release-group-ui-wrapper {
+    div.anidb-release-group-ui-wrapper {
         margin-bottom: 20px;
     }
 
-    img.deleteFromWhitelist, img.deleteFromBlacklist {
+    div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
         float: right;
     }
+
+    div.anidb-release-group-ui-wrapper #add-new-release-group p > img {
+        height: 16px;
+        width: 16px;
+        background-color: rgb(204, 204, 204);
+    }
+
+    div.anidb-release-group-ui-wrapper.placeholder {
+        height: 32px;
+    }
+
+    div.anidb-release-group-ui-wrapper.max-width {
+        max-width: 960px;
+    }
+
 </style>
 <script type="text/x-template" id="anidb-release-group-ui">
-    <div id="anidb-release-group-ui-wrapper" class="top-10">
+    <div class="anidb-release-group-ui-wrapper top-10 max-width">
         <div class="row">
             <div class="col-sm-4 left-whitelist" >
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
@@ -63,8 +78,13 @@
                 </ul>
             </div>
         </div>
-        <div id="add-new-release-group">
-            <input type="text" v-model="newGroup" />
+        <div id="add-new-release-group" class="row">
+            <div class="col-md-4">
+                <input class="form-control input-sm" type="text" v-model="newGroup" placeholder="add custom group"/>
+            </div>
+            <div class="col-md-8">
+                <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"/> to add it to the correct list.</p>
+            </div>
         </div>
     </div>
 </script>
@@ -141,7 +161,11 @@ Vue.component('anidb-release-group-ui', {
                 }
             }
 
-            if (this.newGroup) {
+            /* 
+            * Check if there is a value in the custom release group input box,
+            * and move this to the selected group (whitelist or blacklist)
+            */
+            if (this.newGroup && list !== 'releasegroups') {
                 this.allReleaseGroups.push({
                     id: this.index,
                     name: this.newGroup,

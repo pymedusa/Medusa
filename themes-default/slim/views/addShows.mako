@@ -25,7 +25,7 @@ const startVue = () => {
 <%block name="content">
 <h1 class="header">{{header}}</h1>
 <div id="addShowPortal">
-    <app-link href="addShows/newShow/" id="btnNewShow" class="btn btn-large">
+    <app-link href="addShows/newShow/" id="btnNewShow" class="btn-medusa btn-large">
         <div class="button"><div class="add-list-icon-addnewshow"></div></div>
         <div class="buttontext">
             <h3>Add New Show</h3>
@@ -33,7 +33,7 @@ const startVue = () => {
         </div>
     </app-link>
 
-    <app-link href="addShows/existingShows/" id="btnExistingShow" class="btn btn-large">
+    <app-link href="addShows/existingShows/" id="btnExistingShow" class="btn-medusa btn-large">
         <div class="button"><div class="add-list-icon-addexistingshow"></div></div>
         <div class="buttontext">
             <h3>Add Existing Shows</h3>
