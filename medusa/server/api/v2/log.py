@@ -1,13 +1,14 @@
 # coding=utf-8
 """Request handler for logs."""
 from __future__ import unicode_literals
+
 import json
 import logging
+import threading
 
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 
@@ -28,15 +29,20 @@ class LogHandler(BaseRequestHandler):
         if log_level not in LOGGING_LEVELS:
             return self._bad_request('Invalid log level')
 
+        thread_name = self.get_argument('thread', '').upper()
+        search_query = self.get_argument('query', '')
+
         arg_page = self._get_page()
         arg_limit = self._get_limit()
         min_level = LOGGING_LEVELS[log_level]
 
+        def predicate(log_line):
+            return filter_logline(log_line, min_level=min_level, thread_name=thread_name, search_query=search_query)
+
         def data_generator():
             """Read log lines based on the specified criteria."""
             start = arg_limit * (arg_page - 1) + 1
-            for l in read_loglines(start_index=start, max_lines=arg_limit * arg_page,
-                                   predicate=lambda li: filter_logline(li, min_level=min_level)):
+            for l in read_loglines(start_index=start, max_lines=arg_limit * arg_page, predicate=predicate):
                 yield l.to_json()
 
         return self._paginate(data_generator=data_generator)
@@ -54,9 +60,22 @@ class LogHandler(BaseRequestHandler):
         if data['level'] not in LOGGING_LEVELS:
             return self._bad_request('Invalid log level')
 
+        thread = data.get('thread', '').upper()
+        # if thread not in ('Javascript', ):
+        #     return self._bad_request('Invalid thread name')
+
         message = data['message']
         args = data.get('args', [])
         kwargs = data.get('kwargs', {})
         level = LOGGING_LEVELS[data['level']]
+
+        cur_thread = threading.current_thread().name
+        if thread:
+            threading.current_thread().name = '{0} :: [{1}]'.format(cur_thread, thread)
+
         log.log(level, message, exc_info=False, *args, **kwargs)
+
+        if thread:
+            threading.current_thread().name = cur_thread
+
         self._created()

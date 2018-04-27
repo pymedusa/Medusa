@@ -754,6 +754,8 @@ paths:
       description: Retrieve log messages. Default sorting is descending by timestamp
       parameters:
         - $ref: '#/parameters/log-level'
+        - $ref: '#/parameters/log-thread'
+        - $ref: '#/parameters/log-query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -1767,6 +1769,18 @@ parameters:
     description: The log level
     type: string
     enum: [ERROR, WARNING, INFO, DEBUG, DB]
+  log-thread:
+    name: thread
+    in: query
+    required: false
+    description: The log thread
+    type: string
+  log-query:
+    name: query
+    in: query
+    required: false
+    description: The log search query
+    type: string
 responses:
   pagination:
     description: Pagination response
