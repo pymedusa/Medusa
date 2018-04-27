@@ -102,15 +102,17 @@ class HomeAddShows(Home):
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
-    def massAddTable(self, rootDir=None):
-        t = PageTemplate(rh=self, filename='home_massAddTable.mako')
+    def massAddTable(self, rootDir=None, jsonData=None):
 
-        if not rootDir:
-            return 'No folders selected.'
-        elif not isinstance(rootDir, list):
-            root_dirs = [rootDir]
+        if jsonData:
+            root_dirs = json.loads(jsonData)
         else:
-            root_dirs = rootDir
+            if not rootDir:
+                return 'No folders selected.'
+            elif not isinstance(rootDir, list):
+                root_dirs = [rootDir]
+            else:
+                root_dirs = rootDir
 
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
@@ -174,6 +176,23 @@ class HomeAddShows(Home):
 
                 if indexer_id and indexer and Show.find_by_id(app.showList, indexer, indexer_id):
                     cur_dir['added_already'] = True
+
+        # Workaround for Vue
+        if jsonData:
+            for cur_dir in dir_list:
+                cur_dir.update({
+                    'displayDir': cur_dir['display_dir'],
+                    'alreadyAdded': cur_dir['added_already'],
+                    'existingInfo': dict(zip(('seriesId', 'seriesName', 'indexer'), cur_dir['existing_info']))
+                })
+
+                cur_dir.pop('display_dir', None)
+                cur_dir.pop('added_already', None)
+                cur_dir.pop('existing_info', None)
+
+            return {'dirList': dir_list}
+
+        t = PageTemplate(rh=self, filename='home_massAddTable.mako')
         return t.render(dirList=dir_list)
 
     def newShow(self, show_to_add=None, other_shows=None, search_string=None):
