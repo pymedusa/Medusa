@@ -5,6 +5,8 @@ sudo: false
 branches:
   except:
     - master
+before_install:
+  - python .github/check_version.py
 install:
   - pip install --upgrade pip
   - pip install --upgrade tox
