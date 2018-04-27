@@ -2835,8 +2835,9 @@ html * {
 }
 
 input[type="checkbox"] {
-    margin: 2px 0 0;
+    margin: 2px 5px 0;
     line-height: normal;
+    transform: scale(1.3, 1.3);
 }
 
 input[type="radio"] {
@@ -3443,6 +3444,10 @@ input sizing (for config pages)
 .input350 {
     width: 350px;
     margin-top: -4px;
+}
+
+select.input-sm {
+    font-size: .9em;
 }
 
 /* =======================================================================
