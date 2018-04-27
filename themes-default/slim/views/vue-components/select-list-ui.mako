@@ -39,7 +39,7 @@
 </style>
 <script type="text/x-template" id="select-list">
     <div class="select-list max-width">
-        <img class="switch-input" src="images/refresh.png" @click="syncValues()"/>
+        <img class="switch-input" src="images/refresh.png" @click="switchFields()"/>
 
         <div class="default" v-if="!csvEnabled">
             <ul>
@@ -135,15 +135,31 @@ Vue.component('select-list', {
                 }
             })
         },
+        /**
+         * Depending on which option is selected, sync the data to the other.
+         * Sync from editItems to a csv (comma separated) field.
+         * Or from csv to editItems.
+         */
         syncValues: function() {
             if (this.csvEnabled) {
                 this.editItems = [];
                 this.csv.split(',').forEach((value => {
-                    this.addItem(value.trim());
+                    // Omit empty strings
+                    if (value.trim()) {
+                        this.addItem(value.trim());
+                    }
                 }));
             } else {
                 this.csv = this.editItems.map(x => x.value).join(', ');
             }
+        },
+        /**
+         * When switching between a list of inputs and a csv input
+         * whe're making sure that 1. the data is updated in editItems (which is the source of truth)
+         * and this.csv, which keeps track of the csv.
+         */
+        switchFields: function() {
+            this.syncValues();
             this.csvEnabled = !this.csvEnabled;
         }
     },
@@ -156,16 +172,8 @@ Vue.component('select-list', {
             },
             deep: true
         },
-        csv(value) {
-            const splitValues = value.split(',').map(x => x.trim());
-            if (!splitValues) {
-                csvValid = false;
-            } else {
-                this.editItems = [];
-                splitValues.forEach((value => {
-                    this.addItem(value);
-                }));
-            }
+        csv() {
+            this.syncValues();
         }
     }
 });
