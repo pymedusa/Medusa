@@ -217,6 +217,7 @@ class Series(TV):
         self.last_update_indexer = 1
         self.sports = 0
         self.anime = 0
+        self.drama = 0
         self.scene = 0
         self.rls_ignore_words = ''
         self.rls_require_words = ''
@@ -323,6 +324,11 @@ class Series(TV):
     def is_anime(self):
         """Check if the show is Anime."""
         return bool(self.anime)
+
+    @property
+    def is_drama(self):
+        """Check if the show is a drama."""
+        return bool(self.drama)
 
     def is_location_valid(self, location=None):
         """
@@ -1496,6 +1502,7 @@ class Series(TV):
             self.start_year = int(sql_results[0][b'startyear'] or 0)
             self.air_by_date = int(sql_results[0][b'air_by_date'] or 0)
             self.anime = int(sql_results[0][b'anime'] or 0)
+            self.drama = int(sql_results[0][b'drama'] or 0)
             self.sports = int(sql_results[0][b'sports'] or 0)
             self.scene = int(sql_results[0][b'scene'] or 0)
             self.subtitles = int(sql_results[0][b'subtitles'] or 0)
@@ -1961,6 +1968,7 @@ class Series(TV):
                           'paused': self.paused,
                           'air_by_date': self.air_by_date,
                           'anime': self.anime,
+                          'drama': self.drama,
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
@@ -2013,6 +2021,7 @@ class Series(TV):
         to_return += 'scene: ' + str(self.is_scene) + '\n'
         to_return += 'sports: ' + str(self.is_sports) + '\n'
         to_return += 'anime: ' + str(self.is_anime) + '\n'
+        to_return += 'drama: ' + str(self.is_drama) + '\n'
         return to_return
 
     def __unicode__(self):
@@ -2040,6 +2049,7 @@ class Series(TV):
         to_return += u'scene: {0}\n'.format(self.is_scene)
         to_return += u'sports: {0}\n'.format(self.is_sports)
         to_return += u'anime: {0}\n'.format(self.is_anime)
+        to_return += u'drama: {0}\n'.format(self.is_drama)
         return to_return
 
     def to_json(self, detailed=True):

@@ -635,6 +635,8 @@ class GenericProvider(object):
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
+            elif episode.series.drama:
+                episode_string += 'E{0:0>2}'.format(episode.episode)
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
