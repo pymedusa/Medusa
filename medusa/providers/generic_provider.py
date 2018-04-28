@@ -23,7 +23,6 @@ from medusa import (
     tv,
     ui,
 )
-
 from medusa.classes import (
     SearchResult,
 )
