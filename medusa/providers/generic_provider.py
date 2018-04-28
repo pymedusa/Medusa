@@ -634,28 +634,17 @@ class GenericProvider(object):
         """Create a search string used for as anime 'marked' shows."""
         episode_string = show_scene_name + self.search_separator
 
-        # If the showname is a season scene exception, we want to use the indexer episode number.
+        # If the show name is a season scene exception, we want to use the indexer episode number.
         if (episode.scene_season > 1 and
-            show_scene_name in get_scene_exceptions(episode.show.indexerid,
-                                                    episode.show.indexer,
-                                                    episode.scene_season)):
+                show_scene_name in get_season_scene_exceptions(episode.series, episode.scene_season)):
             # This is apparently a season exception, let's use the scene_episode instead of absolute
             ep = episode.scene_episode
         else:
             ep = episode.scene_absolute_number
 
-        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
         episode_string += '{episode:0>2}'.format(episode=ep)
-
         episode_string += self.search_separator + add_string
-
-        episode_string_fallback += self.search_separator + add_string
-
-        search_string['Episode'].append(episode_string_fallback.strip())
         search_string['Episode'].append(episode_string.strip())
-
-        if self.anime_search_show_name:
-            search_string['EpisodeFallback'].append(show_scene_name.strip())
 
     def _create_default_search_string(self, show_scene_name, episode, search_string, add_string=None):
         """Create a default search string, used for standard type S01E01 tv series."""
