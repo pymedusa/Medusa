@@ -86,11 +86,11 @@ const startVue = () => {
         <div class="show-option pull-right">
             % if app.HOME_LAYOUT != 'poster':
                 <span class="show-option">
-                    <button id="popover" type="button" class="btn btn-inline">
+                    <button id="popover" type="button" class="btn-medusa btn-inline">
                         Select Columns <b class="caret"></b>
                     </button>
                 </span> <span class="show-option">
-                    <button type="button" class="resetsorting btn btn-inline">Clear
+                    <button type="button" class="resetsorting btn-medusa btn-inline">Clear
                         Filter(s)</button>
                 </span>&nbsp;
             % endif

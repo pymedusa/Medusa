@@ -215,7 +215,7 @@ const startVue = () => {
                 </table>
                 <br>
                 <br>
-                <input class="btn" type="button" value="Submit" id="submitSeriesDirs" :disabled="isLoading" @click="submitSeriesDirs" />
+                <input class="btn-medusa" type="button" value="Submit" id="submitSeriesDirs" :disabled="isLoading" @click="submitSeriesDirs" />
             </form>
         </div>
     </div>

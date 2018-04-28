@@ -18,9 +18,9 @@
     </select>
 </div>
 <div id="rootDirsControls" class="rootdir-controls">
-    <input class="btn" type="button" id="addRootDir" value="New" />
-    <input class="btn" type="button" id="editRootDir" value="Edit" />
-    <input class="btn" type="button" id="deleteRootDir" value="Delete" />
-    <input class="btn" type="button" id="defaultRootDir" value="Set as Default *" />
+    <input class="btn-medusa" type="button" id="addRootDir" value="New" />
+    <input class="btn-medusa" type="button" id="editRootDir" value="Edit" />
+    <input class="btn-medusa" type="button" id="deleteRootDir" value="Delete" />
+    <input class="btn-medusa" type="button" id="defaultRootDir" value="Set as Default *" />
 </div>
 <input type="text" style="display: none;" id="rootDirText"/>

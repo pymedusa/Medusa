@@ -1,10 +1,28 @@
-<script type="text/x-template" id="file-browser-template">
-    <div>
-        <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="input-sm form-control fileBrowserField" style="width: 70%;" />
-        <input v-if="showBrowseButton" type="button" :value="'Browse\u2026'" class="btn fileBrowserButton"/>
+<style scoped>
+    /* =========================================================================
+    Style for the file-browser.mako.
+    Should be moved from here, when moving the .vue files.
+    ========================================================================== */
+
+
+    div.file-browser.max-width {
+        max-width: 450px;
+    }
+    
+</style>    
+<script type="text/x-template" id="file-browser">
+    <div class="file-browser max-width">
+        <div class="input-group">
+            <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
+            <div class="input-group-btn fileBrowserButton">
+                <div style="font-size: 14px" class="btn btn-default input-sm">
+                    <i class="glyphicon glyphicon-open"></i>
+                </div>
+            </div>
+        </div>
+        
         <div class="fileBrowserDialog" style="display: none;"></div>
-        <!-- <file-list files="files"></file-list> -->
-        <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control input-sm fileBrowserSearchBox" style="display: none;"/>
+        <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control fileBrowserSearchBox" style="display: none;"/>
         <ul class="fileBrowserFileList" style="display: none;">
             <li v-for="file in files" class="ui-state-default ui-corner-all">
                 <a
@@ -21,7 +39,7 @@
 <script>
 Vue.component('file-browser', {
     name: 'file-browser',
-    template: `#file-browser-template`,
+    template: `#file-browser`,
     props: {
         title: {
             type: String,
@@ -268,9 +286,10 @@ Vue.component('file-browser', {
             return resultField;
         };
 
+        const { title, localStorageKey } = this;
         $(this.$refs.locationInput).fileBrowser({
-            title: this.title,
-            localStorageKey: this.localStorageKey
+            title: title,
+            localStorageKey: localStorageKey
         }).on('autocompleteselect', (e, ui) => {
             this.currentPath = ui.item.value;
         });
