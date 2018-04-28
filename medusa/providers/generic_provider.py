@@ -19,9 +19,11 @@ from dateutil import parser, tz
 from medusa import (
     app,
     config,
+    scene_exceptions,
     tv,
     ui,
 )
+
 from medusa.classes import (
     SearchResult,
 )
@@ -45,7 +47,6 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
-from medusa.scene_exceptions import get_season_scene_exceptions
 from medusa.search import PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
 from medusa.session.hooks import cloudflare
@@ -640,7 +641,7 @@ class GenericProvider(object):
 
         # If the show name is a season scene exception, we want to use the indexer episode number.
         if (episode.scene_season > 1 and
-                show_scene_name in get_season_scene_exceptions(episode.series, episode.scene_season)):
+                show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.series, episode.scene_season)):
             # This is apparently a season exception, let's use the scene_episode instead of absolute
             ep = episode.scene_episode
         else:
