@@ -342,16 +342,20 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
 
         if not best_result:
             best_result = cur_result
-        elif Quality.is_higher_quality(best_result.quality, cur_result.quality, allowed_qualities, preferred_qualities):
+            continue
+        if Quality.is_higher_quality(best_result.quality, cur_result.quality, allowed_qualities, preferred_qualities):
             best_result = cur_result
+            continue
         elif best_result.quality == cur_result.quality:
             if any(ext in cur_result.name.lower() for ext in preferred_words):
                 log.info(u'Preferring {0} (preferred words)', cur_result.name)
                 best_result = cur_result
-            elif cur_result.proper_tags:
+                continue
+            if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
                 best_result = cur_result
-            elif any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
+                continue
+            if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
 
