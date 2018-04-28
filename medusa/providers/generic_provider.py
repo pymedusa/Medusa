@@ -616,7 +616,9 @@ class GenericProvider(object):
         episode_string = show_scene_name + self.search_separator
         episode_string += str(episode.airdate).replace('-', ' ')
 
-        episode_string += self.search_separator + add_string
+        if add_string:
+            episode_string += self.search_separator + add_string
+
         search_string['Episode'].append(episode_string.strip())
 
     def _create_sports_search_string(self, show_scene_name, episode, search_string, add_string=None):
@@ -627,7 +629,9 @@ class GenericProvider(object):
         episode_string += ('|', ' ')[len(self.proper_strings) > 1]
         episode_string += episode.airdate.strftime('%b')
 
-        episode_string += self.search_separator + add_string
+        if add_string:
+            episode_string += self.search_separator + add_string
+
         search_string['Episode'].append(episode_string.strip())
 
     def _create_anime_search_string(self, show_scene_name, episode, search_string, add_string=None):
@@ -643,7 +647,12 @@ class GenericProvider(object):
             ep = episode.scene_absolute_number
 
         episode_string += '{episode:0>2}'.format(episode=ep)
-        episode_string += self.search_separator + add_string
+        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
+
+        if add_string:
+            episode_string += self.search_separator + add_string
+            episode_string_fallback += self.search_separator + add_string
+
         search_string['Episode'].append(episode_string.strip())
 
     def _create_default_search_string(self, show_scene_name, episode, search_string, add_string=None):
@@ -654,7 +663,10 @@ class GenericProvider(object):
             'seasonnumber': episode.scene_season,
             'episodenumber': episode.scene_episode,
         }
-        episode_string += self.search_separator + add_string
+
+        if add_string:
+            episode_string += self.search_separator + add_string
+
         search_string['Episode'].append(episode_string.strip())
 
     def _get_episode_search_strings(self, episode, add_string=''):
@@ -663,8 +675,7 @@ class GenericProvider(object):
             return []
 
         search_string = {
-            'Episode': [],
-            'EpisodeFallback': []
+            'Episode': []
         }
 
         all_possible_show_names = episode.series.get_all_possible_names()
