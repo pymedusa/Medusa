@@ -87,12 +87,29 @@ MEDUSA.home.snatchSelection = function() {
             },
             textExtraction: (function() {
                 return {
+                    // 2: Provider
+                    2: function(node) {
+                        return $(node).find('img').attr('title');
+                    },
                     // 6: The size column needs an explicit field for the filtering on raw size.
                     6: function(node) {
                         return node.getAttribute('data-size');
+                    },
+                    // 9: Published date
+                    9: function(node) {
+                        return node.getAttribute('data-datetime');
+                    },
+                    // 10: Added date
+                    10: function(node) {
+                        return node.getAttribute('data-datetime');
                     }
                 };
-            })()
+            })(),
+            headers: {
+                9: { sorter: 'realISODate' }, // Published
+                10: { sorter: 'realISODate' }, // Added
+                11: { sorter: false, parser: false } // Snatch link
+            }
         });
     }
 

@@ -4,6 +4,14 @@
     Should be moved from here, when moving the .vue files.
     ========================================================================== */
 
+    .error {
+        background-color: red!important;
+    }
+
+    .error p {
+        color: white!important;
+    }
+
     div.fade-animation p {
         position: relative;
         text-align: center;
@@ -25,14 +33,6 @@
         border-radius: 5px;
     }
 
-    .error {
-        background-color: red;
-    }
-
-    .error p {
-        color: #cacaca;
-    }
-
     .fade-enter-active {
         transition: opacity .8s;
     }
@@ -50,11 +50,11 @@
     <div class="saved-message">
         <div class="fade-animation">
             <transition-group  name="fade">
-                <div ref="stateDiv" v-if="localState" class="animation-background" key="background">
-                    <p ref="stateText">{{localState}}</p>
+                <div v-if="localState" class="animation-background" key="background">
+                    <p>{{localState}}</p>
                 </div>
-                <div ref="errorDiv" v-if="localError" class="animation-background error" key="background-error">
-                    <p ref="errorText">{{localError}}</p>
+                <div v-if="localError" class="animation-background error" key="background-error">
+                    <p>{{localError}}</p>
                 </div>
             </transition-group>
         </div>
@@ -68,7 +68,7 @@
         props: {
             state: {
                 type: String,
-                default: 'saving'
+                default: ''
             },
             error: {
                 type: String,
@@ -95,7 +95,7 @@
             this.localError = this.error;
         },
         watch: {
-            state: async function(newState, oldState) {
+            state: function(newState, oldState) {
                 const wait = this.minimalDisplayTime - (Date.now() - this.lastUpdate)
                 if (wait > 0) {
                     setTimeout(() => {
@@ -111,7 +111,7 @@
                     this.localState = ''
                 }, this.timeout)
             },
-            error: async function(newState, oldState) {
+            error: function(newState, oldState) {
                 const wait = 5000 - (Date.now() - this.lastUpdate)
                 if (wait > 0) {
                     setTimeout(() => {
@@ -124,7 +124,7 @@
                 }
 
                 setTimeout(() => {
-                    this.localState = ''
+                    this.localError = '';
                 }, this.timeout)
             }
         }

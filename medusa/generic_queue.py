@@ -6,6 +6,7 @@ import datetime
 import logging
 import threading
 from builtins import object
+from functools import cmp_to_key
 
 log = logging.getLogger()
 
@@ -83,7 +84,7 @@ class GenericQueue(object):
                         else:
                             return y.priority - x.priority
 
-                    self.queue.sort(cmp=sorter)
+                    self.queue.sort(key=cmp_to_key(sorter))
                     if self.queue[0].priority < self.min_priority:
                         return
 

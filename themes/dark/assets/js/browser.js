@@ -108,7 +108,7 @@
 
         fileBrowserDialog.dialog('option', 'buttons', [{
             text: 'Ok',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
@@ -116,7 +116,7 @@
             }
         }, {
             text: 'Cancel',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 $(this).dialog('close');
             }
@@ -209,7 +209,7 @@
         if (options.showBrowseButton) {
             // Append the browse button and give it a click behaviour
             options.field.after(
-                $('<input type="button" value="Browse&hellip;" class="btn btn-inline fileBrowser">').on('click', function() {
+                $('<input type="button" value="Browse&hellip;" class="btn-medusa btn-inline fileBrowser">').on('click', function() {
                     const initialDir = options.field.val() || (options.key && path) || '';
                     const optionsWithInitialDir = $.extend({}, options, { initialDir });
                     $(this).nFileBrowser(callback, optionsWithInitialDir);

@@ -3,11 +3,15 @@
 """Indexer config module."""
 from __future__ import unicode_literals
 
+from builtins import str
+
 from medusa.app import BASE_PYMEDUSA_URL
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
 from medusa.indexers.tvmaze.tvmaze_api import TVmaze
 from medusa.session.core import MedusaSession
+
+from six import iteritems
 
 
 initConfig = {
@@ -114,3 +118,39 @@ indexerConfig = {
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     }
 }
+
+
+def create_config_json(indexer):
+    """Create a json (pickable) compatible dict, for using as an apiv2 resource."""
+    return {
+        'enabled': indexer['enabled'],
+        'id': indexer['id'],
+        'name': indexer['name'],
+        'apiParams': {
+            'language': indexer['api_params']['language'],
+            'useZip': indexer['api_params']['use_zip'],
+        },
+        'xemOrigin': indexer.get('xem_origin'),
+        'icon': indexer.get('icon'),
+        'scene_loc': indexer.get('scene_loc'),
+        'baseUrl': indexer.get('base_url'),
+        'showUrl': indexer.get('show_url'),
+        'mappedTo': indexer.get('mapped_to'),  # The attribute to which other indexers can map there thetvdb id to
+        'identifier': indexer.get('identifier'),  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
+    }
+
+
+def get_indexer_config():
+    indexers = {
+        indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig
+    }
+
+    main = {
+        'validLanguages': initConfig['valid_languages'],
+        'langabbvToId': initConfig['langabbv_to_id'],
+        'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
+        'traktIndexers': TRAKT_INDEXERS,
+        'statusMap': STATUS_MAP
+    }
+
+    return {'indexers': indexers, 'main': main}

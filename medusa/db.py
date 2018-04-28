@@ -198,9 +198,8 @@ class DBConnection(object):
         :param fetchall: Boolean, when using a select query force returning all results
         :return: list of results
         """
-        querylist = querylist or []
-        # remove None types
-        querylist = [i for i in querylist if i is not None and len(i)]
+        # Remove Falsey types
+        querylist = (q for q in querylist or [] if q)
 
         sql_results = []
         attempt = 0
@@ -219,7 +218,7 @@ class DBConnection(object):
                                 logger.log(qu[0] + " with args " + str(qu[1]), logger.DEBUG)
                             sql_results.append(self._execute(qu[0], qu[1], fetchall=fetchall))
                     self.connection.commit()
-                    logger.log(u"Transaction with " + str(len(querylist)) + u" queries executed", logger.DEBUG)
+                    logger.log(u"Transaction with " + str(len(sql_results)) + u" queries executed", logger.DEBUG)
 
                     # finished
                     break

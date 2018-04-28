@@ -17,7 +17,7 @@
                               <% inner_first = False %>
                           % endfor
                       % else:
-                          <app-link href="${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</app-link>
+                          <app-link href="${menuItem['path']}" class="btn-medusa${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</app-link>
                           <% first = False %>
                       % endif
                 % endif

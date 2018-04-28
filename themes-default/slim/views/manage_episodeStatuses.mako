@@ -5,9 +5,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Episode Overview'
@@ -37,7 +37,7 @@ Manage episodes with status <select name="whichStatus" class="form-control form-
     %endif
 % endfor
 </select>
-<input class="btn btn-inline" type="submit" value="Manage" />
+<input class="btn-medusa btn-inline" type="submit" value="Manage" />
 </form>
 % else:
 <form action="manage/changeEpisodeStatuses" method="post">
@@ -66,10 +66,10 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
 <option value="${cur_status}">${common.statusStrings[cur_status]}</option>
 % endfor
 </select>
-<input class="btn btn-inline" type="submit" value="Go" />
+<input class="btn-medusa btn-inline" type="submit" value="Go" />
 <div>
-    <button type="button" class="btn btn-xs selectAllShows">Select all</button>
-    <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
+    <button type="button" class="btn-medusa btn-xs selectAllShows">Select all</button>
+    <button type="button" class="btn-medusa btn-xs unselectAllShows">Clear all</button>
 </div>
 <br>
 <table class="defaultTable manageTable" cellspacing="1" border="0" cellpadding="0">

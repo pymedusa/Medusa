@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.helper.common import (
@@ -49,7 +48,7 @@ class NorbitsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)  # only poll Norbits every 15 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -78,7 +77,7 @@ class NorbitsProvider(TorrentProvider):
                     'search': search_string,
                 }
 
-                response = self.session.post(self.urls['search'], data=post_data)
+                response = self.session.post(self.urls['search'], json=post_data)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
@@ -89,10 +88,10 @@ class NorbitsProvider(TorrentProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                if self._check_auth_from_data(jdata):
+                if not self._check_auth_from_data(jdata):
                     return results
 
-            results += self.parse(jdata, mode)
+                results += self.parse(jdata, mode)
 
         return results
 
@@ -106,10 +105,9 @@ class NorbitsProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
-        data.get('data', '')
-        torrent_rows = data.get('torrents', [])
+        json_data = data.get('data', {})
+        torrent_rows = json_data.get('torrents', [])
 
-        # Skip column headers
         for row in torrent_rows:
             try:
                 title = row.pop('name', '')
@@ -147,16 +145,14 @@ class NorbitsProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 
     def _check_auth(self):
-
         if not self.username or not self.passkey:
-            raise AuthException(('Your authentication credentials for %s are '
-                                 'missing, check your config.') % self.name)
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
@@ -166,6 +162,7 @@ class NorbitsProvider(TorrentProvider):
             if parsed_json.get('status') == 3:
                 log.warning('Invalid username or password.'
                             ' Check your settings')
+                return False
 
         return True
 

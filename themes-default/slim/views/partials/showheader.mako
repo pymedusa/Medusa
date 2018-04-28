@@ -263,8 +263,8 @@
                     <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
                     <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
                     <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-                    <button class="btn seriesCheck">Select Episodes</button>
-                    <button class="btn clearAll">Clear</button>
+                    <button class="btn-medusa seriesCheck">Select Episodes</button>
+                    <button class="btn-medusa clearAll">Clear</button>
                 </div>
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
@@ -283,7 +283,7 @@
                     <input type="hidden" id="series-slug" value="${show.slug}" />
                     <input type="hidden" id="series-id" value="${show.indexerid}" />
                     <input type="hidden" id="indexer" value="${show.indexer}" />
-                    <input class="btn" type="button" id="changeStatus" value="Go" />
+                    <input class="btn-medusa" type="button" id="changeStatus" value="Go" />
                 </div>
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->

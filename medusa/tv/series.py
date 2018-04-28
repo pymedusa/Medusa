@@ -64,6 +64,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helper.mappings import NonEmptyDict
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get
 from medusa.indexers.indexer_api import indexerApi
@@ -89,13 +90,14 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
+from medusa.name_cache import build_name_cache
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions
+from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -105,7 +107,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import itervalues, text_type, viewitems
+from six import iteritems, itervalues, string_types, text_type, viewitems
 
 try:
     from send2trash import send2trash
@@ -414,6 +416,13 @@ class Series(TV):
         """Get the default episode status name."""
         return statusStrings[self.default_ep_status]
 
+    @default_ep_status_name.setter
+    def default_ep_status_name(self, status_name):
+        """Set the default episode status using its name."""
+        self.default_ep_status = next((status for status, name in iteritems(statusStrings)
+                                       if name.lower() == status_name.lower()),
+                                      self.default_ep_status)
+
     @property
     def size(self):
         """Size of the show on disk."""
@@ -538,15 +547,60 @@ class Series(TV):
         """Return series aliases."""
         return self.exceptions or get_scene_exceptions(self)
 
+    @aliases.setter
+    def aliases(self, exceptions):
+        """Set the series aliases."""
+        self.exceptions = exceptions
+        update_scene_exceptions(self, exceptions)
+        build_name_cache(self)
+
     @property
     def release_ignore_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_ignore_words or '').split(',') if v]
 
+    @release_ignore_words.setter
+    def release_ignore_words(self, value):
+        self.rls_ignore_words = value if isinstance(value, string_types) else ','.join(value)
+
     @property
     def release_required_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_require_words or '').split(',') if v]
+
+    @release_required_words.setter
+    def release_required_words(self, value):
+        self.rls_require_words = value if isinstance(value, string_types) else ','.join(value)
+
+    @property
+    def blacklist(self):
+        """Return the anime's blacklisted release groups."""
+        bw_list = self.release_groups or BlackAndWhiteList(self)
+        return bw_list.blacklist
+
+    @blacklist.setter
+    def blacklist(self, value):
+        """
+        Set the anime's blacklisted release groups.
+
+        :param value: A list of blacklist release groups.
+        """
+        self.release_groups.set_black_keywords(short_group_names([v['name'] for v in value]))
+
+    @property
+    def whitelist(self):
+        """Return the anime's whitelisted release groups."""
+        bw_list = self.release_groups or BlackAndWhiteList(self)
+        return bw_list.whitelist
+
+    @whitelist.setter
+    def whitelist(self, value):
+        """
+        Set the anime's whitelisted release groups.
+
+        :param value: A list of whitelist release groups.
+        """
+        self.release_groups.set_white_keywords(short_group_names([v['name'] for v in value]))
 
     @staticmethod
     def normalize_status(series_status):
@@ -1464,8 +1518,7 @@ class Series(TV):
             if not self.imdb_id:
                 self.imdb_id = sql_results[0][b'imdb_id']
 
-            if self.is_anime:
-                self.release_groups = BlackAndWhiteList(self)
+            self.release_groups = BlackAndWhiteList(self)
 
             self.plot = sql_results[0][b'plot']
 
@@ -1997,6 +2050,7 @@ class Series(TV):
         data['id'] = NonEmptyDict()
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
+        data['id']['slug'] = self.identifier.slug
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
@@ -2027,20 +2081,23 @@ class Series(TV):
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
         data['config']['qualities'] = NonEmptyDict()
-        data['config']['qualities']['allowed'] = self.get_allowed_qualities()
-        data['config']['qualities']['preferred'] = self.get_preferred_qualities()
+        data['config']['qualities']['allowed'] = self.qualities_allowed
+        data['config']['qualities']['preferred'] = self.qualities_preferred
         data['config']['paused'] = bool(self.paused)
         data['config']['airByDate'] = bool(self.air_by_date)
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
         data['config']['dvdOrder'] = bool(self.dvd_order)
         data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
+        data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases
         data['config']['release'] = NonEmptyDict()
         data['config']['release']['blacklist'] = bw_list.blacklist
         data['config']['release']['whitelist'] = bw_list.whitelist
+        data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
 
@@ -2056,16 +2113,36 @@ class Series(TV):
         return data
 
     def get_allowed_qualities(self):
-        """Return allowed qualities."""
+        """Return allowed qualities descriptions."""
         allowed = Quality.split_quality(self.quality)[0]
 
         return [Quality.qualityStrings[v] for v in allowed]
 
     def get_preferred_qualities(self):
-        """Return preferred qualities."""
+        """Return preferred qualities descriptions."""
         preferred = Quality.split_quality(self.quality)[1]
 
         return [Quality.qualityStrings[v] for v in preferred]
+
+    @property
+    def qualities_allowed(self):
+        """Return allowed qualities."""
+        return Quality.split_quality(self.quality)[0]
+
+    @property
+    def qualities_preferred(self):
+        """Return preferred qualities."""
+        return Quality.split_quality(self.quality)[1]
+
+    @qualities_allowed.setter
+    def qualities_allowed(self, qualities_allowed):
+        """Configure qualities (combined) by adding the allowed qualities to it."""
+        self.quality = Quality.combine_qualities(qualities_allowed, self.qualities_preferred)
+
+    @qualities_preferred.setter
+    def qualities_preferred(self, qualities_preferred):
+        """Configure qualities (combined) by adding the preferred qualities to it."""
+        self.quality = Quality.combine_qualities(self.qualities_allowed, qualities_preferred)
 
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.

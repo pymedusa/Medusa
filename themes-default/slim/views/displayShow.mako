@@ -15,9 +15,9 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};
@@ -109,9 +109,9 @@ const startVue = () => {
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
                         <div class="pull-right"> <!-- column select and hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
-                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
+                                <button id="showseason-${epResult['season']}" type="button" class="btn-medusa pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                             % endif
-                            <button id="popover" type="button" class="btn pull-right selectColumns">Select Columns <b class="caret"></b></button>
+                            <button id="popover" type="button" class="btn-medusa pull-right selectColumns">Select Columns <b class="caret"></b></button>
                         </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
@@ -153,7 +153,7 @@ const startVue = () => {
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                         <div class="pull-right"> <!-- hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
-                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
+                                <button id="showseason-${epResult['season']}" type="button" class="btn-medusa pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                             % endif
                         </div> <!-- end hide/show episodes -->
                     </th>
@@ -327,8 +327,8 @@ const startVue = () => {
                 <p class="text-warning"><small>The episode release name will be added to the failed history, preventing it to be downloaded again.</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -345,8 +345,8 @@ const startVue = () => {
                 <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -363,8 +363,8 @@ const startVue = () => {
                 <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -380,8 +380,8 @@ const startVue = () => {
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-info" data-dismiss="modal">Auto</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
+                <button type="button" class="btn-medusa btn-info" data-dismiss="modal">Auto</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Manual</button>
             </div>
         </div>
     </div>

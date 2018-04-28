@@ -364,7 +364,7 @@ class Episode(TV):
         :return:
         :rtype: string
         """
-        if self.series.air_by_date and self.airdate is not None:
+        if self.series.air_by_date and self.airdate != date.fromordinal(1):
             return self.airdate.strftime(dateFormat)
         if self.series.is_anime and self.absolute_number is not None:
             return 'e{0:02d}'.format(self.absolute_number)

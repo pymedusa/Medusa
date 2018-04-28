@@ -101,22 +101,22 @@ if (!document.location.pathname.endsWith('/login/')) {
             $(document).ready(UTIL.init);
         }
 
-        MEDUSA.config.indexers.indexerIdToName = function(indexer) {
-            if (!indexer) {
+        MEDUSA.config.indexers.indexerIdToName = indexerId => {
+            if (!indexerId) {
                 return '';
             }
-            return MEDUSA.config.indexers.config[parseInt(indexer, 10)];
+            return Object.keys(MEDUSA.config.indexers.config.indexers).filter(indexer => { // eslint-disable-line array-callback-return
+                if (MEDUSA.config.indexers.config.indexers[indexer].id === parseInt(indexerId, 10)) {
+                    return MEDUSA.config.indexers.config.indexers[indexer].name;
+                }
+            })[0];
         };
 
-        MEDUSA.config.indexers.nameToIndexerId = function(name) {
+        MEDUSA.config.indexers.nameToIndexerId = name => {
             if (!name) {
                 return '';
             }
-            return Object.keys(MEDUSA.config.indexers.config).map(key => { // eslint-disable-line array-callback-return
-                if (MEDUSA.config.indexers.config[key] === name) {
-                    return key;
-                }
-            })[0];
+            return MEDUSA.config.indexers.config.indexers[name];
         };
 
         triggerConfigLoaded();

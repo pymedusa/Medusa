@@ -44,7 +44,7 @@
                     <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
-                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn btn-inline">{{archiveButton.text}}</button>
+                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn-medusa btn-inline">{{archiveButton.text}}</button>
                 <h5>{{archivedStatus}}</h5>
             </div>
         </div>
@@ -84,8 +84,11 @@ Vue.component('quality-chooser', {
             default: ${overall_quality}
         },
         keep: {
-            type: Boolean,
-            default: false
+            type: String,
+            default: null,
+            validator(value) {
+                return ['keep', 'show'].includes(value);
+            }
         }
     },
     data() {
@@ -97,10 +100,11 @@ Vue.component('quality-chooser', {
             qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
+            lock: false,
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
-            selectedQualityPreset: this.keep ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
+            selectedQualityPreset: this.keep === 'keep' ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
             archive: false,
             archivedStatus: '',
             archiveButton: {
@@ -214,14 +218,28 @@ Vue.component('quality-chooser', {
         }
     },
     watch: {
+        /* overallQuality property might recieve values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        overallQuality(newValue, oldValue) {
+            this.lock = true;
+            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
+            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
+            this.$nextTick(() => this.lock = false);
+        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
         allowedQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
+            if (!this.lock) {
+                this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
+            }
         },
         preferredQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
+            if (!this.lock) {
+                this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
+            }
         }
     }
 });

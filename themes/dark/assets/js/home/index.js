@@ -117,7 +117,7 @@ MEDUSA.home.index = function() {
         headers: {
             0: { sorter: 'realISODate' },
             1: { sorter: 'realISODate' },
-            2: { sorter: 'loadingNames' },
+            2: { sorter: 'showNames' },
             4: { sorter: 'text' },
             5: { sorter: 'quality' },
             6: { sorter: 'eps' },

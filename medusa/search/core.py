@@ -16,7 +16,6 @@ from medusa import (
     common,
     db,
     failed_history,
-    helpers,
     history,
     name_cache,
     notifiers,
@@ -45,7 +44,10 @@ from medusa.helper.exceptions import (
     AuthException,
     ex,
 )
+from medusa.helpers import chmod_as_parent
+from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
@@ -85,7 +87,7 @@ def _download_result(result):
             with open(file_name, u'w') as fileOut:
                 fileOut.write(result.extra_info[0])
 
-            helpers.chmod_as_parent(file_name)
+            chmod_as_parent(file_name)
 
         except EnvironmentError as e:
             log.error(u'Error trying to save NZB to black hole: {0}', ex(e))
@@ -513,6 +515,7 @@ def delay_search(best_result):
         cur_ep = best_result.episodes[0]
         log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
                   {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
+
         from medusa.search.manual import get_provider_cache_results
         results = get_provider_cache_results(
             cur_ep.series, show_all_results=False, perform_search=False,
@@ -520,30 +523,39 @@ def delay_search(best_result):
         )
 
         if results.get('found_items'):
-            results['found_items'].sort(key=lambda d: int(d['date_added']))
+            # If date_added is missing we put it at the end of the list
+            results['found_items'].sort(key=lambda d: d['date_added'] or datetime.datetime.now(app_timezone))
+
             first_result = results['found_items'][0]
-            if first_result['date_added'] + cur_provider.search_delay * 60 > int(time.time()):
+            date_added = first_result['date_added']
+            # Some results in cache have date_added as 0
+            if not date_added:
+                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                return False
+
+            timestamp = to_timestamp(date_added)
+            if timestamp + cur_provider.search_delay * 60 > time.time():
                 # The provider's delay cooldown time hasn't expired yet. We're holding back the snatch.
                 log.debug(
-                    u'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}. The provider is waiting'
-                    u' {search_delay_minutes} hours, before accepting the release. Still {hours_left} to go.', {
+                    'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}.'
+                    ' The provider is waiting {search_delay_minutes} hours, before accepting the release.'
+                    ' Still {hours_left} to go.', {
                         'best_result': best_result.name,
                         'first_result': first_result['name'],
                         'provider': cur_provider.name,
                         'search_delay_minutes': round(cur_provider.search_delay / 60, 1),
-                        'hours_left': round((cur_provider.search_delay - (time.time() - first_result['date_added']) / 60) / 60, 1)
+                        'hours_left': round((cur_provider.search_delay - (time.time() - timestamp) / 60) / 60, 1)
                     }
                 )
                 return True
             else:
-                log.debug(u'DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
-                          u'Time of first result: {first_result}',
-                          {'provider': cur_provider.name,
-                           'first_result': datetime.datetime.fromtimestamp(first_result['date_added'])})
+                log.debug('DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
+                          'Time of first result: {first_result}',
+                          {'provider': cur_provider.name, 'first_result': date_added})
         else:
             # This should never happen.
             log.debug(
-                u'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
+                'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
                 {'provider': cur_provider.name, 'series': best_result.series.name,
                  'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
     return False
@@ -729,7 +741,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                           best_season_result.provider.provider_type,
                           best_season_result.name)
             else:
-                if best_season_result.provider.provider_type == GenericProvider.NZB:
+                # Some NZB providers (e.g. Jackett) can also download torrents, but torrents cannot be split like NZB
+                if (best_season_result.provider.provider_type == GenericProvider.NZB and
+                        not best_season_result.url.endswith(GenericProvider.TORRENT)):
                     log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
 
                     # if not, break it apart and add them as the lowest priority results

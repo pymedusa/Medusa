@@ -31,8 +31,6 @@ from builtins import str
 from builtins import zip
 from itertools import cycle
 
-import adba
-
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
@@ -1171,39 +1169,6 @@ def validate_show(show, season=None, episode=None):
     except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
         log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
         pass
-
-
-def set_up_anidb_connection():
-    """Connect to anidb."""
-    if not app.USE_ANIDB:
-        log.debug(u'Usage of anidb disabled. Skipping')
-        return False
-
-    if not app.ANIDB_USERNAME and not app.ANIDB_PASSWORD:
-        log.debug(u'anidb username and/or password are not set.'
-                  u' Aborting anidb lookup.')
-        return False
-
-    if not app.ADBA_CONNECTION:
-        def anidb_logger(msg):
-            return log.debug(u'anidb: {0}', msg)
-
-        try:
-            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
-        except Exception as error:
-            log.warning(u'anidb exception msg: {0!r}', error)
-            return False
-
-    try:
-        if not app.ADBA_CONNECTION.authed():
-            app.ADBA_CONNECTION.auth(app.ANIDB_USERNAME, app.ANIDB_PASSWORD)
-        else:
-            return True
-    except Exception as error:
-        log.warning(u'anidb exception msg: {0!r}', error)
-        return False
-
-    return app.ADBA_CONNECTION.authed()
 
 
 def backup_config_zip(file_list, archive, arcname=None):

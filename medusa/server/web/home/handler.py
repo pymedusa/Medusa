@@ -10,7 +10,6 @@ from builtins import str
 from datetime import date, datetime
 
 import adba
-
 from medusa import (
     app,
     config,
@@ -25,7 +24,6 @@ from medusa import (
 )
 from medusa.black_and_white_list import (
     BlackAndWhiteList,
-    short_group_names,
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -54,11 +52,13 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
+    AnidbAdbaConnectionException,
     CantRefreshShowException,
     CantUpdateShowException,
     ShowDirectoryNotFoundException,
     ex,
 )
+from medusa.helpers.anidb import get_release_groups_for_anime, set_up_anidb_connection, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
@@ -105,8 +105,6 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
-
-from past.builtins import cmp
 
 from requests.compat import (
     quote_plus,
@@ -953,12 +951,12 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
             ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
             ]
 
         bwl = None
@@ -1249,11 +1247,13 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
+            ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
+            ]
 
         bwl = None
         if series_obj.is_anime:
@@ -1443,7 +1443,6 @@ class Home(WebRoot):
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
-        # @TODO: Replace with PATCH /api/v2/show/{id}
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
@@ -1486,7 +1485,7 @@ class Home(WebRoot):
                 blacklist = series_obj.release_groups.blacklist
 
                 groups = []
-                if helpers.set_up_anidb_connection() and not anidb_failed:
+                if set_up_anidb_connection() and not anidb_failed:
                     try:
                         anime = adba.Anime(app.ADBA_CONNECTION, name=series_obj.name)
                         groups = anime.get_groups()
@@ -1501,7 +1500,8 @@ class Home(WebRoot):
 
             if series_obj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
-                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home', action='editShow')
+                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home',
+                                action='editShow')
             else:
                 return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
@@ -1597,7 +1597,8 @@ class Home(WebRoot):
                         series_obj.release_groups.set_black_keywords([])
 
         with series_obj.lock:
-            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities],
+                                                    [int(q) for q in preferred_qualities])
             series_obj.quality = new_quality
 
             # reversed for now
@@ -1720,11 +1721,16 @@ class Home(WebRoot):
             return errors
 
         if errors:
-            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
-                                   (num=errors, s='s' if errors > 1 else ''))
+            ui.notifications.error(
+                'Errors', '{num} error{s} while saving changes. Please check logs'.format(
+                    num=errors, s='s' if errors > 1 else ''
+                )
+            )
 
         logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect(
+            '/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(
+                series_obj=series_obj))
 
     @staticmethod
     def erase_cache(series_obj):
@@ -2432,19 +2438,19 @@ class Home(WebRoot):
             })
 
     @staticmethod
-    def fetch_releasegroups(show_name):
-        logger.log(u'ReleaseGroups: {show}'.format(show=show_name), logger.INFO)
-        if helpers.set_up_anidb_connection():
-            try:
-                anime = adba.Anime(app.ADBA_CONNECTION, name=show_name)
-                groups = anime.get_groups()
-                logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
-                return json.dumps({
-                    'result': 'success',
-                    'groups': groups,
-                })
-            except AttributeError as msg:
-                logger.log(u'Unable to get ReleaseGroups: {error}'.format(error=msg), logger.DEBUG)
+    def fetch_releasegroups(series_name):
+        """Api route for retrieving anidb release groups for an anime show."""
+        logger.log(u'ReleaseGroups: {show}'.format(show=series_name), logger.INFO)
+        try:
+            groups = get_release_groups_for_anime(series_name)
+            logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
+        except AnidbAdbaConnectionException as error:
+            logger.log(u'Unable to get ReleaseGroups: {error}'.format(error=error), logger.DEBUG)
+        else:
+            return json.dumps({
+                'result': 'success',
+                'groups': groups,
+            })
 
         return json.dumps({
             'result': 'failure',

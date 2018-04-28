@@ -10,9 +10,9 @@
 <script src="js/lib/vue-frisbee.min.js"></script>
 <script src="js/vue-submit-form.js"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'New Show'
@@ -63,7 +63,7 @@ const startVue = () => {
                                 % endfor
                             </select>
                             &nbsp;
-                            <input class="btn btn-inline" type="button" id="searchName" value="Search" />
+                            <input class="btn-medusa btn-inline" type="button" id="searchName" value="Search" />
                             <br><br>
                             <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
                             This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br><br>
@@ -95,9 +95,9 @@ const startVue = () => {
             </form>
             <br>
             <div style="width: 100%; text-align: center;">
-                <input @click.prevent="vueSubmitForm('addShowForm')" id="addShowButton" class="btn" type="button" value="Add Show" disabled="disabled" />
+                <input @click.prevent="vueSubmitForm('addShowForm')" id="addShowButton" class="btn-medusa" type="button" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:
-                <input class="btn" type="button" id="skipShowButton" value="Skip Show" />
+                <input class="btn-medusa" type="button" id="skipShowButton" value="Skip Show" />
                 % endif
             </div>
         </div>

@@ -6,9 +6,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Add Recommended Shows'
@@ -26,7 +26,7 @@ const startVue = () => {
 <h1 class="header">{{header}}</h1>
 <div id="addShowPortal">
     <br><br>
-    <app-link href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
+    <app-link href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn-medusa btn-large">
         <div class="button"><div class="add-list-icon-addtrakt"></div></div>
         <div class="buttontext">
             <h3>Add From Trakt Lists</h3>
@@ -34,7 +34,7 @@ const startVue = () => {
         </div>
     </app-link>
 
-    <app-link href="addShows/popularShows/" id="btnNewShow" class="btn btn-large">
+    <app-link href="addShows/popularShows/" id="btnNewShow" class="btn-medusa btn-large">
         <div class="button"><div class="add-list-icon-addimdb"></div></div>
         <div class="buttontext">
             <h3>Add From IMDB's Popular Shows</h3>
@@ -42,7 +42,7 @@ const startVue = () => {
         </div>
     </app-link>
 
-    <app-link href="addShows/popularAnime/" id="btnNewShow" class="btn btn-large">
+    <app-link href="addShows/popularAnime/" id="btnNewShow" class="btn-medusa btn-large">
         <div class="button"><div class="add-list-icon-addanime"></div></div>
         <div class="buttontext">
             <h3>Add From Anidb's Hot Anime list</h3>

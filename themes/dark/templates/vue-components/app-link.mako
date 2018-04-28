@@ -12,6 +12,7 @@
 </script>
 <script>
 Vue.component('app-link', {
+    name: 'app-link',
     props: {
         to: [String, Object],
         href: String,
