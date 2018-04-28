@@ -250,7 +250,7 @@ const startVue = () => {
                             % if airDate.year >= 1970 or show.network:
                                 <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
                             % endif
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" title="${airDate.isoformat('T')}" class="date">{{'${airDate.isoformat('T')}' | formatDate}}</time>
                         % else:
                             Never
                         % endif

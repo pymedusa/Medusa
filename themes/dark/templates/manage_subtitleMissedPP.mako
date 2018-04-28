@@ -61,6 +61,7 @@ const startVue = () => {
                     </span>
                 </td>
                 <td class="tvShow" align="center">
+                ## @TODO: Convert to new timeago
                 <span class="tvShow" datetime="${epResult['date'].isoformat('T')}">
                         ${epResult['age']}${epResult['age_unit']}
                 </span>

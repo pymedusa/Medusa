@@ -148,7 +148,7 @@ const startVue = () => {
                             <td class="col-size triggerhighlight" data-size="${hItem["size"]}">${hItem["pretty_size"]}</td>
                             <td class="triggerhighlight">${hItem["provider_type"]}</td>
                             <td class="col-date triggerhighlight">
-                                <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
+                                <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" title="${hItem['time'].isoformat('T')}" class="date">{{'${hItem['time'].isoformat('T')}' | formatDate}}</time></span>
                             </td>
                             <% user_preset = app.DATE_PRESET + ' ' + app.TIME_PRESET %>
                             <td class="col-date triggerhighlight" data-datetime="${hItem['pubdate'].isoformat('T') if hItem['pubdate'] else datetime.min}">

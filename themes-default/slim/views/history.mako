@@ -152,9 +152,8 @@ const startVue = () => {
                     <% composite = Quality.split_composite_status(int(hItem.action)) %>
                     <tr>
                         <td align="center" class="triggerhighlight">
-                            <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
-                            <time datetime="${isoDate}" class="date">${airDate}</time>
+                            <time datetime="${isoDate}" title="${isoDate}" class="date">{{'${isoDate}' | formatDate}}</time>
                         </td>
                         <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </app-link></td>
                         <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
@@ -220,9 +219,8 @@ const startVue = () => {
                 % for hItem in compactResults:
                     <tr>
                         <td align="center" class="triggerhighlight">
-                            <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.actions[0].date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.actions[0].date), History.date_format).isoformat('T') %>
-                            <time datetime="${isoDate}" class="date">${airDate}</time>
+                            <time datetime="${isoDate}" title="${isoDate}" class="date">{{'${isoDate}' | formatDate}}</time>
                         </td>
                         <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>

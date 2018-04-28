@@ -46,11 +46,11 @@
         <tr class="${show_div}">
             <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% airDate = sbdatetime.sbdatetime.convert_to_setting(cur_result['localtime']) %>
-                <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
+                <time datetime="${airDate.isoformat('T')}" title="${airDate.isoformat('T')}" class="date">{{'${airDate.isoformat('T')}' | formatDate}}</time>
             </td>
             <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
-                <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
+                <time datetime="${airDate.isoformat('T')}" title="${airDate.isoformat('T')}" class="date">{{'${airDate.isoformat('T')}' | formatDate}}</time>
             </td>
             <td class="tvShow triggerhighlight" nowrap="nowrap"><app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</app-link>
 % if bool(cur_result['paused']):
