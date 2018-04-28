@@ -45,6 +45,9 @@ class RTorrentAPI(GenericClient):
 
         if not app.TORRENT_VERIFY_CERT:
             tp_kwargs['check_ssl_cert'] = False
+        else:
+            if app.SSL_CA_BUNDLE:
+                tp_kwargs['check_ssl_cert'] = app.SSL_CA_BUNDLE
 
         if self.username and self.password:
             self.auth = RTorrent(self.host, self.username, self.password, True, tp_kwargs=tp_kwargs)
@@ -53,30 +56,34 @@ class RTorrentAPI(GenericClient):
 
         return self.auth
 
+    @staticmethod
+    def _get_params(result):
+        params = []
+
+        # Set label
+        label = app.TORRENT_LABEL
+        if result.series.is_anime:
+            label = app.TORRENT_LABEL_ANIME
+        if label:
+            params.append('d.custom1.set={0}'.format(label))
+
+        if app.TORRENT_PATH:
+            params.append('d.directory.set={0}'.format(app.TORRENT_PATH))
+
+        return params
+
     def _add_torrent_uri(self, result):
 
         if not (self.auth or result):
             return False
 
         try:
-            # Send magnet to rTorrent
-            torrent = self.auth.load_magnet(result.url, result.hash)
-
+            params = self._get_params(result)
+            # Send magnet to rTorrent and start it
+            torrent = self.auth.load_magnet(result.url, result.hash, start=True, params=params)
             if not torrent:
                 return False
 
-            # Set label
-            label = app.TORRENT_LABEL
-            if result.show.is_anime:
-                label = app.TORRENT_LABEL_ANIME
-            if label:
-                torrent.set_custom(1, label)
-
-            if app.TORRENT_PATH:
-                torrent.set_directory(app.TORRENT_PATH)
-
-            # Start torrent
-            torrent.start()
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
                         {'error': msg})
@@ -89,26 +96,13 @@ class RTorrentAPI(GenericClient):
         if not (self.auth or result):
             return False
 
-        # Send request to rTorrent
         try:
-            # Send torrent to rTorrent
-            torrent = self.auth.load_torrent(result.content)
-
+            params = self._get_params(result)
+            # Send torrent to rTorrent and start it
+            torrent = self.auth.load_torrent(result.content, start=True, params=params)
             if not torrent:
                 return False
 
-            # Set label
-            label = app.TORRENT_LABEL
-            if result.show.is_anime:
-                label = app.TORRENT_LABEL_ANIME
-            if label:
-                torrent.set_custom(1, label)
-
-            if app.TORRENT_PATH:
-                torrent.set_directory(app.TORRENT_PATH)
-
-            # Start torrent
-            torrent.start()
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
                         {'error': msg})
@@ -132,5 +126,6 @@ class RTorrentAPI(GenericClient):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
             else:
                 return True, 'Success: Connected and Authenticated'
+
 
 api = RTorrentAPI

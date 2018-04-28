@@ -4,9 +4,11 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from builtins import object
 
-from medusa import app, common, helpers
+from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 from requests.compat import urljoin
 
@@ -17,7 +19,7 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
 
     def __init__(self):
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.url = 'https://api.pushbullet.com/v2/'
 
     def test_notify(self, pushbullet_api):

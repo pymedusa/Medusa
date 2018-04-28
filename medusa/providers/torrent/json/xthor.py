@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.common import USER_AGENT
@@ -27,9 +26,9 @@ class XthorProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://xthor.bz'
+        self.url = 'https://xthor.to'
         self.urls = {
-            'search': 'https://api.xthor.bz',
+            'search': 'https://api.xthor.to',
         }
 
         # Proper Strings
@@ -47,7 +46,7 @@ class XthorProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -76,9 +75,19 @@ class XthorProvider(TorrentProvider):
                 else:
                     search_params.pop('search', '')
 
-                jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
-                if not jdata:
+                data = self.session.get(self.urls['search'], params=search_params)
+                if not data:
                     log.debug('No data returned from provider')
+                    continue
+
+                try:
+                    jdata = data.json()
+                except ValueError as e:
+                    log.warning(
+                        u'Could not decode the response as json for the result, searching {provider} with error {err_msg}',
+                        provider=self.name,
+                        err_msg=e
+                    )
                     continue
 
                 error_code = jdata.pop('error', {})
@@ -147,8 +156,7 @@ class XthorProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

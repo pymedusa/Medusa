@@ -26,15 +26,19 @@ according to our needs.
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+from __future__ import unicode_literals
 
 import copy
 import logging
 import re
+from builtins import range
+from builtins import str
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
+
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
@@ -835,7 +839,8 @@ class AbsoluteEpisodeNumbers(Rule):
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
                             # if version is present, then it's an anime
-                            if not matches.named('version') and not matches.tagged('anime'):
+                            if (context.get('show_type') != 'anime' and
+                                    not matches.named('version') and not matches.tagged('anime')):
                                 # Some.Show.E07.1080p.HDTV.x265-GROUP
                                 # Some.Show.Episode.10.Some.Title.720p
                                 # not absolute episode
@@ -1090,7 +1095,6 @@ class ScreenSizeStandardizer(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1101,21 +1105,11 @@ class ScreenSizeStandardizer(Rule):
         :type context: dict
         :return:
         """
-        to_remove = []
-        to_append = []
         for screen_size in matches.named('screen_size'):
             if screen_size.raw.lower().endswith('i'):
-                new_size = copy.copy(screen_size)
-                new_size.value = screen_size.value.replace('p', 'i')
-                to_remove.append(screen_size)
-                to_append.append(new_size)
+                screen_size.value = screen_size.value.replace('p', 'i')
             elif screen_size.value == '4K':
-                new_size = copy.copy(screen_size)
-                new_size.value = '2160p'
-                to_remove.append(screen_size)
-                to_append.append(new_size)
-
-        return to_remove, to_append
+                screen_size.value = '2160p'
 
 
 class AudioCodecStandardizer(Rule):
@@ -1222,8 +1216,8 @@ class AvoidMultipleValuesRule(Rule):
                     to_remove.extend(matches.named('title', predicate=lambda match: match.value != values[0].value))
                     continue
 
-                log.info(u"Guessed more than one '%s' for '%s': %s",
-                         name, matches.input_string, u','.join(unique_values), exc_info=False)
+                log.debug(u"Guessed more than one '%s' for '%s': %s",
+                          name, matches.input_string, u','.join(unique_values), exc_info=False)
                 to_remove.extend(values)
 
         return to_remove
@@ -1274,6 +1268,7 @@ class ReleaseGroupPostProcessor(Rule):
 
         # https://github.com/guessit-io/guessit/issues/302
         re.compile(r'\W*\b(obfuscated)\b\W*', flags=re.IGNORECASE),
+        re.compile(r'\W*\b(scrambled)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(vtv|sd|rp|norar|re-?up(loads?)?)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(hebits)\b\W*', flags=re.IGNORECASE),
 

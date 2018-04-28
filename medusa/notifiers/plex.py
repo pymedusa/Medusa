@@ -1,12 +1,19 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import re
+from builtins import object
+from builtins import str
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
-from medusa.helpers import get_url, make_session
+from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
+
+import requests
 
 from six import iteritems
 
@@ -21,13 +28,13 @@ log.logger.addHandler(logging.NullHandler())
 
 class Notifier(object):
     def __init__(self):
-        self.headers = {
+        self.session = MedusaSession()
+        self.session.headers.update({
             'X-Plex-Device-Name': 'Medusa',
             'X-Plex-Product': 'Medusa Notifier',
             'X-Plex-Client-Identifier': common.USER_AGENT,
-            'X-Plex-Version': '2016.02.10'
-        }
-        self.session = make_session()
+            'X-Plex-Version': app.APP_VERSION,
+        })
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
@@ -46,7 +53,7 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-        from . import kodi_notifier
+        from medusa.notifiers import kodi_notifier
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_PLEX_CLIENT and not force:
             return False
@@ -92,10 +99,10 @@ class Notifier(object):
                                 'Test Notification', host, username, password, force=True)
 
     def test_notify_pms(self, host, username, password, plex_server_token):
-        return self.update_library(host=host, username=username, password=password,
+        return self.update_library(hosts=host, username=username, password=password,
                                    plex_server_token=plex_server_token, force=True)
 
-    def update_library(self, ep_obj=None, host=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
+    def update_library(self, ep_obj=None, hosts=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
                        username=None, password=None,
                        plex_server_token=None, force=False):
 
@@ -111,8 +118,8 @@ class Notifier(object):
         if not (app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY) and not force:
             return None
 
-        host = host or app.PLEX_SERVER_HOST
-        if not host:
+        hosts = hosts or app.PLEX_SERVER_HOST
+        if not hosts:
             log.debug(u'PLEX: No Plex Media Server host specified, check your settings')
             return False
 
@@ -121,44 +128,56 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        host_list = {x.strip() for x in host.split(',') if x.strip()}
-        hosts_all = hosts_match = {}
-        hosts_failed = set()
+        gen_hosts = generate(hosts)
+        hosts = (x.strip() for x in gen_hosts if x.strip())
+        all_hosts = {}
+        matching_hosts = {}
+        failed_hosts = set()
+        schema = 'https' if app.PLEX_SERVER_HTTPS else 'http'
 
-        for cur_host in host_list:
+        for cur_host in hosts:
+            url = '{schema}://{host}/library/sections'.format(
+                schema=schema, host=cur_host
+            )
 
-            url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
-                xml_response = get_url(url, headers=self.headers, session=self.session, returns='text')
-                if not xml_response:
-                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
-                    hosts_failed.add(cur_host)
-                    continue
-
-                media_container = etree.fromstring(xml_response)
-            except IOError as error:
+                response = self.session.get(url)
+            except requests.RequestException as error:
                 log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
-            except Exception as error:
-                if 'invalid token' in str(error):
-                    log.warning(u'PLEX: Please set TOKEN in Plex settings: ')
+
+            try:
+                response.raise_for_status()
+            except requests.RequestException as error:
+                if response.status_code == 401:
+                    log.warning(u'PLEX: Unauthorized. Please set TOKEN or USERNAME and PASSWORD in Plex settings')
                 else:
                     log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
+            else:
+                xml_response = response.text
+                if not xml_response:
+                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
+                    failed_hosts.add(cur_host)
+                    continue
+                else:
+                    media_container = etree.fromstring(xml_response)
 
             sections = media_container.findall('.//Directory')
             if not sections:
                 log.debug(u'PLEX: Plex Media Server not running on: {0}', cur_host)
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
 
             for section in sections:
                 if 'show' == section.attrib['type']:
-
-                    keyed_host = [(str(section.attrib['key']), cur_host)]
-                    hosts_all.update(keyed_host)
+                    key = str(section.attrib['key'])
+                    keyed_host = {
+                        key: cur_host,
+                    }
+                    all_hosts.update(keyed_host)
                     if not file_location:
                         continue
 
@@ -169,60 +188,88 @@ class Notifier(object):
                         location_path = re.sub(r'^(.{,2})[/\\]', '', location_path)
 
                         if section_path in location_path:
-                            hosts_match.update(keyed_host)
+                            matching_hosts.update(keyed_host)
 
         if force:
-            return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
+            return ', '.join(failed_hosts) if failed_hosts else None
 
-        if hosts_match:
-            log.debug(u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}', ', '.join(set(hosts_match)))
+        if matching_hosts:
+            hosts_try = matching_hosts
+            result = u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}'
         else:
-            log.debug(u'PLEX: Updating all hosts with TV sections: {0}', ', '.join(set(hosts_all)))
+            hosts_try = all_hosts
+            result = u'PLEX: Updating all hosts with TV sections: {0}'
+        log.debug(result.format(', '.join(hosts_try)))
 
-        hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
-            url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
+            url = '{schema}://{host}/library/sections/{key}/refresh'.format(
+                schema=schema, host=cur_host, key=section_key,
+            )
             try:
-                get_url(url, headers=self.headers, session=self.session, returns='text')
-            except Exception as error:
+                response = self.session.get(url)
+            except requests.RequestException as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
+            else:
+                del response  # request succeeded so response is not needed
 
-        return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
+        return ', '.join(failed_hosts) if failed_hosts else None
 
     def get_token(self, username=None, password=None, plex_server_token=None):
+        """
+        Get auth token.
+
+        Try to get the auth token from the argument, the config, the session,
+        or the Plex website in that order.
+
+        :param username: plex.tv username
+        :param password: plex.tv password
+        :param plex_server_token: auth token
+
+        :returns: Plex auth token being used or True if authentication is
+            not required, else None
+        """
         username = username or app.PLEX_SERVER_USERNAME
         password = password or app.PLEX_SERVER_PASSWORD
         plex_server_token = plex_server_token or app.PLEX_SERVER_TOKEN
 
         if plex_server_token:
-            self.headers['X-Plex-Token'] = plex_server_token
+            self.session.headers['X-Plex-Token'] = plex_server_token
 
-        if 'X-Plex-Token' in self.headers:
-            return True
+        if 'X-Plex-Token' in self.session.headers:
+            return self.session.headers['X-Plex-Token']
 
         if not (username and password):
             return True
 
         log.debug(u'PLEX: fetching plex.tv credentials for user: {0}', username)
+        error_msg = u'PLEX: Error fetching credentials from plex.tv for user {0}: {1}'
+        try:  # sign in
+            response = self.session.post(
+                'https://plex.tv/users/sign_in.json',
+                data={
+                    'user[login]': username,
+                    'user[password]': password,
+                }
+            )
+            response.raise_for_status()
+        except requests.RequestException as error:
+            log.debug(error_msg, username, error)
+            return
 
-        params = {
-            'user[login]': username,
-            'user[password]': password
-        }
+        try:  # get json data
+            data = response.json()
+        except ValueError as error:
+            log.debug(error_msg, username, error)
+            return
 
-        try:
-            response = get_url('https://plex.tv/users/sign_in.json',
-                               post_data=params,
-                               headers=self.headers,
-                               session=self.session,
-                               returns='json')
+        try:  # get token from key
+            plex_server_token = data['user']['authentication_token']
+        except KeyError as error:
+            log.debug(error_msg, username, error)
+            return
+        else:
+            self.session.headers['X-Plex-Token'] = plex_server_token
 
-            self.headers['X-Plex-Token'] = response['user']['authentication_token']
-
-        except Exception as error:
-            self.headers.pop('X-Plex-Token', '')
-            log.debug(u'PLEX: Error fetching credentials from from plex.tv for user {0}: {1}', username, error)
-
-        return 'X-Plex-Token' in self.headers
+        return self.session.headers.get('X-Plex-Token')

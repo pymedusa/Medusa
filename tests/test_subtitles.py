@@ -32,8 +32,8 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
-        {'name': 'subscenter', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
+        {'name': 'wizdom', 'enabled': False},
     ]
     assert expected == [{'name': a['name'], 'enabled': a['enabled']} for a in actual]
 
@@ -209,6 +209,39 @@ def test_from_ietf_code__unknown_code_returning_none():
     assert actual is None
 
 
+def test_from_country_code_to_name__valid_code():
+    # Given
+    code = 'IT'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'ITALY' == actual
+
+
+def test_from_country_code_to_name__valid_lower_code():
+    # Given
+    code = 'fr'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'FRANCE' == actual
+
+
+def test_from_country_code_to_name__invalid_code():
+    # Given
+    code = 'XY'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert None is actual
+
+
 def test_name_from_code__valid_code():
     # Given
     code = 'pob'
@@ -295,7 +328,7 @@ def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monke
     actual = sut.compute_subtitle_path(subtitle, video_path, subtitles_dir)
 
     # Then
-    assert '/folder/subtitles/video.srt' == actual
+    assert os.path.normpath('/folder/subtitles/video.srt') == os.path.normpath(actual)
 
 
 def test_merge_subtitles__with_multi_enabled(monkeypatch):
@@ -390,9 +423,9 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
     some_file = str(tmpdir.ensure('video.fr.nfo'))
 
     # When
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_eng)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_pob)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_eng)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_fre)
 
     # Then
     assert os.path.exists(subtitle_pob)
@@ -507,7 +540,7 @@ def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, crea
     subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['list_subtitles']]
     best_subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['best_subtitles']]
     video_path = str(tmpdir.ensure(video.name))
-    tvepisode = create_tvepisode(show=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
+    tvepisode = create_tvepisode(series=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
     external_subtitles = p['external_subtitles']
     embedded_subtitles = p['embedded_subtitles'] if p['embedded_subtitles'] is not None else True
     refine = Mock()

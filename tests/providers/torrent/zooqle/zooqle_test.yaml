@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-08 00:00:00
+      title: Homes Under The Hammer S20E19 720p HDTV x264-NORiTE[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:60C628C2BBA16D83E0451983C0973F8DC02DEF11
+      size: -1
+    - seeders: 2
+      pubdate: 2017-11-08 00:00:00
+      title: Squidbillies S11E04 720p HDTV x264-MiNDTHEGAP[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:1801088BAAF2801E21F2526213F61B26FD0553A6
+      size: -1
+    - seeders: 1
+      pubdate: 2017-11-08 00:00:00
+      title: Squidbillies S11E04 HDTV x264-MiNDTHEGAP[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:9D6D689B06FEC9EF14F08C69D9BC31A9368DC242
+      size: -1
+
+backlog:
+  search_strings:
+    Episode: ['Chance S02E03']
+  results:
+    - seeders: 63
+      pubdate: 2017-10-09 00:00:00
+      title: Chance S02E03 WEB h264-TBS[ettv]
+      leechers: 5
+      link: magnet:?xt=urn:btih:029AD775FD366536F19CE4F526958C1BFB1F1CFE
+      size: 255852544
+    - seeders: 59
+      pubdate: 2017-10-09 00:00:00
+      title: Chance S02E03 WEB h264-TBS [eztv]
+      leechers: 46
+      link: magnet:?xt=urn:btih:3E0044197C6FFD4B410FD924D7ED8467E01812D9
+      size: 255852544

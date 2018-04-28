@@ -1,5 +1,6 @@
 # coding=utf-8
 """Cache (dogpile) used by application."""
+from __future__ import unicode_literals
 
 import os
 from datetime import timedelta
@@ -37,8 +38,13 @@ class MutexLock(AbstractFileLock):
         """Default release_write_lock."""
         return self.mutex.release_write_lock()
 
+
 cache = make_region()
 memory_cache = make_region()
+recommended_series_cache = make_region()
+# Some of the show titles that are used as keys, contain unicode encoded characters. We need to encode them to
+# bytestrings to be able to use them as keys in dogpile.
+anidb_cache = make_region()
 
 
 def configure(cache_dir):
@@ -60,6 +66,18 @@ def configure(cache_dir):
                     expiration_time=timedelta(days=1),
                     arguments={'filename': os.path.join(cache_dir, 'application.dbm'),
                                'lock_factory': MutexLock})
+
+    # recommended series cache
+    recommended_series_cache.configure('dogpile.cache.dbm',
+                                       expiration_time=timedelta(days=7),
+                                       arguments={'filename': os.path.join(cache_dir, 'recommended.dbm'),
+                                                  'lock_factory': MutexLock})
+
+    # anidb (adba) series cache
+    anidb_cache.configure('dogpile.cache.dbm',
+                          expiration_time=timedelta(days=3),
+                          arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
+                                     'lock_factory': MutexLock})
 
 
 def fallback():

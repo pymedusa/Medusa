@@ -4,15 +4,10 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 import re
-import traceback
-
-from contextlib2 import suppress
 
 from medusa import tv
-
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
@@ -21,10 +16,7 @@ from medusa.helper.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from pytimeparse import parse
-
 from requests.compat import urljoin
-from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -64,9 +56,9 @@ class LimeTorrentsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self, min_time=15)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -93,7 +85,7 @@ class LimeTorrentsProvider(TorrentProvider):
                     # search_url = self.urls['rss'].format(page=1)
                     search_url = self.urls['rss']
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -125,7 +117,7 @@ class LimeTorrentsProvider(TorrentProvider):
                 return items
 
             torrent_rows = torrent_table.find_all('tr')
-            labels = [process_column_header(label) for label in torrent_rows[0]]
+            labels = [process_column_header(label) for label in torrent_rows[0].find_all('th')]
 
             # Skip the first row, since it isn't a valid result
             for row in torrent_rows[1:]:
@@ -150,26 +142,16 @@ class LimeTorrentsProvider(TorrentProvider):
                     if len(title) < len(alt_title):
                         title = alt_title.replace('-', ' ')
 
-                    torrent_id = regex_result.group(2)
                     info_hash = hash_regex.search(title_url).group(2)
-                    if not all([title, torrent_id, info_hash]):
+                    if not all([title, info_hash]):
                         continue
 
-                    with suppress(RequestsConnectionError, Timeout):
-                        # Suppress the timeout since we are not interested in actually getting the results
-                        self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
-                                                                                   'infohash': info_hash})
+                    download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
-                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
+                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''))
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True).replace(',', ''))
-
-                    # Handle all date formats in the site
-                    # Example: "7 days ago - in TV shows" or "16 minutes ago"
-                    pubdate_raw = cells[1].get_text()
-                    pubdate_raw = pubdate_raw.split('ago')[0].split('+')[0].split('-')[0].replace('Last', '1').replace('Yesterday', '24 Hours')
-                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
-                        if pubdate_raw else None
 
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
@@ -179,8 +161,9 @@ class LimeTorrentsProvider(TorrentProvider):
                         continue
 
                     size = convert_size(cells[labels.index('Size')].get_text(strip=True)) or -1
-                    download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=info_hash, title=title, trackers=self._custom_trackers)
+
+                    pubdate_raw = cells[1].get_text().replace('Last', '1').replace('Yesterday', '24 hours')
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,
@@ -196,8 +179,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

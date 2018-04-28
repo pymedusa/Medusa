@@ -15,7 +15,7 @@ from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSe
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import media_browser
 
-from six import string_types
+from six import string_types, text_type
 
 try:
     import xml.etree.cElementTree as etree
@@ -117,7 +117,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             first_aired = etree.SubElement(tv_node, 'premiered')
             first_aired.text = my_show['firstaired']
             try:
-                year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                 if year_text:
                     year = etree.SubElement(tv_node, 'year')
                     year.text = year_text
@@ -136,7 +136,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
             if rating:
                 rating = etree.SubElement(tv_node, 'rating')
-                rating.text = str(rating)
+                rating.text = text_type(rating)
 
         if getattr(my_show, 'status', None):
             status = etree.SubElement(tv_node, 'status')
@@ -182,7 +182,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -203,7 +203,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     'Unable to find episode {ep_num} on {indexer}...'
                     ' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.show.indexer).name,
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
                     }
                 )
                 return None
@@ -213,7 +213,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
                 # default to today's date for specials if firstaired is not set
                 if ep_to_write.season == 0 and not getattr(my_ep, 'firstaired', None):
-                    my_ep['firstaired'] = str(datetime.date.fromordinal(1))
+                    my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
 
                 if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                     return None
@@ -225,14 +225,14 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     episode_name.text = ep_to_write.name
 
                 season_number = etree.SubElement(episode, 'season')
-                season_number.text = str(ep_to_write.season)
+                season_number.text = text_type(ep_to_write.season)
 
                 episode_number = etree.SubElement(episode, 'episode')
-                episode_number.text = str(ep_to_write.episode)
+                episode_number.text = text_type(ep_to_write.episode)
 
                 if getattr(my_show, 'firstaired', None):
                     try:
-                        year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                        year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                         if year_text:
                             year = etree.SubElement(episode, 'year')
                             year.text = year_text
@@ -259,7 +259,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
                     if rating:
                         rating = etree.SubElement(episode, 'rating')
-                        rating.text = str(rating)
+                        rating.text = text_type(rating)
 
                 if getattr(my_ep, 'director', None):
                     director = etree.SubElement(episode, 'director')

@@ -17,6 +17,7 @@ from medusa import (
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import episode_num
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -59,7 +60,7 @@ class BTNProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -129,13 +130,16 @@ class BTNProvider(TorrentProvider):
 
             size = row.get('Size') or -1
 
+            pubdate_raw = row.get('Time')
+            pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
+
             item = {
                 'title': title,
                 'link': download_url,
                 'size': size,
                 'seeders': seeders,
                 'leechers': leechers,
-                'pubdate': None,
+                'pubdate': pubdate,
             }
             log.debug(
                 'Found result: {title} with {x} seeders'
@@ -190,8 +194,8 @@ class BTNProvider(TorrentProvider):
         searches = []
         season = 'Season' if mode == 'Season' else ''
 
-        air_by_date = ep_obj.show.air_by_date
-        sports = ep_obj.show.sports
+        air_by_date = ep_obj.series.air_by_date
+        sports = ep_obj.series.sports
 
         if not season_numbering and (air_by_date or sports):
             date_fmt = '%Y' if season else '%Y.%m.%d'
@@ -210,15 +214,12 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.show.indexer == 1:
+        if ep_obj.series.indexer == INDEXER_TVDBV2:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:
-            name_exceptions = scene_exceptions.get_scene_exceptions(
-                ep_obj.show.indexerid,
-                ep_obj.show.indexer
-            )
-            name_exceptions.add(ep_obj.show.name)
+            name_exceptions = scene_exceptions.get_scene_exceptions(ep_obj.series)
+            name_exceptions.add(ep_obj.series.name)
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
                 params['series'] = name
@@ -246,14 +247,14 @@ class BTNProvider(TorrentProvider):
             )
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            if error.message[1] == 'Invalid API Key':
+            if error.message == (-32001, 'Invalid API Key'):
                 log.warning('Incorrect authentication credentials.')
-            elif error.message[1] == 'Call Limit Exceeded':
+            elif error.message == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of'
                             ' 150 calls per hour.')
             else:
                 log.error('JSON-RPC protocol error while accessing provider.'
-                          ' Error: {msg!r}', {'msg': error.message[1]})
+                          ' Error: {msg!r}', {'msg': error.message})
 
         except (socket.error, socket.timeout, ValueError) as error:
             log.warning('Error while accessing provider.'

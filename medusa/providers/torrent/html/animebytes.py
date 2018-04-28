@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -60,7 +59,7 @@ class AnimeBytes(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -70,9 +69,6 @@ class AnimeBytes(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-
-        if self.show and not self.show.is_anime:
-            return results
 
         if not self.login():
             return results
@@ -108,7 +104,7 @@ class AnimeBytes(TorrentProvider):
                               {'search': search_string})
                     search_params['searchstr'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -283,8 +279,7 @@ class AnimeBytes(TorrentProvider):
                                 continue
 
                     except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                        log.error('Failed parsing provider. Traceback: {0!r}',
-                                  traceback.format_exc())
+                        log.exception('Failed parsing provider.')
 
         return items
 
@@ -295,7 +290,7 @@ class AnimeBytes(TorrentProvider):
             return True
 
         # Get csrf_index and csrf_token
-        csrf_response = self.get_url(self.urls['login'], returns='response')
+        csrf_response = self.session.get(self.urls['login'])
         if not csrf_response or not csrf_response.text:
             log.warning('Unable to connect to provider')
             return False
@@ -317,7 +312,7 @@ class AnimeBytes(TorrentProvider):
             'login': 'Log In!',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False
@@ -338,7 +333,7 @@ class AnimeBytes(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -349,7 +344,7 @@ class AnimeBytes(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

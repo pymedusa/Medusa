@@ -3,7 +3,6 @@
 import os
 
 from medusa import app
-
 from medusa.post_processor import PostProcessor
 
 import pytest

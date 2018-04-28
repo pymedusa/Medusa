@@ -1,9 +1,10 @@
 # coding=utf-8
 
-from .add_recommended import HomeAddRecommended
-from .add_shows import HomeAddShows
-from .change_log import HomeChangeLog
-from .handler import Home
-from .irc import HomeIRC
-from .news import HomeNews
-from .post_process import HomePostProcess
+from __future__ import unicode_literals
+from medusa.server.web.home.add_recommended import HomeAddRecommended
+from medusa.server.web.home.add_shows import HomeAddShows
+from medusa.server.web.home.change_log import HomeChangeLog
+from medusa.server.web.home.handler import Home
+from medusa.server.web.home.irc import HomeIRC
+from medusa.server.web.home.news import HomeNews
+from medusa.server.web.home.post_process import HomePostProcess

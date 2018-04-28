@@ -1,0 +1,43 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      Cookie: [__cfduid=d0ef242b77da9a14958ee9374ebe44de01510935073]
+      User-Agent: [!!python/unicode Medusa/0.0.1 (Windows; 10; ee483911-cbb1-11e7-90fd-1c1b0d9d2a41)]
+    method: GET
+    uri: http://torrentapi.org/pubapi_v2.php?ranked=0&sort=seeders&search_string=Lethal+Weapon+S02E05&format=json_extended&app_id=medusa&mode=search&min_leechers=0&limit=100&token=l2esh1av76&min_seeders=0&category=tv
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA+2Xa0/jRhSG/wqyBF/KmjNn7pbQCgTtVqWrikW7UpeVNTcTi8SOnAlLi/jvnYRL
+        QhdzUekHUCzHI8/12POc128usth2XWhi2YXJdBgnWfH1Iot1HIasyA5CHJhh/iWYcdvknwD3gecf
+        9o4+5+co2Lvffj042D/89LUzXTz7lm1mzsRw0nZ/paFHn9f2x/Wk9WGSGnz7vRm2xqeGkTlpQize
+        n8ftadcUNtaDAipGmNfGGsUqFxQE4zxY7QwFaRzVQTLlLN3wzfbTYlrnu/Oo1vneRuy2BzGO1+nO
+        Ov6cztgZdxq6/Lqs6vPctaPUrCC1mqZpp40Ls2FTvxil8zShPclHIVWhJNDXIbY9HdpxaHIfRm1T
+        19crEkrl0prpTU1C8KFL24AENrNhCG4wvyUitdV/p12hhIDkhJLNbDy1Pr3y9FYRiHxHyDtQa4AF
+        qILLtZ8gHWnKcLUPZd1UbVZcZPXI2zQkRk4EI1qkLvGsMydpnmY6HM7u5h3SQlLPJoiDFPRZHea1
+        QhIyG2Lq7t9ry/lizXSUKvn8Wcykba7ucTbPAqu1Oq4d1j5kl5tZZ5rTkNBIDzQLsRzPQ8lmezYp
+        jreOt64RNeM6b7uT460u+LoLLpaxnT9UPh6M38f2NDTbQwyTATFnUmyMt0nJSihVKdOVl+WCsrTq
+        I5BLhPHTSf+w9wzYpVNQSbQaAqWAnnMmhFdeU+OVBBOEQ5TM9MJ+f2yvn3jC6P3EE2TIJEdCH0Be
+        pAEr5JeRp2W5YO1x5AmoxNWX/d0rrI52XwZ3ZXlFpPLSWKSWSGmQqcpZqJAFRAaEh0qC6sX9x7je
+        AOqIy6gvSBeIAoQC3kc6KTgrcCXut6SLUqdrucDscdKfwvgzzIvQRAUvCEdVeWs89UC1kELTShkk
+        FrXFtLG9gL8xtIHcizYVAohG0WtbEtlQIFuRvUz2zLbc8vVE2/LiEk5kYMxqDiSVjloRdLCEsSoJ
+        Oa+MslZwpW142LG8Lcx1j4CnrxVRQjL9AOakQLXCfBlzUZYLyJ4k4If1+Iqmw53D3V/+g3xLSLLk
+        lNSGMVA+HcyjCswohxyNIdYLjVW/Hf8hmFdKtNR33De/FW7N2Cy/+8w3EUm1C1gJ9zXRusRUkmS+
+        b8l6nOhUmdcxn4V4bXh3fv/z4w1be3t/JB98hdjHI/sioq6DNEZX4EAa4qoqBGoIw3SCYg6N06EK
+        4EQv988K+fULvrjz51TdZAcKqbWSXLP+9ABesJXgL6UHTWW5APB56TE3E/93dlSEW6BKWUVBEMuN
+        APCaO2CKmIpSA8Y6XvVbnudE/PqTA8Wdb8etG+IUkFFE6EkOxAIw+f5VctwkB53/ygV/2eW3y38A
+        tjF9M6YXAAA=
+    headers:
+      cf-ray: [3bf3f738b7601a93-DUS]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [application/json]
+      date: ['Fri, 17 Nov 2017 16:11:25 GMT']
+      server: [cloudflare-nginx]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1

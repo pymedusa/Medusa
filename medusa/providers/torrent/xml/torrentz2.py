@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -50,7 +49,7 @@ class Torrentz2Provider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -77,7 +76,7 @@ class Torrentz2Provider(TorrentProvider):
 
                 # search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 search_url = self.urls['feed']
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -105,7 +104,7 @@ class Torrentz2Provider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
+                    if row.category and 'video' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text
@@ -118,8 +117,9 @@ class Torrentz2Provider(TorrentProvider):
 
                     torrent_size, seeders, leechers = self._split_description(row.find('description').text)
                     size = convert_size(torrent_size) or -1
-                    pubdate_raw = row.pubDate.text if row.pubDate else None
-                    pubdate = self._parse_pubdate(pubdate_raw)
+
+                    pubdate_raw = row.pubdate.get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -143,8 +143,7 @@ class Torrentz2Provider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

@@ -440,7 +440,7 @@
   screen_size: 720p
   release_group: Z-Team
   audio_codec: AAC
-  container: MP4
+  container: mp4
   type: episode
 
 # anime_french_fansub
@@ -473,7 +473,7 @@
   absolute_episode: 4
   episode: 4
   subtitle_language: fr
-  release_group: FHD
+  other: FullHD
   type: episode
 
 # anime_french_fansub
@@ -580,7 +580,7 @@
   episode: 312
   version: 1
   screen_size: 720p
-  container: MKV
+  container: mkv
   release_group: AAA
   type: episode
 
@@ -1873,7 +1873,7 @@
   - Show.Name.Season.1-3.Mp4.1080p
 : title: Show Name
   season: [1, 2, 3]
-  container: MP4
+  container: mp4
   screen_size: 1080p
   type: episode
 
@@ -1882,7 +1882,7 @@
   - Show.Name.-.Season.1.3.and.4-.Mp4.1080p
 : title: Show Name
   season: [1, 3, 4]
-  container: MP4
+  container: mp4
   screen_size: 1080p
   type: episode
 
@@ -2503,7 +2503,7 @@
   format: BluRay
   screen_size: 1080p
   audio_channels: '5.1'
-  container: WMV
+  container: wmv
   release_group: NOVO
   type: episode
 
@@ -2547,7 +2547,7 @@
   video_codec: h264
   video_encoder: x264
   audio_codec: AAC
-  container: [MP4, mp4] # not a big issue
+  container: mp4
   release_group: k3n
   mimetype: video/mp4
   type: episode
@@ -2992,7 +2992,7 @@
   episode: 5
   screen_size: 720p
   audio_codec: AAC
-  container: MP4
+  container: mp4
   release_group: Group
   type: episode
 
@@ -3017,7 +3017,7 @@
   video_codec: h265
   video_encoder: x265
   release_group: GROUP
-  container: MKV
+  container: mkv
   type: episode
 
 # Blacklisted pattern: blacklist-03
@@ -3031,7 +3031,7 @@
   video_codec: h265
   video_encoder: x265
   release_group: GROUP
-  container: MKV
+  container: mkv
   type: episode
 
 # Blacklisted pattern: blacklist-03
@@ -3057,7 +3057,7 @@
   video_codec: h265
   video_encoder: x265
   release_group: GROUP
-  container: MKV
+  container: mkv
   type: episode
 
 # Blacklisted pattern: blacklist-03 (negative scenario)
@@ -3129,7 +3129,7 @@
   episode: 10
   episode_title: Episode Title
   screen_size: 720p
-  container: MP4
+  container: mp4
   release_group: Group
   type: episode
 
@@ -3162,8 +3162,7 @@
 : title: Show '70s Name
   season: 7
   episode: 22
-  episode_title: Episode Title
-  year: 2000 # not a big issue for us
+  episode_title: 2000 Episode Title
   container: mkv
   mimetype: video/x-matroska
   type: episode
@@ -3195,7 +3194,7 @@
   absolute_episode: 10
   episode: 10
   screen_size: 1080p
-  container: MKV
+  container: mkv
   release_group: GROUP
   type: episode
 
@@ -3262,7 +3261,7 @@
 ? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
 : title: Show Name
   season: 2
-  other: Uncensored
+  edition: Uncensored
   release_group: 'pseudo'
   screen_size: 1080p
   format: BDRip
@@ -3436,7 +3435,7 @@
   season: 1
   other: ['HD', 'Proper']
   screen_size: 720p
-  container: MP4
+  container: mp4
   proper_count: 1
   proper_tag: REPACK
   format: HDTV
@@ -3586,7 +3585,7 @@
   format: PDTV
   video_codec: h264
   video_encoder: x264
-  container: MP4
+  container: mp4
   type: episode
 
 # DDP is DD+
@@ -3599,7 +3598,7 @@
   screen_size: 2160p
   streaming_service: Amazon Prime
   format: WEBRip
-  audio_codec: AC3
+  audio_codec: EAC3
   audio_channels: '5.1'
   video_codec: h264
   video_encoder: x264
@@ -3615,7 +3614,7 @@
   screen_size: 1080p
   streaming_service: Amazon Prime
   format: WEBRip
-  audio_codec: AC3
+  audio_codec: EAC3
   audio_channels: '5.1'
   video_codec: h264
   video_encoder: x264
@@ -3626,7 +3625,7 @@
 : title: Show Name
   date: 2016-09-28
   episode_title: Nice Title
-  other: Extended
+  edition: Extended
   screen_size: 1080p
   streaming_service: Comedy Central
   format: WEBRip
@@ -4146,4 +4145,66 @@
   format: TV
   language: und
   crc32: EDA6E7F1
+  type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Scrambled/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Obfuscated/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode
+
+# TODO: Guessit 3 to handle HDR, BT2020 and more
+? Doctor.Estraño.HDR.VISIONPLUS.1000.[4K.UHD.2160p.HEVC.X265][BT2020][DTS-5.1.Castellano.DTS-HD.7.1-Ingles+Subs][ES-EN].x264-NEWPCT
+: title: Doctor Estraño HDR VISIONPLUS
+  absolute_episode: 1000
+  episode: 1000
+  screen_size: 2160p
+  other: [UltraHD, HD]
+  video_codec: [h265, h264]
+  video_encoder: [x265, x264]
+  audio_codec: DTS
+  audio_channels: ['5.1', '7.1']
+  language: ca
+  audio_profile: HD
+  subtitle_language: [es, en]
+  release_group: NEWPCT
+  type: episode
+
+? Saint.Seiya.E76.1080p.BluRay-Yomi.mkv
+: options: {show_type: anime}
+  title: Saint Seiya
+  episode: 76
+  absolute_episode: 76
+  screen_size: 1080p
+  format: BluRay
+  release_group: Yomi
+  container: mkv
+  type: episode
+
+# 20-40 added to the expected_groups.
+? Show.Name.Season.6.480p.HDTV.H264-20-40.WEB-DL
+: title: Show Name
+  season: 6
+  screen_size: 480p
+  video_codec: h264
+  release_group: 20-40
+  format: WEB-DL
   type: episode

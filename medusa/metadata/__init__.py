@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 import sys
 
 from medusa.metadata import (
     generic,
-    helpers,
     kodi,
     kodi_12plus,
     mede8er,
@@ -33,7 +33,6 @@ from medusa.metadata import (
 
 __all__ = [
     'generic',
-    'helpers',
     'kodi',
     'kodi_12plus',
     'mede8er',
@@ -45,7 +44,7 @@ __all__ = [
 
 
 def available_generators():
-    return [x for x in __all__ if x not in ['generic', 'helpers']]
+    return [x for x in __all__ if x not in ['generic']]
 
 
 def _getMetadataModule(name):

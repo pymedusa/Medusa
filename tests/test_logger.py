@@ -5,6 +5,7 @@ from datetime import datetime
 import medusa.logger as sut
 from medusa.logger import DEBUG, INFO, LogLine, WARNING
 from medusa.logger.adapters.style import BraceAdapter
+
 import pytest
 
 from six import text_type
@@ -262,7 +263,7 @@ def test_from_line(p):
     },
     {  # p4: thread_name doesn't match
         'line': '2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [d4ea5af] Performing episode search for Show Name',
-        'thread_name': 'Thread-19',
+        'thread_name': 'Thread_19',
         'expected': False,
     },
     {  # p5: everything matches

@@ -1,26 +1,25 @@
 # coding=utf-8
 
 """Search core module."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import datetime
-import errno
 import logging
 import os
 import threading
-import traceback
-from socket import timeout as socket_timeout
+import time
+from builtins import str
 
 from medusa import (
     app,
     common,
     db,
     failed_history,
-    helpers,
     history,
     name_cache,
     notifiers,
     nzb_splitter,
-    show_name_helpers,
     ui,
 )
 from medusa.clients import torrent
@@ -45,11 +44,14 @@ from medusa.helper.exceptions import (
     AuthException,
     ex,
 )
+from medusa.helpers import chmod_as_parent
+from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers import sorted_provider_list
+from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
+from medusa.show import naming
 
-import requests
+from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -68,10 +70,10 @@ def _download_result(result):
         return False
 
     # nzbs with an URL can just be downloaded from the provider
-    if result.resultType == u'nzb':
+    if result.result_type == u'nzb':
         new_result = res_provider.download_result(result)
     # if it's an nzb data result
-    elif result.resultType == u'nzbdata':
+    elif result.result_type == u'nzbdata':
 
         # get the final file path to the nzb
         file_name = os.path.join(app.NZB_DIR, result.name + u'.nzb')
@@ -83,14 +85,14 @@ def _download_result(result):
         # save the data to disk
         try:
             with open(file_name, u'w') as fileOut:
-                fileOut.write(result.extraInfo[0])
+                fileOut.write(result.extra_info[0])
 
-            helpers.chmod_as_parent(file_name)
+            chmod_as_parent(file_name)
 
         except EnvironmentError as e:
             log.error(u'Error trying to save NZB to black hole: {0}', ex(e))
             new_result = False
-    elif result.resultType == u'torrent':
+    elif result.result_type == u'torrent':
         new_result = res_provider.download_result(result)
     else:
         log.error(u'Invalid provider type - this is a coding error, report it please')
@@ -111,11 +113,13 @@ def snatch_episode(result):
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
     is_proper = False
+
     if app.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for cur_ep in result.episodes:
             if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
+
     if result.proper_tags:
         log.debug(u'Found proper tags for {0}. Snatching as PROPER', result.name)
         is_proper = True
@@ -123,11 +127,18 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet') or result.url.endswith(u'torrent'):
-        result.resultType = u'torrent'
+    # Binsearch.info requires you to download the nzb through a post.
+    if result.provider.kind() == 'BinSearchProvider':
+        result.result_type = 'nzbdata'
+        nzb_data = result.provider.download_nzb_for_post(result)
+        result.extra_info.append(nzb_data)
+
+        if not nzb_data:
+            log.warning('Error trying to get the nzb data from provider binsearch, no data returned')
+            return False
 
     # NZBs can be sent straight to SAB or saved to disk
-    if result.resultType in (u'nzb', u'nzbdata'):
+    if result.result_type in (u'nzb', u'nzbdata'):
         if app.NZB_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == u'sabnzbd':
@@ -139,23 +150,27 @@ def snatch_episode(result):
             result_downloaded = False
 
     # Torrents can be sent to clients or saved to disk
-    elif result.resultType == u'torrent':
+    elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
-            if not result.content and not result.url.startswith(u'magnet'):
+            if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
-                    result.content = result.provider.get_url(result.url, returns=u'content')
+                    if result.provider.kind() == 'TorznabProvider':
+                        result.url = result.provider.get_redirect_url(result.url)
 
-            if result.content or result.url.startswith(u'magnet'):
+                    if not result.url.startswith(u'magnet:'):
+                        result.content = result.provider.get_content(result.url)
+
+            if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
-                log.warning(u'Torrent file content is empty')
+                log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
-        log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
+        log.error(u'Unknown result type, unable to download it: {0!r}', result.result_type)
         result_downloaded = False
 
     if not result_downloaded:
@@ -219,14 +234,14 @@ def snatch_episode(result):
                 trakt_data.append((curEpObj.season, curEpObj.episode))
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
-                    result.show.name,
+                    result.series.name,
                     episode_num(curEpObj.season, curEpObj.episode),
                 )
 
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
         if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update=u'add')
+            notifiers.trakt_notifier.update_watchlist(result.series, data_episode=data_episode, update=u'add')
 
     if sql_l:
         main_db_con = db.DBConnection()
@@ -235,12 +250,11 @@ def snatch_episode(result):
     return True
 
 
-def pick_best_result(results, show):  # pylint: disable=too-many-branches
+def pick_best_result(results):  # pylint: disable=too-many-branches
     """
     Find the best result out of a list of search results for a show.
 
     :param results: list of result objects
-    :param show: Shows we check for
     :return: best result object
     """
     results = results if isinstance(results, list) else [results]
@@ -251,20 +265,35 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
     # find the best result for the current episode
     for cur_result in results:
-        if show and cur_result.show is not show:
-            continue
+        assert cur_result.series, 'Every SearchResult object should have a series object available at this point.'
+
+        # Every SearchResult object should have a show attribute available at this point.
+        series_obj = cur_result.series
 
         # build the black and white list
-        if show.is_anime:
-            if not show.release_groups.is_valid(cur_result):
+        if series_obj.is_anime:
+            if not series_obj.release_groups.is_valid(cur_result):
                 continue
 
         log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
 
-        allowed_qualities, preferred_qualities = show.current_qualities
+        allowed_qualities, preferred_qualities = series_obj.current_qualities
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
+            continue
+
+        wanted_ep = True
+
+        if cur_result.actual_episodes:
+            wanted_ep = False
+            for episode in cur_result.actual_episodes:
+                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality,
+                                           cur_result.forced_search, cur_result.download_current_quality,
+                                           search_type=cur_result.search_type):
+                    wanted_ep = True
+
+        if not wanted_ep:
             continue
 
         # If doesnt have min seeders OR min leechers then discard it
@@ -282,10 +311,10 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             )
             continue
 
-        ignored_words = show.show_words().ignored_words
-        required_words = show.show_words().required_words
-        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
-        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
+        ignored_words = series_obj.show_words().ignored_words
+        required_words = series_obj.show_words().required_words
+        found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
+        found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)
@@ -295,7 +324,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.info(u'Ignoring {0} based on required words filter: {1}', cur_result.name, required_words)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
+        if not naming.filter_bad_releases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, u'size'):
@@ -303,12 +332,13 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                                                                       cur_result.provider.name):
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
-        preferred_words = ''
+
+        preferred_words = []
         if app.PREFERRED_WORDS:
-            preferred_words = app.PREFERRED_WORDS.lower().split(u',')
-        undesired_words = ''
+            preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
+        undesired_words = []
         if app.UNDESIRED_WORDS:
-            undesired_words = app.UNDESIRED_WORDS.lower().split(u',')
+            undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
         if not best_result:
             best_result = cur_result
@@ -320,12 +350,6 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                 best_result = cur_result
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
-                best_result = cur_result
-            elif u'internal' in best_result.name.lower() and u'internal' not in cur_result.name.lower():
-                log.info(u'Preferring {0} (normal instead of internal)', cur_result.name)
-                best_result = cur_result
-            elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
-                log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
             if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
@@ -348,67 +372,66 @@ def is_first_best_match(result):
     """
     log.debug(u'Checking if we should stop searching for a better quality for for episode {0}', result.name)
 
-    show_obj = result.episodes[0].show
+    series_obj = result.episodes[0].series
 
-    _, preferred_qualities = show_obj.current_qualities
+    _, preferred_qualities = series_obj.current_qualities
     # Don't pass allowed because we only want to check if this quality is wanted preferred.
     return Quality.wanted_quality(result.quality, [], preferred_qualities)
 
 
-def wanted_episodes(show, from_date):
+def wanted_episodes(series_obj, from_date):
     """
     Get a list of episodes that we want to download.
 
-    :param show: Show these episodes are from
+    :param series_obj: Series these episodes are from
     :param from_date: Search from a certain date
     :return: list of wanted episodes
     """
     wanted = []
-    allowed_qualities, preferred_qualities = show.current_qualities
+    allowed_qualities, preferred_qualities = series_obj.current_qualities
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
-    log.debug(u'Seeing if we need anything from {0}', show.name)
+    log.debug(u'Seeing if we need anything from {0}', series_obj.name)
     con = db.DBConnection()
 
     sql_results = con.select(
         'SELECT status, season, episode, manually_searched '
         'FROM tv_episodes '
-        'WHERE showid = ?'
+        'WHERE indexer = ? '
+        ' AND showid = ?'
         ' AND season > 0'
         ' and airdate > ?',
-        [show.indexerid, from_date.toordinal()]
+        [series_obj.indexer, series_obj.series_id, from_date.toordinal()]
     )
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
-        should_search, should_search_reason = Quality.should_search(result[b'status'], show, result[b'manually_searched'])
+        should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
         if not should_search:
             continue
         else:
             log.debug(
                 u'Searching for {show} {ep}. Reason: {reason}', {
-                    u'show': show.name,
+                    u'show': series_obj.name,
                     u'ep': episode_num(result[b'season'], result[b'episode']),
                     u'reason': should_search_reason,
                 }
             )
-        ep_obj = show.get_episode(result[b'season'], result[b'episode'])
+        ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
         ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(ep_obj)
 
     return wanted
 
 
-def search_for_needed_episodes():
+def search_for_needed_episodes(force=False):
     """
     Check providers for details on wanted episodes.
 
     :return: episodes we have a search hit for
     """
     found_results = {}
-
-    did_search = False
 
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
@@ -420,15 +443,21 @@ def search_for_needed_episodes():
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
-    if not episodes:
+    if not episodes and not force:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
-        return found_results.values()
+        return list(itervalues(found_results))
 
     original_thread_name = threading.currentThread().name
 
     providers = enabled_providers(u'daily')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
+                    u' Please check your settings')
+        return list(itervalues(found_results))
+
     log.info(u'Using daily search providers')
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
@@ -443,20 +472,14 @@ def search_for_needed_episodes():
         except AuthException as error:
             log.error(u'Authentication error: {0}', ex(error))
             continue
-        except Exception as error:
-            log.debug(traceback.format_exc())
-            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
-            continue
-
-        did_search = True
 
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
-            if not cur_ep.show or cur_ep.show.paused:
+            if not cur_ep.series or cur_ep.series.paused:
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.show)
+            best_result = pick_best_result(cur_found_results[cur_ep])
 
             # if all results were rejected move on to the next episode
             if not best_result:
@@ -467,25 +490,83 @@ def search_for_needed_episodes():
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
+            # Skip the result if search delay is enabled for the provider.
+            if delay_search(best_result):
+                continue
+
             found_results[cur_ep] = best_result
 
     threading.currentThread().name = original_thread_name
 
-    if not did_search:
-        log.warning(
-            u'No NZB/Torrent providers found or enabled in the application config for daily searches. '
-            u'Please check your settings.'
+    return list(itervalues(found_results))
+
+
+def delay_search(best_result):
+    """Delay the search by ignoring the best result, when search delay is enabled for this provider.
+
+    If the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
+    search_delay time (minutes) skip it. For this we need to check if the result has already been
+    stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
+    :param best_result: SearchResult object.
+    :return: True if we want to skipp this result.
+    """
+    cur_provider = best_result.provider
+    if cur_provider.enable_search_delay and cur_provider.search_delay:  # In minutes
+        cur_ep = best_result.episodes[0]
+        log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
+                  {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
+
+        from medusa.search.manual import get_provider_cache_results
+        results = get_provider_cache_results(
+            cur_ep.series, show_all_results=False, perform_search=False,
+            season=cur_ep.season, episode=cur_ep.episode, manual_search_type='episode'
         )
 
-    return found_results.values()
+        if results.get('found_items'):
+            # If date_added is missing we put it at the end of the list
+            results['found_items'].sort(key=lambda d: d['date_added'] or datetime.datetime.now(app_timezone))
+
+            first_result = results['found_items'][0]
+            date_added = first_result['date_added']
+            # Some results in cache have date_added as 0
+            if not date_added:
+                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                return False
+
+            timestamp = to_timestamp(date_added)
+            if timestamp + cur_provider.search_delay * 60 > time.time():
+                # The provider's delay cooldown time hasn't expired yet. We're holding back the snatch.
+                log.debug(
+                    'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}.'
+                    ' The provider is waiting {search_delay_minutes} hours, before accepting the release.'
+                    ' Still {hours_left} to go.', {
+                        'best_result': best_result.name,
+                        'first_result': first_result['name'],
+                        'provider': cur_provider.name,
+                        'search_delay_minutes': round(cur_provider.search_delay / 60, 1),
+                        'hours_left': round((cur_provider.search_delay - (time.time() - timestamp) / 60) / 60, 1)
+                    }
+                )
+                return True
+            else:
+                log.debug('DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
+                          'Time of first result: {first_result}',
+                          {'provider': cur_provider.name, 'first_result': date_added})
+        else:
+            # This should never happen.
+            log.debug(
+                'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
+                {'provider': cur_provider.name, 'series': best_result.series.name,
+                 'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
+    return False
 
 
-def search_providers(show, episodes, forced_search=False, down_cur_quality=False,
+def search_providers(series_obj, episodes, forced_search=False, down_cur_quality=False,
                      manual_search=False, manual_search_type=u'episode'):
     """
     Walk providers for information on shows.
 
-    :param show: Show we are looking for
+    :param series_obj: Show we are looking for
     :param episodes: List, episodes we hope to find
     :param forced_search: Boolean, is this a forced search?
     :param down_cur_quality: Boolean, should we re-download currently available quality file
@@ -497,29 +578,29 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
     final_results = []
     manual_search_results = []
 
-    did_search = False
-
     # build name cache for show
-    name_cache.build_name_cache(show)
+    name_cache.build_name_cache(series_obj)
 
     original_thread_name = threading.currentThread().name
 
     if manual_search:
         log.info(u'Using manual search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_manualsearch]
+        providers = enabled_providers(u'manualsearch')
     else:
         log.info(u'Using backlog search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_backlog]
+        providers = enabled_providers(u'backlog')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for {0} searches.'
+                    u' Please check your settings', 'manual' if manual_search else 'backlog')
 
     threading.currentThread().name = original_thread_name
 
     for cur_provider in providers:
         threading.currentThread().name = original_thread_name + u' :: [' + cur_provider.name + u']'
 
-        if cur_provider.anime_only and not show.is_anime:
-            log.debug(u'{0} is not an anime, skipping', show.name)
+        if cur_provider.anime_only and not series_obj.is_anime:
+            log.debug(u'{0} is not an anime, skipping', series_obj.name)
             continue
 
         found_results[cur_provider.name] = {}
@@ -538,47 +619,16 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             search_count += 1
 
             if search_mode == u'eponly':
-                log.info(u'Performing episode search for {0}', show.name)
+                log.info(u'Performing episode search for {0}', series_obj.name)
             else:
-                log.info(u'Performing season pack search for {0}', show.name)
+                log.info(u'Performing season pack search for {0}', series_obj.name)
 
             try:
-                search_results = cur_provider.find_search_results(show, episodes, search_mode, forced_search,
+                search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
                                                                   down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
                 log.error(u'Authentication error: {0}', ex(error))
                 break
-            except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:
-                log.debug(u'HTTP error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ConnectionError as error:
-                log.debug(u'Connection error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.Timeout as error:
-                log.debug(u'Connection timed out while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ContentDecodingError as error:
-                log.debug(u'Content-Encoding was gzip, but content was not compressed while searching {0}.'
-                          u' Error: {1!r}', cur_provider.name, ex(error))
-                break
-            except Exception as error:
-                if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-                    log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
-                                cur_provider.name, ex(error))
-                else:
-                    log.debug(traceback.format_exc())
-                    log.error(u'Unknown exception while searching {0}. Error: {1!r}',
-                              cur_provider.name, ex(error))
-                break
-
-            did_search = True
 
             if search_results:
                 # make a list of all the results for this provider
@@ -630,7 +680,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         # pick the best season NZB
         best_season_result = None
         if SEASON_RESULT in found_results[cur_provider.name]:
-            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT], show)
+            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT])
 
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
@@ -652,9 +702,10 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             selection = main_db_con.select(
                 'SELECT episode '
                 'FROM tv_episodes '
-                'WHERE showid = ?'
+                'WHERE indexer = ?'
+                ' AND showid = ?'
                 ' AND ( season IN ( {0} ) )'.format(','.join(searched_seasons)),
-                [show.indexerid]
+                [series_obj.indexer, series_obj.series_id]
             )
             all_eps = [int(x[b'episode']) for x in selection]
             log.debug(u'Episode list: {0}', all_eps)
@@ -663,7 +714,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             any_wanted = False
             for cur_ep_num in all_eps:
                 for season in {x.season for x in episodes}:
-                    if not show.want_episode(season, cur_ep_num, season_quality, down_cur_quality):
+                    if not series_obj.want_episode(season, cur_ep_num, season_quality, down_cur_quality):
                         all_wanted = False
                     else:
                         any_wanted = True
@@ -677,7 +728,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 ep_objs = []
                 for cur_ep_num in all_eps:
                     for season in {x.season for x in episodes}:
-                        ep_objs.append(show.get_episode(season, cur_ep_num))
+                        ep_objs.append(series_obj.get_episode(season, cur_ep_num))
                 best_season_result.episodes = ep_objs
 
                 # Remove provider from thread name before return results
@@ -690,7 +741,9 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                           best_season_result.provider.provider_type,
                           best_season_result.name)
             else:
-                if best_season_result.provider.provider_type == GenericProvider.NZB:
+                # Some NZB providers (e.g. Jackett) can also download torrents, but torrents cannot be split like NZB
+                if (best_season_result.provider.provider_type == GenericProvider.NZB and
+                        not best_season_result.url.endswith(GenericProvider.TORRENT)):
                     log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
 
                     # if not, break it apart and add them as the lowest priority results
@@ -716,7 +769,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                     ep_objs = []
                     for cur_ep_num in all_eps:
                         for season in {x.season for x in episodes}:
-                            ep_objs.append(show.get_episode(season, cur_ep_num))
+                            ep_objs.append(series_obj.get_episode(season, cur_ep_num))
                     best_season_result.episodes = ep_objs
 
                     if MULTI_EP_RESULT in found_results[cur_provider.name]:
@@ -731,7 +784,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.debug(u'Seeing if we want to bother with multi-episode result {0}', _multi_result.name)
 
                 # Filter result by ignore/required/whitelist/blacklist/quality, etc
-                multi_result = pick_best_result(_multi_result, show)
+                multi_result = pick_best_result(_multi_result)
                 if not multi_result:
                     continue
 
@@ -795,7 +848,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 continue
 
             # if all results were rejected move on to the next episode
-            best_result = pick_best_result(found_results[cur_provider.name][cur_ep], show)
+            best_result = pick_best_result(found_results[cur_provider.name][cur_ep])
             if not best_result:
                 continue
 
@@ -809,11 +862,9 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                         else:
                             found = True
             if not found:
-                final_results += [best_result]
-
-    if not did_search:
-        log.warning(u'No NZB/Torrent providers found or enabled in the application config for backlog searches.'
-                    u' Please check your settings.')
+                # Skip the result if search delay is enabled for the provider.
+                if not delay_search(best_result):
+                    final_results += [best_result]
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

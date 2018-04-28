@@ -1,12 +1,17 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
 
 import oauth2 as oauth
+
 import pythontwitter as twitter
+
 from six.moves.urllib.parse import parse_qsl
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -133,7 +138,7 @@ class Notifier(object):
         api = twitter.Api(username, password, access_token_key, access_token_secret)
 
         try:
-            api.PostDirectMessage(dmdest, message.encode('utf8')[:139])
+            api.PostDirectMessage(message.encode('utf8')[:139], screen_name=dmdest)
         except Exception as error:
             log.error(u'Error Sending Tweet (DM): {!r}', error)
             return False

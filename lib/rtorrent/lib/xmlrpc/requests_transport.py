@@ -110,9 +110,9 @@ class RequestsTransport(xmlrpc_client.Transport):
         # Need to be done because the schema(http or https) is lost in
         # xmlrpc.Transport's init.
         if self._use_https:
-            url = "https://{host}/{handler}".format(host=host, handler=handler)
+            url = "https://{host}{handler}".format(host=host, handler=handler)
         else:
-            url = "http://{host}/{handler}".format(host=host, handler=handler)
+            url = "http://{host}{handler}".format(host=host, handler=handler)
 
         # TODO Construct kwargs query instead
         try:

@@ -1,8 +1,10 @@
 """Plex or other tvdb fallback sources."""
+from __future__ import unicode_literals
 
 import datetime
 import functools
 import logging
+from builtins import object
 
 from medusa import app, ui
 from medusa.indexers.indexer_exceptions import (

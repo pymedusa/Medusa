@@ -6,13 +6,23 @@ import os
 
 from github import GithubException
 
-from tornroutes import route
+from medusa import (
+    app,
+    config,
+    github_client,
+    helpers,
+    logger,
+    ui,
+)
+from medusa.common import (
+    Quality,
+    WANTED,
+)
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, github_client, helpers, logger, ui
-from ....common import Quality, WANTED
-from ....helper.common import try_int
+from tornroutes import route
 
 
 @route('/config/general(/?.*)')
@@ -23,8 +33,7 @@ class ConfigGeneral(Config):
     def index(self):
         t = PageTemplate(rh=self, filename='config_general.mako')
 
-        return t.render(title='Config - General', header='General Configuration',
-                        topmenu='config', submenu=self.ConfigMenu(),
+        return t.render(topmenu='config', submenu=self.ConfigMenu(),
                         controller='config', action='index')
 
     @staticmethod
@@ -33,14 +42,14 @@ class ConfigGeneral(Config):
 
     @staticmethod
     def saveRootDirs(rootDirString=None):
-        app.ROOT_DIRS = rootDirString
+        app.ROOT_DIRS = rootDirString.split('|')
 
     @staticmethod
     def saveAddShowDefaults(defaultStatus, allowed_qualities, preferred_qualities, defaultFlattenFolders, subtitles=False,
                             anime=False, scene=False, defaultStatusAfter=WANTED):
 
-        allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
-        preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
+        allowed_qualities = [_.strip() for _ in allowed_qualities.split(',')] if allowed_qualities else []
+        preferred_qualities = [_.strip() for _ in preferred_qualities.split(',')] if preferred_qualities else []
 
         new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
@@ -59,7 +68,7 @@ class ConfigGeneral(Config):
     def saveGeneral(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
                     trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
                     indexerDefaultLang='en', ep_default_deleted_status=None, launch_browser=None, showupdate_hour=3, web_username=None,
-                    api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL',
+                    api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL', layout_wide=None,
                     web_password=None, version_notify=None, enable_https=None, https_cert=None, https_key=None,
                     handle_reverse_proxy=None, sort_article=None, auto_update=None, notify_on_update=None,
                     proxy_setting=None, proxy_indexers=None, anon_redirect=None, git_path=None, git_remote=None,
@@ -68,7 +77,7 @@ class ConfigGeneral(Config):
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
                     display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
-                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None):
+                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None, ssl_ca_bundle=None):
 
         results = []
 
@@ -110,6 +119,7 @@ class ConfigGeneral(Config):
         app.NO_RESTART = config.checkbox_to_value(no_restart)
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
+        app.SSL_CA_BUNDLE = ssl_ca_bundle
         # app.LOG_DIR is set in config.change_LOG_DIR()
         app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
@@ -187,6 +197,7 @@ class ConfigGeneral(Config):
         app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
         app.THEME_NAME = theme_name
+        app.LAYOUT_WIDE = config.checkbox_to_value(layout_wide)
         app.FANART_BACKGROUND = config.checkbox_to_value(fanart_background)
         app.FANART_BACKGROUND_OPACITY = fanart_background_opacity
 

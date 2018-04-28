@@ -16,16 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date, timedelta
+from __future__ import unicode_literals
 
+from builtins import object
+from builtins import str
+from datetime import date, timedelta
+from operator import itemgetter
+
+from medusa import app
+from medusa.common import (
+    IGNORED,
+    Quality,
+    UNAIRED,
+    WANTED,
+)
+from medusa.db import DBConnection
+from medusa.helper.common import dateFormat, timeFormat
 from medusa.helpers.quality import get_quality_string
+from medusa.network_timezones import parse_date_time
+from medusa.sbdatetime import sbdatetime
 from medusa.tv.series import SeriesIdentifier
-from .. import app
-from ..common import IGNORED, Quality, UNAIRED, WANTED
-from ..db import DBConnection
-from ..helper.common import dateFormat, timeFormat
-from ..network_timezones import parse_date_time
-from ..sbdatetime import sbdatetime
 
 
 class ComingEpisodes(object):
@@ -35,11 +45,12 @@ class ComingEpisodes(object):
     Soon:     tomorrow till next week
     Later:    later than next week
     """
+
     categories = ['later', 'missed', 'soon', 'today']
     sorts = {
-        'date': (lambda a, b: cmp(a['localtime'], b['localtime'])),
-        'network': (lambda a, b: cmp((a['network'], a['localtime']), (b['network'], b['localtime']))),
-        'show': (lambda a, b: cmp((a['show_name'], a['localtime']), (b['show_name'], b['localtime']))),
+        'date': itemgetter('localtime'),
+        'network': itemgetter('network', 'localtime'),
+        'show': itemgetter('show_name', 'localtime'),
     }
 
     def __init__(self):
@@ -54,7 +65,6 @@ class ComingEpisodes(object):
         :param paused: ``True`` to include paused shows, ``False`` otherwise
         :return: The list of coming episodes
         """
-
         categories = ComingEpisodes._get_categories(categories)
         sort = ComingEpisodes._get_sort(sort)
 
@@ -74,28 +84,31 @@ class ComingEpisodes(object):
             'WHERE season != 0 '
             'AND airdate >= ? '
             'AND airdate < ? '
+            'AND s.indexer = e.indexer '
             'AND s.indexer_id = e.showid '
             'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
             [today, next_week] + qualities_list
         )
 
-        done_shows_list = [int(result['showid']) for result in results]
+        done_shows_list = [int(result[b'showid']) for result in results]
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER))
 
+        # FIXME: This inner join is not multi indexer friendly.
         results += db.select(
             'SELECT %s ' % fields_to_select +
             'FROM tv_episodes e, tv_shows s '
             'WHERE season != 0 '
             'AND showid NOT IN (' + placeholder + ') '
-                                                  'AND s.indexer_id = e.showid '
-                                                  'AND airdate = (SELECT airdate '
-                                                  'FROM tv_episodes inner_e '
-                                                  'WHERE inner_e.season != 0 '
-                                                  'AND inner_e.showid = e.showid '
-                                                  'AND inner_e.airdate >= ? '
-                                                  'ORDER BY inner_e.airdate ASC LIMIT 1) '
-                                                  'AND e.status NOT IN (' + placeholder2 + ')',
+            'AND s.indexer_id = e.showid '
+            'AND airdate = (SELECT airdate '
+            'FROM tv_episodes inner_e '
+            'WHERE inner_e.season != 0 '
+            'AND inner_e.showid = e.showid '
+            'AND inner_e.indexer = e.indexer '
+            'AND inner_e.airdate >= ? '
+            'ORDER BY inner_e.airdate ASC LIMIT 1) '
+            'AND e.status NOT IN (' + placeholder2 + ')',
             done_shows_list + [next_week] + Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER
         )
 
@@ -118,7 +131,7 @@ class ComingEpisodes(object):
             results[index]['localtime'] = sbdatetime.convert_to_setting(
                 parse_date_time(item['airdate'], item['airs'], item['network']))
 
-        results.sort(ComingEpisodes.sorts[sort])
+        results.sort(key=ComingEpisodes.sorts[sort])
 
         if not group:
             return results
@@ -179,7 +192,7 @@ class ComingEpisodes(object):
     def _get_sort(sort):
         sort = sort.lower() if sort else ''
 
-        if sort not in ComingEpisodes.sorts.keys():
+        if sort not in ComingEpisodes.sorts:
             return 'date'
 
         return sort

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
 import logging
 import socket
 
@@ -22,6 +23,7 @@ from medusa.notifiers import (
     pushbullet,
     pushover,
     pytivo,
+    slack,
     synoindex,
     synology_notifier,
     telegram,
@@ -59,6 +61,7 @@ telegram_notifier = telegram.Notifier()
 twitter_notifier = tweet.Notifier()
 trakt_notifier = trakt.Notifier()
 email_notifier = emailnotify.Notifier()
+slack_notifier = slack.Notifier()
 
 notifiers = [
     libnotify_notifier,  # Libnotify notifier goes first because it doesn't involve blocking on network activity.
@@ -81,6 +84,7 @@ notifiers = [
     twitter_notifier,
     trakt_notifier,
     email_notifier,
+    slack_notifier
 ]
 
 
@@ -88,7 +92,7 @@ def notify_download(ep_name):
     for n in notifiers:
         try:
             n.notify_download(ep_name)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
@@ -96,7 +100,7 @@ def notify_subtitle_download(ep_name, lang):
     for n in notifiers:
         try:
             n.notify_subtitle_download(ep_name, lang)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
@@ -104,7 +108,7 @@ def notify_snatch(ep_name, is_proper):
     for n in notifiers:
         try:
             n.notify_snatch(ep_name, is_proper)
-        except (RequestException, socket.gaierror) as error:
+        except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
 
@@ -113,7 +117,7 @@ def notify_git_update(new_version=""):
         if app.NOTIFY_ON_UPDATE:
             try:
                 n.notify_git_update(new_version)
-            except (RequestException, socket.gaierror) as error:
+            except (RequestException, socket.gaierror, socket.timeout) as error:
                 log.debug(u'Unable to send new update notification. Error: {0}', error.message)
 
 
@@ -122,5 +126,5 @@ def notify_login(ipaddress):
         if app.NOTIFY_ON_LOGIN:
             try:
                 n.notify_login(ipaddress)
-            except (RequestException, socket.gaierror) as error:
+            except (RequestException, socket.gaierror, socket.timeout) as error:
                 log.debug(u'Unable to new login notification. Error: {0}', error.message)

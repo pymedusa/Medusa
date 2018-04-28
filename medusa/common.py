@@ -16,31 +16,33 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Common interface for Quality and Status."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import operator
 import os
 import platform
 import re
 import uuid
-
+from builtins import object
+from builtins import str
 from collections import namedtuple
-from os import path
+from functools import reduce
 
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
-from six import PY3
-from six.moves import reduce
+from medusa.numdict import NumDict
+from medusa.recompiled import tags
+from medusa.search import PROPER_SEARCH
 
-from .numdict import NumDict
-from .recompiled import tags
-
+from six import PY3, viewitems
 
 if PY3:
     long = int
 
-# If some provider has an issue with functionality of SR, other than user
+# If some provider has an issue with functionality of Medusa, other than user
 # agents, it's best to come talk to us rather than block.  It is no different
 # than us going to a provider if we have questions or issues.
 # Be a team player here. This is disabled, and was only added for testing,
@@ -48,10 +50,11 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-USER_AGENT = u'Medusa/{version}({system}; {release}; {instance})'.format(
-    version=u'0.0.1', system=platform.system(), release=platform.release(),
+VERSION = '0.2.2'
+USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
+    version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
+ua_settings.DB = os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -312,11 +315,11 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-        from .tagger.episode import EpisodeTags
+        from medusa.tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:
-            name = path.basename(name)
+            name = os.path.basename(name)
 
         result = None
         ep = EpisodeTags(name)
@@ -433,8 +436,10 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
+        height = int(height.magnitude)
+
         # TODO: Use knowledge information like 'resolution'
-        base_filename = path.basename(file_path)
+        base_filename = os.path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 
@@ -462,7 +467,7 @@ class Quality(object):
 
     @staticmethod
     def quality_downloaded(status):
-        return (status - DOWNLOADED) / 100
+        return (status - DOWNLOADED) // 100
 
     @staticmethod
     def split_composite_status(status):
@@ -472,11 +477,11 @@ class Quality(object):
         :param status: to split
         :returns: a namedtuple containing (status, quality)
         """
-        status = long(status)
+        status = int(status)
         if status == UNKNOWN:
             return Quality.composite_status_quality(UNKNOWN, Quality.UNKNOWN)
 
-        for q in sorted(Quality.qualityStrings.keys(), reverse=True):
+        for q in sorted(list(Quality.qualityStrings), reverse=True):
             if status > q * 100:
                 return Quality.composite_status_quality(status - q * 100, q)
 
@@ -634,7 +639,7 @@ class Quality(object):
 
     @staticmethod
     def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
-                       download_current_quality=False, force=False, manually_searched=False):
+                       download_current_quality=False, force=False, manually_searched=False, search_type=None):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
@@ -651,6 +656,7 @@ class Quality(object):
         :param download_current_quality: True if user wants the same existing quality to be snatched
         :param force: True if user did a forced search for that episode
         :param manually_searched: True if episode was manually searched by user
+        :param search_type: The search type, that started this method
         :return: True if the old quality should be replaced with new quality.
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
@@ -669,6 +675,12 @@ class Quality(object):
 
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
             return False, 'New quality is not in any wanted quality lists. Ignoring new quality'
+
+        if search_type == PROPER_SEARCH:
+            if new_quality == old_quality:
+                return True, 'New quality is the same as the existing quality. Accepting PROPER'
+            return False, 'New quality is different from the existing quality.' \
+                          'Ignoring PROPER, as we only PROPER the same release.'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.
@@ -782,7 +794,7 @@ class Quality(object):
         :return: guessit screen_size
         :rtype: str
         """
-        for key, value in Quality.to_guessit_screen_size_map.items():
+        for key, value in viewitems(Quality.to_guessit_screen_size_map):
             if quality & key:
                 return value
 

@@ -8,26 +8,23 @@ import logging
 import threading
 import time
 import traceback
+from builtins import str
 
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
     snatch_episode,
 )
 
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 search_queue_lock = threading.Lock()
-
-BACKLOG_SEARCH = 10
-DAILY_SEARCH = 20
-FAILED_SEARCH = 30
-FORCED_SEARCH = 40
-MANUAL_SEARCH = 50
 
 FORCED_SEARCH_HISTORY = []
 FORCED_SEARCH_HISTORY_SIZE = 100
@@ -137,19 +134,19 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
                 return True
         return False
 
-    def get_all_ep_from_queue(self, show):
+    def get_all_ep_from_queue(self, series_obj):
         """
         Get QueueItems from the queue if the queue item is scheduled to search for the passed Show.
 
-        @param show: Show indexer_id
+        @param series_obj: Series object.
 
         @return: A list of ForcedSearchQueueItem or FailedQueueItem items
-        @todo: In future a show object should be passed instead of the indexer_id, as we might migrate
-        to a system with multiple indexer_id's for one added show.
         """
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)):
+                if series_obj and cur_item.show.identifier != series_obj.identifier:
+                    continue
                 ep_obj_list.append(cur_item)
         return ep_obj_list
 
@@ -248,12 +245,13 @@ class SnatchQueue(generic_queue.GenericQueue):
 class DailySearchQueueItem(generic_queue.QueueItem):
     """Daily searche queue item class."""
 
-    def __init__(self):
+    def __init__(self, force):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
 
         self.success = None
         self.started = None
+        self.force = force
 
     def run(self):
         """Run daily search thread."""
@@ -262,7 +260,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning daily search for new episodes')
-            found_results = search_for_needed_episodes()
+            found_results = search_for_needed_episodes(force=self.force)
 
             if not found_results:
                 log.info('No needed episodes found')
@@ -293,9 +291,9 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
 
-        except Exception:
+        except Exception as error:
             self.success = False
-            log.debug(traceback.format_exc())
+            log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
 
         if self.success is None:
             self.success = False
@@ -450,7 +448,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         result = providers.get_provider_class(self.provider).get_result(self.segment)
-        result.show = self.show
+        result.series = self.show
         result.url = self.cached_result[b'url']
         result.quality = int(self.cached_result[b'quality'])
         result.name = self.cached_result[b'name']
@@ -497,7 +495,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
         except Exception:
             self.success = False
-            log.debug(traceback.format_exc())
+            log.exception('Manual snatch failed!. For result: {name}', {'name': result.name})
             ui.notifications.message('Error while snatching selected result',
                                      'Unable to snatch the result for <i>{name}</i>'.format(name=result.name))
 

@@ -2,14 +2,13 @@
 
 from __future__ import unicode_literals
 
+from medusa import process_tv
+from medusa.helper.encoding import ss
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+
 from six import string_types
-
 from tornroutes import route
-
-from .handler import Home
-from ..core import PageTemplate
-from .... import process_tv
-from ....helper.encoding import ss
 
 
 @route('/home/postprocess(/?.*)')
@@ -20,8 +19,7 @@ class HomePostProcess(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home_postprocess.mako')
-        return t.render(title='Post Processing', header='Post Processing', topmenu='home',
-                        controller='home', action='postProcess')
+        return t.render(topmenu='home', controller='home', action='postProcess')
 
     def processEpisode(self, proc_dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on='0', failed='0', proc_type='auto', ignore_subs=None, *args, **kwargs):

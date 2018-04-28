@@ -4,7 +4,17 @@ from __future__ import unicode_literals
 
 import os
 import threading
+from posixpath import join
 
+from medusa import (
+    app,
+    logger,
+)
+from medusa.helpers import (
+    create_https_certificates,
+    generate_api_key,
+)
+from medusa.server.api.v1.core import ApiHandler
 from medusa.server.api.v2.alias import AliasHandler
 from medusa.server.api.v2.alias_source import (
     AliasSourceHandler,
@@ -19,15 +29,42 @@ from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
+from medusa.server.api.v2.stats import StatsHandler
+from medusa.server.web import (
+    CalendarHandler,
+    KeyHandler,
+    LoginHandler,
+    LogoutHandler,
+    TokenHandler,
+)
+from medusa.server.web.core.base import AuthenticatedStaticFileHandler
+from medusa.ws import MedusaWebSocketHandler
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+from tornado.web import (
+    Application,
+    RedirectHandler,
+    StaticFileHandler,
+    url,
+)
+
 from tornroutes import route
-from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
-from .web.core.base import AuthenticatedStaticFileHandler
-from .. import app, logger
-from ..helpers import create_https_certificates, generate_api_key
+
+
+def clean_url_path(*args, **kwargs):
+    """Make sure we end with a clean route."""
+    end_with_slash = kwargs.pop('end_with_slash', False)
+    build_path = ''
+    for arg in args:
+        build_path = join(build_path.strip('/'), arg.strip('/'))
+
+    build_path = '/' + build_path if build_path else ''
+
+    if end_with_slash:
+        build_path += '/'
+
+    return build_path
 
 
 def get_apiv2_handlers(base):
@@ -49,6 +86,9 @@ def get_apiv2_handlers(base):
         # /api/v2/config
         ConfigHandler.create_app_handler(base),
 
+        # /api/v2/stats
+        StatsHandler.create_app_handler(base),
+
         # /api/v2/log
         LogHandler.create_app_handler(base),
 
@@ -68,13 +108,12 @@ def get_apiv2_handlers(base):
     ]
 
 
-class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
-    def __init__(self, options=None, io_loop=None):
+class AppWebServer(threading.Thread):
+    def __init__(self, options=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self.alive = True
         self.name = 'TORNADO'
-        self.io_loop = io_loop or IOLoop.current()
 
         self.options = options or {}
         self.options.setdefault('port', 8081)
@@ -90,20 +129,29 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # video root
         if app.ROOT_DIRS:
-            root_dirs = app.ROOT_DIRS.split('|')
+            root_dirs = app.ROOT_DIRS
             self.video_root = root_dirs[int(root_dirs[0]) + 1]
         else:
             self.video_root = None
 
         # web root
         if self.options['web_root']:
-            app.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
+            app.WEB_ROOT = self.options['web_root'] = clean_url_path(self.options['web_root'])
+
+        # Configure root to selected theme.
+        app.WEB_ROOT = self.options['theme_path'] = clean_url_path(app.WEB_ROOT)
+
+        # Configure the directory to the theme's data root.
+        app.THEME_DATA_ROOT = self.options['theme_data_root'] = os.path.join(self.options['data_root'], app.THEME_NAME)
 
         # api root
         if not app.API_KEY:
             app.API_KEY = generate_api_key()
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
+
+        # websocket root
+        self.options['web_socket'] = r'{root}/ws'.format(root=app.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -132,8 +180,54 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             gzip=app.WEB_USE_GZIP,
             xheaders=app.HANDLE_REVERSE_PROXY,
             cookie_secret=app.WEB_COOKIE_SECRET,
-            login_url=r'{root}/login/'.format(root=self.options['web_root']),
+            login_url=r'{root}/login/'.format(root=self.options['theme_path']),
         )
+
+        self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
+
+        # Websocket handler
+        self.app.add_handlers(".*$", [
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+        ])
+
+        # Static File Handlers
+        self.app.add_handlers('.*$', [
+            # favicon
+            (r'{base}/(favicon\.ico)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img/ico/favicon.ico')}),
+
+            # images
+            (r'{base}/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img')}),
+
+            # cached images
+            (r'{base}/cache/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(app.CACHE_DIR, 'images')}),
+
+            # css
+            (r'{base}/css/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'css')}),
+
+            # javascript
+            (r'{base}/js/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'js')}),
+
+            # fonts
+            (r'{base}/fonts/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'fonts')}),
+
+            # videos
+            (r'{base}/videos/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': self.video_root}),
+
+            # vue dist
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'vue')}),
+
+            # vue index.html
+            (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
+        ])
 
         # API v1 handlers
         self.app.add_handlers('.*$', [
@@ -148,8 +242,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
              RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
             # Webui login/logout handlers
-            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
-            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
+            (r'{base}/login(/?)'.format(base=self.options['theme_path']), LoginHandler),
+            (r'{base}/logout(/?)'.format(base=self.options['theme_path']), LogoutHandler),
 
             (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
 
@@ -159,49 +253,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # webui handlers
         ] + self._get_webui_routes())
 
-        self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
-
-        # Static File Handlers
-        self.app.add_handlers('.*$', [
-            # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images/ico/favicon.ico')}),
-
-            # images
-            (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images')}),
-
-            # cached images
-            (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(app.CACHE_DIR, 'images')}),
-
-            # css
-            (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'css')}),
-
-            # javascript
-            (r'{base}/js/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'js')}),
-
-            # fonts
-            (r'{base}/fonts/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'fonts')}),
-
-            # videos
-            (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root}),
-
-            # vue dist
-            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['vue_root'], 'dist')}),
-
-            # vue index.html
-            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
-             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
-        ])
-
     def _get_webui_routes(self):
-        webroot = self.options['web_root']
+        webroot = self.options['theme_path']
         route._routes = list(reversed([url(webroot + u.regex.pattern, u.handler_class, u.kwargs, u.name) for u in route.get_routes()]))
         return route.get_routes()
 
@@ -217,7 +270,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
                    (scheme=protocol,
                     host=self.options['host'],
                     port=self.options['port'],
-                    web_root=self.options['web_root']))
+                    web_root=self.options['theme_path']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
@@ -229,12 +282,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             os._exit(1)  # pylint: disable=protected-access
 
         try:
-            self.io_loop.start()
-            self.io_loop.close(True)
+            IOLoop.current().start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):
         self.alive = False
-        self.io_loop.stop()
+        IOLoop.current().stop()

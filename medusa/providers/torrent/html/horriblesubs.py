@@ -5,9 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
-
-from dateutil import parser
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -38,11 +35,13 @@ class HorribleSubsProvider(TorrentProvider):
         }
 
         # Miscellaneous Options
+        self.supports_absolute_numbering = True
+        self.anime_only = True
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -68,7 +67,7 @@ class HorribleSubsProvider(TorrentProvider):
                     search_params = {'value': '{0}'.format(search_string)}
                     search_url = self.urls['search']
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -103,14 +102,17 @@ class HorribleSubsProvider(TorrentProvider):
                         # pubdate is only supported for non-daily searches
                         if mode != 'RSS':
                             # keep the date and strip the rest
-                            date = row.find('td', class_='rls-label').get_text()[1:9]
-                            pubdate = parser.parse(date)
+                            pubdate_raw = row.find('td', class_='rls-label').get_text()[1:9]
+                            pubdate = self.parse_pubdate(pubdate_raw, timezone='America/Los_Angeles')
                         continue
 
                     title = row.find('td', class_='dl-label').get_text()
-                    download_url = row.find('td', class_='dl-type hs-magnet-link').a.get('href')
+                    magnet = row.find('td', class_='dl-type hs-magnet-link')
+                    download_url = magnet or row.find('td', class_='dl-type hs-torrent-link')
                     if not all([title, download_url]):
                         continue
+
+                    download_url = download_url.span.a.get('href')
 
                     # Add HorribleSubs group to the title
                     title = '{group} {title}'.format(group='[HorribleSubs]', title=title)
@@ -134,8 +136,7 @@ class HorribleSubsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

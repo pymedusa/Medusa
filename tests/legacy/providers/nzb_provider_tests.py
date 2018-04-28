@@ -23,8 +23,10 @@ import os
 from medusa import app
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.nzb_provider import NZBProvider
+
 from six import iteritems
-from .generic_provider_tests import GenericProviderTests
+
+from tests.legacy.providers.generic_provider_tests import GenericProviderTests
 
 
 class NZBProviderTests(GenericProviderTests):

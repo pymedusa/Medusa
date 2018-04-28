@@ -17,16 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
+from __future__ import unicode_literals
+
+
+import os
 import re
 import sqlite3
 import threading
 import time
 import warnings
+from builtins import object
+from builtins import str
 
-from six import text_type
-from . import app, logger
-from .helper.exceptions import ex
+from medusa import app, logger
+from medusa.helper.exceptions import ex
+
+from six import itervalues, text_type
 
 db_cons = {}
 db_locks = {}
@@ -152,7 +158,7 @@ class DBConnection(object):
             return None
 
         if result:
-            return int(result[0]["db_version"])
+            return int(result[0][b'db_version'])
         else:
             return None
 
@@ -171,7 +177,7 @@ class DBConnection(object):
             return None
 
         if result:
-            return int(result[0]["db_minor_version"])
+            return int(result[0][b'db_minor_version'])
         else:
             return None
 
@@ -192,9 +198,8 @@ class DBConnection(object):
         :param fetchall: Boolean, when using a select query force returning all results
         :return: list of results
         """
-        querylist = querylist or []
-        # remove None types
-        querylist = [i for i in querylist if i is not None and len(i)]
+        # Remove Falsey types
+        querylist = (q for q in querylist or [] if q)
 
         sql_results = []
         attempt = 0
@@ -213,7 +218,7 @@ class DBConnection(object):
                                 logger.log(qu[0] + " with args " + str(qu[1]), logger.DEBUG)
                             sql_results.append(self._execute(qu[0], qu[1], fetchall=fetchall))
                     self.connection.commit()
-                    logger.log(u"Transaction with " + str(len(querylist)) + u" queries executed", logger.DEBUG)
+                    logger.log(u"Transaction with " + str(len(sql_results)) + u" queries executed", logger.DEBUG)
 
                     # finished
                     break
@@ -328,17 +333,17 @@ class DBConnection(object):
 
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict: [x + " = ?" for x in myDict.keys()]
+        genParams = lambda myDict: [x + " = ?" for x in myDict]
 
         query = "UPDATE [" + tableName + "] SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(
             genParams(keyDict))
 
-        self.action(query, valueDict.values() + keyDict.values())
+        self.action(query, list(itervalues(valueDict)) + list(itervalues(keyDict)))
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT INTO [" + tableName + "] (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                    " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
-            self.action(query, valueDict.values() + keyDict.values())
+            query = "INSERT INTO [" + tableName + "] (" + ", ".join(list(valueDict) + list(keyDict)) + ")" + \
+                    " VALUES (" + ", ".join(["?"] * len(list(valueDict) + list(keyDict))) + ")"
+            self.action(query, list(itervalues(valueDict)) + list(itervalues(keyDict)))
 
     def tableInfo(self, tableName):
         """
@@ -350,7 +355,7 @@ class DBConnection(object):
         sql_results = self.select("PRAGMA table_info(`%s`)" % tableName)
         columns = {}
         for column in sql_results:
-            columns[column['name']] = {'type': column['type']}
+            columns[column[b'name']] = {'type': column[b'type']}
         return columns
 
     @staticmethod
@@ -445,7 +450,7 @@ def restoreDatabase(version):
     :param version: Version to restore to
     :return: True if restore succeeds, False if it fails
     """
-    from . import helpers
+    from medusa import helpers
     logger.log(u"Restoring database before trying upgrade again")
     if not helpers.restore_versioned_file(dbFilename(suffix='v' + str(version)), version):
         logger.log_error_and_exit(u"Database restore failed, abort upgrading database")

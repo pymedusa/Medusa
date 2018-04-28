@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Inuyashiki - 06 [1080p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/162660/
+      size:  621165936
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Inuyashiki - 06 [720p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/162659/
+      size: 251333181
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Inuyashiki - 06 [480p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/162658/
+      size: 99530833
+
+backlog:
+  search_strings:
+    Episode: ['Yu-Gi-Oh! VRAINS']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: Yu-Gi-Oh! VRAINS - 27 (1280x720 HEVC2 AAC).mkv
+      leechers: 0
+      link: https://www.shanaproject.com/download/162646/
+      size: 179914670
+    - seeders: 1
+      pubdate: 2017-11-15 00:00:00
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 27 [1080p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/162593/
+      size: 578289664

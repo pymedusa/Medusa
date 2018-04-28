@@ -1,0 +1,42 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      Cookie: [__cfduid=da0f3c3981b54e6fbc830ab43e94fbe941510518143]
+      User-Agent: [!!python/unicode Medusa/0.0.1 (Windows; 10; aa667f30-c7ed-11e7-a702-1c1b0d9d2a41)]
+    method: GET
+    uri: https://torrentz2.eu/feed?f=Lethal+Weapon+S02E05
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA7WWbW/TMBDHX8OnsCIhgWCJn2LHUduJwaQJMTTRCV4iJ7m0EWkSknQbfHouZOmK
+        NpCZilSpjh3/c3c/351nxzebklxB2xV1NfeYT73jxdMns7br7mY5zhJ8r+pi29ebubfu+yYOguvr
+        a/9a+HW7CjilYfAaF71hd7q2VQXlMOyLvoRFX7ctVP0P7sOWHJH30K9tST6DbeqKLCk/peEsGF/F
+        PWVRfV3cfmN/Z9CBbdP18bf5KPCM01ECB5PIr72okUGXtkXTo1uLhz5HRi3yvLU9kLLYFH1MQvJt
+        C20BXcBoBympW8Io3ZvcFFX3Yhbsiw/22mq1tStYQHW07WbB7hnXhoDFg1Fk3UK+C91vbuUA2XG+
+        c+pkcupkdMojLZRzr4My90j/vYG5Z5umLFI7eBcgqpcIxyPBEO+ihw3+T4EfXfdHRX/U83HSL3r/
+        Y5GBrzlt/M+nJx+LxudvzvwbrkL/7PTTm6OL5Wt/8/XqjstfwIQsY0mW5nnKWEITISmwXFLKRaIM
+        DbWyWiVaAcZmYDvYt9oW2YOQ3bV+SQxazTZ5ixgXS9u/IoyRD/UV4ZRpwnQsQvyRlxRP6CyYXhw2
+        YfhgVbffF58wDjW5RE93U8P6PuRl8QNiwpki5ydkibi6mDBOLgATJyaCnNlujcfHOQr72ggt2FHb
+        DcZkuIfPZzQagR29fT8wu2jrvLjxzyErrBMqkxpGlZEMAyIltRJCHBkuZZKHCS5xqSIF3AWVu9Y9
+        VJfr7StCzR0qLmLGY6EOg8qgg/usJlTsFpW75Y9HdZtV/0xI8wGOYhHTQiqZpYIbHamBDM2TCDIq
+        kggzzIWQu5YrIXogQlxJ8RChKZncLX88oan4PTaXgIe5slZDJjImBU8SiuXTZCJVeZryMJEsBZDa
+        hZS7ljOpA5U9Jbl5iNSUS+6Wu5K6XAM5vYHuCzYsp6Km0oTmudSW5th/sD5jkgCVGVUQQWQ1t4yl
+        oXUC4a51D8TYfzh5Z6uh/whCw5jrmEeHKWqCRb81oKmo0dui5m75fwNhhUy0jZjVIgWaaorxz6US
+        RnJrM2wrFowxkXHJCHeteyDO6wq7i94DYWJqYjzHh7kIGBbtZQSdQEwZ4W75H0DgVWS6Qs+GC97i
+        J+NLCN+oCwAA
+    headers:
+      cache-control: ['public, max-age=1500']
+      cf-ray: [3bcc77ebce0b1ab7-DUS]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [application/xml; charset=utf-8]
+      date: ['Sun, 12 Nov 2017 21:08:46 GMT']
+      server: [cloudflare-nginx]
+      vary: [Accept-Encoding]
+      x-fastcgi-cache: [HIT]
+    status: {code: 200, message: OK}
+version: 1

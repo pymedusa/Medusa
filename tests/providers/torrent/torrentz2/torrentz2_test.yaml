@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-12 00:00:00
+      title: Eggheads.S19E46.HDTV.x264-NORiTE
+      leechers: 26
+      link: magnet:?xt=urn:btih:18921c8b6642c77b0c218d179baacf2362767e4c
+      size: 132120576
+    - seeders: 3
+      pubdate: 2017-11-12 00:00:00
+      title: Blackstone.S04E07.720p.WEBRip.x264-aAF
+      leechers: 1
+      link: magnet:?xt=urn:btih:8a5b74b2feeca4696fe28a9fea2bf16f42600d7d
+      size: 1373634560
+    - seeders: 309
+      pubdate: 2017-11-12 00:00:00
+      title: Once.Upon.a.Time.S07E06.HDTV.x264-SVA[ettv]
+      leechers: 123
+      link: magnet:?xt=urn:btih:2b485956239344991f0a2acb09b1e821f05e6ba7
+      size: 272629760
+
+backlog:
+  search_strings:
+    Episode: ['Lethal Weapon S02E05']
+  results:
+    - seeders: 12
+      pubdate: 2017-11-12 00:00:00
+      title: Lethal.Weapon.S02E05.Let.it.Ride.720p.WEBRip.2CH.x265.HEVC-PSA.mkv
+      leechers: 3
+      link: magnet:?xt=urn:btih:51d1bdcffc11b0b340e1f40023b690576a76b76e
+      size: 226492416
+    - seeders: 1
+      pubdate: 2017-11-12 00:00:00
+      title: Lethal.Weapon.S02.1080p.WEB-DLRip.Profix.Media
+      leechers: 1
+      link: magnet:?xt=urn:btih:9c9106941200440a4e52009244bf5b10624686e2
+      size: 10423894016

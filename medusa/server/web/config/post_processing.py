@@ -6,12 +6,19 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    naming,
+    ui,
+)
+from medusa.helper.exceptions import ex
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
 from unrar2 import RarFile
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, naming, ui
-from ....helper.exceptions import ex
 
 
 @route('/config/postProcessing(/?.*)')
@@ -28,8 +35,7 @@ class ConfigPostProcessing(Config):
         """
         t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
-                        header='Post Processing', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='postProcessing')
 
     def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,
@@ -74,12 +80,12 @@ class ConfigPostProcessing(Config):
         app.ADD_SHOWS_WO_DIR = config.checkbox_to_value(add_shows_wo_dir)
         app.PROCESS_METHOD = process_method
         app.DELRARCONTENTS = config.checkbox_to_value(del_rar_contents)
-        app.EXTRA_SCRIPTS = [x.strip() for x in extra_scripts.split('|') if x.strip()]
+        app.EXTRA_SCRIPTS = [_.strip() for _ in extra_scripts.split('|') if _.strip()]
         app.RENAME_EPISODES = config.checkbox_to_value(rename_episodes)
         app.AIRDATE_EPISODES = config.checkbox_to_value(airdate_episodes)
         app.FILE_TIMESTAMP_TIMEZONE = file_timestamp_timezone
         app.MOVE_ASSOCIATED_FILES = config.checkbox_to_value(move_associated_files)
-        app.SYNC_FILES = sync_files
+        app.SYNC_FILES = [_.strip() for _ in sync_files.split(',') if _.strip()]
         app.POSTPONE_IF_SYNC_FILES = config.checkbox_to_value(postpone_if_sync_files)
         app.POSTPONE_IF_NO_SUBS = config.checkbox_to_value(postpone_if_no_subs)
         # If 'postpone if no subs' is enabled, we must have SRT in allowed extensions list
@@ -87,20 +93,20 @@ class ConfigPostProcessing(Config):
             allowed_extensions += ',srt'
             # # Auto PP must be disabled because FINDSUBTITLE thread that calls manual PP (like nzbtomedia)
             # app.PROCESS_AUTOMATICALLY = 0
-        app.ALLOWED_EXTENSIONS = ','.join({x.strip() for x in allowed_extensions.split(',') if x.strip()})
+        app.ALLOWED_EXTENSIONS = {_.strip() for _ in allowed_extensions.split(',') if _.strip()}
         app.NAMING_CUSTOM_ABD = config.checkbox_to_value(naming_custom_abd)
         app.NAMING_CUSTOM_SPORTS = config.checkbox_to_value(naming_custom_sports)
         app.NAMING_CUSTOM_ANIME = config.checkbox_to_value(naming_custom_anime)
         app.NAMING_STRIP_YEAR = config.checkbox_to_value(naming_strip_year)
         app.NFO_RENAME = config.checkbox_to_value(nfo_rename)
 
-        app.METADATA_KODI = kodi_data
-        app.METADATA_KODI_12PLUS = kodi_12plus_data
-        app.METADATA_MEDIABROWSER = mediabrowser_data
-        app.METADATA_PS3 = sony_ps3_data
-        app.METADATA_WDTV = wdtv_data
-        app.METADATA_TIVO = tivo_data
-        app.METADATA_MEDE8ER = mede8er_data
+        app.METADATA_KODI = kodi_data.split('|')
+        app.METADATA_KODI_12PLUS = kodi_12plus_data.split('|')
+        app.METADATA_MEDIABROWSER = mediabrowser_data.split('|')
+        app.METADATA_PS3 = sony_ps3_data.split('|')
+        app.METADATA_WDTV = wdtv_data.split('|')
+        app.METADATA_TIVO = tivo_data.split('|')
+        app.METADATA_MEDE8ER = mede8er_data.split('|')
 
         app.metadata_provider_dict['KODI'].set_config(app.METADATA_KODI)
         app.metadata_provider_dict['KODI 12+'].set_config(app.METADATA_KODI_12PLUS)

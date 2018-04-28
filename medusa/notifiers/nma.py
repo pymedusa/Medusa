@@ -1,11 +1,17 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
+from builtins import object
 
 from medusa import app, common
+from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 
 from pynma import pynma
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -18,7 +24,8 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if app.NMA_NOTIFY_ONSNATCH:
-            self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
+            self._sendNMA(nma_api=None, nma_priority=None,
+                          event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
                           message=ep_name)
 
     def notify_download(self, ep_name):
@@ -52,6 +59,8 @@ class Notifier(object):
 
         if nma_api is None:
             nma_api = app.NMA_API
+        elif isinstance(nma_api, text_type):
+            nma_api = [nma_api]
 
         if nma_priority is None:
             nma_priority = app.NMA_PRIORITY
@@ -59,7 +68,7 @@ class Notifier(object):
         batch = False
 
         p = pynma.PyNMA()
-        keys = nma_api.split(',')
+        keys = nma_api
         p.addkey(keys)
 
         if len(keys) > 1:
@@ -69,9 +78,18 @@ class Notifier(object):
                   event, message, nma_priority, batch)
         response = p.push(application=title, event=event, description=message, priority=nma_priority, batch_mode=batch)
 
-        if not response[nma_api][u'code'] == u'200':
-            log.error(u'Could not send notification to NotifyMyAndroid')
-            return False
-        else:
+        response_status_code = response[','.join(nma_api)][u'code']
+        log_message = u'NMA: Could not send notification to NotifyMyAndroid.'
+
+        if response_status_code == u'200':
             log.info(u'NMA: Notification sent to NotifyMyAndroid')
             return True
+        elif response_status_code == u'402':
+            log.info(u'{0} Maximum number of API calls per hour exceeded', log_message)
+        elif response_status_code == u'401':
+            log.warning(u'{0} The apikey provided is not valid', log_message)
+        elif response_status_code == u'400':
+            log.error(u'{0} Data supplied is in the wrong format, invalid length or null', log_message)
+        else:
+            log.warning(u'{0} Error: {1}', log_message, http_code_description(response_status_code))
+        return False

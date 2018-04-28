@@ -1,0 +1,11 @@
+{
+  "extends": "xo",
+  "rules": {
+      "indent": ["error", 4], 
+      "space-before-function-paren": ["error", "never"]
+    },
+    "env": {
+      "browser": true,
+      "jquery": true
+    }
+}

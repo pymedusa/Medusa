@@ -1,19 +1,29 @@
 # coding=utf-8
 """Base module for request handlers."""
+from __future__ import division
+from __future__ import unicode_literals
 
 import base64
 import collections
 import json
+import logging
 import operator
 import traceback
-
+from builtins import object
 from datetime import date, datetime
+
 from babelfish.language import Language
+
 import jwt
+
 from medusa import app
-from six import string_types, text_type
+
+from six import string_types, text_type, viewitems
+
 from tornado.httpclient import HTTPError
 from tornado.web import RequestHandler
+
+log = logging.getLogger(__name__)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -66,7 +76,7 @@ class BaseRequestHandler(RequestHandler):
         if app.DEVELOPER and 'exc_info' in kwargs:
             self.set_header('content-type', 'text/plain')
             self.set_status(500)
-            for line in traceback.format_exception(*kwargs["exc_info"]):
+            for line in traceback.format_exception(*kwargs['exc_info']):
                 self.write(line)
             self.finish()
         else:
@@ -258,7 +268,7 @@ class BaseRequestHandler(RequestHandler):
             headers['X-Pagination-Count'] = count
             results = results[start:end]
             next_page = None if end > count else arg_page + 1
-            last_page = ((count - 1) / arg_limit) + 1
+            last_page = ((count - 1) // arg_limit) + 1
             if last_page <= arg_page:
                 last_page = None
 
@@ -347,7 +357,7 @@ def iter_nested_items(data, prefix=''):
 
     Nested keys are separated with dots.
     """
-    for key, value in data.items():
+    for key, value in viewitems(data):
         p = prefix + key
         if isinstance(value, collections.Mapping):
             for inner_key, inner_value in iter_nested_items(value, prefix=p + '.'):
@@ -391,7 +401,17 @@ class PatchField(object):
             valid = True
 
         if valid:
-            setattr(target, self.attr, self.converter(value))
+            try:
+                setattr(target, self.attr, self.converter(value))
+            except AttributeError:
+                log.warning(
+                    'Error trying to change attribute %s on target %s, you sure'
+                    ' you are allowed to change this attribute?',
+                    self.attr,
+                    target
+                )
+                return False
+
             if self.post_processor:
                 self.post_processor(value)
             return True
@@ -413,6 +433,15 @@ class IntegerField(PatchField):
         """Constructor."""
         super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
                                            default_value=default_value, post_processor=post_processor)
+
+
+class ListField(PatchField):
+    """Patch list fields."""
+
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
+                                        default_value=default_value, post_processor=post_processor)
 
 
 class BooleanField(PatchField):

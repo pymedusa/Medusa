@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import string
+from builtins import str
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -100,8 +101,7 @@ def list_folders(path, include_parent=False, include_files=False):
         log.warning('Unable to open %s: %s / %s', path, repr(e), str(e))
         file_list = get_file_list(parent_path, include_files)
 
-    file_list = sorted(file_list,
-                       lambda x, y: cmp(os.path.basename(x['name']).lower(), os.path.basename(y['path']).lower()))
+    file_list = sorted(file_list, key=lambda x: os.path.basename(x['name']).lower())
 
     entries = [{'currentPath': path}]
     if include_parent and parent_path != path:

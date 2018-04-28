@@ -1,6 +1,7 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
+from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
 import pytest
 
@@ -446,6 +447,64 @@ import pytest
         'manually_searched': False,
         'expected': True
     },
+    {  # p40: Downloaded SDTV and found SDTV PROPER: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'search_type': PROPER_SEARCH,
+        'expected': True
+    },
+    {  # p41: Downloaded SDTV and found HDTV PROPER but only Allowed. Not proper search: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV, Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p42: Downloaded SDTV and found HDTV PROPER in Preferred. Not proper search: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p43: Downloaded SDTV and found SDTV PROPER: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'search_type': PROPER_SEARCH,
+        'expected': True
+    },
+    {  # p44: Downloaded SDTV and found HDTV PROPER. Proper search: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV, Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'search_type': PROPER_SEARCH,
+        'expected': False
+    },
 ])
 def test_should_replace(p):
     """Run the test."""
@@ -459,10 +518,11 @@ def test_should_replace(p):
     download_current_quality = p['download_current_quality']
     force = p['force']
     manually_searched = p['manually_searched']
+    search_type = p.get('search_type', DAILY_SEARCH)
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manually_searched)
+                                          download_current_quality, force, manually_searched, search_type)
     actual = replace
 
     # Then

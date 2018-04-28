@@ -1,11 +1,14 @@
 # coding=utf-8
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import socket
+from builtins import object
 
-from libgrowl import gntp
+import gntp.core
+
 from medusa import app, common
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
@@ -22,7 +25,10 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if app.GROWL_NOTIFY_ONSNATCH:
-            self._sendGrowl(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name)
+            self._sendGrowl(
+                common.notifyStrings[
+                    (common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]
+                ], ep_name)
 
     def notify_download(self, ep_name):
         if app.GROWL_NOTIFY_ONDOWNLOAD:
@@ -44,16 +50,13 @@ class Notifier(object):
 
     def _send_growl(self, options, message=None):
 
-        # Send Notification
-        notice = gntp.GNTPNotice()
-
-        # Required
-        notice.add_header('Application-Name', options['app'])
-        notice.add_header('Notification-Name', options['name'])
-        notice.add_header('Notification-Title', options['title'])
-
-        if options['password']:
-            notice.set_password(options['password'])
+        # Initialize Notification
+        notice = gntp.core.GNTPNotice(
+            app=options['app'],
+            name=options['name'],
+            title=options['title'],
+            password=options['password'],
+        )
 
         # Optional
         if options['sticky']:
@@ -67,7 +70,7 @@ class Notifier(object):
             notice.add_header('Notification-Text', message)
 
         response = self._send(options['host'], options['port'], notice.encode(), options['debug'])
-        return True if isinstance(response, gntp.GNTPOK) else False
+        return True if isinstance(response, gntp.core.GNTPOK) else False
 
     @staticmethod
     def _send(host, port, data, debug=False):
@@ -77,7 +80,7 @@ class Notifier(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         s.send(data)
-        response = gntp.parse_gntp(s.recv(1024))
+        response = gntp.core.parse_gntp(s.recv(1024))
         s.close()
 
         if debug:
@@ -168,7 +171,7 @@ class Notifier(object):
         opts['debug'] = False
 
         # Send Registration
-        register = gntp.GNTPRegister()
+        register = gntp.core.GNTPRegister()
         register.add_header('Application-Name', opts['app'])
         register.add_header('Application-Icon', app.LOGO_URL)
 

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -53,7 +52,7 @@ class HDSpaceProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # only poll HDSpace every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -85,7 +84,7 @@ class HDSpaceProvider(TorrentProvider):
                               {'search': search_string})
                     search_params['search'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text or 'please try later' in response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -156,8 +155,8 @@ class HDSpaceProvider(TorrentProvider):
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row.findAll('td', class_='lista', attrs={'align': 'center'})[3].get_text()
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate_raw = row.find_all('td', class_='lista', attrs={'align': 'center'})[3].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -167,15 +166,12 @@ class HDSpaceProvider(TorrentProvider):
                         'leechers': leechers,
                         'pubdate': pubdate,
                     }
-                    if mode != 'RSS':
-                        pass
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
                               title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -193,7 +189,7 @@ class HDSpaceProvider(TorrentProvider):
             'submit': 'Confirm',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False

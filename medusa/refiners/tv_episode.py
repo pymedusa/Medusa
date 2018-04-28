@@ -10,6 +10,8 @@ import re
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
+from six import viewitems
+
 from subliminal.video import Episode
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -58,11 +60,11 @@ def refine(video, tv_episode=None, **kwargs):
                   {'name': video.name})
         return
 
-    if tv_episode.show:
+    if tv_episode.series:
         log.debug('Refining using Series information.')
-        series, year, _ = series_re.match(tv_episode.show.name).groups()
+        series, year, _ = series_re.match(tv_episode.series.name).groups()
         enrich({'series': series, 'year': int(year) if year else None}, video)
-        enrich(SHOW_MAPPING, video, tv_episode.show)
+        enrich(SHOW_MAPPING, video, tv_episode.series)
 
     log.debug('Refining using Episode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)
@@ -81,7 +83,7 @@ def enrich(attributes, target, source=None, overwrite=True):
     :param overwrite: if source field should be overwritten if not already set
     :type overwrite: bool
     """
-    for key, value in attributes.items():
+    for key, value in viewitems(attributes):
         old_value = getattr(target, key)
         if old_value and old_value != '' and not overwrite:
             continue

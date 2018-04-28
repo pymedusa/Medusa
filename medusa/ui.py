@@ -16,39 +16,55 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+from __future__ import unicode_literals
 
-from . import app
+import datetime
+import json
+from builtins import object
+
+from medusa import app
+from medusa.ws.MedusaWebSocketHandler import push_to_web_socket
 
 MESSAGE = 'notice'
 ERROR = 'error'
 
 
 class Notifications(object):
-    """
-    A queue of Notification objects.
-    """
+    """A queue of Notification objects."""
+
     def __init__(self):
         self._messages = []
         self._errors = []
 
     def message(self, title, message=''):
         """
-        Add a regular notification to the queue
+        Add a regular notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
         """
-        self._messages.append(Notification(title, message, MESSAGE))
+        # self._messages.append(Notification(title, message, MESSAGE))
+        new_notification = Notification(title, message, MESSAGE)
+
+        push_to_web_socket(json.dumps({'event': 'notification',
+                                       'data': {'title': new_notification.title,
+                                                'body': new_notification.message,
+                                                'type': new_notification.notification_type,
+                                                'hash': hash(new_notification)}}))
 
     def error(self, title, message=''):
         """
-        Add an error notification to the queue
+        Add an error notification to the queue.
 
         title: The title of the notification
         message: The message portion of the notification
         """
-        self._errors.append(Notification(title, message, ERROR))
+        new_notification = Notification(title, message, ERROR)
+        push_to_web_socket(json.dumps({'event': 'notification',
+                                       'data': {'title': new_notification.title,
+                                                'body': new_notification.message,
+                                                'type': new_notification.notification_type,
+                                                'hash': hash(new_notification)}}))
 
     def get_notifications(self, remote_ip='127.0.0.1'):
         """
@@ -63,6 +79,7 @@ class Notifications(object):
 
         # return any notifications that haven't been shown to the client already
         return [x.see(remote_ip) for x in self._errors + self._messages if x.is_new(remote_ip)]
+
 
 # static notification queue object
 notifications = Notifications()
@@ -178,4 +195,4 @@ class QueueProgressIndicator(object):
 class LoadingTVShow(object):
     def __init__(self, show_dir):
         self.show_dir = show_dir
-        self.show = None
+        self.series = None

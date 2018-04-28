@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for series and episodes."""
+from __future__ import unicode_literals
 
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler

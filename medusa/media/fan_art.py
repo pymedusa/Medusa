@@ -16,18 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from .generic import GenericMedia
-from ..image_cache import ImageCache
+from __future__ import unicode_literals
+from medusa import image_cache
+from medusa.media.generic import GenericMedia
 
 
 class ShowFanArt(GenericMedia):
     """Get the fan art of a show."""
 
-    def get_default_media_name(self):
-        return 'fanart.png'
-
-    def get_media_path(self):
-        if self.get_show():
-            return ImageCache().fanart_path(self.indexer_id)
-
-        return ''
+    img_type = image_cache.FANART
+    default_media_name = 'fanart.png'

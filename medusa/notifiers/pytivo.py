@@ -1,13 +1,17 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import os
+from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
 
@@ -55,8 +59,8 @@ class Notifier(object):
         #
 
         # Calculated values
-        showPath = ep_obj.show.location
-        showName = ep_obj.show.name
+        showPath = ep_obj.series.location
+        showName = ep_obj.series.name
         rootShowAndSeason = os.path.dirname(ep_obj.location)
         absPath = ep_obj.location
 

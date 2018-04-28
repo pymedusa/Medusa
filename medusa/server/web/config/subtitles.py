@@ -6,10 +6,17 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    subtitles,
+    ui,
+)
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, subtitles, ui
 
 
 @route('/config/subtitles(/?.*)')
@@ -26,8 +33,7 @@ class ConfigSubtitles(Config):
         """
         t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Subtitles',
-                        header='Subtitles', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='subtitlesPage')
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,

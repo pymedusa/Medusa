@@ -6,14 +6,11 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
+from collections import OrderedDict
 
-from medusa import (
-    helpers,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size
+from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -26,29 +23,40 @@ log.logger.addHandler(logging.NullHandler())
 class NewpctProvider(TorrentProvider):
     """Newpct Torrent provider."""
 
+    search_regex = re.compile(r'(.*) S0?(\d+)E0?(\d+)')
+    anime_search_regex = re.compile(r'(.*) (\d+)')
+    torrent_id = re.compile(r'\/(\d{6,7})_')
+
     def __init__(self):
         """Initialize the class."""
         super(NewpctProvider, self).__init__('Newpct')
 
         # Credentials
+        self.public = True
 
         # URLs
-        self.url = 'http://www.newpct.com'
-        self.urls = {
-            'search': urljoin(self.url, 'index.php'),
-        }
+        self.url = 'http://www.tvsinpagar.com'
+        self.urls = OrderedDict([
+            ('daily', urljoin(self.url, 'ultimas-descargas')),
+            ('torrent_url', urljoin(self.url, 'descargar-torrent/{0}_{1}.html')),
+            ('download_series', urljoin(self.url, 'descargar-serie/{0}/capitulo-{1}/hdtv/')),
+            ('download_series_hd', urljoin(self.url, 'descargar-seriehd/{0}/capitulo-{1}/hdtv-720p-ac3-5-1/')),
+            ('download_series_vo', urljoin(self.url, 'descargar-serievo/{0}/capitulo-{1}/')),
+        ])
 
         # Proper Strings
 
         # Miscellaneous Options
+        self.supports_absolute_numbering = True
         self.onlyspasearch = None
+        self.torrent_id_counter = None
 
         # Torrent Stats
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -58,43 +66,39 @@ class NewpctProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-
-        # Only search if user conditions are true
-        lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
-
-        # http://www.newpct.com/index.php?l=doSearch&q=fringe&category_=All&idioma_=1&bus_de_=All
-        # Search Params
-        search_params = {
-            'l': 'doSearch',
-            'q': '',  # Show name
-            'category_': 'All',  # Category 'Shows' (767)
-            'idioma_': 1,  # Language Spanish (1)
-            'bus_de_': 'All'  # Date from (All, hoy)
-        }
+        lang_info = '' if not ep_obj or not ep_obj.series else ep_obj.series.lang
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            # Only search if user conditions are true
-            if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
-                log.debug('Show info is not spanish, skipping provider search')
+            if self.series and (self.series.air_by_date or self.series.is_sports):
+                log.debug("Provider doesn't support air by date or sports search")
                 continue
 
-            search_params['bus_de_'] = 'All' if mode != 'RSS' else 'hoy'
+            # Only search if user conditions are true
+            if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
+                log.debug('Show info is not Spanish, skipping provider search')
+                continue
 
             for search_string in search_strings[mode]:
+
+                search_urls = [self.urls['daily']]
 
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['q'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response or not response.text:
-                    log.debug('No data returned from provider')
-                    continue
+                    name, chapter = self._parse_title(search_string)
+                    search_urls = [self.urls[url].format(name, chapter) for url in self.urls
+                                   if url.startswith('download')]
 
-                results += self.parse(response.text, mode)
+                for url in search_urls:
+                    response = self.session.get(url)
+                    if not response or not response.text:
+                        log.debug('No data returned from provider')
+                        continue
+
+                    results += self.parse(response.text, mode)
 
         return results
 
@@ -108,35 +112,58 @@ class NewpctProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
+        self.torrent_id_counter = 0
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', id='categoryTable')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+            torrent_table = html.find('div', class_='content')
+
+            torrent_rows = []
+            if torrent_table:
+                torrent_rows = torrent_table('div', class_='info') if mode == 'RSS' else [torrent_table]
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 3:  # Headers + 1 Torrent + Pagination
+            if not torrent_rows or not torrent_rows[0]:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # 'Fecha', 'Título', 'Tamaño', ''
-            # Date,    Title,     Size
-            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
-
-            # Skip column headers
-            for row in torrent_rows[1:-1]:
-                cells = row('td')
-
+            for row in torrent_rows:
                 try:
-                    torrent_anchor = row.find('a')
-                    title = self._process_title(torrent_anchor.get_text())
-                    download_url = torrent_anchor.get('href', '')
-                    if not all([title, download_url]):
+                    if mode == 'RSS':
+                        quality = row.find('span', id='deco')
+                        if not quality.get_text(strip=True).startswith('HDTV'):
+                            if self.torrent_id_counter:
+                                self.torrent_id_counter -= 1
+                            continue
+
+                        anchor = row.find('a')
+                        if not self.torrent_id_counter:
+                            torrent_content = self._get_content(anchor.get('href'), mode)
+                            if not torrent_content:
+                                continue
+                            title, torrent_id, torrent_size, pubdate_raw = torrent_content
+                        else:
+                            self.torrent_id_counter -= 1
+                            h2 = anchor.h2.get_text(strip=True).replace('  ', ' ')
+                            title = '{0} {1}'.format(h2, quality.contents[0].strip())
+                            torrent_id = self.torrent_id_counter
+                            torrent_size = quality.contents[1].text.replace('Tamaño', '').strip()
+                    else:
+                        torrent_info = self._parse_download(row, mode)
+                        if not torrent_info:
+                            continue
+                        title, torrent_id, torrent_size, pubdate_raw = torrent_info
+
+                    if not all([title, torrent_id]):
                         continue
+
+                    download_url = self.urls['torrent_url'].format(torrent_id, title)
 
                     seeders = 1  # Provider does not provide seeders
                     leechers = 0  # Provider does not provide leechers
-                    torrent_size = cells[labels.index('Tamaño')].get_text(strip=True)
+
                     size = convert_size(torrent_size) or -1
+
+                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     item = {
                         'title': title,
@@ -144,7 +171,7 @@ class NewpctProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -152,75 +179,60 @@ class NewpctProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
-    @staticmethod
-    def _process_title(title):
-        # Add encoder and group to title
-        title = title.strip() + ' x264-NEWPCT'
+    def _parse_title(self, search_string):
+        if self.series and self.series.is_anime:
+            search_matches = NewpctProvider.anime_search_regex.match(search_string)
+            name = search_matches.group(1)
+            chapter = '1{0}'.format(search_matches.group(2))
+        else:
+            search_matches = NewpctProvider.search_regex.match(search_string)
+            name = search_matches.group(1)
+            chapter = '{0}{1}'.format(search_matches.group(2), search_matches.group(3))
 
-        # Quality - Use re module to avoid case sensitive problems with replace
-        title = re.sub(r'\[ALTA DEFINICION[^\[]*]', '720p HDTV', title, flags=re.IGNORECASE)
-        title = re.sub(r'\[(BluRay MicroHD|MicroHD 1080p)[^\[]*]', '1080p BluRay', title, flags=re.IGNORECASE)
-        title = re.sub(r'\[(B[RD]rip|BLuRay)[^\[]*]', '720p BluRay', title, flags=re.IGNORECASE)
+        norm_name = re.sub(r'\W', '-', name)
+        title = norm_name.replace('--', '-').strip('-').lower()
 
-        # Language
-        title = re.sub(r'\[(Spanish|Castellano|Español)[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
-        title = re.sub(r'\[AC3 5\.1 Español[^\[]*]', 'SPANISH AUDIO AC3 5.1', title, flags=re.IGNORECASE)
+        return title, chapter
 
-        return title
+    def _get_content(self, torrent_url, mode):
+        response = self.session.get(torrent_url)
+        if not response or not response.text:
+            log.debug('No data returned for first item')
+            return
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
-        """
-        Parse URL to get the torrent file.
+        with BS4Parser(response.text, 'html5lib') as html:
+            torrent_content = html.find('div', class_='content')
+            if not torrent_content:
+                log.debug('Wrong data returned for first item')
+                return
 
-        :return: 'content' when trying access to torrent info (For calling torrent client).
-        """
-        trickery = kwargs.pop('returns', '')
-        if trickery == 'content':
-            kwargs['returns'] = 'text'
-            data = super(NewpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout,
-                                                       **kwargs)
-            url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
+            return self._parse_download(torrent_content, mode)
 
-        kwargs['returns'] = trickery
-        return super(NewpctProvider, self).get_url(url, post_data=post_data, params=params,
-                                                   timeout=timeout, **kwargs)
+    def _parse_download(self, torrent_content, mode):
+        torrent_dl = torrent_content.find('div', id='tabs_content_container')
+        if not torrent_dl:
+            log.debug('No data returned for searched item')
+            return
 
-    def download_result(self, result):
-        """Save the result to disk."""
-        # check for auth
-        if not self.login():
-            return False
+        torrent_h1 = torrent_content.find('h1')
+        title = torrent_h1.get_text(' ', strip=True).split('/')[-1].strip()
 
-        urls, filename = self._make_url(result)
+        torrent_info = torrent_content.find('div', class_='entry-left')
+        spans = torrent_info('span', class_='imp')
+        size = spans[0].contents[1].strip()
+        pubdate_raw = spans[1].contents[1].strip()
 
-        for url in urls:
-            # Search results don't return torrent files directly,
-            # it returns show sheets so we must parse showSheet to access torrent.
-            response = self.get_url(url, returns='response')
-            url_torrent = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', response.text, re.DOTALL).group()
+        dl_script = torrent_dl.find('script', type='text/javascript').get_text(strip=True)
+        item_id = try_int(NewpctProvider.torrent_id.search(dl_script).group(1))
 
-            if url_torrent.startswith('http'):
-                self.headers.update({'Referer': '/'.join(url_torrent.split('/')[:3]) + '/'})
+        if mode == 'RSS' and not self.torrent_id_counter:
+            self.torrent_id_counter = item_id
 
-            log.info('Downloading a result from {0}', url)
-
-            if helpers.download_file(url_torrent, filename, session=self.session, headers=self.headers):
-                if self._verify_download(filename):
-                    log.info('Saved result to {0}', filename)
-                    return True
-                else:
-                    log.warning('Could not download {0}', url)
-                    helpers.remove_file_failed(filename)
-
-        if urls:
-            log.warning('Failed to download any results')
-
-        return False
+        return title, item_id, size, pubdate_raw
 
 
 provider = NewpctProvider()

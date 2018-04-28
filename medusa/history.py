@@ -16,16 +16,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import datetime
 
-import db
-from .common import FAILED, Quality, SNATCHED, SUBTITLED
-from .helper.encoding import ss
-from .show.history import History
+from medusa import db
+from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
+from medusa.helper.encoding import ss
+from medusa.show.history import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource,
+def _logHistoryItem(action, ep_obj, quality, resource,
                     provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, size=-1):
     """
     Insert a history item in DB
@@ -45,10 +46,10 @@ def _logHistoryItem(action, showid, season, episode, quality, resource,
     main_db_con = db.DBConnection()
     main_db_con.action(
         "INSERT INTO history "
-        "(action, date, showid, season, episode, quality, "
+        "(action, date, indexer_id, showid, season, episode, quality, "
         "resource, provider, version, proper_tags, manually_searched, info_hash, size) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [action, logDate, showid, season, episode, quality,
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, quality,
          resource, provider, version, proper_tags, manually_searched, info_hash, size])
 
 
@@ -58,11 +59,8 @@ def log_snatch(searchResult):
 
     :param searchResult: search result object
     """
-    for curEpObj in searchResult.episodes:
+    for ep_obj in searchResult.episodes:
 
-        showid = int(curEpObj.show.indexerid)
-        season = int(curEpObj.season)
-        episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
         proper_tags = '|'.join(searchResult.proper_tags)
@@ -80,24 +78,21 @@ def log_snatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, showid, season, episode, quality, resource,
+        _logHistoryItem(action, ep_obj, quality, resource,
                         provider, version, proper_tags, manually_searched, info_hash, size)
 
 
-def log_download(episode, filename, new_ep_quality, release_group=None, version=-1):
+def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
     """
     Log history of download
 
-    :param episode: episode of show
+    :param ep_obj: episode object of show
     :param filename: file on disk where the download is
     :param new_ep_quality: Quality of download
     :param release_group: Release group
     :param version: Version of file (defaults to -1)
     """
-    showid = int(episode.show.indexerid)
-    season = int(episode.season)
-    ep_number = int(episode.episode)
-    size = int(episode.file_size)
+    size = int(ep_obj.file_size)
 
     quality = new_ep_quality
 
@@ -107,18 +102,18 @@ def log_download(episode, filename, new_ep_quality, release_group=None, version=
     else:
         provider = -1
 
-    action = episode.status
+    action = ep_obj.status
 
-    _logHistoryItem(action, showid, season, ep_number, quality, filename, provider, version, size=size)
+    _logHistoryItem(action, ep_obj, quality, filename, provider, version, size=size)
 
 
-def logSubtitle(showid, season, episode, status, subtitle_result):
+def logSubtitle(ep_obj, status, subtitle_result):
     """
     Log download of subtitle
 
     :param showid: Showid of download
     :param season: Show season
-    :param episode: Show episode
+    :param ep_obj: Show episode object
     :param status: Status of download
     :param subtitle_result: Result object
     """
@@ -128,7 +123,7 @@ def logSubtitle(showid, season, episode, status, subtitle_result):
     status, quality = Quality.split_composite_status(status)
     action = Quality.composite_status(SUBTITLED, quality)
 
-    _logHistoryItem(action, showid, season, episode, quality, resource, provider)
+    _logHistoryItem(action, ep_obj, quality, resource, provider)
 
 
 def log_failed(ep_obj, release, provider=None):
@@ -139,10 +134,7 @@ def log_failed(ep_obj, release, provider=None):
     :param release: Release group
     :param provider: Provider used for snatch
     """
-    showid = int(ep_obj.show.indexerid)
-    season = int(ep_obj.season)
-    ep_number = int(ep_obj.episode)
     _, quality = Quality.split_composite_status(ep_obj.status)
     action = Quality.composite_status(FAILED, quality)
 
-    _logHistoryItem(action, showid, season, ep_number, quality, release, provider)
+    _logHistoryItem(action, ep_obj, quality, release, provider)

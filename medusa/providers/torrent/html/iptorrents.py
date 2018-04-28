@@ -6,17 +6,14 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -28,10 +25,6 @@ class IPTorrentsProvider(TorrentProvider):
     def __init__(self):
         """Initialize the class."""
         super(IPTorrentsProvider, self).__init__('IPTorrents')
-
-        # Credentials
-        self.username = None
-        self.password = None
 
         # URLs
         self.url = 'https://iptorrents.eu'
@@ -47,6 +40,7 @@ class IPTorrentsProvider(TorrentProvider):
         self.freeleech = False
         self.enable_cookies = True
         self.cookies = ''
+        self.required_cookies = ('uid', 'pass')
         self.categories = '73=&60='
 
         # Torrent Stats
@@ -56,7 +50,7 @@ class IPTorrentsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -84,7 +78,7 @@ class IPTorrentsProvider(TorrentProvider):
                 search_url = self.urls['search'] % (self.categories, freeleech, search_string)
                 search_url += ';o=seeders' if mode != 'RSS' else ''
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -137,13 +131,16 @@ class IPTorrentsProvider(TorrentProvider):
                     torrent_size = row('td')[5].text
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row('td')[1].find('div').get_text().split('|')[-1].strip()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -151,64 +148,13 @@ class IPTorrentsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if dict_from_cookiejar(self.session.cookies).get('uid') and \
-                dict_from_cookiejar(self.session.cookies).get('pass'):
-            return True
-
-        if self.cookies:
-            self.add_cookies_from_ui()
-        else:
-            log.warning('Failed to login, you must add your cookies in the provider settings')
-            return False
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'login': 'submit',
-            'submit.x': 0,
-            'submit.y': 0,
-        }
-
-        # Initialize session with a GET to have cookies
-        self.get_url(self.urls['login'], returns='response')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        # Invalid username and password combination
-        if re.search('Invalid username and password combination', response.text):
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        # You tried too often, please try again after 2 hours!
-        if re.search('You tried too often', response.text):
-            log.warning('You tried too often, please try again after 2 hours!'
-                        ' Disable IPTorrents for at least 2 hours')
-            return False
-
-        if (dict_from_cookiejar(self.session.cookies).get('uid') and
-                dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
-            return True
-        else:
-            log.warning('Failed to login, check your cookies')
-            self.session.cookies.clear()
-            return False
-
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
+        return self.cookie_login('sign in')
 
 
 provider = IPTorrentsProvider()

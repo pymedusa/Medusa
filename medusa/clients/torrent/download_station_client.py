@@ -74,7 +74,7 @@ class DownloadStationAPI(GenericClient):
             self.auth = jdata.get('success')
             if not self.auth:
                 error_code = jdata.get('error', {}).get('code')
-                log.info(self.error_map.get(error_code, jdata))
+                log.warning('Error: {error!r}', {'error': self.error_map.get(error_code, jdata)})
                 self.session.cookies.clear()
 
             return self.auth
@@ -121,6 +121,7 @@ class DownloadStationAPI(GenericClient):
 
         if torrent_path:
             data['destination'] = torrent_path
+        log.debug('Add torrent URI with data: {}'.format(data))
         self._request(method='post', data=data)
         return self._check_response()
 
@@ -143,6 +144,7 @@ class DownloadStationAPI(GenericClient):
 
         files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
 
+        log.debug('Add torrent files with data: {}'.format(data))
         self._request(method='post', data=data, files=files)
         return self._check_response()
 

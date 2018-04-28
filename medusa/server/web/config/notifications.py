@@ -6,11 +6,12 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import app, config, logger, ui
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, ui
-from ....helper.common import try_int
 
 
 @route('/config/notifications(/?.*)')
@@ -27,8 +28,7 @@ class ConfigNotifications(Config):
         """
         t = PageTemplate(rh=self, filename='config_notifications.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Notifications',
-                        header='Notifications', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='notifications')
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,
@@ -79,7 +79,9 @@ class ConfigNotifications(Config):
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
                           email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
-                          email_show=None):
+                          email_show=None,
+                          use_slack=None, slack_notify_onsnatch=None, slack_notify_ondownload=None, slack_notify_onsubtitledownload=None,
+                          slack_webhook=None):
         """
         Save notification related settings
         """
@@ -146,7 +148,7 @@ class ConfigNotifications(Config):
         app.PROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(prowl_notify_onsnatch)
         app.PROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(prowl_notify_ondownload)
         app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(prowl_notify_onsubtitledownload)
-        app.PROWL_API = prowl_api
+        app.PROWL_API = [_.strip() for _ in prowl_api.split(',')]
         app.PROWL_PRIORITY = prowl_priority
         app.PROWL_MESSAGE_TITLE = prowl_message_title
 
@@ -169,7 +171,7 @@ class ConfigNotifications(Config):
         app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushover_notify_onsubtitledownload)
         app.PUSHOVER_USERKEY = pushover_userkey
         app.PUSHOVER_APIKEY = pushover_apikey
-        app.PUSHOVER_DEVICE = pushover_device
+        app.PUSHOVER_DEVICE = [_.strip() for _ in pushover_device.split(',')]
         app.PUSHOVER_SOUND = pushover_sound
 
         app.USE_LIBNOTIFY = config.checkbox_to_value(use_libnotify)
@@ -194,6 +196,12 @@ class ConfigNotifications(Config):
         app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(synologynotifier_notify_ondownload)
         app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(
             synologynotifier_notify_onsubtitledownload)
+
+        app.USE_SLACK = config.checkbox_to_value(use_slack)
+        app.SLACK_NOTIFY_DOWNLOAD = config.checkbox_to_value(slack_notify_ondownload)
+        app.SLACK_NOTIFY_SNATCH = config.checkbox_to_value(slack_notify_onsnatch)
+        app.SLACK_NOTIFY_SUBTITLEDOWNLOAD = config.checkbox_to_value(slack_notify_onsubtitledownload)
+        app.SLACK_WEBHOOK = slack_webhook
 
         config.change_USE_TRAKT(use_trakt)
         app.TRAKT_USERNAME = trakt_username
@@ -220,7 +228,7 @@ class ConfigNotifications(Config):
         app.EMAIL_TLS = config.checkbox_to_value(email_tls)
         app.EMAIL_USER = email_user
         app.EMAIL_PASSWORD = email_password
-        app.EMAIL_LIST = email_list
+        app.EMAIL_LIST = [_.strip() for _ in email_list.split(',')]
         app.EMAIL_SUBJECT = email_subject
 
         app.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
@@ -236,7 +244,7 @@ class ConfigNotifications(Config):
         app.NMA_NOTIFY_ONSNATCH = config.checkbox_to_value(nma_notify_onsnatch)
         app.NMA_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(nma_notify_ondownload)
         app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(nma_notify_onsubtitledownload)
-        app.NMA_API = nma_api
+        app.NMA_API = [_.strip() for _ in nma_api.split(',')]
         app.NMA_PRIORITY = nma_priority
 
         app.USE_PUSHALOT = config.checkbox_to_value(use_pushalot)

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -58,7 +57,7 @@ class TVChaosUKProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -93,7 +92,7 @@ class TVChaosUKProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['keywords'] = search_string
-                response = self.get_url(self.urls['search'], post_data=search_params, returns='response')
+                response = self.session.post(self.urls['search'], data=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -192,8 +191,7 @@ class TVChaosUKProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -210,7 +208,7 @@ class TVChaosUKProvider(TorrentProvider):
             'returnto': '/browse.php',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False
@@ -233,7 +231,7 @@ class TVChaosUKProvider(TorrentProvider):
         # Strip trailing 3 dots
         title = title[:-3]
         search_params = {'input': title}
-        result = self.get_url(self.urls['query'], params=search_params, returns='response')
+        result = self.session.get(self.urls['query'], params=search_params)
         with BS4Parser(result.text, 'html5lib') as html:
             titles = html('results')
             for item in titles:

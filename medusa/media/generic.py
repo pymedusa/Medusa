@@ -16,44 +16,50 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
+from __future__ import unicode_literals
+from builtins import object
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
-from .. import app
-from ..helper.common import try_int
-from ..helper.exceptions import MultipleShowObjectsException
-from ..show.show import Show
+from medusa import app, image_cache
+from medusa.helper.exceptions import MultipleShowObjectsException
 
 
 class GenericMedia(object):
-    def __init__(self, indexer_id, media_format='normal'):
+    """Base class for series media."""
+
+    img_type = None
+    default_media_name = ''
+
+    def __init__(self, series_obj, media_format='normal'):
         """
-        :param indexer_id: The indexer id of the show
+        Initialize media for a series.
+
+        :param series_obj: The series object.
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
         """
 
-        self.indexer_id = try_int(indexer_id, 0)
+        self.series_obj = series_obj
+        self.series_id = series_obj.series_id
 
         if media_format in ('normal', 'thumb'):
             self.media_format = media_format
         else:
             self.media_format = 'normal'
 
-    @abstractmethod
-    def get_default_media_name(self):
-        """
-        :return: The name of the file to use as a fallback if the show media file is missing
-        """
+    @property
+    def indexerid(self):
+        return self.series_id
 
-        return ''
+    @indexerid.setter
+    def indexerid(self, value):
+        self.series_id = value
 
-    def get_media(self):
-        """
-        :return: The content of the desired media file
-        """
+    @property
+    def media(self):
+        """Get the contents of the desired media file."""
 
-        static_media_path = self.get_static_media_path()
+        static_media_path = self.static_media_path
 
         if isfile(static_media_path):
             with open(static_media_path, 'rb') as content:
@@ -61,55 +67,46 @@ class GenericMedia(object):
 
         return None
 
-    @abstractmethod
-    def get_media_path(self):
-        """
-        :return: The path to the media related to ``self.indexer_id``
-        """
-
-        return ''
+    @property
+    def media_path(self):
+        """Get the relative path to the media."""
+        if self.series:
+            return image_cache.get_path(self.img_type, self.series_obj)
+        else:
+            return ''
 
     @staticmethod
     def get_media_root():
-        """
-        :return: The root folder containing the media
-        """
+        """Get the root folder containing the media."""
+        return join(app.THEME_DATA_ROOT, 'assets')
 
-        return join(app.PROG_DIR, 'static')
-
-    def get_media_type(self):
-        """
-        :return: The mime type of the current media
-        """
-
-        static_media_path = self.get_static_media_path()
+    @property
+    def media_type(self):
+        """Get the mime type of the current media."""
+        static_media_path = self.static_media_path
 
         if isfile(static_media_path):
             return guess_type(static_media_path)[0]
 
         return ''
 
-    def get_show(self):
-        """
-        :return: The show object associated with ``self.indexer_id`` or ``None``
-        """
-
+    @property
+    def series(self):
+        """Find the series by indexer id."""
         try:
-            return Show.find(app.showList, self.indexer_id)
+            return self.series_obj
         except MultipleShowObjectsException:
             return None
 
-    def get_static_media_path(self):
-        """
-        :return: The full path to the media
-        """
-
-        if self.get_show():
-            media_path = self.get_media_path()
+    @property
+    def static_media_path(self):
+        """Get the full path to the media."""
+        if self.series:
+            media_path = self.media_path
 
             if isfile(media_path):
                 return normpath(media_path)
 
-        image_path = join(self.get_media_root(), 'images', self.get_default_media_name())
+        image_path = join(self.get_media_root(), 'img', self.default_media_name)
 
         return image_path.replace('\\', '/')

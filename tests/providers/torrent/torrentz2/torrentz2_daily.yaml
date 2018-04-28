@@ -1,0 +1,95 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      User-Agent: [!!python/unicode Medusa/0.0.1 (Windows; 10; 305e03cf-c7e7-11e7-b747-1c1b0d9d2a41)]
+    method: GET
+    uri: https://torrentz2.eu/feed?f=tv+added%3A2d
+  response:
+    body:
+      string: !!binary |
+        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
+        7b1XX/0fbTtQlx9XAAA=
+    headers:
+      cache-control: ['public, max-age=1500']
+      cf-ray: [3bcc33fa7f721ab1-DUS]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [application/xml; charset=utf-8]
+      date: ['Sun, 12 Nov 2017 20:22:23 GMT']
+      server: [cloudflare-nginx]
+      set-cookie: ['__cfduid=da0f3c3981b54e6fbc830ab43e94fbe941510518143; expires=Mon,
+          12-Nov-18 20:22:23 GMT; path=/; domain=.torrentz2.eu; HttpOnly']
+      vary: [Accept-Encoding]
+      x-fastcgi-cache: [HIT]
+    status: {code: 200, message: OK}
+version: 1

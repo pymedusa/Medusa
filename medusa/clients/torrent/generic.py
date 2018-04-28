@@ -8,15 +8,17 @@ import re
 import time
 import traceback
 from base64 import b16encode, b32decode
-
+from builtins import object
+from builtins import str
 from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
 
-from medusa import app, db, helpers
+from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 import requests
 
@@ -48,7 +50,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.session.auth = (self.username, self.password)
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
@@ -57,15 +59,16 @@ class GenericClient(object):
             self.last_time = time.time()
             self._get_auth()
 
-        text = str(data)
+        text_params = str(params)
+        text_data = str(data)
         log.debug(
             '{name}: Requested a {method} connection to {url} with'
             ' params: {params} Data: {data}', {
                 'name': self.name,
                 'method': method.upper(),
                 'url': self.url,
-                'params': params,
-                'data': text[0:99] + '...' if len(text) > 102 else text
+                'params': text_params[0:99] + '...' if len(text_params) > 102 else text_params,
+                'data': text_data[0:99] + '...' if len(text_data) > 102 else text_data
             }
         )
 
@@ -74,8 +77,8 @@ class GenericClient(object):
 
             return False
         try:
-            self.response = self.session.__getattribute__(method)(self.url, params=params, data=data, files=files,
-                                                                  cookies=cookies, timeout=120, verify=False)
+            self.response = self.session.request(method, self.url, params=params, data=data, files=files,
+                                                 cookies=cookies, timeout=120, verify=False)
         except requests.exceptions.ConnectionError as msg:
             log.error('{name}: Unable to connect {error}',
                       {'name': self.name, 'error': msg})
@@ -111,7 +114,7 @@ class GenericClient(object):
         log.debug('{name}: Response to {method} request is {response}', {
             'name': self.name,
             'method': method.upper(),
-            'response': self.response.text
+            'response': self.response.text[0:1024] + '...' if len(self.response.text) > 1027 else self.response.text
         })
 
         return True
@@ -199,7 +202,7 @@ class GenericClient(object):
     @staticmethod
     def _get_info_hash(result):
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
                 result.hash = b16encode(b32decode(result.hash)).lower()
@@ -252,7 +255,7 @@ class GenericClient(object):
             if not result.hash:
                 return False
 
-            if result.url.startswith('magnet'):
+            if result.url.startswith('magnet:'):
                 r_code = self._add_torrent_uri(result)
             else:
                 r_code = self._add_torrent_file(result)
@@ -320,3 +323,23 @@ class GenericClient(object):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
         except Exception as error:
             return False, 'Unable to connect to {name}. Error: {msg}'.format(name=self.name, msg=error)
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+        """
+        raise NotImplementedError

@@ -6,11 +6,17 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa import (
+    app,
+    config,
+    logger,
+    ui,
+)
+from medusa.helper.common import try_int
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, ui
-from ....helper.common import try_int
 
 
 @route('/config/search(/?.*)')
@@ -27,8 +33,7 @@ class ConfigSearch(Config):
         """
         t = PageTemplate(rh=self, filename='config_search.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Episode Search',
-                        header='Search Settings', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='search')
 
     def saveSearch(self, use_nzbs=None, use_torrents=None, nzb_dir=None, sab_username=None, sab_password=None,
@@ -74,19 +79,23 @@ class ConfigSearch(Config):
         app.TORRENT_METHOD = torrent_method
         app.USENET_RETENTION = try_int(usenet_retention, 500)
 
-        app.IGNORE_WORDS = ignore_words if ignore_words else ''
-        app.PREFERRED_WORDS = preferred_words if preferred_words else ''
-        app.UNDESIRED_WORDS = undesired_words if undesired_words else ''
-        app.TRACKERS_LIST = trackers_list if trackers_list else ''
-        app.REQUIRE_WORDS = require_words if require_words else ''
-        app.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ''
+        if app.TORRENT_METHOD != 'blackhole' and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'):
+            config.change_remove_from_client(remove_from_client)
+        else:
+            config.change_remove_from_client('false')
+
+        app.IGNORE_WORDS = [_.strip() for _ in ignore_words.split(',')] if ignore_words else []
+        app.PREFERRED_WORDS = [_.strip() for _ in preferred_words.split(',')] if preferred_words else []
+        app.UNDESIRED_WORDS = [_.strip() for _ in undesired_words.split(',')] if undesired_words else []
+        app.TRACKERS_LIST = [_.strip() for _ in trackers_list.split(',')] if trackers_list else []
+        app.REQUIRE_WORDS = [_.strip() for _ in require_words.split(',')] if require_words else []
+        app.IGNORED_SUBS_LIST = [_.strip() for _ in ignored_subs_list.split(',')] if ignored_subs_list else []
         app.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
 
         app.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
 
         config.change_DOWNLOAD_PROPERS(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
-        app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
         config.change_PROPERS_FREQUENCY(check_propers_interval)
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)

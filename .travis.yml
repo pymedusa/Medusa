@@ -1,25 +1,25 @@
 language: python
 python:
-  - 2.7.9
+  - 2.7.10
 sudo: false
 branches:
   except:
     - master
+before_install:
+  - python .github/check_version.py
 install:
   - pip install --upgrade pip
   - pip install --upgrade tox
   - pip install dredd_hooks
   - pip install PyYAML
   - pip install six
-  - nvm install 6.9.1
-  - nvm use 6.9.1
+  - nvm install v8.9.0
+  - nvm use v8.9.0
   - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-  - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install && cd vue && yarn install && cd ..'
+  - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install'
 script:
-  - 'cd vue && yarn test && cd ..'
-  - yarn test-js
+  - yarn test
   - tox -v --recreate
-  - yarn test-api
 cache:
   yarn: true
   directories:

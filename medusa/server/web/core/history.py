@@ -2,11 +2,12 @@
 
 from __future__ import unicode_literals
 
+from medusa import app, ui
+from medusa.helper.common import try_int
+from medusa.server.web.core.base import PageTemplate, WebRoot
+from medusa.show.history import History as HistoryTool
+
 from tornroutes import route
-from .base import PageTemplate, WebRoot
-from .... import app, ui
-from ....helper.common import try_int
-from ....show.history import History as HistoryTool
 
 
 @route('/history(/?.*)')
@@ -38,8 +39,7 @@ class History(WebRoot):
         ]
 
         return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        submenu=submenu[::-1], title='History', header='History',
-                        topmenu='history', controller='history', action='index')
+                        submenu=submenu[::-1], topmenu='history', controller='history', action='index')
 
     def clearHistory(self):
         # @TODO: Replace this with DELETE /api/v2/history

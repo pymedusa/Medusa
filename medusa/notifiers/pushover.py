@@ -1,7 +1,10 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import logging
 import time
+from builtins import object
 
 from medusa import app
 from medusa.common import (
@@ -19,6 +22,7 @@ from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError
 
@@ -87,7 +91,7 @@ class Notifier(object):
                 }
 
             if app.PUSHOVER_DEVICE:
-                args['device'] = app.PUSHOVER_DEVICE
+                args['device'] = ','.join(app.PUSHOVER_DEVICE)
 
             conn = HTTPSConnection('api.pushover.net:443')
             conn.request('POST', '/1/messages.json',

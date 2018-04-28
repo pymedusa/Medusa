@@ -766,7 +766,7 @@ paths:
             items:
               $ref: '#/definitions/Log'
           examples:
-            'application/json':
+            'application/json; charset=UTF-8':
               - $ref: '#/definitions/Log/example'
               - $ref: '#/definitions/Log/example'
               - $ref: '#/definitions/Log/example'
@@ -812,7 +812,10 @@ paths:
         200:
           description: The JWT for the user
           schema:
-            type: string
+            type: object
+            properties:
+              token:
+                type: string
           x-no-api-key: true
           x-request:
             body:
@@ -965,11 +968,13 @@ definitions:
               allowed:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
               prefered:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
           paused:
             type: boolean
             description: Whether series is paused

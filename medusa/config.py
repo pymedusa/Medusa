@@ -17,46 +17,60 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import datetime
+import logging
 import os.path
 import re
+from builtins import object
+from builtins import str
+
+from contextlib2 import suppress
+
+from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa.helper.common import try_int
+from medusa.helpers.utils import split_and_strip
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.version_checker import CheckVersion
 
 from requests.compat import urlsplit
-from six import iteritems
+
+from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import app, common, db, helpers, logger, naming, scheduler
-from .helper.common import try_int
-from .version_checker import CheckVersion
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
 # http://bugs.python.org/issue23636
 uses_netloc.append('scgi')
 
-naming_ep_type = ("%(seasonnumber)dx%(episodenumber)02d",
-                  "s%(seasonnumber)02de%(episodenumber)02d",
-                  "S%(seasonnumber)02dE%(episodenumber)02d",
-                  "%(seasonnumber)02dx%(episodenumber)02d")
+naming_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
+                  's%(seasonnumber)02de%(episodenumber)02d',
+                  'S%(seasonnumber)02dE%(episodenumber)02d',
+                  '%(seasonnumber)02dx%(episodenumber)02d')
 
-sports_ep_type = ("%(seasonnumber)dx%(episodenumber)02d",
-                  "s%(seasonnumber)02de%(episodenumber)02d",
-                  "S%(seasonnumber)02dE%(episodenumber)02d",
-                  "%(seasonnumber)02dx%(episodenumber)02d")
+sports_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
+                  's%(seasonnumber)02de%(episodenumber)02d',
+                  'S%(seasonnumber)02dE%(episodenumber)02d',
+                  '%(seasonnumber)02dx%(episodenumber)02d')
 
-naming_ep_type_text = ("1x02", "s01e02", "S01E02", "01x02")
+naming_ep_type_text = ('1x02', 's01e02', 'S01E02', '01x02')
 
-naming_multi_ep_type = {0: ["-%(episodenumber)02d"] * len(naming_ep_type),
-                        1: [" - " + x for x in naming_ep_type],
-                        2: [x + "%(episodenumber)02d" for x in ("x", "e", "E", "x")]}
-naming_multi_ep_type_text = ("extend", "duplicate", "repeat")
+naming_multi_ep_type = {0: ['-%(episodenumber)02d'] * len(naming_ep_type),
+                        1: [' - ' + x for x in naming_ep_type],
+                        2: [x + '%(episodenumber)02d' for x in ('x', 'e', 'E', 'x')]}
+naming_multi_ep_type_text = ('extend', 'duplicate', 'repeat')
 
-naming_sep_type = (" - ", " ")
-naming_sep_type_text = (" - ", "space")
+naming_sep_type = (' - ', ' ')
+naming_sep_type_text = (' - ', 'space')
 
 
 def change_HTTPS_CERT(https_cert):
     """
-    Replace HTTPS Certificate file path
+    Replace HTTPS Certificate file path.
 
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
@@ -68,7 +82,7 @@ def change_HTTPS_CERT(https_cert):
     if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
             app.HTTPS_CERT = os.path.normpath(https_cert)
-            logger.log(u"Changed https cert path to " + https_cert)
+            log.info(u'Changed https cert path to {cert_path}', {u'cert_path': https_cert})
         else:
             return False
 
@@ -77,7 +91,7 @@ def change_HTTPS_CERT(https_cert):
 
 def change_HTTPS_KEY(https_key):
     """
-    Replace HTTPS Key file path
+    Replace HTTPS Key file path.
 
     :param https_key: path to the new key file
     :return: True on success, False on failure
@@ -89,7 +103,7 @@ def change_HTTPS_KEY(https_key):
     if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
             app.HTTPS_KEY = os.path.normpath(https_key)
-            logger.log(u"Changed https key path to " + https_key)
+            log.info(u'Changed https key path to {key_path}', {u'key_path': https_key})
         else:
             return False
 
@@ -98,7 +112,7 @@ def change_HTTPS_KEY(https_key):
 
 def change_LOG_DIR(log_dir):
     """
-    Change logging directory for application and webserver
+    Change logging directory for application and webserver.
 
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
@@ -129,7 +143,7 @@ def change_NZB_DIR(nzb_dir):
     if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
         if helpers.make_dir(nzb_dir):
             app.NZB_DIR = os.path.normpath(nzb_dir)
-            logger.log(u"Changed NZB folder to " + nzb_dir)
+            log.info(u'Changed NZB folder to {nzb_dir}', {'nzb_dir': nzb_dir})
         else:
             return False
 
@@ -150,7 +164,7 @@ def change_TORRENT_DIR(torrent_dir):
     if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
         if helpers.make_dir(torrent_dir):
             app.TORRENT_DIR = os.path.normpath(torrent_dir)
-            logger.log(u"Changed torrent folder to " + torrent_dir)
+            log.info(u'Changed torrent folder to {torrent_dir}', {u'torrent_dir': torrent_dir})
         else:
             return False
 
@@ -171,7 +185,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
         if helpers.make_dir(tv_download_dir):
             app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
-            logger.log(u"Changed TV download folder to " + tv_download_dir)
+            log.info(u'Changed TV download folder to {tv_download_dir}', {u'tv_download_dir': tv_download_dir})
         else:
             return False
 
@@ -344,15 +358,15 @@ def change_DOWNLOAD_PROPERS(download_propers):
     app.DOWNLOAD_PROPERS = download_propers
     if app.DOWNLOAD_PROPERS:
         if not app.proper_finder_scheduler.enable:
-            logger.log(u"Starting PROPERFINDER thread", logger.INFO)
+            log.info(u'Starting PROPERFINDER thread')
             app.proper_finder_scheduler.silent = False
             app.proper_finder_scheduler.enable = True
         else:
-            logger.log(u"Unable to start PROPERFINDER thread. Already running", logger.INFO)
+            log.info(u'Unable to start PROPERFINDER thread. Already running')
     else:
         app.proper_finder_scheduler.enable = False
         app.trakt_checker_scheduler.silent = True
-        logger.log(u"Stopping PROPERFINDER thread", logger.INFO)
+        log.info(u'Stopping PROPERFINDER thread')
 
 
 def change_USE_TRAKT(use_trakt):
@@ -370,15 +384,15 @@ def change_USE_TRAKT(use_trakt):
     app.USE_TRAKT = use_trakt
     if app.USE_TRAKT:
         if not app.trakt_checker_scheduler.enable:
-            logger.log(u"Starting TRAKTCHECKER thread", logger.INFO)
+            log.info(u'Starting TRAKTCHECKER thread')
             app.trakt_checker_scheduler.silent = False
             app.trakt_checker_scheduler.enable = True
         else:
-            logger.log(u"Unable to start TRAKTCHECKER thread. Already running", logger.INFO)
+            log.info(u'Unable to start TRAKTCHECKER thread. Already running')
     else:
         app.trakt_checker_scheduler.enable = False
         app.trakt_checker_scheduler.silent = True
-        logger.log(u"Stopping TRAKTCHECKER thread", logger.INFO)
+        log.info(u'Stopping TRAKTCHECKER thread')
 
 
 def change_USE_SUBTITLES(use_subtitles):
@@ -396,15 +410,15 @@ def change_USE_SUBTITLES(use_subtitles):
     app.USE_SUBTITLES = use_subtitles
     if app.USE_SUBTITLES:
         if not app.subtitles_finder_scheduler.enable:
-            logger.log(u"Starting SUBTITLESFINDER thread", logger.INFO)
+            log.info(u'Starting SUBTITLESFINDER thread')
             app.subtitles_finder_scheduler.silent = False
             app.subtitles_finder_scheduler.enable = True
         else:
-            logger.log(u"Unable to start SUBTITLESFINDER thread. Already running", logger.INFO)
+            log.info(u'Unable to start SUBTITLESFINDER thread. Already running')
     else:
         app.subtitles_finder_scheduler.enable = False
         app.subtitles_finder_scheduler.silent = True
-        logger.log(u"Stopping SUBTITLESFINDER thread", logger.INFO)
+        log.info(u'Stopping SUBTITLESFINDER thread')
 
 
 def change_PROCESS_AUTOMATICALLY(process_automatically):
@@ -422,15 +436,41 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
         if not app.auto_post_processor_scheduler.enable:
-            logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
+            log.info(u'Starting POSTPROCESSOR thread')
             app.auto_post_processor_scheduler.silent = False
             app.auto_post_processor_scheduler.enable = True
         else:
-            logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
+            log.info(u'Unable to start POSTPROCESSOR thread. Already running')
     else:
-        logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
+        log.info(u'Stopping POSTPROCESSOR thread')
         app.auto_post_processor_scheduler.enable = False
         app.auto_post_processor_scheduler.silent = True
+
+
+def change_remove_from_client(new_state):
+    """
+    Enable/disable TorrentChecker thread
+    TODO: Make this return true/false on success/failure
+
+    :param new_state: New desired state
+    """
+    new_state = checkbox_to_value(new_state)
+
+    if app.REMOVE_FROM_CLIENT == new_state:
+        return
+
+    app.REMOVE_FROM_CLIENT = new_state
+    if app.REMOVE_FROM_CLIENT:
+        if not app.torrent_checker_scheduler.enable:
+            log.info(u'Starting TORRENTCHECKER thread')
+            app.torrent_checker_scheduler.silent = False
+            app.torrent_checker_scheduler.enable = True
+        else:
+            log.info(u'Unable to start TORRENTCHECKER thread. Already running')
+    else:
+        app.torrent_checker_scheduler.enable = False
+        app.torrent_checker_scheduler.silent = True
+        log.info(u'Stopping TORRENTCHECKER thread')
 
 
 def CheckSection(CFG, sec):
@@ -500,12 +540,12 @@ def clean_hosts(hosts, default_port=None):
     """
     cleaned_hosts = []
 
-    for cur_host in [host.strip() for host in hosts.split(",") if host.strip()]:
+    for cur_host in [host.strip() for host in hosts.split(',') if host.strip()]:
         cleaned_host = clean_host(cur_host, default_port)
         if cleaned_host:
             cleaned_hosts.append(cleaned_host)
 
-    cleaned_hosts = ",".join(cleaned_hosts) if cleaned_hosts else ''
+    cleaned_hosts = cleaned_hosts or []
 
     return cleaned_hosts
 
@@ -536,6 +576,27 @@ def clean_url(url):
     return cleaned_url
 
 
+def convert_csv_string_to_list(value, delimiter=',', trim=False):
+    """
+    Convert comma or other character delimited strings to a list.
+
+    :param value: The value to convert.f
+    :param delimiter: Optionally Change the default delimiter ',' if required.
+    :param trim: Optionally trim the individual list items.
+    :return: The delimited value as a list.
+    """
+
+    if not isinstance(value, (string_types, text_type)):
+        return value
+
+    with suppress(AttributeError, ValueError):
+        value = value.split(delimiter) if value else []
+        if trim:
+            value = [_.strip() for _ in value]
+
+    return value
+
+
 ################################################################################
 # Check_setting_int                                                            #
 ################################################################################
@@ -558,9 +619,9 @@ def minimax(val, default, low, high):
 def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
     try:
         my_val = config[cfg_name][item_name]
-        if str(my_val).lower() == "true":
+        if str(my_val).lower() == 'true':
             my_val = 1
-        elif str(my_val).lower() == "false":
+        elif str(my_val).lower() == 'false':
             my_val = 0
 
         my_val = int(my_val)
@@ -576,7 +637,7 @@ def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
             config[cfg_name][item_name] = my_val
 
     if not silent:
-        logger.log(item_name + " -> " + str(my_val), logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     return my_val
 
@@ -605,7 +666,7 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
             config[cfg_name][item_name] = my_val
 
     if not silent:
-        logger.log(item_name + " -> " + str(my_val), logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     return my_val
 
@@ -613,14 +674,15 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 # Check_setting_str                                                            #
 ################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
-    # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
+def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None, encrypted=False):
+    # For passwords you must include the word `password` in the item_name or pass `encrypted=True`
+    # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
-    if bool(item_name.find('password') + 1):
+    if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:
         encryption_version = 0
@@ -640,13 +702,58 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
-            logger.rebuild_censored_list()
 
     if not silent:
-        logger.log(item_name + " -> " + my_val, logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     if valid_values and my_val not in valid_values:
         return def_val
+
+    return my_val
+
+
+################################################################################
+# Check_setting_list                                                           #
+################################################################################
+def check_setting_list(config, cfg_name, item_name, default=None, silent=True, censor_log=False, transform=None,
+                       transform_default=0, split_value=False):
+    """Check a setting, using the settings section and item name. Expect to return a list."""
+    default = default or []
+
+    if not censor_log:
+        censor_level = common.privacy_levels['stupid']
+    else:
+        censor_level = common.privacy_levels[censor_log]
+    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
+    try:
+        my_val = config[cfg_name][item_name]
+    except Exception:
+        my_val = default
+        try:
+            config[cfg_name][item_name] = my_val
+        except Exception:
+            config[cfg_name] = {}
+            config[cfg_name][item_name] = my_val
+
+    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
+        if not item_name.endswith('custom_url'):
+            logger.censored_items[cfg_name, item_name] = my_val
+
+    if split_value:
+        if isinstance(my_val, string_types):
+            my_val = split_and_strip(my_val, split_value)
+
+    # Make an attempt to cast the lists values.
+    if isinstance(my_val, list) and transform:
+        for index, value in enumerate(my_val):
+            try:
+                my_val[index] = transform(value)
+            except ValueError:
+                my_val[index] = transform_default
+
+    if not silent:
+        log.debug(u'{item} -> {value!r}', {u'item': item_name, u'value': my_val})
 
     return my_val
 
@@ -663,6 +770,7 @@ def check_setting(config, section, attr_type, attr, default=None, silent=True, *
         'int': check_setting_int,
         'float': check_setting_float,
         'bool': check_setting_bool,
+        'list': check_setting_list,
     }
     return func[attr_type](config, section, attr, default, silent, **kwargs)
 
@@ -690,7 +798,7 @@ def load_provider_setting(config, provider, attr_type, attr, default=None, silen
 
 
 ################################################################################
-# Load Provider Setting                                                        #
+# Save Provider Setting                                                        #
 ################################################################################
 def save_provider_setting(config, provider, attr, **kwargs):
     if hasattr(provider, attr):
@@ -706,7 +814,7 @@ class ConfigMigrator(object):
     def __init__(self, config_obj):
         """
         Initializes a config migrator that can take the config from the version indicated in the config
-        file up to the version required by SB
+        file up to the version required by Medusa
         """
 
         self.config_obj = config_obj
@@ -722,7 +830,9 @@ class ConfigMigrator(object):
             5: 'Metadata update',
             6: 'Convert from XBMC to new KODI variables',
             7: 'Use version 2 for password encryption',
-            8: 'Convert Plex setting keys'
+            8: 'Convert Plex setting keys',
+            9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
+            10: 'Convert all csv config items to lists'
         }
 
     def migrate_config(self):
@@ -747,20 +857,21 @@ class ConfigMigrator(object):
             else:
                 migration_name = ''
 
-            logger.log(u"Backing up config before upgrade")
+            log.info(u'Backing up config before upgrade')
             if not helpers.backup_versioned_file(app.CONFIG_FILE, self.config_version):
-                logger.log_error_and_exit(u"Config backup failed, abort upgrading config")
+                logger.log_error_and_exit(u'Config backup failed, abort upgrading config')
             else:
-                logger.log(u"Proceeding with upgrade")
+                log.info(u'Proceeding with upgrade')
 
             # do the migration, expect a method named _migrate_v<num>
-            logger.log(u"Migrating config up to version " + str(next_version) + migration_name)
+                log.info(u'Migrating config up to version {version} {migration_name}',
+                         {'version': next_version, 'migration_name': migration_name})
             getattr(self, '_migrate_v' + str(next_version))()
             self.config_version = next_version
 
             # save new config after migration
             app.CONFIG_VERSION = self.config_version
-            logger.log(u"Saving config file to disk")
+            log.info(u'Saving config file to disk')
             app.instance.save_config()
 
     # Migration v1: Custom naming
@@ -770,13 +881,15 @@ class ConfigMigrator(object):
         """
 
         app.NAMING_PATTERN = self._name_to_pattern()
-        logger.log(u"Based on your old settings I'm setting your new naming pattern to: " + app.NAMING_PATTERN)
+        log.info(u"Based on your old settings I'm setting your new naming pattern to: {pattern}",
+                 {'pattern': app.NAMING_PATTERN})
 
         app.NAMING_CUSTOM_ABD = bool(check_setting_int(self.config_obj, 'General', 'naming_dates', 0))
 
         if app.NAMING_CUSTOM_ABD:
             app.NAMING_ABD_PATTERN = self._name_to_pattern(True)
-            logger.log(u"Adding a custom air-by-date naming pattern to your config: " + app.NAMING_ABD_PATTERN)
+            log.info(u'Adding a custom air-by-date naming pattern to your config: {pattern}',
+                     {'pattern': app.NAMING_ABD_PATTERN})
         else:
             app.NAMING_ABD_PATTERN = naming.name_abd_presets[0]
 
@@ -784,7 +897,7 @@ class ConfigMigrator(object):
 
         # see if any of their shows used season folders
         main_db_con = db.DBConnection()
-        season_folder_shows = main_db_con.select("SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1")
+        season_folder_shows = main_db_con.select(b'SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
 
         # if any shows had season folders on then prepend season folder to the pattern
         if season_folder_shows:
@@ -797,20 +910,23 @@ class ConfigMigrator(object):
                     new_season_format = str(new_season_format).replace('09', '%0S')
                     new_season_format = new_season_format.replace('9', '%S')
 
-                    logger.log(
-                        u"Changed season folder format from " + old_season_format + " to " + new_season_format + ", prepending it to your naming config")
+                    log.info(
+                        u'Changed season folder format from {old_season_format} to {new_season_format}, '
+                        u'prepending it to your naming config',
+                        {'old_season_format': old_season_format, 'new_season_format': new_season_format}
+                    )
                     app.NAMING_PATTERN = new_season_format + os.sep + app.NAMING_PATTERN
 
                 except (TypeError, ValueError):
-                    logger.log(u"Can't change " + old_season_format + " to new season format", logger.ERROR)
+                    log.error(u"Can't change {old_season_format} to new season format",
+                              {'old_season_format': old_season_format})
 
         # if no shows had it on then don't flatten any shows and don't put season folders in the config
         else:
-
-            logger.log(u"No shows were using season folders before so I'm disabling flattening on all shows")
+            log.info(u"No shows were using season folders before so I'm disabling flattening on all shows")
 
             # don't flatten any shows at all
-            main_db_con.action("UPDATE tv_shows SET flatten_folders = 0")
+            main_db_con.action(b'UPDATE tv_shows SET flatten_folders = 0')
 
         app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
 
@@ -826,10 +942,10 @@ class ConfigMigrator(object):
         use_ep_name = bool(check_setting_int(self.config_obj, 'General', 'naming_ep_name', 1))
 
         # make the presets into templates
-        naming_ep_type = ("%Sx%0E",
-                          "s%0Se%0E",
-                          "S%0SE%0E",
-                          "%0Sx%0E")
+        naming_ep_type = ('%Sx%0E',
+                          's%0Se%0E',
+                          'S%0SE%0E',
+                          '%0Sx%0E')
 
         # set up our data to use
         if use_periods:
@@ -848,7 +964,7 @@ class ConfigMigrator(object):
         else:
             ep_string = naming_ep_type[ep_type]
 
-        finalName = ""
+        finalName = ''
 
         # start with the show name
         if use_show_name and show_name:
@@ -866,7 +982,7 @@ class ConfigMigrator(object):
             finalName += naming_sep_type[sep_type] + ep_quality
 
         if use_periods:
-            finalName = re.sub(r"\s+", ".", finalName)
+            finalName = re.sub(r'\s+', '.', finalName)
 
         return finalName
 
@@ -891,14 +1007,14 @@ class ConfigMigrator(object):
         old_newznab_data = check_setting_str(self.config_obj, 'Newznab', 'newznab_data', '')
 
         if old_newznab_data:
-            old_newznab_data_list = old_newznab_data.split("!!!")
+            old_newznab_data_list = old_newznab_data.split('!!!')
 
             for cur_provider_data in old_newznab_data_list:
                 try:
-                    name, url, key, enabled = cur_provider_data.split("|")
+                    name, url, key, enabled = cur_provider_data.split('|')
                 except ValueError:
-                    logger.log(u"Skipping Newznab provider string: '" + cur_provider_data + "', incorrect format",
-                               logger.ERROR)
+                    log.error(u'Skipping Newznab provider string: {cur_provider_data!r}, incorrect format',
+                              {'cur_provider_data': cur_provider_data})
                     continue
 
                 if name == 'Sick Beard Index':
@@ -910,9 +1026,9 @@ class ConfigMigrator(object):
                     cat_ids = '5030,5040,5060'
 
                 cur_provider_data_list = [name, url, key, cat_ids, enabled]
-                new_newznab_data.append("|".join(cur_provider_data_list))
+                new_newznab_data.append('|'.join(cur_provider_data_list))
 
-            app.NEWZNAB_DATA = "!!!".join(new_newznab_data)
+            app.NEWZNAB_DATA = '!!!'.join(new_newznab_data)
 
     # Migration v5: Metadata upgrade
     def _migrate_v5(self):
@@ -955,7 +1071,8 @@ class ConfigMigrator(object):
             cur_metadata = metadata.split('|')
             # if target has the old number of values, do upgrade
             if len(cur_metadata) == 6:
-                logger.log(u"Upgrading " + metadata_name + " metadata, old value: " + metadata)
+                log.info(u'Upgrading {metadata_name} metadata, old value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
                 cur_metadata.insert(4, '0')
                 cur_metadata.append('0')
                 cur_metadata.append('0')
@@ -967,18 +1084,21 @@ class ConfigMigrator(object):
                     cur_metadata[4], cur_metadata[3] = cur_metadata[3], '0'
                 # write new format
                 metadata = '|'.join(cur_metadata)
-                logger.log(u"Upgrading " + metadata_name + " metadata, new value: " + metadata)
+                log.info(u'Upgrading {metadata_name} metadata, new value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             elif len(cur_metadata) == 10:
 
                 metadata = '|'.join(cur_metadata)
-                logger.log(u"Keeping " + metadata_name + " metadata, value: " + metadata)
+                log.info(u'Keeping {metadata_name} metadata, value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             else:
-                logger.log(u"Skipping " + metadata_name + " metadata: '" + metadata + "', incorrect format",
-                           logger.ERROR)
+                log.error(u'Skipping {metadata_name} metadata {metadata!r}, incorrect format',
+                          {'metadata_name': metadata_name, 'metadata': metadata})
                 metadata = '0|0|0|0|0|0|0|0|0|0'
-                logger.log(u"Setting " + metadata_name + " metadata, new value: " + metadata)
+                log.info(u'Setting {metadata_name} metadata, new value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             return metadata
 
@@ -1001,8 +1121,8 @@ class ConfigMigrator(object):
         app.KODI_UPDATE_FULL = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_full', 0))
         app.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_onlyfirst', 0))
         app.KODI_HOST = check_setting_str(self.config_obj, 'XBMC', 'xbmc_host', '')
-        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log=True)
-        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log=True)
+        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log='low')
+        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log='low')
         app.METADATA_KODI = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0|0|0|0|0')
         app.METADATA_KODI_12PLUS = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0|0|0|0|0')
 
@@ -1012,13 +1132,151 @@ class ConfigMigrator(object):
 
     def _migrate_v8(self):
         app.PLEX_CLIENT_HOST = check_setting_str(self.config_obj, 'Plex', 'plex_host', '')
-        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
-        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
+        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log='low')
+        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log='low')
         app.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
 
     def _migrate_v9(self):
         """
         Migrate to config version 9
         """
-        # Added setting "enable_manualsearch" for providers (dynamic setting)
+        # Added setting 'enable_manualsearch' for providers (dynamic setting)
         pass
+
+    def _migrate_v10(self):
+        """
+        Convert all csv stored items as 'real' lists. ConfigObj provides a way for storing lists. These are saved
+        as comma separated values, using this the format documented here:
+        http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
+        """
+
+        def get_providers_from_data(providers_string):
+            """Split the provider string into providers, and get the provider names."""
+            return [provider.split('|')[0].upper() for provider in providers_string.split('!!!') if provider]
+
+        def make_id(name):
+            """Make ID of the provider."""
+            if not name:
+                return ''
+
+            return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
+
+        def get_rss_torrent_providers_list(data):
+            """Get RSS torrent provider list."""
+            providers_list = [_ for _ in (make_rss_torrent_provider(_) for _ in data.split('!!!')) if _]
+            seen_values = set()
+            providers_set = []
+
+            for provider in providers_list:
+                value = provider.name
+
+                if value not in seen_values:
+                    providers_set.append(provider)
+                    seen_values.add(value)
+
+            return [_ for _ in providers_set if _]
+
+        def make_rss_torrent_provider(config):
+            """Create new RSS provider."""
+            if not config:
+                return None
+
+            cookies = ''
+            enable_backlog = 0
+            enable_daily = 0
+            enable_manualsearch = 0
+            search_fallback = 0
+            search_mode = 'eponly'
+            title_tag = 'title'
+
+            try:
+                values = config.split('|')
+
+                if len(values) == 9:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                elif len(values) == 10:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
+                elif len(values) == 8:
+                    name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                else:
+                    enabled = values[4]
+                    name = values[0]
+                    url = values[1]
+            except ValueError:
+                log.error('Skipping RSS Torrent provider string: {config}, incorrect format', {'config': config})
+                return None
+
+            new_provider = TorrentRssProvider(
+                name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode,
+                search_fallback=search_fallback,
+                enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
+            )
+            new_provider.enabled = enabled == '1'
+
+            return new_provider
+
+        # General
+        app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
+        app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
+        app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'], ' ')
+        app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'], '|')
+        app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
+        app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
+        app.PREFERRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['preferred_words'])
+        app.UNDESIRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['undesired_words'])
+        app.TRACKERS_LIST = convert_csv_string_to_list(self.config_obj['General']['trackers_list'])
+        app.REQUIRE_WORDS = convert_csv_string_to_list(self.config_obj['General']['require_words'])
+        app.IGNORED_SUBS_LIST = convert_csv_string_to_list(self.config_obj['General']['ignored_subs_list'])
+        app.BROKEN_PROVIDERS = convert_csv_string_to_list(self.config_obj['General']['broken_providers'])
+        app.EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['General']['extra_scripts'], '|')
+
+        # Metadata
+        app.METADATA_KODI = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi'], '|')
+        app.METADATA_KODI_12PLUS = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi_12plus'], '|')
+        app.METADATA_MEDIABROWSER = convert_csv_string_to_list(self.config_obj['General']['metadata_mediabrowser'], '|')
+        app.METADATA_PS3 = convert_csv_string_to_list(self.config_obj['General']['metadata_ps3'], '|')
+        app.METADATA_WDTV = convert_csv_string_to_list(self.config_obj['General']['metadata_wdtv'], '|')
+        app.METADATA_TIVO = convert_csv_string_to_list(self.config_obj['General']['metadata_tivo'], '|')
+        app.METADATA_MEDE8ER = convert_csv_string_to_list(self.config_obj['General']['metadata_mede8er'], '|')
+
+        # Subtitles
+        app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
+        app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
+        app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'], '|')
+        app.SUBTITLES_EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_extra_scripts'], '|')
+        app.SUBTITLES_PRE_SCRIPTS = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_pre_scripts'], '|')
+
+        # Notifications
+        app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])
+        app.PLEX_SERVER_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_server_host'])
+        app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_client_host'])
+        app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
+        app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
+        app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA']['nma_api'])
+        app.EMAIL_LIST = convert_csv_string_to_list(self.config_obj['Email']['email_list'])
+
+        try:
+            # migrate rsstorrent providers
+            from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+
+            # Create the new list of torrent rss providers, with only the id stored.
+            app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
+
+            # Create the torrent providers from the old rsstorrent piped separated data.
+            app.torrentRssProviderList = get_rss_torrent_providers_list(self.config_obj['TorrentRss']['torrentrss_data'])
+        except KeyError:
+            app.TORRENTRSS_PROVIDERS = []
+
+        try:
+            # migrate newznab providers.
+            # Newznabprovider needs to be imported lazy, as the module will also import other providers to early.
+            from medusa.providers.nzb.newznab import NewznabProvider
+
+            # Create the newznab providers from the old newznab piped separated data.
+            app.newznabProviderList = NewznabProvider.get_providers_list(
+                self.config_obj['Newznab']['newznab_data']
+            )
+
+            app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
+        except KeyError:
+            app.NEWZNAB_PROVIDERS = []

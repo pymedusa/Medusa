@@ -65,7 +65,7 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(http_code_description(http_code), result)
 
     def test_is_sync_file(self):
-        app.SYNC_FILES = '!sync,lftp-pget-status,part'
+        app.SYNC_FILES = ['!sync', 'lftp-pget-status', 'part']
 
         test_cases = {
             None: False,
@@ -408,6 +408,12 @@ class CommonTests(unittest.TestCase):
         self.assertEqual(convert_size('1 B', units=oops), None)
         self.assertEqual(convert_size('1 Mb', units=oops), None)
         self.assertEqual(convert_size('1 MB', units=oops), None)
+
+        # utilize the regex to parse sizes without separator
+        self.assertEqual(convert_size('1GB', sep=''), 1073741824)
+        self.assertEqual(convert_size('1.00GB', sep=''), 1073741824)
+        self.assertEqual(convert_size('1.01GB', sep=''), 1084479242)
+        self.assertEqual(convert_size('1B', sep=''), 1)
 
     def test_episode_num(self):
         # Standard numbering

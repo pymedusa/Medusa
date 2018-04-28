@@ -13,22 +13,24 @@ import datetime
 import logging
 
 from medusa import app
+from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSafeSession
 
-import requests
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-session = requests.Session()
+session = MedusaSafeSession()
 
 
 def send_nzb(nzb):
     """
-    Sends an NZB to SABnzbd via the API.
+    Dispatch method for sending an nzb to sabnzbd using it's api.
 
-    :param nzb: The NZBSearchResult object to send to SAB
+    :param nzb: nzb SearchResult object
+    :return: result of the communication with sabnzbd (True/False)
     """
     session.params.update({
         'output': 'json',
@@ -38,32 +40,76 @@ def send_nzb(nzb):
     })
 
     category = app.SAB_CATEGORY
-    if nzb.show.is_anime:
+    if nzb.series.is_anime:
         category = app.SAB_CATEGORY_ANIME
 
     # if it aired more than 7 days ago, override with the backlog category IDs
     for cur_ep in nzb.episodes:
         if datetime.date.today() - cur_ep.airdate > datetime.timedelta(days=7):
-            category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else app.SAB_CATEGORY_BACKLOG
+            category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.series.is_anime else app.SAB_CATEGORY_BACKLOG
 
     # set up a dict with the URL params in it
     params = {
         'cat': category,
-        'mode': 'addurl',
-        'name': nzb.url,
     }
 
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
 
+    if nzb.result_type == 'nzbdata' and nzb.extra_info:
+        return send_nzb_post(params, nzb)
+    else:
+        return send_nzb_get(params, nzb)
+
+
+def send_nzb_get(params, nzb):
+    """
+    Sends an NZB to SABnzbd via the API using a get request.
+
+    :param nzb: The NZBSearchResult object to send to SAB
+    :return: result of the communication with sabnzbd (True/False)
+    """
+
     log.info('Sending NZB to SABnzbd')
+
+    params.update({'name': nzb.url, 'mode': 'addurl'})
     url = urljoin(app.SAB_HOST, 'api')
 
-    response = session.get(url, params=params, verify=False)
+    data = session.get_json(url, params=params, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        log.debug('Result text from SAB: {0}', data)
+        result, text = _check_sab_response(data)
+        del text
+        return result
 
-    try:
-        data = response.json()
-    except ValueError:
+
+def send_nzb_post(params, nzb):
+    """
+    Sends an NZB to SABnzbd via the API.
+
+    :param params: Prepared post parameters.
+    :param nzb: The NZBSearchResult object to send to SAB
+    :return: result of the communication with sabnzbd (True/False)
+    """
+
+    log.info('Sending NZB to SABnzbd using the post multipart/form data.')
+    url = urljoin(app.SAB_HOST, 'api')
+    params['mode'] = 'addfile'
+    files = {
+        'name': nzb.extra_info[0]
+    }
+
+    data = session.params
+    data.update(params)
+    data['nzbname'] = sanitize_filename(nzb.name)
+
+    # Empty session.params, because else these are added to the url.
+    session.params = {}
+
+    data = session.get_json(url, method='POST', data=data, files=files, verify=False)
+    if not data:
         log.info('Error connecting to sab, no data returned')
     else:
         log.debug('Result text from SAB: {0}', data)
@@ -103,12 +149,9 @@ def get_sab_access_method(host=None):
         'apikey': app.SAB_APIKEY,
     })
     url = urljoin(host, 'api')
-    response = session.get(url, params={'mode': 'auth'}, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
+    data = session.get_json(url, params={'mode': 'auth'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
     else:
         return _check_sab_response(data)
 
@@ -130,11 +173,9 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     })
     url = urljoin(host, 'api')
 
-    response = session.get(url, params={'mode': 'queue'}, verify=False)
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
+    data = session.get_json(url, params={'mode': 'queue'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
     else:
         # check the result and determine if it's good or not
         result, sab_text = _check_sab_response(data)

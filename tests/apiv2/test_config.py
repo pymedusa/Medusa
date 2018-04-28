@@ -1,13 +1,17 @@
 # coding=utf-8
 """Test /config route."""
+from __future__ import unicode_literals
+
 import json
 import platform
 import sys
 
 from medusa import app, db
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
+from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
+
 from tornado.httpclient import HTTPError
 
 
@@ -22,6 +26,7 @@ def config(monkeypatch, app_config):
     config_data = NonEmptyDict()
     config_data['anonRedirect'] = app.ANON_REDIRECT
     config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
+    config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
     config_data['datePreset'] = app.DATE_PRESET
     config_data['fuzzyDating'] = app.FUZZY_DATING
@@ -114,10 +119,13 @@ def config(monkeypatch, app_config):
     config_data['layout']['show'] = NonEmptyDict()
     config_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
     config_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
-    config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None
+    config_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
+    config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
     config_data['backlogOverview'] = NonEmptyDict()
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
     config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+    config_data['indexers'] = NonEmptyDict()
+    config_data['indexers']['config'] = get_indexer_config()
 
     return config_data
 

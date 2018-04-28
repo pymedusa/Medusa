@@ -2,30 +2,49 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import json
 import os
 import re
 import time
 import traceback
-
+from builtins import str
 from concurrent.futures import ThreadPoolExecutor
+
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
+
+from medusa import (
+    app,
+    classes,
+    db,
+    exception_handler,
+    helpers,
+    logger,
+    ui,
+)
+from medusa.server.api.v1.core import function_mapper
+
 from requests.compat import urljoin
-from six import binary_type, iteritems, text_type
+
+from six import (
+    iteritems,
+    viewitems,
+)
+
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-from tornado.process import cpu_count
-from tornado.web import HTTPError, RequestHandler, StaticFileHandler, addslash, authenticated
+from tornado.web import (
+    HTTPError,
+    RequestHandler,
+    StaticFileHandler,
+    addslash,
+    authenticated,
+)
+
 from tornroutes import route
-from ...api.v1.core import function_mapper
-from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
-from ....show.coming_episodes import ComingEpisodes
 
 
 mako_lookup = None
@@ -39,7 +58,7 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = os.path.join(app.PROG_DIR, 'views/')
+        mako_path = os.path.join(app.THEME_DATA_ROOT, 'templates/')
     if mako_cache is None:
         mako_cache = os.path.join(app.CACHE_DIR, 'mako')
     if mako_lookup is None:
@@ -53,12 +72,14 @@ def get_lookup():
 
 
 class PageTemplate(MakoTemplate):
-    """
-    Mako page template
-    """
+    """Mako page template."""
+
     def __init__(self, rh, filename):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
+
+        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
+                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
 
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
@@ -82,9 +103,9 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
-            'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
+            'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
+            'full_url': base_url + rh.request.uri
         }
 
         if rh.request.headers['Host'][0] == '[':
@@ -114,9 +135,7 @@ class PageTemplate(MakoTemplate):
                 type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
-        """
-        Render the Page template
-        """
+        """Render the Page template."""
         for key in self.arguments:
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
@@ -125,8 +144,6 @@ class PageTemplate(MakoTemplate):
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
-            kwargs['title'] = '500'
-            kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
@@ -137,9 +154,8 @@ class PageTemplate(MakoTemplate):
 
 
 class BaseHandler(RequestHandler):
-    """
-    Base Handler for the server
-    """
+    """Base Handler for the server."""
+
     startTime = 0.
 
     def __init__(self, *args, **kwargs):
@@ -148,9 +164,7 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).__init__(*args, **kwargs)
 
     def write_error(self, status_code, **kwargs):
-        """
-        Base error Handler for 404's
-        """
+        """Base error Handler for 404's."""
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
@@ -159,7 +173,7 @@ class BaseHandler(RequestHandler):
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
-                return self.finish(t.render(title='404', header='Oops'))
+                return self.finish(t.render())
             else:
                 self.finish('Wrong API key used')
 
@@ -167,7 +181,7 @@ class BaseHandler(RequestHandler):
             exc_info = kwargs['exc_info']
             trace_info = ''.join(['{line}<br>'.format(line=line) for line in traceback.format_exception(*exc_info)])
             request_info = ''.join(['<strong>{key}</strong>: {value}<br>'.format(key=k, value=v)
-                                    for k, v in self.request.__dict__.items()])
+                                    for k, v in viewitems(self.request.__dict__)])
             error = exc_info[1]
 
             self.set_header('Content-Type', 'text/html')
@@ -189,8 +203,7 @@ class BaseHandler(RequestHandler):
             )
 
     def redirect(self, url, permanent=False, status=None):
-        """
-        Sends a redirect to the given (optionally relative) URL.
+        """Send a redirect to the given (optionally relative) URL.
 
         ----->>>>> NOTE: Removed self.finish <<<<<-----
 
@@ -220,14 +233,12 @@ class BaseHandler(RequestHandler):
 
 
 class WebHandler(BaseHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
+    executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
-        self.io_loop = IOLoop.current()
-
-    executor = ThreadPoolExecutor(cpu_count())
 
     @authenticated
     @coroutine
@@ -241,7 +252,23 @@ class WebHandler(BaseHandler):
             self.finish(results)
 
         except Exception:
-            logger.log(u'Failed doing web ui request {route!r}: {error}'.format
+            logger.log(u'Failed doing web ui get request {route!r}: {error}'.format
+                       (route=route, error=traceback.format_exc()), logger.DEBUG)
+            raise HTTPError(404)
+
+    @authenticated
+    @coroutine
+    def post(self, route, *args, **kwargs):
+        try:
+            # route -> method obj
+            route = route.strip('/').replace('.', '_') or 'index'
+            method = getattr(self, route)
+
+            results = yield self.async_call(method)
+            self.finish(results)
+
+        except Exception:
+            logger.log(u'Failed doing web ui post request {route!r}: {error}'.format
                        (route=route, error=traceback.format_exc()), logger.DEBUG)
             raise HTTPError(404)
 
@@ -251,24 +278,18 @@ class WebHandler(BaseHandler):
             kwargs = self.request.arguments
             for arg, value in iteritems(kwargs):
                 if len(value) == 1:
-                    kwargs[arg] = value[0]
-                if isinstance(kwargs[arg], binary_type):
-                    kwargs[arg] = text_type(kwargs[arg], 'utf-8')
+                    kwargs[arg] = self.get_argument(arg)
 
             result = function(**kwargs)
             return result
         except Exception as e:
             exception_handler.handle(e)
 
-    # post uses get method
-    post = get
-
 
 @route('(.*)(/?)')
 class WebRoot(WebHandler):
-    """
-    Base Handler for the web server
-    """
+    """Base Handler for the web server."""
+
     def __init__(self, *args, **kwargs):
         super(WebRoot, self).__init__(*args, **kwargs)
 
@@ -276,7 +297,7 @@ class WebRoot(WebHandler):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def robots_txt(self):
-        """ Keep web crawlers out """
+        """Keep web crawlers out."""
         self.set_header('Content-Type', 'text/plain')
         return 'User-agent: *\nDisallow: /'
 
@@ -285,11 +306,11 @@ class WebRoot(WebHandler):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
         main_db_con = db.DBConnection(row_type='dict')
-        shows = sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
+        shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
         results = main_db_con.select(
-            b'SELECT episode, season, showid '
+            b'SELECT episode, season, indexer, showid '
             b'FROM tv_episodes '
             b'ORDER BY season ASC, episode ASC'
         )
@@ -327,58 +348,6 @@ class WebRoot(WebHandler):
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
 
-    def toggleScheduleDisplayPaused(self):
-        app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
-
-        return self.redirect('/schedule/')
-
-    def setScheduleSort(self, sort):
-        if sort not in ('date', 'network', 'show') or app.COMING_EPS_LAYOUT == 'calendar':
-            sort = 'date'
-
-        app.COMING_EPS_SORT = sort
-
-        return self.redirect('/schedule/')
-
-    def schedule(self):
-        next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
-        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
-
-        submenu = [
-            {
-                'title': 'Sort by:',
-                'path': {
-                    'Date': 'setScheduleSort/?sort=date',
-                    'Show': 'setScheduleSort/?sort=show',
-                    'Network': 'setScheduleSort/?sort=network',
-                }
-            },
-            {
-                'title': 'Layout:',
-                'path': {
-                    'Banner': 'setScheduleLayout/?layout=banner',
-                    'Poster': 'setScheduleLayout/?layout=poster',
-                    'List': 'setScheduleLayout/?layout=list',
-                    'Calendar': 'setScheduleLayout/?layout=calendar',
-                }
-            },
-            {
-                'title': 'View Paused:',
-                'path': {
-                    'Hide': 'toggleScheduleDisplayPaused'
-                } if app.COMING_EPS_DISPLAY_PAUSED else {
-                    'Show': 'toggleScheduleDisplayPaused'
-                }
-            },
-        ]
-
-        t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=app.COMING_EPS_LAYOUT,
-                        title='Schedule', header='Schedule', topmenu='schedule',
-                        controller='schedule', action='index')
-
 
 @route('/ui(/?.*)')
 class UI(WebRoot):
@@ -402,6 +371,7 @@ class UI(WebRoot):
                 'title': '{0}'.format(cur_notification.title),
                 'message': '{0}'.format(cur_notification.message),
                 'type': '{0}'.format(cur_notification.notification_type),
+                'hash': '{0}'.format(hash(cur_notification)),
             }
             cur_notification_num += 1
 

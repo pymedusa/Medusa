@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -43,16 +42,12 @@ class Anizb(NZBProvider):
         self.anime_only = True
         self.search_separator = '*'
 
-        # Torrent Stats
-
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Start searching for anime using the provided search_strings. Used for backlog and daily."""
         results = []
-        if self.show and not self.show.is_anime:
-            return results
 
         for mode in search_strings:
             items = []
@@ -65,7 +60,7 @@ class Anizb(NZBProvider):
                               {'search': search_string})
 
                     search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
-                    response = self.get_url(search_url, returns='response')
+                    response = self.session.get(search_url)
                     if not response or not response.text:
                         log.debug('No data returned from provider')
                         continue
@@ -98,8 +93,7 @@ class Anizb(NZBProvider):
 
                                 items.append(item)
                             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                                log.error('Failed parsing provider. Traceback: {0!r}',
-                                          traceback.format_exc())
+                                log.exception('Failed parsing provider.')
                                 continue
 
                 results += items

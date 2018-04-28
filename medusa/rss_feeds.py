@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
 import logging
 
 from feedparser.api import parse
@@ -13,11 +14,11 @@ log.logger.addHandler(logging.NullHandler())
 
 def getFeed(url, params=None, request_hook=None):
     try:
-        data = request_hook(url, params=params, returns='text', timeout=30)
-        if not data:
+        response = request_hook(url, params=params, timeout=30)
+        if not response:
             raise Exception
 
-        feed = parse(data, response_headers={'content-type': 'application/xml'})
+        feed = parse(response.text, response_headers={'content-type': 'application/xml'})
         if feed:
             if 'entries' in feed:
                 return feed

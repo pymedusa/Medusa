@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import datetime
 import io
@@ -14,6 +14,8 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -160,7 +162,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -172,13 +174,13 @@ class TIVOMetadata(generic.GenericMetadata):
                 log.debug(
                     u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         'number': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.show.indexer).name,
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
                     }
                 )
                 return None
 
             if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):
-                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
+                my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
 
             if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                 return None
@@ -254,8 +256,8 @@ class TIVOMetadata(generic.GenericMetadata):
                 data += ('tvRating : {rating}\n'.format(rating=my_show['contentrating']))
 
             # This field can be repeated as many times as necessary or omitted completely.
-            if ep_obj.show.genre:
-                for genre in ep_obj.show.genre.split('|'):
+            if ep_obj.series.genre:
+                for genre in ep_obj.series.genre.split('|'):
                     if genre:
                         data += ('vProgramGenre : {genre}\n'.format(genre=genre))
 

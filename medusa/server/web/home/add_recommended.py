@@ -17,9 +17,10 @@
 
 from __future__ import unicode_literals
 
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+
 from tornroutes import route
-from .handler import Home
-from ..core import PageTemplate
 
 
 @route('/addRecommended(/?.*)')
@@ -33,5 +34,4 @@ class HomeAddRecommended(Home):
     def index(self):
         """Render template for route /home/addRecommeded."""
         t = PageTemplate(rh=self, filename="addRecommended.mako")
-        return t.render(title='Add Recommended Shows', header='Add Recommended Shows',
-                        topmenu='home', controller="addShows", action="index")
+        return t.render(topmenu='home', controller="addShows", action="index")

@@ -7,27 +7,27 @@ import json
 import os
 import re
 
-from requests import RequestException
+from medusa import app, classes, config, db, helpers, logger, ui
+from medusa.common import Quality
+from medusa.helper.common import sanitize_filename, try_int
+from medusa.helpers import get_showname_from_indexer
+from medusa.helpers.anidb import short_group_names
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.server.web.core import PageTemplate
+from medusa.server.web.home.handler import Home
+from medusa.show.recommendations.anidb import AnidbPopular
+from medusa.show.recommendations.imdb import ImdbPopular
+from medusa.show.recommendations.trakt import TraktPopular
+from medusa.show.show import Show
 
+from requests import RequestException
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
-from six import iteritems
+from six import iteritems, itervalues
 from tornroutes import route
 from traktor import TraktApi
-from .handler import Home
-from ..core import PageTemplate
-from .... import app, classes, config, db, helpers, logger, ui
-from ....black_and_white_list import short_group_names
-from ....common import Quality
-from ....helper.common import sanitize_filename, try_int
-from ....helpers import get_showname_from_indexer
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerUnavailable
-from ....show.recommendations.anidb import AnidbPopular
-from ....show.recommendations.imdb import ImdbPopular
-from ....show.recommendations.trakt import TraktPopular
-from ....show.show import Show
 
 
 @route('/addShows(/?.*)')
@@ -37,7 +37,7 @@ class HomeAddShows(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='addShows.mako')
-        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller='addShows', action='index')
+        return t.render(topmenu='home', controller='addShows', action='index')
 
     @staticmethod
     def getIndexerLanguages():
@@ -96,7 +96,8 @@ class HomeAddShows(Home):
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
-                                   show['seriesname'].encode('utf-8'), show['firstaired']) for show in shows})
+                                   show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
+                                   show.get('network', '').encode('utf-8') or 'N/A') for show in shows})
 
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
@@ -114,7 +115,7 @@ class HomeAddShows(Home):
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
         if app.ROOT_DIRS:
-            default_index = int(app.ROOT_DIRS.split('|')[0])
+            default_index = int(app.ROOT_DIRS[0])
         else:
             default_index = 0
 
@@ -152,7 +153,7 @@ class HomeAddShows(Home):
 
                 # see if the folder is in KODI already
                 dir_results = main_db_con.select(
-                    b'SELECT indexer_id '
+                    b'SELECT indexer, indexer_id '
                     b'FROM tv_shows '
                     b'WHERE location = ? LIMIT 1',
                     [cur_path]
@@ -165,13 +166,13 @@ class HomeAddShows(Home):
                 indexer_id = show_name = indexer = None
                 # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
                 # is reset. This will prevent errors, when using multiple indexers and caching.
-                for cur_provider in app.metadata_provider_dict.values():
+                for cur_provider in itervalues(app.metadata_provider_dict):
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
-                if indexer_id and Show.find(app.showList, indexer_id):
+                if indexer_id and indexer and Show.find_by_id(app.showList, indexer, indexer_id):
                     cur_dir['added_already'] = True
         return t.render(dirList=dir_list)
 
@@ -215,8 +216,7 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            title='New Show', header='New Show', topmenu='home',
-            controller='addShows', action='newShow'
+            topmenu='home', controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -308,7 +308,7 @@ class HomeAddShows(Home):
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
-        except (RequestException, StandardError) as e:
+        except (RequestException, Exception) as e:
             recommended_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",
@@ -334,16 +334,16 @@ class HomeAddShows(Home):
                         topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
                         controller="addShows", action="recommendedShows", realpage="popularAnime")
 
-    def addShowToBlacklist(self, indexer_id):
+    def addShowToBlacklist(self, seriesid):
         # URL parameters
-        data = {'shows': [{'ids': {'tvdb': indexer_id}}]}
+        data = {'shows': [{'ids': {'tvdb': seriesid}}]}
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
                           'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
                           'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
-        show_name = get_showname_from_indexer(1, indexer_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, seriesid)
         try:
             trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
             trakt_api.request('users/{0}/lists/{1}/items'.format
@@ -361,11 +361,10 @@ class HomeAddShows(Home):
         Prints out the page to add existing shows from a root dir
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
-        return t.render(enable_anime_options=False, title='Existing Show',
-                        header='Existing Show', topmenu='home',
-                        controller='addShows', action='addExistingShow')
+        return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
+                        topmenu='home', controller='addShows', action='addExistingShow')
 
-    def addShowByID(self, indexer_id, show_name=None, indexer="TVDB", which_series=None,
+    def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     flatten_folders=None, subtitles=None, full_show_path=None,
@@ -377,9 +376,10 @@ class HomeAddShows(Home):
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
         """
-        if indexer != 'TVDB':
-            tvdb_id = helpers.get_tvdb_from_id(indexer_id, indexer.upper())
-            if not tvdb_id:
+        series_id = seriesid
+        if indexername != 'tvdb':
+            series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
+            if not series_id:
                 logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
                     'Unable to add %s' % show_name,
@@ -387,9 +387,7 @@ class HomeAddShows(Home):
                 )
                 return
 
-            indexer_id = try_int(tvdb_id, None)
-
-        if Show.find(app.showList, int(indexer_id)):
+        if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
             return
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
@@ -444,7 +442,7 @@ class HomeAddShows(Home):
             default_status_after = app.STATUS_DEFAULT_AFTER
 
             if app.ROOT_DIRS:
-                root_dirs = app.ROOT_DIRS.split('|')
+                root_dirs = app.ROOT_DIRS
                 location = root_dirs[int(root_dirs[0]) + 1]
             else:
                 location = None
@@ -454,11 +452,11 @@ class HomeAddShows(Home):
                        u'no root directory setting found', logger.WARNING)
             return 'No root directories setup, please go back and add one.'
 
-        show_name = get_showname_from_indexer(1, indexer_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, series_id)
         show_dir = None
 
         # add the show
-        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality,
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
                                                 flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 

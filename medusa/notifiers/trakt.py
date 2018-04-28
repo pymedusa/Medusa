@@ -4,10 +4,11 @@
 from __future__ import unicode_literals
 
 import logging
+from builtins import object
 
 from medusa import app
 from medusa.helpers import get_title_without_year
-from medusa.indexers.indexer_config import get_trakt_indexer
+from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
 from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
@@ -46,7 +47,7 @@ class Notifier(object):
         ep_obj: The Episode object to add to trakt
         """
         # Check if TRAKT supports that indexer
-        if not get_trakt_indexer(ep_obj.show.indexer):
+        if not get_trakt_indexer(ep_obj.series.indexer):
             return
 
         # Create a trakt settings dict
@@ -60,18 +61,18 @@ class Notifier(object):
         if app.USE_TRAKT:
             try:
                 # URL parameters
-                title = get_title_without_year(ep_obj.show.name, ep_obj.show.start_year)
+                title = get_title_without_year(ep_obj.series.name, ep_obj.series.start_year)
                 data = {
                     'shows': [
                         {
                             'title': title,
-                            'year': ep_obj.show.start_year,
+                            'year': ep_obj.series.start_year,
                             'ids': {},
                         }
                     ]
                 }
 
-                data['shows'][0]['ids'][get_trakt_indexer(ep_obj.show.indexer)] = ep_obj.show.indexerid
+                data['shows'][0]['ids'][get_trakt_indexer(ep_obj.series.indexer)] = ep_obj.series.indexerid
 
                 if app.TRAKT_SYNC_WATCHLIST:
                     if app.TRAKT_REMOVE_SERIESLIST:

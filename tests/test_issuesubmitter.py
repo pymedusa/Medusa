@@ -16,28 +16,34 @@ sut = IssueSubmitter()
 @pytest.mark.parametrize('p', [
     {  # p0: debug not enabled
         'debug': False,
-        'expected': [(IssueSubmitter.INVALID_CONFIG, None)]
+        'expected': [(IssueSubmitter.DEBUG_NOT_ENABLED, None)]
     },
     {  # p1: debug not set
-        'expected': [(IssueSubmitter.INVALID_CONFIG, None)]
+        'expected': [(IssueSubmitter.DEBUG_NOT_ENABLED, None)]
     },
-    {  # p2: debug enabled, but no username
+    {  # p2: username and password set, but debug not enabled
+        'debug': False,
+        'username': 'user',
+        'password': 'pass',
+        'expected': [(IssueSubmitter.DEBUG_NOT_ENABLED, None)]
+    },
+    {  # p3: debug enabled, but no username
         'debug': True,
         'password': 'pass',
-        'expected': [(IssueSubmitter.INVALID_CONFIG, None)]
+        'expected': [(IssueSubmitter.MISSING_CREDENTIALS, None)]
     },
-    {  # p3: debug enabled, but no password
+    {  # p4: debug enabled, but no password
         'debug': True,
         'username': 'user',
-        'expected': [(IssueSubmitter.INVALID_CONFIG, None)]
+        'expected': [(IssueSubmitter.MISSING_CREDENTIALS, None)]
     },
-    {  # p4: debug enabled, username and password set, but no errors to report
+    {  # p5: debug enabled, username and password set, but no errors to report
         'debug': True,
         'username': 'user',
         'password': 'pass',
         'expected': [(IssueSubmitter.NO_ISSUES, None)]
     },
-    {  # p5: debug enabled, username and password set, errors to report but update is needed
+    {  # p6: debug enabled, username and password set, errors to report but update is needed
         'debug': True,
         'username': 'user',
         'password': 'pass',
@@ -45,7 +51,7 @@ sut = IssueSubmitter()
         'need_update': True,
         'expected': [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
     },
-    {  # p6: debug enabled, username and password set, errors to report, no update is needed, but it's already running
+    {  # p7: debug enabled, username and password set, errors to report, no update is needed, but it's already running
         'debug': True,
         'username': 'user',
         'password': 'pass',
@@ -53,7 +59,7 @@ sut = IssueSubmitter()
         'running': True,
         'expected': [(IssueSubmitter.ALREADY_RUNNING, None)]
     },
-    {  # p7: debug enabled, username and password set, errors to report, update is needed but I'M A DEVELOPER :-)
+    {  # p8: debug enabled, username and password set, errors to report, update is needed but I'M A DEVELOPER :-)
         'debug': True,
         'username': 'user',
         'password': 'pass',
@@ -63,7 +69,7 @@ sut = IssueSubmitter()
         'exception': [BadCredentialsException, 401],
         'expected': [(IssueSubmitter.BAD_CREDENTIALS, None)]
     },
-    {  # p8: debug enabled, username and password set, errors to report, update is not needed but rate limit exception happened
+    {  # p9: debug enabled, username and password set, errors to report, update is not needed but rate limit exception happened
         'debug': True,
         'username': 'user',
         'password': 'pass',
