@@ -163,6 +163,8 @@ class Tmdb(BaseIndexer):
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
                 page += 1
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
         except Exception as e:
             raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(e))
 
@@ -207,9 +209,14 @@ class Tmdb(BaseIndexer):
         :return: An ordered dict with the show searched for.
         """
         log.debug('Getting all show data for {0}', tmdb_id)
-        results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
-        if not results:
-            return
+        try:
+            results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
+            if not results:
+                return
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
+        except Exception as e:
+            raise IndexerException('Show info retrieval failed with error: {0!r}'.format(e))
 
         mapped_results = self._map_results(results, self.series_map, '|')
 
@@ -238,8 +245,11 @@ class Tmdb(BaseIndexer):
 
         # get episodes for each season
         for season in aired_season:
-            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
-            results += season_info['episodes']
+            try:
+                season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
+                results += season_info['episodes']
+            except RequestException as e:
+                raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         if not results:
             log.debug('Series results incomplete')
@@ -310,7 +320,11 @@ class Tmdb(BaseIndexer):
         # Let's get the different type of images available for this series
         params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
 
-        images = self.tmdb.TV(sid).images(params=params)
+        try:
+            images = self.tmdb.TV(sid).images(params=params)
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
+
         bid = images['id']
         for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
@@ -395,7 +409,10 @@ class Tmdb(BaseIndexer):
         log.debug('Getting actors for {0}', sid)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(sid).credits(language=self.config['language'])  # pylint: disable=W0622
+        try:
+            credits = self.tmdb.TV(sid).credits(language=self.config['language'])  # pylint: disable=W0622
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         if not credits or not credits.get('cast'):
             log.debug('Actors result returned zero')
@@ -442,12 +459,15 @@ class Tmdb(BaseIndexer):
             raise IndexerError('Series result returned zero')
 
         # Get MPAA rating if available
-        content_ratings = self.tmdb.TV(sid).content_ratings()
-        if content_ratings and content_ratings.get('results'):
-            mpaa_rating = next((r['rating'] for r in content_ratings['results']
-                                if r['iso_3166_1'].upper() == 'US'), None)
-            if mpaa_rating:
-                self._set_show_data(sid, 'contentrating', mpaa_rating)
+        try:
+            content_ratings = self.tmdb.TV(sid).content_ratings()
+            if content_ratings and content_ratings.get('results'):
+                mpaa_rating = next((r['rating'] for r in content_ratings['results']
+                                    if r['iso_3166_1'].upper() == 'US'), None)
+                if mpaa_rating:
+                    self._set_show_data(sid, 'contentrating', mpaa_rating)
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         # get series data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.
@@ -466,7 +486,11 @@ class Tmdb(BaseIndexer):
 
         # Get external ids.
         # As the external id's are not part of the shows default response, we need to make an additional call for it.
-        self._set_show_data(sid, 'externals', self.tmdb.TV(sid).external_ids())
+        try:
+            external_ids = self.tmdb.TV(sid).external_ids()
+            self._set_show_data(sid, 'externals', external_ids)
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         # get episode data
         if self.config['episodes_enabled']:
@@ -491,15 +515,19 @@ class Tmdb(BaseIndexer):
         results = []
         page = 1
         total_pages = 1
-        while page <= total_pages:
-            # Requesting for the changes on a specific showid, will result in json with changes per season.
-            updates = self.tmdb.TV(sid).changes(start_date=start_date, end_date=end_date)
-            if updates and updates.get('changes'):
-                for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
-                    for season in items:
-                        results += [season['value']['season_number']]
-                total_pages = updates.get('total_pages', 0)
-            page += 1
+
+        try:
+            while page <= total_pages:
+                # Requesting for the changes on a specific showid, will result in json with changes per season.
+                updates = self.tmdb.TV(sid).changes(start_date=start_date, end_date=end_date)
+                if updates and updates.get('changes'):
+                    for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
+                        for season in items:
+                            results += [season['value']['season_number']]
+                    total_pages = updates.get('total_pages', 0)
+                page += 1
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         return set(results)
 
@@ -508,13 +536,17 @@ class Tmdb(BaseIndexer):
         results = []
         page = 1
         total_pages = 1
-        while page <= total_pages:
-            updates = self.tmdb.Changes().tv(start_date=start_date, end_date=end_date, page=page)
-            if not updates or not updates.get('results'):
-                break
-            results += [_.get('id') for _ in updates.get('results')]
-            total_pages = updates.get('total_pages')
-            page += 1
+
+        try:
+            while page <= total_pages:
+                updates = self.tmdb.Changes().tv(start_date=start_date, end_date=end_date, page=page)
+                if not updates or not updates.get('results'):
+                    break
+                results += [_.get('id') for _ in updates.get('results')]
+                total_pages = updates.get('total_pages')
+                page += 1
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         return set(results)
 
@@ -585,17 +617,20 @@ class Tmdb(BaseIndexer):
         :param imdb_id: An imdb id (inc. tt).
         :returns: A dict with externals, including the tvmaze id.
         """
-        wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
-        for external_id in wanted_externals:
-            if kwargs.get(external_id):
-                result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
-                if result.get('tv_results') and result['tv_results'][0]:
-                    # Get the external id's for the passed shows id.
-                    externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
-                    externals = {tmdb_external_id: external_value
-                                 for tmdb_external_id, external_value
-                                 in viewitems(externals)
-                                 if external_value and tmdb_external_id in wanted_externals}
-                    externals['tmdb_id'] = result['tv_results'][0]['id']
-                    return externals
-        return {}
+        try:
+            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
+            for external_id in wanted_externals:
+                if kwargs.get(external_id):
+                    result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
+                    if result.get('tv_results') and result['tv_results'][0]:
+                        # Get the external id's for the passed shows id.
+                        externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
+                        externals = {tmdb_external_id: external_value
+                                     for tmdb_external_id, external_value
+                                     in viewitems(externals)
+                                     if external_value and tmdb_external_id in wanted_externals}
+                        externals['tmdb_id'] = result['tv_results'][0]['id']
+                        return externals
+            return {}
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
