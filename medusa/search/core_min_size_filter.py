@@ -258,19 +258,19 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
     :return: best result object
     """
     # Rafi: simulate calculating of min size per the show resolution and set min_size param
-    #       
+    #
     # min size setting is for 45 min of 1080p , 0 if not used (for testing only, this should be entered in the GUI globally and per-show):
     #
-    #   - Check for show setting 
+    #   - Check for show setting
     #       - if not set (or 0) - check for global setting
-    #       - else use global (or 0 - not used, no minimum) 
+    #       - else use global (or 0 - not used, no minimum)
 
     min_set_file_size = 1200000000
+    max_set_file_size = 5000000000
     min_file_size = min_set_file_size
+    max_file_size = max_set_file_size
     hevc_format_words = ['hevc', 'x265', 'x.265']
     hevc_downsize_factor = 3
-    min_hevc_file_size = min_set_file_size / hevc_downsize_factor
-
 
     results = results if isinstance(results, list) else [results]
 
@@ -288,33 +288,35 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         # log.info(u'file_size: {0}', series_obj.file_size)
         log.info(u'cur_result.size: {0}', cur_result.size)
         # log.info(u'size: {0}', series_obj.size)
-		
-        
+
         # Rafi: calculate correct file size limit for this show/episode
         series_runtime_factored_100 = (series_obj.runtime*100)/45
-		
 
-       
-       # Rafi: might need to add an optional  factor for +ion "x265"/"HEVC", possibly as a  user option (?)
-       # the factors themselves will be re-calculated when this featrure is approved, and be probably made as global here, and not re-calculated.
+        # Rafi: might need to add an optional  factor for +ion "x265"/"HEVC", possibly as a  user option (?)
+        # the factors themselves will be re-calculated when this featrure is approved, and be probably made as global here, and not re-calculated.
 
         if min_set_file_size and Quality.qualityStrings[cur_result.quality].find('1080') >= 0:
                 min_file_size = min_set_file_size*series_runtime_factored_100/100
         elif Quality.qualityStrings[cur_result.quality].find('720') >= 0:
-				min_file_size = (min_set_file_size/1080)*720*series_runtime_factored_100/100
+                min_file_size = (min_set_file_size/1080)*720*series_runtime_factored_100/100
+                max_file_size = (max_set_file_size/1080)*720*series_runtime_factored_100/100
         elif Quality.qualityStrings[cur_result.quality].find('SD') >= 0:
-				min_file_size = (min_set_file_size/1080)*576*series_runtime_factored_100/100
+                min_file_size = (min_set_file_size/1080)*576*series_runtime_factored_100/100
+                max_file_size = (max_set_file_size/1080)*576*series_runtime_factored_100/100
         elif Quality.qualityStrings[cur_result.quality].find('4K') >= 0: 
-				min_file_size = (min_set_file_size/1080)*2160*series_runtime_factored_100/100
+                min_file_size = (min_set_file_size/1080)*2160*series_runtime_factored_100/100
+                max_file_size = (max_set_file_size/1080)*2160*series_runtime_factored_100/100
         elif Quality.qualityStrings[cur_result.quality].find('8K') >= 0:
-				min_file_size = (min_set_file_size/1080)*4320*series_runtime_factored_100/100
-        
+                min_file_size = (min_set_file_size/1080)*4320*series_runtime_factored_100/100
+                max_file_size = (max_set_file_size/1080)*4320*series_runtime_factored_100/100
+
         found_hevc_format = naming.contains_at_least_one_word(cur_result.name, hevc_format_words)
         if found_hevc_format:
             min_file_size = min_file_size / hevc_downsize_factor
-        
-        log.info(u'quality : {0} runtime: {1} min_file_size: {2} found_hevc_format: {3}', Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), found_hevc_format )
+            max_file_size = max_file_size / hevc_downsize_factor
 
+        log.info(u'quality : {0} runtime: {1} min_file_size: {2} max_file_size: {3} found_hevc_format: {4}',
+            Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size), found_hevc_format)
         # build the black and white list
         if series_obj.is_anime:
             if not series_obj.release_groups.is_valid(cur_result):
@@ -357,9 +359,9 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             continue
 
         # Rafi: if doesn't have min file size (testing with x bytes) . Size is -1 if not available 
-        if cur_result.size < min_file_size:
+        if cur_result.size < min_file_size or cur_result.size > max_file_size:
             log.info(
-                u'Discarding torrent because it does not meet the minimum file size '
+                u'Discarding torrent because it does not meet the file size requirements'
                 u'file Name:{0} Size:{1}',
                 cur_result.name,
                 cur_result.size,
@@ -367,7 +369,7 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             continue
         else:
             log.info(
-                u'Torrent meets the minimum file size '
+                u'Torrent meets the file size requirements'
                 u'file Name:{0} Size:{1}',
                 cur_result.name,
                 cur_result.size,
@@ -422,11 +424,10 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
                 best_result = cur_result
 
             # Rafi: possibly - find the result with the largest file? (TBD)
-            #if cur_result.size > best_result.size:
-            #   log.info(u'Preferring release {0} (larger size [{1} > {2}])', cur_result.name, cur_result.size, best_result.size)
-            #   best_result = cur_result
+            # if cur_result.size > best_result.size:
+            #    log.info(u'Preferring release {0} (larger size [{1} > {2}])', cur_result.name, cur_result.size, best_result.size)
+            #    best_result = cur_result
 
-                
     if best_result:
         log.debug(u'Picked {0} as the best', best_result.name)
     else:
