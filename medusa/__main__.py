@@ -508,7 +508,8 @@ class Application(object):
             app.FANART_BACKGROUND = bool(check_setting_int(app.CFG, 'GUI', 'fanart_background', 1))
             app.FANART_BACKGROUND_OPACITY = check_setting_float(app.CFG, 'GUI', 'fanart_background_opacity', 0.4)
 
-            app.THEME_NAME = check_setting_str(app.CFG, 'GUI', 'theme_name', 'dark')
+            app.THEME_NAME = check_setting_str(app.CFG, 'GUI', 'theme_name', 'dark',
+                                               valid_values=[t.name for t in app.AVAILABLE_THEMES])
 
             app.SOCKET_TIMEOUT = check_setting_int(app.CFG, 'General', 'socket_timeout', 30)
             socket.setdefaulttimeout(app.SOCKET_TIMEOUT)
