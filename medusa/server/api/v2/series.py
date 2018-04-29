@@ -188,7 +188,7 @@ class SeriesHandler(BaseRequestHandler):
         return self._no_content()
 
     def _existing_series_data(self):
-        """Generate existing series folders data for adding existing shows"""
+        """Generate existing series folders data for adding existing shows."""
         root_dirs = json.loads(self.get_argument('root-dir', '[]'))
 
         if not root_dirs:
