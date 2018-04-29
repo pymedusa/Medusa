@@ -15,7 +15,7 @@ from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSe
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import media_browser
 
-from six import string_types, text_type
+from six import string_types, text_type as str
 
 try:
     import xml.etree.cElementTree as etree
@@ -117,7 +117,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             first_aired = etree.SubElement(tv_node, 'premiered')
             first_aired.text = my_show['firstaired']
             try:
-                year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                 if year_text:
                     year = etree.SubElement(tv_node, 'year')
                     year.text = year_text
@@ -136,7 +136,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
             if rating:
                 rating = etree.SubElement(tv_node, 'rating')
-                rating.text = text_type(rating)
+                rating.text = str(rating)
 
         if getattr(my_show, 'status', None):
             status = etree.SubElement(tv_node, 'status')
@@ -153,11 +153,11 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         if getattr(my_show, 'id', None):
             indexer_id = etree.SubElement(tv_node, 'indexerid')
-            indexer_id.text = my_show['id']
+            indexer_id.text = str(my_show['id'])
 
         if getattr(my_show, 'runtime', None):
             runtime = etree.SubElement(tv_node, 'runtime')
-            runtime.text = my_show['runtime']
+            runtime.text = str(my_show['runtime'])
 
         if getattr(my_show, '_actors', None):
             cast = etree.SubElement(tv_node, 'cast')
@@ -213,7 +213,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
                 # default to today's date for specials if firstaired is not set
                 if ep_to_write.season == 0 and not getattr(my_ep, 'firstaired', None):
-                    my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
+                    my_ep['firstaired'] = str(datetime.date.fromordinal(1))
 
                 if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                     return None
@@ -225,14 +225,14 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     episode_name.text = ep_to_write.name
 
                 season_number = etree.SubElement(episode, 'season')
-                season_number.text = text_type(ep_to_write.season)
+                season_number.text = str(ep_to_write.season)
 
                 episode_number = etree.SubElement(episode, 'episode')
-                episode_number.text = text_type(ep_to_write.episode)
+                episode_number.text = str(ep_to_write.episode)
 
                 if getattr(my_show, 'firstaired', None):
                     try:
-                        year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                        year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                         if year_text:
                             year = etree.SubElement(episode, 'year')
                             year.text = year_text
@@ -259,7 +259,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
                     if rating:
                         rating = etree.SubElement(episode, 'rating')
-                        rating.text = text_type(rating)
+                        rating.text = str(rating)
 
                 if getattr(my_ep, 'director', None):
                     director = etree.SubElement(episode, 'director')
