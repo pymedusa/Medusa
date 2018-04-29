@@ -44,13 +44,13 @@ from medusa.helper.common import (
     pretty_file_size,
     remove_extension,
 )
-from medusa.helpers.anidb import set_up_anidb_connection
 from medusa.helper.exceptions import (
     EpisodeNotFoundException,
     EpisodePostProcessingFailedException,
     ShowDirectoryNotFoundException,
 )
 from medusa.helpers import is_subtitle, verify_freespace
+from medusa.helpers.anidb import set_up_anidb_connection
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
