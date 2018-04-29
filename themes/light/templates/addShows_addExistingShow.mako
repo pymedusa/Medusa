@@ -1,10 +1,12 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
+
     from medusa import app
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.indexer_config import indexerConfig
 
-    from six import iteritems
+    from six import iteritems, text_type as str
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
@@ -17,23 +19,17 @@ const startVue = () => {
             title: 'Existing Show'
         },
         data() {
-            // @FIXME: Need this before rendering
-            <%
-                indexers = ["{0}: {{name: '{1}', showUrl: '{2}'}},".format(indexer, values['name'], values['show_url'])
-                            for indexer, values in iteritems(indexerConfig)]
-            %>
+            <% indexers = { str(i): { 'name': v['name'], 'showUrl': v['show_url'] } for i, v in iteritems(indexerConfig) } %>
             return {
-                indexers: {
-                    ${'\n'.join(indexers)}
-                },
+                // @FIXME: Python conversions (fix when config is loaded before routes)
+                indexers: ${json.dumps(indexers)},
                 defaultIndexer: ${app.INDEXER_DEFAULT},
 
-                dirList: [],
-                selectedRootDirs: [],
-                selectedSeriesDirs: [],
                 isLoading: false,
-                header: 'Existing Show',
-                lastRootDirTxt: ''
+                lastRootDirText: '',
+                selectedRootDirs: [],
+                dirList: [],
+                promptForSettings: false
             };
         },
         mounted() {
@@ -44,12 +40,12 @@ const startVue = () => {
             });
 
             $(document.body).on('change', '#rootDirText', () => {
-                if (this.lastRootDirTxt === $('#rootDirText').val()) {
+                if (this.lastRootDirText === $('#rootDirText').val()) {
                     return false;
                 }
-                this.lastRootDirTxt = $('#rootDirText').val();
+                this.lastRootDirText = $('#rootDirText').val();
                 this.selectedRootDirs = this.rootDirs;
-                this.loadContent();
+                this.update();
             });
 
             // Trigger Root Dirs to update.
@@ -58,30 +54,44 @@ const startVue = () => {
                 $('#rootDirs').click();
             }
 
-            // this.lastRootDirTxt = $('#rootDirText').val();
+            // this.lastRootDirText = $('#rootDirText').val();
             // this.selectedRootDirs = this.rootDirs;
-            // this.loadContent();
+            // this.update();
         },
         computed: {
             rootDirs() {
-                if (!this.lastRootDirTxt) return [];
-                return this.lastRootDirTxt.split('|').slice(1);
+                if (!this.lastRootDirText) return [];
+                return this.lastRootDirText.split('|').slice(1);
             },
             filteredDirList() {
                 return this.dirList.filter(dir => !dir.alreadyAdded);
             },
+            displayPaths() {
+                // Mark the root dir as bold in the path
+                return this.filteredDirList
+                    .map(dir => {
+                        const rootDir = this.rootDirs.filter((rd) => dir.path.startsWith(rd))[0];
+                        const rootDirEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
+                        const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
+                        return '<b>' + dir.path.slice(0, rootDirEndIndex + pathSep) + '</b>' + dir.path.slice(rootDirEndIndex + pathSep);
+                    });
+            },
             checkAll: {
                 get() {
-                    if (!this.selectedSeriesDirs.length) return false;
-                    return this.selectedSeriesDirs.length === this.filteredDirList.length;
+                    const selectedSeriesDirs = this.filteredDirList.filter(dir => dir.selected);
+                    if (!selectedSeriesDirs.length) return false;
+                    return selectedSeriesDirs.length === this.filteredDirList.length;
                 },
                 set(newValue) {
-                    this.selectedSeriesDirs = newValue ? this.filteredDirList.map(dir => dir.dir) : [];
+                    this.dirList = this.dirList.map(dir => {
+                        dir.selected = newValue;
+                        return dir;
+                    });
                 }
             }
         },
         methods: {
-            async loadContent() {
+            async update() {
                 if (this.isLoading) return;
 
                 this.isLoading = true;
@@ -90,59 +100,74 @@ const startVue = () => {
                     this.isLoading = false;
                     return;
                 }
-
-                const data = await $.getJSON('addShows/massAddTable/', {
-                    jsonData: JSON.stringify(this.selectedRootDirs)
-                });
-                this.dirList = data.dirList;
-                this.selectedSeriesDirs = this.filteredDirList.map(dir => dir.dir);
+                const params = { 'root-dir': JSON.stringify(this.selectedRootDirs) };
+                const { data } = await api.get('series/existingSeries', { params });
+                this.dirList = data
+                    .map(dir => {
+                        // Pre-select all dirs not already added
+                        dir.selected = !dir.alreadyAdded;
+                        dir.selectedIndexer = dir.existingInfo.indexer || this.defaultIndexer;
+                        return dir;
+                    });
                 this.isLoading = false;
 
                 this.$nextTick(() => {
-                    $('#addRootDirTable').tablesorter({
-                        // SortList: [[1,0]],
-                        widgets: ['zebra'],
-                        // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
-                        // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
-                        headerTemplate: '',
-                        headers: {
-                            0: { sorter: false },
-                            3: { sorter: false }
-                        }
-                    })
-                    // Fixes tablesorter not working after root dirs are refreshed
-                    .trigger("updateAll");
+                    $('#addRootDirTable')
+                        .tablesorter({
+                            widgets: ['zebra'],
+                            // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
+                            // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
+                            headerTemplate: '',
+                            headers: {
+                                0: { sorter: false },
+                                3: { sorter: false }
+                            }
+                        })
+                        // Fixes tablesorter not working after root dirs are refreshed
+                        .trigger("updateAll");
                 });
             },
+            toggleRootDir(toggledRootDir) {
+                const selected = this.selectedRootDirs.includes(toggledRootDir);
+                this.selectedRootDirs = this.rootDirs
+                    .filter(rd => {
+                        if (selected) {
+                            return rd !== toggledRootDir && this.selectedRootDirs.includes(rd);
+                        } else {
+                            return rd === toggledRootDir || this.selectedRootDirs.includes(rd);
+                        }
+                    });
+            },
+            seriesIndexerUrl(curDir) {
+                return this.indexers[curDir.existingInfo.indexer].showUrl + curDir.existingInfo.seriesId.toString();
+            },
             submitSeriesDirs() {
-                const dirArr = [];
-                $('.seriesDirCheck').each((index, element) => {
-                    if (element.checked === true) {
-                        const originalIndexer = $(element).attr('data-indexer');
-                        let seriesId = '|' + $(element).attr('data-series-id');
-                        const seriesName = $(element).attr('data-series-name');
-                        const seriesDir = $(element).attr('data-series-dir');
+                const dirArr = this.filteredDirList
+                    .reduce((accumlator, dir) => {
+                        if (!dir.selected) return accumlator;
 
-                        const indexer = $(element).closest('tr').find('select').val();
-                        if (originalIndexer !== indexer || originalIndexer === '0') {
+                        const originalIndexer = dir.existingInfo.indexer;
+                        let seriesId = dir.existingInfo.seriesId;
+                        if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
                             seriesId = '';
                         }
-                        dirArr.push(encodeURIComponent(indexer + '|' + seriesDir + seriesId + '|' + seriesName));
-                    }
-                });
 
-                if (dirArr.length === 0) {
-                    return false;
-                }
+                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.existingInfo.seriesName]
+                            .filter(Boolean).join('|');
+                        accumlator.push(encodeURIComponent(seriesToAdd));
+                        return accumlator;
+                    }, []);
 
-                // @FIXME: Restore functionality!
-                //window.location.href = $('base').attr('href') + 'addShows/addExistingShows?promptForSettings=' + ($('#promptForSettings').prop('checked') ? 'on' : 'off') + '&shows_to_add=' + dirArr.join('&shows_to_add=');
-                console.log($('base').attr('href') + 'addShows/addExistingShows?promptForSettings=' + ($('#promptForSettings').prop('checked') ? 'on' : 'off') + '&shows_to_add=' + dirArr.join('&shows_to_add='));
+                if (dirArr.length === 0) return false;
+
+                const promptForSettings = 'promptForSettings=' + (this.promptForSettings ? 'on' : 'off');
+                const seriesToAdd = 'shows_to_add=' + dirArr.join('&shows_to_add=');
+                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?' + promptForSettings + '&' + seriesToAdd;
             }
         },
         watch: {
             selectedRootDirs() {
-                this.loadContent();
+                this.update();
             }
         }
     });
@@ -150,7 +175,7 @@ const startVue = () => {
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">Existing Show</h1>
 <div id="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
@@ -171,13 +196,13 @@ const startVue = () => {
                 <br>
                 <p>Medusa can add existing shows, using the current options, by using locally stored NFO/XML metadata to eliminate user interaction.
                 If you would rather have Medusa prompt you to customize each show, then use the checkbox below.</p>
-                <p><input type="checkbox" name="promptForSettings" id="promptForSettings" /> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
+                <p><input type="checkbox" v-model="promptForSettings" id="promptForSettings" /> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
                 <hr>
                 <p><b>Displaying folders within these directories which aren't already added to Medusa:</b></p>
                 <ul id="rootDirStaticList">
-                    <li v-for="rootDir in rootDirs" class="ui-state-default ui-corner-all" @click.self=""> <!-- @FIXME -->
-                        <input type="checkbox" class="rootDirCheck" v-model="selectedRootDirs" :value="rootDir" style="cursor: pointer;">
-                        <label :for="rootDir"><b style="cursor: pointer;">{{rootDir}}</b></label>
+                    <li v-for="rootDir in rootDirs" class="ui-state-default ui-corner-all" @click="toggleRootDir(rootDir)">
+                        <input type="checkbox" class="rootDirCheck" v-model.sync="selectedRootDirs" :value="rootDir" style="cursor: pointer;">
+                        <label><b style="cursor: pointer;">{{rootDir}}</b></label>
                     </li>
                 </ul>
                 <br>
@@ -193,21 +218,21 @@ const startVue = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="curDir in dirList" v-if="!curDir.alreadyAdded">
+                        <tr v-for="(curDir, curDirIndex) in filteredDirList">
                             <td class="col-checkbox">
-                                <input type="checkbox" v-model="selectedSeriesDirs" :value="curDir.dir" :data-indexer="curDir.existingInfo.indexer || 0"
-                                       :data-series-id="curDir.existingInfo.seriesId || 0" :data-series-dir="curDir.dir"
-                                       :data-series-name="curDir.existingInfo.seriesName || ''" class="seriesDirCheck" />
+                                <input type="checkbox" v-model="curDir.selected" :value="curDir.path" class="seriesDirCheck" />
                             </td>
-                            <td><label :for="curDir.dir" v-html="curDir.displayDir"></label></td>
+                            <td>
+                                <label @click="curDir.selected = !curDir.selected" v-html="displayPaths[curDirIndex]"></label>
+                            </td>
                             <td>
                                 <app-link v-if="curDir.existingInfo.seriesName && curDir.existingInfo.indexer > 0"
-                                          :href="indexers[curDir.existingInfo.indexer].showUrl + curDir.existingInfo.seriesId.toString()">{{curDir.existingInfo.seriesName}}</app-link>
+                                          :href="seriesIndexerUrl(curDir)">{{curDir.existingInfo.seriesName}}</app-link>
                                 <span v-else>?</span>
                             </td>
                             <td align="center">
-                                <select name="indexer">
-                                    <option v-for="(indexer, indexerId) in indexers" :value="indexerId" :selected="parseInt(indexerId, 10) === curDir.existingInfo.indexer || indexerId == defaultIndexer">{{indexer.name}}</option>
+                                <select name="indexer" v-model="curDir.selectedIndexer">
+                                    <option v-for="(indexer, indexerId) in indexers" :value.number="indexerId">{{indexer.name}}</option>
                                 </select>
                             </td>
                         </tr>
