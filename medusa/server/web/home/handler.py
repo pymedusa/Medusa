@@ -1871,7 +1871,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={0.indexer_name}&seriesid={0.series_id}'.format(series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
@@ -1898,7 +1898,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={0.indexer_name}&seriesid={0.series_id}'.format(series_obj))
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
