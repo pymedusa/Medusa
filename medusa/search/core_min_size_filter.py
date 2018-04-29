@@ -315,8 +315,10 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             min_file_size = min_file_size / hevc_downsize_factor
             max_file_size = max_file_size / hevc_downsize_factor
 
-        log.info(u'quality : {0} runtime: {1} min_file_size: {2} max_file_size: {3} found_hevc_format: {4}',
-                Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size), found_hevc_format)
+        log.info(
+            u'quality : {0} runtime: {1} min_file_size: {2} max_file_size: {3} found_hevc_format: {4}',
+            Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size), found_hevc_format
+        )
         # build the black and white list
         if series_obj.is_anime:
             if not series_obj.release_groups.is_valid(cur_result):
