@@ -303,7 +303,7 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         elif Quality.qualityStrings[cur_result.quality].find('SD') >= 0:
                 min_file_size = (min_set_file_size/1080)*576*series_runtime_factored_100/100
                 max_file_size = (max_set_file_size/1080)*576*series_runtime_factored_100/100
-        elif Quality.qualityStrings[cur_result.quality].find('4K') >= 0: 
+        elif Quality.qualityStrings[cur_result.quality].find('4K') >= 0:
                 min_file_size = (min_set_file_size/1080)*2160*series_runtime_factored_100/100
                 max_file_size = (max_set_file_size/1080)*2160*series_runtime_factored_100/100
         elif Quality.qualityStrings[cur_result.quality].find('8K') >= 0:
@@ -316,7 +316,7 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             max_file_size = max_file_size / hevc_downsize_factor
 
         log.info(u'quality : {0} runtime: {1} min_file_size: {2} max_file_size: {3} found_hevc_format: {4}',
-            Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size), found_hevc_format)
+                Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size), found_hevc_format)
         # build the black and white list
         if series_obj.is_anime:
             if not series_obj.release_groups.is_valid(cur_result):
@@ -358,7 +358,7 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             )
             continue
 
-        # Rafi: if doesn't have min file size (testing with x bytes) . Size is -1 if not available 
+        # Rafi: if doesn't have min file size (testing with x bytes) . Size is -1 if not available
         if cur_result.size < min_file_size or cur_result.size > max_file_size:
             log.info(
                 u'Discarding torrent because it does not meet the file size requirements'
