@@ -38,7 +38,7 @@ class SeriesHandler(BaseRequestHandler):
     def get(self, series_slug, path_param=None):
         """Query series information.
 
-        :param series_slug: series slug. E.g.: tvdb1234 or a resource name
+        :param series_slug: series slug. E.g.: tvdb1234
         :param path_param:
         """
         arg_paused = self._parse_boolean(self.get_argument('paused', default=None))
