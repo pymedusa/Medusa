@@ -153,7 +153,7 @@ const startVue = () => {
                         }
 
                         const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.existingInfo.seriesName]
-                            .filter(Boolean).join('|');
+                            .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
                         accumlator.push(encodeURIComponent(seriesToAdd));
                         return accumlator;
                     }, []);
@@ -232,6 +232,7 @@ const startVue = () => {
                             </td>
                             <td align="center">
                                 <select name="indexer" v-model="curDir.selectedIndexer">
+                                    <option :value.number="0">All Indexers</option>
                                     <option v-for="(indexer, indexerId) in indexers" :value.number="indexerId">{{indexer.name}}</option>
                                 </select>
                             </td>
