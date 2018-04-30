@@ -176,7 +176,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <h1 class="header">Existing Show</h1>
-<div id="newShowPortal">
+<div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
@@ -240,7 +240,7 @@ const startVue = () => {
                 </table>
                 <br>
                 <br>
-                <input class="btn-medusa" type="button" value="Submit" id="submitSeriesDirs" :disabled="isLoading" @click="submitSeriesDirs" />
+                <input class="btn-medusa" type="button" value="Submit" :disabled="isLoading" @click="submitSeriesDirs" />
             </form>
         </div>
     </div>
