@@ -65,15 +65,23 @@ class TorrentLeechProvider(TorrentProvider):
         if not self.login():
             return results
 
-        # TV/Episodes, TV/BoxSets, TV/Episodes HD, Animation/Anime, Animation/Cartoons, Foreign
-        # 26,          27,         32,             34,              35,                 44
+        # Categories:
+        #   TV
+        #     26: Episodes
+        #     27: BoxSets
+        #     32: Episodes HD
+        #   Animation
+        #     34: Anime
+        #     35: Cartoons
+        #   Foreign
+        #     44: Foreign
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            # Configured for mode == 'RSS'
+            # Configured for: mode == 'RSS'
             search_params = {
-                'categories': ['2', '26', '27', '32', '7', '34', '35', '44'],
+                'categories': ['26', '27', '32', '34', '35', '44'],
                 'query': '',
                 'orderby': 'added',
                 'order': 'desc',
@@ -84,7 +92,7 @@ class TorrentLeechProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                    search_params['categories'] = ['2', '7', '35']
+                    search_params['categories'] = ['35']
                     search_params['categories'] += ['26', '32', '44'] if mode == 'Episode' else ['27']
                     if self.series and self.series.is_anime:
                         search_params['categories'] += ['34']
