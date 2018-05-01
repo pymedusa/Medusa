@@ -62,11 +62,15 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
-![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
-![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
-![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
-![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/dognzb.png)[DOGnzb](https://dognzb.cr)
-![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/danishbits.png)[DanishBits](https://danishbits.org)
+![RARBG](https://rarbg.com/favicon.ico) [RARBG](https://rarbg.to)
+&nbsp;&middot;&nbsp;
+![NZB.cat](https://nzb.cat/favicon.ico) [NZB.cat](https://nzb.cat/)
+&nbsp;&middot;&nbsp;
+![NZBGeek](https://nzbgeek.info/favicon.ico) [NZBGeek](https://nzbgeek.info)
+&nbsp;&middot;&nbsp;
+![DOGnzb](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/dognzb.png) [DOGnzb](https://dognzb.cr)
+&nbsp;&middot;&nbsp;
+![DanishBits](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/danishbits.png) [DanishBits](https://danishbits.org)
 
 #### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
 
