@@ -79,7 +79,7 @@ const startVue = () => {
             checkAll: {
                 get() {
                     const selectedSeriesDirs = this.filteredDirList.filter(dir => dir.selected);
-                    if (!selectedSeriesDirs.length) return false;
+                    if (!selectedSeriesDirs) return false;
                     return selectedSeriesDirs.length === this.filteredDirList.length;
                 },
                 set(newValue) {
@@ -95,7 +95,7 @@ const startVue = () => {
                 if (this.isLoading) return;
 
                 this.isLoading = true;
-                if (!this.selectedRootDirs.length) {
+                if (!this.selectedRootDirs) {
                     this.dirList = [];
                     this.isLoading = false;
                     return;
@@ -131,11 +131,8 @@ const startVue = () => {
                 const selected = this.selectedRootDirs.includes(toggledRootDir);
                 this.selectedRootDirs = this.rootDirs
                     .filter(rd => {
-                        if (selected) {
-                            return rd !== toggledRootDir && this.selectedRootDirs.includes(rd);
-                        } else {
-                            return rd === toggledRootDir || this.selectedRootDirs.includes(rd);
-                        }
+                        if (selected) return rd !== toggledRootDir && this.selectedRootDirs.includes(rd);
+                        return rd === toggledRootDir || this.selectedRootDirs.includes(rd);
                     });
             },
             seriesIndexerUrl(curDir) {
