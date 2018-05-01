@@ -168,11 +168,7 @@ const startVue = () => {
             <div id="core-component-group1">
                 <div class="component-group">
                     <h3>Main Settings</h3>
-                    
-                    
                     <fieldset class="component-group-list">
-                        
-                        
                         <div class="form-group">
                             <label for="location" class="col-sm-2 control-label">Show Location</label>
                             <div class="col-sm-10 content">
@@ -228,7 +224,7 @@ const startVue = () => {
                 <div class="component-group">
                     <h3>Format Settings</h3>
                     <fieldset class="component-group-list">
-                        
+
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
@@ -258,7 +254,7 @@ const startVue = () => {
                                 <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
@@ -272,7 +268,7 @@ const startVue = () => {
                                     <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
@@ -287,7 +283,7 @@ const startVue = () => {
                 <div class="component-group">
                     <h3>Advanced Settings</h3>
                     <fieldset class="component-group-list">
-                        
+
                         <div class="form-group">
                             <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
                             <div class="col-sm-10 content">
