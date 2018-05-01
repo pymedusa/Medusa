@@ -8,8 +8,8 @@
     div.file-browser.max-width {
         max-width: 450px;
     }
-    
-</style>    
+
+</style>
 <script type="text/x-template" id="file-browser">
     <div class="file-browser max-width">
         <div class="input-group">
@@ -20,7 +20,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="fileBrowserDialog" style="display: none;"></div>
         <input @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control fileBrowserSearchBox" style="display: none;"/>
         <ul class="fileBrowserFileList" style="display: none;">
@@ -295,8 +295,9 @@ Vue.component('file-browser', {
         });
     },
     watch: {
-        /* initialDir property might recieve values originating from the API,
-         * that are sometimes not avaiable when creating rendering.
+        /**
+         * initialDir property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
          * @TODO: Maybe we can remove this in the future.
          */
         initialDir(newValue, oldValue) {

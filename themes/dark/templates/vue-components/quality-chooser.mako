@@ -218,7 +218,8 @@ Vue.component('quality-chooser', {
         }
     },
     watch: {
-        /* overallQuality property might recieve values originating from the API,
+        /**
+         * overallQuality property might receive values originating from the API,
          * that are sometimes not avaiable when rendering.
          * @TODO: Maybe we can remove this in the future.
          */

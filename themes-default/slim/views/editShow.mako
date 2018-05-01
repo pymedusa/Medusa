@@ -12,8 +12,6 @@ const startVue = () => {
             title: 'Edit Show'
         },
         data() {
-            // Python conversions
-            // JS only
             return {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
@@ -181,7 +179,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
                             <div class="col-sm-10 content">
-                                    <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                             </div>
                         </div>
 
@@ -228,8 +226,8 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
 
@@ -265,15 +263,15 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
-                                    <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
+                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
+                                <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
                         </div>
                     </fieldset>
