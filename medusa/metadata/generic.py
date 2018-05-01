@@ -890,13 +890,13 @@ class GenericMetadata(object):
 
         if not os.path.isdir(folder) or not os.path.isfile(metadata_path):
             log.debug(
-                u'Cannot load the metadata file from {location}, it does not exist',
-                {u'location': metadata_path}
+                u'Cannot load the {name} metadata file from {location}, it does not exist',
+                {u'name': self.name, u'location': metadata_path}
             )
             return empty_return
 
-        log.debug(u'Loading show info from metadata file in {location}',
-                  {u'location': folder})
+        log.debug(u'Loading show info from {name} metadata file in {location}',
+                  {u'name': self.name, u'location': folder})
 
         try:
             with io.open(metadata_path, u'rb') as xmlFileObj:

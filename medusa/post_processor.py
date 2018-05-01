@@ -50,6 +50,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
 )
 from medusa.helpers import is_subtitle, verify_freespace
+from medusa.helpers.anidb import set_up_anidb_connection
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -527,7 +528,7 @@ class PostProcessor(object):
 
         :param file_path: file to add to mylist
         """
-        if helpers.set_up_anidb_connection():
+        if set_up_anidb_connection():
             if not self.anidbEpisode:  # seems like we could parse the name before, now lets build the anidb object
                 self.anidbEpisode = self._build_anidb_episode(app.ADBA_CONNECTION, file_path)
 
