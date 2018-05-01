@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -19,7 +20,7 @@ from six import itervalues, viewitems
 
 from tornado.escape import json_decode
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
 
 
 class SeriesHandler(BaseRequestHandler):
@@ -62,7 +63,7 @@ class SeriesHandler(BaseRequestHandler):
         data = series.to_json(detailed=detailed)
         if path_param:
             if path_param not in data:
-                return self._bad_request("Invalid path parameter'{0}'".format(path_param))
+                return self._bad_request("Invalid path parameter '{0}'".format(path_param))
             data = data[path_param]
 
         return self._ok(data)

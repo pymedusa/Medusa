@@ -59,7 +59,7 @@ $(document).ready(() => {
         if ($('#rootDirs').length === 0) {
             /* Trigger change event as $.rootDirCheck() function is not
                always available when this section of code is called. */
-            $('#rootDirs').trigger('change');
+            $('#rootDirText').trigger('change');
             return;
         }
 
@@ -95,7 +95,7 @@ $(document).ready(() => {
 
         $('#rootDirText').val(dirString);
         // Manually trigger change event as setting .val directly doesn't
-        $('#rootDirs').trigger('change');
+        $('#rootDirText').trigger('change');
     }
 
     function addRootDir(path) {
