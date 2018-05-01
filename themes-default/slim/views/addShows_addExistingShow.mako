@@ -70,10 +70,10 @@ const startVue = () => {
                 // Mark the root dir as bold in the path
                 return this.filteredDirList
                     .map(dir => {
-                        const rootDir = this.rootDirs.filter((rd) => dir.path.startsWith(rd))[0];
-                        const rootDirEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
+                        const rootDir = this.rootDirs.find(rd => dir.path.startsWith(rd));
                         const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
-                        return '<b>' + dir.path.slice(0, rootDirEndIndex + pathSep) + '</b>' + dir.path.slice(rootDirEndIndex + pathSep);
+                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
+                        return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
                     });
             },
             checkAll: {
