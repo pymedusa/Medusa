@@ -90,9 +90,7 @@ const startVue = () => {
                             subtitlesEnabled: this.series.config.subtitlesEnabled,
                             release: {
                                 requiredWords: this.series.config.release.requiredWords,
-                                ignoredWords: this.series.config.release.ignoredWords,
-                                blacklist: this.series.config.release.blacklist,
-                                whitelist: this.series.config.release.whitelist
+                                ignoredWords: this.series.config.release.ignoredWords
                             },
                             qualities: {
                                 preferred: this.series.config.qualities.preferred,
@@ -101,6 +99,12 @@ const startVue = () => {
                         },
                         language: this.series.language
                     };
+
+                    if (data.config.anime) {
+                        data.config.release.blacklist = this.series.config.release.blacklist;
+                        data.config.release.whitelist = this.series.config.release.whitelist;
+                    }
+
                     try {
                         this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
