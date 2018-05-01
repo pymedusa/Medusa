@@ -462,6 +462,10 @@ class GenericMetadata(object):
         nfo_file_path = self.get_episode_file_path(ep_obj)
         nfo_file_dir = os.path.dirname(nfo_file_path)
 
+        if not (nfo_file_path and nfo_file_dir):
+            log.debug(u'Unable to write episode nfo file because episode location is missing.')
+            return False
+
         try:
             if not os.path.isdir(nfo_file_dir):
                 log.debug(u'Metadata directory missing, creating it at {location}',
