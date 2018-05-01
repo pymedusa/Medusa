@@ -98,7 +98,6 @@ class GenericProvider(object):
         self.series = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
-        self.anime_search_show_name = True
         self.url = ''
         self.urls = {}
 
