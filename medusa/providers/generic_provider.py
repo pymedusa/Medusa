@@ -48,7 +48,6 @@ from medusa.name_parser.parser import (
 )
 from medusa.search import PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
-from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
 from pytimeparse import parse
@@ -93,7 +92,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = MedusaSafeSession(hooks=[cloudflare])
+        self.session = MedusaSafeSession(cloudflare=True)
         self.session.headers.update(self.headers)
         self.series = None
         self.supports_absolute_numbering = False

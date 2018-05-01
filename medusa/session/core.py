@@ -10,7 +10,7 @@ import certifi
 
 import medusa.common
 from medusa import app
-from medusa.session import factory, hooks
+from medusa.session import factory, handlers, hooks
 
 import requests
 
@@ -74,6 +74,9 @@ class MedusaSession(BaseSession):
         # Pop the cache_control config
         cache_control = kwargs.pop('cache_control', None)
 
+        # Apply handler for bypassing CloudFlare protection
+        self.cloudflare = kwargs.pop('cloudflare', False)
+
         # Initialize request.session after we've done the pop's.
         super(MedusaSession, self).__init__(**kwargs)
 
@@ -94,9 +97,13 @@ class MedusaSession(BaseSession):
         self.headers.update(self.default_headers)
 
     def request(self, method, url, data=None, params=None, headers=None, timeout=30, verify=True, **kwargs):
-        return super(MedusaSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                  timeout=timeout, verify=self._get_ssl_cert(verify),
-                                                  **kwargs)
+        ssl_cert = self._get_ssl_cert(verify)
+        response = super(MedusaSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                      timeout=timeout, verify=ssl_cert, **kwargs)
+        if self.cloudflare:
+            response = handlers.cloudflare(self, response, timeout=timeout, verify=ssl_cert, **kwargs)
+
+        return response
 
     def get_json(self, url, method='GET', *args, **kwargs):
         """Overwrite request, to be able to return the json value if possible. Else it will fail silently."""
