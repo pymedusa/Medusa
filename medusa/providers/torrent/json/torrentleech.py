@@ -120,33 +120,8 @@ class TorrentLeechProvider(TorrentProvider):
 
                 results += self.parse(data, mode)
 
-                # Pagination
-                num_found = data.get('numFound', 0)
-                per_page = data.get('perPage', 35)
-
-                if per_page < 100 and num_found > per_page:
-                    log.info('It is recommended to change "Default Results Per Page" to 100'
-                             ' in your profile options on {name}.', name=self.name)
-
-                try:
-                    pages = math.ceil(self.max_torrents / per_page)
-                except ZeroDivisionError:
-                    pages = 1
-
-                if num_found and num_found > per_page and pages > 1:
-                    log.debug('Total results found: {0}, getting {1} more page{s} of results',
-                              num_found, pages - 1, s=('', 's')[pages - 1 > 1])
-
-                    for page in range(2, pages + 1):
-                        page_url = urljoin(search_url, 'page/{page}/'.format(page=page))
-                        data = self.session.get_json(page_url)
-
-                        if not data:
-                            log.debug('Page {0} returned no data from provider', page)
-                            continue
-
-                        log.debug('Parsing page {0} of results', page)
-                        results += self.parse(data, mode)
+                # Handle pagination
+                results += self._pagination(data, mode, search_url)
 
         return results
 
@@ -230,6 +205,42 @@ class TorrentLeechProvider(TorrentProvider):
             return False
 
         return True
+
+    def _pagination(self, data, mode, search_url):
+        """If needed, query the next page(s) of results, parse them and return."""
+        results = []
+        num_found = data.get('numFound', 0)
+        per_page = data.get('perPage', 35)
+
+        if per_page < 100 and num_found > per_page:
+            log.info('It is recommended to change "Default Results Per Page" to 100'
+                     ' in your profile options on {name}.', {'name': self.name})
+
+        try:
+            pages = math.ceil(self.max_torrents / per_page)
+        except ZeroDivisionError:
+            pages = 1
+
+        if num_found and num_found > per_page and pages > 1:
+            log.debug('Total results found: {total}, getting {pages} more page{s} of results', {
+                'total': num_found,
+                'pages': pages - 1,
+                's': ('', 's')[pages - 1 > 1]
+            })
+
+            for page in range(2, pages + 1):
+                page_url = urljoin(search_url, 'page/{page}/'.format(page=page))
+                data = self.session.get_json(page_url)
+
+                if not data:
+                    log.debug('Page {0} returned no data from provider,'
+                              ' not getting more pages.', page)
+                    break
+
+                log.debug('Parsing page {0} of results', page)
+                results += self.parse(data, mode)
+
+        return results
 
 
 provider = TorrentLeechProvider()
