@@ -5,6 +5,11 @@
     from medusa.clients import torrent
 %>
 <%block name="scripts">
+<%
+## Convert boolean values
+def js_bool(value):
+    return 'true' if value else 'false'
+%>
 <script>
 window.app = {};
 const startVue = () => {
@@ -17,78 +22,144 @@ const startVue = () => {
             return {
                 header: 'Search Settings',
                 clients: {
-                    blackhole: {
-                        title: 'Black hole'
+                    torrent: {
+                        blackhole: {
+                            title: 'Black hole'
+                        },
+                        utorrent: {
+                            title: 'uTorrent',
+                            description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
+                            labelOption: true,
+                            labelAnimeOption: true,
+                            seedTimeOption: true,
+                            pausedOption: true
+                        },
+                        transmission: {
+                            title: 'Transmission',
+                            description: 'URL to your Transmission client (e.g. http://localhost:9091)',
+                            pathOption: true,
+                            removeFromClientOption: true,
+                            seedLocationOption: true,
+                            seedTimeOption: true,
+                            pausedOption: true,
+                        },
+                        deluge: {
+                            title: 'Deluge (via WebUI)',
+                            shortTitle: 'Deluge',
+                            description: 'URL to your Deluge client (e.g. http://localhost:8112)',
+                            pathOption: true,
+                            removeFromClientOption: true,
+                            labelOption: true,
+                            labelAnimeOption: true,
+                            seedLocationOption: true,
+                            pausedOption: true,
+                            verifyCertOption: true
+                        },
+                        deluged: {
+                            title: 'Deluge (via Daemon)',
+                            shortTitle: 'Deluge',
+                            description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
+                            pathOption: true,
+                            removeFromClientOption: true,
+                            labelOption: true,
+                            labelAnimeOption: true,
+                            seedLocationOption: true,
+                            pausedOption: true,
+                            verifyCertOption: true
+                        },
+                        download_station: {
+                            title: 'Synology DS',
+                            description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
+                        },
+                        rtorrent: {
+                            title: 'rTorrent',
+                            description: 'URL to your rTorrent client (e.g. scgi://localhost:5000 <br> or https://localhost/rutorrent/plugins/httprpc/action.php)',
+                            pathOption: true,
+                            labelOption: true,
+                            labelAnimeOption: true,
+                            verifyCertOption: true
+                        },
+                        qbittorrent: {
+                            title: 'qBittorrent',
+                            description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
+                            labelOption: true,
+                            labelAnimeOption: true,
+                            pausedOption: true
+                        },
+                        mlnet: {
+                            title: 'MLDonkey',
+                            description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
+                            verifyCertOption: true
+                        }
                     },
-                    utorrent: {
-                        title: 'uTorrent',
-                        description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
-                        animeOption: true,
-                        seedTimeOption: true
+                    nzb: {
+                        blackhole: {
+                            title: 'Black hole'
+                        },
+                        nzbget: {
+                            title: 'NZBget',
+                            description: 'NZBget RPC host name and port number (not NZBgetweb!) (e.g. localhost:6789)'
+                        },
+                        sabnzbd: {
+                            title: 'SABnzbd',
+                            description: 'URL to your SABnzbd server (e.g. http://localhost:8080/)'
+                        }
                     },
-                    transmission: {
-                        title: 'Transmission',
-                        description: 'URL to your Transmission client (e.g. http://localhost:9091)',
-                        seedLocationOption: true,
-                        seedTimeOption: true
-                    },
-                    deluge: {
-                        title: 'Deluge (via WebUI)',
-                        shortTitle: 'Deluge',
-                        description: 'URL to your Deluge client (e.g. http://localhost:8112)',
-                        animeOption: true,
-                        seedLocationOption: true
-                    },
-                    deluged: {
-                        title: 'Deluge (via Daemon)',
-                        shortTitle: 'Deluge',
-                        description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
-                        animeOption: true,
-                        seedLocationOption: true
-                    },
-                    download_station: {
-                        title: 'Synology DS',
-                        description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
-                    },
-                    rtorrent: {
-                        title: 'rTorrent',
-                        description: 'URL to your rTorrent client (e.g. scgi://localhost:5000 <br> or https://localhost/rutorrent/plugins/httprpc/action.php)',
-                        animeOption: true
-                    },
-                    qbittorrent: {
-                        title: 'qbittorrent',
-                        description: 'URL to your qbittorrent client (e.g. http://localhost:8080)',
-                        animeOption: true
-                    },
-                    mlnet: {
-                        title: 'MLDonkey',
-                        description: 'URL to your MLDonkey (e.g. http://localhost:4080)'
-                    }
                 },
                 torrent: {
+                    enabled: ${js_bool(app.USE_TORRENTS)},
+                    dir: ${json.dumps(app.TORRENT_DIR)},
                     method: '${app.TORRENT_METHOD}',
                     host: '${app.TORRENT_HOST}',
+                    rpcUrl: '${app.TORRENT_RPCURL}',
                     username: '${app.TORRENT_USERNAME}',
                     password: '${app.TORRENT_PASSWORD}',
+                    label: '${app.TORRENT_LABEL}',
+                    labelAnime: '${app.TORRENT_LABEL_ANIME}',
+                    path: '${app.TORRENT_PATH}',
                     seedLocation: '${app.TORRENT_SEED_LOCATION}',
+                    seedTime: '${app.TORRENT_SEED_TIME}',
                     testStatus: 'Click below to test',
-                    authType: '${app.TORRENT_AUTH_TYPE}'
+                    authType: '${app.TORRENT_AUTH_TYPE}',
+                    verifyCert: ${js_bool(app.TORRENT_VERIFY_CERT)},
+                    paused: ${js_bool(app.TORRENT_PAUSED)},
+                    highBandwidth: ${js_bool(app.TORRENT_HIGH_BANDWIDTH)},
                 },
                 nzb: {
+                    enabled: ${js_bool(app.USE_NZBS)},
+                    dir: ${json.dumps(app.NZB_DIR)},
                     method: '${app.NZB_METHOD}',
                     nzbget: {
+                        useHttps: ${js_bool(app.NZBGET_USE_HTTPS)},
                         host: '${app.NZBGET_HOST}',
                         username: '${app.NZBGET_USERNAME}',
                         password: '${app.NZBGET_PASSWORD}',
-                        useHttps: '${app.NZBGET_USE_HTTPS}',
-                        testStatus: 'Click below to test'
+                        testStatus: 'Click below to test',
+                        category: '${app.NZBGET_CATEGORY}',
+                        categoryBacklog: '${app.NZBGET_CATEGORY_BACKLOG}',
+                        categoryAnime: '${app.NZBGET_CATEGORY_ANIME}',
+                        categoryAnimeBacklog: '${app.NZBGET_CATEGORY_ANIME_BACKLOG}',
+                        priority: ${app.NZBGET_PRIORITY},
+                        priorityOptions: {
+                            'Very low': -100,
+                            'Low': -50,
+                            'Normal': 0,
+                            'High': 50,
+                            'Very high': 100,
+                            'Force': 900
+                        }
                     },
                     sabnzbd: {
                         host: '${app.SAB_HOST}',
                         username: '${app.SAB_USERNAME}',
                         password: '${app.SAB_PASSWORD}',
                         apiKey: '${app.SAB_APIKEY}',
-                        testStatus: 'Click below to test'
+                        testStatus: 'Click below to test',
+                        category: '${app.SAB_CATEGORY}',
+                        categoryBacklog: '${app.SAB_CATEGORY_BACKLOG}',
+                        categoryAnime: '${app.SAB_CATEGORY_ANIME}',
+                        categoryAnimeBacklog: '${app.SAB_CATEGORY_ANIME_BACKLOG}',
+                        forced: ${js_bool(app.SAB_FORCED)}
                     }
                 },
                 httpAuthTypes: {
@@ -96,9 +167,39 @@ const startVue = () => {
                     basic: 'Basic',
                     digest: 'Digest'
                 },
-                searchIntervals: JSON.parse('${json.dumps(app.PROPERS_SEARCH_INTERVAL)}'),
+
+                // Episode Search: General Config
+                randomizeProviders: ${js_bool(app.RANDOMIZE_PROVIDERS)},
+                downloadPropers: ${js_bool(app.DOWNLOAD_PROPERS)},
+                checkPropersInterval: '${app.CHECK_PROPERS_INTERVAL}',
                 propersIntervalLabels: JSON.parse('${json.dumps(app.PROPERS_INTERVAL_LABELS)}'),
-                propersInterval: '${app.CHECK_PROPERS_INTERVAL}'
+                propersSearchDays: ${app.PROPERS_SEARCH_DAYS},
+                backlogDays: ${app.BACKLOG_DAYS},
+                backlogFrequency: ${app.BACKLOG_FREQUENCY},
+                minBacklogFrequency: ${app.MIN_BACKLOG_FREQUENCY},
+                dailySearchFrequency: ${app.DAILYSEARCH_FREQUENCY},
+                minDailySearchFrequency: ${app.MIN_DAILYSEARCH_FREQUENCY},
+                removeFromClient: ${js_bool(app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'))},
+                torrentCheckerFrequency: ${app.TORRENT_CHECKER_FREQUENCY},
+                minTorrentCheckerFrequency: ${app.MIN_TORRENT_CHECKER_FREQUENCY},
+                usenetRetention: ${app.USENET_RETENTION},
+                trackersList: JSON.parse('${json.dumps(app.TRACKERS_LIST)}').join(', '),
+                allowHighPriority: ${js_bool(app.ALLOW_HIGH_PRIORITY)},
+                useFailedDownloads: ${js_bool(app.USE_FAILED_DOWNLOADS)},
+                deleteFailed: ${js_bool(app.DELETE_FAILED)},
+                cacheTrimming: ${js_bool(app.CACHE_TRIMMING)},
+                maxCacheAge: ${app.MAX_CACHE_AGE},
+
+                // Episode Search: Search Filters
+                ignoreWords: JSON.parse('${json.dumps(app.IGNORE_WORDS)}').join(', '),
+                undesiredWords: JSON.parse('${json.dumps(app.UNDESIRED_WORDS)}').join(', '),
+                preferredWords: JSON.parse('${json.dumps(app.PREFERRED_WORDS)}').join(', '),
+                requireWords: JSON.parse('${json.dumps(app.REQUIRE_WORDS)}').join(', '),
+                ignoredSubsList: JSON.parse('${json.dumps(app.IGNORED_SUBS_LIST)}').join(', '),
+                ignoreUndSubs: ${js_bool(app.IGNORE_UND_SUBS)},
+
+                // Global
+                dataDir: ${json.dumps(app.DATA_DIR)},
             };
         },
         mounted() {
@@ -175,6 +276,11 @@ const startVue = () => {
                 if (method === 'deluge') {
                     this.torrent.username = '';
                 }
+            },
+            'torrent.method'(method) {
+                if (!this.clients.torrent[method].removeFromClientOption) {
+                    this.removeFromClient = false;
+                }
             }
         }
     });
@@ -193,6 +299,7 @@ const startVue = () => {
                     <li><app-link href="#torrent-search">Torrent Search</app-link></li>
                 </ul>
                 <div id="episode-search">
+                    <!-- general settings //-->
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
                             <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
@@ -203,7 +310,7 @@ const startVue = () => {
                                 <label for="randomize_providers">
                                     <span class="component-title">Randomize Providers</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="randomize_providers" id="randomize_providers" class="enabler" ${'checked="checked"' if app.RANDOMIZE_PROVIDERS else ''}/>
+                                        <input type="checkbox" name="randomize_providers" id="randomize_providers" v-model="randomizeProviders"/>
                                         <p>randomize the provider search order instead of going in order of placement</p>
                                     </span>
                                 </label>
@@ -212,18 +319,18 @@ const startVue = () => {
                                 <label for="download_propers">
                                     <span class="component-title">Download propers</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="download_propers" id="download_propers" class="enabler" ${'checked="checked"' if app.DOWNLOAD_PROPERS else ''}/>
+                                        <input type="checkbox" name="download_propers" id="download_propers" v-model="downloadPropers"/>
                                         <p>replace original download with "Proper" or "Repack" if nuked</p>
                                     </span>
                                 </label>
                             </div><!-- download propers -->
-                            <div id="content_download_propers">
+                            <div v-show="downloadPropers">
                                 <div class="field-pair">
                                     <label for="check_propers_interval">
                                         <span class="component-title">Check propers every:</span>
                                         <span class="component-desc">
-                                            <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
-                                                <option v-for="(interval, label) in searchIntervals" :v-model="propersInterval">{{propersIntervalLabels[label]}}</option>
+                                            <select id="check_propers_interval" name="check_propers_interval" v-model="checkPropersInterval" class="form-control input-sm">
+                                                <option v-for="(label, interval) in propersIntervalLabels" :value="interval">{{label}}</option>
                                             </select>
                                         </span>
                                     </label>
@@ -232,7 +339,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Proper search days</span>
                                         <span class="component-desc">
-                                            <input type="number" min="2" max="7" step="1" name="propers_search_days" value="${app.PROPERS_SEARCH_DAYS}" class="form-control input-sm input75"/>
+                                            <input type="number" min="2" max="7" step="1" name="propers_search_days" v-model.number="propersSearchDays" class="form-control input-sm input75"/>
                                             <p>how many days to keep searching for propers since episode airdate (default: 2 days)</p>
                                         </span>
                                     </label>
@@ -242,7 +349,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Forced backlog search day(s)</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="backlog_days" value="${app.BACKLOG_DAYS}" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="backlog_days" v-model.number="backlogDays" class="form-control input-sm input75"/>
                                         <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
                                     </span>
                                 </label>
@@ -251,8 +358,8 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Backlog search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" min="720" step="1" name="backlog_frequency" value="${app.BACKLOG_FREQUENCY}" class="form-control input-sm input75"/>
-                                        <p>time in minutes between searches (min. ${app.MIN_BACKLOG_FREQUENCY})</p>
+                                        <input type="number" :min="minBacklogFrequency" step="1" name="backlog_frequency" v-model.number="backlogFrequency" class="form-control input-sm input75"/>
+                                        <p>time in minutes between searches (min. {{minBacklogFrequency}})</p>
                                     </span>
                                 </label>
                             </div><!-- backlog frequency -->
@@ -260,27 +367,27 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Daily search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" min="10" step="1" name="dailysearch_frequency" value="${app.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75"/>
-                                        <p>time in minutes between searches (min. ${app.MIN_DAILYSEARCH_FREQUENCY})</p>
+                                        <input type="number" :min="minDailySearchFrequency" step="1" name="dailysearch_frequency" v-model.number="dailySearchFrequency" class="form-control input-sm input75"/>
+                                        <p>time in minutes between searches (min. {{minDailySearchFrequency}})</p>
                                         </span>
                                 </label>
                             </div><!-- daily search frequency -->
-                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD not in ('transmission', 'deluge', 'deluged') else ''}>
+                            <div class="field-pair" v-show="clients.torrent[torrent.method].removeFromClientOption">
                                 <label for="remove_from_client">
                                     <span class="component-title">Remove torrents from client</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged') else ''}/>
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" v-model="removeFromClient"/>
                                         <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
                                         <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </span>
                                 </label>
                             </div>
-                            <div id="content_remove_from_client">
+                            <div v-show="removeFromClient">
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Frequency to check torrents ratio</span>
                                         <span class="component-desc">
-                                            <input type="number" min="${app.MIN_TORRENT_CHECKER_FREQUENCY}" step="1" name="torrent_checker_frequency" value="${app.TORRENT_CHECKER_FREQUENCY}" class="form-control input-sm input75"/>
+                                            <input type="number" :min="minTorrentCheckerFrequency" step="1" name="torrent_checker_frequency" v-model.number="torrentCheckerFrequency" class="form-control input-sm input75"/>
                                             <p>Frequency in minutes to check torrent's ratio (default: 60)</p>
                                         </span>
                                     </label>
@@ -290,7 +397,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Usenet retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="usenet_retention" value="${app.USENET_RETENTION}" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="usenet_retention" v-model.number="usenetRetention" class="form-control input-sm input75"/>
                                         <p>age limit in days for usenet articles to be used (e.g. 500)</p>
                                     </span>
                                 </label>
@@ -299,7 +406,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
-                                        <input type="text" name="trackers_list" value="${', '.join(app.TRACKERS_LIST)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="trackers_list" v-model="trackersList" class="form-control input-sm input350"/>
                                         <div class="clear-left">Trackers that will be added to magnets without trackers<br>
                                         separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
                                         </div>
@@ -310,7 +417,7 @@ const startVue = () => {
                                 <label for="allow_high_priority">
                                     <span class="component-title">Allow high priority</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="allow_high_priority" id="allow_high_priority" ${'checked="checked"' if app.ALLOW_HIGH_PRIORITY else ''}/>
+                                        <input type="checkbox" name="allow_high_priority" id="allow_high_priority" v-model="allowHighPriority"/>
                                         <p>set downloads of recently aired episodes to high priority</p>
                                     </span>
                                 </label>
@@ -319,17 +426,17 @@ const startVue = () => {
                                 <label for="use_failed_downloads">
                                     <span class="component-title">Use Failed Downloads</span>
                                     <span class="component-desc">
-                                        <input id="use_failed_downloads" type="checkbox" class="enabler" name="use_failed_downloads" ${'checked="checked"' if app.USE_FAILED_DOWNLOADS else ''} />
+                                        <input id="use_failed_downloads" type="checkbox" name="use_failed_downloads" v-model="useFailedDownloads"/>
                                         Use Failed Download Handling?<br>
                                         Will only work with snatched/downloaded episodes after enabling this
                                     </span>
                                 </label>
                             </div><!-- use failed -->
-                            <div class="field-pair">
+                            <div class="field-pair" v-show="useFailedDownloads">
                                 <label for="delete_failed">
                                     <span class="component-title">Delete Failed</span>
                                     <span class="component-desc">
-                                        <input id="delete_failed" type="checkbox" name="delete_failed" ${'checked="checked"' if app.DELETE_FAILED else ''}/>
+                                        <input id="delete_failed" type="checkbox" name="delete_failed" v-model="deleteFailed"/>
                                         Delete files left over from a failed download?<br>
                                         <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
                                     </span>
@@ -339,16 +446,16 @@ const startVue = () => {
                                 <label for="cache_trimming">
                                     <span class="component-title">Cache Trimming</span>
                                     <span class="component-desc">
-                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" ${'checked="checked"' if app.CACHE_TRIMMING else ''}/>
+                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" v-model="cacheTrimming"/>
                                         Enable trimming of provider cache<br>
                                     </span>
                                 </label>
                             </div><!-- cache trimming -->
-                            <div class="field-pair">
+                            <div class="field-pair" v-show="cacheTrimming">
                                 <label for="max_cache_age">
                                     <span class="component-title">Cache Retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${app.MAX_CACHE_AGE}" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" v-model.number="maxCacheAge" class="form-control input-sm input75"/>
                                         days<br>
                                         <br>
                                         Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
@@ -357,7 +464,8 @@ const startVue = () => {
                             </div><!-- max cache age -->
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
-                    </div><!-- general settings -->
+                    </div><!-- /general settings //-->
+                    <!-- search filters //-->
                         <div class="component-group-desc">
                             <h3>Search Filters</h3>
                             <p>Options to filter search results</p>
@@ -368,7 +476,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignore_words" value="${', '.join(app.IGNORE_WORDS)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignore_words" v-model="ignoreWords" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with any words from this list will be ignored<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -379,7 +487,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="undesired_words" value="${', '.join(app.UNDESIRED_WORDS)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="undesired_words" v-model="undesiredWords" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with words from this list will only be selected as a last resort<br>
                                         separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
@@ -390,7 +498,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="preferred_words" value="${', '.join(app.PREFERRED_WORDS)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="preferred_words" v-model="preferredWords" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with one or more word from this list will be chosen over others<br>
                                         separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
@@ -401,7 +509,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="require_words" value="${', '.join(app.REQUIRE_WORDS)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="require_words" v-model="requireWords" class="form-control input-sm input350"/>
                                         <div class="clear-left">results must include at least one word from this list<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -412,10 +520,10 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignored_subs_list" value="${', '.join(app.IGNORED_SUBS_LIST)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignored_subs_list" v-model="ignoredSubsList" class="form-control input-sm input350"/>
                                         <div class="clear-left">Ignore subbed releases based on language names <br>
                                         Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
-                                        separate languages with a comma, e.g. "lang1,lang2,lang3
+                                        separate languages with a comma, e.g. "lang1, lang2, lang3"
                                         </div>
                                     </span>
                                 </label>
@@ -424,7 +532,7 @@ const startVue = () => {
                                 <label for="ignore_und_subs">
                                     <span class="component-title">Ignore unknown subbed releases</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${'checked="checked"' if app.IGNORE_UND_SUBS else ''}/>
+                                        <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" v-model="ignoreUndSubs"/>
                                         Ignore subbed releases without language names <br>
                                         Filter words: subbed, subpack, subbed, subs, etc.)
                                     </span>
@@ -432,8 +540,8 @@ const startVue = () => {
                             </div><!-- ignore unknown subs -->
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
-                        </div><!-- search filters -->
-                </div><!-- /component-group1 //-->
+                    </div><!-- /search filters //-->
+                </div><!-- /#episode-search //-->
                 <div id="nzb-search" class="component-group">
                     <div class="component-group-desc">
                         <h3>NZB Search</h3>
@@ -445,20 +553,17 @@ const startVue = () => {
                             <label for="use_nzbs">
                                 <span class="component-title">Search NZBs</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="use_nzbs" class="enabler" id="use_nzbs" ${'checked="checked"' if app.USE_NZBS else ''}/>
+                                    <input type="checkbox" name="use_nzbs" id="use_nzbs" v-model="nzb.enabled"/>
                                     <p>enable NZB search providers</p></span>
                             </label>
                         </div>
-                        <div id="content_use_nzbs">
+                        <div v-show="nzb.enabled">
                         <div class="field-pair">
                             <label for="nzb_method">
                                 <span class="component-title">Send .nzb files to:</span>
                                 <span class="component-desc">
-                                    <select name="nzb_method" id="nzb_method" class="form-control input-sm">
-<% nzb_method_text = {'blackhole': "Black hole", 'sabnzbd': "SABnzbd", 'nzbget': "NZBget"} %>
-% for cur_action in ('sabnzbd', 'blackhole', 'nzbget'):
-                                    <option value="${cur_action}" ${'selected="selected"' if app.NZB_METHOD == cur_action else ''}>${nzb_method_text[cur_action]}</option>
-% endfor
+                                        <select v-model="nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
+                                            <option v-for="(client, name) in clients.nzb" :value="name">{{client.title}}</option>
                                     </select>
                                 </span>
                             </label>
@@ -468,8 +573,10 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Black hole folder location</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzb_dir" id="nzb_dir" value="${app.NZB_DIR}" class="form-control input-sm input350"/>
-                                        <div class="clear-left"><p><b>.nzb</b> files are stored at this location for external software to find and use</p></div>
+                                            <input type="text" name="nzb_dir" id="nzb_dir" v-model="nzb.dir" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
+                                            </div>
                                     </span>
                                 </label>
                             </div>
@@ -480,7 +587,9 @@ const startVue = () => {
                                     <span class="component-title">SABnzbd server URL</span>
                                     <span class="component-desc">
                                         <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
-                                        <div class="clear-left"><p>URL to your SABnzbd server (e.g. http://localhost:8080/)</p></div>
+                                            <div class="clear-left">
+                                                <p v-html="clients.nzb[nzb.method].description"></p>
+                                            </div>
                                     </span>
                                 </label>
                             </div>
@@ -515,7 +624,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use SABnzbd category</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category" id="sab_category" value="${app.SAB_CATEGORY}" class="form-control input-sm input200"/>
+                                            <input type="text" name="sab_category" id="sab_category" v-model="nzb.sabnzbd.category" class="form-control input-sm input200"/>
                                         <p>add downloads to this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -524,7 +633,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use SABnzbd category (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_backlog" id="sab_category_backlog" value="${app.SAB_CATEGORY_BACKLOG}" class="form-control input-sm input200"/>
+                                            <input type="text" name="sab_category_backlog" id="sab_category_backlog" v-model="nzb.sabnzbd.categoryBacklog" class="form-control input-sm input200"/>
                                         <p>add downloads of old episodes to this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -533,7 +642,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_anime" id="sab_category_anime" value="${app.SAB_CATEGORY_ANIME}" class="form-control input-sm input200"/>
+                                            <input type="text" name="sab_category_anime" id="sab_category_anime" v-model="nzb.sabnzbd.categoryAnime" class="form-control input-sm input200"/>
                                         <p>add anime downloads to this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -542,22 +651,20 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" value="${app.SAB_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200"/>
+                                            <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" v-model="nzb.sabnzbd.categoryAnimeBacklog" class="form-control input-sm input200"/>
                                         <p>add anime downloads of old episodes to this category (e.g. anime)</p>
                                     </span>
                                 </label>
                             </div>
-                            % if app.ALLOW_HIGH_PRIORITY is True:
-                            <div class="field-pair">
+                                <div class="field-pair" v-show="allowHighPriority">
                                 <label for="sab_forced">
                                     <span class="component-title">Use forced priority</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="sab_forced" class="enabler" id="sab_forced" ${'checked="checked"' if app.SAB_FORCED else ''}/>
+                                            <input type="checkbox" name="sab_forced" id="sab_forced" v-model="nzb.sabnzbd.forced"/>
                                         <p>enable to change priority from HIGH to FORCED</p></span>
                                 </label>
                             </div>
-                            % endif
-                        <div class="testNotification" id="testSABnzbd_result">{{nzb.sabnzbd.testStatus}}</div>
+                            <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
                             <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </div>
@@ -566,7 +673,7 @@ const startVue = () => {
                                 <label for="nzbget_use_https">
                                     <span class="component-title">Connect using HTTPS</span>
                                     <span class="component-desc">
-                                        <input v-model="nzb.nzbget.useHttps" id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https"/>
+                                            <input type="checkbox" name="nzbget_use_https" id="nzbget_use_https" v-model="nzb.nzbget.useHttps"/>
                                         <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                     </span>
                                 </label>
@@ -576,8 +683,9 @@ const startVue = () => {
                                     <span class="component-title">NZBget host:port</span>
                                     <span class="component-desc">
                                         <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
-                                        <p>(e.g. localhost:6789)</p>
-                                        <div class="clear-left"><p>NZBget RPC host name and port number (not NZBgetweb!)</p></div>
+                                            <div class="clear-left">
+                                                <p v-html="clients.nzb[nzb.method].description"></p>
+                                            </div>
                                     </span>
                                 </label>
                             </div>
@@ -595,7 +703,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">NZBget password</span>
                                     <span class="component-desc">
-                                        <input type="password" name="nzbget_password" id="nzbget_password" value="${app.NZBGET_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
+                                            <input type="password" name="nzbget_password" id="nzbget_password" v-model="nzb.nzbget.password" class="form-control input-sm input200" autocomplete="no"/>
                                         <p>locate in nzbget.conf (default:tegbzn6789)</p>
                                     </span>
                                 </label>
@@ -604,7 +712,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use NZBget category</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category" id="nzbget_category" value="${app.NZBGET_CATEGORY}" class="form-control input-sm input200"/>
+                                            <input type="text" name="nzbget_category" id="nzbget_category" v-model="nzb.nzbget.category" class="form-control input-sm input200"/>
                                         <p>send downloads marked this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -613,7 +721,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use NZBget category (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" value="${app.NZBGET_CATEGORY_BACKLOG}" class="form-control input-sm input200"/>
+                                            <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" v-model="nzb.nzbget.categoryBacklog" class="form-control input-sm input200"/>
                                         <p>send downloads of old episodes marked this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -622,7 +730,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use NZBget category for anime</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" value="${app.NZBGET_CATEGORY_ANIME}" class="form-control input-sm input200"/>
+                                            <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" v-model="nzb.nzbget.categoryAnime" class="form-control input-sm input200"/>
                                         <p>send anime downloads marked this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -631,7 +739,7 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" value="${app.NZBGET_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200"/>
+                                            <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" v-model="nzb.nzbget.categoryAnimeBacklog" class="form-control input-sm input200"/>
                                         <p>send anime downloads of old episodes marked this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -640,25 +748,20 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">NZBget priority</span>
                                     <span class="component-desc">
-                                        <select name="nzbget_priority" id="nzbget_priority" class="form-control input-sm">
-                                            <option value="-100" ${'selected="selected"' if app.NZBGET_PRIORITY == -100 else ''}>Very low</option>
-                                            <option value="-50" ${'selected="selected"' if app.NZBGET_PRIORITY == -50 else ''}>Low</option>
-                                            <option value="0" ${'selected="selected"' if app.NZBGET_PRIORITY == 0 else ''}>Normal</option>
-                                            <option value="50" ${'selected="selected"' if app.NZBGET_PRIORITY == 50 else ''}>High</option>
-                                            <option value="100" ${'selected="selected"' if app.NZBGET_PRIORITY == 100 else ''}>Very high</option>
-                                            <option value="900" ${'selected="selected"' if app.NZBGET_PRIORITY == 900 else ''}>Force</option>
+                                            <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
+                                                <option v-for="(title, value) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
                                         </select>
                                         <span>priority for daily snatches (no backlog)</span>
                                     </span>
                                 </label>
                             </div>
-                            <div class="testNotification" id="testNZBget_result">{{nzb.nzbget.testStatus}}</div>
+                            <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
                                 <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
-                </div><!-- /component-group2 //-->
+                </div><!-- /#nzb-search //-->
                 <div id="torrent-search" class="component-group">
                     <div class="component-group-desc">
                         <h3>Torrent Search</h3>
@@ -670,18 +773,18 @@ const startVue = () => {
                             <label for="use_torrents">
                                 <span class="component-title">Search torrents</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="use_torrents" class="enabler" id="use_torrents" ${'checked="checked"' if app.USE_TORRENTS else ''}/>
+                                    <input type="checkbox" name="use_torrents" id="use_torrents" v-model="torrent.enabled"/>
                                     <p>enable torrent search providers</p>
                                 </span>
                             </label>
                         </div>
-                        <div id="content_use_torrents">
+                        <div v-show="torrent.enabled">
                             <div class="field-pair">
                                 <label for="torrent_method">
                                     <span class="component-title">Send .torrent files to:</span>
                                     <span class="component-desc">
                                     <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
-                                        <option v-for="(client, name) in clients" :value="name">{{client.title}}</option>
+                                        <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
                                     </select>
                                     </span>
                                 </label>
@@ -690,8 +793,10 @@ const startVue = () => {
                                         <label>
                                             <span class="component-title">Black hole folder location</span>
                                             <span class="component-desc">
-                                                <input type="text" name="torrent_dir" id="torrent_dir" value="${app.TORRENT_DIR}" class="form-control input-sm input350"/>
-                                                <div class="clear-left"><p><b>.torrent</b> files are stored at this location for external software to find and use</p></div>
+                                                <input type="text" name="torrent_dir" id="torrent_dir" v-model="torrent.dir" class="form-control input-sm input350"/>
+                                                <div class="clear-left">
+                                                    <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
+                                                </div>
                                             </span>
                                         </label>
                                     </div>
@@ -701,20 +806,20 @@ const startVue = () => {
                             <div v-show="torrent.method !== 'blackhole'">
                                 <div class="field-pair">
                                     <label>
-                                        <span class="component-title" id="host_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} host:port</span>
+                                        <span class="component-title" id="host_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} host:port</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_host" id="torrent_host" v-model="torrent.host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>{{clients[torrent.method].description}}</p>
+                                                <p v-html="clients.torrent[torrent.method].description"></p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
                                 <div v-show="torrent.method === 'transmission'" class="field-pair" id="torrent_rpcurl_option">
                                     <label>
-                                        <span class="component-title" id="rpcurl_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} RPC URL</span>
+                                        <span class="component-title" id="rpcurl_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} RPC URL</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" value="${app.TORRENT_RPCURL}" class="form-control input-sm input350"/>
+                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" v-model="torrent.rpcUrl" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </div>
@@ -732,19 +837,19 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="['deluge', 'deluged', 'rtorrent', 'mlnet'].includes(torrent.method)" class="field-pair">
+                                <div v-show="clients.torrent[torrent.method].verifyCertOption" class="field-pair">
                                     <label for="torrent_verify_cert">
                                         <span class="component-title">Verify certificate</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_verify_cert" class="enabler" id="torrent_verify_cert" ${'checked="checked"' if app.TORRENT_VERIFY_CERT else ''}/>
+                                            <input type="checkbox" name="torrent_verify_cert" id="torrent_verify_cert" v-model="torrent.verifyCert"/>
+                                            <p>Verify SSL certificates for HTTPS requests</p>
                                             <p v-show="torrent.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
-                                            <p v-show="torrent.method === 'rtorrent'">Verify SSL certificates for HTTPS requests</p>
                                         </span>
                                     </label>
                                 </div>
                                 <div v-show="!['rtorrent', 'deluge'].includes(torrent.method) || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_username_option">
                                     <label>
-                                        <span class="component-title" id="username_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} username</span>
+                                        <span class="component-title" id="username_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} username</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_username" id="torrent_username" v-model="torrent.username" class="form-control input-sm input200" autocomplete="no" />
                                             <p>(blank for none)</p>
@@ -753,59 +858,59 @@ const startVue = () => {
                                 </div>
                                 <div v-show="torrent.method !== 'rtorrent' || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_password_option">
                                     <label>
-                                        <span class="component-title" id="password_title">{{clients[torrent.method].shortTitle || clients[torrent.method].title}} password</span>
+                                        <span class="component-title" id="password_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} password</span>
                                         <span class="component-desc">
                                             <input type="password" name="torrent_password" id="torrent_password" v-model="torrent.password" class="form-control input-sm input200" autocomplete="no"/>
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="!['transmission', 'download_stations', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_label_option">
+                                <div v-show="clients.torrent[torrent.method].labelOption" class="field-pair" id="torrent_label_option">
                                     <label>
                                         <span class="component-title">Add label to torrent</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label" id="torrent_label" value="${app.TORRENT_LABEL}" class="form-control input-sm input200"/>
+                                            <input type="text" name="torrent_label" id="torrent_label" v-model="torrent.label" class="form-control input-sm input200"/>
                                             <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
                                             <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
-                                                <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up</p></div>
+                                                <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients[torrent.method].animeOption" class="field-pair">
+                                <div v-show="clients.torrent[torrent.method].labelAnimeOption" class="field-pair">
                                     <label>
                                         <span class="component-title">Add label to torrent for anime</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" value="${app.TORRENT_LABEL_ANIME}" class="form-control input-sm input200"/>
+                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" v-model="torrent.labelAnime" class="form-control input-sm input200"/>
                                             <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
                                             <span v-show="torrent.method === 'qbittorrent'" style="display:none;"><p>(blank spaces are not allowed)</p>
-                                                <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up </p></div>
+                                                <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up </p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="!['utorrent', 'download_station', 'qbittorrent', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_path_option">
+                                <div v-show="clients.torrent[torrent.method].pathOption" class="field-pair" id="torrent_path_option">
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_path" id="torrent_path" value="${app.TORRENT_PATH}" class="form-control input-sm input350"/>
-                                            <div class="clear-left"><p>where <span id="torrent_client">{{clients[torrent.method].shortTitle || clients[torrent.method].title}}</span> will save downloaded files (blank for client default)
+                                            <input type="text" name="torrent_path" id="torrent_path" v-model="torrent.path" class="form-control input-sm input350"/>
+                                            <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
                                                 <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients[torrent.method].seedLocationOption" class="field-pair">
+                                <div v-show="clients.torrent[torrent.method].seedLocationOption" class="field-pair">
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_seed_location" id="torrent_seed_location" v-model="torrent.seedLocation" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>where <span id="torrent_client_seed_path">{{clients[torrent.method].shortTitle || clients[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
+                                                <p>where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
                                                    <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
                                                    to another location after Post-Processor to prevent reprocessing the same file over and over.
                                                    This feature does a "Set Torrent location" or "Move Torrent" like in client
@@ -814,18 +919,18 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients[torrent.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
+                                <div v-show="clients.torrent[torrent.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
                                     <label>
                                         <span class="component-title" id="torrent_seed_time_label">{{torrent.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
-                                        <span class="component-desc"><input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" value="${app.TORRENT_SEED_TIME}" class="form-control input-sm input100" />
-                                        <p>hours. (default:'0' passes blank to client and '-1' passes nothing)</p></span>
+                                        <span class="component-desc"><input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrent.seedTime" class="form-control input-sm input100" />
+                                        <p>hours. (default: '0' passes blank to client and '-1' passes nothing)</p></span>
                                     </label>
                                 </div>
-                                <div v-show="!['download_station', 'rtorrent', 'mlnet'].includes(torrent.method)" class="field-pair" id="torrent_paused_option">
+                                <div v-show="clients.torrent[torrent.method].pausedOption" class="field-pair" id="torrent_paused_option">
                                     <label>
                                         <span class="component-title">Start torrent paused</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_paused" class="enabler" id="torrent_paused" ${'checked="checked"' if app.TORRENT_PAUSED else ''}/>
+                                            <input type="checkbox" name="torrent_paused" id="torrent_paused" v-model="torrent.paused"/>
                                             <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
                                         </span>
                                     </label>
@@ -834,7 +939,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Allow high bandwidth</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_high_bandwidth" class="enabler" id="torrent_high_bandwidth" ${'checked="checked"' if app.TORRENT_HIGH_BANDWIDTH else ''}/>
+                                            <input type="checkbox" name="torrent_high_bandwidth" id="torrent_high_bandwidth" v-model="torrent.highBandwidth"/>
                                             <p>use high bandwidth allocation if priority is high</p>
                                         </span>
                                     </label>
@@ -845,9 +950,9 @@ const startVue = () => {
                             </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
-                </div><!-- /component-group3 //-->
+                </div><!-- /#torrent-search //-->
                 <br>
-                <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
+                <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{dataDir}}</span></b> </h6>
                 <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components //-->
         </form>
