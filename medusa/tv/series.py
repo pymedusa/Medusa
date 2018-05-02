@@ -2095,7 +2095,7 @@ class Series(TV):
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases
         data['config']['release'] = NonEmptyDict()
-        # These are for now considered anime-only options, as the query anidb for available release groups.
+        # These are for now considered anime-only options, as they query anidb for available release groups.
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
