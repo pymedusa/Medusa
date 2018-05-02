@@ -113,16 +113,16 @@ class TorrentLeechProvider(TorrentProvider):
                 )
                 search_url = urljoin(self.urls['search'], path_params)
 
-                json = self.session.get_json(search_url)
-                if not json:
+                data = self.session.get_json(search_url)
+                if not data:
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(json, mode)
+                results += self.parse(data, mode)
 
                 # Pagination
-                num_found = json.get('numFound', 0)
-                per_page = json.get('perPage', 35)
+                num_found = data.get('numFound', 0)
+                per_page = data.get('perPage', 35)
 
                 if per_page < 100 and num_found > per_page:
                     log.info('It is recommended to change "Default Results Per Page" to 100'
@@ -139,14 +139,14 @@ class TorrentLeechProvider(TorrentProvider):
 
                     for page in range(2, pages + 1):
                         page_url = urljoin(search_url, 'page/{page}/'.format(page=page))
-                        json = self.session.get_json(page_url)
+                        data = self.session.get_json(page_url)
 
-                        if not json:
+                        if not data:
                             log.debug('Page {0} returned no data from provider', page)
                             continue
 
                         log.debug('Parsing page {0} of results', page)
-                        results += self.parse(json, mode)
+                        results += self.parse(data, mode)
 
         return results
 
