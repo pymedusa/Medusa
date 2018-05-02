@@ -213,8 +213,8 @@ class TorrentLeechProvider(TorrentProvider):
         per_page = data.get('perPage', 35)
 
         if per_page < 100 and num_found > per_page:
-            log.info('It is recommended to change "Default Results Per Page" to 100'
-                     ' in your profile options on {name}.', {'name': self.name})
+            log.warning('It is recommended to change "Default Results Per Page" to 100'
+                        ' in your profile options on {name}.', {'name': self.name})
 
         try:
             pages = math.ceil(self.max_torrents / per_page)
