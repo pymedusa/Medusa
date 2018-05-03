@@ -1851,23 +1851,21 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def updateKODI(self, indexername=None, seriesid=None):
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
+        series_name = series_obj = None
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Unable to find the specified show')
-        else:
-            show_name = quote_plus(series_obj.name.encode('utf-8'))
+            series_name = quote_plus(series_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
             host = app.KODI_HOST[0].strip()
         else:
             host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(series_name=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=series_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1887,12 +1885,11 @@ class Home(WebRoot):
 
     def updateEMBY(self, indexername=None, seriesid=None):
         series_obj = None
-
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
-
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
         if notifiers.emby_notifier.update_library(series_obj):
             ui.notifications.message(

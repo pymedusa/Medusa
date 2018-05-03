@@ -99,41 +99,41 @@ const startVue = () => {
                 <%
                     cur_ep = cur_show.next_aired
                     disabled = app.show_queue_scheduler.action.isBeingUpdated(cur_show) or app.show_queue_scheduler.action.isInUpdateQueue(cur_show)
-                    curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curUpdate = '<input type="checkbox" class="updateCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="update-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
                     disabled = app.show_queue_scheduler.action.isBeingRefreshed(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curRefresh = '<input type="checkbox" class="refreshCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="refresh-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show)
-                    curRename = "<input type=\"checkbox\" class=\"renameCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curRename = '<input type="checkbox" class="renameCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="rename-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
                     disabled = not cur_show.subtitles or app.show_queue_scheduler.action.isBeingSubtitled(cur_show) or app.show_queue_scheduler.action.isInSubtitleQueue(cur_show)
-                    curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curSubtitle = '<input type="checkbox" class="subtitleCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="subtitle-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+                    curDelete = '<input type="checkbox" class="confirm deleteCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="delete-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
                     disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
-                    curRemove = "<input type=\"checkbox\" class=\"removeCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-                    curImage = "<input type=\"checkbox\" class=\"imageCheck\" data-indexer-name=" + cur_show.indexer_name + " data-series-id=\"" + str(cur_show.series_id) + "\"id=\"image-" + str(cur_show.indexerid) + "\" " + "/>"
+                    curRemove = '<input type="checkbox" class="removeCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="remove-' + str(cur_show.indexerid) + '" ' + ('', 'disabled="disabled" ')[disabled] + '/>'
+                    curImage = '<input type="checkbox" class="imageCheck" data-indexer-name=' + cur_show.indexer_name + ' data-series-id="' + str(cur_show.series_id) + '" id="image-' + str(cur_show.indexerid) + '" ' + '/>'
                 %>
                 <tr>
-                    <td class="triggerhighlight" align="center"><input type="checkbox" class="editCheck" data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" id="edit-${cur_show.series_id}" /></td>
+                    <td class="triggerhighlight" align="center" title="Edit"><input type="checkbox" class="editCheck" data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" id="edit-${cur_show.series_id}" /></td>
                     <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</app-link></td>
                     <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.dvd_order) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center">${statusStrings[cur_show.default_ep_status]}</td>
-                    <td class="triggerhighlight" align="center">${cur_show.status}</td>
-                    <td class="triggerhighlight" align="center">${curUpdate}</td>
-                    <td class="triggerhighlight" align="center">${curRefresh}</td>
-                    <td class="triggerhighlight" align="center">${curRename}</td>
+                    <td class="triggerhighlight" align="center" title="Sports"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Scene"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Anime"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Season folders"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="DVD Order"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.dvd_order) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Paused"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Subtitle"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Default Ep Status">${statusStrings[cur_show.default_ep_status]}</td>
+                    <td class="triggerhighlight" align="center" title="Status">${cur_show.status}</td>
+                    <td class="triggerhighlight" align="center" title="Update">${curUpdate}</td>
+                    <td class="triggerhighlight" align="center" title="Refresh">${curRefresh}</td>
+                    <td class="triggerhighlight" align="center" title="Rename">${curRename}</td>
                     % if app.USE_SUBTITLES:
-                    <td class="triggerhighlight" align="center">${curSubtitle}</td>
+                    <td class="triggerhighlight" align="center" title="Search Subtitle">${curSubtitle}</td>
                     % endif
-                    <td class="triggerhighlight" align="center">${curDelete}</td>
-                    <td class="triggerhighlight" align="center">${curRemove}</td>
-                    <td class="triggerhighlight" align="center">${curImage}</td>
+                    <td class="triggerhighlight" align="center" title="Delete">${curDelete}</td>
+                    <td class="triggerhighlight" align="center" title="Remove">${curRemove}</td>
+                    <td class="triggerhighlight" align="center" title="Update image">${curImage}</td>
                 </tr>
             % endfor
             </tbody>

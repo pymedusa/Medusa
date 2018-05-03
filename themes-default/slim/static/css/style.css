@@ -915,7 +915,7 @@ home_newShow.mako
     font-size: 13px;
 }
 
-#newShowPortal {
+.newShowPortal {
     max-width: 960px;
     padding: 10px 0;
     margin-right: auto;

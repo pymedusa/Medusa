@@ -6,7 +6,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-<script src="js/lib/Frisbee.min.js"></script>
+<script src="js/lib/frisbee.min.js"></script>
 <script src="js/lib/vue-frisbee.min.js"></script>
 <script src="js/vue-submit-form.js"></script>
 <script>
@@ -31,7 +31,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <h1 class="header">{{header}}</h1>
-<div id="newShowPortal">
+<div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">

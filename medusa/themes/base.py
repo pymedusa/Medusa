@@ -12,8 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-themes = []
-
 
 class Theme(object):
     """Base theme class."""
@@ -28,6 +26,7 @@ class Theme(object):
 
 def read_themes():
     """Read the theme folder and create a Theme object for every entry, if valid."""
+    themes = []
     theme_root = os.path.join(app.PROG_DIR, 'themes')
     themes_from_fs = [os.path.join(theme_root, theme_dir) for theme_dir in os.listdir(theme_root) if os.path.isdir(os.path.join(theme_root, theme_dir))]
     for theme_path in themes_from_fs:

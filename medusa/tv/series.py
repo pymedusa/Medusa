@@ -2095,9 +2095,11 @@ class Series(TV):
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases
         data['config']['release'] = NonEmptyDict()
-        data['config']['release']['blacklist'] = bw_list.blacklist
-        data['config']['release']['whitelist'] = bw_list.whitelist
-        data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+        # These are for now considered anime-only options, as they query anidb for available release groups.
+        if self.is_anime:
+            data['config']['release']['blacklist'] = bw_list.blacklist
+            data['config']['release']['whitelist'] = bw_list.whitelist
+            data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
 

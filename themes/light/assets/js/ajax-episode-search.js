@@ -243,12 +243,12 @@ $.ajaxEpSearch = function(options) {
         }
     });
 
-    $('#forcedSearchModalFailed .btn').on('click', function() {
+    $('#forcedSearchModalFailed .btn-medusa').on('click', function() {
         failedDownload = ($(this).text().toLowerCase() === 'yes');
         $('#forcedSearchModalQuality').modal('show');
     });
 
-    $('#forcedSearchModalQuality .btn').on('click', function() {
+    $('#forcedSearchModalQuality .btn-medusa').on('click', function() {
         qualityDownload = ($(this).text().toLowerCase() === 'yes');
         forcedSearch();
     });
