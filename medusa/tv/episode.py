@@ -246,7 +246,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNKNOWN
+        self._status = UNKNOWN
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -402,6 +402,34 @@ class Episode(TV):
                 self.series.network
             )
         ).isoformat(b'T')
+
+    @property
+    def status(self):
+        """Return the existing status removing the quality from it."""
+        return self._status
+
+    @property
+    def composite_status(self):
+        """Return the existing status removing the quality from it."""
+        return Quality.split_composite_status(self._status)
+
+    @status.setter
+    def status(self, value):
+        """
+        Set a new status, reusing the existing quality, when no quality information included.
+
+        Or reuse the existing status, when no status information included.
+        """
+        current_status = self.composite_status.status
+        current_quality = self.composite_status.quality
+        new_status_composite = Quality.split_composite_status(value)
+
+        if new_status_composite.status and not new_status_composite.quality:
+            self._status = Quality.composite_status(new_status_composite.status, current_quality)
+        elif not new_status_composite.status and new_status_composite.quality:
+            self._status = Quality.composite_status(current_status, new_status_composite.quality)
+        else:
+            self._status = int(value)
 
     @property
     def status_name(self):

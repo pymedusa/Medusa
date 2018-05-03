@@ -2254,20 +2254,19 @@ class Series(TV):
             )
             return False
 
-        ep_status = int(sql_results[0][b'status'])
-        ep_status_text = statusStrings[ep_status].upper()
+        cur_status, cur_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
+        ep_status_text = statusStrings[cur_status].upper()
         manually_searched = sql_results[0][b'manually_searched']
-        _, cur_quality = Quality.split_composite_status(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
-        if ep_status == WANTED:
+        if cur_status == WANTED:
             should_replace, reason = (
                 True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
                     new_quality=Quality.qualityStrings[quality]
                 )
             )
         else:
-            should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+            should_replace, reason = Quality.should_replace(cur_status, cur_quality, quality, allowed_qualities,
                                                             preferred_qualities, download_current_quality,
                                                             forced_search, manually_searched, search_type)
 

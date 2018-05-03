@@ -1965,6 +1965,7 @@ class Home(WebRoot):
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
+                combined_existing_status = Quality.split_composite_status(ep_obj.status)
                 status = int(status)
                 if status in [WANTED, FAILED]:
                     # figure out what episodes are wanted so we can backlog them
