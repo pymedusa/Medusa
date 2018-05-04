@@ -211,8 +211,8 @@ const startVue = () => {
         },
         methods: {
             async testTorrentClient() {
-                const {torrent} = this;
-                const {method, host, username, password} = torrent;
+                const { torrent } = this;
+                const { method, host, username, password } = torrent;
 
                 this.torrent.testStatus = MEDUSA.config.loading;
 
@@ -221,7 +221,10 @@ const startVue = () => {
                     host,
                     username,
                     password
-                }));
+                }),
+                {
+                    credentials: 'same-origin'
+                });
 
                 this.torrent.testStatus = await data.text();
             },
@@ -237,7 +240,10 @@ const startVue = () => {
                     username,
                     password,
                     user_https: useHttps
-                }));
+                }),
+                {
+                    credentials: 'same-origin'
+                });
 
                 this.nzb.nzbget.testStatus = await data.text();
             },
@@ -253,7 +259,10 @@ const startVue = () => {
                     username,
                     password,
                     apikey: apiKey
-                }));
+                }),
+                {
+                    credentials: 'same-origin'
+                });
 
                 this.nzb.sabnzbd.testStatus = await data.text();
             }
