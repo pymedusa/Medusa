@@ -35,7 +35,6 @@ from medusa.providers.torrent.html import (
     torrent9,
     torrentbytes,
     torrenting,
-    torrentleech,
     tvchaosuk,
     yggtorrent,
     zooqle,
@@ -48,6 +47,7 @@ from medusa.providers.torrent.json import (
     norbits,
     rarbg,
     torrentday,
+    torrentleech,
     xthor,
 )
 from medusa.providers.torrent.rss import (
