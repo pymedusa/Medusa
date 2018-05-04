@@ -300,10 +300,10 @@ const startVue = () => {
                 </ul>
                 <div id="episode-search">
                     <!-- general settings //-->
-                        <div class="component-group-desc">
-                            <h3>General Search Settings</h3>
-                            <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
-                        </div>
+                    <div class="component-group-desc">
+                        <h3>General Search Settings</h3>
+                        <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -369,7 +369,7 @@ const startVue = () => {
                                     <span class="component-desc">
                                         <input type="number" :min="minDailySearchFrequency" step="1" name="dailysearch_frequency" v-model.number="dailySearchFrequency" class="form-control input-sm input75"/>
                                         <p>time in minutes between searches (min. {{minDailySearchFrequency}})</p>
-                                        </span>
+                                    </span>
                                 </label>
                             </div><!-- daily search frequency -->
                             <div class="field-pair" v-show="clients.torrent[torrent.method].removeFromClientOption">
@@ -407,8 +407,9 @@ const startVue = () => {
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
                                         <input type="text" name="trackers_list" v-model="trackersList" class="form-control input-sm input350"/>
-                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br>
-                                        separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
+                                        <div class="clear-left">
+                                            Trackers that will be added to magnets without trackers<br>
+                                            separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
                                         </div>
                                     </span>
                                 </label>
@@ -466,19 +467,20 @@ const startVue = () => {
                         </fieldset>
                     </div><!-- /general settings //-->
                     <!-- search filters //-->
-                        <div class="component-group-desc">
-                            <h3>Search Filters</h3>
-                            <p>Options to filter search results</p>
-                        </div>
-                        <div class="component-group">
+                    <div class="component-group-desc">
+                        <h3>Search Filters</h3>
+                        <p>Options to filter search results</p>
+                    </div>
+                    <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignore_words" v-model="ignoreWords" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with any words from this list will be ignored<br>
-                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        <div class="clear-left">
+                                            results with any words from this list will be ignored<br>
+                                            separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
                                 </label>
@@ -488,8 +490,9 @@ const startVue = () => {
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
                                         <input type="text" name="undesired_words" v-model="undesiredWords" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br>
-                                        separate words with a comma, e.g. "word1, word2, word3"
+                                        <div class="clear-left">
+                                            results with words from this list will only be selected as a last resort<br>
+                                            separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
                                     </span>
                                 </label>
@@ -499,8 +502,9 @@ const startVue = () => {
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
                                         <input type="text" name="preferred_words" v-model="preferredWords" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br>
-                                        separate words with a comma, e.g. "word1, word2, word3"
+                                        <div class="clear-left">
+                                            results with one or more word from this list will be chosen over others<br>
+                                            separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
                                     </span>
                                 </label>
@@ -510,8 +514,9 @@ const startVue = () => {
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
                                         <input type="text" name="require_words" v-model="requireWords" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results must include at least one word from this list<br>
-                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        <div class="clear-left">
+                                            results must include at least one word from this list<br>
+                                            separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
                                 </label>
@@ -521,9 +526,10 @@ const startVue = () => {
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignored_subs_list" v-model="ignoredSubsList" class="form-control input-sm input350"/>
-                                        <div class="clear-left">Ignore subbed releases based on language names <br>
-                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
-                                        separate languages with a comma, e.g. "lang1, lang2, lang3"
+                                        <div class="clear-left">
+                                            Ignore subbed releases based on language names <br>
+                                            Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
+                                            separate languages with a comma, e.g. "lang1, lang2, lang3"
                                         </div>
                                     </span>
                                 </label>
@@ -554,212 +560,212 @@ const startVue = () => {
                                 <span class="component-title">Search NZBs</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="use_nzbs" id="use_nzbs" v-model="nzb.enabled"/>
-                                    <p>enable NZB search providers</p></span>
-                            </label>
-                        </div>
-                        <div v-show="nzb.enabled">
-                        <div class="field-pair">
-                            <label for="nzb_method">
-                                <span class="component-title">Send .nzb files to:</span>
-                                <span class="component-desc">
-                                        <select v-model="nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
-                                            <option v-for="(client, name) in clients.nzb" :value="name">{{client.title}}</option>
-                                    </select>
+                                    <p>enable NZB search providers</p>
                                 </span>
                             </label>
                         </div>
-                        <div v-show="nzb.method === 'blackhole'" id="blackhole_settings">
+                        <div v-show="nzb.enabled">
                             <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Black hole folder location</span>
+                                <label for="nzb_method">
+                                    <span class="component-title">Send .nzb files to:</span>
                                     <span class="component-desc">
+                                        <select v-model="nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
+                                            <option v-for="(client, name) in clients.nzb" :value="name">{{client.title}}</option>
+                                        </select>
+                                    </span>
+                                </label>
+                            </div>
+                            <div v-show="nzb.method === 'blackhole'" id="blackhole_settings">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Black hole folder location</span>
+                                        <span class="component-desc">
                                             <input type="text" name="nzb_dir" id="nzb_dir" v-model="nzb.dir" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                             </div>
-                                    </span>
-                                </label>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <div v-show="nzb.method === 'sabnzbd'" id="sabnzbd_settings">
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">SABnzbd server URL</span>
-                                    <span class="component-desc">
-                                        <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
+                            <div v-show="nzb.method === 'sabnzbd'" id="sabnzbd_settings">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">SABnzbd server URL</span>
+                                        <span class="component-desc">
+                                            <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p v-html="clients.nzb[nzb.method].description"></p>
                                             </div>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">SABnzbd username</span>
-                                    <span class="component-desc">
-                                        <input v-model="nzb.sabnzbd.username" type="text" name="sab_username" id="sab_username" class="form-control input-sm input200" autocomplete="no" />
-                                        <p>(blank for none)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">SABnzbd password</span>
-                                    <span class="component-desc">
-                                        <input v-model="nzb.sabnzbd.password" type="password" name="sab_password" id="sab_password" class="form-control input-sm input200" autocomplete="no"/>
-                                        <p>(blank for none)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">SABnzbd API key</span>
-                                    <span class="component-desc">
-                                        <input v-model="nzb.sabnzbd.apiKey" type="text" name="sab_apikey" id="sab_apikey" class="form-control input-sm input350"/>
-                                        <div class="clear-left"><p>locate at... SABnzbd Config -> General -> API Key</p></div>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use SABnzbd category</span>
-                                    <span class="component-desc">
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">SABnzbd username</span>
+                                        <span class="component-desc">
+                                            <input v-model="nzb.sabnzbd.username" type="text" name="sab_username" id="sab_username" class="form-control input-sm input200" autocomplete="no" />
+                                            <p>(blank for none)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">SABnzbd password</span>
+                                        <span class="component-desc">
+                                            <input v-model="nzb.sabnzbd.password" type="password" name="sab_password" id="sab_password" class="form-control input-sm input200" autocomplete="no"/>
+                                            <p>(blank for none)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">SABnzbd API key</span>
+                                        <span class="component-desc">
+                                            <input v-model="nzb.sabnzbd.apiKey" type="text" name="sab_apikey" id="sab_apikey" class="form-control input-sm input350"/>
+                                            <div class="clear-left"><p>locate at... SABnzbd Config -> General -> API Key</p></div>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use SABnzbd category</span>
+                                        <span class="component-desc">
                                             <input type="text" name="sab_category" id="sab_category" v-model="nzb.sabnzbd.category" class="form-control input-sm input200"/>
-                                        <p>add downloads to this category (e.g. TV)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use SABnzbd category (backlog episodes)</span>
-                                    <span class="component-desc">
+                                            <p>add downloads to this category (e.g. TV)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use SABnzbd category (backlog episodes)</span>
+                                        <span class="component-desc">
                                             <input type="text" name="sab_category_backlog" id="sab_category_backlog" v-model="nzb.sabnzbd.categoryBacklog" class="form-control input-sm input200"/>
-                                        <p>add downloads of old episodes to this category (e.g. TV)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use SABnzbd category for anime</span>
-                                    <span class="component-desc">
+                                            <p>add downloads of old episodes to this category (e.g. TV)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use SABnzbd category for anime</span>
+                                        <span class="component-desc">
                                             <input type="text" name="sab_category_anime" id="sab_category_anime" v-model="nzb.sabnzbd.categoryAnime" class="form-control input-sm input200"/>
-                                        <p>add anime downloads to this category (e.g. anime)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
-                                    <span class="component-desc">
+                                            <p>add anime downloads to this category (e.g. anime)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
+                                        <span class="component-desc">
                                             <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" v-model="nzb.sabnzbd.categoryAnimeBacklog" class="form-control input-sm input200"/>
-                                        <p>add anime downloads of old episodes to this category (e.g. anime)</p>
-                                    </span>
-                                </label>
-                            </div>
+                                            <p>add anime downloads of old episodes to this category (e.g. anime)</p>
+                                        </span>
+                                    </label>
+                                </div>
                                 <div class="field-pair" v-show="allowHighPriority">
-                                <label for="sab_forced">
-                                    <span class="component-title">Use forced priority</span>
-                                    <span class="component-desc">
+                                    <label for="sab_forced">
+                                        <span class="component-title">Use forced priority</span>
+                                        <span class="component-desc">
                                             <input type="checkbox" name="sab_forced" id="sab_forced" v-model="nzb.sabnzbd.forced"/>
-                                        <p>enable to change priority from HIGH to FORCED</p></span>
-                                </label>
-                            </div>
-                            <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
-                            <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
-                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
-                        </div>
-                        <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
-                            <div class="field-pair">
-                                <label for="nzbget_use_https">
-                                    <span class="component-title">Connect using HTTPS</span>
-                                    <span class="component-desc">
-                                            <input type="checkbox" name="nzbget_use_https" id="nzbget_use_https" v-model="nzb.nzbget.useHttps"/>
-                                        <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">NZBget host:port</span>
-                                    <span class="component-desc">
-                                        <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                <p v-html="clients.nzb[nzb.method].description"></p>
-                                            </div>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">NZBget username</span>
-                                    <span class="component-desc">
-                                        <input type="text" name="nzbget_username" id="nzbget_username" v-model="nzb.nzbget.username" class="form-control input-sm input200"
-                                               autocomplete="no" />
-                                        <p>locate in nzbget.conf (default:nzbget)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">NZBget password</span>
-                                    <span class="component-desc">
-                                            <input type="password" name="nzbget_password" id="nzbget_password" v-model="nzb.nzbget.password" class="form-control input-sm input200" autocomplete="no"/>
-                                        <p>locate in nzbget.conf (default:tegbzn6789)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use NZBget category</span>
-                                    <span class="component-desc">
-                                            <input type="text" name="nzbget_category" id="nzbget_category" v-model="nzb.nzbget.category" class="form-control input-sm input200"/>
-                                        <p>send downloads marked this category (e.g. TV)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use NZBget category (backlog episodes)</span>
-                                    <span class="component-desc">
-                                            <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" v-model="nzb.nzbget.categoryBacklog" class="form-control input-sm input200"/>
-                                        <p>send downloads of old episodes marked this category (e.g. TV)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use NZBget category for anime</span>
-                                    <span class="component-desc">
-                                            <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" v-model="nzb.nzbget.categoryAnime" class="form-control input-sm input200"/>
-                                        <p>send anime downloads marked this category (e.g. anime)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
-                                    <span class="component-desc">
-                                            <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" v-model="nzb.nzbget.categoryAnimeBacklog" class="form-control input-sm input200"/>
-                                        <p>send anime downloads of old episodes marked this category (e.g. anime)</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label>
-                                    <span class="component-title">NZBget priority</span>
-                                    <span class="component-desc">
-                                            <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
-                                                <option v-for="(title, value) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
-                                        </select>
-                                        <span>priority for daily snatches (no backlog)</span>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
-                                <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                            <p>enable to change priority from HIGH to FORCED</p></span>
+                                    </label>
+                                </div>
+                                <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
+                                <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
-                        </div><!-- /content_use_nzbs //-->
+                            <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
+                                <div class="field-pair">
+                                    <label for="nzbget_use_https">
+                                        <span class="component-title">Connect using HTTPS</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="nzbget_use_https" id="nzbget_use_https" v-model="nzb.nzbget.useHttps"/>
+                                            <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">NZBget host:port</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p v-html="clients.nzb[nzb.method].description"></p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">NZBget username</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_username" id="nzbget_username" v-model="nzb.nzbget.username" class="form-control input-sm input200" autocomplete="no" />
+                                            <p>locate in nzbget.conf (default:nzbget)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">NZBget password</span>
+                                        <span class="component-desc">
+                                            <input type="password" name="nzbget_password" id="nzbget_password" v-model="nzb.nzbget.password" class="form-control input-sm input200" autocomplete="no"/>
+                                            <p>locate in nzbget.conf (default:tegbzn6789)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use NZBget category</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_category" id="nzbget_category" v-model="nzb.nzbget.category" class="form-control input-sm input200"/>
+                                            <p>send downloads marked this category (e.g. TV)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use NZBget category (backlog episodes)</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" v-model="nzb.nzbget.categoryBacklog" class="form-control input-sm input200"/>
+                                            <p>send downloads of old episodes marked this category (e.g. TV)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use NZBget category for anime</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" v-model="nzb.nzbget.categoryAnime" class="form-control input-sm input200"/>
+                                            <p>send anime downloads marked this category (e.g. anime)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" v-model="nzb.nzbget.categoryAnimeBacklog" class="form-control input-sm input200"/>
+                                            <p>send anime downloads of old episodes marked this category (e.g. anime)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">NZBget priority</span>
+                                        <span class="component-desc">
+                                            <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
+                                                <option v-for="(title, value) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
+                                            </select>
+                                            <span>priority for daily snatches (no backlog)</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
+                                <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
+                            </div><!-- /nzb.enabled //-->
+                        </div>
                     </fieldset>
                 </div><!-- /#nzb-search //-->
                 <div id="torrent-search" class="component-group">
@@ -783,9 +789,9 @@ const startVue = () => {
                                 <label for="torrent_method">
                                     <span class="component-title">Send .torrent files to:</span>
                                     <span class="component-desc">
-                                    <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
-                                        <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
-                                    </select>
+                                        <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
+                                            <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
+                                        </select>
                                     </span>
                                 </label>
                                 <div v-show="torrent.method === 'blackhole'">
@@ -910,10 +916,11 @@ const startVue = () => {
                                         <span class="component-desc">
                                             <input type="text" name="torrent_seed_location" id="torrent_seed_location" v-model="torrent.seedLocation" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
-                                                   <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
-                                                   to another location after Post-Processor to prevent reprocessing the same file over and over.
-                                                   This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                <p>
+                                                    where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
+                                                    <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                    to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                    This feature does a "Set Torrent location" or "Move Torrent" like in client
                                                 </p>
                                             </div>
                                         </span>
@@ -922,8 +929,10 @@ const startVue = () => {
                                 <div v-show="clients.torrent[torrent.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
                                     <label>
                                         <span class="component-title" id="torrent_seed_time_label">{{torrent.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
-                                        <span class="component-desc"><input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrent.seedTime" class="form-control input-sm input100" />
-                                        <p>hours. (default: '0' passes blank to client and '-1' passes nothing)</p></span>
+                                        <span class="component-desc">
+                                            <input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrent.seedTime" class="form-control input-sm input100" />
+                                            <p>hours. (default: '0' passes blank to client and '-1' passes nothing)</p>
+                                        </span>
                                     </label>
                                 </div>
                                 <div v-show="clients.torrent[torrent.method].pausedOption" class="field-pair" id="torrent_paused_option">
@@ -948,7 +957,7 @@ const startVue = () => {
                                 <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
-                        </div><!-- /content_use_torrents //-->
+                        </div><!-- /torrent.enabled //-->
                     </fieldset>
                 </div><!-- /#torrent-search //-->
                 <br>
