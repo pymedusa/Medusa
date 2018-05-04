@@ -794,20 +794,20 @@ const startVue = () => {
                                         </select>
                                     </span>
                                 </label>
-                                <div v-show="torrent.method === 'blackhole'">
-                                    <div class="field-pair">
-                                        <label>
-                                            <span class="component-title">Black hole folder location</span>
-                                            <span class="component-desc">
-                                                <input type="text" name="torrent_dir" id="torrent_dir" v-model="torrent.dir" class="form-control input-sm input350"/>
-                                                <div class="clear-left">
-                                                    <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
-                                                </div>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
+                            </div>
+                            <div v-show="torrent.method === 'blackhole'">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Black hole folder location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_dir" id="torrent_dir" v-model="torrent.dir" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
+                                            </div>
+                                        </span>
+                                    </label>
                                 </div>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
                             <div v-show="torrent.method !== 'blackhole'">
                                 <div class="field-pair">
