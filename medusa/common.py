@@ -812,6 +812,7 @@ Quality.SNATCHED_BEST = [Quality.composite_status(SNATCHED_BEST, x) for x in Qua
 Quality.SNATCHED_PROPER = [Quality.composite_status(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
 Quality.FAILED = [Quality.composite_status(FAILED, x) for x in Quality.qualityStrings if x is not None]
 Quality.ARCHIVED = [Quality.composite_status(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
+Quality.WANTED = [Quality.composite_status(WANTED, x) for x in Quality.qualityStrings if x is not None]
 
 Quality.DOWNLOADED.sort()
 Quality.SNATCHED.sort()
