@@ -32,10 +32,14 @@ def read_themes():
     for theme_path in themes_from_fs:
         # validate the directory structure
         try:
-            validate_theme(theme_path)
+            result = validate_theme(theme_path)
         except Exception as error:
             log.error('Error reading theme {theme}, {error!r}', {'theme': theme_path, 'error': error})
             raise Exception('Error in one of the theme paths. Please fix the error and start medusa.')
+
+        if not result:
+            log.debug('Skipping reading theme {theme}, as the folder is empty', {'theme': theme_path})
+            continue
 
         # validate the package.json
         package_json = json.load(open(os.path.join(theme_path, 'package.json')))
@@ -48,6 +52,15 @@ def read_themes():
 
 def validate_theme(theme_path):
     """Validate theme configuration."""
+    try:
+        dir_list = os.listdir(theme_path)
+    except Exception as err:
+        raise Exception("Unable to list directories in {path}: {err!r}".format(path=theme_path, err=err))
+
+    # If the folder is completely empty, then the theme was probably removed, so just skip it
+    if not dir_list:
+        return False
+
     if not os.path.isdir(os.path.join(theme_path, 'assets')):
         raise Exception('Missing assets folder. Please refer to the medusa theming documentation.')
 
