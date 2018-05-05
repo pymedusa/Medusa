@@ -405,7 +405,7 @@ class Episode(TV):
 
     @property
     def status(self):
-        """Return the existing status removing the quality from it."""
+        """Return the existing status as is."""
         return self._status
 
     @property

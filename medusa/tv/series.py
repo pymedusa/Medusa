@@ -1377,6 +1377,14 @@ class Series(TV):
                     continue
 
             else:
+                # If the episodes status is set to archive, leave it alone.
+                if cur_ep.composite_status.status == ARCHIVED:
+                    log.debug(
+                        u'{indexerid}: Episode {episode} has a status of ARCHIVED, not touching it',
+                        {'indexerid': self.series_id, 'episode': cur_ep.pretty_name()}
+                    )
+                    continue
+
                 # if there is a new file associated with this ep then re-check the quality
                 if not cur_ep.location or os.path.normpath(cur_ep.location) != os.path.normpath(filepath):
                     log.debug(
@@ -2308,12 +2316,12 @@ class Series(TV):
                 return Overview.QUAL
             return Overview.GOOD
 
-        if ep_status == WANTED:
-            return Overview.WANTED
-        elif ep_status in (UNAIRED, UNKNOWN):
+        if ep_status in (UNAIRED, UNKNOWN):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED
+        elif ep_status in Quality.WANTED:
+            return Overview.WANTED
         elif ep_status in Quality.ARCHIVED:
             return Overview.GOOD
         elif ep_status in Quality.FAILED:
