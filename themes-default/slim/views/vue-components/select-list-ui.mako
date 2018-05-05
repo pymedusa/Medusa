@@ -54,14 +54,7 @@
                     </div>
                 </li>
                 <div class="new-item">
-                    <div class="input-group">
-                        <input class="form-control input-sm" type="text" v-model="newItem" placeholder="add new values per line" />
-                        <div class="input-group-btn" @click="addNewItem()">
-                                <div style="font-size: 14px" class="btn btn-default input-sm">
-                                    <i class="glyphicon glyphicon-plus"></i>
-                                </div>
-                        </div>
-                    </div>
+                        <input class="form-control input-sm" type="text" v-model="newItem" placeholder="add new values per line" @change="addNewItem()" />
                 </div>
             </ul>
         </div>
@@ -69,7 +62,6 @@
         <div class="csv" v-if="csvEnabled">
             <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated "/>
         </div>
-
     </div>
 </script>
 <script>
@@ -95,12 +87,15 @@ Vue.component('select-list', {
         }
     },
     mounted() {
-        this.lock = true;
-        this.editItems = this.sanitize(this.listItems);
-        this.$nextTick(() => this.lock = false);
-        this.csv = this.editItems.map(x => x.value).join(', ');
+        this.constructList();
     },
     methods: {
+        constructList: function() {
+            this.lock = true;
+            this.editItems = this.sanitize(this.listItems);
+            this.$nextTick(() => this.lock = false);
+            this.csv = this.editItems.map(x => x.value).join(', ');
+        },
         addItem: function(item) {
             this.editItems.push({id: this.indexCounter, value: item});
             this.indexCounter += 1;
@@ -111,7 +106,6 @@ Vue.component('select-list', {
         },
         deleteItem: function(item) {
             this.editItems = this.editItems.filter(e => e !== item);
-            this.newItem = item.value;
         },
         /**
          * Initially an array of strings is passed, which we'd like to translate to an array of object.
@@ -174,6 +168,12 @@ Vue.component('select-list', {
         },
         csv() {
             this.syncValues();
+        },
+        listItems: {
+            handler: function() {
+                this.constructList();
+            },
+            deep: true
         }
     }
 });
