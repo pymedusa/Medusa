@@ -146,6 +146,11 @@ const startVue = () => {
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
                 return allowed | preferred << 16
+            },
+            displayShowUrl() {
+                // @TODO: Change the URL generation to use `this.series`. Currently not possible because
+                // the values are not available at the time of app-link component creation.
+                return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
             }
         }
     });
@@ -156,7 +161,10 @@ const startVue = () => {
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-<h1 class="header">Edit Show</h1>
+<h1 class="header">
+    Edit Show
+    <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
+</h1>
 <saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
