@@ -33,7 +33,6 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
-from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
@@ -90,7 +89,7 @@ NOTIFY_LOGIN = 6
 NOTIFY_LOGIN_TEXT = 7
 NOTIFY_SNATCH_PROPER = 8
 
-notifyStrings = NumDict({
+notifyStrings = {
     NOTIFY_SNATCH: "Started Download",
     NOTIFY_DOWNLOAD: "Download Finished",
     NOTIFY_SUBTITLE_DOWNLOAD: "Subtitle Download Finished",
@@ -99,7 +98,7 @@ notifyStrings = NumDict({
     NOTIFY_LOGIN: "Medusa new login",
     NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
     NOTIFY_SNATCH_PROPER: "Started PROPER Download"
-})
+}
 
 # Episode statuses
 UNKNOWN = -1  # should never happen
@@ -122,14 +121,14 @@ NAMING_LIMITED_EXTEND = 8
 NAMING_SEPARATED_REPEAT = 16
 NAMING_LIMITED_EXTEND_E_PREFIXED = 32
 
-MULTI_EP_STRINGS = NumDict({
+MULTI_EP_STRINGS = {
     NAMING_REPEAT: "Repeat",
     NAMING_SEPARATED_REPEAT: "Repeat (Separated)",
     NAMING_DUPLICATE: "Duplicate",
     NAMING_EXTEND: "Extend",
     NAMING_LIMITED_EXTEND: "Extend (Limited)",
     NAMING_LIMITED_EXTEND_E_PREFIXED: "Extend (Limited, E-prefixed)"
-})
+}
 
 
 class Quality(object):
@@ -159,7 +158,7 @@ class Quality(object):
     # far enough out that they shouldn't interfere
     UNKNOWN = 1 << 15  # 32768
 
-    qualityStrings = NumDict({
+    qualityStrings = {
         None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
@@ -178,9 +177,9 @@ class Quality(object):
         UHD_8K_WEBDL: "8K UHD WEB-DL",
         UHD_4K_BLURAY: "4K UHD BluRay",
         UHD_8K_BLURAY: "8K UHD BluRay",
-    })
+    }
 
-    sceneQualityStrings = NumDict({
+    sceneQualityStrings = {
         None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
@@ -199,15 +198,15 @@ class Quality(object):
         UHD_8K_WEBDL: "4320p",
         UHD_4K_BLURAY: "2160p BluRay",
         UHD_8K_BLURAY: "4320p BluRay",
-    })
+    }
 
-    combinedQualityStrings = NumDict({
+    combinedQualityStrings = {
         ANYHDTV: "HDTV",
         ANYWEBDL: "WEB-DL",
         ANYBLURAY: "BluRay"
-    })
+    }
 
-    cssClassStrings = NumDict({
+    cssClassStrings = {
         None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
@@ -229,16 +228,22 @@ class Quality(object):
         ANYHDTV: "any-hd",
         ANYWEBDL: "any-hd",
         ANYBLURAY: "any-hd"
-    })
+    }
 
-    statusPrefixes = NumDict({
+    statusPrefixes = {
+        UNKNOWN: "Unknown",
+        UNAIRED: "Unaired",
+        WANTED: "Wanted",
+        SKIPPED: "Skipped",
+        IGNORED: "Ignored",
+        SUBTITLED: "Subtitled",
         DOWNLOADED: "Downloaded",
         SNATCHED: "Snatched",
         SNATCHED_PROPER: "Snatched (Proper)",
         FAILED: "Failed",
         SNATCHED_BEST: "Snatched (Best)",
         ARCHIVED: "Archived"
-    })
+    }
 
     @staticmethod
     def _get_status_strings(status):
@@ -840,7 +845,7 @@ qualityPresets = (
     UHD, UHD_4K, UHD_8K,
 )
 
-qualityPresetStrings = NumDict({
+qualityPresetStrings = {
     SD: "SD",
     HD: "HD",
     HD720p: "HD720p",
@@ -849,10 +854,10 @@ qualityPresetStrings = NumDict({
     UHD_4K: "UHD-4K",
     UHD_8K: "UHD-8K",
     ANY: "Any",
-})
+}
 
 
-class StatusStrings(NumDict):
+class StatusStrings(dict):
     """Dictionary containing strings for status codes."""
 
     # todo: Make views return Qualities too
@@ -867,7 +872,7 @@ class StatusStrings(NumDict):
         :raise KeyError: if the key is invalid and can't be determined from Quality
         """
         # convert key to number
-        key = self.numeric(key)  # raises KeyError if it can't
+        key = int(key)  # raises KeyError if it can't
         if key in self.qualities:  # if key isn't found check in qualities
             current = Quality.split_composite_status(key)
             return '{status} ({quality})'.format(
@@ -879,7 +884,7 @@ class StatusStrings(NumDict):
 
     def __contains__(self, key):
         try:
-            key = self.numeric(key)
+            key = int(key)
             return key in self.data or key in self.qualities
         except KeyError:
             return False
@@ -914,7 +919,7 @@ class Overview(object):
     # Should suffice!
     QUAL = 50
 
-    overviewStrings = NumDict({
+    overviewStrings = {
         SKIPPED: "skipped",
         WANTED: "wanted",
         QUAL: "qual",
@@ -925,7 +930,7 @@ class Overview(object):
         # breaks checkboxes in displayShow for showing different statuses
         SNATCHED_BEST: "snatched",
         SNATCHED_PROPER: "snatched"
-    })
+    }
 
 
 countryList = {
