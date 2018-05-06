@@ -862,8 +862,8 @@ class StatusStrings(dict):
     """Dictionary containing strings for status codes."""
 
     # todo: Make views return Qualities too
-    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + \
-        Quality.ARCHIVED + Quality.FAILED
+    stat = list(Quality.statusPrefixes)
+    qual = list(Quality.qualityStrings)
 
     def __missing__(self, key):
         """
@@ -874,8 +874,8 @@ class StatusStrings(dict):
         """
         # convert key to number
         key = int(key)  # raises KeyError if it can't
-        if key in self.qualities:  # if key isn't found check in qualities
-            current = Quality.split_composite_status(key)
+        current = Quality.split_composite_status(key)
+        if current.quality in self.qual:
             return '{status} ({quality})'.format(
                 status=self[current.status],
                 quality=Quality.qualityStrings[current.quality]
@@ -886,7 +886,7 @@ class StatusStrings(dict):
     def __contains__(self, key):
         try:
             key = int(key)
-            return key in self.data or key in self.qualities
+            return key in self.stat or key in self.qual
         except KeyError:
             return False
 
