@@ -2005,7 +2005,8 @@ class Home(WebRoot):
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status
+                        # We're only setting the status (leaving the quality as is).
+                        ep_obj.splitted_status_status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())

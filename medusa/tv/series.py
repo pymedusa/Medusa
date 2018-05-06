@@ -2203,12 +2203,12 @@ class Series(TV):
                 return Overview.QUAL
             return Overview.GOOD
 
-        if ep_status == WANTED:
-            return Overview.WANTED
-        elif ep_status in (UNAIRED, UNKNOWN):
+        if ep_status in (UNAIRED, UNKNOWN):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED
+        elif ep_status in Quality.WANTED:
+            return Overview.WANTED
         elif ep_status in Quality.ARCHIVED:
             return Overview.GOOD
         elif ep_status in Quality.FAILED:
