@@ -25,6 +25,8 @@ from medusa import (
     subtitles,
 )
 from medusa.common import (
+    ARCHIVED,
+    DOWNLOADED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -32,6 +34,9 @@ from medusa.common import (
     NAMING_SEPARATED_REPEAT,
     Quality,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
     UNKNOWN,
     WANTED,
@@ -1996,5 +2001,67 @@ class Episode(TV):
                 '{id}: Failed to modify date of {location}', {
                     'id': self.series.series_id,
                     'location': os.path.basename(self.location),
+                }
+            )
+
+    def update_status(self, filepath):
+        """Check if we should use the dectect file to change status.
+
+        TODO
+        """
+        old_status, old_quality = Quality.split_composite_status(self.status)
+
+        old_location = self.location
+        # Changing the name of the file might also change its quality
+        same_name = old_location and os.path.normpath(old_location) == os.path.normpath(filepath)
+
+        old_size = self.file_size
+        # Setting a location to episode, will get the size of the filepath
+        with self.lock:
+            self.location = filepath
+        # If size from given filepath is 0 it means we couldn't determine file size
+        same_size = old_size and self.file_size > 0 and self.file_size == old_size
+
+        if not same_size or not same_name:
+            log.debug(
+                '{name}: The old episode had a different file associated with it, '
+                're-checking the quality using the new filename {filepath}',
+                {'name': self.series.name, 'filepath': filepath}
+            )
+
+            new_quality = Quality.name_quality(filepath, self.series.is_anime)
+
+            if old_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) or (
+                    old_status == DOWNLOADED and old_location):
+                new_status = DOWNLOADED
+            else:
+                new_status = ARCHIVED
+
+            with self.lock:
+                self.status = Quality.composite_status(new_status, new_quality)
+
+                if not same_name:
+                    # Reset release name as the name changed
+                    self.release_name = ''
+
+            log.debug(
+                "{name}: Setting the status from '{status_old}' to '{status_new}' and"
+                " quality '{quality_old}' to '{quality_new}' based on file: {filepath}", {
+                    'name': self.series.name,
+                    'status_old': Quality.statusPrefixes[old_status],
+                    'status_new': Quality.statusPrefixes[new_status],
+                    'quality_old': Quality.qualityStrings[old_quality],
+                    'quality_new': Quality.qualityStrings[new_quality],
+                    'filepath': filepath,
+                }
+            )
+        else:
+            log.debug(
+                "{name}: Not changing current status '{status_old}' or"
+                " quality '{quality_old}' based on file: {filepath}", {
+                    'name': self.series.name,
+                    'status_old': Quality.statusPrefixes[old_status],
+                    'quality_old': Quality.qualityStrings[old_quality],
+                    'filepath': filepath,
                 }
             )
