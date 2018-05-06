@@ -408,28 +408,41 @@ class Episode(TV):
         """Return the existing status as is."""
         return self._status
 
+    @status.setter
+    def status(self, value):
+        """Set the status."""
+        self._status = value
+
     @property
-    def composite_status(self):
+    def splitted_status(self):
         """Return the existing status removing the quality from it."""
         return Quality.split_composite_status(self._status)
 
-    @status.setter
-    def status(self, value):
-        """
-        Set a new status, reusing the existing quality, when no quality information included.
+    @property
+    def splitted_status_status(self):
+        """Return the status from the status/quality composite."""
+        return self.splitted_status.status
 
-        Or reuse the existing status, when no status information included.
+    @splitted_status_status.setter
+    def splitted_status_status(self, value):
         """
-        current_status = self.composite_status.status
-        current_quality = self.composite_status.quality
-        new_status_composite = Quality.split_composite_status(value)
+        Only set the status (reuse existing quality) of the composite status.
+        :param value: The new status.
+        """
+        self._status = Quality.composite_status(value, self.splitted_status_quality)
 
-        if new_status_composite.status and not new_status_composite.quality:
-            self._status = Quality.composite_status(new_status_composite.status, current_quality)
-        elif not new_status_composite.status and new_status_composite.quality:
-            self._status = Quality.composite_status(current_status, new_status_composite.quality)
-        else:
-            self._status = int(value)
+    @property
+    def splitted_status_quality(self):
+        """Return the quality from the status/quality composite."""
+        return self.splitted_status.quality
+
+    @splitted_status_quality.setter
+    def splitted_status_quality(self, value):
+        """
+        Only set the quality (reuse existing status) of the composite status.
+        :param value: The new quality.
+        """
+        self._status = Quality.composite_status(self.splitted_status_status, value)
 
     @property
     def status_name(self):

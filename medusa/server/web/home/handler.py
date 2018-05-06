@@ -1962,7 +1962,6 @@ class Home(WebRoot):
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
-                combined_existing_status = Quality.split_composite_status(ep_obj.status)
                 status = int(status)
                 if status in [WANTED, FAILED]:
                     # figure out what episodes are wanted so we can backlog them
@@ -2005,7 +2004,8 @@ class Home(WebRoot):
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status
+                        # We're only setting the status (leaving the quality as is).
+                        ep_obj.splitted_status_status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
