@@ -200,9 +200,9 @@ def snatch_episode(result):
             # We can't reset location because we need to know what we are replacing
             # curEpObj.location = ''
 
-            # Size and release name are fetched in PP (only for downloaded status, not snatched)
-            curEpObj.file_size = 0
+            # Release name and group are parsed in PP
             curEpObj.release_name = ''
+            curEpObj.release_group = ''
 
             # Need to reset subtitle settings because it's a different file
             curEpObj.subtitles = list()
@@ -212,9 +212,6 @@ def snatch_episode(result):
             # Need to store the correct is_proper. Not use the old one
             curEpObj.is_proper = True if result.proper_tags else False
             curEpObj.version = 0
-
-            # Release group is parsed in PP
-            curEpObj.release_group = ''
 
             curEpObj.manually_searched = result.manually_searched
 
