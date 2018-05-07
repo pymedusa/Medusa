@@ -326,6 +326,9 @@ class Application(object):
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
 
+        # Initialize all available themes
+        app.AVAILABLE_THEMES = read_themes()
+
         # Load the config and publish it to the application package
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
@@ -386,9 +389,6 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
-
-        # Initialize all available themes
-        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()
