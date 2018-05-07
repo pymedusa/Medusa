@@ -38,7 +38,7 @@ from medusa.common import (
     Quality,
     SKIPPED,
     UNAIRED,
-    UNKNOWN,
+    UNSET,
     WANTED,
     countryList,
     qualityPresets,
@@ -1395,7 +1395,7 @@ class Series(TV):
             self.scene = int(sql_results[0][b'scene'] or 0)
             self.subtitles = int(sql_results[0][b'subtitles'] or 0)
             self.dvd_order = int(sql_results[0][b'dvdorder'] or 0)
-            self.quality = int(sql_results[0][b'quality'] or UNKNOWN)
+            self.quality = int(sql_results[0][b'quality'] or UNSET)
             self.flatten_folders = int(sql_results[0][b'flatten_folders'] or 0)
             self.paused = int(sql_results[0][b'paused'] or 0)
             self._location = sql_results[0][b'location']  # skip location validation
@@ -2194,7 +2194,7 @@ class Series(TV):
         :return: an Overview status
         :rtype: int
         """
-        ep_status = try_int(ep_status) or UNKNOWN
+        ep_status = try_int(ep_status) or UNSET
 
         if backlog_mode:
             if ep_status == WANTED:
@@ -2203,7 +2203,7 @@ class Series(TV):
                 return Overview.QUAL
             return Overview.GOOD
 
-        if ep_status in (UNAIRED, UNKNOWN):
+        if ep_status in (UNSET, UNAIRED):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED

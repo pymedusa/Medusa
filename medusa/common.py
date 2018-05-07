@@ -101,7 +101,7 @@ notifyStrings = {
 }
 
 # Episode statuses
-UNKNOWN = -1  # should never happen
+UNSET = -1  # should never happen
 UNAIRED = 1  # episodes that haven't aired yet
 SNATCHED = 2  # qualified with quality
 WANTED = 3  # episodes we don't have but want to get
@@ -231,7 +231,7 @@ class Quality(object):
     }
 
     statusPrefixes = {
-        UNKNOWN: "Unknown",
+        UNSET: "Unset",
         UNAIRED: "Unaired",
         WANTED: "Wanted",
         SKIPPED: "Skipped",
@@ -321,19 +321,19 @@ class Quality(object):
         :return: Quality
         """
         from medusa.tagger.episode import EpisodeTags
+
         if not name:
             return Quality.UNKNOWN
-        else:
-            name = os.path.basename(name)
 
         result = None
+        name = os.path.basename(name)
         ep = EpisodeTags(name)
 
         if anime:
             sd_options = tags.anime_sd.search(name)
             hd_options = tags.anime_hd.search(name)
             full_hd = tags.anime_fullhd.search(name)
-            ep.rex[u'bluray'] = tags.anime_bluray
+            ep.rex['bluray'] = tags.anime_bluray
 
             # BluRay
             if ep.bluray and (full_hd or hd_options):
@@ -351,7 +351,7 @@ class Quality(object):
             return Quality.UNKNOWN if result is None else result
 
         # Is it UHD?
-        if ep.vres in [2160, 4320] and ep.scan == u'p':
+        if ep.vres in [2160, 4320] and ep.scan == 'p':
             # BluRay
             full_res = (ep.vres == 4320)
             if ep.avc and ep.bluray:
@@ -360,12 +360,12 @@ class Quality(object):
             elif (ep.avc and ep.itunes) or ep.web:
                 result = Quality.UHD_4K_WEBDL if not full_res else Quality.UHD_8K_WEBDL
             # HDTV
-            elif ep.avc and ep.tv == u'hd':
+            elif ep.avc and ep.tv == 'hd':
                 result = Quality.UHD_4K_TV if not full_res else Quality.UHD_8K_TV
 
         # Is it HD?
         elif ep.vres in [1080, 720]:
-            if ep.scan == u'p':
+            if ep.scan == 'p':
                 # BluRay
                 full_res = (ep.vres == 1080)
                 if ep.avc and (ep.bluray or ep.hddvd):
@@ -374,27 +374,32 @@ class Quality(object):
                 elif (ep.avc and ep.itunes) or ep.web:
                     result = Quality.FULLHDWEBDL if full_res else Quality.HDWEBDL
                 # HDTV
-                elif ep.avc and ep.tv == u'hd':
-                    result = Quality.FULLHDTV if full_res else Quality.HDTV
-                elif all([ep.vres == 720, ep.tv == u'hd', ep.mpeg]):
+                elif ep.avc and ep.tv == 'hd':
+                    result = Quality.FULLHDTV if full_res else Quality.HDTV  # 1080 HDTV h264
+                # MPEG2 encoded
+                elif all([ep.vres == 1080, ep.tv == 'hd', ep.mpeg]):
                     result = Quality.RAWHDTV
-            elif (ep.res == u'1080i') and ep.tv == u'hd':
-                if ep.mpeg or (ep.raw and ep.avc_non_free):
+                elif all([ep.vres == 720, ep.tv == 'hd', ep.mpeg]):
                     result = Quality.RAWHDTV
+            elif (ep.res == '1080i') and ep.tv == 'hd' and (ep.mpeg or (ep.raw and ep.avc_non_free)):
+                result = Quality.RAWHDTV
         elif ep.hrws:
             result = Quality.HDTV
 
         # Is it SD?
         elif ep.xvid or ep.avc:
-            # Is it aussie p2p?  If so its 720p
-            if all([ep.tv == u'hd', ep.widescreen, ep.aussie]):
-                result = Quality.HDTV
             # SD DVD
-            elif ep.dvd or ep.bluray:
+            if ep.dvd or ep.bluray:
                 result = Quality.SDDVD
             # SDTV
-            elif ep.res == u'480p' or any([ep.tv, ep.sat, ep.web]):
+            elif ep.res == '480p' or any([ep.tv, ep.sat, ep.web]):
                 result = Quality.SDTV
+        elif ep.dvd:
+            # SD DVD
+            result = Quality.SDDVD
+        elif ep.tv:
+            # SD TV/HD TV
+            result = Quality.SDTV
 
         return Quality.UNKNOWN if result is None else result
 
@@ -483,8 +488,8 @@ class Quality(object):
         :returns: a namedtuple containing (status, quality)
         """
         status = int(status)
-        if status == UNKNOWN:
-            return Quality.composite_status_quality(UNKNOWN, Quality.UNKNOWN)
+        if status == UNSET:
+            return Quality.composite_status_quality(UNSET, Quality.UNKNOWN)
 
         for q in sorted(list(Quality.qualityStrings), reverse=True):
             if status > q * 100:
@@ -614,7 +619,7 @@ class Quality(object):
         :param manually_searched: if episode was manually searched by user
         :return: True if need to run a search for given episode
         """
-        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNKNOWN)
+        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNSET)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         # When user manually searched, we should consider this as final quality.
@@ -879,7 +884,7 @@ class StatusStrings(dict):
             return '{status} ({quality})'.format(
                 status=self[current.status],
                 quality=Quality.qualityStrings[current.quality]
-            ) if current.quality else self[current.status]
+            )
         else:  # the key wasn't found in qualities either
             raise KeyError(key)  # ... so the key is invalid
 
@@ -893,7 +898,7 @@ class StatusStrings(dict):
 
 # Assign strings to statuses
 statusStrings = StatusStrings({
-    UNKNOWN: "Unknown",
+    UNSET: "Unset",
     UNAIRED: "Unaired",
     SNATCHED: "Snatched",
     DOWNLOADED: "Downloaded",

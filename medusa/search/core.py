@@ -34,7 +34,7 @@ from medusa.common import (
     SNATCHED,
     SNATCHED_BEST,
     SNATCHED_PROPER,
-    UNKNOWN,
+    UNSET,
 )
 from medusa.helper.common import (
     enabled_providers,
@@ -403,7 +403,7 @@ def wanted_episodes(series_obj, from_date):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
+        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNSET))
         should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
         if not should_search:
             continue
@@ -416,7 +416,7 @@ def wanted_episodes(series_obj, from_date):
                 }
             )
         ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
         wanted.append(ep_obj)
 
     return wanted

@@ -38,7 +38,7 @@ from medusa.common import (
     SNATCHED_BEST,
     SNATCHED_PROPER,
     UNAIRED,
-    UNKNOWN,
+    UNSET,
     WANTED,
     statusStrings,
 )
@@ -251,7 +251,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self._status = UNKNOWN
+        self._status = UNSET
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -912,7 +912,7 @@ class Episode(TV):
 
         if not os.path.isfile(self.location):
             if (self.airdate >= date.today() or self.airdate == date.fromordinal(1)) and \
-                    self.status in (UNAIRED, UNKNOWN, WANTED):
+                    self.status in (UNSET, UNAIRED, WANTED):
                 # Need to check if is UNAIRED otherwise code will step into second 'IF'
                 # and make episode as default_ep_status
                 # If is a leaked episode and user manually snatched, it will respect status
@@ -927,8 +927,8 @@ class Episode(TV):
                         'status': statusStrings[self.status].upper(),
                     }
                 )
-            elif self.status in (UNAIRED, UNKNOWN):
-                # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
+            elif self.status in (UNSET, UNAIRED):
+                # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
                 self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
@@ -976,14 +976,14 @@ class Episode(TV):
         # shouldn't get here probably
         else:
             log.warning(
-                '{id}: {series} {ep} status changed from {old_status} to UNKNOWN', {
+                '{id}: {series} {ep} status changed from {old_status} to UNSET', {
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
                     'old_status': statusStrings[self.status].upper(),
                 }
             )
-            self.status = UNKNOWN
+            self.status = UNSET
 
     def __load_from_nfo(self, location):
 
@@ -999,10 +999,10 @@ class Episode(TV):
 
         if self.location != '':
 
-            if self.status == UNKNOWN and helpers.is_media_file(self.location):
+            if self.status == UNSET and helpers.is_media_file(self.location):
                 self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
                 log.debug(
-                    '{id}: {series} {ep} status changed from UNKNOWN to {new_status}', {
+                    '{id}: {series} {ep} status changed from UNSET to {new_status}', {
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(self.season, self.episode),
