@@ -21,6 +21,100 @@ const startVue = () => {
             return {
                 header: 'Show List'
             };
+        },
+        mounted() {
+            $('#showListTableSeries:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
+                debug: false,
+                sortList: [[7, 1], [2, 0]],
+                textExtraction: (function() {
+                    return {
+                        0: node => $(node).find('span').attr('timestamp'),
+                        1: node => $(node).find('span').attr('timestamp'),
+                        3: node => $(node).find('span').prop('title').toLowerCase(),
+                        4: node => $(node).find('a[data-indexer-name]').attr('data-indexer-name'),
+                        5: node => $(node).find('span').text().toLowerCase(),
+                        6: node => $(node).find('span:first').text(),
+                        7: node => $(node).data('show-size'),
+                        8: node => $(node).find('img').attr('alt'),
+                        10: node => $(node).find('img').attr('alt')
+                    };
+                })(),
+                widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
+                headers: {
+                    0: { sorter: 'realISODate' },
+                    1: { sorter: 'realISODate' },
+                    2: { sorter: 'showNames' },
+                    4: { sorter: 'text' },
+                    5: { sorter: 'quality' },
+                    6: { sorter: 'eps' },
+                    7: { sorter: 'digit' },
+                    8: { filter: 'parsed' },
+                    10: { filter: 'parsed' }
+                },
+                widgetOptions: {
+                    filter_columnFilters: true, // eslint-disable-line camelcase
+                    filter_hideFilters: true, // eslint-disable-line camelcase
+                    filter_saveFilters: true, // eslint-disable-line camelcase
+                    filter_functions: { // eslint-disable-line camelcase
+                        5(e, n, f) { // eslint-disable-line complexity
+                            let test = false;
+                            const pct = Math.floor((n % 1) * 1000);
+                            if (f === '') {
+                                test = true;
+                            } else {
+                                let result = f.match(/(<|<=|>=|>)\s+(\d+)/i);
+                                if (result) {
+                                    if (result[1] === '<') {
+                                        if (pct < parseInt(result[2], 10)) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === '<=') {
+                                        if (pct <= parseInt(result[2], 10)) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === '>=') {
+                                        if (pct >= parseInt(result[2], 10)) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === '>') {
+                                        if (pct > parseInt(result[2], 10)) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                result = f.match(/(\d+)\s(-|to)\s+(\d+)/i);
+                                if (result) {
+                                    if ((result[2] === '-') || (result[2] === 'to')) {
+                                        if ((pct >= parseInt(result[1], 10)) && (pct <= parseInt(result[3], 10))) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                result = f.match(/(=)?\s?(\d+)\s?(=)?/i);
+                                if (result) {
+                                    if ((result[1] === '=') || (result[3] === '=')) {
+                                        if (parseInt(result[2], 10) === pct) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                if (!isNaN(parseFloat(f)) && isFinite(f)) {
+                                    if (parseInt(f, 10) === pct) {
+                                        test = true;
+                                    }
+                                }
+                            }
+                            return test;
+                        }
+                    },
+                    columnSelector_mediaquery: false // eslint-disable-line camelcase
+                },
+                sortStable: true,
+                sortAppend: [[2, 0]]
+            });
         }
     });
 };

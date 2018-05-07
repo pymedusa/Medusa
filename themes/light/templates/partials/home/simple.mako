@@ -123,7 +123,7 @@
                     <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
                     % try:
                         <td align="center" class="nowrap triggerhighlight">
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" title="${airDate.isoformat('T')}" class="date">{{'${airDate.isoformat('T')}' | formatDate}}</time>
                         </td>
                     % except ValueError:
                         <td align="center" class="nowrap triggerhighlight"></td>
@@ -135,7 +135,7 @@
                     <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network)) %>
                     % try:
                         <td align="center" class="nowrap triggerhighlight">
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
+                            <time datetime="${airDate.isoformat('T')}" title="${airDate.isoformat('T')}" class="date">{{'${airDate.isoformat('T')}' | formatDate}}</time>
                         </td>
                     % except ValueError:
                         <td align="center" class="nowrap triggerhighlight"></td>

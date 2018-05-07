@@ -97,103 +97,6 @@ MEDUSA.home.index = function() {
         $(this).remove();
     });
 
-    $('#showListTableSeries:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
-        debug: false,
-        sortList: [[7, 1], [2, 0]],
-        textExtraction: (function() {
-            return {
-                0(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                1(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                3(node) { return $(node).find('span').prop('title').toLowerCase(); }, // eslint-disable-line brace-style
-                4(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); }, // eslint-disable-line brace-style
-                5(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                6(node) { return $(node).find('span:first').text(); }, // eslint-disable-line brace-style
-                7(node) { return $(node).data('show-size'); }, // eslint-disable-line brace-style
-                8(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-                10(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
-            };
-        })(),
-        widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
-        headers: {
-            0: { sorter: 'realISODate' },
-            1: { sorter: 'realISODate' },
-            2: { sorter: 'showNames' },
-            4: { sorter: 'text' },
-            5: { sorter: 'quality' },
-            6: { sorter: 'eps' },
-            7: { sorter: 'digit' },
-            8: { filter: 'parsed' },
-            10: { filter: 'parsed' }
-        },
-        widgetOptions: {
-            filter_columnFilters: true, // eslint-disable-line camelcase
-            filter_hideFilters: true, // eslint-disable-line camelcase
-            filter_saveFilters: true, // eslint-disable-line camelcase
-            filter_functions: { // eslint-disable-line camelcase
-                5(e, n, f) { // eslint-disable-line complexity
-                    let test = false;
-                    const pct = Math.floor((n % 1) * 1000);
-                    if (f === '') {
-                        test = true;
-                    } else {
-                        let result = f.match(/(<|<=|>=|>)\s+(\d+)/i);
-                        if (result) {
-                            if (result[1] === '<') {
-                                if (pct < parseInt(result[2], 10)) {
-                                    test = true;
-                                }
-                            } else if (result[1] === '<=') {
-                                if (pct <= parseInt(result[2], 10)) {
-                                    test = true;
-                                }
-                            } else if (result[1] === '>=') {
-                                if (pct >= parseInt(result[2], 10)) {
-                                    test = true;
-                                }
-                            } else if (result[1] === '>') {
-                                if (pct > parseInt(result[2], 10)) {
-                                    test = true;
-                                }
-                            }
-                        }
-
-                        result = f.match(/(\d+)\s(-|to)\s+(\d+)/i);
-                        if (result) {
-                            if ((result[2] === '-') || (result[2] === 'to')) {
-                                if ((pct >= parseInt(result[1], 10)) && (pct <= parseInt(result[3], 10))) {
-                                    test = true;
-                                }
-                            }
-                        }
-
-                        result = f.match(/(=)?\s?(\d+)\s?(=)?/i);
-                        if (result) {
-                            if ((result[1] === '=') || (result[3] === '=')) {
-                                if (parseInt(result[2], 10) === pct) {
-                                    test = true;
-                                }
-                            }
-                        }
-
-                        if (!isNaN(parseFloat(f)) && isFinite(f)) {
-                            if (parseInt(f, 10) === pct) {
-                                test = true;
-                            }
-                        }
-                    }
-                    return test;
-                }
-            },
-            columnSelector_mediaquery: false // eslint-disable-line camelcase
-        },
-        sortStable: true,
-        sortAppend: [[2, 0]]
-    }).bind('sortEnd', () => {
-        imgLazyLoad.handleScroll();
-    }).bind('filterEnd', () => {
-        imgLazyLoad.handleScroll();
-    });
-
     $('.show-grid').imagesLoaded(() => {
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
@@ -226,9 +129,6 @@ MEDUSA.home.index = function() {
                     return (indexer.length && parseInt(indexer, 10)) || Number.NEGATIVE_INFINITY;
                 }
             }
-        }).on('layoutComplete arrangeComplete removeComplete', () => {
-            imgLazyLoad.update();
-            imgLazyLoad.handleScroll();
         });
 
         // When posters are small enough to not display the .show-details

@@ -121,6 +121,7 @@
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
+        <script src="js/lib/timeago.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
@@ -129,6 +130,14 @@
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
         <script>window.routes = [];</script>
+        <script>
+            Vue.filter('formatDate', str => {
+                if (MEDUSA.config.fuzzyDating) {
+                    return timeago().format(str);
+                }
+                return (new Date(str)).toLocaleDateString();
+            });
+        </script>
         <%block name="scripts" />
         <script>
             if (!window.app) {

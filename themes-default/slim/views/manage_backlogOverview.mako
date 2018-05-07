@@ -162,7 +162,7 @@ const startVue = () => {
                         <td>
                             <% show = cur_show %>
                             % if cur_result['airdate']:
-                                <time datetime="${cur_result['airdate'].isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(cur_result['airdate'])}</time>
+                                <time datetime="${cur_result['airdate'].isoformat('T')}" title="${cur_result['airdate'].isoformat('T')}" class="date">{{'${cur_result['airdate'].isoformat('T')}' | formatDate}}</time>
                             % else:
                                 Never
                             % endif
