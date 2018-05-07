@@ -150,9 +150,15 @@ def create_tvepisode(monkeypatch):
 
 @pytest.fixture
 def create_file(tmpdir):
-    def create(filename, lines=None, **kwargs):
+    def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
-        f.write_binary('\n'.join(lines or []))
+        content = '\n'.join(lines or [])
+        f.write_binary(content)
+        if size:
+            tmp_size = f.size()
+            if tmp_size < size:
+                add_size = '\0' * (size - tmp_size)
+                f.write_binary(content + add_size)
         return str(f)
 
     return create
