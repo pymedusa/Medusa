@@ -217,7 +217,7 @@ def snatch_episode(result):
 
             sql_l.append(curEpObj.get_sql())
 
-        if curEpObj.splitted_status.status != common.DOWNLOADED:
+        if curEpObj.splitted_status_status != common.DOWNLOADED:
             notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):

@@ -432,6 +432,7 @@ class Episode(TV):
     def splitted_status_status(self, value):
         """
         Only set the status (reuse existing quality) of the composite status.
+
         :param value: The new status.
         """
         self._status = Quality.composite_status(value, self.splitted_status_quality)
@@ -445,6 +446,7 @@ class Episode(TV):
     def splitted_status_quality(self, value):
         """
         Only set the quality (reuse existing status) of the composite status.
+
         :param value: The new quality.
         """
         self._status = Quality.composite_status(self.splitted_status_status, value)
@@ -905,7 +907,7 @@ class Episode(TV):
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
-                    'status': statusStrings[self.status].upper(),
+                    'status': statusStrings[self.status],
                     'location': self.location,
                 }
             )
@@ -924,7 +926,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
             elif self.status in (UNSET, UNAIRED):
@@ -936,7 +938,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
             else:
@@ -945,7 +947,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
         #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
@@ -960,8 +962,8 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'old_status': statusStrings[old_status].upper(),
-                        'new_status': statusStrings[self.status].upper(),
+                        'old_status': statusStrings[old_status],
+                        'new_status': statusStrings[self.status],
                     }
                 )
             else:
@@ -970,7 +972,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
         # shouldn't get here probably
@@ -980,7 +982,7 @@ class Episode(TV):
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
-                    'old_status': statusStrings[self.status].upper(),
+                    'old_status': statusStrings[self.status],
                 }
             )
             self.status = UNSET
@@ -1006,7 +1008,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(self.season, self.episode),
-                        'new_status': statusStrings[self.status].upper(),
+                        'new_status': statusStrings[self.status],
                     }
                 )
 
@@ -2018,9 +2020,10 @@ class Episode(TV):
             )
 
     def update_status(self, filepath):
-        """Check if we should use the dectect file to change status.
+        """Update the episode status according to the file information.
 
-        TODO
+        The status should only be changed if either the size or the filename changed.
+        :param filepath: Path to the new episode file.
         """
         old_status, old_quality = Quality.split_composite_status(self.status)
 

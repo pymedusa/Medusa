@@ -1760,8 +1760,8 @@ class Series(TV):
                                     'id': self.series_id,
                                     'show': self.name,
                                     'ep': episode_num(season, episode),
-                                    'old_status': statusStrings[cur_ep.status].upper(),
-                                    'status': statusStrings[new_status].upper(),
+                                    'old_status': statusStrings[cur_ep.status],
+                                    'status': statusStrings[new_status],
                                 }
                             )
 
@@ -2152,7 +2152,7 @@ class Series(TV):
             return False
 
         cur_status, cur_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
-        ep_status_text = statusStrings[cur_status].upper()
+        ep_status_text = statusStrings[cur_status]
         manually_searched = sql_results[0][b'manually_searched']
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
