@@ -157,7 +157,7 @@ MEDUSA.addShows.init = function() {
             $('#blackwhitelist').show();
             if (showName) {
                 $.getJSON('home/fetch_releasegroups', {
-                    show_name: showName // eslint-disable-line camelcase
+                    series_name: showName // eslint-disable-line camelcase
                 }, data => {
                     if (data.result === 'success') {
                         $.each(data.groups, (i, group) => {
