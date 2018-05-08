@@ -1957,7 +1957,7 @@ class Series(TV):
                           'quality': self.quality,
                           'airs': self.airs,
                           'status': self.status,
-                          'flatten_folders': self.season_folders,
+                          'flatten_folders': not self.season_folders,  # TODO: Remove negation after DB change
                           'paused': self.paused,
                           'air_by_date': self.air_by_date,
                           'anime': self.anime,
