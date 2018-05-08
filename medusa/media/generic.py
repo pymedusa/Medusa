@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
 from builtins import object
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
