@@ -119,7 +119,7 @@ const startVue = () => {
                     <td class="triggerhighlight" align="center" title="Sports"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Scene"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Anime"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
-                    <td class="triggerhighlight" align="center" title="Season folders"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
+                    <td class="triggerhighlight" align="center" title="Season folders"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[cur_show.season_folders]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="DVD Order"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.dvd_order) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Paused"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Subtitle"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>

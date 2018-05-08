@@ -1738,7 +1738,7 @@ class Episode(TV):
         result = self.formatted_filename(anime_type=anime_type)
 
         # if they want us to flatten it and we're allowed to flatten it then we will
-        if self.series.flatten_folders and not app.NAMING_FORCE_FOLDERS:
+        if not self.series.season_folders and not app.NAMING_FORCE_FOLDERS:
             return result
 
         # if not we append the folder on and use that

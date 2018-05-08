@@ -1438,7 +1438,7 @@ class Home(WebRoot):
             return True
 
     def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
+                 exceptions_list=None, season_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
@@ -1475,7 +1475,7 @@ class Home(WebRoot):
         if try_int(quality_preset, None):
             preferred_qualities = []
 
-        if not location and not allowed_qualities and not preferred_qualities and not flatten_folders:
+        if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
             t = PageTemplate(rh=self, filename='editShow.mako')
 
             if series_obj.is_anime:
@@ -1506,7 +1506,7 @@ class Home(WebRoot):
                 return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
 
-        flatten_folders = not config.checkbox_to_value(flatten_folders)  # UI inverts this value
+        season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
         paused = config.checkbox_to_value(paused)
         air_by_date = config.checkbox_to_value(air_by_date)
@@ -1602,8 +1602,8 @@ class Home(WebRoot):
             series_obj.quality = new_quality
 
             # reversed for now
-            if bool(series_obj.flatten_folders) != bool(flatten_folders):
-                series_obj.flatten_folders = flatten_folders
+            if bool(series_obj.season_folders) != bool(season_folders):
+                series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                 except CantRefreshShowException as e:
