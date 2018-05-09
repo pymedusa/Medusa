@@ -12,7 +12,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
-from six import itervalues, text_type as str
+from six import itervalues
 
 from tornado.escape import json_decode
 
