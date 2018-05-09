@@ -297,11 +297,10 @@ class HomeAddShows(Home):
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
-                    flatten_folders=None, subtitles=None, full_show_path=None,
+                    season_folders=None, subtitles=None, full_show_path=None,
                     other_shows=None, skip_show=None, provided_indexer=None,
                     anime=None, scene=None, blacklist=None, whitelist=None,
-                    default_status_after=None, default_flatten_folders=None,
-                    configure_show_options=False):
+                    default_status_after=None, configure_show_options=False):
         """
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
@@ -338,7 +337,7 @@ class HomeAddShows(Home):
             # prepare the inputs for passing along
             scene = config.checkbox_to_value(scene)
             anime = config.checkbox_to_value(anime)
-            flatten_folders = config.checkbox_to_value(flatten_folders)
+            season_folders = config.checkbox_to_value(season_folders)
             subtitles = config.checkbox_to_value(subtitles)
 
             if whitelist:
@@ -365,7 +364,7 @@ class HomeAddShows(Home):
         else:
             default_status = app.STATUS_DEFAULT
             quality = app.QUALITY_DEFAULT
-            flatten_folders = app.FLATTEN_FOLDERS_DEFAULT
+            season_folders = app.SEASON_FOLDERS_DEFAULT
             subtitles = app.SUBTITLES_DEFAULT
             anime = app.ANIME_DEFAULT
             scene = app.SCENE_DEFAULT
@@ -387,7 +386,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
-                                                flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
+                                                season_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
@@ -396,7 +395,7 @@ class HomeAddShows(Home):
         return self.redirect('/home/')
 
     def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
-                   allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
+                   allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
         """
@@ -485,7 +484,7 @@ class HomeAddShows(Home):
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
         anime = config.checkbox_to_value(anime)
-        flatten_folders = config.checkbox_to_value(flatten_folders)
+        season_folders = config.checkbox_to_value(season_folders)
         subtitles = config.checkbox_to_value(subtitles)
 
         if whitelist:
@@ -505,7 +504,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                                flatten_folders, indexer_lang, subtitles, anime,
+                                                season_folders, indexer_lang, subtitles, anime,
                                                 scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
@@ -579,7 +578,7 @@ class HomeAddShows(Home):
                     indexer, indexer_id, show_dir,
                     default_status=app.STATUS_DEFAULT,
                     quality=app.QUALITY_DEFAULT,
-                    flatten_folders=app.FLATTEN_FOLDERS_DEFAULT,
+                    season_folders=app.SEASON_FOLDERS_DEFAULT,
                     subtitles=app.SUBTITLES_DEFAULT,
                     anime=app.ANIME_DEFAULT,
                     scene=app.SCENE_DEFAULT,

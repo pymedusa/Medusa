@@ -126,13 +126,13 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <label for="edit_flatten_folders">
+                                    <label for="edit_season_folders">
                                         <span class="component-title">Season folders (<span class="separator">*</span>)</span>
                                         <span class="component-desc">
-                                            <select id="" name="flatten_folders" class="form-control form-control-inline input-sm">
-                                                <option value="keep" ${'selected="selected"' if flatten_folders_value is None else ''}>&lt; Keep &gt;</option>
-                                                <option value="enable" ${'selected="selected"' if flatten_folders_value == 0 else ''}>Yes</option>
-                                                <option value="disable" ${'selected="selected"' if flatten_folders_value == 1 else ''}>No</option>
+                                            <select id="season_folders" name="season_folders" class="form-control form-control-inline input-sm">
+                                                <option value="keep" ${'selected="selected"' if season_folders_value is None else ''}>&lt; Keep &gt;</option>
+                                                <option value="enable" ${'selected="selected"' if season_folders_value == 1 else ''}>Yes</option>
+                                                <option value="disable" ${'selected="selected"' if season_folders_value == 0 else ''}>No</option>
                                             </select><br>
                                             Group episodes by season folder (set to "No" to store in a single folder).
                                         </span>
