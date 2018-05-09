@@ -2,7 +2,7 @@
 
 """qBittorrent Client."""
 
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 
@@ -39,13 +39,15 @@ class QBittorrentAPI(GenericClient):
         try:
             self.url = '{host}version/api'.format(host=self.host)
             version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)
+            # Convert old API versioning to new versioning (major, minor, release)
+            version = (1, version % 100, 0)
         except Exception:
-            version = 1
+            version = (1, 0, 0)
         return version
 
     def _get_auth(self):
 
-        if self.api > 1:
+        if self.api > (1, 0, 0):
             self.url = '{host}login'.format(host=self.host)
             data = {
                 'username': self.username,
@@ -80,7 +82,10 @@ class QBittorrentAPI(GenericClient):
 
         self.url = '{host}command/upload'.format(host=self.host)
         files = {
-            'torrents': result.content
+            'torrents': (
+                '{result}.torrent'.format(result=result.name),
+                result.content,
+            ),
         }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
@@ -88,8 +93,8 @@ class QBittorrentAPI(GenericClient):
 
         label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
 
-        if self.api > 6 and label:
-            label_key = 'Category' if self.api >= 10 else 'Label'
+        if self.api > (1, 6, 0) and label:
+            label_key = 'Category' if self.api >= (1, 10, 0) else 'Label'
             self.url = '{host}command/set{key}'.format(
                 host=self.host,
                 key=label_key,
@@ -120,7 +125,7 @@ class QBittorrentAPI(GenericClient):
     def _set_torrent_pause(self, result):
         self.url = '{host}command/{state}'.format(host=self.host,
                                                   state='pause' if app.TORRENT_PAUSED else 'resume')
-        hashes_key = 'hashes' if self.api >= 18 else 'hash'
+        hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         data = {
             hashes_key: result.hash.lower(),
         }
