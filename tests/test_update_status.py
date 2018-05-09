@@ -1,7 +1,7 @@
 # coding=utf-8
 """Tests for medusa/tv/episode.py:should_refresh"""
-from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED,
-                           SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, statusStrings)
+from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
+                           SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings)
 
 import pytest
 
@@ -78,35 +78,52 @@ def create_episode(tvshow, create_tvepisode, create_file):
         'expected': Quality.composite_status(ARCHIVED, Quality.SDTV)
     },
     {  # p10: Previous status was Ignored
-        'status': Quality.composite_status(IGNORED, Quality.SDTV),
+        'status': Quality.composite_status(IGNORED, None),
         'filepath': 'Show.S01E11.HDTV.X264-GROUP.mkv',
         'expected': Quality.composite_status(ARCHIVED, Quality.SDTV)
     },
-    {  # p11: Snatched and download is finished
+    {  # p11: Previous status was Unset
+        'status': Quality.composite_status(UNSET, None),
+        'filepath': 'Show.S01E11.HDTV.X264-GROUP.mkv',
+        'expected': Quality.composite_status(ARCHIVED, Quality.SDTV)
+    },
+    {  # p12: Snatched and download is finished
         'status': Quality.composite_status(SNATCHED, Quality.HDTV),
         'location': 'Show.S01E12.720p.HDTV.X264-GROUP.mkv',
         'filepath': 'Show.S01E12.720p.HDTV.X264-BETTERGROUP.mkv',
         'new_size': 29,
         'expected': Quality.composite_status(DOWNLOADED, Quality.HDTV)
     },
-    {  # p12: Snatched a Proper and download is finished
+    {  # p13: Snatched a Proper and download is finished
         'status': Quality.composite_status(SNATCHED_PROPER, Quality.FULLHDTV),
         'location': 'Show.S01E13.1080p.HDTV.X264-GROUP.mkv',
         'filepath': 'Show.S01E13.PROPER.1080p.HDTV.X264-GROUP.mkv',
         'new_size': 89,
         'expected': Quality.composite_status(DOWNLOADED, Quality.FULLHDTV)
     },
-    {  # p13: Snatched a Proper (Best) and download is finished (higher quality)
+    {  # p14: Snatched a Proper (Best) and download is finished (higher quality)
         'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
         'location': 'Show.S01E14.HDTV.X264-GROUP.mkv',
         'filepath': 'Show.S01E14.720p.HDTV.X264-GROUP.mkv',
         'expected': Quality.composite_status(DOWNLOADED, Quality.HDTV)
     },
-    {  # p13: Snatched a Proper (Best) and download is finished (lower quality)
+    {  # p15: Snatched a Proper (Best) and download is finished (lower quality)
         'status': Quality.composite_status(SNATCHED_BEST, Quality.FULLHDTV),
         'location': 'Show.S01E15.1080p.HDTV.X264-GROUP.mkv',
         'filepath': 'Show.S01E15.HDTV.X264-GROUP.mkv',
         'expected': Quality.composite_status(DOWNLOADED, Quality.SDTV)
+    },
+    {  # p16: Previous status was Wanted and no previous file present (location)
+        'status': Quality.composite_status(WANTED, None),
+        'filepath': 'Show.S01E16.HDTV.X264-GROUP.mkv',
+        'expected': Quality.composite_status(DOWNLOADED, Quality.SDTV)
+    },
+    {  # p17: Previous status was Wanted
+        'status': Quality.composite_status(WANTED, Quality.FULLHDTV),
+        'location': 'Show.S01E17.1080p.HDTV.X264-GROUP.mkv',
+        'filepath': 'Show.S01E17.720p.HDTV.X264-GROUP.mkv',
+        'new_size': 38,
+        'expected': Quality.composite_status(ARCHIVED, Quality.HDTV)
     },
 ])
 def test_should_refresh(p, create_episode, create_file):
