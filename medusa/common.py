@@ -159,7 +159,6 @@ class Quality(object):
     UNKNOWN = 1 << 15  # 32768
 
     qualityStrings = {
-        None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "SDTV",
@@ -180,7 +179,6 @@ class Quality(object):
     }
 
     sceneQualityStrings = {
-        None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "",
@@ -207,7 +205,6 @@ class Quality(object):
     }
 
     cssClassStrings = {
-        None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "SDTV",
@@ -874,11 +871,14 @@ class StatusStrings(dict):
         """
         If the key is not found try to determine a status from Quality.
 
-        :param key: A numeric key or None
+        :param key: A numeric key
         :raise KeyError: if the key is invalid and can't be determined from Quality
         """
-        # convert key to number
-        key = int(key)  # raises KeyError if it can't
+        try:
+            key = int(key)
+        except (TypeError, ValueError):
+            raise ValueError(key)
+
         current = Quality.split_composite_status(key)
         if current.quality in self.qualities:
             return '{status} ({quality})'.format(
@@ -892,8 +892,8 @@ class StatusStrings(dict):
         try:
             key = int(key)
             return key in self.statuses or key in self.qualities
-        except KeyError:
-            return False
+        except (TypeError, ValueError):
+            raise ValueError(key)
 
 
 # Assign strings to statuses
