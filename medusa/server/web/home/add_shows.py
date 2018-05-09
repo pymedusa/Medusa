@@ -300,8 +300,7 @@ class HomeAddShows(Home):
                     season_folders=None, subtitles=None, full_show_path=None,
                     other_shows=None, skip_show=None, provided_indexer=None,
                     anime=None, scene=None, blacklist=None, whitelist=None,
-                    default_status_after=None, default_flatten_folders=None,
-                    configure_show_options=False):
+                    default_status_after=None, configure_show_options=False):
         """
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
@@ -365,7 +364,7 @@ class HomeAddShows(Home):
         else:
             default_status = app.STATUS_DEFAULT
             quality = app.QUALITY_DEFAULT
-            season_folders = not app.FLATTEN_FOLDERS_DEFAULT
+            season_folders = app.SEASON_FOLDERS_DEFAULT
             subtitles = app.SUBTITLES_DEFAULT
             anime = app.ANIME_DEFAULT
             scene = app.SCENE_DEFAULT
@@ -579,7 +578,7 @@ class HomeAddShows(Home):
                     indexer, indexer_id, show_dir,
                     default_status=app.STATUS_DEFAULT,
                     quality=app.QUALITY_DEFAULT,
-                    season_folders=not app.FLATTEN_FOLDERS_DEFAULT,
+                    season_folders=app.SEASON_FOLDERS_DEFAULT,
                     subtitles=app.SUBTITLES_DEFAULT,
                     anime=app.ANIME_DEFAULT,
                     scene=app.SCENE_DEFAULT,

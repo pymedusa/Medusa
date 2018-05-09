@@ -98,7 +98,7 @@ result_type_map = {
 class ApiHandler(RequestHandler):
     """Api class that returns json results."""
 
-    version = 5  # use an int since float-point is unpredictable
+    version = 6  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):
         super(ApiHandler, self).__init__(*args, **kwargs)
@@ -1516,8 +1516,11 @@ class CMD_GetDefaults(ApiCall):
         any_qualities, best_qualities = _map_quality(app.QUALITY_DEFAULT)
 
         data = {'status': statusStrings[app.STATUS_DEFAULT].lower(),
-                'season_folders': int(not app.FLATTEN_FOLDERS_DEFAULT), 'initial': any_qualities,
-                'archive': best_qualities, 'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
+                'flatten_folders': int(not app.SEASON_FOLDERS_DEFAULT),
+                'season_folders': int(app.SEASON_FOLDERS_DEFAULT),
+                'initial': any_qualities,
+                'archive': best_qualities,
+                'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
         return _responds(RESULT_SUCCESS, data)
 
 
@@ -1761,7 +1764,10 @@ class CMD_SetDefaults(ApiCall):
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
         self.future_show_paused, args = self.check_params(args, kwargs, 'future_show_paused', None, False, 'bool', [])
-        self.season_folders, args = self.check_params(args, kwargs, 'season_folders', None, True, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         # super, missing, help
@@ -1798,7 +1804,7 @@ class CMD_SetDefaults(ApiCall):
             app.STATUS_DEFAULT = self.status
 
         if self.season_folders is not None:
-            app.FLATTEN_FOLDERS_DEFAULT = int(not self.season_folders)
+            app.SEASON_FOLDERS_DEFAULT = int(self.season_folders)
 
         if self.future_show_paused is not None:
             app.COMING_EPS_DISPLAY_PAUSED = int(self.future_show_paused)
@@ -1965,8 +1971,10 @@ class CMD_ShowAddExisting(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
-                                                       bool(not app.FLATTEN_FOLDERS_DEFAULT), True, 'bool', [])
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.subtitles, args = self.check_params(args, kwargs, 'subtitles', int(app.USE_SUBTITLES),
                                                  False, 'int', [])
         # super, missing, help
@@ -2051,8 +2059,10 @@ class CMD_ShowAddNew(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
-                                                       bool(not app.FLATTEN_FOLDERS_DEFAULT), True, 'bool', [])
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         self.lang, args = self.check_params(args, kwargs, 'lang', app.INDEXER_DEFAULT_LANGUAGE, False, 'string',

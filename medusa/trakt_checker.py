@@ -593,7 +593,7 @@ class TraktChecker(object):
                 app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
                                                         default_status=status,
                                                         quality=int(app.QUALITY_DEFAULT),
-                                                        season_folders=int(not app.FLATTEN_FOLDERS_DEFAULT),
+                                                        season_folders=int(app.SEASON_FOLDERS_DEFAULT),
                                                         paused=app.TRAKT_START_PAUSED,
                                                         default_status_after=status,
                                                         root_dir=location)

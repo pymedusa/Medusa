@@ -483,7 +483,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.subtitles = self.subtitles if self.subtitles is not None else app.SUBTITLES_DEFAULT
             self.show.quality = self.quality if self.quality else app.QUALITY_DEFAULT
             self.show.season_folders = self.season_folders if self.season_folders is not None \
-                else not app.FLATTEN_FOLDERS_DEFAULT
+                else app.SEASON_FOLDERS_DEFAULT
             self.show.anime = self.anime if self.anime is not None else app.ANIME_DEFAULT
             self.show.scene = self.scene if self.scene is not None else app.SCENE_DEFAULT
             self.show.paused = self.paused if self.paused is not None else False

@@ -205,7 +205,7 @@ class Series(TV):
         self.runtime = 0
         self.imdb_info = {}
         self.quality = quality or int(app.QUALITY_DEFAULT)
-        self.season_folders = season_folders or int(not app.FLATTEN_FOLDERS_DEFAULT)
+        self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self._airs = ''
         self.start_year = 0

@@ -137,8 +137,7 @@ MEDUSA.addShows.init = function() {
                 default_status: $('#statusSelect').val(), // eslint-disable-line camelcase
                 any_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
                 best_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
-                // Flatten folders is the contrary of season folders!
-                default_flatten_folders: !$('#season_folders').prop('checked'), // eslint-disable-line camelcase
+                season_folders: $('#season_folders').prop('checked'), // eslint-disable-line camelcase
                 subtitles: $('#subtitles').prop('checked'),
                 anime: $('#anime').prop('checked'),
                 scene: $('#scene').prop('checked'),
