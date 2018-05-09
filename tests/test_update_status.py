@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for medusa/tv/episode.py:should_refresh"""
+"""Tests for medusa/tv/episode.py:update_status"""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
                            SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings)
 
@@ -126,7 +126,7 @@ def create_episode(tvshow, create_tvepisode, create_file):
         'expected': Quality.composite_status(ARCHIVED, Quality.HDTV)
     },
 ])
-def test_should_refresh(p, create_episode, create_file):
+def test_update_status(p, create_episode, create_file):
     """Run the test."""
     # Given
     location = p.get('location')

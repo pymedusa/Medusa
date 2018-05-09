@@ -2036,7 +2036,7 @@ class Episode(TV):
         with self.lock:
             self.location = filepath
         # If size from given filepath is 0 it means we couldn't determine file size
-        same_size = old_size and self.file_size > 0 and self.file_size == old_size
+        same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
 
         if not same_size or not same_name:
             log.debug(
