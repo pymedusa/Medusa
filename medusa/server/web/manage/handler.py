@@ -466,8 +466,8 @@ class Manage(Home, WebRoot):
                 show_list.append(series_obj)
                 show_names.append(series_obj.name)
 
-        flatten_folders_all_same = True
-        last_flatten_folders = None
+        season_folders_all_same = True
+        last_season_folders = None
 
         paused_all_same = True
         last_paused = None
@@ -525,11 +525,11 @@ class Manage(Home, WebRoot):
                 else:
                     last_anime = cur_show.anime
 
-            if flatten_folders_all_same:
-                if last_flatten_folders not in (None, cur_show.flatten_folders):
-                    flatten_folders_all_same = False
+            if season_folders_all_same:
+                if last_season_folders not in (None, cur_show.season_folders):
+                    season_folders_all_same = False
                 else:
-                    last_flatten_folders = cur_show.flatten_folders
+                    last_season_folders = cur_show.season_folders
 
             if quality_all_same:
                 if last_quality not in (None, cur_show.quality):
@@ -570,7 +570,7 @@ class Manage(Home, WebRoot):
         default_ep_status_value = last_default_ep_status if default_ep_status_all_same else None
         paused_value = last_paused if paused_all_same else None
         anime_value = last_anime if anime_all_same else None
-        flatten_folders_value = last_flatten_folders if flatten_folders_all_same else None
+        season_folders_value = last_season_folders if season_folders_all_same else None
         quality_value = last_quality if quality_all_same else None
         subtitles_value = last_subtitles if subtitles_all_same else None
         scene_value = last_scene if scene_all_same else None
@@ -580,12 +580,12 @@ class Manage(Home, WebRoot):
         root_dir_list = root_dir_list
 
         return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
-                        paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
+                        paused_value=paused_value, anime_value=anime_value, season_folders_value=season_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, topmenu='manage')
 
     def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
-                       anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
+                       anime=None, sports=None, scene=None, season_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
         allowed_qualities = allowed_qualities or []
@@ -658,11 +658,11 @@ class Manage(Home, WebRoot):
                 new_dvd_order = True if dvd_order == 'enable' else False
             new_dvd_order = 'on' if new_dvd_order else 'off'
 
-            if flatten_folders == 'keep':
-                new_flatten_folders = series_obj.flatten_folders
+            if season_folders == 'keep':
+                new_season_folders = series_obj.season_folders
             else:
-                new_flatten_folders = True if flatten_folders == 'enable' else False
-            new_flatten_folders = 'on' if new_flatten_folders else 'off'
+                new_season_folders = True if season_folders == 'enable' else False
+            new_season_folders = 'on' if new_season_folders else 'off'
 
             if subtitles == 'keep':
                 new_subtitles = series_obj.subtitles
@@ -681,7 +681,7 @@ class Manage(Home, WebRoot):
             errors += self.editShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
                                     preferred_qualities, exceptions_list,
                                     defaultEpStatus=new_default_ep_status,
-                                    flatten_folders=new_flatten_folders,
+                                    season_folders=new_season_folders,
                                     paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
                                     subtitles=new_subtitles, anime=new_anime,
                                     scene=new_scene, air_by_date=new_air_by_date,

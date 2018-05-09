@@ -568,7 +568,8 @@ class Application(object):
             app.VERSION_NOTIFY = bool(check_setting_int(app.CFG, 'General', 'version_notify', 1))
             app.AUTO_UPDATE = bool(check_setting_int(app.CFG, 'General', 'auto_update', 0))
             app.NOTIFY_ON_UPDATE = bool(check_setting_int(app.CFG, 'General', 'notify_on_update', 1))
-            app.FLATTEN_FOLDERS_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'flatten_folders_default', 0))
+            # TODO: Remove negation, change item name to season_folders_default and default to 1
+            app.SEASON_FOLDERS_DEFAULT = not bool(check_setting_int(app.CFG, 'General', 'flatten_folders_default', 0))
             app.INDEXER_DEFAULT = check_setting_int(app.CFG, 'General', 'indexer_default', 0)
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
@@ -1484,7 +1485,8 @@ class Application(object):
         new_config['General']['quality_default'] = int(app.QUALITY_DEFAULT)
         new_config['General']['status_default'] = int(app.STATUS_DEFAULT)
         new_config['General']['status_default_after'] = int(app.STATUS_DEFAULT_AFTER)
-        new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
+        # TODO: Rename to season_folders_default
+        new_config['General']['flatten_folders_default'] = int(not app.SEASON_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)

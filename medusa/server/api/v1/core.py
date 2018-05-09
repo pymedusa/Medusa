@@ -98,7 +98,7 @@ result_type_map = {
 class ApiHandler(RequestHandler):
     """Api class that returns json results."""
 
-    version = 5  # use an int since float-point is unpredictable
+    version = 6  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):
         super(ApiHandler, self).__init__(*args, **kwargs)
@@ -1516,8 +1516,11 @@ class CMD_GetDefaults(ApiCall):
         any_qualities, best_qualities = _map_quality(app.QUALITY_DEFAULT)
 
         data = {'status': statusStrings[app.STATUS_DEFAULT].lower(),
-                'flatten_folders': int(app.FLATTEN_FOLDERS_DEFAULT), 'initial': any_qualities,
-                'archive': best_qualities, 'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
+                'flatten_folders': int(not app.SEASON_FOLDERS_DEFAULT),
+                'season_folders': int(app.SEASON_FOLDERS_DEFAULT),
+                'initial': any_qualities,
+                'archive': best_qualities,
+                'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
         return _responds(RESULT_SUCCESS, data)
 
 
@@ -1749,7 +1752,7 @@ class CMD_SetDefaults(ApiCall):
             'initial': {'desc': 'The initial quality of a show'},
             'archive': {'desc': 'The archive quality of a show'},
             'future_show_paused': {'desc': 'True to list paused shows in the coming episode, False otherwise'},
-            'flatten_folders': {'desc': 'Flatten sub-folders within the show directory'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'status': {'desc': 'Status of missing episodes'},
         }
     }
@@ -1761,7 +1764,10 @@ class CMD_SetDefaults(ApiCall):
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
         self.future_show_paused, args = self.check_params(args, kwargs, 'future_show_paused', None, False, 'bool', [])
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders', None, False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         # super, missing, help
@@ -1797,8 +1803,8 @@ class CMD_SetDefaults(ApiCall):
                 raise ApiError('Status Prohibited')
             app.STATUS_DEFAULT = self.status
 
-        if self.flatten_folders is not None:
-            app.FLATTEN_FOLDERS_DEFAULT = int(self.flatten_folders)
+        if self.season_folders is not None:
+            app.SEASON_FOLDERS_DEFAULT = int(self.season_folders)
 
         if self.future_show_paused is not None:
             app.COMING_EPS_DISPLAY_PAUSED = int(self.future_show_paused)
@@ -1898,7 +1904,7 @@ class CMD_Show(ApiCall):
         show_dict['paused'] = (0, 1)[show_obj.paused]
         show_dict['subtitles'] = (0, 1)[show_obj.subtitles]
         show_dict['air_by_date'] = (0, 1)[show_obj.air_by_date]
-        show_dict['flatten_folders'] = (0, 1)[show_obj.flatten_folders]
+        show_dict['season_folders'] = (0, 1)[show_obj.season_folders]
         show_dict['sports'] = (0, 1)[show_obj.sports]
         show_dict['anime'] = (0, 1)[show_obj.anime]
         show_dict['airs'] = str(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
@@ -1952,7 +1958,7 @@ class CMD_ShowAddExisting(ApiCall):
             'tvdbid': {'desc': 'thetvdb.com unique ID of a show'},
             'initial': {'desc': 'The initial quality of the show'},
             'archive': {'desc': 'The archive quality of the show'},
-            'flatten_folders': {'desc': 'True to flatten the show folder, False otherwise'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'subtitles': {'desc': 'True to search for subtitles, False otherwise'},
         }
     }
@@ -1965,8 +1971,10 @@ class CMD_ShowAddExisting(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders',
-                                                       bool(app.FLATTEN_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.subtitles, args = self.check_params(args, kwargs, 'subtitles', int(app.USE_SUBTITLES),
                                                  False, 'int', [])
         # super, missing, help
@@ -2014,7 +2022,7 @@ class CMD_ShowAddExisting(ApiCall):
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
             default_status=app.STATUS_DEFAULT, quality=new_quality,
-            flatten_folders=int(self.flatten_folders), subtitles=self.subtitles,
+            season_folders=int(self.season_folders), subtitles=self.subtitles,
             default_status_after=app.STATUS_DEFAULT_AFTER
         )
 
@@ -2032,7 +2040,7 @@ class CMD_ShowAddNew(ApiCall):
             'initial': {'desc': 'The initial quality of the show'},
             'location': {'desc': 'The path to the folder where the show should be created'},
             'archive': {'desc': 'The archive quality of the show'},
-            'flatten_folders': {'desc': 'True to flatten the show folder, False otherwise'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'status': {'desc': 'The status of missing episodes'},
             'lang': {'desc': 'The 2-letter language code of the desired show'},
             'subtitles': {'desc': 'True to search for subtitles, False otherwise'},
@@ -2051,8 +2059,10 @@ class CMD_ShowAddNew(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders',
-                                                       bool(app.FLATTEN_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         self.lang, args = self.check_params(args, kwargs, 'lang', app.INDEXER_DEFAULT_LANGUAGE, False, 'string',
@@ -2169,7 +2179,7 @@ class CMD_ShowAddNew(ApiCall):
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
-            quality=new_quality, flatten_folders=int(self.flatten_folders),
+            quality=new_quality, season_folders=int(self.season_folders),
             lang=self.lang, subtitles=self.subtitles, anime=self.anime,
             scene=self.scene, default_status_after=default_ep_status_after
         )

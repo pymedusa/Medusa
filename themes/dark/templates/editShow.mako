@@ -24,7 +24,7 @@ const startVue = () => {
                         aliases: [],
                         dvdOrder: false,
                         defaultEpisodeStatus: '',
-                        flattenFolders: false,
+                        seasonFolders: true,
                         anime: false,
                         scene: false,
                         sports: false,
@@ -82,7 +82,7 @@ const startVue = () => {
                             aliases: this.series.config.aliases,
                             defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
                             dvdOrder: this.series.config.dvdOrder,
-                            flattenFolders: this.series.config.flattenFolders,
+                            seasonFolders: this.series.config.seasonFolders,
                             anime: this.series.config.anime,
                             scene: this.series.config.scene,
                             sports: this.series.config.sports,
@@ -258,7 +258,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="season_folders" name="flatten_folders" v-model="series.config.flattenFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
+                                <input type="checkbox" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
                             </div>
                         </div>
 

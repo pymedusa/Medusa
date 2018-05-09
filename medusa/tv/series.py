@@ -185,7 +185,7 @@ class Series(TV):
     """Represent a TV Show."""
 
     def __init__(self, indexer, indexerid, lang='', quality=None,
-                 flatten_folders=None, enabled_subtitles=None):
+                 season_folders=None, enabled_subtitles=None):
         """Instantiate a Series with database information based on indexerid.
 
         :param indexer:
@@ -205,7 +205,7 @@ class Series(TV):
         self.runtime = 0
         self.imdb_info = {}
         self.quality = quality or int(app.QUALITY_DEFAULT)
-        self.flatten_folders = flatten_folders or int(app.FLATTEN_FOLDERS_DEFAULT)
+        self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self._airs = ''
         self.start_year = 0
@@ -1501,7 +1501,7 @@ class Series(TV):
             self.subtitles = int(sql_results[0][b'subtitles'] or 0)
             self.dvd_order = int(sql_results[0][b'dvdorder'] or 0)
             self.quality = int(sql_results[0][b'quality'] or UNKNOWN)
-            self.flatten_folders = int(sql_results[0][b'flatten_folders'] or 0)
+            self.season_folders = int(not (sql_results[0][b'flatten_folders'] or 0))  # TODO: Rename this in the DB
             self.paused = int(sql_results[0][b'paused'] or 0)
             self._location = sql_results[0][b'location']  # skip location validation
 
@@ -1957,7 +1957,7 @@ class Series(TV):
                           'quality': self.quality,
                           'airs': self.airs,
                           'status': self.status,
-                          'flatten_folders': self.flatten_folders,
+                          'flatten_folders': not self.season_folders,  # TODO: Remove negation after DB change
                           'paused': self.paused,
                           'air_by_date': self.air_by_date,
                           'anime': self.anime,
@@ -2087,7 +2087,7 @@ class Series(TV):
         data['config']['airByDate'] = bool(self.air_by_date)
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
         data['config']['dvdOrder'] = bool(self.dvd_order)
-        data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['seasonFolders'] = bool(self.season_folders)
         data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
         data['config']['sports'] = self.is_sports
