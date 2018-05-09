@@ -16,7 +16,7 @@ from medusa.name_parser.rules import default_api
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
 # release group exception list
-expected_groups = {
+expected_groups = [
     # release groups with numbers
     'TV2LAX9',
 
@@ -25,9 +25,9 @@ expected_groups = {
 
     # The.Good.Wife.Season.6.480p.HDTV.H264-20-40.WEB-DL
     '20-40',
-}
+]
 
-allowed_languages = {
+allowed_languages = [
     'de',
     'en',
     'es',
@@ -46,12 +46,12 @@ allowed_languages = {
     'uk',
     'mul',  # multi language
     'und',  # undetermined
-}
+]
 
-allowed_countries = {
+allowed_countries = [
     'us',
     'gb',
-}
+]
 
 series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
 

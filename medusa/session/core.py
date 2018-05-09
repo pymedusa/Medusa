@@ -154,19 +154,19 @@ class MedusaSafeSession(MedusaSession):
                                                           timeout=timeout, verify=verify, **kwargs)
             resp.raise_for_status()
         except requests.exceptions.HTTPError as error:
-            log.debug(u'The response returned a non-200 response while requesting url {url}. Error: {err_msg!r}',
+            log.debug(u'The response returned a non-200 response while requesting url {url} Error: {err_msg!r}',
                       url=url, err_msg=error)
             return resp or error.response
         except requests.exceptions.RequestException as error:
-            log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=error)
+            log.debug(u'Error requesting url {url} Error: {err_msg}', url=url, err_msg=error)
             return resp or error.response
         except Exception as error:
             if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
                 log.warning(
-                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=error)
+                    u'Connection reset by peer accessing url {url} Error: {err_msg}'.format(url=url, err_msg=error)
                 )
             else:
-                log.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=error)
+                log.info(u'Unknown exception in url {url} Error: {err_msg}', url=url, err_msg=error)
                 log.debug(traceback.format_exc())
             return None
 
