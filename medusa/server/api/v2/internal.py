@@ -12,7 +12,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
-from six import itervalues
+from six import itervalues, text_type as str
 
 from tornado.escape import json_decode
 
@@ -74,13 +74,16 @@ class InternalHandler(BaseRequestHandler):
         dir_list = []
 
         # Get a unique list of shows
-        query_where = b' OR '.join([b"location LIKE '{0}%'".format(rd) for rd in root_dirs])
         main_db_con = db.DBConnection()
         dir_results = main_db_con.select(
             b'SELECT location '
-            b'FROM tv_shows '
-            b'WHERE {0}'.format(query_where)
+            b'FROM tv_shows'
         )
+        root_dirs_lower = tuple(map(str.lower, root_dirs))
+        dir_results = [
+            series[b'location'] for series in dir_results
+            if series[b'location'].lower().startswith(root_dirs_lower)
+        ]
 
         for root_dir in root_dirs:
             try:
@@ -111,7 +114,7 @@ class InternalHandler(BaseRequestHandler):
                 }
 
                 # Check if the folder is already in the library
-                cur_dir['alreadyAdded'] = next((True for entry in dir_results if entry[b'location'] == cur_path), False)
+                cur_dir['alreadyAdded'] = next((True for path in dir_results if path == cur_path), False)
 
                 if not cur_dir['alreadyAdded']:
                     # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
