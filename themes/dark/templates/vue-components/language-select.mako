@@ -23,10 +23,10 @@ Vue.component('language-select', {
         const vm = this;
         $(this.$el).bfhlanguages({
             flags: this.flags, language: this.language,
-            available: this.available, blank: this.blank             
+            available: this.available, blank: this.blank
         });
 
-        $(this.$el).on('change', function(evt) { 
+        $(this.$el).on('change', function(evt) {
             vm.$emit('update-language', evt.currentTarget.value);
         });
     },

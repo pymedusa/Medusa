@@ -20,6 +20,7 @@
     }
 
     div.anidb-release-group-ui-wrapper div.arrow img {
+        cursor: pointer;
         height: 32px;
         width: 32px;
     }
@@ -53,7 +54,7 @@
             <div class="col-sm-4 left-whitelist" >
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
                 <ul>
-                    <li @click="item.toggled = !item.toggled" v-for="item in itemsWhitelist" v-bind:class="{active: item.toggled}">{{ item.name }}</li>
+                    <li @click="item.toggled = !item.toggled" v-for="item in itemsWhitelist" :class="{active: item.toggled}">{{ item.name }}</li>
                     <div class="arrow" @click="moveToList('whitelist')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -62,7 +63,7 @@
             <div class="col-sm-4 center-available">
                 <span>Release groups</span>
                 <ul>
-                    <li v-for="release in itemsReleaseGroups" class="initial" v-bind:class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
+                    <li v-for="release in itemsReleaseGroups" class="initial" :class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('releasegroups')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -71,7 +72,7 @@
             <div class="col-sm-4 right-blacklist">
                 <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')"/>
                 <ul>
-                    <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" v-bind:class="{active: release.toggled}">{{ release.name }}</li>
+                    <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" :class="{active: release.toggled}">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('blacklist')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -95,15 +96,21 @@ Vue.component('anidb-release-group-ui', {
     props: {
         blacklist: {
             type: Array,
-            default: []
+            default() {
+                return [];
+            }
         },
         whitelist: {
             type: Array,
-            default: []
+            default() {
+                return [];
+            }
         },
         allGroups: {
             type: Array,
-            default: []
+            default() {
+                return [];
+            }
         }
     },
     data() {
@@ -130,7 +137,6 @@ Vue.component('anidb-release-group-ui', {
         createIndexedObjects(releaseGroups, list) {
             newList = [];
             for (release of releaseGroups) {
-
                 // Whitelist and blacklist pass an array of strings not objects.
                 if (typeof(release) === 'string') {
                     release = { name: release };
@@ -182,19 +188,23 @@ Vue.component('anidb-release-group-ui', {
     },
     computed: {
         itemsWhitelist() {
-            return this.allReleaseGroups.filter(x => x.memberOf == 'whitelist');
+            return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },
         itemsBlacklist() {
-            return this.allReleaseGroups.filter(x => x.memberOf == 'blacklist');
+            return this.allReleaseGroups.filter(x => x.memberOf === 'blacklist');
         },
         itemsReleaseGroups() {
-            return this.allReleaseGroups.filter(x => x.memberOf == 'releasegroups');
+            return this.allReleaseGroups.filter(x => x.memberOf === 'releasegroups');
         },
         showDeleteFromWhitelist() {
-            return this.allReleaseGroups.filter(x => x.memberOf == 'whitelist' && x.toggled == true).length !== 0;
+            return this.allReleaseGroups
+                .filter(x => x.memberOf === 'whitelist' && x.toggled === true)
+                .length !== 0;
         },
         showDeleteFromBlacklist() {
-            return this.allReleaseGroups.filter(x => x.memberOf == 'blacklist' && x.toggled == true).length !== 0;
+            return this.allReleaseGroups
+                .filter(x => x.memberOf === 'blacklist' && x.toggled === true)
+                .length !== 0;
         }
     },
     watch: {

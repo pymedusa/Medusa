@@ -12,8 +12,6 @@ const startVue = () => {
             title: 'Edit Show'
         },
         data() {
-            // Python conversions
-            // JS only
             return {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
@@ -33,8 +31,8 @@ const startVue = () => {
                         airByDate: false,
                         subtitlesEnabled: false,
                         release: {
-                            requiredWords: null,
-                            ignoredWords: null,
+                            requiredWords: [],
+                            ignoredWords: [],
                             blacklist: [],
                             whitelist: [],
                             allgroups: []
@@ -92,9 +90,7 @@ const startVue = () => {
                             subtitlesEnabled: this.series.config.subtitlesEnabled,
                             release: {
                                 requiredWords: this.series.config.release.requiredWords,
-                                ignoredWords: this.series.config.release.ignoredWords,
-                                blacklist: this.series.config.release.blacklist,
-                                whitelist: this.series.config.release.whitelist
+                                ignoredWords: this.series.config.release.ignoredWords
                             },
                             qualities: {
                                 preferred: this.series.config.qualities.preferred,
@@ -103,6 +99,12 @@ const startVue = () => {
                         },
                         language: this.series.language
                     };
+
+                    if (data.config.anime) {
+                        data.config.release.blacklist = this.series.config.release.blacklist;
+                        data.config.release.whitelist = this.series.config.release.whitelist;
+                    }
+
                     try {
                         this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
@@ -144,6 +146,11 @@ const startVue = () => {
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
                 return allowed | preferred << 16
+            },
+            displayShowUrl() {
+                // @TODO: Change the URL generation to use `this.series`. Currently not possible because
+                // the values are not available at the time of app-link component creation.
+                return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
             }
         }
     });
@@ -154,7 +161,10 @@ const startVue = () => {
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-<h1 class="header">Edit Show</h1>
+<h1 class="header">
+    Edit Show
+    <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
+</h1>
 <saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -181,7 +191,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
                             <div class="col-sm-10 content">
-                                    <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
                             </div>
                         </div>
 
@@ -228,8 +238,8 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
 
@@ -265,15 +275,15 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
-                                    <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
+                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
+                                <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
                         </div>
                     </fieldset>
@@ -287,7 +297,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
                             <div class="col-sm-10 content">
-                                <select-list v-if="series.config.release.ignoredWords !== null" :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
+                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords" />
                                 <div class="clear-left">
                                     <p>Search results with one or more words from this list will be ignored.</p>
                                 </div>
@@ -297,7 +307,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_require_words" class="col-sm-2 control-label">Required words</label>
                             <div class="col-sm-10 content">
-                                <select-list v-if="series.config.release.requiredWords !== null" :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
+                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords" />
                                 <div class="clear-left">
                                     <p>Search results with no words from this list will be ignored.</p>
                                 </div>
@@ -307,7 +317,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="SceneName" class="col-sm-2 control-label">Scene Exception</label>
                             <div class="col-sm-10 content">
-                                <select-list v-if="series.config.aliases" :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
+                                <select-list :list-items="series.config.aliases" @change="onChangeAliases" />
                                 <div class="clear-left">
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
                                 </div>

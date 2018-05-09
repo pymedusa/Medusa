@@ -17,6 +17,11 @@
         display: flex;
     }
 
+    div.select-list .new-item-help {
+        font-weight: bold;
+        padding-top: 5px;
+    }
+
     div.select-list input, div.select-list img {
         display: inline-block;
         box-sizing: border-box;
@@ -27,8 +32,6 @@
     }
 
     div.select-list .switch-input {
-        height: 18px;
-        width: 18px;
         left: -8px;
         top: 4px;
         position: absolute;
@@ -39,35 +42,37 @@
 </style>
 <script type="text/x-template" id="select-list">
     <div class="select-list max-width">
-        <img class="switch-input" src="images/refresh.png" @click="switchFields()"/>
+        <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()"
+            title="Switch between a list and comma separated values"></i>
 
-        <div class="default" v-if="!csvEnabled">
-            <ul>
-                <li v-for="item of editItems">
-                    <div class="input-group">
-                        <input class="form-control input-sm" type="text" v-model="item.value"/>
-                        <div class="input-group-btn" @click="deleteItem(item)">
-                            <div style="font-size: 14px" class="btn btn-default input-sm">
-                                <i class="glyphicon glyphicon-remove"></i>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <div class="new-item">
-                    <div class="input-group">
-                        <input class="form-control input-sm" type="text" v-model="newItem" placeholder="add new values per line" />
-                        <div class="input-group-btn" @click="addNewItem()">
-                                <div style="font-size: 14px" class="btn btn-default input-sm">
-                                    <i class="glyphicon glyphicon-plus"></i>
-                                </div>
+        <ul v-if="!csvEnabled">
+            <li v-for="item of editItems">
+                <div class="input-group">
+                    <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)"/>
+                    <div class="input-group-btn" @click="deleteItem(item)">
+                        <div style="font-size: 14px" class="btn btn-default input-sm">
+                            <i class="glyphicon glyphicon-remove" title="Remove"></i>
                         </div>
                     </div>
                 </div>
-            </ul>
-        </div>
+            </li>
+            <div class="new-item">
+                <div class="input-group">
+                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line" />
+                    <div class="input-group-btn" @click="addNewItem()">
+                        <div style="font-size: 14px" class="btn btn-default input-sm">
+                            <i class="glyphicon glyphicon-plus" title="Add"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="newItem.length > 0" class="new-item-help">
+                Click <i class="glyphicon glyphicon-plus"></i> to finish adding the value.
+            </div>
+        </ul>
 
-        <div class="csv" v-if="csvEnabled">
-            <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated "/>
+        <div v-else class="csv">
+            <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated"/>
         </div>
 
     </div>
@@ -80,7 +85,13 @@ Vue.component('select-list', {
     props: {
         listItems: {
             type: Array,
+            default: [],
             required: true
+        },
+        unique: {
+            type: Boolean,
+            default: true,
+            required: false
         }
     },
     data() {
@@ -90,28 +101,26 @@ Vue.component('select-list', {
             newItem: '',
             indexCounter: 0,
             csv: '',
-            csvEnabled: false,
-            csvValid: true
+            csvEnabled: false
         }
-    },
-    mounted() {
-        this.lock = true;
-        this.editItems = this.sanitize(this.listItems);
-        this.$nextTick(() => this.lock = false);
-        this.csv = this.editItems.map(x => x.value).join(', ');
     },
     methods: {
         addItem: function(item) {
+            if (this.unique && this.editItems.find(i => i.value === item)) return;
             this.editItems.push({id: this.indexCounter, value: item});
             this.indexCounter += 1;
         },
         addNewItem: function(evt) {
+            if (this.newItem === '') return;
             this.addItem(this.newItem);
             this.newItem = '';
         },
         deleteItem: function(item) {
             this.editItems = this.editItems.filter(e => e !== item);
-            this.newItem = item.value;
+            this.$refs.newItemInput.focus();
+        },
+        removeEmpty: function(item) {
+            return item.value === '' ? this.deleteItem(item) : false;
         },
         /**
          * Initially an array of strings is passed, which we'd like to translate to an array of object.
@@ -164,6 +173,17 @@ Vue.component('select-list', {
         }
     },
     watch: {
+        /**
+         * listItems property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        listItems() {
+            this.lock = true;
+            this.editItems = this.sanitize(this.listItems);
+            this.$nextTick(() => this.lock = false);
+            this.csv = this.editItems.map(x => x.value).join(', ');
+        },
         editItems: {
             handler: function() {
                 if (!this.lock) {
