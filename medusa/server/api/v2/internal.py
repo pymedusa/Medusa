@@ -80,10 +80,10 @@ class InternalHandler(BaseRequestHandler):
             b'SELECT location '
             b'FROM tv_shows'
         )
-        root_dirs_lower = tuple(map(str.lower, root_dirs))
+        root_dirs_tuple = tuple(root_dirs)
         dir_results = [
             series[b'location'] for series in dir_results
-            if series[b'location'].lower().startswith(root_dirs_lower)
+            if series[b'location'].lower().startswith(root_dirs_tuple)
         ]
 
         for root_dir in root_dirs:
