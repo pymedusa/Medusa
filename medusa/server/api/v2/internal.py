@@ -83,7 +83,7 @@ class InternalHandler(BaseRequestHandler):
         root_dirs_tuple = tuple(root_dirs)
         dir_results = [
             series[b'location'] for series in dir_results
-            if series[b'location'].lower().startswith(root_dirs_tuple)
+            if series[b'location'].startswith(root_dirs_tuple)
         ]
 
         for root_dir in root_dirs:
