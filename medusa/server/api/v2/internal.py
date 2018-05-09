@@ -31,8 +31,6 @@ class InternalHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    valid_resources = ('existingSeries', )
-
     def get(self, resource, path_param=None):
         """Query internal data.
 
@@ -41,18 +39,21 @@ class InternalHandler(BaseRequestHandler):
         :type path_param: str
         """
         if resource is None:
-            return self._bad_request('You must provider a resource name')
+            return self._bad_request('You must provide a resource name')
 
-        if resource not in self.valid_resources:
+        # Convert 'camelCase' to 'resource_snake_case'
+        resource_function_name = 'resource_' + re.sub('([A-Z]+)', r'_\1', resource).lower()
+        resource_function = getattr(self, resource_function_name, None)
+
+        if resource_function is None:
+            log.error('Unable to get function "{func}" for resource "{resource}"',
+                      {'func': resource_function_name, 'resource': resource})
             return self._bad_request('{key} is a invalid resource'.format(key=resource))
 
-        # Convert 'camelCase' to '_snake_case'
-        resource_function = '_' + re.sub('([A-Z]+)', r'_\1', resource).lower()
-        data = getattr(self, resource_function)()
-
+        data = resource_function()
         return self._ok(data=data)
 
-    def _existing_series(self):
+    def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""
         root_dirs = json_decode(self.get_argument('root-dir', '[]'))
 
@@ -74,13 +75,16 @@ class InternalHandler(BaseRequestHandler):
         dir_list = []
 
         # Get a unique list of shows
-        query_where = b' OR '.join([b"location LIKE '{0}%'".format(rd) for rd in root_dirs])
         main_db_con = db.DBConnection()
         dir_results = main_db_con.select(
             b'SELECT location '
-            b'FROM tv_shows '
-            b'WHERE {0}'.format(query_where)
+            b'FROM tv_shows'
         )
+        root_dirs_tuple = tuple(root_dirs)
+        dir_results = [
+            series[b'location'] for series in dir_results
+            if series[b'location'].startswith(root_dirs_tuple)
+        ]
 
         for root_dir in root_dirs:
             try:
@@ -111,7 +115,7 @@ class InternalHandler(BaseRequestHandler):
                 }
 
                 # Check if the folder is already in the library
-                cur_dir['alreadyAdded'] = next((True for entry in dir_results if entry[b'location'] == cur_path), False)
+                cur_dir['alreadyAdded'] = next((True for path in dir_results if path == cur_path), False)
 
                 if not cur_dir['alreadyAdded']:
                     # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
