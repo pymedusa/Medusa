@@ -36,6 +36,25 @@ class QBittorrentAPI(GenericClient):
     @property
     def api(self):
         """Get API version."""
+        # It's required to authenticate before requesting anything from API v2.
+        if self._get_auth_v2():
+            # Update the auth method to v2
+            self._get_auth = self._get_auth_v2
+            # Attempt to get API v2 version first
+            self.url = '{host}api/v2/app/webapiVersion'.format(host=self.host)
+            try:
+                version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content
+                # Make sure version is using the (major, minor, release) format
+                version = map(int, version.split('.'))
+                if len(version) < 2:
+                    version.append(0)
+                return tuple(version)
+            except Exception as error:
+                log.error('{name}: Unable to get API version. Error: {error!r}',
+                          {'name': self.name, 'error': error})
+
+        # Fall back to API v1
+        self._get_auth = self._get_auth_legacy
         try:
             self.url = '{host}version/api'.format(host=self.host)
             version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)
@@ -46,22 +65,45 @@ class QBittorrentAPI(GenericClient):
         return version
 
     def _get_auth(self):
+        """This method gets overriden by the `api` property."""
+        return self._get_auth_v2() or self._get_auth_legacy()
 
-        if self.api > (1, 0, 0):
-            self.url = '{host}login'.format(host=self.host)
-            data = {
-                'username': self.username,
-                'password': self.password,
-            }
-            try:
-                self.response = self.session.post(self.url, data=data)
-            except Exception:
-                return None
+    def _get_auth_v2(self):
+        """Authenticate using the new method (API v2)."""
+        self.url = '{host}api/v2/auth/login'.format(host=self.host)
+        data = {
+            'username': self.username,
+            'password': self.password,
+        }
+        try:
+            self.response = self.session.post(self.url, data=data)
+        except Exception:
+            return None
 
-        else:
+        if self.response.status_code == 404:
+            return None
+
+        self.session.cookies = self.response.cookies
+        self.auth = self.response.content
+
+        return self.auth if not self.response.status_code == 404 else None
+
+    def _get_auth_legacy(self):
+        """Authenticate using the legacy method (API v1)."""
+        self.url = '{host}login'.format(host=self.host)
+        data = {
+            'username': self.username,
+            'password': self.password,
+        }
+        try:
+            self.response = self.session.post(self.url, data=data)
+        except Exception:
+            return None
+
+        # Pre-API v1
+        if self.response.status_code == 404:
             try:
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
-                self.auth = self.response.content
             except Exception:
                 return None
 
@@ -72,48 +114,58 @@ class QBittorrentAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        self.url = '{host}command/download'.format(host=self.host)
+        command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/download'
+        self.url = '{host}{command}'.format(host=self.host, command=command)
         data = {
             'urls': result.url,
         }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        return self._request(method='post', data=data)
 
     def _add_torrent_file(self, result):
 
-        self.url = '{host}command/upload'.format(host=self.host)
+        command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
+        self.url = '{host}{command}'.format(host=self.host, command=command)
         files = {
             'torrents': (
                 '{result}.torrent'.format(result=result.name),
                 result.content,
             ),
         }
-        return self._request(method='post', files=files, cookies=self.session.cookies)
+        return self._request(method='post', files=files)
 
     def _set_torrent_label(self, result):
 
         label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
+        if not label:
+            return True
 
-        if self.api > (1, 6, 0) and label:
-            label_key = 'Category' if self.api >= (1, 10, 0) else 'Label'
+        api = self.api
+        if api >= (2, 0, 0):
+            self.url = '{host}api/v2/torrents/setCategory'.format(host=self.host)
+            label_key = 'category'
+        elif api > (1, 6, 0):
+            label_key = 'Category' if api >= (1, 10, 0) else 'Label'
             self.url = '{host}command/set{key}'.format(
                 host=self.host,
                 key=label_key,
             )
-            data = {
-                'hashes': result.hash.lower(),
-                label_key.lower(): label.replace(' ', '_'),
-            }
-            return self._request(method='post', data=data, cookies=self.session.cookies)
-        return True
+
+        data = {
+            'hashes': result.hash.lower(),
+            label_key.lower(): label.replace(' ', '_'),
+        }
+        return self._request(method='post', data=data)
 
     def _set_torrent_priority(self, result):
 
-        self.url = '{host}command/{method}Prio'.format(host=self.host,
-                                                       method='increase' if result.priority == 1 else 'decrease')
+        command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
+        method = 'increase' if result.priority == 1 else 'decrease'
+        self.url = '{host}{command}/{method}Prio'.format(
+            host=self.host, command=command, method=method)
         data = {
             'hashes': result.hash.lower(),
         }
-        ok = self._request(method='post', data=data, cookies=self.session.cookies)
+        ok = self._request(method='post', data=data)
 
         if self.response.status_code == 403:
             log.info('{name}: Unable to set torrent priority because torrent queueing'
@@ -123,13 +175,15 @@ class QBittorrentAPI(GenericClient):
         return ok
 
     def _set_torrent_pause(self, result):
-        self.url = '{host}command/{state}'.format(host=self.host,
-                                                  state='pause' if app.TORRENT_PAUSED else 'resume')
+        api = self.api
+        state = 'pause' if app.TORRENT_PAUSED else 'resume'
+        command = 'api/v2/torrents' if api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
+        self.url = '{host}{command}/{state}'.format(host=self.host, command=command, state=state)
         data = {
             hashes_key: result.hash.lower(),
         }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        return self._request(method='post', data=data)
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
@@ -139,12 +193,16 @@ class QBittorrentAPI(GenericClient):
         :return
         :rtype: bool
         """
-        self.url = '{host}command/deletePerm'.format(host=self.host)
         data = {
             'hashes': info_hash.lower(),
         }
+        if self.api >= (2, 0, 0):
+            self.url = '{host}api/v2/torrents/delete'.format(host=self.host)
+            data['deleteFiles'] = True
+        else:
+            self.url = '{host}command/deletePerm'.format(host=self.host)
 
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        return self._request(method='post', data=data)
 
 
 api = QBittorrentAPI
