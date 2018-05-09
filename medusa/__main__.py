@@ -1485,8 +1485,8 @@ class Application(object):
         new_config['General']['quality_default'] = int(app.QUALITY_DEFAULT)
         new_config['General']['status_default'] = int(app.STATUS_DEFAULT)
         new_config['General']['status_default_after'] = int(app.STATUS_DEFAULT_AFTER)
+        # TODO: Rename to season_folders_default
         new_config['General']['flatten_folders_default'] = int(not app.SEASON_FOLDERS_DEFAULT)
-        new_config['General']['season_folders_default'] = int(app.SEASON_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
