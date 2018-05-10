@@ -191,7 +191,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
                             <div class="col-sm-10 content">
-                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
                             </div>
                         </div>
 
@@ -297,7 +297,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords" />
+                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with one or more words from this list will be ignored.</p>
                                 </div>
@@ -307,7 +307,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_require_words" class="col-sm-2 control-label">Required words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords" />
+                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with no words from this list will be ignored.</p>
                                 </div>
@@ -317,7 +317,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="SceneName" class="col-sm-2 control-label">Scene Exception</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.aliases" @change="onChangeAliases" />
+                                <select-list :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
                                 <div class="clear-left">
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
                                 </div>
