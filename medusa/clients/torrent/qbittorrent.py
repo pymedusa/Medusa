@@ -36,22 +36,21 @@ class QBittorrentAPI(GenericClient):
     @property
     def api(self):
         """Get API version."""
-        # It's required to authenticate before requesting anything from API v2.
-        if self._get_auth_v2():
-            # Update the auth method to v2
-            self._get_auth = self._get_auth_v2
-            # Attempt to get API v2 version first
-            self.url = '{host}api/v2/app/webapiVersion'.format(host=self.host)
-            try:
-                version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content
-                # Make sure version is using the (major, minor, release) format
-                version = map(int, version.split('.'))
-                if len(version) < 2:
-                    version.append(0)
-                return tuple(version)
-            except Exception as error:
-                log.error('{name}: Unable to get API version. Error: {error!r}',
-                          {'name': self.name, 'error': error})
+        # Update the auth method to v2
+        self._get_auth = self._get_auth_v2
+        # Attempt to get API v2 version first
+        self.url = '{host}api/v2/app/webapiVersion'.format(host=self.host)
+        try:
+            version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT,
+                                       cookies=self.session.cookies)
+            # Make sure version is using the (major, minor, release) format
+            version = map(int, version.content.split('.'))
+            if len(version) < 2:
+                version.append(0)
+            return tuple(version)
+        except (AttributeError, ValueError) as error:
+            log.error('{name}: Unable to get API version. Error: {error!r}',
+                      {'name': self.name, 'error': error})
 
         # Fall back to API v1
         self._get_auth = self._get_auth_legacy
