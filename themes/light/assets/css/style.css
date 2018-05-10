@@ -3380,7 +3380,8 @@ pre {
 input sizing (for config pages)
 ========================================================================== */
 
-#config select {
+/* Don't style root-dirs select */
+#config select:not([size]) {
     width: auto;
     display: inline;
 }
