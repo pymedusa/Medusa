@@ -50,9 +50,7 @@ const startVue = () => {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 seriesLoaded: false,
-                saveMessage: '',
-                saveError: '',
-                mounted: false
+                saving: false
             }
         },
         async mounted() {
@@ -65,14 +63,17 @@ const startVue = () => {
             } catch (error) {
                 console.debug('Could not get series info for: '+ seriesSlug);
             }
-            this.mounted = true;
+            this.seriesLoaded = true;
         },
         methods: {
             async saveSeries(subject) {
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
-                if (!this.mounted) {
+                if (!this.seriesLoaded) {
                     return;
                 }
+
+                // Disable the save button until we're done.
+                this.saving = true;
 
                 if (['series', 'all'].includes(subject)) {
                     const data = {
@@ -106,14 +107,20 @@ const startVue = () => {
                     }
 
                     try {
-                        this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.saveMessage = 'saved';
+                        this.$snotify.success(this.series.title, 'Saved',
+                                           {timeout: 5000});
 
                     } catch (error) {
-                        this.saveError = 'Problem trying to save the config: ' + error.message || '';
+                        this.$snotify.error(
+                            'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                            'Error'
+                        );
                     }
                 };
+
+                // Re-enable the save button.
+                this.saving = false;
             },
             onChangeIgnoredWords(items) {
                 this.series.config.release.ignoredWords = items.map(item => item.value);
@@ -128,7 +135,6 @@ const startVue = () => {
                 this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
                 this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
-
             },
             updateLanguage(value) {
                 this.series.language = value;
@@ -146,6 +152,9 @@ const startVue = () => {
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
                 return allowed | preferred << 16
+            },
+            saveButton() {
+                return this.saving === false ? 'Save Changes' : 'Saving...';
             },
             displayShowUrl() {
                 // @TODO: Change the URL generation to use `this.series`. Currently not possible because
@@ -166,7 +175,6 @@ const startVue = () => {
     Edit Show
     <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
 </h1>
-<saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
         <form @submit.prevent="saveSeries('all')" class="form-horizontal">
@@ -330,7 +338,7 @@ const startVue = () => {
             </div>
         </div>
         <br>
-        <input id="submit" type="submit" value="Save Changes" class="btn-medusa pull-left config_submitter button">
+        <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !seriesLoaded">
         </form>
     </div>
 </div>
