@@ -244,7 +244,8 @@ const startVue = () => {
                                 'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
                                 'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
-                                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
+                                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS},
+                                'cinemast': {'user': app.CINEMAST_USER, 'pass': app.CINEMAST_PASS}}
                         %>
                         % for curService in subtitles.sorted_service_list():
                             <% provider_name = curService['name'] %>

@@ -72,7 +72,8 @@ PROVIDER_URLS = {
     'shooter': 'http://www.shooter.cn',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net',
-    'wizdom': 'http://wizdom.xyz'
+    'wizdom': 'http://wizdom.xyz',
+    'cinemast': 'http://www.cinemast.org'
 }
 
 
@@ -517,7 +518,9 @@ def get_provider_pool():
                         'legendastv': {'username': app.LEGENDASTV_USER,
                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
-                                          'password': app.OPENSUBTITLES_PASS}}
+                                          'password': app.OPENSUBTITLES_PASS},
+                        'cinemast': {'username': app.CINEMAST_USER,
+                                  'password': app.CINEMAST_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)
 
 

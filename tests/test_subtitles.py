@@ -34,6 +34,7 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'podnapisi', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
         {'name': 'wizdom', 'enabled': False},
+        {'name': 'cinemast', 'enabled': False},
     ]
     assert expected == [{'name': a['name'], 'enabled': a['enabled']} for a in actual]
 
