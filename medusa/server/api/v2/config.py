@@ -70,6 +70,7 @@ class ConfigHandler(BaseRequestHandler):
         'theme.name': StringField(app, 'THEME_NAME'),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+        'rootDirs': ListField(app, 'ROOT_DIRS'),
     }
 
     def get(self, identifier, path_param=None):
