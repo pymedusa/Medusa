@@ -208,7 +208,7 @@ const startVue = () => {
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
                                 <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
+                                    v-model="series.config.defaultEpisodeStatus"/>
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -226,14 +226,14 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" @change="saveSeries('series')"/> search for subtitles
+                                <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled"/> search for subtitles
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="paused" class="col-sm-2 control-label">Paused</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
+                                <input type="checkbox" id="paused" name="paused" v-model="series.config.paused"/> pause this show (Medusa will not download episodes)
                             </div>
                         </div>
                     </fieldset>
@@ -247,7 +247,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                 <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
@@ -255,7 +255,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="anime" class="col-sm-2 control-label">Anime</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="anime" name="anime" v-model="series.config.anime" @change="saveSeries('series')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                <input type="checkbox" id="anime" name="anime" v-model="series.config.anime"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                             </div>
                         </div>
 
@@ -269,7 +269,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="sports" class="col-sm-2 control-label">Sports</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="sports" name="sports" v-model="series.config.sports" @change="saveSeries('series')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                <input type="checkbox" id="sports" name="sports" v-model="series.config.sports"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                 <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
@@ -277,21 +277,21 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
+                                <input type="checkbox" id="season_folders" name="season_folders" v-model="series.config.seasonFolders"/> group episodes by season folder (uncheck to store in a single folder)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene"/> search by scene numbering (uncheck to search by indexer numbering)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
+                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder"/> use the DVD order instead of the air order<br>
                                 <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
                         </div>
