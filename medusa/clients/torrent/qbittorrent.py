@@ -119,7 +119,7 @@ class QBittorrentAPI(GenericClient):
         data = {
             'urls': result.url,
         }
-        return self._request(method='post', data=data)
+        return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
 
@@ -131,7 +131,7 @@ class QBittorrentAPI(GenericClient):
                 result.content,
             ),
         }
-        return self._request(method='post', files=files)
+        return self._request(method='post', files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
 
@@ -154,7 +154,7 @@ class QBittorrentAPI(GenericClient):
             'hashes': result.hash.lower(),
             label_key.lower(): label.replace(' ', '_'),
         }
-        return self._request(method='post', data=data)
+        return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _set_torrent_priority(self, result):
 
@@ -165,7 +165,7 @@ class QBittorrentAPI(GenericClient):
         data = {
             'hashes': result.hash.lower(),
         }
-        ok = self._request(method='post', data=data)
+        ok = self._request(method='post', data=data, cookies=self.session.cookies)
 
         if self.response.status_code == 403:
             log.info('{name}: Unable to set torrent priority because torrent queueing'
@@ -183,7 +183,7 @@ class QBittorrentAPI(GenericClient):
         data = {
             hashes_key: result.hash.lower(),
         }
-        return self._request(method='post', data=data)
+        return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
@@ -202,7 +202,7 @@ class QBittorrentAPI(GenericClient):
         else:
             self.url = '{host}command/deletePerm'.format(host=self.host)
 
-        return self._request(method='post', data=data)
+        return self._request(method='post', data=data, cookies=self.session.cookies)
 
 
 api = QBittorrentAPI
