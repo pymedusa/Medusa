@@ -13,18 +13,91 @@
     from medusa.show.history import History
     from medusa.providers.generic_provider import GenericProvider
 %>
+<%block name="scripts">
+<script>
+window.app = {};
+const startVue = () => {
+    window.app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'History'
+        },
+        data() {
+            return {
+                header: 'History'
+            };
+        },
+        mounted() {
+            $('#historyTable:has(tbody tr)').tablesorter({
+                widgets: ['saveSort', 'zebra', 'filter'],
+                sortList: [[0, 1]],
+                textExtraction: (function() {
+                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
+                        return {
+                            // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
+                            0: node => $(node).find('time').attr('datetime'),
+                            1: node => $(node).find('a').text()
+                        };
+                    }
+                    // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
+                    const compactExtract = {
+                        0: node => $(node).find('time').attr('datetime'),
+                        1: node => $(node).find('a').text(),
+                        2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        3: node => $(node).text()
+                    };
+                    if ($.isMeta({ subtitles: 'enabled' }, [true])) {
+                        // 4: Subtitled, 5: Quality
+                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        compactExtract[5] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                    } else {
+                        // 4: Quality
+                        compactExtract[4] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                    }
+                    return compactExtract;
+                })(),
+                headers: (function() {
+                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
+                        return {
+                            0: { sorter: 'realISODate' }
+                        };
+                    }
+                    return {
+                        0: { sorter: 'realISODate' },
+                        2: { sorter: 'text' }
+                    };
+                })()
+            });
+
+            $('#history_limit').on('change', function() {
+                window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
+            });
+
+            $('.show-option select[name="layout"]').on('change', function() {
+                api.patch('config/main', {
+                    layout: {
+                        history: $(this).val()
+                    }
+                }).then(response => {
+                    log.info(response);
+                    window.location.reload();
+                }).catch(err => {
+                    log.info(err);
+                });
+            });
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
 <input type="hidden" id="background-series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
 
 <div class="row">
-    <div class="col-md-6"> <!-- Title -->
-        % if not header is UNDEFINED:
-            <h1 class="header">${header}</h1>
-        % else:
-            <h1 class="title">${title}</h1>
-        % endif
+    <div class="col-md-6">
+        <h1 class="header">{{header}}</h1>
     </div> <!-- layout title -->
     <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">
@@ -83,7 +156,7 @@
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
-                        <td class="tvShow triggerhighlight"><a data-indexer-to-name="${hItem.indexer_id}") href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </a></td>
+                        <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </app-link></td>
                         <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                         % if composite.status == SUBTITLED:
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -153,7 +226,7 @@
                         </td>
                         <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
-                            <span><a data-indexer-to-name="${hItem.index.indexer_id}") href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
+                            <span><app-link indexer-id="${hItem.index.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</app-link></span>
                         </td>
                         <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):

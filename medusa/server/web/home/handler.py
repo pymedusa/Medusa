@@ -10,7 +10,6 @@ from builtins import str
 from datetime import date, datetime
 
 import adba
-
 from medusa import (
     app,
     config,
@@ -25,7 +24,6 @@ from medusa import (
 )
 from medusa.black_and_white_list import (
     BlackAndWhiteList,
-    short_group_names,
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -60,7 +58,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime
+from medusa.helpers.anidb import get_release_groups_for_anime, set_up_anidb_connection, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
@@ -107,8 +105,6 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.version_checker import CheckVersion
-
-from past.builtins import cmp
 
 from requests.compat import (
     quote_plus,
@@ -170,7 +166,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
@@ -596,18 +592,16 @@ class Home(WebRoot):
         return json.dumps(data)
 
     @staticmethod
-    def saveShowNotifyList(indexername=None, seriesid=None, emails=None, prowlAPIs=None):
+    def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
         entries = {'emails': '', 'prowlAPIs': ''}
         main_db_con = db.DBConnection()
-
-        indexer_id = indexer_name_to_id(indexername)
 
         # Get current data
         sql_results = main_db_con.select(
             b'SELECT notify_list '
             b'FROM tv_shows '
-            b'WHERE indexer = ? AND show_id = ?',
-            [indexer_id, seriesid]
+            b'WHERE show_id = ?',
+            [show]
         )
         for subs in sql_results:
             if subs[b'notify_list']:
@@ -622,8 +616,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
@@ -632,8 +626,8 @@ class Home(WebRoot):
             if not main_db_con.action(
                     b'UPDATE tv_shows '
                     b'SET notify_list = ? '
-                    b'WHERE indexer = ? AND show_id = ?',
-                    [str(entries), indexer_id, seriesid]
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
             ):
                 return 'ERROR'
 
@@ -957,12 +951,12 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
             ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
             ]
 
         bwl = None
@@ -1252,11 +1246,13 @@ class Home(WebRoot):
                 else:
                     shows.append(show)
             sorted_show_lists = [
-                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
+                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
+            ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
+            ]
 
         bwl = None
         if series_obj.is_anime:
@@ -1437,16 +1433,14 @@ class Home(WebRoot):
         indexer = show_indexer.indexer(**params)
 
         if language in indexer.config['valid_languages']:
-            indexer[series_obj.indexerid]
             return True
 
     def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
+                 exceptions_list=None, season_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
-        # @TODO: Replace with PATCH /api/v2/show/{id}
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
@@ -1479,7 +1473,7 @@ class Home(WebRoot):
         if try_int(quality_preset, None):
             preferred_qualities = []
 
-        if not location and not allowed_qualities and not preferred_qualities and not flatten_folders:
+        if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
             t = PageTemplate(rh=self, filename='editShow.mako')
             anime_release_groups = []
 
@@ -1489,7 +1483,8 @@ class Home(WebRoot):
                 whitelist = series_obj.release_groups.whitelist
                 blacklist = series_obj.release_groups.blacklist
 
-                if not anidb_failed:
+                groups = []
+                if set_up_anidb_connection() and not anidb_failed:
                     try:
                         anime_release_groups = get_release_groups_for_anime(series_obj.name)
                     except AnidbAdbaConnectionException as e:
@@ -1503,12 +1498,13 @@ class Home(WebRoot):
 
             if series_obj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=anime_release_groups, whitelist=whitelist,
-                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home', action='editShow')
+                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home',
+                                action='editShow')
             else:
                 return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
 
-        flatten_folders = not config.checkbox_to_value(flatten_folders)  # UI inverts this value
+        season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
         paused = config.checkbox_to_value(paused)
         air_by_date = config.checkbox_to_value(air_by_date)
@@ -1599,12 +1595,13 @@ class Home(WebRoot):
                         series_obj.release_groups.set_black_keywords([])
 
         with series_obj.lock:
-            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities],
+                                                    [int(q) for q in preferred_qualities])
             series_obj.quality = new_quality
 
             # reversed for now
-            if bool(series_obj.flatten_folders) != bool(flatten_folders):
-                series_obj.flatten_folders = flatten_folders
+            if bool(series_obj.season_folders) != bool(season_folders):
+                series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                 except CantRefreshShowException as e:
@@ -1722,11 +1719,16 @@ class Home(WebRoot):
             return errors
 
         if errors:
-            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
-                                   (num=errors, s='s' if errors > 1 else ''))
+            ui.notifications.error(
+                'Errors', '{num} error{s} while saving changes. Please check logs'.format(
+                    num=errors, s='s' if errors > 1 else ''
+                )
+            )
 
         logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect(
+            '/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(
+                series_obj=series_obj))
 
     @staticmethod
     def erase_cache(series_obj):
@@ -1847,23 +1849,21 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def updateKODI(self, indexername=None, seriesid=None):
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
+        series_name = series_obj = None
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Unable to find the specified show')
-        else:
-            show_name = quote_plus(series_obj.name.encode('utf-8'))
+            series_name = quote_plus(series_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
             host = app.KODI_HOST[0].strip()
         else:
             host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(series_name=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=series_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1883,12 +1883,11 @@ class Home(WebRoot):
 
     def updateEMBY(self, indexername=None, seriesid=None):
         series_obj = None
-
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
-
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
         if notifiers.emby_notifier.update_library(series_obj):
             ui.notifications.message(
@@ -2112,8 +2111,7 @@ class Home(WebRoot):
         }]
 
         return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj, title='Preview Rename',
-                        header='Preview Rename',
+                        show=series_obj,
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):
@@ -2356,7 +2354,7 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if series_obj.is_anime:
-            ep_obj = series_obj.get_episode(absolute=forAbsolute)
+            ep_obj = series_obj.get_episode(absolute_number=forAbsolute)
         else:
             ep_obj = series_obj.get_episode(forSeason, forEpisode)
 

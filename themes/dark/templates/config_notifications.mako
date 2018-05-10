@@ -2,31 +2,44 @@
 <%!
     import re
     from medusa import app
-    from medusa.helpers import anon_url
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import get_trakt_indexer
 %>
+<%block name="scripts">
+<script>
+window.app = {};
+const startVue = () => {
+    window.app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Notifications'
+        },
+        data() {
+            return {
+                header: 'Notifications'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#home-theater-nas">Home Theater / NAS</a></li>
-                    <li><a href="${full_url}#devices">Devices</a></li>
-                    <li><a href="${full_url}#social">Social</a></li>
+                    <li><app-link href="#home-theater-nas">Home Theater / NAS</app-link></li>
+                    <li><app-link href="#devices">Devices</app-link></li>
+                    <li><app-link href="#social">Social</app-link></li>
                 </ul>
                 <div id="home-theater-nas">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
-                        <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
+                        <h3><app-link href="http://kodi.tv">KODI</app-link></h3>
                         <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
                     </div>
                     <div class="component-group">
@@ -149,14 +162,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testKODI-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test KODI" id="testKODI" />
+                                <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_kodi //-->
                         </fieldset>
                     </div><!-- /kodi component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-plex" title="Plex Media Server"></span>
-                            <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Media Server</a></h3>
+                            <h3><app-link href="https://plex.tv">Plex Media Server</app-link></h3>
                             <p>Experience your media on a visually stunning, easy to use interface on your Mac connected to your TV. Your media library has never looked this good!</p>
                             <p class="plexinfo hide">For sending notifications to Plex Home Theater (PHT) clients, use the KODI notifier with port <b>3005</b>.</p>
                         </div>
@@ -183,7 +196,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">See: <a href="${anon_url('https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token')}" class="wiki" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><strong>Finding your account token</strong></a></span>
+                                        <span class="component-desc">See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span>
                                     </label>
                                 </div>
                                 <div class="component-group" style="padding: 0; min-height: 130px;">
@@ -240,7 +253,7 @@
                                         </div>
                                         <div class="field-pair">
                                             <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
-                                            <input class="btn" type="button" value="Test Plex Media Server" id="testPMS" />
+                                            <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
                                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                                             <div class="clear-left">&nbsp;</div>
                                         </div>
@@ -251,7 +264,7 @@
                     </div><!-- /plex media server component-group -->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
-                        <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Home Theater</a></h3>
+                        <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
                     </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -326,7 +339,7 @@
                                 </div>
                                 <div class="field-pair">
                                     <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
-                                    <input class="btn" type="button" value="Test Plex Home Theater" id="testPHT" />
+                                    <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
                                     <input type="submit" class="config_submitter btn" value="Save Changes" />
                                     <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                 </div>
@@ -335,7 +348,7 @@
                     </div><!-- /Plex Home Theater component-group -->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-emby" title="Emby"></span>
-                        <h3><a href="${anon_url('http://emby.media/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Emby</a></h3>
+                        <h3><app-link href="http://emby.media">Emby</app-link></h3>
                         <p>A home media server built using other popular open source technologies.</p>
                     </div>
                     <div class="component-group">
@@ -367,14 +380,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testEMBY-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test Emby" id="testEMBY" />
+                                <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_emby //-->
                         </fieldset>
                     </div><!-- /emby component-group //-->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
-                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJ</a></h3>
+                        <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
                     </div>
                     <div class="component-group">
@@ -402,7 +415,7 @@
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Get settings</span>
-                                        <input class="btn btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -430,14 +443,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testNMJ-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test NMJ" id="testNMJ" />
+                                <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nmj //-->
                         </fieldset>
                     </div><!-- /nmj component-group //-->
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
-                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJv2</a></h3>
+                        <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
                     </div>
                     <div class="component-group">
@@ -496,7 +509,7 @@
                                 <div class="field-pair">
                                     <label for="settingsNMJv2">
                                         <span class="component-title">Find database</span>
-                                        <input type="button" class="btn btn-inline" value="Find Database" id="settingsNMJv2" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -514,14 +527,14 @@
                                     </label>
                                 </div>
                             <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
-                            <input class="btn" type="button" value="Test NMJv2" id="testNMJv2" />
+                            <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nmjv2 //-->
                         </fieldset>
                     </div><!-- /nmjv2 component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-syno1" title="Synology"></span>
-                            <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology</a></h3>
+                            <h3><app-link href="http://synology.com/">Synology</app-link></h3>
                             <p>The Synology DiskStation NAS.</p>
                             <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
                         </div>
@@ -547,7 +560,7 @@
                     </div><!-- /synoindex component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
-                            <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology Notifier</a></h3>
+                            <h3><app-link href="http://synology.com/">Synology Notifier</app-link></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
                         </div>
                     <div class="component-group">
@@ -599,7 +612,7 @@
                     </div><!-- /synology notifier component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
-                            <h3><a href="${anon_url('http://pytivo.sourceforge.net/wiki/index.php/PyTivo')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">pyTivo</a></h3>
+                            <h3><app-link href="http://pytivo.sourceforge.net/wiki/index.php/PyTivo">pyTivo</app-link></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
                         </div>
                     <div class="component-group">
@@ -656,7 +669,7 @@
                 <div id="devices">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-growl" title="Growl"></span>
-                        <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
+                        <h3><app-link href="http://growl.info/">Growl</app-link></h3>
                         <p>A cross-platform unobtrusive global notification system.</p>
                     </div>
                     <div class="component-group">
@@ -723,14 +736,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
-                                <input  class="btn" type="button" value="Register Growl" id="testGrowl" />
+                                <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_growl //-->
                         </fieldset>
                     </div><!-- /growl component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
-                            <h3><a href="${anon_url('http://www.prowlapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Prowl</a></h3>
+                            <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
                             <p>A Growl client for iOS.</p>
                         </div>
                     <div class="component-group">
@@ -787,8 +800,8 @@
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br> receive notifications for <b>all</b> shows.
                                                                      Your Prowl API key is available at:
-                                                                     <a href="${anon_url('https://www.prowlapp.com/api_settings.php')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">
-                                                                     https://www.prowlapp.com/api_settings.php</a><br>
+                                                                     <app-link href="https://www.prowlapp.com/api_settings.php">
+                                                                     https://www.prowlapp.com/api_settings.php</app-link><br>
                                                                      (This field may be blank except when testing.)</span>
                                     </label>
                                 </div>
@@ -811,7 +824,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="prowl_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="prowl_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -831,15 +844,15 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Prowl" id="testProwl" />
+                                <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_prowl //-->
                         </fieldset>
                     </div><!-- /prowl component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
-                            <h3><a href="${anon_url('http://library.gnome.org/devel/libnotify/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Libnotify</a></h3>
-                            <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <a href="apt:python-notify">python-notify</a>).</p>
+                            <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>
+                            <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <app-link href="apt:python-notify">python-notify</app-link>).</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -881,14 +894,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Libnotify" id="testLibnotify" />
+                                <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_libnotify //-->
                         </fieldset>
                     </div><!-- /libnotify component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
-                            <h3><a href="${anon_url('https://pushover.net/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
+                            <h3><app-link href="https://pushover.net/">Pushover</app-link></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
                     <div class="component-group">
@@ -948,7 +961,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><a href="${anon_url('https://pushover.net/apps/build/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
+                                        <span class="component-desc"><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -996,14 +1009,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushover-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Pushover" id="testPushover" />
+                                <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_pushover //-->
                         </fieldset>
                     </div><!-- /pushover component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
-                            <h3><a href="${anon_url('https://new.boxcar.io/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Boxcar 2</a></h3>
+                            <h3><app-link href="https://new.boxcar.io/">Boxcar 2</app-link></h3>
                             <p>Read your messages where and when you want them!</p>
                         </div>
                     <div class="component-group">
@@ -1056,14 +1069,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Boxcar" id="testBoxcar2" />
+                                <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_boxcar2 //-->
                         </fieldset>
                     </div><!-- /boxcar2 component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-nma" title="NMA"></span>
-                            <h3><a href="${anon_url('http://www.notifymyandroid.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Notify My Android</a></h3>
+                            <h3><app-link href="http://www.notifymyandroid.com">Notify My Android</app-link></h3>
                             <p>Notify My Android is a Prowl-like Android App and API that offers an easy way to send notifications from your application directly to your Android device.</p>
                         </div>
                     <div class="component-group">
@@ -1132,14 +1145,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testNMA-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test NMA" id="testNMA" />
+                                <input  class="btn-medusa" type="button" value="Test NMA" id="testNMA" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nma //-->
                         </fieldset>
                     </div><!-- /nma component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushalot" title="Pushalot"></span>
-                            <h3><a href="${anon_url('https://pushalot.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushalot</a></h3>
+                            <h3><app-link href="https://pushalot.com">Pushalot</app-link></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
                         </div>
                     <div class="component-group">
@@ -1192,14 +1205,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushalot-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushalot" id="testPushalot" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushalot //-->
                         </fieldset>
                     </div><!-- /pushalot component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
-                            <h3><a href="${anon_url('https://www.pushbullet.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushbullet</a></h3>
+                            <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
                             <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
                         </div>
                     <div class="component-group">
@@ -1256,7 +1269,7 @@
                                         <span class="component-title">Pushbullet devices</span>
                                         <select name="pushbullet_device_list" id="pushbullet_device_list" class="form-control input-sm"></select>
                                         <input type="hidden" id="pushbullet_device" value="${app.PUSHBULLET_DEVICE}">
-                                        <input type="button" class="btn btn-inline" value="Update device list" id="getPushbulletDevices" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Update device list" id="getPushbulletDevices" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1264,14 +1277,14 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushbullet-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushbullet" id="testPushbullet" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushbullet //-->
                         </fieldset>
                     </div><!-- /pushbullet component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
-                            <h3><a href="${anon_url('http://mobile.free.fr/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Free Mobile</a></h3>
+                            <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                             <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
                         </div>
                     <div class="component-group">
@@ -1334,7 +1347,7 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test SMS" id="testFreeMobile" />
+                                <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_freemobile //-->
                         </fieldset>
@@ -1342,7 +1355,7 @@
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-telegram" title="Telegram"></span>
-                        <h3><a href="${anon_url('https://telegram.org/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Telegram</a></h3>
+                        <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
                         <p>Telegram is a cloud-based instant messaging service.</p>
                     </div>
                     <div class="component-group">
@@ -1405,7 +1418,7 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Telegram" id="testTelegram" />
+                                <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_telegram //-->
                         </fieldset>
@@ -1414,7 +1427,7 @@
                 <div id="social">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>
-                        <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>
+                        <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
                         <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
                     </div>
                     <div class="component-group">
@@ -1484,7 +1497,7 @@
                                     </label>
                                     <label>
                                         <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
-                                        <input class="btn" type="button" value="Request Authorization" id="twitterStep1" />
+                                        <input class="btn-medusa" type="button" value="Request Authorization" id="twitterStep1" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1494,7 +1507,7 @@
                                     <label>
                                         <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
                                         <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
-                                        <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
                                 </div>
                                 <!--
@@ -1505,14 +1518,14 @@
                                 </div>
                                 //-->
                                 <div class="testNotification" id="testTwitter-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Twitter" id="testTwitter" />
+                                <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_twitter //-->
                         </fieldset>
                     </div><!-- twitter .component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
-                            <h3><a href="${anon_url('http://trakt.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Trakt</a></h3>
+                            <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
                         </div><!-- .component-group-desc //-->
                     <div class="component-group">
@@ -1542,8 +1555,8 @@
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
                                         <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} />
-                                        <input type="button" class="btn" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
-                                        <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
+                                        <input type="button" class="btn-medusa" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
+                                        <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
                                     </label>
                                     <p>
                                         <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
@@ -1674,16 +1687,16 @@
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTrakt-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Trakt" id="testTrakt" />
-                                <input type="button" class="btn" value="Force Sync" id="forceSync" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
+                                <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
                         </fieldset><!-- .component-group-desc //-->
                     </div><!-- trakt .component-group //-->
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-email" title="Email"></span>
-                        <h3><a href="${anon_url('http://en.wikipedia.org/wiki/Comparison_of_webmail_providers')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Email</a></h3>
+                        <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
                         <p>Allows configuration of email notifications on a per show basis.</p>
                     </div><!-- .component-group-desc //-->
                     <div class="component-group">
@@ -1833,14 +1846,14 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="email_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="email_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div><!-- .field-pair //-->
                                 <div class="testNotification" id="testEmail-result">
                                     Click below to test.
                                 </div><!-- #testEmail-result //-->
-                                <input class="btn" type="button" value="Test Email" id="testEmail" />
-                                <input class="btn" type="submit" class="config_submitter" value="Save Changes" />
+                                <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
+                                <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
                             </div><!-- #content_use_email //-->
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- email .component-group //-->
@@ -1848,7 +1861,7 @@
 
                     <div class="component-group-desc">
                         <span class="icon-notifiers-slack" title="Slack"></span>
-                        <h3><a href="${anon_url('https://slack.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Slack</a></h3>
+                        <h3><app-link href="https://slack.com">Slack</app-link></h3>
                         <p>Slack is a messaging app for teams.</p>
                     </div>
                     <div class="component-group">
@@ -1898,11 +1911,11 @@
                                     <label>
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">Create an incoming webhook, to communicate with your slack channel.
-                                        <a href="${anon_url('https://my.slack.com/services/new/incoming-webhook/')}">https://my.slack.com/services/new/incoming-webhook/</a></span>
+                                        <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Slack" id="testSlack" />
+                                <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_slack //-->
                         </fieldset>

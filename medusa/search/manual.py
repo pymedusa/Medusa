@@ -21,7 +21,7 @@ from medusa.common import (
 )
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.sbdatetime import sbdatetime
+from medusa.network_timezones import app_timezone
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
@@ -220,7 +220,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
                 b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
-                b" url, time, proper_tags, quality, release_group, version,"
+                b" url, proper_tags, quality, release_group, version,"
                 b" seeders, leechers, size, time, pubdate, date_added "
                 b"FROM '{provider_id}' "
                 b"WHERE indexer = ? AND indexerid = ? AND quality > 0 ".format(
@@ -291,6 +291,9 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     else:
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:
+            threading.currentThread().name = '{thread} :: [{provider}]'.format(
+                thread=original_thread_name, provider=i['provider'])
+
             i['quality_name'] = Quality.split_quality(int(i['quality']))
             i['time'] = datetime.fromtimestamp(i['time'])
             i['release_group'] = i['release_group'] or 'None'
@@ -300,8 +303,8 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
             i['seeders'] = i['seeders'] if i['seeders'] >= 0 else '-'
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
-            i['pubdate'] = sbdatetime.convert_to_setting(parser.parse(i['pubdate'])).strftime(
-                app.DATE_PRESET + ' ' + app.TIME_PRESET) if i['pubdate'] else '-'
+            i['pubdate'] = parser.parse(i['pubdate']).astimezone(app_timezone) if i['pubdate'] else ''
+            i['date_added'] = datetime.fromtimestamp(float(i['date_added']), tz=app_timezone) if i['date_added'] else ''
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'

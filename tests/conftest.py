@@ -128,11 +128,11 @@ def create_sub(monkeypatch):
 
 @pytest.fixture
 def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
+    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, season_folders=1,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
         target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
-                        flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
+                        season_folders=season_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create

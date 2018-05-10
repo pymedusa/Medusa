@@ -10,12 +10,26 @@
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
 %>
+<%block name="scripts">
+<script>
+window.app = {};
+const startVue = () => {
+    window.app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Backup/Restore'
+        },
+        data() {
+            return {
+                header: 'Backup/Restore'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <% indexer = 0 %>
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
@@ -25,8 +39,8 @@
         <form name="configForm" method="post" action="config/backuprestore">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#backup">Backup</a></li>
-                    <li><a href="${full_url}#restore">Restore</a></li>
+                    <li><app-link href="#backup">Backup</app-link></li>
+                    <li><app-link href="#restore">Restore</app-link></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
                     <div class="component-group-desc">
@@ -38,7 +52,7 @@
                             Select the folder you wish to save your backup file to:
                             <br><br>
                             <input type="text" name="backupDir" id="backupDir" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Backup" id="Backup" />
+                            <input class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>
                         </div>
                         <div class="Backup" id="Backup-result"></div>
@@ -54,7 +68,7 @@
                             Select the backup file you wish to restore:
                             <br><br>
                             <input type="text" name="backupFile" id="backupFile" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Restore" id="Restore" />
+                            <input class="btn-medusa btn-inline" type="button" value="Restore" id="Restore" />
                             <br>
                         </div>
                         <div class="Restore" id="Restore-result"></div>

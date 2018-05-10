@@ -1,10 +1,10 @@
 MEDUSA.home.snatchSelection = function() {
-    $('.imdbPlot').on('click', function() {
-        $(this).prev('span').toggle();
-        if ($(this).html() === '..show less') {
-            $(this).html('..show more');
+    $(document.body).on('click', '.imdbPlot', event => {
+        $(event.currentTarget).prev('span').toggle();
+        if ($(event.currentTarget).html() === '..show less') {
+            $(event.currentTarget).html('..show more');
         } else {
-            $(this).html('..show less');
+            $(event.currentTarget).html('..show less');
         }
         moveSummaryBackground();
     });
@@ -53,11 +53,11 @@ MEDUSA.home.snatchSelection = function() {
     };
 
     // Click event for the download button for snatching a result
-    $('body').on('click', '.epManualSearch', function(event) {
+    $(document.body).on('click', '.epManualSearch', event => {
         event.preventDefault();
-        const link = this;
+        const link = event.currentTarget;
         $(link).children('img').prop('src', 'images/loading16.gif');
-        $.getJSON(this.href, data => {
+        $.getJSON(event.currentTarget.href, data => {
             if (data.result === 'success') {
                 $(link).children('img').prop('src', 'images/save.png');
             } else {
@@ -67,8 +67,8 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $.fn.generateStars = function() {
-        return this.each((i, e) => {
-            $(e).html($('<span/>').width($(e).text() * 12));
+        return this.each((index, element) => {
+            $(element).html($('<span/>').width($(element).text() * 12));
         });
     };
 
@@ -87,12 +87,29 @@ MEDUSA.home.snatchSelection = function() {
             },
             textExtraction: (function() {
                 return {
+                    // 2: Provider
+                    2(node) {
+                        return $(node).find('img').attr('title');
+                    },
                     // 6: The size column needs an explicit field for the filtering on raw size.
                     6(node) {
                         return node.getAttribute('data-size');
+                    },
+                    // 9: Published date
+                    9(node) {
+                        return node.getAttribute('data-datetime');
+                    },
+                    // 10: Added date
+                    10(node) {
+                        return node.getAttribute('data-datetime');
                     }
                 };
-            })()
+            })(),
+            headers: {
+                9: { sorter: 'realISODate' }, // Published
+                10: { sorter: 'realISODate' }, // Added
+                11: { sorter: false, parser: false } // Snatch link
+            }
         });
     }
 
@@ -133,12 +150,16 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         self.refreshResults = function() {
+            // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
+            /*
             $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection' + urlParams,
-                    'Loading new search results...',
-                    'Time out, refresh page to try again',
-                    toggleHistoryTable // This is a callback function
+                'home/snatchSelection' + urlParams,
+                'Loading new search results...',
+                'Time out, refresh page to try again',
+                toggleHistoryTable // This is a callback function
             );
+            */
+            window.location.reload();
         };
 
         $.ajax({
@@ -201,7 +222,7 @@ MEDUSA.home.snatchSelection = function() {
     setTimeout(checkCacheUpdates, 2000);
 
     // Click event for the reload results and force search buttons
-    $('body').on('click', '.manualSearchButton', function(event) {
+    $(document.body).on('click', '.manualSearchButton', event => {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
         const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
@@ -209,14 +230,14 @@ MEDUSA.home.snatchSelection = function() {
         const season = $('meta[data-last-prov-updates]').attr('data-season');
         const episode = $('meta[data-last-prov-updates]').attr('data-episode');
         const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
-        const forceSearch = $(this).attr('data-force-search');
+        const forceSearch = $(event.currentTarget).attr('data-force-search');
 
         const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
             return checkIsTrue;
         });
 
         if (!checkParams) {
-            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
                         seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
             return;
         }
@@ -251,8 +272,8 @@ MEDUSA.home.snatchSelection = function() {
 
     $('#btnReset').click(() => {
         $('#showTable')
-        .trigger('saveSortReset') // Clear saved sort
-        .trigger('sortReset');    // Reset current table sort
+            .trigger('saveSortReset') // Clear saved sort
+            .trigger('sortReset'); // Reset current table sort
         return false;
     });
 
@@ -269,8 +290,8 @@ MEDUSA.home.snatchSelection = function() {
         });
     });
 
-    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', el => {
-        const target = $(el.currentTarget);
+    $(document.body).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', event => {
+        const target = $(event.currentTarget);
 
         if (target.hasClass('release-name-ellipses')) {
             target.switchClass('release-name-ellipses', 'release-name-ellipses-toggled', 100);

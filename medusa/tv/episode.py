@@ -364,7 +364,7 @@ class Episode(TV):
         :return:
         :rtype: string
         """
-        if self.series.air_by_date and self.airdate is not None:
+        if self.series.air_by_date and self.airdate != date.fromordinal(1):
             return self.airdate.strftime(dateFormat)
         if self.series.is_anime and self.absolute_number is not None:
             return 'e{0:02d}'.format(self.absolute_number)
@@ -1095,7 +1095,7 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
+            data['wantedQualities'] = [ep.identifier for ep in self.related_episodes]
 
         return data
 
@@ -1738,7 +1738,7 @@ class Episode(TV):
         result = self.formatted_filename(anime_type=anime_type)
 
         # if they want us to flatten it and we're allowed to flatten it then we will
-        if self.series.flatten_folders and not app.NAMING_FORCE_FOLDERS:
+        if not self.series.season_folders and not app.NAMING_FORCE_FOLDERS:
             return result
 
         # if not we append the folder on and use that

@@ -42,6 +42,8 @@ class MutexLock(AbstractFileLock):
 cache = make_region()
 memory_cache = make_region()
 recommended_series_cache = make_region()
+# Some of the show titles that are used as keys, contain unicode encoded characters. We need to encode them to
+# bytestrings to be able to use them as keys in dogpile.
 anidb_cache = make_region()
 
 
@@ -73,9 +75,9 @@ def configure(cache_dir):
 
     # anidb (adba) series cache
     anidb_cache.configure('dogpile.cache.dbm',
-                    expiration_time=timedelta(days=3),
-                    arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
-                               'lock_factory': MutexLock})
+                          expiration_time=timedelta(days=3),
+                          arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
+                                     'lock_factory': MutexLock})
 
 
 def fallback():

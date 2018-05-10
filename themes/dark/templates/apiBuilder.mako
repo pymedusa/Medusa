@@ -1,5 +1,6 @@
 <%!
     from medusa import app
+    from six import binary_type
 %>
 <!DOCTYPE html>
 <html>
@@ -61,10 +62,10 @@
         </div>
         <div class="collapse navbar-collapse" id="nav-collapsed">
             <div class="btn-group navbar-btn" data-toggle="buttons">
-                <label class="btn btn-primary">
+                <label class="btn-medusa btn-primary">
                     <input autocomplete="off" id="option-profile" type="checkbox" /> Profile
                 </label>
-                <label class="btn btn-primary">
+                <label class="btn-medusa btn-primary">
                     <input autocomplete="off" id="option-jsonp" type="checkbox" /> JSONP
                 </label>
             </div>
@@ -120,7 +121,7 @@
                     % if help['data']['optionalParameters']:
                         Optional parameters: ${display_parameters_playground(help['data']['optionalParameters'], False, command_id)}<br>
                     % endif
-                    <button class="btn btn-primary" data-action="api-call" data-command-name="${command_id}" data-base-url="command-${command_id}-base-url" data-target="#command-${command_id}-response" data-time="#command-${command_id}-time" data-url="#command-${command_id}-url">Call API</button><br>
+                    <button class="btn-medusa btn-primary" data-action="api-call" data-command-name="${command_id}" data-base-url="command-${command_id}-base-url" data-target="#command-${command_id}-response" data-time="#command-${command_id}-time" data-url="#command-${command_id}-url">Call API</button><br>
                     <div class="result-wrapper hidden">
                         <div class="clearfix">
                             <span class="pull-left">
@@ -128,7 +129,7 @@
                                 URL: <kbd id="command-${command_id}-url"></kbd>
                             </span>
                             <span class="pull-right">
-                                <button class="btn btn-default" data-action="clear-result" data-target="#command-${command_id}-response">Clear</button>
+                                <button class="btn-medusa btn-default" data-action="clear-result" data-target="#command-${command_id}-response">Clear</button>
                             </span>
                         </div>
                         <pre><code id="command-${command_id}-response"></code></pre>
@@ -140,10 +141,12 @@
     </div>
 </div>
 <script type="text/javascript">
-var commands = ${sorted(commands)};
+var commands = ${sorted([binary_type(_) for _ in commands])};
 var episodes = ${episodes};
 </script>
 <script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/api.js?${sbPID}"></script>
 <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 <script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>

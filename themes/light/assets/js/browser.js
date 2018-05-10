@@ -94,12 +94,12 @@
                 title: options.title,
                 position: {
                     my: 'center top',
-                    at: 'center top+60',
+                    at: 'center top+100',
                     of: window
                 },
                 minWidth: Math.min($(document).width() - 80, 650),
-                height: Math.min($(document).height() - 80, $(window).height() - 80),
-                maxHeight: Math.min($(document).height() - 80, $(window).height() - 80),
+                height: Math.min($(document).height() - 120, $(window).height() - 120),
+                maxHeight: Math.min($(document).height() - 120, $(window).height() - 120),
                 maxWidth: $(document).width() - 80,
                 modal: true,
                 autoOpen: false
@@ -108,7 +108,7 @@
 
         fileBrowserDialog.dialog('option', 'buttons', [{
             text: 'Ok',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
@@ -116,7 +116,7 @@
             }
         }, {
             text: 'Cancel',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 $(this).dialog('close');
             }
@@ -209,7 +209,7 @@
         if (options.showBrowseButton) {
             // Append the browse button and give it a click behaviour
             options.field.after(
-                $('<input type="button" value="Browse&hellip;" class="btn btn-inline fileBrowser">').on('click', function() {
+                $('<input type="button" value="Browse&hellip;" class="btn-medusa btn-inline fileBrowser">').on('click', function() {
                     const initialDir = options.field.val() || (options.key && path) || '';
                     const optionsWithInitialDir = $.extend({}, options, { initialDir });
                     $(this).nFileBrowser(callback, optionsWithInitialDir);

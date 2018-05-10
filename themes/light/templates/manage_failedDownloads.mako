@@ -10,12 +10,26 @@
     from medusa.providers.generic_provider import GenericProvider
     from medusa.helper.common import pretty_file_size
 %>
+<%block name="scripts">
+<script>
+window.app = {};
+const startVue = () => {
+    window.app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Failed Downloads'
+        },
+        data() {
+            return {
+                header: 'Failed Downloads'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="limit" id="limit" class="form-control form-control-inline input-sm">
         <option value="100" ${'selected="selected"' if limit == '100' else ''}>100</option>
@@ -37,7 +51,7 @@
   </thead>
   <tfoot>
     <tr>
-      <td rowspan="1" colspan="4"><input type="button" class="btn pull-right" value="Submit" id="submitMassRemove"></td>
+      <td rowspan="1" colspan="4"><input type="button" class="btn-medusa pull-right" value="Submit" id="submitMassRemove"></td>
     </tr>
   </tfoot>
   <tbody>

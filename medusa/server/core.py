@@ -24,11 +24,13 @@ from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
+from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
+from medusa.server.api.v2.stats import StatsHandler
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -38,6 +40,7 @@ from medusa.server.web import (
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws import MedusaWebSocketHandler
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import (
@@ -46,6 +49,7 @@ from tornado.web import (
     StaticFileHandler,
     url,
 )
+
 from tornroutes import route
 
 
@@ -83,6 +87,12 @@ def get_apiv2_handlers(base):
         # /api/v2/config
         ConfigHandler.create_app_handler(base),
 
+        # /api/v2/stats
+        StatsHandler.create_app_handler(base),
+
+        # /api/v2/internal
+        InternalHandler.create_app_handler(base),
+
         # /api/v2/log
         LogHandler.create_app_handler(base),
 
@@ -102,13 +112,12 @@ def get_apiv2_handlers(base):
     ]
 
 
-class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
-    def __init__(self, options=None, io_loop=None):
+class AppWebServer(threading.Thread):
+    def __init__(self, options=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self.alive = True
         self.name = 'TORNADO'
-        self.io_loop = io_loop or IOLoop.current()
 
         self.options = options or {}
         self.options.setdefault('port', 8081)
@@ -277,12 +286,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             os._exit(1)  # pylint: disable=protected-access
 
         try:
-            self.io_loop.start()
-            self.io_loop.close(True)
+            IOLoop.current().start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):
         self.alive = False
-        self.io_loop.stop()
+        IOLoop.current().stop()

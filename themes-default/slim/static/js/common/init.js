@@ -247,7 +247,7 @@ MEDUSA.common.init = function() {
         $('.dropdown-toggle').on('click', function() {
             const $this = $(this);
             if ($this.attr('aria-expanded') === 'true') {
-                window.location.href = $('base').attr('href') + $this.attr('href');
+                window.location.href = $this.attr('href');
             }
         });
     }

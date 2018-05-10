@@ -9,7 +9,7 @@ functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2014 by Celia Oakley
+:copyright: (c) 2013-2018 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -20,7 +20,7 @@ class Configuration(TMDB):
     """
     Configuration functionality.
 
-    See: http://docs.themoviedb.apiary.io/#configuration
+    See: https://developers.themoviedb.org/3/configuration
     """
     BASE_PATH = 'configuration'
     URLS = {
@@ -45,7 +45,7 @@ class Certifications(TMDB):
     """
     Certifications functionality.
 
-    See: http://docs.themoviedb.apiary.io/#certifications
+    See: https://developers.themoviedb.org/3/certifications
     """
     BASE_PATH = 'certification'
     URLS = {
@@ -70,7 +70,7 @@ class Timezones(TMDB):
     """
     Timezones functionality.
 
-    See: http://docs.themoviedb.apiary.io/#timezones
+    See: https://developers.themoviedb.org/3/timezones
     """
     BASE_PATH = 'timezones'
     URLS = {

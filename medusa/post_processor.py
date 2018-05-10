@@ -29,11 +29,6 @@ from collections import OrderedDict
 
 import adba
 
-try:
-    import itertools.filter as filter
-except ImportError:
-    pass
-
 from medusa import (
     app,
     common,
@@ -55,6 +50,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
 )
 from medusa.helpers import is_subtitle, verify_freespace
+from medusa.helpers.anidb import set_up_anidb_connection
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -209,7 +205,7 @@ class PostProcessor(object):
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
-        processed_names += filter(None, (self._rar_basename(file_path, files),))
+        processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
 
         associated_files = set()
         for found_file in files:
@@ -532,7 +528,7 @@ class PostProcessor(object):
 
         :param file_path: file to add to mylist
         """
-        if helpers.set_up_anidb_connection():
+        if set_up_anidb_connection():
             if not self.anidbEpisode:  # seems like we could parse the name before, now lets build the anidb object
                 self.anidbEpisode = self._build_anidb_episode(app.ADBA_CONNECTION, file_path)
 

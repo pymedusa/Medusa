@@ -5,7 +5,6 @@
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
-    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
 %>
@@ -13,10 +12,11 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
 <div class="row">
-    <div id="showtitle" class="col-lg-12" data-showname="${show.name}">
+    <div id="showtitle" class="col-lg-12" data-showname="${show.name | h}">
         <div>
             <h1 class="title" data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
-            <a href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
+                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name | h}</app-link>
+            </h1>
         </div>
 
     % if action == 'snatchSelection':
@@ -40,7 +40,7 @@
                 <span class="h2footer display-specials">
                     % if season_special:
                     Display Specials:
-                        <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                        <app-link class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</app-link>
                     % endif
                 </span>
 
@@ -57,9 +57,9 @@
                         Season:
                         % for seasonNum in season_results:
                             % if int(seasonNum["season"]) == 0:
-                                <a href="#season-${seasonNum["season"]}">Specials</a>
+                                <app-link href="#season-${seasonNum["season"]}">Specials</app-link>
                             % else:
-                                <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
+                                <app-link href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</app-link>
                             % endif
                             % if seasonNum != season_results[-1]:
                                 <span class="separator">|</span>
@@ -87,9 +87,9 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <a series="${show.slug}" asset="poster">
+                    <app-link series="${show.slug}" asset="poster">
                         <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
-                    </a>
+                    </app-link>
                 </div>
             </div>
         </div>
@@ -120,34 +120,34 @@
                      % endif
                                      ${show.imdb_info.get('runtimes') or show.runtime} minutes
                                  </span>
-                                 <a href="${anon_url('http://www.imdb.com/title/', show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdb_id}">
+                                 <app-link href="http://www.imdb.com/title/${show.imdb_id}" title="http://www.imdb.com/title/${show.imdb_id}">
                                      <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
-                                 </a>
+                                 </app-link>
                  % endif
                 % if show.externals.get('trakt_id'):
-                    <a href="${anon_url('https://trakt.tv/shows/', show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
+                    <app-link href="https://trakt.tv/shows/${show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
-                    </a>
+                    </app-link>
                 % endif
-                 <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-                     <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
-                 </a>
+                 <app-link href="${indexerApi(show.indexer).config['show_url']}${show.indexerid}" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                     <img alt="${indexerApi(show.indexer).name | h}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                 </app-link>
                  % if xem_numbering or xem_absolute_numbering:
-                     <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                     <app-link href="http://thexem.de/search?q=${show.name | h}" title="http://thexem.de/search?q-${show.name | h}">
                          <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
-                     </a>
+                     </app-link>
                  % endif
-                     <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
+                     <app-link href="https://fanart.tv/series/${show.indexerid}" title="https://fanart.tv/series/${show.name | h}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
                          % if show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % elif show.genre:
                              % for genre in show.genre.strip('|').split('|'):
-                                 <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
+                                 <app-link href="http://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
                              % endfor
                          % endif
                      </ul>
@@ -236,7 +236,7 @@
                             % if app.USE_SUBTITLES:
                             <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                             % endif
-                            <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
@@ -263,13 +263,13 @@
                     <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
                     <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
                     <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-                    <button class="btn seriesCheck">Select Episodes</button>
-                    <button class="btn clearAll">Clear</button>
+                    <button class="btn-medusa seriesCheck">Select Episodes</button>
+                    <button class="btn-medusa clearAll">Clear</button>
                 </div>
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                     <option selected value="">Change selected to:</option>
-                    <option value=""">--------------------------------------------</option>
+                    <option value="">--------------------------------------------</option>
                     <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
                     % if not app.USE_FAILED_DOWNLOADS:
                     <% availableStatus.remove(FAILED) %>
@@ -283,7 +283,7 @@
                     <input type="hidden" id="series-slug" value="${show.slug}" />
                     <input type="hidden" id="series-id" value="${show.indexerid}" />
                     <input type="hidden" id="indexer" value="${show.indexer}" />
-                    <input class="btn" type="button" id="changeStatus" value="Go" />
+                    <input class="btn-medusa" type="button" id="changeStatus" value="Go" />
                 </div>
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->

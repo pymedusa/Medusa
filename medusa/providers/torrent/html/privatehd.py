@@ -42,6 +42,7 @@ class PrivateHDProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
+        self.freeleech = False
 
         # Torrent Stats
 
@@ -72,7 +73,9 @@ class PrivateHDProvider(TorrentProvider):
                 search_params = {
                     'in': 1,
                     'search': search_string,
-                    'type': 2
+                    'type': 2,
+                    'discount[]': 1 if self.freeleech else None,
+                    'tv_type[]': {'episode': 1, 'season': 2}.get(mode.lower())
                 }
 
                 if not search_string:
@@ -99,11 +102,8 @@ class PrivateHDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if not html:
-                log.debug('No html data parsed from provider')
-                return items
-
             torrents = html('tr')
+
             if not torrents or len(torrents) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
@@ -115,12 +115,12 @@ class PrivateHDProvider(TorrentProvider):
                     continue
 
                 try:
-                    title = row.find(class_='torrent-filename').text.strip()
+                    title = row.find(class_='torrent-filename').get_text(strip=True)
                     download_url = row.find(class_='torrent-download-icon').get('href')
-                    size = convert_size(row.contents[11].text.strip(), -1)
-                    seeders = row.contents[13].text
-                    leechers = row.contents[15].text
-                    pubdate = self.parse_pubdate(row.contents[7].findChild().get('title'))
+                    seeders = row.contents[13].get_text()
+                    leechers = row.contents[15].get_text()
+                    size = convert_size(row.contents[11].get_text(strip=True), default=-1)
+                    pubdate = self.parse_pubdate(row.contents[7].contents[1].get('title'))
 
                     item = {
                         'title': title,
@@ -130,8 +130,6 @@ class PrivateHDProvider(TorrentProvider):
                         'leechers': leechers,
                         'pubdate': pubdate,
                     }
-                    if mode != 'RSS':
-                        pass
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
                               title, seeders, leechers)
 
@@ -149,7 +147,8 @@ class PrivateHDProvider(TorrentProvider):
         if 'pass' in dict_from_cookiejar(self.session.cookies):
             return True
 
-        with BS4Parser(self.session.get(self.urls['login']).text, 'html5lib') as html:
+        login_html = self.session.get(self.urls['login'])
+        with BS4Parser(login_html.text, 'html5lib') as html:
             token = html.find('input', attrs={'name': '_token'}).get('value')
 
         login_params = {

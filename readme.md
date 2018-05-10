@@ -1,7 +1,26 @@
-![Medusa](themes-default/slim/static/images/medusa-logo.png)
-
-[![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=develop)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open") [![codebeat badge](https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0)](https://codebeat.co/projects/github-com-pymedusa-medusa-develop) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo) [![codecov](https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg)](https://codecov.io/gh/pymedusa/Medusa)
-
+<p align="center">
+  <img src="https://cdn.rawgit.com/pymedusa/medusa.github.io/4360d494/images/logo/new-logo.png"/>
+</p>
+<p align="center" title="Build Status">
+  <a href="https://travis-ci.org/pymedusa/Medusa">
+    <img src="https://travis-ci.org/pymedusa/Medusa.svg?branch=develop" alt=""/>
+  </a>
+  <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Average time to resolve an issue">
+    <img src="http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg" alt="Average time to resolve an issue"/>
+  </a>
+  <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Percentage of issues still open">
+    <img src="http://isitmaintained.com/badge/open/pymedusa/Medusa.svg" alt="Percentage of issues still open"/>
+  </a>
+  <a href="https://codebeat.co/projects/github-com-pymedusa-medusa-develop" title="">
+    <img src="https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0" alt="codebeat badge"/>
+  </a>
+  <a href="https://github.com/sindresorhus/xo" title="">
+    <img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="XO code style"/>
+  </a>
+  <a href="https://codecov.io/gh/pymedusa/Medusa" title="">
+    <img src="https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg" alt="codecov"/>
+  </a>
+</p>
 
 
 ### Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
@@ -60,11 +79,15 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
-![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
-![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
-![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
-![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/dognzb.png)[DOGnzb](https://dognzb.cr)
-![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/danishbits.png)[DanishBits](https://danishbits.org)
+![RARBG](https://rarbg.com/favicon.ico) [RARBG](https://rarbg.to)
+&nbsp;&middot;&nbsp;
+![NZB.cat](https://nzb.cat/favicon.ico) [NZB.cat](https://nzb.cat/)
+&nbsp;&middot;&nbsp;
+![NZBGeek](https://nzbgeek.info/favicon.ico) [NZBGeek](https://nzbgeek.info)
+&nbsp;&middot;&nbsp;
+![DOGnzb](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/dognzb.png) [DOGnzb](https://dognzb.cr)
+&nbsp;&middot;&nbsp;
+![DanishBits](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/danishbits.png) [DanishBits](https://danishbits.org)
 
 #### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
 

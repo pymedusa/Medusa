@@ -6,6 +6,10 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import re
+from base64 import b16encode, b32decode
+from os.path import join
+from random import shuffle
 
 import bencode
 from bencode.BTL import BTFailure
@@ -14,7 +18,7 @@ from feedparser.util import FeedParserDict
 
 from medusa import app
 from medusa.classes import TorrentSearchResult
-from medusa.helper.common import try_int
+from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import remove_file_failed
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
@@ -142,3 +146,59 @@ class TorrentProvider(GenericProvider):
             pubdate = None
 
         return pubdate
+
+    def get_redirect_url(self, url):
+        """Get the address that the provided URL redirects to."""
+        log.debug('Retrieving redirect URL for {url}', {'url': url})
+
+        response = self.session.get(url, allow_redirects=False)
+        if response and response.headers.get('Location'):
+            return response.headers['Location']
+
+        log.debug('Unable to retrieve redirect URL for {url}', {'url': url})
+        return url
+
+    def _make_url(self, result):
+        """Return url if result is a magnet link."""
+        urls = []
+        filename = ''
+
+        if not result or not result.url:
+            return urls, filename
+
+        if result.url.startswith('magnet:'):
+            try:
+                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
+
+                try:
+                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
+                except Exception:
+                    torrent_name = 'NO_DOWNLOAD_NAME'
+
+                if len(info_hash) == 32:
+                    info_hash = b16encode(b32decode(info_hash)).upper()
+
+                if not info_hash:
+                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
+                    return urls, filename
+
+                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                shuffle(urls)
+            except Exception:
+                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
+                return urls, filename
+        else:
+            # Required for Jackett providers that use magnet redirects
+            # See: https://github.com/pymedusa/Medusa/issues/3435
+            if self.kind() == 'TorznabProvider':
+                redirect_url = self.get_redirect_url(result.url)
+                if redirect_url != result.url:
+                    result.url = redirect_url
+                    return self._make_url(result)
+
+            urls = [result.url]
+
+        result_name = sanitize_filename(result.name)
+        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+
+        return urls, filename

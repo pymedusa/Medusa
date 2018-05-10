@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -117,7 +116,7 @@ class HeBitsProvider(TorrentProvider):
             torrent_rows = torrent_table('div', class_=re.compile('^line')) if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if len(torrent_rows) < 1:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
@@ -169,8 +168,7 @@ class HeBitsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

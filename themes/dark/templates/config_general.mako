@@ -7,16 +7,24 @@
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
-    from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
+<%block name="scripts">
+<script>
+window.app = new Vue({
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - General'
+    },
+    data: {
+        header: 'General Configuration'
+    }
+});
+</script>
+</%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <% indexer = 0 %>
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
@@ -26,9 +34,9 @@
         <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${full_url}#misc">Misc</a></li>
-                    <li><a href="${full_url}#interface">Interface</a></li>
-                    <li><a href="${full_url}#advanced-settings">Advanced Settings</a></li>
+                    <li><app-link href="#misc">Misc</app-link></li>
+                    <li><app-link href="#interface">Interface</app-link></li>
+                    <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
                 </ul>
                 <div id="misc">
                     <div class="component-group-desc">
@@ -111,7 +119,7 @@
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
                     <div class="component-group-desc">
@@ -237,7 +245,7 @@
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
                 </div><!-- /component-group1 //-->
@@ -388,7 +396,7 @@
                             <span class="component-desc">URL where the shows can be downloaded.</span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
                     <div class="component-group-desc">
@@ -403,10 +411,10 @@
                                 <span class="component-title">API key</span>
                                 <span class="component-desc">
                                     <input type="text" name="api_key" id="api_key" value="${app.API_KEY}" class="form-control input-sm input300" readonly="readonly"/>
-                                    <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
+                                    <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
-                                        <p>you can try all the features of the API <a href="apibuilder/">here</a></p>
+                                        <p>you can try all the features of the API <app-link href="apibuilder/">here</app-link></p>
                                     </div>
                                 </span>
                             </label>
@@ -516,7 +524,7 @@
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 </div>
@@ -585,7 +593,7 @@
                                 <span class="component-desc">
                                     <input type="checkbox" name="encryption_version" id="encryption_version" ${'checked="checked"' if app.ENCRYPTION_VERSION else ''}/>
                                     <p>in the <code>config.ini</code> file.
-                                    <b>Warning:</b> Passwords must only contain <a target="_blank" href="${anon_url('http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters')}">ASCII characters</a></p>
+                                    <b>Warning:</b> Passwords must only contain <app-link href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII characters</app-link></p>
                                 </span>
                             </label>
                         </div>
@@ -665,7 +673,7 @@
                             </label>
                         </div>
 
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                     <div class="component-group-desc">
@@ -719,7 +727,7 @@
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                     <div class="component-group-desc">
@@ -746,9 +754,9 @@
                                     % endif
                                     </select>
                                     % if not gh_branch:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
                                     % else:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
                                     % endif
                                     % if not gh_branch:
                                        <div class="clear-left" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></div>
@@ -802,9 +810,9 @@
                                     <span class="component-desc">
                                         <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
                                          % if not app.GIT_TOKEN:
-                                            <input class="btn btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                            <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
                                          % else:
-                                            <input class="btn btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                            <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
                                          % endif
                                         <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
                                     </span>
@@ -854,20 +862,20 @@
                                             % endfor
                                         % endif
                                     </select>
-                                    <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
+                                    <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
                                 </span>
                                 <div class="clear-left">
                                     <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
                                 </div>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->
         </form>
     </div>

@@ -20,14 +20,13 @@ from medusa.providers.torrent import (
     animebytes,
     animetorrents,
     archetorrent,
+    avistaz,
     bitcannon,
     bithdtv,
     btn,
+    cinemaz,
     danishbits,
-    elitetorrent,
     elitetracker,
-    gftracker,
-    hd4free,
     hdbits,
     hdspace,
     hdtorrents,
@@ -65,17 +64,17 @@ from medusa.providers.torrent import (
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
-    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents', 'hebits',
-    'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
+    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents',
+    'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor',
+    'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
+    'hdspace', 'newpct', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz', 'avistaz'
 ]
 
 
 def sorted_provider_list(randomize=False):
-    initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
+    initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
     provider_dict = dict(list(zip([x.get_id() for x in initial_list], initial_list)))
 
     new_list = []
@@ -118,5 +117,5 @@ def get_provider_module(name):
 
 
 def get_provider_class(provider_id):
-    provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
+    provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
     return next((provider for provider in provider_list if provider.get_id() == provider_id), None)

@@ -1,6 +1,7 @@
 # coding=utf-8
 """First module to initialize."""
 from __future__ import unicode_literals
+
 import random
 from threading import Lock
 
@@ -91,6 +92,7 @@ showList = []
 providerList = []
 newznabProviderList = []
 torrentRssProviderList = []
+torznab_providers_list = []
 metadata_provider_dict = {}
 
 NEWEST_VERSION = None
@@ -198,7 +200,7 @@ METADATA_MEDE8ER = []
 QUALITY_DEFAULT = None
 STATUS_DEFAULT = None
 STATUS_DEFAULT_AFTER = None
-FLATTEN_FOLDERS_DEFAULT = False
+SEASON_FOLDERS_DEFAULT = True
 SUBTITLES_DEFAULT = False
 INDEXER_DEFAULT = None
 INDEXER_TIMEOUT = None
@@ -617,6 +619,8 @@ __INITIALIZED__ = False
 NEWZNAB_PROVIDERS = []
 
 TORRENTRSS_PROVIDERS = []
+
+TORZNAB_PROVIDERS = []
 
 RECENTLY_DELETED = set()
 

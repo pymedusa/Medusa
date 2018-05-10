@@ -310,7 +310,7 @@ class Cache(object):
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
                       ' this result is unusable', self.provider.name)
-        return False
+        return None
 
     @property
     def updated(self):
@@ -363,7 +363,7 @@ class Cache(object):
         # if we've updated recently then skip the update
         if time() - self.updated < self.minTime * 60:
             log.debug('Last update was too soon, using old cache: {0}.'
-                      ' Updated less then {1} minutes ago',
+                      ' Updated less than {1} minutes ago',
                       self.updated, self.minTime)
             return False
         log.debug('Updating providers cache')

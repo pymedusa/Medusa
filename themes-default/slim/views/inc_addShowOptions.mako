@@ -8,8 +8,7 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <% allowed_qualities, preferred_qualities = Quality.split_quality(app.QUALITY_DEFAULT) %>
-                    <%include file="/inc_qualityChooser.mako"/>
+                    <quality-chooser/>
                 </span>
             </label>
         </div>
@@ -49,11 +48,11 @@
             </label>
         </div>
         <div class="field-pair alt">
-            <label for="flatten_folders" class="clearfix">
-                <span class="component-title">Flatten Folders</span>
+            <label for="season_folders" class="clearfix">
+                <span class="component-title">Season Folders</span>
                 <span class="component-desc">
-                    <input class="cb" type="checkbox" name="flatten_folders" id="flatten_folders" ${'checked="checked"' if app.FLATTEN_FOLDERS_DEFAULT else ''}/>
-                    <p>Disregard sub-folders?</p>
+                    <input type="checkbox" name="season_folders" id="season_folders" ${'checked="checked"' if app.SEASON_FOLDERS_DEFAULT or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/>
+                    <p>Group episodes by season folder?</p>
                 </span>
             </label>
         </div>
@@ -80,7 +79,7 @@
         <br>
         <div class="field-pair alt">
             <label for="saveDefaultsButton" class="nocheck clearfix">
-                <span class="component-title"><input class="btn btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
+                <span class="component-title"><input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
                 <span class="component-desc">
                     <p>Use current values as the defaults</p>
                 </span>

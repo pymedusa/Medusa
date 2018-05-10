@@ -75,11 +75,8 @@ def send_nzb_get(params, nzb):
     params.update({'name': nzb.url, 'mode': 'addurl'})
     url = urljoin(app.SAB_HOST, 'api')
 
-    response = session.get(url, params=params, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
+    data = session.get_json(url, params=params, verify=False)
+    if not data:
         log.info('Error connecting to sab, no data returned')
     else:
         log.debug('Result text from SAB: {0}', data)
@@ -111,11 +108,8 @@ def send_nzb_post(params, nzb):
     # Empty session.params, because else these are added to the url.
     session.params = {}
 
-    response = session.post(url, data=data, files=files, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
+    data = session.get_json(url, method='POST', data=data, files=files, verify=False)
+    if not data:
         log.info('Error connecting to sab, no data returned')
     else:
         log.debug('Result text from SAB: {0}', data)
@@ -155,12 +149,9 @@ def get_sab_access_method(host=None):
         'apikey': app.SAB_APIKEY,
     })
     url = urljoin(host, 'api')
-    response = session.get(url, params={'mode': 'auth'}, verify=False)
-
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
+    data = session.get_json(url, params={'mode': 'auth'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
     else:
         return _check_sab_response(data)
 
@@ -182,11 +173,9 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     })
     url = urljoin(host, 'api')
 
-    response = session.get(url, params={'mode': 'queue'}, verify=False)
-    try:
-        data = response.json()
-    except ValueError:
-        return False, response
+    data = session.get_json(url, params={'mode': 'queue'}, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
     else:
         # check the result and determine if it's good or not
         result, sab_text = _check_sab_response(data)

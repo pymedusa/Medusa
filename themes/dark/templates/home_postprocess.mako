@@ -1,16 +1,31 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import pkgutil
     from medusa import app
 %>
+<%block name="scripts">
+<script>
+window.app = {};
+const startVue = () => {
+    window.app = new Vue({
+        el: '#vue-wrap',
+        metaInfo: {
+            title: 'Post Processing'
+        },
+        data() {
+            return {
+                header: 'Post Processing'
+            };
+        }
+    });
+};
+</script>
+</%block>
 <%block name="content">
 
 <div class="row">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 <div class="row">
@@ -32,10 +47,17 @@
                 </td>
                 <td>
                     <select name="process_method" id="process_method" class="form-control form-control-inline input-sm" >
-                    <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                    % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
-                        <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
-                    % endfor
+                    % if pkgutil.find_loader('reflink') is not None:
+                        <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link"} %>
+                        % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
+                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                        % endfor
+                    % else:
+                        <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
+                        % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
+                        % endfor
+                    % endif
                     </select>
                 </td>
             </tr>
@@ -96,7 +118,7 @@
             </tr>
             % endif
         </table>
-            <input id="submit" class="btn" type="submit" value="Process" />
+            <input id="submit" class="btn-medusa" type="submit" value="Process" />
         </form>
     </div>
 </div>

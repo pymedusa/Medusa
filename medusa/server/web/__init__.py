@@ -21,6 +21,7 @@ from medusa.server.web.core import (
     LoginHandler,
     LogoutHandler,
     PageTemplate,
+    Schedule,
     TokenHandler,
     UI,
     WebFileBrowser,

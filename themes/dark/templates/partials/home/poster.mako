@@ -1,11 +1,13 @@
 <%!
-    from medusa import app
     import calendar
+    import re
+
+    from medusa import app
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.helpers import remove_article
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
-    import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
@@ -42,7 +44,12 @@
                 </div>
             % endif
         % endfor
-        <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+        <%
+            def titler(x):
+                return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
+            my_show_list.sort(key=lambda x: titler(x.name).lower())
+        %>
         % for cur_show in my_show_list:
         <%
             cur_airs_next = ''
@@ -93,20 +100,20 @@
                 elif 'nded' in display_status:
                     data_date = '5000000100.0'
         %>
-            <div class="show-container" id="show${cur_show.indexerid}" data-name="${cur_show.name}" data-date="${data_date}" data-network="${cur_show.network}" data-progress="${progressbar_percent}" data-indexer="${cur_show.indexer}">
+            <div class="show-container" id="show${cur_show.indexerid}" data-name="${cur_show.name | h}" data-date="${data_date}" data-network="${cur_show.network}" data-progress="${progressbar_percent}" data-indexer="${cur_show.indexer}">
                 <div class="aligner">
                     <div class="background-image">
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <a href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></a>
+                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></app-link>
                     </div>
                 </div>
                 <div class="show-poster-footer row">
                     <div class="col-md-12">
                         <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                         <div class="show-title">
-                            <div class="ellipsis">${cur_show.name}</div>
+                            <div class="ellipsis">${cur_show.name | h}</div>
                             % if get_xem_numbering_for_show(cur_show, refresh_data=False):
                                 <div class="xem">
                                     <img src="images/xem.png" width="16" height="16" />

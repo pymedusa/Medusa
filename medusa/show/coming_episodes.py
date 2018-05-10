@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from builtins import object
 from builtins import str
 from datetime import date, timedelta
+from operator import itemgetter
 
 from medusa import app
 from medusa.common import (
@@ -36,8 +37,6 @@ from medusa.network_timezones import parse_date_time
 from medusa.sbdatetime import sbdatetime
 from medusa.tv.series import SeriesIdentifier
 
-from past.builtins import cmp
-
 
 class ComingEpisodes(object):
     """
@@ -49,9 +48,9 @@ class ComingEpisodes(object):
 
     categories = ['later', 'missed', 'soon', 'today']
     sorts = {
-        'date': (lambda a, b: cmp(a['localtime'], b['localtime'])),
-        'network': (lambda a, b: cmp((a['network'], a['localtime']), (b['network'], b['localtime']))),
-        'show': (lambda a, b: cmp((a['show_name'], a['localtime']), (b['show_name'], b['localtime']))),
+        'date': itemgetter('localtime'),
+        'network': itemgetter('network', 'localtime'),
+        'show': itemgetter('show_name', 'localtime'),
     }
 
     def __init__(self):
@@ -132,7 +131,7 @@ class ComingEpisodes(object):
             results[index]['localtime'] = sbdatetime.convert_to_setting(
                 parse_date_time(item['airdate'], item['airs'], item['network']))
 
-        results.sort(ComingEpisodes.sorts[sort])
+        results.sort(key=ComingEpisodes.sorts[sort])
 
         if not group:
             return results

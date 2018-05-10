@@ -50,8 +50,8 @@ $(document).ready(() => {
     function syncOptionIDs() {
         // Re-sync option ids
         let i = 0;
-        $('#rootDirs option').each(function() {
-            $(this).prop('id', 'rd-' + (i++));
+        $('#rootDirs option').each((index, element) => {
+            $(element).prop('id', 'rd-' + (i++));
         });
     }
 
@@ -59,7 +59,7 @@ $(document).ready(() => {
         if ($('#rootDirs').length === 0) {
             /* Trigger change event as $.rootDirCheck() function is not
                always available when this section of code is called. */
-            $('#rootDirs').trigger('change');
+            $('#rootDirText').trigger('change');
             return;
         }
 
@@ -87,15 +87,15 @@ $(document).ready(() => {
         if ($('#whichDefaultRootDir').val().length >= 4) {
             dirString = $('#whichDefaultRootDir').val().substr(3);
         }
-        $('#rootDirs option').each(function() {
+        $('#rootDirs option').each((index, element) => {
             if (dirString.length !== 0) {
-                dirString += '|' + $(this).val();
+                dirString += '|' + $(element).val();
             }
         });
 
         $('#rootDirText').val(dirString);
         // Manually trigger change event as setting .val directly doesn't
-        $('#rootDirs').trigger('change');
+        $('#rootDirText').trigger('change');
     }
 
     function addRootDir(path) {
@@ -145,16 +145,16 @@ $(document).ready(() => {
         });
     }
 
-    $('#addRootDir').on('click', function() {
-        $(this).nFileBrowser(addRootDir);
+    $(document.body).on('click', '#addRootDir', event => {
+        $(event.currentTarget).nFileBrowser(addRootDir);
     });
-    $('#editRootDir').on('click', function() {
-        $(this).nFileBrowser(editRootDir, {
+    $(document.body).on('click', '#editRootDir', event => {
+        $(event.currentTarget).nFileBrowser(editRootDir, {
             initialDir: $('#rootDirs option:selected').val()
         });
     });
 
-    $('#deleteRootDir').on('click', () => {
+    $(document.body).on('click', '#deleteRootDir', () => {
         if ($('#rootDirs option:selected').length !== 0) {
             const toDelete = $('#rootDirs option:selected');
             const newDefault = (toDelete.attr('id') === $('#whichDefaultRootDir').val());
@@ -186,7 +186,7 @@ $(document).ready(() => {
         });
     });
 
-    $('#defaultRootDir').on('click', () => {
+    $(document.body).on('click', '#defaultRootDir', () => {
         if ($('#rootDirs option:selected').length !== 0) {
             setDefault($('#rootDirs option:selected').attr('id'));
         }
@@ -195,7 +195,7 @@ $(document).ready(() => {
             rootDirString: $('#rootDirText').val()
         });
     });
-    $('#rootDirs').click(refreshRootDirs);
+    $(document.body).on('click', '#rootDirs', refreshRootDirs);
 
     // Set up buttons on page load
     syncOptionIDs();

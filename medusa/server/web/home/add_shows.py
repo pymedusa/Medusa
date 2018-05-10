@@ -7,11 +7,11 @@ import json
 import os
 import re
 
-from medusa import app, classes, config, db, helpers, logger, ui
-from medusa.black_and_white_list import short_group_names
+from medusa import app, classes, config, helpers, logger, ui
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
+from medusa.helpers.anidb import short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
@@ -24,9 +24,13 @@ from medusa.show.show import Show
 
 from requests import RequestException
 from requests.compat import unquote_plus
+
 from simpleanidb import REQUEST_HOT
-from six import iteritems, itervalues
+
+from six import iteritems
+
 from tornroutes import route
+
 from traktor import TraktApi
 
 
@@ -37,7 +41,7 @@ class HomeAddShows(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='addShows.mako')
-        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller='addShows', action='index')
+        return t.render(topmenu='home', controller='addShows', action='index')
 
     @staticmethod
     def getIndexerLanguages():
@@ -102,80 +106,6 @@ class HomeAddShows(Home):
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
-    def massAddTable(self, rootDir=None):
-        t = PageTemplate(rh=self, filename='home_massAddTable.mako')
-
-        if not rootDir:
-            return 'No folders selected.'
-        elif not isinstance(rootDir, list):
-            root_dirs = [rootDir]
-        else:
-            root_dirs = rootDir
-
-        root_dirs = [unquote_plus(x) for x in root_dirs]
-
-        if app.ROOT_DIRS:
-            default_index = int(app.ROOT_DIRS[0])
-        else:
-            default_index = 0
-
-        if len(root_dirs) > default_index:
-            tmp = root_dirs[default_index]
-            if tmp in root_dirs:
-                root_dirs.remove(tmp)
-                root_dirs = [tmp] + root_dirs
-
-        dir_list = []
-
-        main_db_con = db.DBConnection()
-        for root_dir in root_dirs:
-            try:
-                file_list = os.listdir(root_dir)
-            except Exception as error:
-                logger.log('Unable to listdir {path}: {e!r}'.format(path=root_dir, e=error))
-                continue
-
-            for cur_file in file_list:
-
-                try:
-                    cur_path = os.path.normpath(os.path.join(root_dir, cur_file))
-                    if not os.path.isdir(cur_path):
-                        continue
-                except Exception as error:
-                    logger.log('Unable to get current path {path} and {file}: {e!r}'.format(path=root_dir, file=cur_file, e=error))
-                    continue
-
-                cur_dir = {
-                    'dir': cur_path,
-                    'display_dir': '<b>{dir}{sep}</b>{base}'.format(
-                        dir=os.path.dirname(cur_path), sep=os.sep, base=os.path.basename(cur_path)),
-                }
-
-                # see if the folder is in KODI already
-                dir_results = main_db_con.select(
-                    b'SELECT indexer, indexer_id '
-                    b'FROM tv_shows '
-                    b'WHERE location = ? LIMIT 1',
-                    [cur_path]
-                )
-
-                cur_dir['added_already'] = bool(dir_results)
-
-                dir_list.append(cur_dir)
-
-                indexer_id = show_name = indexer = None
-                # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-                # is reset. This will prevent errors, when using multiple indexers and caching.
-                for cur_provider in itervalues(app.metadata_provider_dict):
-                    if not (indexer_id and show_name):
-                        (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
-
-                cur_dir['existing_info'] = (indexer_id, show_name, indexer)
-
-                if indexer_id and indexer and Show.find_by_id(app.showList, indexer, indexer_id):
-                    cur_dir['added_already'] = True
-        return t.render(dirList=dir_list)
-
     def newShow(self, show_to_add=None, other_shows=None, search_string=None):
         """
         Display the new show page which collects a tvdb id, folder, and extra options and
@@ -216,8 +146,7 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            title='New Show', header='New Show', topmenu='home',
-            controller='addShows', action='newShow'
+            topmenu='home', controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -363,17 +292,15 @@ class HomeAddShows(Home):
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        title='Existing Show', header='Existing Show', topmenu='home',
-                        controller='addShows', action='addExistingShow')
+                        topmenu='home', controller='addShows', action='addExistingShow')
 
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
-                    flatten_folders=None, subtitles=None, full_show_path=None,
+                    season_folders=None, subtitles=None, full_show_path=None,
                     other_shows=None, skip_show=None, provided_indexer=None,
                     anime=None, scene=None, blacklist=None, whitelist=None,
-                    default_status_after=None, default_flatten_folders=None,
-                    configure_show_options=False):
+                    default_status_after=None, configure_show_options=False):
         """
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
@@ -410,7 +337,7 @@ class HomeAddShows(Home):
             # prepare the inputs for passing along
             scene = config.checkbox_to_value(scene)
             anime = config.checkbox_to_value(anime)
-            flatten_folders = config.checkbox_to_value(flatten_folders)
+            season_folders = config.checkbox_to_value(season_folders)
             subtitles = config.checkbox_to_value(subtitles)
 
             if whitelist:
@@ -437,7 +364,7 @@ class HomeAddShows(Home):
         else:
             default_status = app.STATUS_DEFAULT
             quality = app.QUALITY_DEFAULT
-            flatten_folders = app.FLATTEN_FOLDERS_DEFAULT
+            season_folders = app.SEASON_FOLDERS_DEFAULT
             subtitles = app.SUBTITLES_DEFAULT
             anime = app.ANIME_DEFAULT
             scene = app.SCENE_DEFAULT
@@ -459,7 +386,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
-                                                flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
+                                                season_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
@@ -468,7 +395,7 @@ class HomeAddShows(Home):
         return self.redirect('/home/')
 
     def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
-                   allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
+                   allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
         """
@@ -557,7 +484,7 @@ class HomeAddShows(Home):
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
         anime = config.checkbox_to_value(anime)
-        flatten_folders = config.checkbox_to_value(flatten_folders)
+        season_folders = config.checkbox_to_value(season_folders)
         subtitles = config.checkbox_to_value(subtitles)
 
         if whitelist:
@@ -577,7 +504,7 @@ class HomeAddShows(Home):
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                                flatten_folders, indexer_lang, subtitles, anime,
+                                                season_folders, indexer_lang, subtitles, anime,
                                                 scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
@@ -651,7 +578,7 @@ class HomeAddShows(Home):
                     indexer, indexer_id, show_dir,
                     default_status=app.STATUS_DEFAULT,
                     quality=app.QUALITY_DEFAULT,
-                    flatten_folders=app.FLATTEN_FOLDERS_DEFAULT,
+                    season_folders=app.SEASON_FOLDERS_DEFAULT,
                     subtitles=app.SUBTITLES_DEFAULT,
                     anime=app.ANIME_DEFAULT,
                     scene=app.SCENE_DEFAULT,

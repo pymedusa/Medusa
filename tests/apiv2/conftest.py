@@ -1,5 +1,7 @@
 # coding=utf-8
 """Configuration for pytest."""
+from __future__ import unicode_literals
+
 from medusa.server.core import get_apiv2_handlers
 import pytest
 import tornado.web
