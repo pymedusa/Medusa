@@ -26,8 +26,7 @@ const startVue = () => {
                 defaultIndexer: ${app.INDEXER_DEFAULT},
 
                 isLoading: false,
-                lastRootDirText: '',
-                selectedRootDirs: [],
+                rootDirs: [],
                 dirList: [],
                 promptForSettings: false
             };
@@ -38,30 +37,10 @@ const startVue = () => {
                 // Hide the black/whitelist, because it can only be used for a single anime show
                 $.updateBlackWhiteList(undefined);
             });
-
-            $(document.body).on('change', '#rootDirText', () => {
-                if (this.lastRootDirText === $('#rootDirText').val()) {
-                    return false;
-                }
-                this.lastRootDirText = $('#rootDirText').val();
-                this.selectedRootDirs = this.rootDirs;
-                this.update();
-            });
-
-            // Trigger Root Dirs to update.
-            // @FIXME: This is a workaround until root-dirs is a Vue component.
-            if ($('#rootDirText').val() === '') {
-                $('#rootDirs').click();
-            }
-
-            // this.lastRootDirText = $('#rootDirText').val();
-            // this.selectedRootDirs = this.rootDirs;
-            // this.update();
         },
         computed: {
-            rootDirs() {
-                if (this.lastRootDirText.length === 0) return [];
-                return this.lastRootDirText.split('|').slice(1);
+            selectedRootDirs() {
+                return this.rootDirs.filter(rd => rd.selected);
             },
             filteredDirList() {
                 return this.dirList.filter(dir => !dir.alreadyAdded);
@@ -70,7 +49,7 @@ const startVue = () => {
                 // Mark the root dir as bold in the path
                 return this.filteredDirList
                     .map(dir => {
-                        const rootDir = this.rootDirs.find(rd => dir.path.startsWith(rd));
+                        const rootDir = this.rootDirs.find(rd => dir.path.startsWith(rd.path)).path;
                         const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
                         const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
@@ -78,9 +57,9 @@ const startVue = () => {
             },
             checkAll: {
                 get() {
-                    const selectedSeriesDirs = this.filteredDirList.filter(dir => dir.selected);
-                    if (selectedSeriesDirs.length === 0) return false;
-                    return selectedSeriesDirs.length === this.filteredDirList.length;
+                    const selectedDirList = this.filteredDirList.filter(dir => dir.selected);
+                    if (selectedDirList.length === 0) return false;
+                    return selectedDirList.length === this.filteredDirList.length;
                 },
                 set(newValue) {
                     this.dirList = this.dirList.map(dir => {
@@ -91,22 +70,37 @@ const startVue = () => {
             }
         },
         methods: {
+            rootDirsUpdated(value, data) {
+                this.rootDirs = data.map(rd => {
+                    return {
+                        selected: true,
+                        path: rd.path
+                    };
+                });
+            },
             async update() {
                 if (this.isLoading) return;
 
                 this.isLoading = true;
-                if (this.selectedRootDirs.length === 0) {
+
+                const indices = this.rootDirs
+                    .reduce((indices, rd, idx) => {
+                        if (rd.selected) indices.push(idx);
+                        return indices;
+                    }, []);
+                if (indices.length === 0) {
                     this.dirList = [];
                     this.isLoading = false;
                     return;
                 }
-                const params = { 'root-dir': JSON.stringify(this.selectedRootDirs) };
+
+                const params = { 'root-dirs': indices.join(',') };
                 const { data } = await api.get('internal/existingSeries', { params });
                 this.dirList = data
                     .map(dir => {
                         // Pre-select all dirs not already added
                         dir.selected = !dir.alreadyAdded;
-                        dir.selectedIndexer = dir.existingInfo.indexer || this.defaultIndexer;
+                        dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
                         return dir;
                     });
                 this.isLoading = false;
@@ -127,29 +121,21 @@ const startVue = () => {
                         .trigger("updateAll");
                 });
             },
-            toggleRootDir(toggledRootDir) {
-                const selected = this.selectedRootDirs.includes(toggledRootDir);
-                this.selectedRootDirs = this.rootDirs
-                    .filter(rd => {
-                        if (selected) return rd !== toggledRootDir && this.selectedRootDirs.includes(rd);
-                        return rd === toggledRootDir || this.selectedRootDirs.includes(rd);
-                    });
-            },
             seriesIndexerUrl(curDir) {
-                return this.indexers[curDir.existingInfo.indexer].showUrl + curDir.existingInfo.seriesId.toString();
+                return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
             },
             submitSeriesDirs() {
                 const dirArr = this.filteredDirList
                     .reduce((accumlator, dir) => {
                         if (!dir.selected) return accumlator;
 
-                        const originalIndexer = dir.existingInfo.indexer;
-                        let seriesId = dir.existingInfo.seriesId;
+                        const originalIndexer = dir.metadata.indexer;
+                        let seriesId = dir.metadata.seriesId;
                         if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
                             seriesId = '';
                         }
 
-                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.existingInfo.seriesName]
+                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
                             .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
                         accumlator.push(encodeURIComponent(seriesToAdd));
                         return accumlator;
@@ -184,7 +170,7 @@ const startVue = () => {
                         <li><app-link href="addShows/existingShows/#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
-                        <%include file="/inc_rootDirs.mako"/>
+                        <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
                     </div>
                     <div id="tabs-2" class="existingtabs">
                         <%include file="/inc_addShowOptions.mako"/>
@@ -197,15 +183,15 @@ const startVue = () => {
                 <hr>
                 <p><b>Displaying folders within these directories which aren't already added to Medusa:</b></p>
                 <ul id="rootDirStaticList">
-                    <li v-for="rootDir in rootDirs" class="ui-state-default ui-corner-all" @click="toggleRootDir(rootDir)">
-                        <input type="checkbox" class="rootDirCheck" v-model.sync="selectedRootDirs" :value="rootDir" style="cursor: pointer;">
-                        <label><b style="cursor: pointer;">{{rootDir}}</b></label>
+                    <li v-for="(rootDir, idx) in rootDirs" class="ui-state-default ui-corner-all" @click="rootDirs[idx].selected = !rootDirs[idx].selected">
+                        <input type="checkbox" class="rootDirCheck" v-model="rootDir.selected" :value="rootDir.path" style="cursor: pointer;">
+                        <label><b style="cursor: pointer;">{{rootDir.path}}</b></label>
                     </li>
                 </ul>
                 <br>
                 <span v-if="isLoading"><img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...</span>
-                <span v-if="!isLoading && Object.keys(dirList).length === 0">No folders selected.</span>
-                <table v-show="!isLoading && Object.keys(dirList).length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
+                <span v-if="!isLoading && selectedRootDirs.length === 0">No folders selected.</span>
+                <table v-show="!isLoading && selectedRootDirs.length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
                     <thead>
                         <tr>
                             <th class="col-checkbox"><input type="checkbox" v-model="checkAll" /></th>
@@ -223,8 +209,8 @@ const startVue = () => {
                                 <label @click="curDir.selected = !curDir.selected" v-html="displayPaths[curDirIndex]"></label>
                             </td>
                             <td>
-                                <app-link v-if="curDir.existingInfo.seriesName && curDir.existingInfo.indexer > 0"
-                                          :href="seriesIndexerUrl(curDir)">{{curDir.existingInfo.seriesName}}</app-link>
+                                <app-link v-if="curDir.metadata.seriesName && curDir.metadata.indexer > 0"
+                                          :href="seriesIndexerUrl(curDir)">{{curDir.metadata.seriesName}}</app-link>
                                 <span v-else>?</span>
                             </td>
                             <td align="center">

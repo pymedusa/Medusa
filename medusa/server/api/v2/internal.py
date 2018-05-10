@@ -14,8 +14,6 @@ from medusa.tv.series import Series, SeriesIdentifier
 
 from six import itervalues
 
-from tornado.escape import json_decode
-
 log = BraceAdapter(logging.getLogger(__name__))
 
 
@@ -53,24 +51,27 @@ class InternalHandler(BaseRequestHandler):
         data = resource_function()
         return self._ok(data=data)
 
+    # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""
-        root_dirs = json_decode(self.get_argument('root-dir', '[]'))
+        root_dirs_indices = self.get_argument('root-dirs', '')
 
-        if not root_dirs:
-            if app.ROOT_DIRS:
-                root_dirs = app.ROOT_DIRS[1:]
-            else:
-                self._not_found('No configured root dirs')
+        if root_dirs_indices:
+            root_dirs_indices = set(root_dirs_indices.split(','))
 
-        # Put the default root-dir first
-        try:
-            default_index = int(app.ROOT_DIRS[0])
-            default_root_dir = root_dirs[default_index]
-            root_dirs.remove(default_root_dir)
-            root_dirs.insert(0, default_root_dir)
-        except (IndexError, ValueError):
-            pass
+        if not app.ROOT_DIRS:
+            return self._not_found('No configured root dirs')
+
+        root_dirs = app.ROOT_DIRS[1:]
+        if root_dirs_indices:
+            try:
+                root_dirs_indices = sorted(map(int, root_dirs_indices))
+            except ValueError as error:
+                log.warning('Unable to parse root dirs indices: {indices}. Error: {error}',
+                            {'indices': root_dirs_indices, 'error': error})
+                return self._bad_request('Invalid root dirs indices')
+
+            root_dirs = [root_dirs[idx] for idx in root_dirs_indices]
 
         dir_list = []
 
@@ -107,7 +108,7 @@ class InternalHandler(BaseRequestHandler):
                 cur_dir = {
                     'path': cur_path,
                     'alreadyAdded': False,
-                    'existingInfo': {
+                    'metadata': {
                         'seriesId': None,
                         'seriesName': None,
                         'indexer': None
@@ -123,7 +124,7 @@ class InternalHandler(BaseRequestHandler):
                     for cur_provider in itervalues(app.metadata_provider_dict):
                         (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
                         if all((series_id, series_name, indexer)):
-                            cur_dir['existingInfo'] = {
+                            cur_dir['metadata'] = {
                                 'seriesId': try_int(series_id),
                                 'seriesName': series_name,
                                 'indexer': try_int(indexer)
