@@ -695,9 +695,7 @@ class GenericProvider(object):
             else:
                 self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
 
-            exceptions = get_scene_exceptions_by_name(show_name)
-
-            for exception in exceptions:
+            for exception in get_scene_exceptions_by_name(show_name):
                 if exception.episode_search_template:
                     anime_type = app.NAMING_ANIME
                     if not self.series.is_anime:
