@@ -364,7 +364,7 @@ td.col-checkbox {
     text-align: center;
 }
 
-#showBanner {
+.show-banner {
     border: 1px solid rgba(220, 220, 220, 0.43);
 }
 
