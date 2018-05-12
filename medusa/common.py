@@ -33,7 +33,6 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
-from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
@@ -90,7 +89,7 @@ NOTIFY_LOGIN = 6
 NOTIFY_LOGIN_TEXT = 7
 NOTIFY_SNATCH_PROPER = 8
 
-notifyStrings = NumDict({
+notifyStrings = {
     NOTIFY_SNATCH: "Started Download",
     NOTIFY_DOWNLOAD: "Download Finished",
     NOTIFY_SUBTITLE_DOWNLOAD: "Subtitle Download Finished",
@@ -99,10 +98,10 @@ notifyStrings = NumDict({
     NOTIFY_LOGIN: "Medusa new login",
     NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
     NOTIFY_SNATCH_PROPER: "Started PROPER Download"
-})
+}
 
 # Episode statuses
-UNKNOWN = -1  # should never happen
+UNSET = -1  # should never happen
 UNAIRED = 1  # episodes that haven't aired yet
 SNATCHED = 2  # qualified with quality
 WANTED = 3  # episodes we don't have but want to get
@@ -122,14 +121,14 @@ NAMING_LIMITED_EXTEND = 8
 NAMING_SEPARATED_REPEAT = 16
 NAMING_LIMITED_EXTEND_E_PREFIXED = 32
 
-MULTI_EP_STRINGS = NumDict({
+MULTI_EP_STRINGS = {
     NAMING_REPEAT: "Repeat",
     NAMING_SEPARATED_REPEAT: "Repeat (Separated)",
     NAMING_DUPLICATE: "Duplicate",
     NAMING_EXTEND: "Extend",
     NAMING_LIMITED_EXTEND: "Extend (Limited)",
     NAMING_LIMITED_EXTEND_E_PREFIXED: "Extend (Limited, E-prefixed)"
-})
+}
 
 
 class Quality(object):
@@ -159,8 +158,7 @@ class Quality(object):
     # far enough out that they shouldn't interfere
     UNKNOWN = 1 << 15  # 32768
 
-    qualityStrings = NumDict({
-        None: "None",
+    qualityStrings = {
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "SDTV",
@@ -178,10 +176,9 @@ class Quality(object):
         UHD_8K_WEBDL: "8K UHD WEB-DL",
         UHD_4K_BLURAY: "4K UHD BluRay",
         UHD_8K_BLURAY: "8K UHD BluRay",
-    })
+    }
 
-    sceneQualityStrings = NumDict({
-        None: "None",
+    sceneQualityStrings = {
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "",
@@ -199,16 +196,15 @@ class Quality(object):
         UHD_8K_WEBDL: "4320p",
         UHD_4K_BLURAY: "2160p BluRay",
         UHD_8K_BLURAY: "4320p BluRay",
-    })
+    }
 
-    combinedQualityStrings = NumDict({
+    combinedQualityStrings = {
         ANYHDTV: "HDTV",
         ANYWEBDL: "WEB-DL",
         ANYBLURAY: "BluRay"
-    })
+    }
 
-    cssClassStrings = NumDict({
-        None: "None",
+    cssClassStrings = {
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "SDTV",
@@ -229,16 +225,22 @@ class Quality(object):
         ANYHDTV: "any-hd",
         ANYWEBDL: "any-hd",
         ANYBLURAY: "any-hd"
-    })
+    }
 
-    statusPrefixes = NumDict({
+    statusPrefixes = {
+        UNSET: "Unset",
+        UNAIRED: "Unaired",
+        WANTED: "Wanted",
+        SKIPPED: "Skipped",
+        IGNORED: "Ignored",
+        SUBTITLED: "Subtitled",
         DOWNLOADED: "Downloaded",
         SNATCHED: "Snatched",
         SNATCHED_PROPER: "Snatched (Proper)",
         FAILED: "Failed",
         SNATCHED_BEST: "Snatched (Best)",
         ARCHIVED: "Archived"
-    })
+    }
 
     @staticmethod
     def _get_status_strings(status):
@@ -316,19 +318,19 @@ class Quality(object):
         :return: Quality
         """
         from medusa.tagger.episode import EpisodeTags
+
         if not name:
             return Quality.UNKNOWN
-        else:
-            name = os.path.basename(name)
 
         result = None
+        name = os.path.basename(name)
         ep = EpisodeTags(name)
 
         if anime:
             sd_options = tags.anime_sd.search(name)
             hd_options = tags.anime_hd.search(name)
             full_hd = tags.anime_fullhd.search(name)
-            ep.rex[u'bluray'] = tags.anime_bluray
+            ep.rex['bluray'] = tags.anime_bluray
 
             # BluRay
             if ep.bluray and (full_hd or hd_options):
@@ -346,7 +348,7 @@ class Quality(object):
             return Quality.UNKNOWN if result is None else result
 
         # Is it UHD?
-        if ep.vres in [2160, 4320] and ep.scan == u'p':
+        if ep.vres in [2160, 4320] and ep.scan == 'p':
             # BluRay
             full_res = (ep.vres == 4320)
             if ep.avc and ep.bluray:
@@ -355,12 +357,12 @@ class Quality(object):
             elif (ep.avc and ep.itunes) or ep.web:
                 result = Quality.UHD_4K_WEBDL if not full_res else Quality.UHD_8K_WEBDL
             # HDTV
-            elif ep.avc and ep.tv == u'hd':
+            elif ep.avc and ep.tv == 'hd':
                 result = Quality.UHD_4K_TV if not full_res else Quality.UHD_8K_TV
 
         # Is it HD?
         elif ep.vres in [1080, 720]:
-            if ep.scan == u'p':
+            if ep.scan == 'p':
                 # BluRay
                 full_res = (ep.vres == 1080)
                 if ep.avc and (ep.bluray or ep.hddvd):
@@ -369,27 +371,32 @@ class Quality(object):
                 elif (ep.avc and ep.itunes) or ep.web:
                     result = Quality.FULLHDWEBDL if full_res else Quality.HDWEBDL
                 # HDTV
-                elif ep.avc and ep.tv == u'hd':
-                    result = Quality.FULLHDTV if full_res else Quality.HDTV
-                elif all([ep.vres == 720, ep.tv == u'hd', ep.mpeg]):
+                elif ep.avc and ep.tv == 'hd':
+                    result = Quality.FULLHDTV if full_res else Quality.HDTV  # 1080 HDTV h264
+                # MPEG2 encoded
+                elif all([ep.vres == 1080, ep.tv == 'hd', ep.mpeg]):
                     result = Quality.RAWHDTV
-            elif (ep.res == u'1080i') and ep.tv == u'hd':
-                if ep.mpeg or (ep.raw and ep.avc_non_free):
+                elif all([ep.vres == 720, ep.tv == 'hd', ep.mpeg]):
                     result = Quality.RAWHDTV
+            elif (ep.res == '1080i') and ep.tv == 'hd' and (ep.mpeg or (ep.raw and ep.avc_non_free)):
+                result = Quality.RAWHDTV
         elif ep.hrws:
             result = Quality.HDTV
 
         # Is it SD?
         elif ep.xvid or ep.avc:
-            # Is it aussie p2p?  If so its 720p
-            if all([ep.tv == u'hd', ep.widescreen, ep.aussie]):
-                result = Quality.HDTV
             # SD DVD
-            elif ep.dvd or ep.bluray:
+            if ep.dvd or ep.bluray:
                 result = Quality.SDDVD
             # SDTV
-            elif ep.res == u'480p' or any([ep.tv, ep.sat, ep.web]):
+            elif ep.res == '480p' or any([ep.tv, ep.sat, ep.web]):
                 result = Quality.SDTV
+        elif ep.dvd:
+            # SD DVD
+            result = Quality.SDDVD
+        elif ep.tv:
+            # SD TV/HD TV
+            result = Quality.SDTV
 
         return Quality.UNKNOWN if result is None else result
 
@@ -478,8 +485,8 @@ class Quality(object):
         :returns: a namedtuple containing (status, quality)
         """
         status = int(status)
-        if status == UNKNOWN:
-            return Quality.composite_status_quality(UNKNOWN, Quality.UNKNOWN)
+        if status == UNSET:
+            return Quality.composite_status_quality(UNSET, Quality.UNKNOWN)
 
         for q in sorted(list(Quality.qualityStrings), reverse=True):
             if status > q * 100:
@@ -609,7 +616,7 @@ class Quality(object):
         :param manually_searched: if episode was manually searched by user
         :return: True if need to run a search for given episode
         """
-        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNKNOWN)
+        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNSET)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         # When user manually searched, we should consider this as final quality.
@@ -812,6 +819,7 @@ Quality.SNATCHED_BEST = [Quality.composite_status(SNATCHED_BEST, x) for x in Qua
 Quality.SNATCHED_PROPER = [Quality.composite_status(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
 Quality.FAILED = [Quality.composite_status(FAILED, x) for x in Quality.qualityStrings if x is not None]
 Quality.ARCHIVED = [Quality.composite_status(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
+Quality.WANTED = [Quality.composite_status(WANTED, x) for x in Quality.qualityStrings if x is not None]
 
 Quality.DOWNLOADED.sort()
 Quality.SNATCHED.sort()
@@ -840,7 +848,7 @@ qualityPresets = (
     UHD, UHD_4K, UHD_8K,
 )
 
-qualityPresetStrings = NumDict({
+qualityPresetStrings = {
     SD: "SD",
     HD: "HD",
     HD720p: "HD720p",
@@ -849,45 +857,48 @@ qualityPresetStrings = NumDict({
     UHD_4K: "UHD-4K",
     UHD_8K: "UHD-8K",
     ANY: "Any",
-})
+}
 
 
-class StatusStrings(NumDict):
+class StatusStrings(dict):
     """Dictionary containing strings for status codes."""
 
     # todo: Make views return Qualities too
-    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + \
-        Quality.ARCHIVED + Quality.FAILED
+    statuses = list(Quality.statusPrefixes)
+    qualities = list(Quality.qualityStrings)
 
     def __missing__(self, key):
         """
         If the key is not found try to determine a status from Quality.
 
-        :param key: A numeric key or None
+        :param key: A numeric key
         :raise KeyError: if the key is invalid and can't be determined from Quality
         """
-        # convert key to number
-        key = self.numeric(key)  # raises KeyError if it can't
-        if key in self.qualities:  # if key isn't found check in qualities
-            current = Quality.split_composite_status(key)
+        try:
+            key = int(key)
+        except (TypeError, ValueError):
+            raise ValueError(key)
+
+        current = Quality.split_composite_status(key)
+        if current.quality in self.qualities:
             return '{status} ({quality})'.format(
                 status=self[current.status],
                 quality=Quality.qualityStrings[current.quality]
-            ) if current.quality else self[current.status]
+            )
         else:  # the key wasn't found in qualities either
             raise KeyError(key)  # ... so the key is invalid
 
     def __contains__(self, key):
         try:
-            key = self.numeric(key)
-            return key in self.data or key in self.qualities
-        except KeyError:
-            return False
+            key = int(key)
+            return key in self.statuses or key in self.qualities
+        except (TypeError, ValueError):
+            raise ValueError(key)
 
 
 # Assign strings to statuses
 statusStrings = StatusStrings({
-    UNKNOWN: "Unknown",
+    UNSET: "Unset",
     UNAIRED: "Unaired",
     SNATCHED: "Snatched",
     DOWNLOADED: "Downloaded",
@@ -914,7 +925,7 @@ class Overview(object):
     # Should suffice!
     QUAL = 50
 
-    overviewStrings = NumDict({
+    overviewStrings = {
         SKIPPED: "skipped",
         WANTED: "wanted",
         QUAL: "qual",
@@ -925,7 +936,7 @@ class Overview(object):
         # breaks checkboxes in displayShow for showing different statuses
         SNATCHED_BEST: "snatched",
         SNATCHED_PROPER: "snatched"
-    })
+    }
 
 
 countryList = {

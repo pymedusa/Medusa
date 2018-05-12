@@ -34,7 +34,7 @@ from medusa.common import (
     SNATCHED,
     SNATCHED_BEST,
     SNATCHED_PROPER,
-    UNKNOWN,
+    UNSET,
 )
 from medusa.helper.common import (
     enabled_providers,
@@ -200,9 +200,9 @@ def snatch_episode(result):
             # We can't reset location because we need to know what we are replacing
             # curEpObj.location = ''
 
-            # Size and release name are fetched in PP (only for downloaded status, not snatched)
-            curEpObj.file_size = 0
+            # Release name and group are parsed in PP
             curEpObj.release_name = ''
+            curEpObj.release_group = ''
 
             # Need to reset subtitle settings because it's a different file
             curEpObj.subtitles = list()
@@ -213,14 +213,11 @@ def snatch_episode(result):
             curEpObj.is_proper = True if result.proper_tags else False
             curEpObj.version = 0
 
-            # Release group is parsed in PP
-            curEpObj.release_group = ''
-
             curEpObj.manually_searched = result.manually_searched
 
             sql_l.append(curEpObj.get_sql())
 
-        if curEpObj.status not in Quality.DOWNLOADED:
+        if curEpObj.splitted_status_status != common.DOWNLOADED:
             notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
@@ -406,7 +403,7 @@ def wanted_episodes(series_obj, from_date):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
+        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNSET))
         should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
         if not should_search:
             continue
@@ -419,7 +416,7 @@ def wanted_episodes(series_obj, from_date):
                 }
             )
         ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
         wanted.append(ep_obj)
 
     return wanted

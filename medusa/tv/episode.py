@@ -25,6 +25,8 @@ from medusa import (
     subtitles,
 )
 from medusa.common import (
+    ARCHIVED,
+    DOWNLOADED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -32,8 +34,11 @@ from medusa.common import (
     NAMING_SEPARATED_REPEAT,
     Quality,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
-    UNKNOWN,
+    UNSET,
     WANTED,
     statusStrings,
 )
@@ -246,7 +251,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNKNOWN
+        self._status = UNSET
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -402,6 +407,49 @@ class Episode(TV):
                 self.series.network
             )
         ).isoformat(b'T')
+
+    @property
+    def status(self):
+        """Return the existing status as is."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        """Set the status."""
+        self._status = value
+
+    @property
+    def splitted_status(self):
+        """Return the existing status removing the quality from it."""
+        return Quality.split_composite_status(self._status)
+
+    @property
+    def splitted_status_status(self):
+        """Return the status from the status/quality composite."""
+        return self.splitted_status.status
+
+    @splitted_status_status.setter
+    def splitted_status_status(self, value):
+        """
+        Only set the status (reuse existing quality) of the composite status.
+
+        :param value: The new status.
+        """
+        self._status = Quality.composite_status(value, self.splitted_status_quality)
+
+    @property
+    def splitted_status_quality(self):
+        """Return the quality from the status/quality composite."""
+        return self.splitted_status.quality
+
+    @splitted_status_quality.setter
+    def splitted_status_quality(self, value):
+        """
+        Only set the quality (reuse existing status) of the composite status.
+
+        :param value: The new quality.
+        """
+        self._status = Quality.composite_status(self.splitted_status_status, value)
 
     @property
     def status_name(self):
@@ -859,14 +907,14 @@ class Episode(TV):
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
-                    'status': statusStrings[self.status].upper(),
+                    'status': statusStrings[self.status],
                     'location': self.location,
                 }
             )
 
         if not os.path.isfile(self.location):
             if (self.airdate >= date.today() or self.airdate == date.fromordinal(1)) and \
-                    self.status in (UNAIRED, UNKNOWN, WANTED):
+                    self.status in (UNSET, UNAIRED, WANTED):
                 # Need to check if is UNAIRED otherwise code will step into second 'IF'
                 # and make episode as default_ep_status
                 # If is a leaked episode and user manually snatched, it will respect status
@@ -878,11 +926,11 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
-            elif self.status in (UNAIRED, UNKNOWN):
-                # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
+            elif self.status in (UNSET, UNAIRED):
+                # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
                 self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
@@ -890,7 +938,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
             else:
@@ -899,7 +947,7 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
         #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
@@ -914,8 +962,8 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'old_status': statusStrings[old_status].upper(),
-                        'new_status': statusStrings[self.status].upper(),
+                        'old_status': statusStrings[old_status],
+                        'new_status': statusStrings[self.status],
                     }
                 )
             else:
@@ -924,20 +972,20 @@ class Episode(TV):
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(season, episode),
-                        'status': statusStrings[self.status].upper(),
+                        'status': statusStrings[self.status],
                     }
                 )
         # shouldn't get here probably
         else:
             log.warning(
-                '{id}: {series} {ep} status changed from {old_status} to UNKNOWN', {
+                '{id}: {series} {ep} status changed from {old_status} to UNSET', {
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
-                    'old_status': statusStrings[self.status].upper(),
+                    'old_status': statusStrings[self.status],
                 }
             )
-            self.status = UNKNOWN
+            self.status = UNSET
 
     def __load_from_nfo(self, location):
 
@@ -953,14 +1001,14 @@ class Episode(TV):
 
         if self.location != '':
 
-            if self.status == UNKNOWN and helpers.is_media_file(self.location):
+            if self.status == UNSET and helpers.is_media_file(self.location):
                 self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
                 log.debug(
-                    '{id}: {series} {ep} status changed from UNKNOWN to {new_status}', {
+                    '{id}: {series} {ep} status changed from UNSET to {new_status}', {
                         'id': self.series.series_id,
                         'series': self.series.name,
                         'ep': episode_num(self.season, self.episode),
-                        'new_status': statusStrings[self.status].upper(),
+                        'new_status': statusStrings[self.status],
                     }
                 )
 
@@ -1968,5 +2016,69 @@ class Episode(TV):
                 '{id}: Failed to modify date of {location}', {
                     'id': self.series.series_id,
                     'location': os.path.basename(self.location),
+                }
+            )
+
+    def update_status(self, filepath):
+        """Update the episode status according to the file information.
+
+        The status should only be changed if either the size or the filename changed.
+        :param filepath: Path to the new episode file.
+        """
+        old_status, old_quality = Quality.split_composite_status(self.status)
+
+        old_location = self.location
+        # Changing the name of the file might also change its quality
+        same_name = old_location and os.path.normpath(old_location) == os.path.normpath(filepath)
+
+        old_size = self.file_size
+        # Setting a location to episode, will get the size of the filepath
+        with self.lock:
+            self.location = filepath
+        # If size from given filepath is 0 it means we couldn't determine file size
+        same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
+
+        if not same_size or not same_name:
+            log.debug(
+                '{name}: The old episode had a different file associated with it, '
+                're-checking the quality using the new filename {filepath}',
+                {'name': self.series.name, 'filepath': filepath}
+            )
+
+            new_quality = Quality.name_quality(filepath, self.series.is_anime)
+
+            if old_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) or (
+                    old_status == DOWNLOADED and old_location) or (
+                    old_status == WANTED and not old_location):
+                new_status = DOWNLOADED
+            else:
+                new_status = ARCHIVED
+
+            with self.lock:
+                self.status = Quality.composite_status(new_status, new_quality)
+
+                if not same_name:
+                    # Reset release name as the name changed
+                    self.release_name = ''
+
+            log.debug(
+                "{name}: Setting the status from '{status_old}' to '{status_new}' and"
+                " quality '{quality_old}' to '{quality_new}' based on file: {filepath}", {
+                    'name': self.series.name,
+                    'status_old': Quality.statusPrefixes[old_status],
+                    'status_new': Quality.statusPrefixes[new_status],
+                    'quality_old': Quality.qualityStrings[old_quality],
+                    'quality_new': Quality.qualityStrings[new_quality],
+                    'filepath': filepath,
+                }
+            )
+        else:
+            log.debug(
+                "{name}: Not changing current status '{status_old}' or"
+                " quality '{quality_old}' based on file: {filepath}", {
+                    'name': self.series.name,
+                    'status_old': Quality.statusPrefixes[old_status],
+                    'quality_old': Quality.qualityStrings[old_quality],
+                    'filepath': filepath,
                 }
             )
