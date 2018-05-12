@@ -49,7 +49,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         const id = $('#seasonJump option:selected').val();
         if (id && id !== 'jump') {
             const season = $('#seasonJump option:selected').data('season');
-            $('html,body').animate({ scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50 }, 'slow');
+            $('html,body').animate({ scrollTop: $('[name="' + id.substring(1) + '"]').offset().top - 100 }, 'slow');
             $('#collapseSeason-' + season).collapse('show');
             location.hash = id;
         }

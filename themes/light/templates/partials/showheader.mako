@@ -46,7 +46,7 @@
                 <div class="h2footer display-seasons clear">
                     <span>
                     % if (len(season_results) > 14):
-                        <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
+                        <select id="seasonJump" class="form-control input-sm" style="position: relative">
                             <option value="jump">Jump to Season</option>
                         % for seasonNum in season_results:
                             <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
