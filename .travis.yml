@@ -19,8 +19,7 @@ install:
   - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install'
 script:
   - yarn test
-  # Skip Python tests if the exit code of `.github/check_changes.py` is 0
-  - python .github/check_changes.py; if [[ $? -eq 0 ]]; then tox -v --recreate; fi
+  - tox -v --recreate
 cache:
   yarn: true
   directories:
