@@ -108,8 +108,7 @@ const startVue = () => {
 
                     try {
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.$snotify.success(this.series.title, 'Saved',
-                                           {timeout: 5000});
+                        this.$snotify.success('You may need to "Re-scan files" or "Force Full Update".', 'Saved', { timeout: 5000 });
 
                     } catch (error) {
                         this.$snotify.error(
