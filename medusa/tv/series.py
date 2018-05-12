@@ -33,17 +33,12 @@ from medusa import (
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
     ARCHIVED,
-    DOWNLOADED,
-    FAILED,
     IGNORED,
     Overview,
     Quality,
     SKIPPED,
-    SNATCHED,
-    SNATCHED_BEST,
-    SNATCHED_PROPER,
     UNAIRED,
-    UNKNOWN,
+    UNSET,
     WANTED,
     countryList,
     qualityPresets,
@@ -1268,53 +1263,6 @@ class Series(TV):
         return (fanart_result or poster_result or banner_result or season_posters_result or
                 season_banners_result or season_all_poster_result or season_all_banner_result)
 
-    @staticmethod
-    def should_refresh_file(cur_status, same_file, check_quality_again, anime, filepath):
-        """Check if we should use the dectect file to change status.
-
-        This method only refreshes when there is a existing file in show folder
-        For SNATCHED status without existing file (first snatch), it won't use this method
-        For SNATCHED BEST status, there is a existing file in `location` in DB, so it MUST stop in `same_file` rule
-        so user doesn't lose this SNATCHED_BEST status
-        """
-        if same_file:
-            return False, 'New file is the same as current file'
-        if not helpers.is_media_file(filepath):
-            return False, 'New file is not a valid media file'
-
-        new_quality = Quality.name_quality(filepath, anime)
-
-        if check_quality_again:
-            if new_quality != Quality.UNKNOWN:
-                return True, 'New file has different name from the database but has valid quality.'
-            else:
-                return True, 'New file has different name from the database and an UNKNOWN quality.'
-
-        #  Reach here to check for status/quality changes as long as it's a new/different file
-        if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
-            return False, 'Existing status is {0} and its not allowed'.format(statusStrings[cur_status])
-
-        if cur_status in [FAILED, SKIPPED, WANTED, UNKNOWN, UNAIRED]:
-            return True, 'Existing status is {0} and its allowed'.format(statusStrings[cur_status])
-
-        old_status, old_quality = Quality.split_composite_status(cur_status)
-
-        if old_status == SNATCHED or old_status == SNATCHED_BEST:
-            #  Only use new file if is same|higher quality
-            if old_quality <= new_quality:
-                return True, 'Existing status is {0} and new quality is same|higher'.format(statusStrings[cur_status])
-            else:
-                return False, 'Existing status is {0} and new quality is lower'.format(statusStrings[cur_status])
-
-        if old_status == SNATCHED_PROPER:
-            #  Only use new file if is a higher quality (not necessary a PROPER)
-            if old_quality < new_quality:
-                return True, 'Existing status is {0} and new quality is higher'.format(statusStrings[cur_status])
-            else:
-                return False, 'Existing status is {0} and new quality is same|lower'.format(statusStrings[cur_status])
-
-        return False, 'There is no rule set to allow this file'
-
     def make_ep_from_file(self, filepath):
         """Make a TVEpisode object from a media file.
 
@@ -1323,8 +1271,8 @@ class Series(TV):
         :return:
         :rtype: Episode
         """
-        if not os.path.isfile(filepath):
-            log.info(u"{indexer_id}: That isn't even a real file dude... {filepath}",
+        if not (os.path.isfile(filepath) and helpers.is_media_file(filepath)):
+            log.info(u"{indexer_id}: This isn't a valid media file: {filepath}",
                      {'indexer_id': self.series_id, 'filepath': filepath})
             return None
 
@@ -1362,9 +1310,6 @@ class Series(TV):
                 }
             )
 
-            check_quality_again = False
-            same_file = False
-
             cur_ep = self.get_episode(season, current_ep)
             if not cur_ep:
                 try:
@@ -1377,24 +1322,9 @@ class Series(TV):
                     continue
 
             else:
-                # if there is a new file associated with this ep then re-check the quality
-                if not cur_ep.location or os.path.normpath(cur_ep.location) != os.path.normpath(filepath):
-                    log.debug(
-                        u'{indexerid}: The old episode had a different file associated with it, '
-                        u're-checking the quality using the new filename {filepath}',
-                        {'indexerid': self.series_id, 'filepath': filepath}
-                    )
-                    check_quality_again = True
+                cur_ep.update_status(filepath)
 
                 with cur_ep.lock:
-                    old_size = cur_ep.file_size
-
-                    # Setting a location to cur_ep, we will get the size of the filepath
-                    cur_ep.location = filepath
-
-                    # if the sizes are the same then it's probably the same file
-                    # If size from given filepath is 0 means we couldn't determine file size
-                    same_file = old_size and cur_ep.file_size > 0 and cur_ep.file_size == old_size
                     cur_ep.check_for_meta_files()
 
             if root_ep is None:
@@ -1404,41 +1334,6 @@ class Series(TV):
                     with root_ep.lock:
                         root_ep.related_episodes.append(cur_ep)
 
-            # if it's a new file then
-            if not same_file:
-                with cur_ep.lock:
-                    cur_ep.release_name = ''
-
-            # if they replace a file on me I'll make some attempt at re-checking the
-            # quality unless I know it's the same file
-            should_refresh, should_refresh_reason = self.should_refresh_file(cur_ep.status, same_file,
-                                                                             check_quality_again, self.is_anime,
-                                                                             filepath)
-            if should_refresh:
-                with cur_ep.lock:
-                    old_ep_status = cur_ep.status
-                    new_quality = Quality.name_quality(filepath, self.is_anime)
-                    cur_ep.status = Quality.composite_status(DOWNLOADED, new_quality)
-                    log.debug(
-                        u"{id}: Setting the status from '{status_old}' to '{status_cur}'"
-                        u" based on file: {filepath}. Reason: {reason}", {
-                            'id': self.series_id,
-                            'status_old': statusStrings[old_ep_status],
-                            'status_cur': statusStrings[cur_ep.status],
-                            'filepath': filepath,
-                            'reason': should_refresh_reason,
-                        }
-                    )
-            else:
-                log.debug(
-                    u"{id}: Not changing current status '{status_string}' based on file: {filepath}."
-                    u" Reason: {should_refresh}", {
-                        'id': self.series_id,
-                        'status_string': statusStrings[cur_ep.status],
-                        'filepath': filepath,
-                        'should_refresh': should_refresh_reason,
-                    }
-                )
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
 
@@ -1500,7 +1395,7 @@ class Series(TV):
             self.scene = int(sql_results[0][b'scene'] or 0)
             self.subtitles = int(sql_results[0][b'subtitles'] or 0)
             self.dvd_order = int(sql_results[0][b'dvdorder'] or 0)
-            self.quality = int(sql_results[0][b'quality'] or UNKNOWN)
+            self.quality = int(sql_results[0][b'quality'] or UNSET)
             self.season_folders = int(not (sql_results[0][b'flatten_folders'] or 0))  # TODO: Rename this in the DB
             self.paused = int(sql_results[0][b'paused'] or 0)
             self._location = sql_results[0][b'location']  # skip location validation
@@ -1865,8 +1760,8 @@ class Series(TV):
                                     'id': self.series_id,
                                     'show': self.name,
                                     'ep': episode_num(season, episode),
-                                    'old_status': statusStrings[cur_ep.status].upper(),
-                                    'status': statusStrings[new_status].upper(),
+                                    'old_status': statusStrings[cur_ep.status],
+                                    'status': statusStrings[new_status],
                                 }
                             )
 
@@ -2256,20 +2151,19 @@ class Series(TV):
             )
             return False
 
-        ep_status = int(sql_results[0][b'status'])
-        ep_status_text = statusStrings[ep_status].upper()
+        cur_status, cur_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
+        ep_status_text = statusStrings[cur_status]
         manually_searched = sql_results[0][b'manually_searched']
-        _, cur_quality = Quality.split_composite_status(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
-        if ep_status == WANTED:
+        if cur_status == WANTED:
             should_replace, reason = (
                 True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
                     new_quality=Quality.qualityStrings[quality]
                 )
             )
         else:
-            should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+            should_replace, reason = Quality.should_replace(cur_status, cur_quality, quality, allowed_qualities,
                                                             preferred_qualities, download_current_quality,
                                                             forced_search, manually_searched, search_type)
 
@@ -2300,7 +2194,7 @@ class Series(TV):
         :return: an Overview status
         :rtype: int
         """
-        ep_status = try_int(ep_status) or UNKNOWN
+        ep_status = try_int(ep_status) or UNSET
 
         if backlog_mode:
             if ep_status == WANTED:
@@ -2309,12 +2203,12 @@ class Series(TV):
                 return Overview.QUAL
             return Overview.GOOD
 
-        if ep_status == WANTED:
-            return Overview.WANTED
-        elif ep_status in (UNAIRED, UNKNOWN):
+        if ep_status in (UNSET, UNAIRED):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED
+        elif ep_status in Quality.WANTED:
+            return Overview.WANTED
         elif ep_status in Quality.ARCHIVED:
             return Overview.GOOD
         elif ep_status in Quality.FAILED:

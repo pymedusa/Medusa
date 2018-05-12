@@ -53,7 +53,6 @@
 <%!
     import json
     from medusa import app
-    from medusa.numdict import NumDict
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
@@ -66,7 +65,7 @@ overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualiti
 
 def convert(obj):
     ## This converts the keys to strings as keys can't be ints
-    if isinstance(obj, (NumDict, dict)):
+    if isinstance(obj, dict):
         new_obj = {}
         for key in obj:
             new_obj[str(key)] = obj[key]

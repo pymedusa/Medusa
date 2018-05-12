@@ -96,11 +96,11 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
             cur_ep = series_obj.get_episode(db_episode[b'season'], db_episode[b'episode'])
             with cur_ep.lock:
-                cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
+                cur_ep.splitted_status_status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(
                     'Setting status ({status}) for show airing today: {name} {special}', {
                         'name': cur_ep.pretty_name(),
-                        'status': common.statusStrings[cur_ep.status],
+                        'status': common.statusStrings[cur_ep.splitted_status_status],
                         'special': '(specials are not supported)' if not cur_ep.season else '',
                     }
                 )

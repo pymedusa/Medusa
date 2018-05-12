@@ -1945,20 +1945,18 @@ class Home(WebRoot):
             for cur_ep in eps.split('|'):
 
                 if not cur_ep:
-                    logger.log(u'Current episode was empty when trying to set status', logger.DEBUG)
+                    logger.log('Current episode was empty when trying to set status', logger.DEBUG)
 
-                logger.log(u'Attempting to set status on episode {episode} to {status}'.format
-                           (episode=cur_ep, status=status), logger.DEBUG)
+                logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
+                    series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
 
                 ep_info = cur_ep.split('x')
-
                 if not all(ep_info):
-                    logger.log(u'Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
+                    logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
                                (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
                     continue
 
                 ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
-
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
@@ -1971,40 +1969,44 @@ class Home(WebRoot):
                         segments[ep_obj.season] = [ep_obj]
 
                 with ep_obj.lock:
-                    # don't let them mess up UNAIRED episodes
                     if ep_obj.status == UNAIRED:
-                        logger.log(u'Refusing to change status of {episode} because it is UNAIRED'.format
-                                   (episode=cur_ep), logger.WARNING)
+                        logger.log('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
+                            series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-                    if all([status in Quality.DOWNLOADED,
-                            ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
-                            not os.path.isfile(ep_obj.location)]):
-                        logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format
-                                   (episode=cur_ep), logger.WARNING)
+
+                    if status in Quality.DOWNLOADED and not (
+                            ep_obj.status in snatched_qualities + Quality.DOWNLOADED
+                            and os.path.isfile(ep_obj.location)):
+                        logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
+                                   ' because it\'s not SNATCHED/DOWNLOADED'.format(
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([status == FAILED,
-                            ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Refusing to change status of {episode} to FAILED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
+                    if status == FAILED and ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED:
+                        logger.log('Refusing to change status of {series} {episode} to FAILED'
+                                   ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
+                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([status == WANTED,
-                            ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
-                        ep_obj.release_name = ''
+                    if status == WANTED:
+                        if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED:
+                            logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
+                                series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.release_name = ''
 
-                    if ep_obj.manually_searched and status == WANTED:
-                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
-                        ep_obj.manually_searched = False
+                        if ep_obj.manually_searched:
+                            logger.log("Resetting 'manually searched' flag of {series} {episode}"
+                                       " as episode was changed to WANTED".format(
+                                            series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status
+                        # We're only setting the status (leaving the quality as is).
+                        ep_obj.splitted_status_status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -2019,8 +2021,8 @@ class Home(WebRoot):
                 elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
                     upd = 'Remove'
 
-                logger.log(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format
-                           (action=upd, show=series_obj), logger.DEBUG)
+                logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
+                                action=upd, show=series_obj), logger.DEBUG)
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())

@@ -38,7 +38,7 @@ from medusa import (
 )
 from medusa.common import (
     ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNKNOWN, WANTED, statusStrings,
+    UNAIRED, UNSET, WANTED, statusStrings,
 )
 from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
@@ -2659,7 +2659,7 @@ class CMD_ShowStats(ApiCall):
         # show stats
         episode_status_counts_total = {'total': 0}
         for status in statusStrings:
-            if status in [UNKNOWN, DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED]:
+            if status in [UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED]:
                 continue
             episode_status_counts_total[status] = 0
 
