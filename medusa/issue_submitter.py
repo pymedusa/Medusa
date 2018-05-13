@@ -57,6 +57,11 @@ class IssueSubmitter(object):
 
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
+    TITLE_DIFF_RATIO_OVERRIDES = [
+        # "Missing time zone for network" errors should match
+        ('missing time zone for network', 1.0),
+    ]
+
     def __init__(self):
         """Initialize class with the default constructor."""
         self.running = False
@@ -64,6 +69,7 @@ class IssueSubmitter(object):
     @staticmethod
     def create_gist(github, logline):
         """Create a private gist with log data for the specified log line."""
+        log.debug('Creating gist for error: {0}', logline)
         context_loglines = logline.get_context_loglines()
         if context_loglines:
             content = '\n'.join([str(ll) for ll in context_loglines])
@@ -76,6 +82,8 @@ class IssueSubmitter(object):
             locale_name = locale.getdefaultlocale()[1]
         except ValueError:
             locale_name = 'unknown'
+
+        log.debug('Creating issue data for error: {0}', logline)
 
         # Get current DB version
         main_db_con = db.DBConnection()
@@ -102,6 +110,7 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
+        log.debug('Issues loaded from Github: {0}', len(issues))
         for issue in issues:
             if hasattr(issue, 'pull_request') and issue.pull_request:
                 continue
@@ -111,7 +120,13 @@ class IssueSubmitter(object):
 
             for logline in loglines:
                 log_title = logline.issue_title
-                if cls.similar(log_title, issue_title):
+                log.debug('Searching for issues similar to: {0}', log_title)
+
+                # Apply diff ratio overrides on first-matched basis, default = 0.9
+                diff_ratio = next((override[1] for override in cls.TITLE_DIFF_RATIO_OVERRIDES
+                                   if override[0] in log_title.lower()), 0.9)
+
+                if cls.similar(log_title, issue_title, diff_ratio):
                     results[logline.key] = issue
 
             if len(results) >= len(loglines):
