@@ -13,8 +13,13 @@ window.vueSubmitForm = async function(formId) {
     // [pair[0]]: pair[1]
     // }), {});
     this.$http[method](path, { body: formData, redirect: 'follow' })
-        .then(() => {
-            if (redirect) {
+        .then(res => {
+            // We can get the redirect url using obj.url.
+            if (res.url) {
+                window.location.href = res.url;
+            } else if (redirect) {
+                // This is statically redirecting to "/", or at least for addNewShow.
+                // But how are we going to use the redirect offered by tornado?
                 window.location.href = base + redirect;
             }
         });
