@@ -8,6 +8,7 @@ from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 
 from six import string_types
+
 from tornroutes import route
 
 

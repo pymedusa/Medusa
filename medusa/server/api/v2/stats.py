@@ -1,6 +1,7 @@
 # coding=utf-8
 """Request handler for statistics."""
 from __future__ import unicode_literals
+
 from datetime import date
 
 from medusa import db

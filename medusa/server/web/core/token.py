@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from medusa import app
 from medusa.server.web.core.base import BaseHandler
+
 from tornado.web import authenticated
 
 

@@ -1,10 +1,12 @@
 # coding=utf-8
 """Request handler for alias source."""
 from __future__ import unicode_literals
+
 from datetime import datetime
 
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
 from medusa.server.api.v2.base import BaseRequestHandler
+
 from tornado.escape import json_decode
 
 
