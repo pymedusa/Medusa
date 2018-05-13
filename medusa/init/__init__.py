@@ -23,7 +23,6 @@ def initialize():
     _configure_mimetypes()
     _handle_old_tornado()
     _unload_system_dogpile()
-    _use_shutil_custom()
     _urllib3_disable_warnings()
     _strptime_workaround()
     _configure_guessit()
@@ -104,11 +103,6 @@ def _unload_system_dogpile():
             del sys.modules['dogpile']
     except AttributeError:
         pass
-
-
-def _use_shutil_custom():
-    import shutil_custom
-    shutil.copyfile = shutil_custom.copyfile_custom
 
 
 def _urllib3_disable_warnings():
