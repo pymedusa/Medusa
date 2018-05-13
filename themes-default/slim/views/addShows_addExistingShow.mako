@@ -60,7 +60,7 @@ const startVue = () => {
         },
         computed: {
             rootDirs() {
-                if (!this.lastRootDirText) return [];
+                if (this.lastRootDirText.length === 0) return [];
                 return this.lastRootDirText.split('|').slice(1);
             },
             filteredDirList() {
@@ -79,7 +79,7 @@ const startVue = () => {
             checkAll: {
                 get() {
                     const selectedSeriesDirs = this.filteredDirList.filter(dir => dir.selected);
-                    if (!selectedSeriesDirs) return false;
+                    if (selectedSeriesDirs.length === 0) return false;
                     return selectedSeriesDirs.length === this.filteredDirList.length;
                 },
                 set(newValue) {
@@ -95,7 +95,7 @@ const startVue = () => {
                 if (this.isLoading) return;
 
                 this.isLoading = true;
-                if (!this.selectedRootDirs) {
+                if (this.selectedRootDirs.length === 0) {
                     this.dirList = [];
                     this.isLoading = false;
                     return;

@@ -121,7 +121,7 @@ const startVue = () => {
                                                 overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
                                             %>
                                             <quality-chooser keep="${('show', 'keep')[quality_value is None]}"
-                                                             :overall-quality.number="${overall_quality}" />
+                                                             :overall-quality.number="${overall_quality}"></quality-chooser>
                                         </span>
                                     </label>
                                 </div>

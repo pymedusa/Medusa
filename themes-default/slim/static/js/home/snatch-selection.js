@@ -33,7 +33,7 @@ MEDUSA.home.snatchSelection = function() {
 
     // Check the previous status of the history table, for hidden or shown, through the data attribute
     // data-history-toggle-hidden
-    function toggleHistoryTable() {
+    function toggleHistoryTable() {  // eslint-disable-line no-unused-vars
         // Get previous state which was saved on the wrapper
         const showOrHide = $('#wrapper').attr('data-history-toggle');
         $('#historydata').collapse(showOrHide);

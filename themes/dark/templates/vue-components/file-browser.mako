@@ -14,7 +14,7 @@
     <div class="file-browser max-width">
         <div class="input-group">
             <input v-model="currentPath" ref="locationInput" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
-            <div class="input-group-btn fileBrowserButton">
+            <div class="input-group-btn fileBrowserButton" :title="title" :alt="title">
                 <div style="font-size: 14px" class="btn btn-default input-sm">
                     <i class="glyphicon glyphicon-open"></i>
                 </div>

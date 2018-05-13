@@ -50,9 +50,7 @@ const startVue = () => {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 seriesLoaded: false,
-                saveMessage: '',
-                saveError: '',
-                mounted: false
+                saving: false
             }
         },
         async mounted() {
@@ -65,14 +63,17 @@ const startVue = () => {
             } catch (error) {
                 console.debug('Could not get series info for: '+ seriesSlug);
             }
-            this.mounted = true;
+            this.seriesLoaded = true;
         },
         methods: {
             async saveSeries(subject) {
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
-                if (!this.mounted) {
+                if (!this.seriesLoaded) {
                     return;
                 }
+
+                // Disable the save button until we're done.
+                this.saving = true;
 
                 if (['series', 'all'].includes(subject)) {
                     const data = {
@@ -106,14 +107,19 @@ const startVue = () => {
                     }
 
                     try {
-                        this.saveMessage = 'saving';
                         const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.saveMessage = 'saved';
+                        this.$snotify.success('You may need to "Re-scan files" or "Force Full Update".', 'Saved', { timeout: 5000 });
 
                     } catch (error) {
-                        this.saveError = 'Problem trying to save the config: ' + error.message || '';
+                        this.$snotify.error(
+                            'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                            'Error'
+                        );
                     }
                 };
+
+                // Re-enable the save button.
+                this.saving = false;
             },
             onChangeIgnoredWords(items) {
                 this.series.config.release.ignoredWords = items.map(item => item.value);
@@ -128,7 +134,6 @@ const startVue = () => {
                 this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
                 this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
                 this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
-
             },
             updateLanguage(value) {
                 this.series.language = value;
@@ -147,6 +152,9 @@ const startVue = () => {
 
                 return allowed | preferred << 16
             },
+            saveButton() {
+                return this.saving === false ? 'Save Changes' : 'Saving...';
+            },
             displayShowUrl() {
                 // @TODO: Change the URL generation to use `this.series`. Currently not possible because
                 // the values are not available at the time of app-link component creation.
@@ -158,6 +166,7 @@ const startVue = () => {
 </script>
 </%block>
 <%block name="content">
+<vue-snotify></vue-snotify>
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
@@ -165,7 +174,6 @@ const startVue = () => {
     Edit Show
     <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
 </h1>
-<saved-message :state="saveMessage" :error="saveError"></saved-message>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
         <form @submit.prevent="saveSeries('all')" class="form-horizontal">
@@ -191,7 +199,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
                             <div class="col-sm-10 content">
-                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"/>
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
                             </div>
                         </div>
 
@@ -199,7 +207,7 @@ const startVue = () => {
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
                                 <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"  @change="saveSeries('series')"/>
+                                    v-model="series.config.defaultEpisodeStatus"/>
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -217,14 +225,14 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" @change="saveSeries('series')"/> search for subtitles
+                                <input type="checkbox" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled"/> search for subtitles
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="paused" class="col-sm-2 control-label">Paused</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="paused" name="paused" v-model="series.config.paused" @change="saveSeries('series')"/> pause this show (Medusa will not download episodes)
+                                <input type="checkbox" id="paused" name="paused" v-model="series.config.paused"/> pause this show (Medusa will not download episodes)
                             </div>
                         </div>
                     </fieldset>
@@ -238,7 +246,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" @change="saveSeries('series')" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                <input type="checkbox" id="airbydate" name="air_by_date" v-model="series.config.airByDate" /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                 <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
@@ -246,7 +254,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="anime" class="col-sm-2 control-label">Anime</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="anime" name="anime" v-model="series.config.anime" @change="saveSeries('series')"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                <input type="checkbox" id="anime" name="anime" v-model="series.config.anime"> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                             </div>
                         </div>
 
@@ -260,7 +268,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="sports" class="col-sm-2 control-label">Sports</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="sports" name="sports" v-model="series.config.sports" @change="saveSeries('series')"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                <input type="checkbox" id="sports" name="sports" v-model="series.config.sports"/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                 <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                             </div>
                         </div>
@@ -268,21 +276,21 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" @change="saveSeries('series')"/> group episodes by season folder (uncheck to store in a single folder)
+                                <input type="checkbox" id="season_folders" name="season_folders" v-model="series.config.seasonFolders"/> group episodes by season folder (uncheck to store in a single folder)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene" @change="saveSeries('series')"/> search by scene numbering (uncheck to search by indexer numbering)
+                                <input type="checkbox" id="scene" name="scene" v-model="series.config.scene"/> search by scene numbering (uncheck to search by indexer numbering)
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder" @change="saveSeries('series')"/> use the DVD order instead of the air order<br>
+                                <input type="checkbox" id="dvdorder" name="dvd_order" v-model="series.config.dvdOrder"/> use the DVD order instead of the air order<br>
                                 <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
                         </div>
@@ -297,7 +305,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords" />
+                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with one or more words from this list will be ignored.</p>
                                 </div>
@@ -307,7 +315,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="rls_require_words" class="col-sm-2 control-label">Required words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords" />
+                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with no words from this list will be ignored.</p>
                                 </div>
@@ -317,7 +325,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="SceneName" class="col-sm-2 control-label">Scene Exception</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.aliases" @change="onChangeAliases" />
+                                <select-list :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
                                 <div class="clear-left">
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
                                 </div>
@@ -329,7 +337,7 @@ const startVue = () => {
             </div>
         </div>
         <br>
-        <input id="submit" type="submit" value="Save Changes" class="btn-medusa pull-left config_submitter button">
+        <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !seriesLoaded">
         </form>
     </div>
 </div>

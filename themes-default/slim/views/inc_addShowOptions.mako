@@ -8,7 +8,7 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <quality-chooser/>
+                    <quality-chooser></quality-chooser>
                 </span>
             </label>
         </div>
