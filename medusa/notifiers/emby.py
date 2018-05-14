@@ -3,20 +3,18 @@
 """Emby notifier module."""
 from __future__ import unicode_literals
 
-import json
 import logging
-from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from medusa.indexers.utils import indexer_id_to_name, mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
-from requests.compat import urlencode
+from requests.exceptions import HTTPError, RequestException
 
-from six.moves.urllib.error import URLError
-from six.moves.urllib.request import Request, urlopen
+from six import text_type as str
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -24,6 +22,9 @@ log.logger.addHandler(logging.NullHandler())
 
 class Notifier(object):
     """Emby notifier class."""
+
+    def __init__(self):
+        self.session = MedusaSession()
 
     def _notify_emby(self, message, host=None, emby_apikey=None):
         """
@@ -37,22 +38,26 @@ class Notifier(object):
         if not emby_apikey:
             emby_apikey = app.EMBY_APIKEY
 
-        url = 'http://%s/emby/Notifications/Admin' % host
-        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': app.LOGO_URL}
-        data = json.dumps(values)
+        url = 'http://{host}/emby/Notifications/Admin'.format(host=host)
         try:
-            req = Request(url, data)
-            req.add_header('X-MediaBrowser-Token', emby_apikey)
-            req.add_header('Content-Type', 'application/json')
+            resp = self.session.post(
+                url=url,
+                data={
+                    'Name': 'Medusa',
+                    'Description': message,
+                    'ImageUrl': app.LOGO_URL
+                },
+                headers={
+                    'X-MediaBrowser-Token': emby_apikey,
+                    'Content-Type': 'application/json'
+                }
+            )
+            resp.raise_for_status()
 
-            response = urlopen(req)
-            result = response.read()
-            response.close()
-
-            log.debug('EMBY: HTTP response: {0}', result.replace('\n', ''))
+            log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
             return True
 
-        except (URLError, IOError) as error:
+        except (HTTPError, RequestException) as error:
             log.warning('EMBY: Warning: Unable to contact Emby at {url}: {error}',
                         {'url': url, 'error': ex(error)})
             return False
@@ -83,7 +88,7 @@ class Notifier(object):
 
             if show:
                 # EMBY only supports TVDB ids
-                provider = 'tvdb'
+                provider = 'tvdbid'
                 if show.indexer == INDEXER_TVDBV2:
                     tvdb_id = show.indexerid
                 else:
@@ -101,25 +106,27 @@ class Notifier(object):
                         )
                     return False
 
-                query = '?%sid=%s' % (provider, tvdb_id)
+                params = {
+                    provider: str(tvdb_id)
+                }
             else:
-                query = ''
+                params = {}
 
-            url = 'http://%s/emby/Library/Series/Updated%s' % (app.EMBY_HOST, query)
-            values = {}
-            data = urlencode(values)
+            url = 'http://{host}/emby/Library/Series/Updated'.format(host=app.EMBY_HOST)
             try:
-                req = Request(url, data)
-                req.add_header('X-MediaBrowser-Token', app.EMBY_APIKEY)
+                resp = self.session.post(
+                    url=url,
+                    params=params,
+                    headers={
+                        'X-MediaBrowser-Token': app.EMBY_APIKEY
+                    }
+                )
+                resp.raise_for_status()
 
-                response = urlopen(req)
-                result = response.read()
-                response.close()
-
-                log.debug('EMBY: HTTP response: {0}', result.replace('\n', ''))
+                log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
                 return True
 
-            except (URLError, IOError) as error:
+            except (HTTPError, RequestException) as error:
                 log.warning('EMBY: Warning: Unable to contact Emby at {url}: {error}',
                             {'url': url, 'error': ex(error)})
                 return False
