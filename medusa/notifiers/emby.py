@@ -1,5 +1,6 @@
 # coding=utf-8
 
+"""Emby notifier module."""
 from __future__ import unicode_literals
 
 import json
@@ -20,15 +21,14 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
+    """Emby notifier class."""
 
     def _notify_emby(self, message, host=None, emby_apikey=None):
-        """Handles notifying Emby host via HTTP API
-
-        Returns:
-            Returns True for no issue or False if there was an error
-
         """
+        Notify Emby host via HTTP API.
 
+        :return: True for no issue or False if there was an error
+        """
         # fill in omitted parameters
         if not host:
             host = app.EMBY_HOST
@@ -61,18 +61,20 @@ class Notifier(object):
 ##############################################################################
 
     def test_notify(self, host, emby_apikey):
+        """
+        Sends a test notification.
+
+        :return: True for no issue or False if there was an error
+        """
         return self._notify_emby('This is a test notification from Medusa', host, emby_apikey)
 
     def update_library(self, show=None):
-        """Handles updating the Emby Media Server host via HTTP API
-
-        Returns:
-            Returns True for no issue or False if there was an error
-
         """
+        Update the Emby Media Server host via HTTP API.
 
+        :return: True for no issue or False if there was an error
+        """
         if app.USE_EMBY:
-
             if not app.EMBY_HOST:
                 log.debug(u'EMBY: No host specified, check your settings')
                 return False
