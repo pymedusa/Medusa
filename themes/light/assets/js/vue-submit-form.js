@@ -17,7 +17,7 @@ window.vueSubmitForm = async function(formId) {
             // If our current url differs from the new one and the form action - we've been redirected
 		    if (window.location.href !== resp.url && window.location.href !== base + path) {
 		        window.location.href = resp.url;
-			} else {
+			} else if (redirect) {
 				window.location.href = base + redirect;
 			}
         });
