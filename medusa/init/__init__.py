@@ -108,7 +108,7 @@ def _unload_system_dogpile():
 
 def _patch_shutil_copyfileobj():
     copyfileobj_orig = shutil.copyfileobj
-    # Improves copy performance on large files
+    # Improves copy performance for large files
     def _copyfileobj(fsrc, fdst, length=10485760):
         """Run shutil.copyfileobj with a bigger buffer."""
         return copyfileobj_orig(fsrc, fdst, length)
