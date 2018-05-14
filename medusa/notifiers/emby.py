@@ -47,11 +47,11 @@ class Notifier(object):
             result = response.read()
             response.close()
 
-            log.debug(u'EMBY: HTTP response: {0}', result.replace('\n', ''))
+            log.debug('EMBY: HTTP response: {0}', result.replace('\n', ''))
             return True
 
         except (URLError, IOError) as error:
-            log.warning(u'EMBY: Warning: Unable to contact Emby at {url}: {error}',
+            log.warning('EMBY: Warning: Unable to contact Emby at {url}: {error}',
                         {'url': url, 'error': ex(error)})
             return False
 
@@ -76,17 +76,17 @@ class Notifier(object):
         """
         if app.USE_EMBY:
             if not app.EMBY_HOST:
-                log.debug(u'EMBY: No host specified, check your settings')
+                log.debug('EMBY: No host specified, check your settings')
                 return False
 
             if show:
                 if show.indexer == 1:
                     provider = 'tvdb'
                 elif show.indexer == 2:
-                    log.warning(u'EMBY: TVRage Provider no longer valid')
+                    log.warning('EMBY: TVRage Provider no longer valid')
                     return False
                 else:
-                    log.warning(u'EMBY: Provider unknown')
+                    log.warning('EMBY: Provider unknown')
                     return False
                 query = '?%sid=%s' % (provider, show.indexerid)
             else:
@@ -103,10 +103,10 @@ class Notifier(object):
                 result = response.read()
                 response.close()
 
-                log.debug(u'EMBY: HTTP response: {0}', result.replace('\n', ''))
+                log.debug('EMBY: HTTP response: {0}', result.replace('\n', ''))
                 return True
 
             except (URLError, IOError) as error:
-                log.warning(u'EMBY: Warning: Unable to contact Emby at {url}: {error}',
+                log.warning('EMBY: Warning: Unable to contact Emby at {url}: {error}',
                             {'url': url, 'error': ex(error)})
                 return False
