@@ -7,9 +7,9 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from medusa import tv
 from requests.compat import urljoin
 
-from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
@@ -20,11 +20,11 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class BJShareProvider(TorrentProvider):
+    """BJ-Share Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, "BJ-Share")
+        """Initialize the class."""
+        super(BJShareProvider, self).__init__('BJ-Share')
 
         # URLs
         self.url = 'https://bj-share.me'
@@ -69,12 +69,13 @@ class BJShareProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
+
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Informations about the episode being searched (when not RSS)
+
         :returns: A list of search results (structure)
         """
-
         results = []
         if not self.login():
             return results
@@ -184,8 +185,8 @@ class BJShareProvider(TorrentProvider):
                                     "href"]
                                 title = cells[labels.index("Nome/Ano")].find("a", dir="ltr").get_text(strip=True)
                                 if '[' in title and ']' in title:
-                                    torrent['national_title'] = self.searchcut(title, '', ' [')
-                                    torrent['international_name'] = self.searchcut(title, '[', ' ]')
+                                    torrent['national_title'] = self._searchcut(title, '', ' [')
+                                    torrent['international_name'] = self._searchcut(title, '[', ' ]')
                                 else:
                                     torrent['international_name'] = title
 
@@ -243,34 +244,49 @@ class BJShareProvider(TorrentProvider):
 
                                 title = title[:title.rfind('-')].strip()
 
+                                # Include year in result only if the search have it
                                 search_year_fmt = ''
                                 if searching_year != '':
                                     search_year_fmt = " ({0})".format(torrent['year'])
 
                                 if anime and title in self.animes_with_broken_seasons_numbering:
+                                    # Some animes season is broken, so ignore it and include only the episode
+                                    # In this case, the episode is in absolute format
                                     torrent_name = u"{0}{1} E{2} {3} {4} {5} {6}.{7}" \
                                         .format(title, search_year_fmt, episode, resolution, source, codec, audio, ext)
                                 elif season.isdigit() and not episode.isdigit():
+                                    # Season Pack
                                     torrent_name = u"{0}{1} S{2} {3} {4} {5} {6}.{7}" \
                                         .format(title, search_year_fmt, season, resolution, source, codec, audio, ext)
                                 else:
+                                    # Season with episode included
                                     torrent_name = u"{0}{1} S{2}E{3} {4} {5} {6} {7}.{8}" \
                                         .format(title, search_year_fmt, season, episode, resolution, source, codec,
                                                 audio, ext)
 
                                 if searching_year != '' and torrent['year'] != searching_year:
+                                    # If the year is included in the search term, skip releases with different year
                                     log.debug("Discarding result, different year than being searched: {0}".format(
                                         torrent_name))
                                     continue
 
-                                torrent_name = self.remove_accents(torrent_name)
-                                item = {'title': torrent_name, 'link': download_url, 'size': size, 'seeders': seeders,
-                                        'leechers': leechers, 'hash': ''}
+                                # Removing accents due to an bug that i noticed that the torrent is not being sent to
+                                # qBittorrent when accents are present, there was no error in log.
+                                torrent_name = self._remove_accents(torrent_name)
+
+                                items.append({
+                                    'title': torrent_name,
+                                    'link': download_url,
+                                    'size': size,
+                                    'seeders': seeders,
+                                    'leechers': leechers,
+                                    'hash': ''
+                                })
+
                                 if mode != "RSS":
                                     log.debug("Found result: {0} with {1} seeders and {2} leechers".format
                                               (torrent_name, seeders, leechers))
 
-                                items.append(item)
                             except StandardError:
                                 continue
 
@@ -286,7 +302,8 @@ class BJShareProvider(TorrentProvider):
         return self.cookie_login('Login', check_url=self.urls['search'])
 
     @staticmethod
-    def remove_accents(string):
+    def _remove_accents(string):
+        """Remove all accents from string."""
         if type(string) is not unicode:
             string = unicode(string, encoding='utf-8')
 
@@ -308,7 +325,18 @@ class BJShareProvider(TorrentProvider):
         return string
 
     @staticmethod
-    def searchcut(source, startsearch, endsearch, startpos=0, includetag=False):
+    def _searchcut(source, startsearch, endsearch, startpos=0, includetag=False):
+        """
+        Search for given prefix and suffix and return the text between both
+
+        :param source: Source text
+        :param startsearch: Prefix
+        :param endsearch: Suffix
+        :param startpos: Index where the search will begin (useful to create loop)
+        :param includetag: Include the prefix and suffix in the return?
+
+        :return: Text between Prefix (startsearch) and Suffix (endsearch)
+        """
         start = 0
 
         def finalresult(result):
