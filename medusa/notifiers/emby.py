@@ -9,6 +9,8 @@ from builtins import object
 
 from medusa import app
 from medusa.helper.exceptions import ex
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
+from medusa.indexers.utils import indexer_id_to_name, mappings
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
@@ -80,15 +82,26 @@ class Notifier(object):
                 return False
 
             if show:
-                if show.indexer == 1:
-                    provider = 'tvdb'
-                elif show.indexer == 2:
-                    log.warning('EMBY: TVRage Provider no longer valid')
-                    return False
+                # EMBY only supports TVDB ids
+                provider = 'tvdb'
+                if show.indexer == INDEXER_TVDBV2:
+                    tvdb_id = show.indexerid
                 else:
-                    log.warning('EMBY: Provider unknown')
+                    # Try using external ids to get a TVDB id
+                    tvdb_id = show.externals.get(mappings[INDEXER_TVDBV2], None)
+
+                if tvdb_id is None:
+                    if show.indexer == INDEXER_TVRAGE:
+                        log.warning('EMBY: TVRage indexer no longer valid')
+                    else:
+                        log.warning(
+                            'EMBY: Unable to find a TVDB ID for {series},'
+                            ' and {indexer} indexer is unsupported',
+                            {'series': show.name, 'indexer': indexer_id_to_name(show.indexer)}
+                        )
                     return False
-                query = '?%sid=%s' % (provider, show.indexerid)
+
+                query = '?%sid=%s' % (provider, tvdb_id)
             else:
                 query = ''
 
