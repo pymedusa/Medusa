@@ -16,7 +16,6 @@ from medusa import (
     common,
     db,
     failed_history,
-    helpers,
     history,
     name_cache,
     notifiers,
@@ -35,7 +34,7 @@ from medusa.common import (
     SNATCHED,
     SNATCHED_BEST,
     SNATCHED_PROPER,
-    UNKNOWN,
+    UNSET,
 )
 from medusa.helper.common import (
     enabled_providers,
@@ -45,7 +44,10 @@ from medusa.helper.exceptions import (
     AuthException,
     ex,
 )
+from medusa.helpers import chmod_as_parent
+from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
@@ -85,7 +87,7 @@ def _download_result(result):
             with open(file_name, u'w') as fileOut:
                 fileOut.write(result.extra_info[0])
 
-            helpers.chmod_as_parent(file_name)
+            chmod_as_parent(file_name)
 
         except EnvironmentError as e:
             log.error(u'Error trying to save NZB to black hole: {0}', ex(e))
@@ -111,11 +113,13 @@ def snatch_episode(result):
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
     is_proper = False
+
     if app.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for cur_ep in result.episodes:
             if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
+
     if result.proper_tags:
         log.debug(u'Found proper tags for {0}. Snatching as PROPER', result.name)
         is_proper = True
@@ -123,11 +127,8 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
-        result.result_type = u'torrent'
-
     # Binsearch.info requires you to download the nzb through a post.
-    if hasattr(result.provider, 'download_nzb_for_post'):
+    if result.provider.kind() == 'BinSearchProvider':
         result.result_type = 'nzbdata'
         nzb_data = result.provider.download_nzb_for_post(result)
         result.extra_info.append(nzb_data)
@@ -156,7 +157,11 @@ def snatch_episode(result):
         else:
             if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
-                    result.content = result.provider.get_content(result.url)
+                    if result.provider.kind() == 'TorznabProvider':
+                        result.url = result.provider.get_redirect_url(result.url)
+
+                    if not result.url.startswith(u'magnet:'):
+                        result.content = result.provider.get_content(result.url)
 
             if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
@@ -195,9 +200,9 @@ def snatch_episode(result):
             # We can't reset location because we need to know what we are replacing
             # curEpObj.location = ''
 
-            # Size and release name are fetched in PP (only for downloaded status, not snatched)
-            curEpObj.file_size = 0
+            # Release name and group are parsed in PP
             curEpObj.release_name = ''
+            curEpObj.release_group = ''
 
             # Need to reset subtitle settings because it's a different file
             curEpObj.subtitles = list()
@@ -208,14 +213,11 @@ def snatch_episode(result):
             curEpObj.is_proper = True if result.proper_tags else False
             curEpObj.version = 0
 
-            # Release group is parsed in PP
-            curEpObj.release_group = ''
-
             curEpObj.manually_searched = result.manually_searched
 
             sql_l.append(curEpObj.get_sql())
 
-        if curEpObj.status not in Quality.DOWNLOADED:
+        if curEpObj.splitted_status_status != common.DOWNLOADED:
             notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
@@ -401,7 +403,7 @@ def wanted_episodes(series_obj, from_date):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
+        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNSET))
         should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
         if not should_search:
             continue
@@ -414,7 +416,7 @@ def wanted_episodes(series_obj, from_date):
                 }
             )
         ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
         wanted.append(ep_obj)
 
     return wanted
@@ -510,6 +512,7 @@ def delay_search(best_result):
         cur_ep = best_result.episodes[0]
         log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
                   {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
+
         from medusa.search.manual import get_provider_cache_results
         results = get_provider_cache_results(
             cur_ep.series, show_all_results=False, perform_search=False,
@@ -517,30 +520,39 @@ def delay_search(best_result):
         )
 
         if results.get('found_items'):
-            results['found_items'].sort(key=lambda d: int(d['date_added']))
+            # If date_added is missing we put it at the end of the list
+            results['found_items'].sort(key=lambda d: d['date_added'] or datetime.datetime.now(app_timezone))
+
             first_result = results['found_items'][0]
-            if first_result['date_added'] + cur_provider.search_delay * 60 > int(time.time()):
+            date_added = first_result['date_added']
+            # Some results in cache have date_added as 0
+            if not date_added:
+                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                return False
+
+            timestamp = to_timestamp(date_added)
+            if timestamp + cur_provider.search_delay * 60 > time.time():
                 # The provider's delay cooldown time hasn't expired yet. We're holding back the snatch.
                 log.debug(
-                    u'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}. The provider is waiting'
-                    u' {search_delay_minutes} hours, before accepting the release. Still {hours_left} to go.', {
+                    'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}.'
+                    ' The provider is waiting {search_delay_minutes} hours, before accepting the release.'
+                    ' Still {hours_left} to go.', {
                         'best_result': best_result.name,
                         'first_result': first_result['name'],
                         'provider': cur_provider.name,
                         'search_delay_minutes': round(cur_provider.search_delay / 60, 1),
-                        'hours_left': round((cur_provider.search_delay - (time.time() - first_result['date_added']) / 60) / 60, 1)
+                        'hours_left': round((cur_provider.search_delay - (time.time() - timestamp) / 60) / 60, 1)
                     }
                 )
                 return True
             else:
-                log.debug(u'DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
-                          u'Time of first result: {first_result}',
-                          {'provider': cur_provider.name,
-                           'first_result': datetime.datetime.fromtimestamp(first_result['date_added'])})
+                log.debug('DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
+                          'Time of first result: {first_result}',
+                          {'provider': cur_provider.name, 'first_result': date_added})
         else:
             # This should never happen.
             log.debug(
-                u'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
+                'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
                 {'provider': cur_provider.name, 'series': best_result.series.name,
                  'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
     return False
@@ -726,7 +738,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                           best_season_result.provider.provider_type,
                           best_season_result.name)
             else:
-                if best_season_result.provider.provider_type == GenericProvider.NZB:
+                # Some NZB providers (e.g. Jackett) can also download torrents, but torrents cannot be split like NZB
+                if (best_season_result.provider.provider_type == GenericProvider.NZB and
+                        not best_season_result.url.endswith(GenericProvider.TORRENT)):
                     log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
 
                     # if not, break it apart and add them as the lowest priority results

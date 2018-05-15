@@ -8,12 +8,17 @@
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Missing Subtitles in Post-Process folder'
+        },
         data() {
-            return {};
+            return {
+                header: 'Missing Subtitles in Post-Process folder'
+            };
         }
     });
 };
@@ -22,11 +27,7 @@ const startVue = () => {
 <%block name="content">
 <div class="row">
 <div class="col-md-12">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 </div>
 </div>
 <div class="row">
@@ -84,7 +85,7 @@ const startVue = () => {
     <input type="hidden" id="failed" name="failed" value="0">
     <input type="hidden" id="ignore_subs" name="ignore_subs" value="0">
 </table>
-    <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
+    <input id="submit" class="btn-medusa" type="submit" value="Run Manual Post-Process" />
 </form>
 </div><!-- Releases missed subtitles -->
 </div><!-- col -->

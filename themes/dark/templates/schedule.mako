@@ -6,14 +6,18 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Schedule'
+        },
         data() {
-            return {};
+            return {
+                header: 'Schedule'
+            };
         },
         mounted() {
             if ($.isMeta({ layout: 'schedule' }, ['list'])) {
@@ -102,7 +106,7 @@ const startVue = () => {
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="header">${header}</h1>
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 
@@ -116,7 +120,7 @@ const startVue = () => {
             <span class="listing-key listing-default">Soon</span>
             <span class="listing-key listing-toofar">Later</span>
         % endif
-            <app-link class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <app-link class="btn-medusa btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
             <i class="icon-calendar icon-white"></i>Subscribe</app-link>
         </div>
 
@@ -124,8 +128,8 @@ const startVue = () => {
             <div class="show-option">
                 <span>View Paused:
                     <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+                        <option value="schedule/toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+                        <option value="schedule/toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
                     </select>
                 </span>
             </div>
@@ -141,15 +145,15 @@ const startVue = () => {
             </div>
             % if layout == 'list':
             <div class="show-option">
-                <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+                <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
             </div>
             % elif layout != 'calendar':  # Calendar sorting is always by date
             <div class="show-option">
                 <span>Sort By:
                     <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-                        <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-                        <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                        <option value="schedule/setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
+                        <option value="schedule/setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
+                        <option value="schedule/setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
                     </select>
                 </span>
             </div>

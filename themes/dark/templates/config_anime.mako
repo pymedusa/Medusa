@@ -4,12 +4,17 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Anime'
+        },
         data() {
-            return {};
+            return {
+                header: 'Anime'
+            };
         }
     });
 };
@@ -17,7 +22,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content960">
-    <h1 class="header">${header}</h1>
+    <h1 class="header">{{header}}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/anime/saveAnime" method="post">
@@ -72,7 +77,7 @@ const startVue = () => {
                                     </label>
                                 </div><!-- .field-pair //-->
                             </div><!-- #content_use_anidb //-->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- #animedb-settings //-->
                     <div id="anime-look-feel" class="tab-pane component-group">
@@ -98,11 +103,11 @@ const startVue = () => {
                                     </label>
                                 </div><!-- .field-pair //-->
                             </div><!-- #content_split_home //-->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                        </fieldset><!-- .component-group-list //-->
                     </div><!-- #anime-look-feel //-->
                     <br>
-                    <input type="submit" class="btn config_submitter" value="Save Changes" />
+                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     <br>
                 </div><!-- #config-components //-->
             </form><!-- #configForm //-->

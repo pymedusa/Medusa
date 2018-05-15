@@ -4,13 +4,12 @@
     from medusa import app
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};
@@ -41,7 +40,7 @@ const startVue = () => {
                                 <h3>
                                     History
                                 </h3>
-                                <button id="showhistory" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#historydata">
+                                <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#historydata">
                                     Show History
                                 </button>
                             </th>
@@ -93,14 +92,14 @@ const startVue = () => {
                 </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">
-                    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
-                    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+                    <input class="btn-medusa manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
+                    <input class="btn-medusa manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
                     <div id="searchNotification"></div><!-- #searchNotification //-->
                     </div>
                     <div class="pull-right clearfix col-md-4 right-30" id="filterControls">
                         <div class="pull-right">
-                            <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
-                            <button id="btnReset" type="button" class="btn">Reset Sort</button>
+                            <button id="popover" type="button" class="btn-medusa">Select Columns <b class="caret"></b></button>
+                            <button id="btnReset" type="button" class="btn-medusa">Reset Sort</button>
                         </div>
                     </div><!-- #filterControls //-->
                 </div>
@@ -123,9 +122,9 @@ const startVue = () => {
                     </thead>
                     <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
-                        <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
+                        <tr id="${hItem['name'] | h}" class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">
-                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
                             </td>
                             <td class="col-group break-word triggerhighlight">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>

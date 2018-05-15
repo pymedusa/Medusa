@@ -5,14 +5,16 @@ sudo: false
 branches:
   except:
     - master
+before_install:
+  - python .github/check_version.py
 install:
   - pip install --upgrade pip
   - pip install --upgrade tox
   - pip install dredd_hooks
   - pip install PyYAML
   - pip install six
-  - nvm install node
-  - nvm use node
+  - nvm install v8.9.0
+  - nvm use v8.9.0
   - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
   - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install'
 script:

@@ -3,12 +3,12 @@
 """
 tmdbsimple.movies
 ~~~~~~~~~~~~~~~~~
-This module implements the Movies, Collections, Companies, Keywords, and 
+This module implements the Movies, Collections, Companies, Keywords, and
 Reviews functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2014 by Celia Oakley
+:copyright: (c) 2013-2018 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -18,15 +18,17 @@ class Movies(TMDB):
     """
     Movies functionality.
 
-    See: http://docs.themoviedb.apiary.io/#movies
+    See: https://developers.themoviedb.org/3/movies
     """
     BASE_PATH = 'movie'
     URLS = {
         'info': '/{id}',
         'alternative_titles': '/{id}/alternative_titles',
         'credits': '/{id}/credits',
+        'external_ids': '/{id}/external_ids',
         'images': '/{id}/images',
         'keywords': '/{id}/keywords',
+        'release_dates': '/{id}/release_dates',
         'releases': '/{id}/releases',
         'videos': '/{id}/videos',
         'translations': '/{id}/translations',
@@ -41,6 +43,7 @@ class Movies(TMDB):
         'top_rated': '/top_rated',
         'account_states': '/{id}/account_states',
         'rating': '/{id}/rating',
+        'recommendations': '/{id}/recommendations'
     }
 
     def __init__(self, id=0):
@@ -50,7 +53,7 @@ class Movies(TMDB):
     def info(self, **kwargs):
         """
         Get the basic movie information for a specific movie id.
-        
+
         Args:
             language: (optional) ISO 639-1 code.
             append_to_response: (optional) Comma separated, any movie method.
@@ -67,7 +70,7 @@ class Movies(TMDB):
     def alternative_titles(self, **kwargs):
         """
         Get the alternative titles for a specific movie id.
-        
+
         Args:
             country: (optional) ISO 3166-1 code.
             append_to_response: (optional) Comma separated, any movie method.
@@ -84,7 +87,7 @@ class Movies(TMDB):
     def credits(self, **kwargs):
         """
         Get the cast and crew information for a specific movie id.
-        
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
@@ -97,15 +100,32 @@ class Movies(TMDB):
         self._set_attrs_to_values(response)
         return response
 
-    def images(self, **kwargs):
+    def external_ids(self, **kwargs):
         """
-        Get the images (posters and backdrops) for a specific movie id.
-        
+        Get the external ids for a specific movie id.
+
         Args:
             language: (optional) ISO 639-1 code.
             append_to_response: (optional) Comma separated, any movie method.
-            include_image_language: (optional) Comma separated, a valid 
-                                    ISO 69-1. 
+
+        Returns:
+            A dict respresentation of the JSON returned from the API.
+        """
+        path = self._get_id_path('external_ids')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
+    def images(self, **kwargs):
+        """
+        Get the images (posters and backdrops) for a specific movie id.
+
+        Args:
+            language: (optional) ISO 639-1 code.
+            append_to_response: (optional) Comma separated, any movie method.
+            include_image_language: (optional) Comma separated, a valid
+                                    ISO 69-1.
 
         Returns:
             A dict respresentation of the JSON returned from the API.
@@ -116,17 +136,47 @@ class Movies(TMDB):
         self._set_attrs_to_values(response)
         return response
 
-    def keywords(self, **kwargs):
+    def keywords(self):
         """
         Get the plot keywords for a specific movie id.
-        
+
+        Returns:
+            A dict respresentation of the JSON returned from the API.
+        """
+        path = self._get_id_path('keywords')
+
+        response = self._GET(path)
+        self._set_attrs_to_values(response)
+        return response
+
+    def recommendations(self, **kwargs):
+        """
+        Get a list of recommended movies for a movie.
+
+        Args:
+            language: (optional) ISO 639-1 code.
+            page: (optional) Minimum value of 1.  Expected value is an integer.
+
+        Returns:
+            A dict respresentation of the JSON returned from the API.
+        """
+        path = self._get_id_path('recommendations')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
+    def release_dates(self, **kwargs):
+        """
+        Get the release dates and certification for a specific movie id.
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
-        path = self._get_id_path('keywords')
+        path = self._get_id_path('release_dates')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
@@ -134,9 +184,9 @@ class Movies(TMDB):
 
     def releases(self, **kwargs):
         """
-        Get the release date and certification information by country for a 
+        Get the release date and certification information by country for a
         specific movie id.
-        
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
@@ -151,9 +201,9 @@ class Movies(TMDB):
 
     def videos(self, **kwargs):
         """
-        Get the videos (trailers, teasers, clips, etc...) for a 
+        Get the videos (trailers, teasers, clips, etc...) for a
         specific movie id.
-        
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
@@ -169,7 +219,7 @@ class Movies(TMDB):
     def translations(self, **kwargs):
         """
         Get the translations for a specific movie id.
-        
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
@@ -185,7 +235,7 @@ class Movies(TMDB):
     def similar_movies(self, **kwargs):
         """
         Get the similar movies for a specific movie id.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -203,7 +253,7 @@ class Movies(TMDB):
     def reviews(self, **kwargs):
         """
         Get the reviews for a particular movie id.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -221,7 +271,7 @@ class Movies(TMDB):
     def lists(self, **kwargs):
         """
         Get the lists that the movie belongs to.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -240,11 +290,11 @@ class Movies(TMDB):
         """
         Get the changes for a specific movie id.
 
-        Changes are grouped by key, and ordered by date in descending order. 
-        By default, only the last 24 hours of changes are returned. The 
-        maximum number of days that can be returned in a single request is 14. 
+        Changes are grouped by key, and ordered by date in descending order.
+        By default, only the last 24 hours of changes are returned. The
+        maximum number of days that can be returned in a single request is 14.
         The language is present on fields that are translatable.
-        
+
         Args:
             start_date: (optional) Expected format is 'YYYY-MM-DD'.
             end_date: (optional) Expected format is 'YYYY-MM-DD'.
@@ -261,7 +311,7 @@ class Movies(TMDB):
     def latest(self, **kwargs):
         """
         Get the latest movie id.
-        
+
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
@@ -273,9 +323,9 @@ class Movies(TMDB):
 
     def upcoming(self, **kwargs):
         """
-        Get the list of upcoming movies. This list refreshes every day. 
+        Get the list of upcoming movies. This list refreshes every day.
         The maximum number of items this list will include is 100.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -291,9 +341,9 @@ class Movies(TMDB):
 
     def now_playing(self, **kwargs):
         """
-        Get the list of movies playing in theatres. This list refreshes 
+        Get the list of movies playing in theatres. This list refreshes
         every day. The maximum number of items this list will include is 100.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -309,9 +359,9 @@ class Movies(TMDB):
 
     def popular(self, **kwargs):
         """
-        Get the list of popular movies on The Movie Database. This list 
+        Get the list of popular movies on The Movie Database. This list
         refreshes every day.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -327,10 +377,10 @@ class Movies(TMDB):
 
     def top_rated(self, **kwargs):
         """
-        Get the list of top rated movies. By default, this list will only 
-        include movies that have 10 or more votes. This list refreshes every 
+        Get the list of top rated movies. By default, this list will only
+        include movies that have 10 or more votes. This list refreshes every
         day.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -346,10 +396,10 @@ class Movies(TMDB):
 
     def account_states(self, **kwargs):
         """
-        This method lets users get the status of whether or not the movie has 
-        been rated or added to their favourite or watch lists. A valid session 
+        This method lets users get the status of whether or not the movie has
+        been rated or added to their favourite or watch lists. A valid session
         id is required.
-        
+
         Args:
             session_id: see Authentication.
 
@@ -364,7 +414,7 @@ class Movies(TMDB):
 
     def rating(self, **kwargs):
         """
-        This method lets users rate a movie. A valid session id or guest 
+        This method lets users rate a movie. A valid session id or guest
         session id is required.
 
         Args:
@@ -388,9 +438,9 @@ class Movies(TMDB):
 
 class Collections(TMDB):
     """
-    Collections functionality. 
+    Collections functionality.
 
-    See: http://docs.themoviedb.apiary.io/#collections
+    See: https://developers.themoviedb.org/3/collections
     """
     BASE_PATH = 'collection'
     URLS = {
@@ -404,13 +454,13 @@ class Collections(TMDB):
 
     def info(self, **kwargs):
         """
-        Get the basic collection information for a specific collection id. 
-        You can get the ID needed for this method by making a /movie/{id} 
+        Get the basic collection information for a specific collection id.
+        You can get the ID needed for this method by making a /movie/{id}
         request and paying attention to the belongs_to_collection hash.
 
-        Movie parts are not sorted in any particular order. If you would like 
+        Movie parts are not sorted in any particular order. If you would like
         to sort them yourself you can use the provided release_date.
-        
+
         Args:
             language: (optional) ISO 639-1 code.
             append_to_response: (optional) Comma separated, any movie method.
@@ -427,17 +477,17 @@ class Collections(TMDB):
     def images(self, **kwargs):
         """
         Get all of the images for a particular collection by collection id.
-        
+
         Args:
             language: (optional) ISO 639-1 code.
             append_to_response: (optional) Comma separated, any movie method.
-            include_image_language: (optional) Comma separated, a valid 
-            ISO 69-1. 
+            include_image_language: (optional) Comma separated, a valid
+            ISO 69-1.
 
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
-        path = self._get_id_path('info')
+        path = self._get_id_path('images')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
@@ -445,9 +495,9 @@ class Collections(TMDB):
 
 class Companies(TMDB):
     """
-    Companies functionality. 
+    Companies functionality.
 
-    See: http://docs.themoviedb.apiary.io/#companies
+    See: https://developers.themoviedb.org/3/companies
     """
     BASE_PATH = 'company'
     URLS = {
@@ -461,9 +511,9 @@ class Companies(TMDB):
 
     def info(self, **kwargs):
         """
-        This method is used to retrieve all of the basic information about a 
+        This method is used to retrieve all of the basic information about a
         company.
-        
+
         Args:
             append_to_response: (optional) Comma separated, any movie method.
 
@@ -475,11 +525,11 @@ class Companies(TMDB):
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
         return response
-        
+
     def movies(self, **kwargs):
         """
         Get the list of movies associated with a particular company.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -496,9 +546,9 @@ class Companies(TMDB):
 
 class Keywords(TMDB):
     """
-    Keywords functionality. 
+    Keywords functionality.
 
-    See: http://docs.themoviedb.apiary.io/#keywords
+    See: https://developers.themoviedb.org/3/keywords
     """
     BASE_PATH = 'keyword'
     URLS = {
@@ -513,7 +563,7 @@ class Keywords(TMDB):
     def info(self, **kwargs):
         """
         Get the basic information for a specific keyword id.
-        
+
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
@@ -526,7 +576,7 @@ class Keywords(TMDB):
     def movies(self, **kwargs):
         """
         Get the list of movies for a particular keyword by id.
-        
+
         Args:
             page: (optional) Minimum value of 1.  Expected value is an integer.
             language: (optional) ISO 639-1 code.
@@ -542,9 +592,9 @@ class Keywords(TMDB):
 
 class Reviews(TMDB):
     """
-    Reviews functionality. 
+    Reviews functionality.
 
-    See: http://docs.themoviedb.apiary.io/#reviews
+    See: https://developers.themoviedb.org/3/reviews
     """
     BASE_PATH = 'review'
     URLS = {
@@ -558,7 +608,7 @@ class Reviews(TMDB):
     def info(self, **kwargs):
         """
         Get the full details of a review by ID.
-        
+
         Returns:
             A dict respresentation of the JSON returned from the API.
         """

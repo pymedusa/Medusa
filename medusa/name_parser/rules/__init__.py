@@ -3,7 +3,9 @@
 
 """Guessit customization."""
 from __future__ import unicode_literals
+
 from guessit.api import default_api
+
 from medusa.name_parser.rules.properties import (
     blacklist,
     container,

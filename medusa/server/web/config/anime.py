@@ -14,6 +14,7 @@ from medusa import (
 )
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
+
 from tornroutes import route
 
 
@@ -32,8 +33,7 @@ class ConfigAnime(Config):
 
         t = PageTemplate(rh=self, filename='config_anime.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Anime',
-                        header='Anime', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,

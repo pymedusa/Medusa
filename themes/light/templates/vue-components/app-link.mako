@@ -12,6 +12,7 @@
 </script>
 <script>
 Vue.component('app-link', {
+    name: 'app-link',
     props: {
         to: [String, Object],
         href: String,
@@ -43,7 +44,7 @@ Vue.component('app-link', {
             const isAnonymised = url => {
                 return url.startsWith(MEDUSA.config.anonRedirect);
             };
-            const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : null;
+            const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : url;
             if (!to) {
                 if (href) {
                     // @TODO: Remove this once we move to vue only

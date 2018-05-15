@@ -18,6 +18,7 @@ from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
 from tornroutes import route
+
 from unrar2 import RarFile
 
 
@@ -35,8 +36,7 @@ class ConfigPostProcessing(Config):
         """
         t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
-                        header='Post Processing', topmenu='config',
+        return t.render(submenu=self.ConfigMenu(), topmenu='config',
                         controller='config', action='postProcessing')
 
     def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,

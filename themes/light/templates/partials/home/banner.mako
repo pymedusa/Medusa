@@ -1,12 +1,11 @@
 <%!
     from medusa import app
-    import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.helpers import remove_article
     from medusa.indexers.indexer_api import indexerApi
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
-    import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
@@ -62,7 +61,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <app-link href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</app-link>
+                        <app-link href="home/displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -74,7 +73,12 @@
                 </tbody>
             % endif
             <tbody>
-            <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+            <%
+                def titler(x):
+                   return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
+                my_show_list.sort(key=lambda x: titler(x.name).lower())
+            %>
             % for cur_show in my_show_list:
             <%
                 cur_airs_next = ''

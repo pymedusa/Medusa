@@ -5,12 +5,17 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Config - Subtitles'
+        },
         data() {
-            return {};
+            return {
+                header: 'Subtitles'
+            };
         },
         mounted() {
             $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {
@@ -29,11 +34,7 @@ const startVue = () => {
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <div id="config">
 <div id="config-content">
     <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
@@ -205,7 +206,7 @@ const startVue = () => {
                                         </label>
                                 </div>
                         </div>
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
@@ -229,7 +230,7 @@ const startVue = () => {
                         % endfor
                         </ul>
                         <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in subtitles.sorted_service_list()])}"/>
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
@@ -267,10 +268,10 @@ const startVue = () => {
                                 </label>
                             </div>
                         % endfor
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
             </div><!-- /config-components //-->
 </form>
 </div>

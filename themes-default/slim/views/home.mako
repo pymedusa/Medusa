@@ -10,12 +10,17 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Home'
+        },
         data() {
-            return {};
+            return {
+                header: 'Show List'
+            };
         }
     });
 };
@@ -65,11 +70,7 @@ const startVue = () => {
 
 <div class="row">
     <div class="col-md-12">
-        % if not header is UNDEFINED:
-        <h1 class="header pull-left" style="margin: 0;">${header}</h1>
-        % else:
-        <h1 class="title pull-left" style="margin: 0;">${title}</h1>
-        % endif
+        <h1 class="header pull-left" style="margin: 0;">{{header}}</h1>
     </div>
 </div>
 
@@ -85,11 +86,11 @@ const startVue = () => {
         <div class="show-option pull-right">
             % if app.HOME_LAYOUT != 'poster':
                 <span class="show-option">
-                    <button id="popover" type="button" class="btn btn-inline">
+                    <button id="popover" type="button" class="btn-medusa btn-inline">
                         Select Columns <b class="caret"></b>
                     </button>
                 </span> <span class="show-option">
-                    <button type="button" class="resetsorting btn btn-inline">Clear
+                    <button type="button" class="resetsorting btn-medusa btn-inline">Clear
                         Filter(s)</button>
                 </span>&nbsp;
             % endif

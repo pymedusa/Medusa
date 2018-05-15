@@ -4,34 +4,40 @@
     from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
+<script src="js/lib/frisbee.min.js"></script>
+<script src="js/lib/vue-frisbee.min.js"></script>
+<script src="js/vue-submit-form.js"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'New Show'
+        },
         data() {
-            return {};
+            return {
+                header: 'New Show'
+            };
+        },
+        methods: {
+            vueSubmitForm
         }
     });
 };
 </script>
 </%block>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
-<div id="newShowPortal">
+<h1 class="header">{{header}}</h1>
+<div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
-            <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
+            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="/home" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
@@ -57,7 +63,7 @@ const startVue = () => {
                                 % endfor
                             </select>
                             &nbsp;
-                            <input class="btn btn-inline" type="button" id="searchName" value="Search" />
+                            <input class="btn-medusa btn-inline" type="button" id="searchName" value="Search" />
                             <br><br>
                             <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
                             This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br><br>
@@ -89,9 +95,9 @@ const startVue = () => {
             </form>
             <br>
             <div style="width: 100%; text-align: center;">
-                <input class="btn" type="button" id="addShowButton" value="Add Show" disabled="disabled" />
+                <input @click.prevent="vueSubmitForm('addShowForm')" id="addShowButton" class="btn-medusa" type="button" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:
-                <input class="btn" type="button" id="skipShowButton" value="Skip Show" />
+                <input class="btn-medusa" type="button" id="skipShowButton" value="Skip Show" />
                 % endif
             </div>
         </div>

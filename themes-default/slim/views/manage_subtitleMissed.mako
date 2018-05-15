@@ -7,12 +7,17 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Missing Subtitles'
+        },
         data() {
-            return {};
+            return {
+                header: 'Missing Subtitles'
+            };
         }
     });
 };
@@ -20,11 +25,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
     <div id="content960">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+    <h1 class="header">{{header}}</h1>
     <% subsLanguage = subtitles.name_from_code(whichSubs) if whichSubs and whichSubs != 'all' else 'All' %>
     <% wanted_languages = subtitles.wanted_languages() %>
     <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
@@ -54,7 +55,7 @@ const startVue = () => {
                 % endif
                 </select>
             % endif
-            <input class="btn" type="submit" value="Manage" />
+            <input class="btn-medusa" type="submit" value="Manage" />
         </form>
     % else:
         ##Strange that this is used by js but is an input outside of any form?
@@ -71,10 +72,10 @@ const startVue = () => {
                 % endfor
             % endif
             <br>
-            Download missed subtitles for selected episodes <input class="btn btn-inline" type="submit" value="Go" />
+            Download missed subtitles for selected episodes <input class="btn-medusa btn-inline" type="submit" value="Go" />
             <div>
-                <button type="button" class="btn btn-xs selectAllShows">Select all</button>
-                <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
+                <button type="button" class="btn-medusa btn-xs selectAllShows">Select all</button>
+                <button type="button" class="btn-medusa btn-xs unselectAllShows">Clear all</button>
             </div>
             <br>
             <table class="defaultTable manageTable" cellspacing="1" border="0" cellpadding="0">

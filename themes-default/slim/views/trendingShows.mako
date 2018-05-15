@@ -8,9 +8,9 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/trending-shows.js"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};
@@ -47,9 +47,9 @@ const startVue = () => {
             <p>${int(cur_show['show']['rating']*10)}% <img src="images/heart.png"></p>
             <i>${cur_show['show']['votes']} votes</i>
             <div class="traktShowTitleIcons">
-                <app-link href="addShows/addShowByID?indexer_id=${cur_show['show']['ids']['tvdb']}&amp;show_name=${cur_show['show']['title'] | u}" class="btn btn-xs" data-no-redirect>Add Show</app-link>
+                <app-link href="addShows/addShowByID?indexer_id=${cur_show['show']['ids']['tvdb']}&amp;show_name=${cur_show['show']['title'] | u}" class="btn-medusa btn-xs" data-no-redirect>Add Show</app-link>
                 % if blacklist:
-                <app-link href="addShows/addShowToBlacklist?indexer_id=${cur_show['show']['ids']['tvdb'] or cur_show['show']['ids']['tvrage']}" class="btn btn-xs">Remove Show</app-link>
+                <app-link href="addShows/addShowToBlacklist?indexer_id=${cur_show['show']['ids']['tvdb'] or cur_show['show']['ids']['tvrage']}" class="btn-medusa btn-xs">Remove Show</app-link>
                 % endif
             </div>
         </div>

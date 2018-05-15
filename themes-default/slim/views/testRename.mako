@@ -10,14 +10,61 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/test-rename.js"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Preview Rename'
+        },
         data() {
-            return {};
+            return {
+                header: 'Preview Rename'
+            };
+        },
+        mounted() {
+            $('.seriesCheck').on('click', function() {
+                const serCheck = this;
+
+                $('.seasonCheck:visible').each(function() {
+                    this.checked = serCheck.checked;
+                });
+
+                $('.epCheck:visible').each(function() {
+                    this.checked = serCheck.checked;
+                });
+            });
+
+            $('.seasonCheck').on('click', function() {
+                const seasCheck = this;
+                const seasNo = $(seasCheck).attr('id');
+
+                $('.epCheck:visible').each(function() {
+                    const epParts = $(this).attr('id').split('x');
+
+                    if (epParts[0] === seasNo) {
+                        this.checked = seasCheck.checked;
+                    }
+                });
+            });
+
+            $('input[type=submit]').on('click', () => {
+                const epArr = [];
+
+                $('.epCheck').each(function() {
+                    if (this.checked === true) {
+                        epArr.push($(this).attr('id'));
+                    }
+                });
+
+                if (epArr.length === 0) {
+                    return false;
+                }
+
+                window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
+                    '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+            });
         }
     });
 };
@@ -34,11 +81,7 @@ const startVue = () => {
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<h1 class="header">{{header}}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:
@@ -64,7 +107,7 @@ const startVue = () => {
     </table>
     </div>
     <div class="col-md-10">
-        <input type="submit" value="Rename Selected" class="btn btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</app-link>
+        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
     </div>
 </div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
@@ -112,5 +155,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn btn-danger">Cancel Rename</app-link>
+<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
 </%block>

@@ -3,15 +3,13 @@
     from medusa import app
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};

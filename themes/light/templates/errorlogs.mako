@@ -5,12 +5,17 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
+        metaInfo: {
+            title: 'Logs & Errors'
+        },
         data() {
-            return {};
+            return {
+                header: 'Logs & Errors'
+            };
         }
     });
 };
@@ -39,11 +44,7 @@ pre {
 
 <div class="row">
     <div class="col-md-12 wide">
-        % if not header is UNDEFINED:
-            <h1 class="header">${header}</h1>
-        % else:
-            <h1 class="title">${title}</h1>
-        % endif
+        <h1 class="header">{{header}}</h1>
     </div>
 </div>
 

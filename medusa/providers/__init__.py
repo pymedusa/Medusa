@@ -20,12 +20,12 @@ from medusa.providers.torrent import (
     animebytes,
     animetorrents,
     archetorrent,
+    avistaz,
     bitcannon,
     bithdtv,
     btn,
     cinemaz,
     danishbits,
-    elitetorrent,
     elitetracker,
     hdbits,
     hdspace,
@@ -67,9 +67,9 @@ __all__ = [
     'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents',
     'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor',
     'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
+    'hdspace', 'newpct', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz'
+    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz', 'avistaz'
 ]
 
 

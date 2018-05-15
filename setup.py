@@ -23,7 +23,7 @@ class PyTest(TestCommand):
     def run_tests(self):
         import pytest
 
-        errno = pytest.main(self.pytest_args)
+        errno = pytest.main(self.pytest_args.split(' '))
         sys.exit(errno)
 
 
@@ -43,6 +43,7 @@ setup(
         'flake8-docstrings',
         'flake8-import-order',
         'pep8-naming',
+        'pycodestyle==2.3.1',
         'pytest',
         'pytest-cov',
         'pytest-flake8==0.9.1',

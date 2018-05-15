@@ -11,14 +11,13 @@
     from medusa.indexers.utils import mappings
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         data() {
             return {};
@@ -36,7 +35,7 @@ const startVue = () => {
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
-    <div class="col-md-12 horizontal-scroll">
+    <div class="col-md-12 horizontal-scroll" style="top: 12px">
         <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
             <% cur_season = -1 %>
             <% odd = 0 %>
@@ -110,9 +109,9 @@ const startVue = () => {
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
                         <div class="pull-right"> <!-- column select and hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
-                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
+                                <button id="showseason-${epResult['season']}" type="button" class="btn-medusa pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                             % endif
-                            <button id="popover" type="button" class="btn pull-right selectColumns">Select Columns <b class="caret"></b></button>
+                            <button id="popover" type="button" class="btn-medusa pull-right selectColumns">Select Columns <b class="caret"></b></button>
                         </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
@@ -154,7 +153,7 @@ const startVue = () => {
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                         <div class="pull-right"> <!-- hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
-                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
+                                <button id="showseason-${epResult['season']}" type="button" class="btn-medusa pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                             % endif
                         </div> <!-- end hide/show episodes -->
                     </th>
@@ -233,12 +232,9 @@ const startVue = () => {
                                 style="padding: 0; text-align: center; max-width: 60px;"/>
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">
-                    % if epResult["description"] != "" and epResult["description"] is not None:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${show.indexer_slug}_${str(epResult["season"])}_${str(epResult["episode"])}" />
-                    % else:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
-                    % endif
-                    ${epResult["name"]}
+                        <% has_plot = 'has-plot' if epResult['description'] else '' %>
+                        <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
+                        ${epResult["name"]}
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
                     <td class="col-ep triggerhighlight">
@@ -331,8 +327,8 @@ const startVue = () => {
                 <p class="text-warning"><small>The episode release name will be added to the failed history, preventing it to be downloaded again.</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -349,8 +345,8 @@ const startVue = () => {
                 <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -367,8 +363,8 @@ const startVue = () => {
                 <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
             </div>
         </div>
     </div>
@@ -384,8 +380,8 @@ const startVue = () => {
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-info" data-dismiss="modal">Auto</button>
-                <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
+                <button type="button" class="btn-medusa btn-info" data-dismiss="modal">Auto</button>
+                <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Manual</button>
             </div>
         </div>
     </div>

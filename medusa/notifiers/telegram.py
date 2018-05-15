@@ -21,6 +21,7 @@ from medusa.helper.common import http_status_code
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
+
 from six.moves.urllib.request import Request, urlopen
 
 log = BraceAdapter(logging.getLogger(__name__))
