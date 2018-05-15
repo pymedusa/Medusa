@@ -81,6 +81,10 @@ class BJShareProvider(TorrentProvider):
         if not self.login():
             return results
 
+        manual_search = "manual_search" in kwargs and kwargs['manual_search']
+        if manual_search:
+            self.max_back_pages = 20
+
         anime = False
         if ep_obj and ep_obj.series:
             anime = ep_obj.series.anime == 1
@@ -106,7 +110,7 @@ class BJShareProvider(TorrentProvider):
             log.debug(u"Search Mode: {0}".format(mode))
 
             # if looking for season, look for more pages
-            if mode == 'Season':
+            if mode == 'Season' and not manual_search:
                 self.max_back_pages = 10
 
             for search_string in search_strings[mode]:
