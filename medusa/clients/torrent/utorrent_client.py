@@ -24,8 +24,7 @@ def get_torrent_subfolder(result):
     # Get the subfolder name the user has assigned to that series
     root_dirs = app.ROOT_DIRS
     root_location = root_dirs[int(root_dirs[0]) + 1]
-    torrent_path = result.series._location
-    torrent_subfolder = ''
+    torrent_path = result.series.raw_location
 
     if not root_location == torrent_path:
         # Subfolder is under root, but possibly not directly under
@@ -80,7 +79,7 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
-
+        """Send an 'add-url' download request to uTorrent when search provider is using a magnet link."""
         # Set proper subfolder as download destination for uTorrent torrent
         torrent_subfolder = get_torrent_subfolder(result)
 
@@ -92,7 +91,7 @@ class UTorrentAPI(GenericClient):
         })
 
     def _add_torrent_file(self, result):
-
+        """Send an 'add-file' download request to uTorrent when the search provider is using a .torrent file."""
         # Set proper subfolder as download destination for uTorrent torrent
         torrent_subfolder = get_torrent_subfolder(result)
 
@@ -111,6 +110,7 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
+        """Send a 'setprop' request to uTorrent to set a label for the torrent, optionally - the show name."""
         torrent_new_label = result.series.name
 
         if result.series.is_anime and app.TORRENT_LABEL_ANIME:
@@ -120,7 +120,7 @@ class UTorrentAPI(GenericClient):
 
         label = label.replace('%N', torrent_new_label)
 
-        log.debug('torrent label is now set to {path}', {'path': label})
+        log.debug('Torrent label is now set to {path}', {'path': label})
 
         return self._request(
             params={
