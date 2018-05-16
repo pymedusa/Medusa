@@ -81,7 +81,7 @@ class BJShareProvider(TorrentProvider):
         if not self.login():
             return results
 
-        manual_search = "manual_search" in kwargs and kwargs['manual_search']
+        manual_search = kwargs.get('manual_search')
         if manual_search:
             self.max_back_pages = 20
 
