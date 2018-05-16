@@ -9,9 +9,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Config - Notifications'
@@ -162,7 +162,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testKODI-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test KODI" id="testKODI" />
+                                <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_kodi //-->
                         </fieldset>
@@ -253,7 +253,7 @@ const startVue = () => {
                                         </div>
                                         <div class="field-pair">
                                             <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
-                                            <input class="btn" type="button" value="Test Plex Media Server" id="testPMS" />
+                                            <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
                                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                                             <div class="clear-left">&nbsp;</div>
                                         </div>
@@ -339,7 +339,7 @@ const startVue = () => {
                                 </div>
                                 <div class="field-pair">
                                     <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
-                                    <input class="btn" type="button" value="Test Plex Home Theater" id="testPHT" />
+                                    <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
                                     <input type="submit" class="config_submitter btn" value="Save Changes" />
                                     <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                 </div>
@@ -380,7 +380,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testEMBY-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test Emby" id="testEMBY" />
+                                <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_emby //-->
                         </fieldset>
@@ -415,7 +415,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Get settings</span>
-                                        <input class="btn btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -443,7 +443,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testNMJ-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test NMJ" id="testNMJ" />
+                                <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nmj //-->
                         </fieldset>
@@ -509,7 +509,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label for="settingsNMJv2">
                                         <span class="component-title">Find database</span>
-                                        <input type="button" class="btn btn-inline" value="Find Database" id="settingsNMJv2" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -527,7 +527,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                             <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
-                            <input class="btn" type="button" value="Test NMJv2" id="testNMJv2" />
+                            <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nmjv2 //-->
                         </fieldset>
@@ -736,7 +736,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
-                                <input  class="btn" type="button" value="Register Growl" id="testGrowl" />
+                                <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_growl //-->
                         </fieldset>
@@ -824,7 +824,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="prowl_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="prowl_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -844,7 +844,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Prowl" id="testProwl" />
+                                <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_prowl //-->
                         </fieldset>
@@ -894,7 +894,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Libnotify" id="testLibnotify" />
+                                <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_libnotify //-->
                         </fieldset>
@@ -1009,7 +1009,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushover-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Pushover" id="testPushover" />
+                                <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_pushover //-->
                         </fieldset>
@@ -1069,7 +1069,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Boxcar" id="testBoxcar2" />
+                                <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_boxcar2 //-->
                         </fieldset>
@@ -1145,7 +1145,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testNMA-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test NMA" id="testNMA" />
+                                <input  class="btn-medusa" type="button" value="Test NMA" id="testNMA" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_nma //-->
                         </fieldset>
@@ -1205,8 +1205,8 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushalot-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushalot" id="testPushalot" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushalot //-->
                         </fieldset>
                     </div><!-- /pushalot component-group //-->
@@ -1269,7 +1269,7 @@ const startVue = () => {
                                         <span class="component-title">Pushbullet devices</span>
                                         <select name="pushbullet_device_list" id="pushbullet_device_list" class="form-control input-sm"></select>
                                         <input type="hidden" id="pushbullet_device" value="${app.PUSHBULLET_DEVICE}">
-                                        <input type="button" class="btn btn-inline" value="Update device list" id="getPushbulletDevices" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Update device list" id="getPushbulletDevices" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1277,8 +1277,8 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushbullet-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushbullet" id="testPushbullet" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushbullet //-->
                         </fieldset>
                     </div><!-- /pushbullet component-group //-->
@@ -1347,7 +1347,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test SMS" id="testFreeMobile" />
+                                <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_freemobile //-->
                         </fieldset>
@@ -1418,7 +1418,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Telegram" id="testTelegram" />
+                                <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_telegram //-->
                         </fieldset>
@@ -1497,7 +1497,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
-                                        <input class="btn" type="button" value="Request Authorization" id="twitterStep1" />
+                                        <input class="btn-medusa" type="button" value="Request Authorization" id="twitterStep1" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1507,7 +1507,7 @@ const startVue = () => {
                                     <label>
                                         <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
                                         <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
-                                        <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
                                 </div>
                                 <!--
@@ -1518,7 +1518,7 @@ const startVue = () => {
                                 </div>
                                 //-->
                                 <div class="testNotification" id="testTwitter-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Twitter" id="testTwitter" />
+                                <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_twitter //-->
                         </fieldset>
@@ -1555,8 +1555,8 @@ const startVue = () => {
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
                                         <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} />
-                                        <input type="button" class="btn" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
-                                        <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
+                                        <input type="button" class="btn-medusa" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
+                                        <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
                                     </label>
                                     <p>
                                         <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
@@ -1687,9 +1687,9 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTrakt-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Trakt" id="testTrakt" />
-                                <input type="button" class="btn" value="Force Sync" id="forceSync" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
+                                <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
                         </fieldset><!-- .component-group-desc //-->
                     </div><!-- trakt .component-group //-->
@@ -1846,14 +1846,14 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="email_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="email_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div><!-- .field-pair //-->
                                 <div class="testNotification" id="testEmail-result">
                                     Click below to test.
                                 </div><!-- #testEmail-result //-->
-                                <input class="btn" type="button" value="Test Email" id="testEmail" />
-                                <input class="btn" type="submit" class="config_submitter" value="Save Changes" />
+                                <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
+                                <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
                             </div><!-- #content_use_email //-->
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- email .component-group //-->
@@ -1915,7 +1915,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Slack" id="testSlack" />
+                                <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
                                 <input type="submit" class="config_submitter btn" value="Save Changes" />
                             </div><!-- /content_use_slack //-->
                         </fieldset>

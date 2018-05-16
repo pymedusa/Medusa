@@ -5,9 +5,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Post Processing'
@@ -118,7 +118,7 @@ const startVue = () => {
             </tr>
             % endif
         </table>
-            <input id="submit" class="btn" type="submit" value="Process" />
+            <input id="submit" class="btn-medusa" type="submit" value="Process" />
         </form>
     </div>
 </div>

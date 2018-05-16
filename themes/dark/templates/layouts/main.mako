@@ -46,6 +46,7 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
@@ -95,7 +96,6 @@
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/home/edit-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
@@ -120,13 +120,32 @@
         <script src="js/lib/vue.js"></script>
         <script src="js/lib/vue-async-computed@3.3.0.js"></script>
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
+        <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
+        <script src="js/lib/vue-snotify.min.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
-        <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
+        <%include file="/vue-components/language-select.mako"/>
+        <script>window.routes = [];</script>
         <%block name="scripts" />
+        <script>
+            if (!window.app) {
+                console.info('Loading Vue with router since window.app is missing.');
+                const router = new vueRouter({
+                    base: document.body.getAttribute('api-root').replace('api/v2/', ''),
+                    mode: 'history',
+                    routes
+                });
+                window.app = new Vue({
+                    el: '#vue-wrap',
+                    router
+                });
+            } else {
+                console.info('Loading local Vue since we found a window.app');
+            }
+        </script>
     </body>
 </html>

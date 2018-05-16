@@ -26,8 +26,6 @@ from medusa import (
 )
 from medusa.server.api.v1.core import function_mapper
 
-from past.builtins import cmp
-
 from requests.compat import urljoin
 
 from six import (
@@ -308,7 +306,7 @@ class WebRoot(WebHandler):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
         main_db_con = db.DBConnection(row_type='dict')
-        shows = sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
+        shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
         results = main_db_con.select(

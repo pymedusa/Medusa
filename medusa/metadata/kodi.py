@@ -2,10 +2,12 @@
 
 
 from __future__ import unicode_literals
+
 import os
 
 from medusa.helper.common import replace_extension
 from medusa.metadata import kodi_12plus
+
 from six import text_type
 
 

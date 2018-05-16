@@ -12,8 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-themes = []
-
 
 class Theme(object):
     """Base theme class."""
@@ -28,15 +26,20 @@ class Theme(object):
 
 def read_themes():
     """Read the theme folder and create a Theme object for every entry, if valid."""
+    themes = []
     theme_root = os.path.join(app.PROG_DIR, 'themes')
     themes_from_fs = [os.path.join(theme_root, theme_dir) for theme_dir in os.listdir(theme_root) if os.path.isdir(os.path.join(theme_root, theme_dir))]
     for theme_path in themes_from_fs:
         # validate the directory structure
         try:
-            validate_theme(theme_path)
+            result = validate_theme(theme_path)
         except Exception as error:
             log.error('Error reading theme {theme}, {error!r}', {'theme': theme_path, 'error': error})
             raise Exception('Error in one of the theme paths. Please fix the error and start medusa.')
+
+        if not result:
+            log.debug('Skipping reading theme {theme}, as the folder is empty', {'theme': theme_path})
+            continue
 
         # validate the package.json
         package_json = json.load(open(os.path.join(theme_path, 'package.json')))
@@ -49,6 +52,15 @@ def read_themes():
 
 def validate_theme(theme_path):
     """Validate theme configuration."""
+    try:
+        dir_list = os.listdir(theme_path)
+    except Exception as err:
+        raise Exception("Unable to list directories in {path}: {err!r}".format(path=theme_path, err=err))
+
+    # If the folder is completely empty, then the theme was probably removed, so just skip it
+    if not dir_list:
+        return False
+
     if not os.path.isdir(os.path.join(theme_path, 'assets')):
         raise Exception('Missing assets folder. Please refer to the medusa theming documentation.')
 

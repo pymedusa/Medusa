@@ -1,11 +1,13 @@
 <%!
-    from medusa import app
     import calendar
+    import re
+
+    from medusa import app
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.helpers import remove_article
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
-    import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
@@ -42,7 +44,12 @@
                 </div>
             % endif
         % endfor
-        <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+        <%
+            def titler(x):
+                return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
+            my_show_list.sort(key=lambda x: titler(x.name).lower())
+        %>
         % for cur_show in my_show_list:
         <%
             cur_airs_next = ''

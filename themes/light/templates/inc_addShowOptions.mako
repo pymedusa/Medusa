@@ -8,7 +8,7 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <quality-chooser/>
+                    <quality-chooser></quality-chooser>
                 </span>
             </label>
         </div>
@@ -51,7 +51,7 @@
             <label for="season_folders" class="clearfix">
                 <span class="component-title">Season Folders</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="flatten_folders" id="season_folders" ${'checked="checked"' if not app.FLATTEN_FOLDERS_DEFAULT or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/>
+                    <input type="checkbox" name="season_folders" id="season_folders" ${'checked="checked"' if app.SEASON_FOLDERS_DEFAULT or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/>
                     <p>Group episodes by season folder?</p>
                 </span>
             </label>
@@ -79,7 +79,7 @@
         <br>
         <div class="field-pair alt">
             <label for="saveDefaultsButton" class="nocheck clearfix">
-                <span class="component-title"><input class="btn btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
+                <span class="component-title"><input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
                 <span class="component-desc">
                     <p>Use current values as the defaults</p>
                 </span>

@@ -45,19 +45,20 @@ class ConfigGeneral(Config):
         app.ROOT_DIRS = rootDirString.split('|')
 
     @staticmethod
-    def saveAddShowDefaults(defaultStatus, allowed_qualities, preferred_qualities, defaultFlattenFolders, subtitles=False,
-                            anime=False, scene=False, defaultStatusAfter=WANTED):
+    def saveAddShowDefaults(default_status, allowed_qualities, preferred_qualities, default_season_folders,
+                            subtitles=False, anime=False, scene=False, default_status_after=WANTED):
 
         allowed_qualities = [_.strip() for _ in allowed_qualities.split(',')] if allowed_qualities else []
         preferred_qualities = [_.strip() for _ in preferred_qualities.split(',')] if preferred_qualities else []
 
-        new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities],
+                                                [int(quality) for quality in preferred_qualities])
 
-        app.STATUS_DEFAULT = int(defaultStatus)
-        app.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
+        app.STATUS_DEFAULT = int(default_status)
+        app.STATUS_DEFAULT_AFTER = int(default_status_after)
         app.QUALITY_DEFAULT = int(new_quality)
 
-        app.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(defaultFlattenFolders)
+        app.SEASON_FOLDERS_DEFAULT = config.checkbox_to_value(default_season_folders)
         app.SUBTITLES_DEFAULT = config.checkbox_to_value(subtitles)
 
         app.ANIME_DEFAULT = config.checkbox_to_value(anime)

@@ -8,6 +8,7 @@ dogpile.cache==0.6.5
 git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
 future==0.16.0
 futures==3.2.0
+gntp==1.0.3
 guessit==2.1.4
 html5lib==1.0.1
 imdbpie==5.4.0
@@ -29,4 +30,3 @@ tornado==5.0.2
 tornroutes==0.5.1
 validators==0.12.1
 vcrpy==1.11.1
-gntp==1.0.3

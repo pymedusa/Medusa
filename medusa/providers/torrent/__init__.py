@@ -10,6 +10,7 @@ from medusa.providers.torrent.html import (
     animebytes,
     animetorrents,
     archetorrent,
+    avistaz,
     bithdtv,
     cinemaz,
     elitetracker,
@@ -34,7 +35,6 @@ from medusa.providers.torrent.html import (
     torrent9,
     torrentbytes,
     torrenting,
-    torrentleech,
     tvchaosuk,
     yggtorrent,
     zooqle,
@@ -47,6 +47,7 @@ from medusa.providers.torrent.json import (
     norbits,
     rarbg,
     torrentday,
+    torrentleech,
     xthor,
 )
 from medusa.providers.torrent.rss import (
@@ -68,5 +69,5 @@ __all__ = [
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker', 'privatehd', 'cinemaz'
+    'elitetracker', 'privatehd', 'cinemaz', 'avistaz'
 ]

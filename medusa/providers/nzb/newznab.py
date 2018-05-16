@@ -8,7 +8,6 @@ import logging
 import os
 import re
 from builtins import range
-from builtins import str
 from builtins import zip
 from collections import namedtuple
 
@@ -33,7 +32,7 @@ from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 
-from six import iteritems, itervalues
+from six import iteritems, itervalues, text_type as str
 
 import validators
 
@@ -109,8 +108,6 @@ class NewznabProvider(NZBProvider):
         # For providers that don't have caps, or for which the t=caps is not working.
         if not self.params and all(provider not in self.url for provider in self.providers_without_caps):
             self.get_capabilities(just_params=True)
-            if not self.params:
-                return results
 
         # Search Params
         search_params = {

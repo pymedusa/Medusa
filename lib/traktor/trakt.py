@@ -123,8 +123,8 @@ class TraktApi(object):
             code = getattr(e.response, 'status_code', None)
             if code == 502:
                 # Retry the request, cloudflare had a proxying issue
-                log.debug(u'Retrying trakt api request: %s', path)
-                return self.request(path, data, headers, url, method)
+                log.debug(u'Retrying trakt api request: {0} (attempt: {1})'.format(path, count))
+                return self.request(path, data, headers, url, method, count=count)
             elif code == 401:
                 if self.get_token(refresh_token=True, count=count):
                     return self.request(path, data, headers, url, method)
@@ -137,15 +137,25 @@ class TraktApi(object):
                 # http://docs.trakt.apiary.io/#introduction/status-codes
                 raise UnavailableException(u"Trakt may have some issues and it's unavailable. Try again later please")
             elif code == 404:
-                log_message = u'Trakt error (404) Not found - the resource does not exist: %s' % url + path
+                log_message = u'Trakt error (404) Not found - the resource does not exist: {0}'.format(url + path)
                 log.error(log_message)
                 raise ResourceUnavailable(log_message)
             elif code == 410:
                 log_message = u'Trakt error (410) Expired - the tokens have expired. Get a new one'
                 log.warning(log_message)
                 raise TokenExpiredException(log_message)
+            elif code == 413:
+                # Cause of error unknown - https://github.com/pymedusa/Medusa/issues/4090
+                log_message = u'Trakt error (413) Request Entity Too Large for url {0}'.format(url + path)
+                log.warning(log_message)
+                # Dumping data for debugging purposes
+                log.debug(u'Trakt request headers:\n{0}'.format(e.request.headers))
+                log.debug(u'Trakt request body:\n{0}'.format(e.request.body))
+                log.debug(u'Trakt response headers:\n{0}'.format(e.response.headers))
+                log.debug(u'Trakt response body:\n{0}'.format(e.response.body))
+                raise TraktException(log_message)
             else:
-                log_message = u'Unknown Trakt request exception. Error: %s' % code if code else e
+                log_message = u'Unknown Trakt request exception. Error: {0}'.format(code or e)
                 log.error(log_message)
                 raise TraktException(log_message)
 

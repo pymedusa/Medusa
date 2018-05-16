@@ -1,14 +1,15 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
     from medusa import sbdatetime
+    from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
+    from medusa.helpers import remove_article
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Backlog Overview'
@@ -35,8 +36,14 @@ const startVue = () => {
 <div class="row">
     <div class="col-md-12">
 <%
+    def titler(x):
+        return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
     totalWanted = totalQual = 0
-    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[(x.indexer, x.series_id)][Overview.QUAL] + showCounts[(x.indexer, x.series_id)][Overview.WANTED]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if x.paused == 0 and
+                           showCounts[(x.indexer, x.series_id)][Overview.QUAL] +
+                           showCounts[(x.indexer, x.series_id)][Overview.WANTED]],
+                          key=lambda x: titler(x.name).lower())
     for cur_show in backLogShows:
         totalWanted += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.WANTED]
         totalQual += showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]
@@ -102,8 +109,8 @@ const startVue = () => {
                                     % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
-                                    <app-link class="btn btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>

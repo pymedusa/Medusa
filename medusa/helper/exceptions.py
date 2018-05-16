@@ -1,7 +1,9 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
+
 from builtins import str
+
 from medusa.helper.encoding import ss
 
 from six import text_type
@@ -129,4 +131,12 @@ class ShowDirectoryNotFoundException(ApplicationException):
 class ShowNotFoundException(ApplicationException):
     """
     The show wasn't found on the Indexer
+    """
+
+
+class AnidbAdbaConnectionException(Exception):
+    """
+    Connection exceptions raised while trying to communicate with the Anidb UDP api.
+
+    More info on the api: https://wiki.anidb.net/w/API.
     """

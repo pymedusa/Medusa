@@ -304,7 +304,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['seeders'] = i['seeders'] if i['seeders'] >= 0 else '-'
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
             i['pubdate'] = parser.parse(i['pubdate']).astimezone(app_timezone) if i['pubdate'] else ''
-            i['date_added'] = datetime.fromtimestamp(float(i['date_added'])) if i['date_added'] else ''
+            i['date_added'] = datetime.fromtimestamp(float(i['date_added']), tz=app_timezone) if i['date_added'] else ''
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'

@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import base64
 import collections
 import json
+import logging
 import operator
 import traceback
 from builtins import object
@@ -21,6 +22,8 @@ from six import string_types, text_type, viewitems
 
 from tornado.httpclient import HTTPError
 from tornado.web import RequestHandler
+
+log = logging.getLogger(__name__)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -398,7 +401,17 @@ class PatchField(object):
             valid = True
 
         if valid:
-            setattr(target, self.attr, self.converter(value))
+            try:
+                setattr(target, self.attr, self.converter(value))
+            except AttributeError:
+                log.warning(
+                    'Error trying to change attribute %s on target %s, you sure'
+                    ' you are allowed to change this attribute?',
+                    self.attr,
+                    target
+                )
+                return False
+
             if self.post_processor:
                 self.post_processor(value)
             return True
