@@ -32,6 +32,7 @@ from medusa.clients.nzb import (
     sab,
 )
 from medusa.common import (
+    ARCHIVED,
     DOWNLOADED,
     FAILED,
     IGNORED,
@@ -1916,7 +1917,7 @@ class Home(WebRoot):
                 return self._genericMessage('Error', error_message)
 
         # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
-        # FIXME: Always chech status with status and quality with quality.
+        # FIXME: Always check status with status and quality with quality.
         status_with_quality = status
         status = Quality.split_composite_status(status).status
 
@@ -1981,7 +1982,7 @@ class Home(WebRoot):
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
 
-                    if status in Quality.DOWNLOADED and not (
+                    if status == DOWNLOADED and not (
                             ep_obj.status in snatched_qualities + Quality.DOWNLOADED
                             and os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
@@ -2010,7 +2011,6 @@ class Home(WebRoot):
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        # We're only setting the status (leaving the quality as is).
                         ep_obj.status = status_with_quality
 
                     # mass add to database
@@ -2023,7 +2023,7 @@ class Home(WebRoot):
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
                     upd = 'Add'
-                elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
+                elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
                     upd = 'Remove'
 
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
