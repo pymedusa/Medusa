@@ -1915,7 +1915,11 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        # Use .has_key() since it is overridden for statusStrings in common.py
+        # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
+        # FIXME: Always chech status with status and quality with quality.
+        status_with_quality = status
+        status = Quality.split_composite_status(status).status
+
         if status not in statusStrings:
             error_message = 'Invalid status'
             if direct:
@@ -2007,7 +2011,7 @@ class Home(WebRoot):
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
                         # We're only setting the status (leaving the quality as is).
-                        ep_obj.splitted_status_status = status
+                        ep_obj.status = status_with_quality
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
