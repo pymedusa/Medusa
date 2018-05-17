@@ -2,9 +2,6 @@ language: python
 python:
   - 2.7.10
 sudo: false
-branches:
-  except:
-    - master
 before_install:
   - python .github/check_version.py
 install:
