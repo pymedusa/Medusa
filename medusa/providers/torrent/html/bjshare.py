@@ -53,16 +53,11 @@ class BJShareProvider(TorrentProvider):
         self.proper_strings = ["PROPER", "REPACK", "REAL", "RERIP"]
 
         # Cache
-        self.cache = tv.Cache(self, min_time=1)
+        self.cache = tv.Cache(self, min_time=30)
 
         self.quality = {
             'Full HD': '1080p',
-            'HD': '720p',
-            'BRRip': 'BR-Rip',
-            'Remux': 'BR-Rip',
-            'DVDRip': 'DVD-Rip',
-            'Blu-ray': 'BR-Disk',
-            'HDTC': 'TeleCine'
+            'HD': '720p'
         }
 
         self.animes_with_broken_seasons_numbering = [
@@ -227,7 +222,8 @@ class BJShareProvider(TorrentProvider):
                         details.append(detail)
 
                     if len(details) >= 7 and details[6] != 'Free':
-                        resolution = self.quality[details[6]]
+                        resolution = self.quality.get(details[6])
+                        resolution = details[6] if resolution is None else resolution
                     else:
                         resolution = '480p'
 
@@ -347,10 +343,10 @@ class BJShareProvider(TorrentProvider):
                     details = self._remove_accents(str(cells[labels.index("Nome")].find("a").find("span")))
 
                     audio_re = re.search(r"(?s)(?<=Audio: ).*?(?=<br/>)", details)
-                    pubdate_re = re.search(r"(?s)(?<=Lancado em: ).*?(?=<br/>)", details)
+                    # pubdate_re = re.search(r"(?s)(?<=Lancado em: ).*?(?=<br/>)", details)
                     size_re = re.search(r"(?s)(?<=Tamanho: ).*?(?=<br/>)", details)
                     year_re = re.search(r"(?s)(?<=Ano: ).*?(?=<br/>)", details)
-                    resolution_re = re.search(r"(?s)(?<=Resolucao: ).*?(?=<br/>)", details)
+                    # resolution_re = re.search(r"(?s)(?<=Resolucao: ).*?(?=<br/>)", details)
                     quality_re = re.search(r"(?s)(?<=Qualidade: ).*?(?=<br/>)", details)
                     format_re = re.search(r"(?s)(?<=Formato: ).*?(?=<br/>)", details)
 
@@ -369,6 +365,7 @@ class BJShareProvider(TorrentProvider):
                     details = cells[labels.index("Nome")].find_all("font")
                     if len(details) >= 3:
                         resolution = self.quality[details[2].get_text()]
+                        resolution = details[6] if resolution is None else resolution
                     else:
                         resolution = '480p'
 
