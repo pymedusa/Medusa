@@ -31,6 +31,7 @@ class BJShareProvider(TorrentProvider):
         self.urls = {
             'detail': urljoin(self.url, "torrents.php?id=%s"),
             'search': urljoin(self.url, "torrents.php"),
+            'today': urljoin(self.url, "torrents.php?action=today"),
             'download': urljoin(self.url, "%s"),
         }
 
@@ -58,6 +59,7 @@ class BJShareProvider(TorrentProvider):
             'Full HD': '1080p',
             'HD': '720p',
             'BRRip': 'BR-Rip',
+            'Remux': 'BR-Rip',
             'DVDRip': 'DVD-Rip',
             'Blu-ray': 'BR-Disk',
             'HDTC': 'TeleCine'
@@ -97,10 +99,7 @@ class BJShareProvider(TorrentProvider):
             "searchsubmit": 1
         }
 
-        if 'RSS' in search_strings.keys():
-            search_params["filter_cat[14]"] = 1  # anime
-            search_params["filter_cat[2]"] = 1  # tv shows
-        elif anime:
+        if anime:
             search_params["filter_cat[14]"] = 1
         else:
             search_params["filter_cat[2]"] = 1
@@ -132,12 +131,17 @@ class BJShareProvider(TorrentProvider):
                     log.debug(u"Page Search: {0}".format(next_page))
                     next_page += 1
 
-                    response = self.session.get(self.urls['search'], params=search_params)
+                    url = self.urls['today'] if mode == "RSS" else self.urls['search']
+                    search_params = None if mode == "RSS" else search_params
+                    response = self.session.get(url, params=search_params)
                     if not response:
                         log.debug("No data returned from provider")
                         continue
 
-                    result = self._parse(response.text, mode, search_string)
+                    if mode == "RSS":
+                        result = self._parse_rss(response.content)
+                    else:
+                        result = self._parse(response.content, search_string)
                     has_next_page = result['has_next_page']
                     items += result['items']
 
@@ -148,12 +152,11 @@ class BJShareProvider(TorrentProvider):
 
         return results
 
-    def _parse(self, data, mode, search_string):
+    def _parse(self, data, search_string):
         """
         Parse search results for items.
 
         :param data: The raw response from a search
-        :param mode: The current mode used to search, e.g. RSS
         :param search_string: Original search string
 
         :return: A KV with a list of items found and if there's an next page to search
@@ -167,8 +170,7 @@ class BJShareProvider(TorrentProvider):
             year_re = re.search(r"\((\d{4})\)|(\d{4})", search_string, re.I)
             searching_year = '' if year_re is None else year_re.group(1)
 
-            # ignore next page in RSS mode
-            has_next_page = mode != 'RSS' and html.find("a", attrs={"class", "pager_next"}) is not None
+            has_next_page = html.find("a", attrs={"class", "pager_next"}) is not None
             log.debug(u"More Pages? {0}".format(has_next_page))
 
             # Continue only if at least one Release is found
@@ -189,19 +191,19 @@ class BJShareProvider(TorrentProvider):
                     anime = "filter_cat[14]=14" in result.find("td", attrs={"class": "cats_col"}).find("a")[
                         "href"]
                     title = cells[labels.index("Nome/Ano")].find("a", dir="ltr").get_text(strip=True)
-                    if '[' in title and ']' in title:
-                        torrent['national_title'] = self._searchcut(title, '', ' [')
-                        torrent['international_name'] = self._searchcut(title, '[', ' ]')
+                    dual_title_re = re.search(r"(.*) \[(.*?)\]", title)
+                    if dual_title_re:
+                        torrent['national_title'] = dual_title_re.group(1)
+                        torrent['international_name'] = dual_title_re.group(2)
                     else:
+                        torrent['national_title'] = None
                         torrent['international_name'] = title
 
-                    year = cells[labels.index("Nome/Ano")].find("a",
-                                                                dir="ltr").next_sibling.strip().replace(
+                    year = cells[labels.index("Nome/Ano")].find("a", dir="ltr").next_sibling.strip().replace(
                         '[', '').replace(']', '')
                     torrent['year'] = year
                     download_url = urljoin(self.url,
-                                           cells[labels.index("Nome/Ano")].find("a", title="Baixar")[
-                                               "href"])
+                                           cells[labels.index("Nome/Ano")].find("a", title="Baixar")["href"])
                     if not all([title, download_url]):
                         continue
 
@@ -210,10 +212,9 @@ class BJShareProvider(TorrentProvider):
 
                     # Filter unseeded torrent
                     if seeders < self.minseed or leechers < self.minleech:
-                        if mode != "RSS":
-                            log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                      (title, seeders, leechers))
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders or leechers: {0} (S:{1} L:{2})".format
+                                  (title, seeders, leechers))
                         continue
 
                     torrent_details = cells[labels.index("Nome/Ano")].find("div", attrs={
@@ -247,7 +248,9 @@ class BJShareProvider(TorrentProvider):
                     except IndexError:
                         episode = ''
 
-                    title = title[:title.rfind('-')].strip()
+                    title = torrent['international_name']
+                    if not torrent['national_title'] and season.isdigit() and episode.isdigit():
+                        title = title[:title.rfind('-')].strip()
 
                     # Include year in result only if the search have it
                     search_year_fmt = ''
@@ -257,17 +260,20 @@ class BJShareProvider(TorrentProvider):
                     if anime and title in self.animes_with_broken_seasons_numbering:
                         # Some animes season is broken, so ignore it and include only the episode
                         # In this case, the episode is in absolute format
-                        torrent_name = u"{0}{1} E{2} {3} {4} {5} {6}.{7}" \
-                            .format(title, search_year_fmt, episode, resolution, source, codec, audio, ext)
+                        torrent_name = u"{0}{1} E{2} {3} {4} {5} {6}" \
+                            .format(title, search_year_fmt, episode, resolution, source, codec, audio)
                     elif season.isdigit() and not episode.isdigit():
                         # Season Pack
-                        torrent_name = u"{0}{1} S{2} {3} {4} {5} {6}.{7}" \
-                            .format(title, search_year_fmt, season, resolution, source, codec, audio, ext)
-                    else:
+                        torrent_name = u"{0}{1} S{2} {3} {4} {5} {6}" \
+                            .format(title, search_year_fmt, season, resolution, source, codec, audio)
+                    elif season.isdigit() and episode.isdigit():
                         # Season with episode included
-                        torrent_name = u"{0}{1} S{2}E{3} {4} {5} {6} {7}.{8}" \
-                            .format(title, search_year_fmt, season, episode, resolution, source, codec,
-                                    audio, ext)
+                        torrent_name = u"{0}{1} S{2}E{3} {4} {5} {6} {7}" \
+                            .format(title, search_year_fmt, season, episode, resolution, source, codec, audio)
+                    else:
+                        # Probably movie or something else that does not have season or episode
+                        torrent_name = u"{0}{1} {2} {3} {4} {5}" \
+                            .format(title, search_year_fmt, resolution, source, codec, audio)
 
                     if searching_year != '' and torrent['year'] != searching_year:
                         # If the year is included in the search term, skip releases with different year
@@ -277,7 +283,9 @@ class BJShareProvider(TorrentProvider):
 
                     # Removing accents due to an bug that i noticed that the torrent is not being sent to
                     # qBittorrent when accents are present, there was no error in log.
-                    torrent_name = self._remove_accents(torrent_name)
+                    torrent_name = re.sub('\s+', ' ', self._remove_accents(torrent_name)).strip()
+                    if ext:
+                        torrent_name = u"{0}.{1}".format(torrent_name, ext)
 
                     items.append({
                         'title': torrent_name,
@@ -288,17 +296,146 @@ class BJShareProvider(TorrentProvider):
                         'hash': ''
                     })
 
-                    if mode != "RSS":
-                        log.debug("Found result: {0} with {1} seeders and {2} leechers".format
-                                  (torrent_name, seeders, leechers))
+                    log.debug("Found result: {0} with {1} seeders and {2} leechers".format
+                              (torrent_name, seeders, leechers))
 
                 except StandardError:
                     continue
         return {'has_next_page': has_next_page, 'items': items}
 
+    def _parse_rss(self, data):
+        """
+        Parse rss results for items.
+
+        :param data: The raw response from a search
+        :param search_string: Original search string
+
+        :return: A KV with a list of items found and if there's an next page to search
+        """
+        items = []
+        has_next_page = False
+        with BS4Parser(data, "html5lib") as html:
+
+            torrent_table = html.find("table", attrs={"class", "torrent_table"})
+            torrent_rows = torrent_table("tr") if torrent_table else []
+
+            # Continue only if at least one Release is found
+            if len(torrent_rows) < 2:
+                log.debug("Data returned from provider does not contain any torrents")
+                return {'has_next_page': has_next_page, 'items': []}
+
+            # "", "", "Name /Year", "Files", "Time", "Size", "Snatches", "Seeders", "Leechers"
+            labels = [self._process_column_header(label) for label in torrent_rows[0]("th")]
+
+            # Skip column headers
+            for result in torrent_rows[1:]:
+                cells = result("td")
+                if len(cells) < len(labels):
+                    continue
+                torrent = {}
+                try:
+                    anime = "filter_cat[14]=14" in result.find("td").find("a")["href"]
+                    title = cells[labels.index("Nome")].find("a").find("font").get_text(strip=True)
+                    dual_title_re = re.search(r"(.*) \[(.*?)\]", title)
+                    if dual_title_re:
+                        torrent['national_title'] = dual_title_re.group(1)
+                        torrent['international_name'] = dual_title_re.group(2)
+                    else:
+                        torrent['national_title'] = None
+                        torrent['international_name'] = title
+
+                    details = self._remove_accents(str(cells[labels.index("Nome")].find("a").find("span")))
+
+                    audio_re = re.search(r"(?s)(?<=Audio: ).*?(?=<br/>)", details)
+                    pubdate_re = re.search(r"(?s)(?<=Lancado em: ).*?(?=<br/>)", details)
+                    size_re = re.search(r"(?s)(?<=Tamanho: ).*?(?=<br/>)", details)
+                    year_re = re.search(r"(?s)(?<=Ano: ).*?(?=<br/>)", details)
+                    resolution_re = re.search(r"(?s)(?<=Resolucao: ).*?(?=<br/>)", details)
+                    quality_re = re.search(r"(?s)(?<=Qualidade: ).*?(?=<br/>)", details)
+                    format_re = re.search(r"(?s)(?<=Formato: ).*?(?=<br/>)", details)
+
+                    torrent['year'] = None if not year_re else year_re.group(0)
+                    download_url = urljoin(self.url, cells[labels.index("Baixar")].find("a")["href"])
+                    if not all([title, download_url]):
+                        continue
+
+                    seeders = try_int(cells[labels.index("Seeders")].get_text(strip=True))
+                    leechers = try_int(cells[labels.index("Leechers")].get_text(strip=True))
+
+                    # Filter unseeded torrent
+                    if seeders < self.minseed or leechers < self.minleech:
+                        continue
+
+                    details = cells[labels.index("Nome")].find_all("font")
+                    if len(details) >= 3:
+                        resolution = self.quality[details[2].get_text()]
+                    else:
+                        resolution = '480p'
+
+                    source = '' if not quality_re else quality_re.group(0)
+                    codec = ''
+                    audio = '' if not audio_re else audio_re.group(0)
+                    ext = '' if not format_re else format_re.group(0)
+
+                    torrent_size = size_re.group(0)
+                    size = convert_size(torrent_size, units=self.units) or -1
+                    try:
+                        season = re.findall(r"(?:s|season)(\d{2})", title, re.I)[0]
+                    except IndexError:
+                        season = ''
+
+                    try:
+                        episode = re.findall(r"(?:e|x|episode|ep|\n)(\d{2,4})", title, re.I)[0]
+                    except IndexError:
+                        episode = ''
+
+                    title = torrent['international_name']
+                    if not torrent['national_title'] and season.isdigit() and episode.isdigit():
+                        title = title[:title.rfind('-')].strip()
+
+                    if anime and title in self.animes_with_broken_seasons_numbering:
+                        # Some animes season is broken, so ignore it and include only the episode
+                        # In this case, the episode is in absolute format
+                        torrent_name = u"{0} E{1} {2} {3} {4} {5}" \
+                            .format(title, episode, resolution, source, codec, audio)
+                    elif season.isdigit() and not episode.isdigit():
+                        # Season Pack
+                        torrent_name = u"{0} S{1} {2} {3} {4} {5}" \
+                            .format(title, season, resolution, source, codec, audio)
+                    elif season.isdigit() and episode.isdigit():
+                        # Season with episode included
+                        torrent_name = u"{0} S{1}E{2} {3} {4} {5} {6}" \
+                            .format(title, season, episode, resolution, source, codec, audio)
+                    else:
+                        # Probably movie or something else that does not have season or episode
+                        torrent_name = u"{0} {1} {2} {3} {4}" \
+                            .format(title, resolution, source, codec, audio)
+                    # Removing accents due to an bug that i noticed that the torrent is not being sent to
+                    # qBittorrent when accents are present, there was no error in log.
+                    torrent_name = re.sub('\s+', ' ', self._remove_accents(torrent_name)).strip()
+                    if ext:
+                        torrent_name = u"{0}.{1}".format(torrent_name, ext)
+
+                    items.append({
+                        'title': torrent_name,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'hash': ''
+                    })
+
+                except StandardError:
+                    continue
+        return {'has_next_page': False, 'items': items}
+
     @staticmethod
     def _process_column_header(td):
         ret = u""
+        if td.img and 'seeders' in td.img.attrs.get('src'):
+            return u"Seeders"
+        if td.img and 'leechers' in td.img.attrs.get('src'):
+            return u"Leechers"
         if td.a and td.a.img:
             ret = td.a.img.get("title", td.a.get_text(strip=True))
         if not ret:
@@ -331,43 +468,6 @@ class BJShareProvider(TorrentProvider):
         string = re.sub(u"[ÝŸ]", 'Y', string)
 
         return string
-
-    @staticmethod
-    def _searchcut(source, startsearch, endsearch, startpos=0, includetag=False):
-        """
-        Search for given prefix and suffix and return the text between both.
-
-        :param source: Source text
-        :param startsearch: Prefix
-        :param endsearch: Suffix
-        :param startpos: Index where the search will begin (useful to create loop)
-        :param includetag: Include the prefix and suffix in the return?
-
-        :return: Text between Prefix (startsearch) and Suffix (endsearch)
-        """
-        start = 0
-
-        def finalresult(result):
-            if includetag:
-                return startsearch + result + endsearch
-            else:
-                return result
-
-        if startsearch:
-            start = source.find(startsearch, startpos)
-            if start == -1:
-                return {"pos": -1, "pos_end": -1, "txt": ""}
-            start += len(startsearch)
-        end = 0
-        if endsearch:
-            end = source.find(endsearch, start)
-        if end == -1:
-            return {"pos": -1, "pos_end": -1, "txt": ""}
-        if end == 0:
-            return {"pos": start, "pos_end": end, "txt": finalresult(source[start:])}
-        if start == 0:
-            return {"pos": start, "pos_end": end, "txt": finalresult(source[:end])}
-        return {"pos": start, "pos_end": end, "txt": finalresult(source[start:end])}
 
 
 provider = BJShareProvider()
