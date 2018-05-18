@@ -53,7 +53,7 @@ class BJShareProvider(TorrentProvider):
         self.proper_strings = ["PROPER", "REPACK", "REAL", "RERIP"]
 
         # Cache
-        self.cache = tv.Cache(self, min_time=1)
+        self.cache = tv.Cache(self, min_time=30)
 
         self.quality = OrderedDict([
             ('Full HD ', '1080p'),
