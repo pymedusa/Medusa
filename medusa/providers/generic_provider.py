@@ -80,6 +80,8 @@ class GenericProvider(object):
             'https://asnet.pw/download/{info_hash}/',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
+            'http://thetorrent.org/torrent/{info_hash}.torrent',
+            'https://cache.torrentgalaxy.org/get/{info_hash}',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
