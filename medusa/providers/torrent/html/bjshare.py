@@ -148,7 +148,6 @@ class BJShareProvider(TorrentProvider):
 
         :return: A KV with a list of items found and if there's an next page to search
         """
-
         def process_column_header(td):
             ret = u''
             if td.a and td.a.img:
