@@ -4,12 +4,11 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-import os.path
 import sys
 import warnings
 
 from medusa import common, db, helpers, subtitles
-from medusa.helper.common import dateTimeFormat, episode_num
+from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
@@ -23,7 +22,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 9
+CURRENT_MINOR_DB_VERSION = 10
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -37,7 +36,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_invalid_airdates()
         #  self.fix_subtitles_codes()
         self.fix_show_nfo_lang()
-        self.convert_archived_to_compound()
+        # self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
 
@@ -87,39 +86,39 @@ class MainSanityCheck(db.DBSanityCheck):
                                        "WHERE episode_id = %i" % (sql_result[b'episode_id'])
                                        )
 
-    def convert_archived_to_compound(self):
-        log.debug(u'Checking for archived episodes not qualified')
-
-        query = "SELECT episode_id, showid, e.status, e.location, season, episode, anime " + \
-                "FROM tv_episodes e, tv_shows s WHERE e.status = %s AND e.showid = s.indexer_id" % common.ARCHIVED
-
-        sql_results = self.connection.select(query)
-        if sql_results:
-            log.warning(u'Found {0} shows with bare archived status, '
-                        u'attempting automatic conversion...',
-                        len(sql_results))
-
-        for archivedEp in sql_results:
-            fixedStatus = common.Quality.composite_status(common.ARCHIVED, common.Quality.UNKNOWN)
-            existing = archivedEp[b'location'] and os.path.exists(archivedEp[b'location'])
-            if existing:
-                quality = common.Quality.name_quality(archivedEp[b'location'], archivedEp[b'anime'], extend=False)
-                fixedStatus = common.Quality.composite_status(common.ARCHIVED, quality)
-
-            log.info(
-                u'Changing status from {old_status} to {new_status} for'
-                u' {id}: {ep} at {location} (File {result})',
-                {'old_status': common.statusStrings[common.ARCHIVED],
-                 'new_status': common.statusStrings[fixedStatus],
-                 'id': archivedEp[b'showid'],
-                 'ep': episode_num(archivedEp[b'season'],
-                                   archivedEp[b'episode']),
-                 'location': archivedEp[b'location'] or 'unknown location',
-                 'result': 'EXISTS' if existing else 'NOT FOUND', }
-            )
-
-            self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" %
-                                   (fixedStatus, archivedEp[b'episode_id']))
+    # def convert_archived_to_compound(self):
+    #     log.debug(u'Checking for archived episodes not qualified')
+    #
+    #     query = "SELECT episode_id, showid, e.status, e.location, season, episode, anime " + \
+    #             "FROM tv_episodes e, tv_shows s WHERE e.ep_status = %s AND e.showid = s.indexer_id" % ARCHIVED
+    #
+    #     sql_results = self.connection.select(query)
+    #     if sql_results:
+    #         log.warning(u'Found {0} shows with bare archived status, '
+    #                     u'attempting automatic conversion...',
+    #                     len(sql_results))
+    #
+    #     for archivedEp in sql_results:
+    #         fixedStatus = common.Quality.composite_status(common.ARCHIVED, common.Quality.UNKNOWN)
+    #         existing = archivedEp[b'location'] and os.path.exists(archivedEp[b'location'])
+    #         if existing:
+    #             quality = common.Quality.name_quality(archivedEp[b'location'], archivedEp[b'anime'], extend=False)
+    #             fixedStatus = common.Quality.composite_status(common.ARCHIVED, quality)
+    #
+    #         log.info(
+    #             u'Changing status from {old_status} to {new_status} for'
+    #             u' {id}: {ep} at {location} (File {result})',
+    #             {'old_status': common.statusStrings[common.ARCHIVED],
+    #              'new_status': common.statusStrings[fixedStatus],
+    #              'id': archivedEp[b'showid'],
+    #              'ep': episode_num(archivedEp[b'season'],
+    #                                archivedEp[b'episode']),
+    #              'location': archivedEp[b'location'] or 'unknown location',
+    #              'result': 'EXISTS' if existing else 'NOT FOUND', }
+    #         )
+    #
+    #         self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" %
+    #                                (fixedStatus, archivedEp[b'episode_id']))
 
     def fix_duplicate_episodes(self):
 
@@ -170,30 +169,30 @@ class MainSanityCheck(db.DBSanityCheck):
         if not self.connection.select("PRAGMA index_info('idx_status')"):
             log.info(u'Missing idx_status for TV Episodes table detected!,'
                      u' fixing...')
-            self.connection.action("CREATE INDEX idx_status ON tv_episodes (status, season, episode, airdate)")
+            self.connection.action("CREATE INDEX idx_status ON tv_episodes (ep_status, ep_quality, season, episode, airdate)")
 
         if not self.connection.select("PRAGMA index_info('idx_sta_epi_air')"):
             log.info(u'Missing idx_sta_epi_air for TV Episodes table'
                      u' detected!, fixing...')
-            self.connection.action("CREATE INDEX idx_sta_epi_air ON tv_episodes (status, episode, airdate)")
+            self.connection.action("CREATE INDEX idx_sta_epi_air ON tv_episodes (ep_status, ep_quality, episode, airdate)")
 
         if not self.connection.select("PRAGMA index_info('idx_sta_epi_sta_air')"):
             log.info(u'Missing idx_sta_epi_sta_air for TV Episodes table'
                      u' detected!, fixing...')
-            self.connection.action("CREATE INDEX idx_sta_epi_sta_air ON tv_episodes (season, episode, status, airdate)")
+            self.connection.action("CREATE INDEX idx_sta_epi_sta_air ON tv_episodes (season, episode, ep_status, ep_quality, airdate)")
 
     def fix_unaired_episodes(self):
 
         curDate = datetime.date.today()
 
         sql_results = self.connection.select(
-            "SELECT episode_id FROM tv_episodes WHERE (airdate > ? or airdate = 1) AND status in (?,?) AND season > 0",
+            "SELECT episode_id FROM tv_episodes WHERE (airdate > ? or airdate = 1) AND ep_status in (?, ?) AND season > 0",
             [curDate.toordinal(), common.SKIPPED, common.WANTED])
 
         for cur_unaired in sql_results:
             log.info(u'Fixing unaired episode status for episode_id: {0!s}',
                      cur_unaired[b'episode_id'])
-            self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
+            self.connection.action("UPDATE tv_episodes SET ep_status = ? WHERE episode_id = ?",
                                    [common.UNAIRED, cur_unaired[b'episode_id']])
 
     def fix_indexer_show_statues(self):
@@ -209,7 +208,7 @@ class MainSanityCheck(db.DBSanityCheck):
                       cur_ep[b'showid'])
             log.info(u'Fixing malformed episode status with'
                      u' episode_id: {0!s}', cur_ep[b'episode_id'])
-            self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
+            self.connection.action("UPDATE tv_episodes SET ep_status = ? WHERE episode_id = ?",
                                    [common.UNSET, cur_ep[b'episode_id']])
 
     def fix_invalid_airdates(self):
@@ -706,3 +705,62 @@ class AddIndexerIds(AddIndexerInteger):
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
+
+
+class AddSeparatedStatusQualityFields(AddIndexerIds):
+    """Add new separated status and quality fields."""
+
+    def test(self):
+        """Test if the version is at least 44.10"""
+        return self.connection.version >= (44, 10)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Dropping the unique index on idx_sta_epi_air')
+        self.connection.action('DROP INDEX IF EXISTS idx_sta_epi_air')
+
+        log.info(u'Dropping the unique index on idx_sta_epi_air')
+        self.connection.action('DROP INDEX IF EXISTS idx_sta_epi_sta_air')
+
+        log.info(u'Dropping the unique index on idx_status')
+        self.connection.action('DROP INDEX IF EXISTS idx_status')
+
+        log.info(u'Adding new ep_status and ep_quality fields in the tv_episodes table')
+        self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
+
+        self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
+                               '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
+                               'name TEXT, season NUMERIC, episode NUMERIC,description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
+                               'hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
+                               'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
+                               'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
+                               'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC, '
+                               'ep_status NUMERIC, ep_quality NUMERIC)')
+
+        self.connection.action('INSERT INTO new_tv_episodes (showid, indexerid, indexer, '
+                               'name, season, episode,description, airdate, hasnfo, '
+                               'hastbn, status, location, file_size, release_name, '
+                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+                               'is_proper, scene_season, scene_episode, absolute_number, '
+                               'scene_absolute_number, version, release_group, manually_searched, '
+                               'ep_status, ep_quality) SELECT showid, indexerid, indexer, '
+                               'name, season, episode,description, airdate, hasnfo, '
+                               'hastbn, status, location, file_size, release_name, '
+                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+                               'is_proper, scene_season, scene_episode, absolute_number, '
+                               'scene_absolute_number, version, release_group, manually_searched, -1, -1 '
+                               'FROM tv_episodes;')
+        self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
+        self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
+        self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
+
+        log.info(u'Split composite status in to ep_status and ep_quality')
+        sql_results = self.connection.select("SELECT status from tv_episodes GROUP BY status HAVING status > -1")
+
+        for status in sql_results:
+            split = common.Quality.split_composite_status(status[b'status'])
+            self.connection.action("UPDATE tv_episodes SET ep_status = ?, ep_quality = ? WHERE status = ?",
+                                   [split.status, split.quality, status[b'status']])
+
+        self.inc_minor_version()
