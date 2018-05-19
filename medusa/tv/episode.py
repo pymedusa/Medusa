@@ -628,7 +628,7 @@ class Episode(TV):
             self.subtitles_lastsearch = sql_results[0][b'subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0][b'airdate']))
             self.status = int(sql_results[0][b'status'] or -1)
-            self.quality = int(sql_results[0][b'quality'] or -1)
+            self.quality = int(sql_results[0][b'quality'] or 0)
 
             # don't overwrite my location
             if sql_results[0][b'location']:
