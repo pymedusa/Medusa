@@ -169,30 +169,30 @@ class MainSanityCheck(db.DBSanityCheck):
         if not self.connection.select("PRAGMA index_info('idx_status')"):
             log.info(u'Missing idx_status for TV Episodes table detected!,'
                      u' fixing...')
-            self.connection.action("CREATE INDEX idx_status ON tv_episodes (ep_status, ep_quality, season, episode, airdate)")
+            self.connection.action("CREATE INDEX idx_status ON tv_episodes (status, quality, season, episode, airdate)")
 
         if not self.connection.select("PRAGMA index_info('idx_sta_epi_air')"):
             log.info(u'Missing idx_sta_epi_air for TV Episodes table'
                      u' detected!, fixing...')
-            self.connection.action("CREATE INDEX idx_sta_epi_air ON tv_episodes (ep_status, ep_quality, episode, airdate)")
+            self.connection.action("CREATE INDEX idx_sta_epi_air ON tv_episodes (status, quality, episode, airdate)")
 
         if not self.connection.select("PRAGMA index_info('idx_sta_epi_sta_air')"):
             log.info(u'Missing idx_sta_epi_sta_air for TV Episodes table'
                      u' detected!, fixing...')
-            self.connection.action("CREATE INDEX idx_sta_epi_sta_air ON tv_episodes (season, episode, ep_status, ep_quality, airdate)")
+            self.connection.action("CREATE INDEX idx_sta_epi_sta_air ON tv_episodes (season, episode, status, quality, airdate)")
 
     def fix_unaired_episodes(self):
 
         curDate = datetime.date.today()
 
         sql_results = self.connection.select(
-            "SELECT episode_id FROM tv_episodes WHERE (airdate > ? or airdate = 1) AND ep_status in (?, ?) AND season > 0",
+            "SELECT episode_id FROM tv_episodes WHERE (airdate > ? or airdate = 1) AND status in (?, ?) AND season > 0",
             [curDate.toordinal(), common.SKIPPED, common.WANTED])
 
         for cur_unaired in sql_results:
             log.info(u'Fixing unaired episode status for episode_id: {0!s}',
                      cur_unaired[b'episode_id'])
-            self.connection.action("UPDATE tv_episodes SET ep_status = ? WHERE episode_id = ?",
+            self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
                                    [common.UNAIRED, cur_unaired[b'episode_id']])
 
     def fix_indexer_show_statues(self):
@@ -208,7 +208,7 @@ class MainSanityCheck(db.DBSanityCheck):
                       cur_ep[b'showid'])
             log.info(u'Fixing malformed episode status with'
                      u' episode_id: {0!s}', cur_ep[b'episode_id'])
-            self.connection.action("UPDATE tv_episodes SET ep_status = ? WHERE episode_id = ?",
+            self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
                                    [common.UNSET, cur_ep[b'episode_id']])
 
     def fix_invalid_airdates(self):
@@ -762,5 +762,35 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
             split = common.Quality.split_composite_status(status[b'status'])
             self.connection.action("UPDATE tv_episodes SET ep_status = ?, ep_quality = ? WHERE status = ?",
                                    [split.status, split.quality, status[b'status']])
+
+        # Remove ep_status and ep_quality and add quality field.
+        # Move status from ep_status and quality from ep_quality
+        log.info(u'Adding data from ep_status and ep_quality fields into status/quality fields the tv_episodes table')
+        self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
+
+        self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
+                               '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
+                               'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
+                               'hastbn NUMERIC, status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
+                               'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
+                               'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
+                               'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC)')
+
+        self.connection.action('INSERT INTO new_tv_episodes (showid, indexerid, indexer, '
+                               'name, season, episode, description, airdate, hasnfo, '
+                               'hastbn, status, quality, location, file_size, release_name, '
+                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+                               'is_proper, scene_season, scene_episode, absolute_number, '
+                               'scene_absolute_number, version, release_group, manually_searched) '
+                               'SELECT showid, indexerid, indexer, '
+                               'name, season, episode, description, airdate, hasnfo, '
+                               'hastbn, ep_status, ep_quality, location, file_size, release_name, '
+                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+                               'is_proper, scene_season, scene_episode, absolute_number, '
+                               'scene_absolute_number, version, release_group, manually_searched '
+                               'FROM tv_episodes;')
+        self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
+        self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
+        self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
 
         self.inc_minor_version()
