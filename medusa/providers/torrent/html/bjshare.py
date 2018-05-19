@@ -173,16 +173,26 @@ class BJShareProvider(TorrentProvider):
 
             # '', '', 'Name /Year', 'Files', 'Time', 'Size', 'Snatches', 'Seeders', 'Leechers'
             labels = [process_column_header(label) for label in torrent_rows[0]('td')]
+            group_title = u''
 
             # Skip column headers
             for result in torrent_rows[1:]:
                 cells = result('td')
-                if len(cells) < len(labels):
-                    continue
+                result_class = result.get("class")
+                group_index = -2 if "group_torrent" in result_class else 0
+                # if len(cells) < len(labels):
+                #     continue
                 try:
-                    title = cells[labels.index('Nome/Ano')].find('a', dir='ltr').get_text(strip=True)
-                    # get international title if available
-                    title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
+                    title = result.select('a[href^="torrents.php?id="]')[0].get_text()
+                    title = re.sub('\s+', ' ', title).strip()  # clean empty lines and multiple spaces
+
+                    if "group" in result_class or "torrent" in result_class:
+                        # get international title if available
+                        title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
+
+                    if "group" in result_class:
+                        group_title = title
+                        continue
 
                     for serie in self.absolute_numbering:
                         if serie in title:
@@ -190,12 +200,12 @@ class BJShareProvider(TorrentProvider):
                             title = re.sub('S\d{2}(E\d{2,4})', r'\1', title)
                             break
 
-                    download_url = urljoin(self.url, cells[labels.index('Nome/Ano')].find('a', title='Baixar')['href'])
+                    download_url = urljoin(self.url, result.select('a[href^="torrents.php?action=download"]')[0]['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders')+group_index].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Leechers')+group_index].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed or leechers < self.minleech:
@@ -205,14 +215,19 @@ class BJShareProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_details = cells[labels.index('Nome/Ano')].find('div', class_='torrent_info')\
-                        .get_text(strip=True).replace('[', ' ').replace(']', ' ')\
-                        .replace('/', ' ')
+                    torrent_details = u''
+                    if "group_torrent" in result_class:
+                        # torrents belonging to a group
+                        torrent_details = title
+                        title = group_title
+                    elif "torrent" in result_class:
+                        # standalone/un grouped torrents
+                        torrent_details = cells[labels.index('Nome/Ano')].find('div', class_='torrent_info').get_text()
 
-                    torrent_details = torrent_details.replace('Full HD ', '1080p')
-                    torrent_details = torrent_details.replace('HD ', '720p')
+                    torrent_details = torrent_details.replace('[', ' ').replace(']', ' ').replace('/', ' ')
+                    torrent_details = torrent_details.replace('Full HD ', '1080p').replace('HD ', '720p')
 
-                    torrent_size = cells[labels.index('Tamanho')].get_text(strip=True)
+                    torrent_size = cells[labels.index('Tamanho')+group_index].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
