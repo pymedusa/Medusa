@@ -756,7 +756,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
 
         log.info(u'Split composite status in to ep_status and ep_quality')
-        sql_results = self.connection.select("SELECT status from tv_episodes GROUP BY status HAVING status > -1")
+        sql_results = self.connection.select("SELECT status from tv_episodes GROUP BY status")
 
         for status in sql_results:
             split = common.Quality.split_composite_status(status[b'status'])
