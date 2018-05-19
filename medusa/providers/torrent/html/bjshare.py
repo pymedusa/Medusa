@@ -30,9 +30,7 @@ class BJShareProvider(TorrentProvider):
         # URLs
         self.url = 'https://bj-share.me'
         self.urls = {
-            'detail': urljoin(self.url, "torrents.php?id=%s"),
-            'search': urljoin(self.url, "torrents.php"),
-            'download': urljoin(self.url, "%s"),
+            'search': urljoin(self.url, "torrents.php")
         }
 
         # Credentials
@@ -57,8 +55,7 @@ class BJShareProvider(TorrentProvider):
 
         self.quality = OrderedDict([
             ('Full HD ', '1080p'),
-            ('HD ', '720p'),
-            ('4K', '2160p')])
+            ('HD ', '720p')])
 
         self.absolute_numbering = [
             'One Piece'
