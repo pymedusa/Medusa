@@ -159,7 +159,7 @@ class BacklogSearcher(object):
 
         con = db.DBConnection()
         sql_results = con.select(
-            'SELECT status, season, episode, manually_searched '
+            'SELECT status, quality, season, episode, manually_searched '
             'FROM tv_episodes '
             'WHERE airdate > ?'
             ' AND indexer = ? '
