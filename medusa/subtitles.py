@@ -472,7 +472,6 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     episode = tv_episode.episode
     episode_name = tv_episode.name
     show_indexerid = tv_episode.series.indexerid
-    status = tv_episode.status
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
                                      single=not app.SUBTITLES_MULTI)
@@ -493,7 +492,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         if app.SUBTITLES_HISTORY:
             logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
                          subtitle.provider_name, subtitle.language.opensubtitles)
-            history.logSubtitle(tv_episode, status, subtitle)
+            history.logSubtitle(tv_episode, subtitle)
 
     # Refresh the subtitles property
     if tv_episode.location:

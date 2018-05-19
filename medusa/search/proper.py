@@ -228,7 +228,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT status, release_name "
+            sql_results = main_db_con.select(b"SELECT status, quality, release_name "
                                              b"FROM tv_episodes WHERE indexer = ? "
                                              b"AND showid = ? AND season = ? "
                                              b"AND episode = ? AND status LIKE '%04'",
@@ -243,7 +243,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
-            _, old_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
+            old_quality = int(sql_results[0][b'quality'])
             if old_quality != best_result.quality:
                 log.info('Ignoring proper because quality is different: {name}', {'name': best_result.name})
                 if cur_proper.name not in processed_propers_names:

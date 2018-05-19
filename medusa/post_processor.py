@@ -738,23 +738,21 @@ class PostProcessor(object):
 
         return root_ep
 
-    def _quality_from_status(self, status):
-        """
-        Determine the quality of the file that is being post processed with its status.
-
-        :param status: The status related to the file we are post processing
-        :return: A quality value found in common.Quality
-        """
-        quality = common.Quality.UNKNOWN
-
-        if status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, quality = common.Quality.split_composite_status(status)
-            if quality != common.Quality.UNKNOWN:
-                self.log(u'The snatched status has a quality in it, using that: {0}'.format
-                         (common.Quality.qualityStrings[quality]), logger.DEBUG)
-                return quality
-
-        return quality
+    # def _quality_from_status(self, ep_obj):
+    #     """
+    #     Determine the quality of the file that is being post processed with its status.
+    #
+    #     :param ep_obj: episode object.
+    #     :return: A quality value found in common.Quality
+    #     """
+    #
+    #     if ep_obj.status in (common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST):
+    #         if ep_obj.quality != common.Quality.UNKNOWN:
+    #             self.log(u'The snatched status has a quality in it, using that: {0}'.format
+    #                      (common.Quality.qualityStrings[ep_obj.quality]), logger.DEBUG)
+    #             return ep_obj.quality
+    #
+    #     return common.UNKNOWN
 
     def _get_quality(self, ep_obj):
         """
@@ -794,7 +792,7 @@ class PostProcessor(object):
         for episode in episodes:
             # First: check if the episode status is snatched
             tv_episodes_result = main_db_con.select(
-                'SELECT status '
+                'SELECT status, quality '
                 'FROM tv_episodes '
                 'WHERE indexer = ? '
                 'AND showid = ? '
@@ -1018,7 +1016,7 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(series_obj, season, episodes)
-        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
+        old_ep_quality = ep_obj.quality
 
         # get the quality of the episode we're processing
         if quality and common.Quality.qualityStrings[quality] != 'Unknown':
@@ -1026,7 +1024,8 @@ class PostProcessor(object):
                      (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
-            new_ep_quality = self._quality_from_status(ep_obj.status)
+            # Fall back to the episode object's quality
+            new_ep_quality = ep_obj.quality
 
         # check snatched history to see if we should set the download as priority
         self._priority_from_history(series_obj, season, episodes, new_ep_quality)

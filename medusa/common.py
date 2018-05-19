@@ -605,18 +605,18 @@ class Quality(object):
     }
 
     @staticmethod
-    def should_search(status, show_obj, manually_searched):
+    def should_search(cur_status, cur_quality, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality.
 
         If cur_quality is Quality.NONE, it will return True as its a invalid quality
         If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
 
-        :param status: current status of the episode
+        :param cur_status: current status of the episode
+        :param cur_quality: current quality of the episode
         :param show_obj: Series object of the episode we will check if we should search or not
         :param manually_searched: if episode was manually searched by user
         :return: True if need to run a search for given episode
         """
-        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNSET)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         # When user manually searched, we should consider this as final quality.
@@ -759,15 +759,16 @@ class Quality(object):
         return quality if quality is not None else Quality.UNKNOWN
 
     @staticmethod
-    def to_guessit(status):
-        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status).
+    def to_guessit(quality):
+        """Return a guessit dict containing 'screen_size and format' from a Quality (status).
 
-        :param status: a quality composite status
-        :type status: int
+        This was previously a composite status. But status/quality have been separated into their own attributes.
+
+        :param quality: a quality status
+        :type quality: int
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
         :rtype: dict (str, str)
         """
-        _, quality = Quality.split_composite_status(status)
         screen_size = Quality.to_guessit_screen_size(quality)
         fmt = Quality.to_guessit_format(quality)
         result = dict()

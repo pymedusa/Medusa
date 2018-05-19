@@ -1917,9 +1917,11 @@ class Home(WebRoot):
                 return self._genericMessage('Error', error_message)
 
         # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
-        # FIXME: Always check status with status and quality with quality.
-        status_with_quality = status
+        # Currently status is passed from displayShow as a composite status+quality. Therefor we need to separate
+        # the status from it.
+
         status = Quality.split_composite_status(status).status
+        quality = Quality.split_composite_status(status).quality
 
         if status not in statusStrings:
             error_message = 'Invalid status'
@@ -2011,7 +2013,8 @@ class Home(WebRoot):
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status_with_quality
+                        ep_obj.status = status
+                        ep_obj.quality = quality
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())

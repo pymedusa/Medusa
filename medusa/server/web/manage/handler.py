@@ -21,8 +21,10 @@ from medusa import (
 )
 from medusa.common import (
     Overview,
-    Quality,
+    DOWNLOADED,
     SNATCHED,
+    SNATCHED_PROPER,
+    SNATCHED_BEST,
 )
 from medusa.helper.common import (
     episode_num,
@@ -58,7 +60,7 @@ class Manage(Home, WebRoot):
     def showEpisodeStatuses(indexername, seriesid, whichStatus):
         status_list = [int(whichStatus)]
         if status_list[0] == SNATCHED:
-            status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+            status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
@@ -86,7 +88,7 @@ class Manage(Home, WebRoot):
         if whichStatus:
             status_list = [int(whichStatus)]
             if status_list[0] == SNATCHED:
-                status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         else:
             status_list = []
 
@@ -136,7 +138,7 @@ class Manage(Home, WebRoot):
     def changeEpisodeStatuses(self, oldStatus, newStatus, *args, **kwargs):
         status_list = [int(oldStatus)]
         if status_list[0] == SNATCHED:
-            status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+            status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
         to_change = {}
 
@@ -178,6 +180,7 @@ class Manage(Home, WebRoot):
     @staticmethod
     def showSubtitleMissed(indexer, seriesid, whichSubs):
         main_db_con = db.DBConnection()
+        # TODO: maybe need to check if %4 still applies here.
         cur_show_results = main_db_con.select(
             b'SELECT season, episode, name, subtitles '
             b'FROM tv_episodes '
@@ -220,6 +223,7 @@ class Manage(Home, WebRoot):
                             controller='manage', action='subtitleMissed')
 
         main_db_con = db.DBConnection()
+        # TODO: maybe need to check if %4 still applies here.
         status_results = main_db_con.select(
             b'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
             b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
@@ -281,6 +285,7 @@ class Manage(Home, WebRoot):
             # get a list of all the eps we want to download subtitles if they just said 'all'
             if 'all' in to_download[(cur_indexer_id, cur_series_id)]:
                 main_db_con = db.DBConnection()
+                # TODO: maybe need to check if %4 still applies here.
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
@@ -322,10 +327,10 @@ class Manage(Home, WebRoot):
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
                     continue
 
-                ep_status = Quality.split_composite_status(tv_episode.status).status
-                if ep_status in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                ep_status = tv_episode.status
+                if ep_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     status = 'snatched'
-                elif ep_status in Quality.DOWNLOADED:
+                elif ep_status in DOWNLOADED:
                     status = 'downloaded'
                 else:
                     continue

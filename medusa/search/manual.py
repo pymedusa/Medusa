@@ -36,9 +36,8 @@ SEARCH_STATUS_SEARCHING = 'searching'
 
 def get_quality_class(ep_obj):
     """Find the quality class for the episode."""
-    _, ep_quality = Quality.split_composite_status(ep_obj.status)
-    if ep_quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_quality]
+    if ep_obj.quality in Quality.cssClassStrings:
+        quality_class = Quality.cssClassStrings[ep_obj.quality]
     else:
         quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
 

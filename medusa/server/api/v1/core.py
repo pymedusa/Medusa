@@ -719,7 +719,7 @@ class CMD_Episode(ApiCall):
 
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select(
-            'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
+            'SELECT name, description, airdate, status, quality, location, file_size, release_name, subtitles '
             'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
             [INDEXER_TVDBV2, self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
@@ -748,7 +748,7 @@ class CMD_Episode(ApiCall):
         else:
             episode[b'airdate'] = 'Never'
 
-        status, quality = Quality.split_composite_status(int(episode[b'status']))
+        status, quality = int(episode[b'status']), int(episode[b'quality'])
         episode[b'status'] = statusStrings[status]
         episode[b'quality'] = get_quality_string(quality)
         episode[b'file_size_human'] = pretty_file_size(episode[b'file_size'])
@@ -799,10 +799,8 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            _, quality = Quality.split_composite_status(ep_obj.status)
-            # TODO: split quality and status?
-            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(quality)},
-                             'Snatched ({0})'.format(get_quality_string(quality)))
+            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(ep_obj.quality)},
+                             'Snatched ({0})'.format(get_quality_string(ep_obj.quality)))
 
         return _responds(RESULT_FAILURE, msg='Unable to find episode')
 
@@ -1070,6 +1068,7 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
+            # FIXME: Can't really do anything about this now. History -> action, should also be separated?
             composite = Quality.split_composite_status(cur_item.action)
             if cur_type in (statusStrings[composite.status].lower(), None):
                 return {
@@ -1182,7 +1181,9 @@ class CMD_Backlog(ApiCall):
 
             for cur_result in sql_results:
 
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
+                cur_ep_cat = cur_show.get_overview(
+                    cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched']
+                )
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(cur_result)
 
@@ -2534,12 +2535,12 @@ class CMD_ShowSeasons(ApiCall):
 
         if self.season is None:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles '
+                'SELECT name, episode, airdate, status, quality, release_name, season, location, file_size, subtitles '
                 'FROM tv_episodes WHERE indexer = ? AND showid = ?',
                 [INDEXER_TVDBV2, self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = Quality.split_composite_status(int(row[b'status']))
+                status, quality = int(row[b'status']), int(row[b'quality'])
                 row[b'status'] = statusStrings[status]
                 row[b'quality'] = get_quality_string(quality)
                 if try_int(row[b'airdate'], 1) > 693595:  # 1900
@@ -2558,7 +2559,7 @@ class CMD_ShowSeasons(ApiCall):
 
         else:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
+                'SELECT name, episode, airdate, status, quality, location, file_size, release_name, subtitles'
                 ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? ',
                 [INDEXER_TVDBV2, self.indexerid, self.season])
             if not sql_results:
@@ -2567,7 +2568,7 @@ class CMD_ShowSeasons(ApiCall):
             for row in sql_results:
                 cur_episode = int(row[b'episode'])
                 del row[b'episode']
-                status, quality = Quality.split_composite_status(int(row[b'status']))
+                status, quality = int(row[b'status']), int(row[b'quality'])
                 row[b'status'] = statusStrings[status]
                 row[b'quality'] = get_quality_string(quality)
                 if try_int(row[b'airdate'], 1) > 693595:  # 1900
@@ -2680,19 +2681,19 @@ class CMD_ShowStats(ApiCall):
             episode_qualities_counts_snatch[statusCode] = 0
 
         main_db_con = db.DBConnection(row_type='dict')
-        sql_results = main_db_con.select('SELECT status, season FROM tv_episodes '
+        sql_results = main_db_con.select('SELECT status, quality, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
                                          [INDEXER_TVDBV2, self.indexerid])
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = Quality.split_composite_status(int(row[b'status']))
+            status, quality = int(row[b'status']), int(row[b'quality'])
 
             episode_status_counts_total['total'] += 1
 
-            if status in Quality.DOWNLOADED + Quality.ARCHIVED:
+            if status in DOWNLOADED + ARCHIVED:
                 episode_qualities_counts_download['total'] += 1
                 episode_qualities_counts_download[int(row[b'status'])] += 1
-            elif status in Quality.SNATCHED + Quality.SNATCHED_PROPER:
+            elif status in SNATCHED + SNATCHED_PROPER:
                 episode_qualities_counts_snatch['total'] += 1
                 episode_qualities_counts_snatch[int(row[b'status'])] += 1
             elif status == 0:  # we don't count NONE = 0 = N/A

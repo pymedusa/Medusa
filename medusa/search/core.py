@@ -217,7 +217,7 @@ def snatch_episode(result):
 
             sql_l.append(curEpObj.get_sql())
 
-        if curEpObj.splitted_status_status != common.DOWNLOADED:
+        if curEpObj.status != common.DOWNLOADED:
             notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
@@ -392,7 +392,7 @@ def wanted_episodes(series_obj, from_date):
     con = db.DBConnection()
 
     sql_results = con.select(
-        'SELECT status, season, episode, manually_searched '
+        'SELECT status, quality, season, episode, manually_searched '
         'FROM tv_episodes '
         'WHERE indexer = ? '
         ' AND showid = ?'
@@ -402,20 +402,22 @@ def wanted_episodes(series_obj, from_date):
     )
 
     # check through the list of statuses to see if we want any
-    for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNSET))
-        should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
+    for episode in sql_results:
+        cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or 0)
+        should_search, should_search_reason = Quality.should_search(
+            cur_status, cur_quality, series_obj, episode[b'manually_searched']
+        )
         if not should_search:
             continue
         else:
             log.debug(
                 u'Searching for {show} {ep}. Reason: {reason}', {
                     u'show': series_obj.name,
-                    u'ep': episode_num(result[b'season'], result[b'episode']),
+                    u'ep': episode_num(episode[b'season'], episode[b'episode']),
                     u'reason': should_search_reason,
                 }
             )
-        ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
+        ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
         ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
         wanted.append(ep_obj)
 
