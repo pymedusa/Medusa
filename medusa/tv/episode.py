@@ -251,7 +251,8 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self._status = UNSET
+        self.status = UNSET
+        self.quality = 0
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -409,52 +410,14 @@ class Episode(TV):
         ).isoformat(b'T')
 
     @property
-    def status(self):
-        """Return the existing status as is."""
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        """Set the status."""
-        self._status = value
-
-    @property
-    def splitted_status(self):
-        """Return the existing status removing the quality from it."""
-        return Quality.split_composite_status(self._status)
-
-    @property
-    def splitted_status_status(self):
-        """Return the status from the status/quality composite."""
-        return self.splitted_status.status
-
-    @splitted_status_status.setter
-    def splitted_status_status(self, value):
-        """
-        Only set the status (reuse existing quality) of the composite status.
-
-        :param value: The new status.
-        """
-        self._status = Quality.composite_status(value, self.splitted_status_quality)
-
-    @property
-    def splitted_status_quality(self):
-        """Return the quality from the status/quality composite."""
-        return self.splitted_status.quality
-
-    @splitted_status_quality.setter
-    def splitted_status_quality(self, value):
-        """
-        Only set the quality (reuse existing status) of the composite status.
-
-        :param value: The new quality.
-        """
-        self._status = Quality.composite_status(self.splitted_status_status, value)
-
-    @property
     def status_name(self):
         """Return the status name."""
-        return statusStrings[Quality.split_composite_status(self.status).status]
+        return statusStrings[self.status]
+
+    @property
+    def quality_name(self):
+        """Return the status name."""
+        return Quality.qualityStrings[self.quality]
 
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
@@ -665,6 +628,7 @@ class Episode(TV):
             self.subtitles_lastsearch = sql_results[0][b'subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0][b'airdate']))
             self.status = int(sql_results[0][b'status'] or -1)
+            self.quality = int(sql_results[0][b'quality'] or -1)
 
             # don't overwrite my location
             if sql_results[0][b'location']:
@@ -1095,6 +1059,7 @@ class Episode(TV):
         result += 'hasnfo: %r\n' % self.hasnfo
         result += 'hastbn: %r\n' % self.hastbn
         result += 'status: %r\n' % self.status
+        result += 'quality: %r\n' % self.quality
         return result
 
     def to_json(self, detailed=True):
@@ -1115,6 +1080,7 @@ class Episode(TV):
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
+        data['quality'] = self.quality
         data['release'] = NonEmptyDict()
         data['release']['name'] = self.release_name
         data['release']['group'] = self.release_group
@@ -1257,6 +1223,7 @@ class Episode(TV):
                         b'  hasnfo = ?, '
                         b'  hastbn = ?, '
                         b'  status = ?, '
+                        b'  quality = ?, '
                         b'  location = ?, '
                         b'  file_size = ?, '
                         b'  release_name = ?, '
@@ -1272,9 +1239,9 @@ class Episode(TV):
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
-                         self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
-                         self.series.series_id, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, self.manually_searched, ep_id]]
+                         self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
+                         self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
+                         self.version, self.release_group, self.manually_searched, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
@@ -1292,6 +1259,7 @@ class Episode(TV):
                         b'  hasnfo = ?, '
                         b'  hastbn = ?, '
                         b'  status = ?, '
+                        b'  quality = ?, '
                         b'  location = ?, '
                         b'  file_size = ?, '
                         b'  release_name = ?, '
@@ -1307,9 +1275,9 @@ class Episode(TV):
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
-                         self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
-                         self.series.series_id, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, self.manually_searched, ep_id]]
+                         self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
+                         self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
+                         self.version, self.release_group, self.manually_searched, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
                 return [
@@ -1327,6 +1295,7 @@ class Episode(TV):
                     b'  hasnfo, '
                     b'  hastbn, '
                     b'  status, '
+                    b'  quality, '
                     b'  location, '
                     b'  file_size, '
                     b'  release_name, '
@@ -1339,11 +1308,11 @@ class Episode(TV):
                     b'  release_group) '
                     b'VALUES '
                     b'  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
-                    b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
+                    b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
                     [self.series.indexer, self.series.series_id, self.season, self.episode, self.indexerid, self.series.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
-                     self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.location, self.file_size,
-                     self.release_name, self.is_proper, self.series.series_id, self.season, self.episode,
+                     self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.quality, self.location,
+                     self.file_size, self.release_name, self.is_proper, self.series.series_id, self.season, self.episode,
                      self.absolute_number, self.version, self.release_group]]
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
@@ -1364,6 +1333,7 @@ class Episode(TV):
                           b'hasnfo': self.hasnfo,
                           b'hastbn': self.hastbn,
                           b'status': self.status,
+                          b'quality': self.quality,
                           b'location': self.location,
                           b'file_size': self.file_size,
                           b'release_name': self.release_name,
@@ -1490,8 +1460,6 @@ class Episode(TV):
                 return ''
             return parse_result.release_group.strip('.- []{}')
 
-        _, ep_qual = Quality.split_composite_status(self.status)  # @UnusedVariable
-
         if app.NAMING_STRIP_YEAR:
             series_name = re.sub(r'\(\d+\)$', '', self.series.name).rstrip()
         else:
@@ -1537,12 +1505,12 @@ class Episode(TV):
             '%EN': ep_name,
             '%E.N': dot(ep_name),
             '%E_N': us(ep_name),
-            '%QN': Quality.qualityStrings[ep_qual],
-            '%Q.N': dot(Quality.qualityStrings[ep_qual]),
-            '%Q_N': us(Quality.qualityStrings[ep_qual]),
-            '%SQN': Quality.sceneQualityStrings[ep_qual] + encoder,
-            '%SQ.N': dot(Quality.sceneQualityStrings[ep_qual] + encoder),
-            '%SQ_N': us(Quality.sceneQualityStrings[ep_qual] + encoder),
+            '%QN': Quality.qualityStrings[self.quality],
+            '%Q.N': dot(Quality.qualityStrings[self.quality]),
+            '%Q_N': us(Quality.qualityStrings[self.quality]),
+            '%SQN': Quality.sceneQualityStrings[self.quality] + encoder,
+            '%SQ.N': dot(Quality.sceneQualityStrings[self.quality] + encoder),
+            '%SQ_N': us(Quality.sceneQualityStrings[self.quality] + encoder),
             '%S': str(self.season),
             '%0S': '%02d' % self.season,
             '%E': str(self.episode),
@@ -2025,7 +1993,7 @@ class Episode(TV):
         The status should only be changed if either the size or the filename changed.
         :param filepath: Path to the new episode file.
         """
-        old_status, old_quality = Quality.split_composite_status(self.status)
+        old_status, old_quality = self.status, self.quality
 
         old_location = self.location
         # Changing the name of the file might also change its quality
@@ -2055,7 +2023,8 @@ class Episode(TV):
                 new_status = ARCHIVED
 
             with self.lock:
-                self.status = Quality.composite_status(new_status, new_quality)
+                self.status = new_status
+                self.quality = new_quality
 
                 if not same_name:
                     # Reset release name as the name changed
