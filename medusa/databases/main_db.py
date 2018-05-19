@@ -749,7 +749,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
                                'hastbn, status, location, file_size, release_name, '
                                'subtitles, subtitles_searchcount, subtitles_lastsearch, '
                                'is_proper, scene_season, scene_episode, absolute_number, '
-                               'scene_absolute_number, version, release_group, manually_searched, -1, -1 '
+                               'scene_absolute_number, version, release_group, manually_searched, -1, 0 '
                                'FROM tv_episodes;')
         self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
