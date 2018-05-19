@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-from collections import OrderedDict
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -45,18 +44,23 @@ class BJShareProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.max_back_pages = 2
-        self.units = ["B", "KB", "MB", "GB", "TB", "PB"]
 
         # Proper Strings
-        self.proper_strings = ["PROPER", "REPACK", "REAL", "RERIP"]
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-        self.quality = OrderedDict([
-            ('Full HD ', '1080p'),
-            ('HD ', '720p')])
-
+        # One piece is the only anime that i'm aware that is in "absolute" numbering, the problem is that they include
+        # the season (wrong season) and episode as absolute, eg: One Piece - S08E836
+        # 836 is the latest episode in absolute numbering, that is correct, but S08 is not the current season...
+        # So for this show, i don't see a other way to make it work...
+        #
+        # All others animes that i tested is with correct season and episode set, so i can't remove the season from all
+        # or will break everything else
+        #
+        # In this indexer, it looks that it is added "automatically", so all current and new releases will be broken
+        # until they or the source from where they get that info fix it...
         self.absolute_numbering = [
             'One Piece'
         ]
@@ -75,7 +79,7 @@ class BJShareProvider(TorrentProvider):
         if not self.login():
             return results
 
-        manual_search = "manual_search" in kwargs and kwargs['manual_search']
+        manual_search = kwargs.get('manual_search')
         if manual_search:
             self.max_back_pages = 20
 
@@ -84,24 +88,24 @@ class BJShareProvider(TorrentProvider):
             anime = ep_obj.series.anime == 1
 
         search_params = {
-            "order_by": "time",
-            "order_way": "desc",
-            "group_results": 0,
-            "action": "basic",
-            "searchsubmit": 1
+            'order_by': 'time',
+            'order_way': 'desc',
+            'group_results': 0,
+            'action': 'basic',
+            'searchsubmit': 1
         }
 
         if 'RSS' in search_strings.keys():
-            search_params["filter_cat[14]"] = 1  # anime
-            search_params["filter_cat[2]"] = 1  # tv shows
+            search_params['filter_cat[14]'] = 1  # anime
+            search_params['filter_cat[2]'] = 1  # tv shows
         elif anime:
-            search_params["filter_cat[14]"] = 1
+            search_params['filter_cat[14]'] = 1  # anime
         else:
-            search_params["filter_cat[2]"] = 1
+            search_params['filter_cat[2]'] = 1  # tv shows
 
         for mode in search_strings:
             items = []
-            log.debug(u"Search Mode: {0}".format(mode))
+            log.debug(u'Search Mode: {0}'.format(mode))
 
             # if looking for season, look for more pages
             if mode == 'Season' and not manual_search:
@@ -109,111 +113,110 @@ class BJShareProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    log.debug(u"Search string: {0}".format(search_string.decode("utf-8")))
+                    log.debug(u'Search string: {0}'.format(search_string.decode('utf-8')))
 
                 # Remove season / episode from search (not supported by tracker)
                 search_str = re.sub(r'\d+$' if anime else r'[S|E]\d\d', '', search_string).strip()
-                # Remove year from search (not supported by tracker)
-                search_str = re.sub(r"\((\d{4})\)$", '', search_str).strip()
-
                 search_params['searchstr'] = search_str
-
                 next_page = 1
                 has_next_page = True
-                while has_next_page and next_page <= self.max_back_pages:
 
-                    search_params["page"] = next_page
-                    log.debug(u"Page Search: {0}".format(next_page))
+                while has_next_page and next_page <= self.max_back_pages:
+                    search_params['page'] = next_page
+                    log.debug(u'Page Search: {0}'.format(next_page))
                     next_page += 1
 
                     response = self.session.get(self.urls['search'], params=search_params)
                     if not response:
-                        log.debug("No data returned from provider")
+                        log.debug('No data returned from provider')
                         continue
 
-                    result = self._parse(response.content, mode, search_string)
+                    result = self._parse(response.content, mode)
                     has_next_page = result['has_next_page']
                     items += result['items']
-
-                # For each search mode sort all the items by seeders if available
-                items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
                 results += items
 
         return results
 
-    def _parse(self, data, mode, search_string):
+    def _parse(self, data, mode):
         """
         Parse search results for items.
 
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
-        :param search_string: Original search string
 
         :return: A KV with a list of items found and if there's an next page to search
         """
+
+        def process_column_header(td):
+            ret = u''
+            if td.a and td.a.img:
+                ret = td.a.img.get('title', td.a.get_text(strip=True))
+            if not ret:
+                ret = td.get_text(strip=True)
+            return ret
+
         items = []
         has_next_page = False
-        with BS4Parser(data, "html5lib") as html:
-            torrent_table = html.find("table", id="torrent_table")
-            torrent_rows = torrent_table("tr") if torrent_table else []
-
-            # year_re = re.search(r"\((\d{4})\)|(\d{4})", search_string, re.I)
+        with BS4Parser(data, 'html5lib') as html:
+            torrent_table = html.find('table', id='torrent_table')
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
             # ignore next page in RSS mode
-            has_next_page = mode != 'RSS' and html.find("a", attrs={"class", "pager_next"}) is not None
-            log.debug(u"More Pages? {0}".format(has_next_page))
+            has_next_page = mode != 'RSS' and html.find('a', class_='pager_next') is not None
+            log.debug(u'More Pages? {0}'.format(has_next_page))
 
             # Continue only if at least one Release is found
             if len(torrent_rows) < 2:
-                log.debug("Data returned from provider does not contain any torrents")
+                log.debug('Data returned from provider does not contain any torrents')
                 return {'has_next_page': has_next_page, 'items': []}
 
-            # "", "", "Name /Year", "Files", "Time", "Size", "Snatches", "Seeders", "Leechers"
-            labels = [self._process_column_header(label) for label in torrent_rows[0]("td")]
+            # '', '', 'Name /Year', 'Files', 'Time', 'Size', 'Snatches', 'Seeders', 'Leechers'
+            labels = [process_column_header(label) for label in torrent_rows[0]('td')]
 
             # Skip column headers
             for result in torrent_rows[1:]:
-                cells = result("td")
+                cells = result('td')
                 if len(cells) < len(labels):
                     continue
                 try:
-                    title = cells[labels.index("Nome/Ano")].find("a", dir="ltr").get_text(strip=True)
+                    title = cells[labels.index('Nome/Ano')].find('a', dir='ltr').get_text(strip=True)
                     # get international title if available
-                    title = re.sub(".* \[(.*?)\](.*)", r"\1\2", title)
+                    title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
 
                     for serie in self.absolute_numbering:
                         if serie in title:
                             # remove season from title when its in absolute format
-                            title = re.sub("S\d{2}(E\d{2,4})", r"\1", title)
+                            title = re.sub('S\d{2}(E\d{2,4})', r'\1', title)
                             break
 
-                    download_url = urljoin(self.url, cells[labels.index("Nome/Ano")].find("a", title="Baixar")["href"])
+                    download_url = urljoin(self.url, cells[labels.index('Nome/Ano')].find('a', title='Baixar')['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index("Seeders")].get_text(strip=True))
-                    leechers = try_int(cells[labels.index("Leechers")].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed or leechers < self.minleech:
-                        if mode != "RSS":
+                        if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                      (title, seeders, leechers))
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
-                    torrent_details = cells[labels.index("Nome/Ano")].find("div", attrs={
-                        "class": "torrent_info"}).get_text(strip=True).replace('[', ' ').replace(']', ' ')\
+                    torrent_details = cells[labels.index('Nome/Ano')].find('div', class_='torrent_info')\
+                        .get_text(strip=True).replace('[', ' ').replace(']', ' ')\
                         .replace('/', ' ')
 
-                    for key, value in self.quality.iteritems():
-                        torrent_details = torrent_details.replace(key, value)
+                    torrent_details = torrent_details.replace('Full HD ', '1080p')
+                    torrent_details = torrent_details.replace('HD ', '720p')
 
-                    torrent_size = cells[labels.index("Tamanho")].get_text(strip=True)
-                    size = convert_size(torrent_size, units=self.units) or -1
+                    torrent_size = cells[labels.index('Tamanho')].get_text(strip=True)
+                    size = convert_size(torrent_size) or -1
 
-                    torrent_name = "{0} {1}".format(title, torrent_details.strip()).strip()
+                    torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
                     torrent_name = re.sub('\s+', ' ', torrent_name)
 
                     items.append({
@@ -222,25 +225,15 @@ class BJShareProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'hash': ''
                     })
 
-                    if mode != "RSS":
-                        log.debug("Found result: {0} with {1} seeders and {2} leechers".format
+                    if mode != 'RSS':
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers'.format
                                   (torrent_name, seeders, leechers))
 
                 except StandardError:
                     continue
         return {'has_next_page': has_next_page, 'items': items}
-
-    @staticmethod
-    def _process_column_header(td):
-        ret = u""
-        if td.a and td.a.img:
-            ret = td.a.img.get("title", td.a.get_text(strip=True))
-        if not ret:
-            ret = td.get_text(strip=True)
-        return ret
 
     def login(self):
         """Login method used for logging in before doing a search and torrent downloads."""
