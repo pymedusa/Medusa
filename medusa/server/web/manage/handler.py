@@ -409,7 +409,7 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
+                SELECT e.status, e.quality, e.season, e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND
                       e.indexer = ? AND e.showid = ?
@@ -420,7 +420,7 @@ class Manage(Home, WebRoot):
             filtered_episodes = []
             backlogged_episodes = [dict(row) for row in sql_results]
             for cur_result in backlogged_episodes:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], cur_result[b'quality'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
                     if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
