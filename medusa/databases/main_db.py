@@ -765,7 +765,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         # Remove ep_status and ep_quality and add quality field.
         # Move status from ep_status and quality from ep_quality
-        log.info(u'Adding data from ep_status and ep_quality fields into status/quality fields the tv_episodes table')
+        log.info(u'Adding data from ep_status and ep_quality fields to status/quality fields the tv_episodes table')
         self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
 
         self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
@@ -792,5 +792,13 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
+
+        log.info(u'Remove the quality from the action field, as this is a composite status')
+        sql_results = self.connection.select("SELECT action from history GROUP BY action")
+
+        for status in sql_results:
+            split = common.Quality.split_composite_status(status[b'action'])
+            self.connection.action("UPDATE history SET action = ? WHERE action = ?",
+                                   [split.status, status[b'action']])
 
         self.inc_minor_version()
