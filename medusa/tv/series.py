@@ -2213,19 +2213,19 @@ class Series(TV):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED
-        elif ep_status in WANTED:
+        elif ep_status == WANTED:
             return Overview.WANTED
-        elif ep_status in ARCHIVED:
+        elif ep_status == ARCHIVED:
             return Overview.GOOD
-        elif ep_status in FAILED:
+        elif ep_status == FAILED:
             return Overview.WANTED
-        elif ep_status in SNATCHED:
+        elif ep_status == SNATCHED:
             return Overview.SNATCHED
-        elif ep_status in SNATCHED_PROPER:
+        elif ep_status == SNATCHED_PROPER:
             return Overview.SNATCHED_PROPER
-        elif ep_status in SNATCHED_BEST:
+        elif ep_status == SNATCHED_BEST:
             return Overview.SNATCHED_BEST
-        elif ep_status in DOWNLOADED:
+        elif ep_status == DOWNLOADED:
             if Quality.should_search(ep_status, self, manually_searched)[0]:
                 return Overview.QUAL
             else:
