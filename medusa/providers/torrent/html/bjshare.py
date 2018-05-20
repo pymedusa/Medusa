@@ -178,19 +178,19 @@ class BJShareProvider(TorrentProvider):
             # Skip column headers
             for result in torrent_rows[1:]:
                 cells = result('td')
-                result_class = result.get("class")
-                group_index = -2 if "group_torrent" in result_class else 0
+                result_class = result.get('class')
+                group_index = -2 if 'group_torrent' in result_class else 0
                 # if len(cells) < len(labels):
                 #     continue
                 try:
                     title = result.select('a[href^="torrents.php?id="]')[0].get_text()
                     title = re.sub('\s+', ' ', title).strip()  # clean empty lines and multiple spaces
 
-                    if "group" in result_class or "torrent" in result_class:
+                    if 'group' in result_class or 'torrent' in result_class:
                         # get international title if available
                         title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
 
-                    if "group" in result_class:
+                    if 'group' in result_class:
                         group_title = title
                         continue
 
@@ -208,19 +208,19 @@ class BJShareProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers')+group_index].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < self.minseed or leechers < self.minleech:
+                    if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       " minimum seeders: {0}. Seeders: {1}",
                                       title, seeders)
                         continue
 
-                    torrent_details = u''
-                    if "group_torrent" in result_class:
+                    torrent_details = None
+                    if 'group_torrent' in result_class:
                         # torrents belonging to a group
                         torrent_details = title
                         title = group_title
-                    elif "torrent" in result_class:
+                    elif 'torrent' in result_class:
                         # standalone/un grouped torrents
                         torrent_details = cells[labels.index('Nome/Ano')].find('div', class_='torrent_info').get_text()
 
@@ -239,14 +239,16 @@ class BJShareProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
+                        'pubdate': None
                     })
 
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers'.format
                                   (torrent_name, seeders, leechers))
 
-                except StandardError:
-                    continue
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    log.exception('Failed parsing provider.')
+
         return {'has_next_page': has_next_page, 'items': items}
 
     def login(self):
