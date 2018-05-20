@@ -2226,7 +2226,7 @@ class Series(TV):
         elif ep_status == SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status == DOWNLOADED:
-            if Quality.should_search(ep_status, self, manually_searched)[0]:
+            if Quality.should_search(ep_status, ep_quality, self, manually_searched)[0]:
                 return Overview.QUAL
             else:
                 return Overview.GOOD
