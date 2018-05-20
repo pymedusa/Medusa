@@ -179,9 +179,8 @@ class BJShareProvider(TorrentProvider):
             for result in torrent_rows[1:]:
                 cells = result('td')
                 result_class = result.get('class')
+                # When "Grouping Torrents" is enabled, the structure of table change
                 group_index = -2 if 'group_torrent' in result_class else 0
-                # if len(cells) < len(labels):
-                #     continue
                 try:
                     title = result.select('a[href^="torrents.php?id="]')[0].get_text()
                     title = re.sub('\s+', ' ', title).strip()  # clean empty lines and multiple spaces
