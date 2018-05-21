@@ -39,6 +39,7 @@ class MainSanityCheck(db.DBSanityCheck):
         # self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
+        self.fix_remove_status_unknown()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -257,6 +258,10 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 or lang = '0'")
+
+    def fix_remove_status_unknown(self):
+        log.info(u'Remove status UNKONWN from tv_episodes')
+        self.connection.select("UPDATE tv_episodes SET quality = 0 WHERE quality = 32768")
 
 
 def backupDatabase(version):
@@ -765,7 +770,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         # Remove ep_status and ep_quality and add quality field.
         # Move status from ep_status and quality from ep_quality
-        log.info(u'Adding data from ep_status and ep_quality fields to status/quality fields the tv_episodes table')
+        log.info(u'Adding data from ep_status and ep_quality fields to status/quality fields in the tv_episodes table')
         self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
 
         self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
