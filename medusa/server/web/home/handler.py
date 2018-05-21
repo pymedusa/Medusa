@@ -175,8 +175,8 @@ class Home(WebRoot):
     def show_statistics():
         main_db_con = db.DBConnection()
 
-        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
+        snatched = [SNATCHED. SNATCHED_PROPER, SNATCHED_BEST]
+        downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
@@ -1291,7 +1291,7 @@ class Home(WebRoot):
                 b'AND showid = ? '
                 b'AND season = ? '
                 b'AND episode = ? '
-                b'AND (action LIKE \'%02\' OR action LIKE \'%04\' OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') '
+                b"AND action in ('2', '4', '9', '11', '12') "  # SNATCHED, DOWN, SNATCH_PROP, FAILED, SNATCH_BEST
                 b'ORDER BY date DESC',
                 [indexer_id, series_id, season, episode]
             )
@@ -1982,24 +1982,24 @@ class Home(WebRoot):
                             series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                    snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + Quality.DOWNLOADED
+                            ep_obj.status in snatched_qualities + [DOWNLOADED]
                             and os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if status == FAILED and ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
                                         series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
-                        if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED:
+                        if ep_obj.status in [DOWNLOADED, ARCHIVED]:
                             logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
                                 series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.release_name = ''
@@ -2150,7 +2150,8 @@ class Home(WebRoot):
 
             ep_info = cur_ep.split('x')
 
-            # this is probably the worst possible way to deal with double eps but I've kinda painted myself into a corner here with this stupid database
+            # this is probably the worst possible way to deal with double eps
+            # but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
                 b'SELECT location '
                 b'FROM tv_episodes '

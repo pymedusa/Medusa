@@ -798,9 +798,7 @@ class PostProcessor(object):
                 'AND showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                "AND (status LIKE '%02' "
-                "OR status LIKE '%09' "
-                "OR status LIKE '%12')",
+                "AND status IN ('2', '9', '12') ",
                 [series_obj.indexer, series_obj.series_id, season, episode]
             )
 
@@ -814,9 +812,7 @@ class PostProcessor(object):
                     'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
-                    "AND (action LIKE '%02' "
-                    "OR action LIKE '%09' "
-                    "OR action LIKE '%12') "
+                    "AND action IN ('2', '9', '12') "
                     'ORDER BY date DESC',
                     [series_obj.indexer, series_obj.series_id, season, episode])
 
@@ -838,7 +834,7 @@ class PostProcessor(object):
                         'AND season = ? '
                         'AND episode = ? '
                         'AND quality = ? '
-                        "AND action LIKE '%04' "
+                        "AND action = '4' "
                         'ORDER BY date DESC',
                         [series_obj.indexer, series_obj.series_id, season, episode, quality])
 

@@ -180,15 +180,14 @@ class Manage(Home, WebRoot):
     @staticmethod
     def showSubtitleMissed(indexer, seriesid, whichSubs):
         main_db_con = db.DBConnection()
-        # TODO: maybe need to check if %4 still applies here.
         cur_show_results = main_db_con.select(
             b'SELECT season, episode, name, subtitles '
             b'FROM tv_episodes '
             b'WHERE indexer = ? '
             b'AND showid = ? '
             b'AND season != 0 '
-            b'AND status LIKE \'%4\' '
-            b'AND location != \'\'',
+            b"AND status = '4' "
+            b"AND location != ''",
             [int(indexer), int(seriesid)]
         )
 
@@ -223,15 +222,14 @@ class Manage(Home, WebRoot):
                             controller='manage', action='subtitleMissed')
 
         main_db_con = db.DBConnection()
-        # TODO: maybe need to check if %4 still applies here.
         status_results = main_db_con.select(
             b'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
             b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
-            b'AND tv_episodes.status LIKE \'%4\' '
+            b"AND tv_episodes.status = '4' "
             b'AND tv_episodes.season != 0 '
-            b'AND tv_episodes.location != \'\' '
+            b"AND tv_episodes.location != ''  "
             b'AND tv_episodes.showid = tv_shows.indexer_id '
             b'AND tv_episodes.indexer = tv_shows.indexer '
             b'ORDER BY show_name'
@@ -285,15 +283,14 @@ class Manage(Home, WebRoot):
             # get a list of all the eps we want to download subtitles if they just said 'all'
             if 'all' in to_download[(cur_indexer_id, cur_series_id)]:
                 main_db_con = db.DBConnection()
-                # TODO: maybe need to check if %4 still applies here.
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b'WHERE status LIKE \'%4\' '
+                    b"WHERE status = '4' " 
                     b'AND season != 0 '
                     b'AND indexer = ? '
                     b'AND showid = ? '
-                    b'AND location != \'\'',
+                    b"AND location != ''",
                     [cur_indexer_id, cur_series_id]
                 )
                 to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
@@ -408,8 +405,9 @@ class Manage(Home, WebRoot):
             ep_cats = {}
 
             sql_results = main_db_con.select(
-                """
-                SELECT e.status, e.quality, e.season, e.episode, e.name, e.airdate, e.manually_searched
+                b"""
+                SELECT e.status, e.quality, e.season, 
+                e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND
                       e.indexer = ? AND e.showid = ?

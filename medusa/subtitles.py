@@ -992,7 +992,7 @@ class SubtitlesFinder(object):
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
-                "AND e.status LIKE '%4' "
+                "AND e.status = '4' "
                 "AND e.season > 0 "
                 "AND e.location != '' "
                 "AND age {} 30 "

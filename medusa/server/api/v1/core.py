@@ -890,7 +890,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     continue
 
                 # allow the user to force setting the status for an already downloaded episode
-                if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED and not self.force:
+                if ep_obj.status in [DOWNLOADED, ARCHIVED] and not self.force:
                     ep_results.append(
                         _ep_result(
                             RESULT_FAILURE, ep_obj,
@@ -2666,6 +2666,7 @@ class CMD_ShowStats(ApiCall):
 
         # add all the downloaded qualities
         episode_qualities_counts_download = {'total': 0}
+        # TODO: replace Quality status with normal status. But no idea what this does? medariox?
         for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
             status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:
@@ -2674,6 +2675,7 @@ class CMD_ShowStats(ApiCall):
 
         # add all snatched qualities
         episode_qualities_counts_snatch = {'total': 0}
+        # TODO: replace Quality status with normal status. But no idea what this does? medariox?
         for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
             status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:

@@ -1771,7 +1771,7 @@ def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
-                                        "WHERE action LIKE '%04' "
+                                        "WHERE action = '4' "
                                         'AND resource LIKE ?',
                                         ['%' + full_filename])
     return bool(history_result)
@@ -1796,7 +1796,7 @@ def is_info_hash_processed(info_hash):
                                         'd.season = s.season AND '
                                         'd.episode = s.episode AND '
                                         'd.quality = s.quality '
-                                        'WHERE d.action LIKE "%04"',
+                                        'WHERE d.action = "4"',
                                         [info_hash])
     return bool(history_result)
 

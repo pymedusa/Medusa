@@ -498,7 +498,7 @@ class ProcessResult(object):
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
             'SELECT * FROM history '
-            "WHERE action LIKE '%04' "
+            "WHERE action = '4' "  # DOWNLOADED
             'AND resource LIKE ?',
             ['%' + video_file])
 

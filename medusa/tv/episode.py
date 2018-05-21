@@ -916,8 +916,7 @@ class Episode(TV):
                 )
         #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
         elif helpers.is_media_file(self.location):
-            if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + \
-                    Quality.ARCHIVED + Quality.SNATCHED_BEST:
+            if self.status not in [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED]:
                 old_status = self.status
                 self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
                 log.debug(

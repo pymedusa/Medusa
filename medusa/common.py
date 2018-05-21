@@ -666,7 +666,7 @@ class Quality(object):
         :param search_type: The search type, that started this method
         :return: True if the old quality should be replaced with new quality.
         """
-        if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+        if ep_status and ep_status not in [DOWNLOADED, SNATCHED, SNATCHED_PROPER]:
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
