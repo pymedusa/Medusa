@@ -2441,95 +2441,91 @@ div.metadataDiv .disabled {
 }
 
 .icon-notifiers-plex {
-    background-position: -35px 0;
+    background-position: -32px 0;
 }
 
 .icon-notifiers-plexth {
-    background-position: -69px 0;
+    background-position: -64px 0;
 }
 
 .icon-notifiers-emby {
-    background-position: -104px 0;
+    background-position: -96px 0;
 }
 
 .icon-notifiers-nmj {
-    background-position: -136px 0;
+    background-position: -128px 0;
 }
 
 .icon-notifiers-syno1 {
-    background-position: -168px 0;
+    background-position: -160px 0;
 }
 
 .icon-notifiers-syno2 {
-    background-position: -202px 0;
+    background-position: -192px 0;
 }
 
 .icon-notifiers-pytivo {
-    background-position: -237px 0;
+    background-position: -224px 0;
 }
 
 .icon-notifiers-growl {
-    background-position: -272px 0;
+    background-position: -256px 0;
 }
 
 .icon-notifiers-prowl {
-    background-position: -308px 0;
+    background-position: -288px 0;
 }
 
 .icon-notifiers-libnotify {
-    background-position: -345px 0;
+    background-position: -320px 0;
 }
 
 .icon-notifiers-pushover {
-    background-position: -377px 0;
+    background-position: -352px 0;
 }
 
 .icon-notifiers-boxcar2 {
-    background-position: -414px 0;
-}
-
-.icon-notifiers-nma {
-    background-position: -450px 0;
+    background-position: -384px 0;
 }
 
 .icon-notifiers-pushalot {
-    background-position: -486px 0;
+    background-position: -416px 0;
 }
 
 .icon-notifiers-pushbullet {
-    background-position: -519px 0;
+    background-position: -448px 0;
 }
 
 .icon-notifiers-freemobile {
-    background-position: -551px 0;
+    background-position: -480px 0;
 }
 
 .icon-notifiers-telegram {
-    background-position: -587px 0;
+    background-position: -512px 0;
 }
 
 .icon-notifiers-twitter {
-    background-position: -624px 0;
+    background-position: -544px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -660px 0;
+    background-position: -576px 0;
 }
 
 .icon-notifiers-email {
-    background-position: -695px 0;
+    background-position: -608px 0;
 }
 
 .icon-notifiers-anime {
-    background-position: -733px 0;
+    background-position: -640px 0;
 }
 
 .icon-notifiers-look {
-    background-position: -769px 0;
+    background-position: -672px 0;
 }
 
 .icon-notifiers-slack {
-    background-position: -804px 0;
+    background-position: -704px 0;
 }
 
 div#config-components h3 > a {
