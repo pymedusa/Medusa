@@ -79,7 +79,6 @@ class QBittorrentAPI(GenericClient):
     def _add_torrent_file(self, result):
 
         self.url = '{host}command/upload'.format(host=self.host)
-        # Using a mock_filename.torrent, as it doesn't have any purpose, besides that the client requests for it.
         files = {
             'torrents': (
                 result.content,
