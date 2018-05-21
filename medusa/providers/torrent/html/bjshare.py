@@ -29,7 +29,7 @@ class BJShareProvider(TorrentProvider):
         # URLs
         self.url = 'https://bj-share.me'
         self.urls = {
-            'search': urljoin(self.url, "torrents.php")
+            'search': urljoin(self.url, 'torrents.php')
         }
 
         # Credentials
