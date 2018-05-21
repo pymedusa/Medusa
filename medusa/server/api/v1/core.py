@@ -1068,20 +1068,18 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            # FIXME: Can't really do anything about this now. History -> action, should also be separated?
-            composite = Quality.split_composite_status(cur_item.action)
-            if cur_type in (statusStrings[composite.status].lower(), None):
+            if cur_type in (statusStrings[cur_type.status].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
                     'indexerid': cur_item.show_id,
                     'provider': cur_item.provider,
-                    'quality': get_quality_string(composite.quality),
+                    'quality': get_quality_string(cur_item.quality),
                     'resource': os.path.basename(cur_item.resource),
                     'resource_path': os.path.dirname(cur_item.resource),
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
-                    'status': statusStrings[composite.status],
+                    'status': statusStrings[cur_item.status],
                     # Add tvdbid for backward compatibility
                     # TODO: Make this actual tvdb id for other indexers
                     'tvdbid': cur_item.show_id,

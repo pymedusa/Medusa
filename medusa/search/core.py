@@ -189,9 +189,11 @@ def snatch_episode(result):
     for curEpObj in result.episodes:
         with curEpObj.lock:
             if is_first_best_match(result):
-                curEpObj.status = Quality.composite_status(SNATCHED_BEST, result.quality)
+                curEpObj.status = SNATCHED_BEST
+                curEpObj.quality = result.quality
             else:
-                curEpObj.status = Quality.composite_status(end_status, result.quality)
+                curEpObj.status = end_status
+                curEpObj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn
             curEpObj.hasnfo = False

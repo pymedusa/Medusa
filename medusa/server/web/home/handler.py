@@ -1297,7 +1297,7 @@ class Home(WebRoot):
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
-                i['status'], i['quality'] = Quality.split_composite_status(i['action'])
+                i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
@@ -1916,7 +1916,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
+        # FIXME: statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
         # Currently status is passed from displayShow as a composite status+quality. Therefor we need to separate
         # the status from it.
 

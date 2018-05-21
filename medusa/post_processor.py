@@ -1150,7 +1150,8 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep.status = common.Quality.composite_status(common.DOWNLOADED, new_ep_quality)
+                cur_ep.status = common.DOWNLOADED
+                cur_ep.quality = new_ep_quality
 
                 cur_ep.subtitles = u''
 
