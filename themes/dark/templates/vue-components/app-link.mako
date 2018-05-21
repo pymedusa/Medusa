@@ -53,7 +53,13 @@ Vue.component('app-link', {
                     }
                     const resolvedHref = () => {
                         if (isHashPath(href)) {
-                            return window.location.href + href;
+                            const {location} = window;
+                            if (location.hash.length === 0) {
+                                // current location might be `url#`
+                                const newHash = location.href.endsWith('#') ? href.substr(1) : href;
+                                return location.href + newHash;
+                            }
+                            return location.href.replace(location.hash, '') + href;
                         }
                         if (isIRC(href)) {
                             return href;
