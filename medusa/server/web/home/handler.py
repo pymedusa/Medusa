@@ -644,14 +644,6 @@ class Home(WebRoot):
             return 'ERROR: {error}'.format(error=notifiers.email_notifier.last_err)
 
     @staticmethod
-    def testNMA(nma_api=None, nma_priority=0):
-        result = notifiers.nma_notifier.test_notify(nma_api, nma_priority)
-        if result:
-            return 'Test NMA notice sent successfully'
-        else:
-            return 'Test NMA notice failed'
-
-    @staticmethod
     def testPushalot(authorizationToken=None):
         result = notifiers.pushalot_notifier.test_notify(authorizationToken)
         if result:
