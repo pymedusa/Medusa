@@ -82,7 +82,6 @@ class QBittorrentAPI(GenericClient):
         # Using a mock_filename.torrent, as it doesn't have any purpose, besides that the client requests for it.
         files = {
             'torrents': (
-                'mock_filename.torrent',
                 result.content,
             ),
         }
