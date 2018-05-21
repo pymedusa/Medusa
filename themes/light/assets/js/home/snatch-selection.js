@@ -33,7 +33,7 @@ MEDUSA.home.snatchSelection = function() {
 
     // Check the previous status of the history table, for hidden or shown, through the data attribute
     // data-history-toggle-hidden
-    function toggleHistoryTable() {
+    function toggleHistoryTable() {  // eslint-disable-line no-unused-vars
         // Get previous state which was saved on the wrapper
         const showOrHide = $('#wrapper').attr('data-history-toggle');
         $('#historydata').collapse(showOrHide);
@@ -150,12 +150,16 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         self.refreshResults = function() {
+            // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
+            /*
             $('#manualSearchTbody').loadContainer(
                 'home/snatchSelection' + urlParams,
                 'Loading new search results...',
                 'Time out, refresh page to try again',
                 toggleHistoryTable // This is a callback function
             );
+            */
+            window.location.reload();
         };
 
         $.ajax({

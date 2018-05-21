@@ -5,9 +5,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Config - Subtitles'
@@ -206,7 +206,7 @@ const startVue = () => {
                                         </label>
                                 </div>
                         </div>
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
@@ -230,7 +230,7 @@ const startVue = () => {
                         % endfor
                         </ul>
                         <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in subtitles.sorted_service_list()])}"/>
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
@@ -268,10 +268,10 @@ const startVue = () => {
                                 </label>
                             </div>
                         % endfor
-                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                        <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
             </div><!-- /config-components //-->
 </form>
 </div>

@@ -118,7 +118,7 @@ class Notifier(object):
         api = twitter.Api(username, password, access_token_key, access_token_secret)
 
         try:
-            api.PostUpdate(message.encode('utf8')[:139])
+            api.PostUpdate(message.encode('utf8')[:279])
         except Exception as e:
             log.error(u'Error Sending Tweet: {!r}', e)
             return False
@@ -138,7 +138,7 @@ class Notifier(object):
         api = twitter.Api(username, password, access_token_key, access_token_secret)
 
         try:
-            api.PostDirectMessage(message.encode('utf8')[:139], screen_name=dmdest)
+            api.PostDirectMessage(message.encode('utf8'), screen_name=dmdest)
         except Exception as error:
             log.error(u'Error Sending Tweet (DM): {!r}', error)
             return False

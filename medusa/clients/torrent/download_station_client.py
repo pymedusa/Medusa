@@ -44,7 +44,6 @@ class DownloadStationAPI(GenericClient):
             'login': urljoin(self.host, 'webapi/auth.cgi'),
             'task': urljoin(self.host, 'webapi/DownloadStation/task.cgi'),
             'info': urljoin(self.host, '/webapi/DownloadStation/info.cgi'),
-            'dsminfo': urljoin(self.host, '/webapi/entry.cgi'),
         }
 
         self.url = self.urls['task']
@@ -159,14 +158,14 @@ class DownloadStationAPI(GenericClient):
             return True
 
         params = {
-            'api': 'SYNO.DSM.Info',
+            'api': 'SYNO.DownloadStation.Info',
             'version': 2,
             'method': 'getinfo',
             'session': 'DownloadStation',
         }
 
         try:
-            self.response = self.session.get(self.urls['dsminfo'], params=params, verify=False, timeout=120)
+            self.response = self.session.get(self.urls['info'], params=params, verify=False, timeout=120)
             self.response.raise_for_status()
         except RequestException as error:
             handle_requests_exception(error)

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from builtins import str
 from collections import namedtuple
 
 from medusa import (
@@ -26,7 +25,7 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
-from six import iteritems, itervalues
+from six import iteritems, itervalues, text_type as str
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -179,8 +178,8 @@ class TorznabProvider(TorrentProvider):
 
                     seeders_attr = item.find('torznab:attr', attrs={'name': 'seeders'})
                     peers_attr = item.find('torznab:attr', attrs={'name': 'peers'})
-                    seeders = int(seeders_attr.get('value', 0))
-                    leechers = int(peers_attr.get('value', 0))
+                    seeders = int(seeders_attr.get('value', 0)) if seeders_attr else 1
+                    leechers = int(peers_attr.get('value', 0)) if peers_attr else 0
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):

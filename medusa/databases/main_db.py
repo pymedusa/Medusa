@@ -210,7 +210,7 @@ class MainSanityCheck(db.DBSanityCheck):
             log.info(u'Fixing malformed episode status with'
                      u' episode_id: {0!s}', cur_ep[b'episode_id'])
             self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
-                                   [common.UNKNOWN, cur_ep[b'episode_id']])
+                                   [common.UNSET, cur_ep[b'episode_id']])
 
     def fix_invalid_airdates(self):
 

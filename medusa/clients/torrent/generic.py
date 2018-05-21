@@ -61,14 +61,16 @@ class GenericClient(object):
 
         text_params = str(params)
         text_data = str(data)
+        text_files = str(files)
         log.debug(
             '{name}: Requested a {method} connection to {url} with'
-            ' params: {params} Data: {data}', {
+            ' params: {params} Data: {data} Files: {files}', {
                 'name': self.name,
                 'method': method.upper(),
                 'url': self.url,
                 'params': text_params[0:99] + '...' if len(text_params) > 102 else text_params,
-                'data': text_data[0:99] + '...' if len(text_data) > 102 else text_data
+                'data': text_data[0:99] + '...' if len(text_data) > 102 else text_data,
+                'files': text_files[0:99] + '...' if len(text_files) > 102 else text_files,
             }
         )
 

@@ -1,9 +1,9 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: '500'
@@ -25,7 +25,7 @@ If this happened during an update a simple page refresh may be the solution.<br>
 Mako errors that happen during updates may be a one time error if there were significant ui changes.<br>
 </p>
 <hr>
-<app-link href="#mako-error" class="btn btn-default" data-toggle="collapse">Show/Hide Error</app-link>
+<app-link href="#mako-error" class="btn-medusa btn-default" data-toggle="collapse">Show/Hide Error</app-link>
 <div id="mako-error" class="collapse">
 <br>
 <div class="align-center">

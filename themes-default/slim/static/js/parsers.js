@@ -1,5 +1,5 @@
 $.tablesorter.addParser({
-    id: 'loadingNames',
+    id: 'showNames',
     is() {
         return false;
     },

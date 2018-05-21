@@ -8,9 +8,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Mass Edit'
@@ -95,8 +95,8 @@ const startVue = () => {
                                                         <td align="center">${cur_dir}</td>
                                                         <td align="center" id="display_new_root_dir_${cur_index}">${cur_dir}</td>
                                                         <td>
-                                                            <app-link href="#" class="btn edit_root_dir" class="edit_root_dir" id="edit_root_dir_${cur_index}">Edit</app-link>
-                                                            <app-link href="#" class="btn delete_root_dir" class="delete_root_dir" id="delete_root_dir_${cur_index}">Delete</app-link>
+                                                            <app-link href="#" class="btn-medusa edit_root_dir" class="edit_root_dir" id="edit_root_dir_${cur_index}">Edit</app-link>
+                                                            <app-link href="#" class="btn-medusa delete_root_dir" class="delete_root_dir" id="delete_root_dir_${cur_index}">Delete</app-link>
                                                             <input type="hidden" name="orig_root_dir_${cur_index}" value="${cur_dir}" />
                                                             <input type="text" style="display: none;" name="new_root_dir_${cur_index}" id="new_root_dir_${cur_index}" class="new_root_dir" value="${cur_dir}"/>
                                                         </td>
@@ -120,19 +120,19 @@ const startVue = () => {
                                                 allowed_qualities, preferred_qualities = Quality.split_quality(initial_quality)
                                                 overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
                                             %>
-                                            <quality-chooser ${('', 'keep')[quality_value is None]}
-                                                             :overall-quality.number="${overall_quality}" />
+                                            <quality-chooser keep="${('show', 'keep')[quality_value is None]}"
+                                                             :overall-quality.number="${overall_quality}"></quality-chooser>
                                         </span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <label for="edit_flatten_folders">
+                                    <label for="edit_season_folders">
                                         <span class="component-title">Season folders (<span class="separator">*</span>)</span>
                                         <span class="component-desc">
-                                            <select id="" name="flatten_folders" class="form-control form-control-inline input-sm">
-                                                <option value="keep" ${'selected="selected"' if flatten_folders_value is None else ''}>&lt; Keep &gt;</option>
-                                                <option value="enable" ${'selected="selected"' if flatten_folders_value == 0 else ''}>Yes</option>
-                                                <option value="disable" ${'selected="selected"' if flatten_folders_value == 1 else ''}>No</option>
+                                            <select id="season_folders" name="season_folders" class="form-control form-control-inline input-sm">
+                                                <option value="keep" ${'selected="selected"' if season_folders_value is None else ''}>&lt; Keep &gt;</option>
+                                                <option value="enable" ${'selected="selected"' if season_folders_value == 1 else ''}>Yes</option>
+                                                <option value="disable" ${'selected="selected"' if season_folders_value == 0 else ''}>No</option>
                                             </select><br>
                                             Group episodes by season folder (set to "No" to store in a single folder).
                                         </span>
@@ -250,7 +250,7 @@ const startVue = () => {
                             </div>
                         </div>
                     </div>
-                    <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
+                    <input id="submit" type="submit" value="Save Changes" class="btn-medusa pull-left config_submitter button">
                 </form>
             </div>
         </div>

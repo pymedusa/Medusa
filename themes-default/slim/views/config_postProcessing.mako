@@ -13,9 +13,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Config - Post Processing'
@@ -250,7 +250,7 @@ const startVue = () => {
                                     <span class="component-desc">See <app-link href="${app.EXTRA_SCRIPTS_URL}" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group1 //-->
                     <div id="episode-naming" class="component-group">
@@ -1052,7 +1052,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                             </div><!-- /naming_anime_different -->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group2 //-->
                     <div id="metadata" class="component-group">
@@ -1113,12 +1113,12 @@ const startVue = () => {
                             </div>
                             % endfor
                             <div class="clearfix"></div><br>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group3 //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                    <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
                 </div><!--/config-components//-->
             </form>
         </div><!--/config-content//-->

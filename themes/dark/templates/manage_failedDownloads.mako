@@ -12,9 +12,9 @@
 %>
 <%block name="scripts">
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Failed Downloads'
@@ -51,7 +51,7 @@ const startVue = () => {
   </thead>
   <tfoot>
     <tr>
-      <td rowspan="1" colspan="4"><input type="button" class="btn pull-right" value="Submit" id="submitMassRemove"></td>
+      <td rowspan="1" colspan="4"><input type="button" class="btn-medusa pull-right" value="Submit" id="submitMassRemove"></td>
     </tr>
   </tfoot>
   <tbody>

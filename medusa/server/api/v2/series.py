@@ -4,9 +4,12 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
+    IntegerField,
+    ListField,
     StringField,
     iter_nested_items,
     set_nested_value
@@ -17,7 +20,7 @@ from six import itervalues, viewitems
 
 from tornado.escape import json_decode
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
 
 
 class SeriesHandler(BaseRequestHandler):
@@ -60,7 +63,7 @@ class SeriesHandler(BaseRequestHandler):
         data = series.to_json(detailed=detailed)
         if path_param:
             if path_param not in data:
-                return self._bad_request("Invalid path parameter'{0}'".format(path_param))
+                return self._bad_request("Invalid path parameter '{0}'".format(path_param))
             data = data[path_param]
 
         return self._ok(data)
@@ -113,13 +116,25 @@ class SeriesHandler(BaseRequestHandler):
         accepted = {}
         ignored = {}
         patches = {
+            'config.aliases': ListField(series, 'aliases'),
+            'config.defaultEpisodeStatus': StringField(series, 'default_ep_status_name'),
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
-            'config.flattenFolders': BooleanField(series, 'flatten_folders'),
+            'config.seasonFolders': BooleanField(series, 'season_folders'),
+            'config.anime': BooleanField(series, 'anime'),
             'config.scene': BooleanField(series, 'scene'),
+            'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
             'config.location': StringField(series, '_location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
-            'config.subtitlesEnabled': BooleanField(series, 'subtitles')
+            'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
+            'config.release.requiredWords': ListField(series, 'release_required_words'),
+            'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
+            'config.release.blacklist': ListField(series, 'blacklist'),
+            'config.release.whitelist': ListField(series, 'whitelist'),
+            'language': StringField(series, 'lang'),
+            'config.qualities.allowed': ListField(series, 'qualities_allowed'),
+            'config.qualities.preferred': ListField(series, 'qualities_preferred'),
+            'config.qualities.combined': IntegerField(series, 'quality'),
         }
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)

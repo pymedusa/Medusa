@@ -7,9 +7,9 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script>
-let app;
+window.app = {};
 const startVue = () => {
-    app = new Vue({
+    window.app = new Vue({
         el: '#vue-wrap',
         metaInfo: {
             title: 'Schedule'
@@ -120,7 +120,7 @@ const startVue = () => {
             <span class="listing-key listing-default">Soon</span>
             <span class="listing-key listing-toofar">Later</span>
         % endif
-            <app-link class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <app-link class="btn-medusa btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
             <i class="icon-calendar icon-white"></i>Subscribe</app-link>
         </div>
 
@@ -145,7 +145,7 @@ const startVue = () => {
             </div>
             % if layout == 'list':
             <div class="show-option">
-                <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+                <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
             </div>
             % elif layout != 'calendar':  # Calendar sorting is always by date
             <div class="show-option">

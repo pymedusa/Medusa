@@ -1,5 +1,8 @@
 <script type="text/x-template" id="asset-template">
-    <img :src="src">
+    <img v-if="!link" :src="src" :class="cls">
+    <app-link v-else :href="href">
+        <img :src="src" :class="cls">
+    </app-link>
 </script>
 <script>
 Vue.component('asset', {
@@ -10,7 +13,12 @@ Vue.component('asset', {
             type: String,
             required: true
         },
-        default: String
+        default: String,
+        link: {
+            type: Boolean,
+            default: false
+        },
+        cls: String
     },
     data() {
         return {
@@ -23,11 +31,15 @@ Vue.component('asset', {
             const apiRoot = document.getElementsByTagName('body')[0].getAttribute('api-root');
             const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
 
-            if (!isVisible) {
+            if (!isVisible || !seriesSlug || !type) {
                 return this.default;
             }
 
             return apiRoot + 'series/' + seriesSlug + '/asset/' + type + '?api_key=' + apiKey;
+        },
+        href() {
+            // Compute a link to the full asset, if applicable
+            if (this.link) return this.src.replace('Thumb', '');
         }
     },
     watch: {

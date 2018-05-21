@@ -1,7 +1,9 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
+
 from builtins import map
+
 from chardet import detect
 
 from medusa import app
