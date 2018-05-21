@@ -29,7 +29,7 @@ class BJShareProvider(TorrentProvider):
         # URLs
         self.url = 'https://bj-share.me'
         self.urls = {
-            'search': urljoin(self.url, "torrents.php")
+            'search': urljoin(self.url, 'torrents.php')
         }
 
         # Credentials
@@ -203,14 +203,14 @@ class BJShareProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')+group_index].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')+group_index].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders') + group_index].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Leechers') + group_index].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
