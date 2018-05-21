@@ -160,7 +160,7 @@ class Show(object):
         total_status = [SKIPPED, WANTED]
 
         results = db.select(
-            'SELECT airdate, status, quality'
+            'SELECT airdate, status, quality '
             'FROM tv_episodes '
             'WHERE season > 0 '
             'AND episode > 0 '

@@ -175,7 +175,7 @@ class Home(WebRoot):
     def show_statistics():
         main_db_con = db.DBConnection()
 
-        snatched = [SNATCHED. SNATCHED_PROPER, SNATCHED_BEST]
+        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
