@@ -36,7 +36,7 @@ Vue.component('app-link', {
                 return /^[a-z][a-z0-9+.-]*:/.test(url);
             }
             const isExternal = url => {
-                return !url.startsWith(base);
+                return !url.startsWith(base) && !url.startsWith('webcal://');
             };
             const isHashPath = url => {
                 return url.startsWith('#')
