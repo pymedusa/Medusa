@@ -104,7 +104,7 @@ def get_episodes(search_thread, searchstatus):
             'status': statusStrings[ep.status],
             'quality': get_quality_class(ep),
             'overview': Overview.overviewStrings[series_obj.get_overview(
-                ep.status,
+                ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
         })
