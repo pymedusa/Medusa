@@ -3533,22 +3533,36 @@
   video_codec: Xvid
   type: episode
 
-# BDRip
-? - Show.Name.BD.720p
-  - Show.Name.BDRip.720p
-  - Show.Name.BD.Rip.720p
-  - Show.Name.BD-Rip.720p
+# BD
+? Show.Name.BD.720p
 : title: Show Name
   source: BDRip
   screen_size: 720p
   type: episode
 
 # BDRip
-? - Show.Name.BDMux.720p
-  - Show.Name.BDRipMux.720p
+? - Show.Name.BDRip.720p
+  - Show.Name.BD.Rip.720p
+  - Show.Name.BD-Rip.720p
+: title: Show Name
+  source: BDRip
+  other: Rip
+  screen_size: 720p
+  type: episode
+
+# BDMux
+? Show.Name.BDMux.720p
 : title: Show Name
   source: BDRip
   other: Mux
+  screen_size: 720p
+  type: episode
+
+# BDRipMux
+? Show.Name.BDRipMux.720p
+: title: Show Name
+  source: BDRip
+  other: [Rip, Mux]
   screen_size: 720p
   type: episode
 
@@ -3572,18 +3586,32 @@
   other: [Reencoded, Rip]
   type: episode
 
-# BRRip
-? - Show.Name.BRMux.720p
-  - Show.Name.BRRipMux.720p
+# BRMux
+? Show.Name.BRMux.720p
 : title: Show Name
   source: BRRip
-  other: Mux
+  other: ['Reencoded', 'Mux']
+  screen_size: 720p
+  type: episode
+
+# BRRipMux
+? Show.Name.BRRipMux.720p
+: title: Show Name
+  other: ['Reencoded', 'Rip', 'Mux']
+  source: BRRip
   screen_size: 720p
   type: episode
 
 # Digital TV should be PDTV
-? - Show Name S02E11 DVB
-  - Show Name S02E11 DVBRip
+? Show Name S02E11 DVB
+: title: Show Name
+  source: PDTV
+  season: 2
+  episode: 11
+  type: episode
+
+# Digital TV should be PDTV
+? Show Name S02E11 DVBRip
 : title: Show Name
   source: PDTV
   season: 2
