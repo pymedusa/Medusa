@@ -49,8 +49,8 @@ from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
-from medusa.show import naming
 from medusa.numdict import NumDict
+from medusa.show import naming
 
 from six import itervalues
 
@@ -86,8 +86,8 @@ class ExtendedQuality(Quality):
         Quality.UHD_8K_BLURAY: 33177600,  # 7680 ª 4320
     })
 
-    # this will optionally hold [MIN/MAX] sizes per quality. It will be used globally (45min), and per-show. 
-    # at this point, values will be parsed from "gnore words" suffix. 
+    # this will optionally hold [MIN/MAX] sizes per quality. It will be used globally (45min), and per-show.
+    # at this point, values will be parsed from "gnore words" suffix.
     QualityFileSizes = NumDict({
         None: [0, 0],  # [MIN, MAX]
         Quality.NONE: [0, 0],
@@ -145,22 +145,22 @@ def get_word_value(word, series_list, global_list):
     :return: value,  -1 if not found, size limit and the list found in 0,1-local,2-global
     """
     value = -1      # type: int
-    found_word = None # type: str
-    affective_list = 0 # type: int
+    found_word = None  # type: str
+    affective_list = 0  # type: int
 
     found_word = next((s for s in series_list if word in s), None)
-    if found_word != None:
+    if found_word is not None:
         affective_list = 1
     else:
         found_word = next((s for s in global_list if word in s), None)
-        if found_word == None:
+        if found_word is None:
             return -1, affective_list
         else:
             affective_list = 2
     log.info('word: {0} series_list: {1} global_list: {2}; found_word: {3} list: {4}',
-        word , series_list, global_list, found_word, affective_list)
+         word, series_list, global_list, found_word, affective_list)
     data = found_word.split("=")
-    data_len=len(data)
+    data_len=len( data )
     if data_len == 2:
         log.info(u'Found word, key & value: {0} {1} {2} Affective list (1-series, 2-global): {3}', found_word, data[0], data[1], affective_list)
         value = int(data[1])
@@ -383,10 +383,9 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
     ignored_words = results[0].series.show_words().ignored_words
     required_words = results[0].series.show_words().required_words
     release_ignore_words = results[0].series.release_ignore_words
-    
+
     min_size_word = '%MINSIZE'  # type: str
     max_size_word = '%MAXSIZE'  # type: str
-    min_max_per_quality_suffixes = ['1080', '720', 'SD', '4K', '8K']  # used to normalize/estimate sizes
     mbytes = 1024 * 1024  # type: int
     hevc_format_words = ['hevc', 'x265', 'x.265']
     min_set_file_size = -1  # type: int
@@ -440,11 +439,11 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
 
         if min_set_file_size >= 0:
             min_file_size = get_file_size_limit(min_set_file_size, min_affective_list,
-                cur_result.quality, top_series_quality, series_runtime)
+                 cur_result.quality, top_series_quality, series_runtime)
 
         if max_set_file_size >= 0:
             max_file_size = get_file_size_limit(max_set_file_size, max_affective_list,
-                cur_result.quality, top_series_quality, series_runtime)
+                 cur_result.quality, top_series_quality, series_runtime)
 
         found_hevc_format = naming.contains_at_least_one_word(cur_result.name, hevc_format_words)
         if found_hevc_format:
