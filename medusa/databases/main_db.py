@@ -40,6 +40,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
         self.fix_remove_status_unknown()
+        self.fix_status_qualities()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -259,7 +260,27 @@ class MainSanityCheck(db.DBSanityCheck):
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 or lang = '0'")
 
+    def fix_status_qualities(self):
+        """
+        Check for a status bigger then 12, and translate to a status + quality,
+        as these are old composite statussus.
+        This can be removed when all code that creates composite statussus has been migrated.
+        Until then this can be used to keep the DB sane.
+        """
+        log.info(u'Convert composite statussus in tv_episodes to status + quality.')
+        sql_results = self.connection.select("SELECT status FROM tv_episodes where status > 12 GROUP BY status")
+        for status in sql_results:
+            log.info(u'Split composite status in to ep_status and ep_quality for %s', status[b'status'])
+            split = common.Quality.split_composite_status(status[b'status'])
+            self.connection.select(
+                "UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?",
+                [split.status, split.quality, status[b'status']]
+            )
+
+        self.connection.select("")
+
     def fix_remove_status_unknown(self):
+        """Changes any `UNKNOWN` quality to 0."""
         log.info(u'Remove status UNKONWN from tv_episodes')
         self.connection.select("UPDATE tv_episodes SET quality = 0 WHERE quality = 32768")
 
