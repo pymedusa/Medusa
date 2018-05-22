@@ -25,17 +25,18 @@ class TestQuality(object):
         },
         {  # p4
             'screen_size': '720p',
-            'source': 'WEB-DL',
+            'source': 'Web',
             'expected': Quality.HDWEBDL
         },
         {  # p5
             'screen_size': '720p',
-            'source': 'WEBRip',
+            'source': 'Web',
+            'other': 'Rip',
             'expected': Quality.HDWEBDL
         },
         {  # p6
             'screen_size': '720p',
-            'source': 'BluRay',
+            'source': 'Blu-ray',
             'expected': Quality.HDBLURAY
         },
         {  # p7
@@ -49,17 +50,18 @@ class TestQuality(object):
         },
         {  # p9
             'screen_size': '1080p',
-            'source': 'WEB-DL',
+            'source': 'Web',
             'expected': Quality.FULLHDWEBDL
         },
         {  # p10
             'screen_size': '1080p',
-            'source': 'WEBRip',
+            'source': 'Web',
+            'other': 'Rip',
             'expected': Quality.FULLHDWEBDL
         },
         {  # p11
             'screen_size': '1080p',
-            'source': 'BluRay',
+            'source': 'Blu-ray',
             'expected': Quality.FULLHDBLURAY
         },
         {  # p12
@@ -69,27 +71,28 @@ class TestQuality(object):
         },
         {  # p13
             'screen_size': '4K',
-            'source': 'WEB-DL',
+            'source': 'Web',
             'expected': Quality.UHD_4K_WEBDL
         },
         {  # p14
             'screen_size': '4K',
-            'source': 'WEBRip',
+            'source': 'Web',
+            'other': 'Rip',
             'expected': Quality.UHD_4K_WEBDL
         },
         {  # p15
             'screen_size': '4K',
-            'source': 'BluRay',
+            'source': 'Blu-ray',
             'expected': Quality.UHD_4K_BLURAY
         },
         {  # p16: multiple screen sizes
             'screen_size': ['4K', '720p'],
-            'source': 'BluRay',
+            'source': 'Blu-ray',
             'expected': Quality.UNKNOWN
         },
         {  # p17: multiple sources
             'screen_size': '720p',
-            'source': ['HDTV', 'BluRay'],
+            'source': ['HDTV', 'Blu-ray'],
             'expected': Quality.UNKNOWN
         },
         {  # p18: source not mapped (at least not yet)
@@ -103,6 +106,7 @@ class TestQuality(object):
         guess = {
             'screen_size': p.get('screen_size'),
             'source': p.get('source'),
+            'other': p.get('other'),
         }
         expected = p['expected']
 
@@ -136,14 +140,14 @@ class TestQuality(object):
             'quality': Quality.HDWEBDL,
             'expected': {
                 'screen_size': '720p',
-                'source': 'WEB-DL',
+                'source': 'Web',
             }
         },
         {  # p5
             'quality': Quality.HDBLURAY,
             'expected': {
                 'screen_size': '720p',
-                'source': 'BluRay',
+                'source': 'Blu-ray',
             }
         },
         {  # p6
@@ -163,14 +167,14 @@ class TestQuality(object):
             'quality': Quality.FULLHDWEBDL,
             'expected': {
                 'screen_size': '1080p',
-                'source': 'WEB-DL',
+                'source': 'Web',
             }
         },
         {  # p9
             'quality': Quality.FULLHDBLURAY,
             'expected': {
                 'screen_size': '1080p',
-                'source': 'BluRay',
+                'source': 'Blu-ray',
             }
         },
         {  # p10
@@ -184,14 +188,14 @@ class TestQuality(object):
             'quality': Quality.UHD_4K_WEBDL,
             'expected': {
                 'screen_size': '4K',
-                'source': 'WEB-DL',
+                'source': 'Web',
             }
         },
         {  # p12
             'quality': Quality.UHD_4K_BLURAY,
             'expected': {
                 'screen_size': '4K',
-                'source': 'BluRay',
+                'source': 'Blu-ray',
             }
         },
         {  # p13: guessit unsupported quality

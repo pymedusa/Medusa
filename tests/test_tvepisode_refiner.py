@@ -29,7 +29,7 @@ def data(create_tvshow, create_tvepisode):
             'episode': tvepisode.episode,
             'title': tvepisode.name,
             'resolution': '1080p',
-            'format': 'BluRay',
+            'source': 'Blu-ray',
             'release_group': tvepisode.release_group,
             'size': tvepisode.file_size,
             'tvdb_id': tvepisode.tvdb_id,
@@ -42,7 +42,7 @@ def data(create_tvshow, create_tvepisode):
             'title': None,
             'year': None,
             'resolution': None,
-            'format': None,
+            'source': None,
             'release_group': None,
             'size': None,
             'series_tvdb_id': None,
@@ -60,7 +60,8 @@ def _to_properties(video):
         'title': video.title,
         'year': video.year,
         'resolution': video.resolution,
-        'format': video.format,
+        # @TODO: subliminal.video.Video: format should be source
+        'source': video.format,
         'size': video.size,
         'release_group': video.release_group,
         'series_tvdb_id': video.series_tvdb_id,
@@ -114,11 +115,13 @@ def test_refine__with_tvepisode_not_overwriting_resolution_format_and_release_gr
     # Given
     video = data['video']
     video.resolution = '720p'
+    # @TODO: subliminal.video.Video: format should be source
     video.format = 'HDTV'
     video.release_group = 'AnotherGroup'
     tvepisode = data['tvepisode']
     expected = dict(data['tvshow_properties'], **data['tvepisode_properties'])
-    expected = dict(expected, resolution=video.resolution, format=video.format, release_group=video.release_group,
+    # @TODO: subliminal.video.Video: format should be source
+    expected = dict(expected, resolution=video.resolution, source=video.format, release_group=video.release_group,
                     season=video.season, episode=video.episode)
 
     # When

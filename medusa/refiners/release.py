@@ -17,7 +17,8 @@ log.logger.addHandler(logging.NullHandler())
 MOVIE_ATTRIBUTES = {
     'title': 'title',
     'year': 'year',
-    'format': 'format',
+    # @TODO: subliminal.video.Video: format should be source
+    'format': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',
@@ -29,7 +30,8 @@ EPISODE_ATTRIBUTES = {
     'episode': 'episode',
     'title': 'episode_title',
     'year': 'year',
-    'format': 'format',
+    # @TODO: subliminal.video.Video: format should be source
+    'format': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',

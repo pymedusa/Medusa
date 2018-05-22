@@ -425,7 +425,7 @@ class CreateAliasWithCountryOrYear(Rule):
             "country": "UNITED STATES",
             "season": 3,
             "screen_size": "720p",
-            "source": "Blu-Ray",
+            "source": "Blu-ray",
             "video_codec": "H.264",
             "release_group": "SuperGroup",
             "type": "episode"
@@ -439,7 +439,7 @@ class CreateAliasWithCountryOrYear(Rule):
             "country": "UNITED STATES",
             "season": 3,
             "screen_size": "720p",
-            "source": "Blu-Ray",
+            "source": "Blu-ray",
             "video_codec": "H.264",
             "release_group": "SuperGroup",
             "type": "episode"
@@ -967,7 +967,7 @@ class FixMultipleSources(Rule):
             "part": 1,
             "source": [
                 "Telecine",
-                "WEB-DL"
+                "Web"
             ],
             "screen_size": "1080p",
             "audio_codec": "DolbyDigital",
@@ -986,7 +986,7 @@ class FixMultipleSources(Rule):
             "episode": 1,
             "episode_title": "eps2 0 unm4sk",
             "part": 1,
-            "source": "WEB-DL",
+            "source": "Web",
             "screen_size": "1080p",
             "audio_codec": "DolbyDigital",
             "audio_channels": "5.1",

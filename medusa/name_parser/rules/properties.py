@@ -36,7 +36,7 @@ def blacklist():
     return rebulk
 
 
-def source_():
+def source():
     """Source property.
 
     :return:
@@ -114,8 +114,8 @@ def container():
                     validator=seps_surround,
                     formatter=lambda s: s.upper(),
                     conflict_solver=lambda match, other: match
-                    if other.name in ['source',
-                                      'video_codec'] or other.name == 'container' and 'extension' in other.tags
+                    if other.name in ['source', 'video_codec'] or
+                    other.name == 'container' and 'extension' in other.tags
                     else '__default__')
 
     rebulk.string(*nzb, tags=['nzb'])
