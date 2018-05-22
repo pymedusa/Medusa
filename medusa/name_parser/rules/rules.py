@@ -1141,7 +1141,7 @@ class AudioCodecStandardizer(Rule):
 
 
 class SourceStandardizer(Rule):
-    """DVB renamed to PDTV."""
+    """Digital TV renamed to PDTV."""
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
@@ -1157,7 +1157,7 @@ class SourceStandardizer(Rule):
         """
         to_remove = []
         to_append = []
-        for source in matches.named('source', predicate=lambda m: m.value in ('DVB', )):
+        for source in matches.named('source', predicate=lambda m: m.value in ('Digital TV', )):
             new_source = copy.copy(source)
             new_source.value = 'PDTV'
             to_remove.append(source)

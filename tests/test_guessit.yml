@@ -3124,7 +3124,7 @@
 : episode: 31
   episode_title: Episode Title
   season: 12
-  source: Digital TV
+  source: PDTV
   release_group: Group
   title: Show Name
   type: episode
@@ -3581,11 +3581,11 @@
   screen_size: 720p
   type: episode
 
-# DVB should be PDTV
+# Digital TV should be PDTV
 ? - Show Name S02E11 DVB
   - Show Name S02E11 DVBRip
 : title: Show Name
-  source: Digital TV
+  source: PDTV
   season: 2
   episode: 11
   other: Rip
@@ -3609,7 +3609,7 @@
   season: 12
   episode: 1
   date: 2016-11-16
-  source: Digital TV
+  source: PDTV
   video_codec: H.264
   video_encoder: x264
   container: mp4
@@ -4079,7 +4079,7 @@
   season: 10
   episode: 6
   date: 2016-11-18
-  source: Digital TV
+  source: PDTV
   video_codec: Xvid
   type: episode
 
