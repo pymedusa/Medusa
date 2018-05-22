@@ -1285,7 +1285,7 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource, size '
+                b'SELECT date, action, quality, provider, resource, size '
                 b'FROM history '
                 b'WHERE indexer_id = ? '
                 b'AND showid = ? '
