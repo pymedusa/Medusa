@@ -69,7 +69,8 @@ def screen_size():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
     rebulk.defaults(name='screen_size', validator=seps_surround)
 
-    rebulk.regex(r'(?:\d{3,}(?:x|\*))?4320(?:p?x?)', value='4320p')
+    # Discarded:
+    rebulk.regex(r'(?:\d{3,}(?:x|\*))?4320(?:p?x?)', value='4320p', private=True)
 
     return rebulk
 
