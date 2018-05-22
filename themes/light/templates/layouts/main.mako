@@ -46,6 +46,7 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
@@ -121,11 +122,11 @@
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
+        <script src="js/lib/vue-snotify.min.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
-        <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
         <script>window.routes = [];</script>

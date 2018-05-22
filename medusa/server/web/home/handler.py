@@ -10,6 +10,7 @@ from builtins import str
 from datetime import date, datetime
 
 import adba
+
 from medusa import (
     app,
     config,
@@ -31,6 +32,7 @@ from medusa.clients.nzb import (
     sab,
 )
 from medusa.common import (
+    ARCHIVED,
     DOWNLOADED,
     FAILED,
     IGNORED,
@@ -1438,7 +1440,7 @@ class Home(WebRoot):
             return True
 
     def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
+                 exceptions_list=None, season_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
@@ -1475,7 +1477,7 @@ class Home(WebRoot):
         if try_int(quality_preset, None):
             preferred_qualities = []
 
-        if not location and not allowed_qualities and not preferred_qualities and not flatten_folders:
+        if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
             t = PageTemplate(rh=self, filename='editShow.mako')
 
             if series_obj.is_anime:
@@ -1506,7 +1508,7 @@ class Home(WebRoot):
                 return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
 
-        flatten_folders = not config.checkbox_to_value(flatten_folders)  # UI inverts this value
+        season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
         paused = config.checkbox_to_value(paused)
         air_by_date = config.checkbox_to_value(air_by_date)
@@ -1602,8 +1604,8 @@ class Home(WebRoot):
             series_obj.quality = new_quality
 
             # reversed for now
-            if bool(series_obj.flatten_folders) != bool(flatten_folders):
-                series_obj.flatten_folders = flatten_folders
+            if bool(series_obj.season_folders) != bool(season_folders):
+                series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                 except CantRefreshShowException as e:
@@ -1851,23 +1853,21 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def updateKODI(self, indexername=None, seriesid=None):
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
+        series_name = series_obj = None
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Unable to find the specified show')
-        else:
-            show_name = quote_plus(series_obj.name.encode('utf-8'))
+            series_name = quote_plus(series_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
             host = app.KODI_HOST[0].strip()
         else:
             host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(series_name=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=series_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1887,12 +1887,11 @@ class Home(WebRoot):
 
     def updateEMBY(self, indexername=None, seriesid=None):
         series_obj = None
-
-        if seriesid is None:
-            return self._genericMessage('Error', 'Invalid show ID')
-
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        if seriesid:
+            indexer = indexer_name_to_id(indexername)
+            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+            if series_obj is None:
+                return self._genericMessage('Error', 'Unable to find the specified show')
 
         if notifiers.emby_notifier.update_library(series_obj):
             ui.notifications.message(
@@ -1917,7 +1916,11 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        # Use .has_key() since it is overridden for statusStrings in common.py
+        # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
+        # FIXME: Always check status with status and quality with quality.
+        status_with_quality = status
+        status = Quality.split_composite_status(status).status
+
         if status not in statusStrings:
             error_message = 'Invalid status'
             if direct:
@@ -1948,20 +1951,18 @@ class Home(WebRoot):
             for cur_ep in eps.split('|'):
 
                 if not cur_ep:
-                    logger.log(u'Current episode was empty when trying to set status', logger.DEBUG)
+                    logger.log('Current episode was empty when trying to set status', logger.DEBUG)
 
-                logger.log(u'Attempting to set status on episode {episode} to {status}'.format
-                           (episode=cur_ep, status=status), logger.DEBUG)
+                logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
+                    series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
 
                 ep_info = cur_ep.split('x')
-
                 if not all(ep_info):
-                    logger.log(u'Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
+                    logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
                                (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
                     continue
 
                 ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
-
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
@@ -1974,40 +1975,43 @@ class Home(WebRoot):
                         segments[ep_obj.season] = [ep_obj]
 
                 with ep_obj.lock:
-                    # don't let them mess up UNAIRED episodes
                     if ep_obj.status == UNAIRED:
-                        logger.log(u'Refusing to change status of {episode} because it is UNAIRED'.format
-                                   (episode=cur_ep), logger.WARNING)
+                        logger.log('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
+                            series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-                    if all([status in Quality.DOWNLOADED,
-                            ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
-                            not os.path.isfile(ep_obj.location)]):
-                        logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format
-                                   (episode=cur_ep), logger.WARNING)
+
+                    if status == DOWNLOADED and not (
+                            ep_obj.status in snatched_qualities + Quality.DOWNLOADED
+                            and os.path.isfile(ep_obj.location)):
+                        logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
+                                   ' because it\'s not SNATCHED/DOWNLOADED'.format(
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([status == FAILED,
-                            ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Refusing to change status of {episode} to FAILED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
+                    if status == FAILED and ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED:
+                        logger.log('Refusing to change status of {series} {episode} to FAILED'
+                                   ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
+                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([status == WANTED,
-                            ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
-                        ep_obj.release_name = ''
+                    if status == WANTED:
+                        if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED:
+                            logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
+                                series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.release_name = ''
 
-                    if ep_obj.manually_searched and status == WANTED:
-                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
-                        ep_obj.manually_searched = False
+                        if ep_obj.manually_searched:
+                            logger.log("Resetting 'manually searched' flag of {series} {episode}"
+                                       " as episode was changed to WANTED".format(
+                                            series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status
+                        ep_obj.status = status_with_quality
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -2019,11 +2023,11 @@ class Home(WebRoot):
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
                     upd = 'Add'
-                elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
+                elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
                     upd = 'Remove'
 
-                logger.log(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format
-                           (action=upd, show=series_obj), logger.DEBUG)
+                logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
+                                action=upd, show=series_obj), logger.DEBUG)
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())

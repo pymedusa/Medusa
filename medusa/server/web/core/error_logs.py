@@ -16,6 +16,7 @@ from medusa.server.web.core.base import PageTemplate, WebRoot
 from medusa.version_checker import CheckVersion
 
 from six import text_type
+
 from tornroutes import route
 
 log = logging.getLogger(__name__)

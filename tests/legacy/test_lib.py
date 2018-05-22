@@ -74,7 +74,7 @@ app.SYS_ENCODING = 'UTF-8'
 
 app.showList = []
 app.QUALITY_DEFAULT = 4  # hdtv
-app.FLATTEN_FOLDERS_DEFAULT = 0
+app.SEASON_FOLDERS_DEFAULT = 1
 
 app.NAMING_PATTERN = ''
 app.NAMING_ABD_PATTERN = ''

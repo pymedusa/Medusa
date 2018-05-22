@@ -128,11 +128,11 @@ def create_sub(monkeypatch):
 
 @pytest.fixture
 def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
+    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, season_folders=1,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
         target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
-                        flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
+                        season_folders=season_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
@@ -150,9 +150,15 @@ def create_tvepisode(monkeypatch):
 
 @pytest.fixture
 def create_file(tmpdir):
-    def create(filename, lines=None, **kwargs):
+    def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
-        f.write_binary('\n'.join(lines or []))
+        content = '\n'.join(lines or [])
+        f.write_binary(content)
+        if size:
+            tmp_size = f.size()
+            if tmp_size < size:
+                add_size = '\0' * (size - tmp_size)
+                f.write_binary(content + add_size)
         return str(f)
 
     return create

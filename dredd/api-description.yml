@@ -987,9 +987,9 @@ definitions:
           dvdOrder:
             type: boolean
             description: Whether episode numbering follows DVD order instead of air date
-          flattenFolders:
+          seasonFolders:
             type: boolean
-            description: Whether episodes are stored in a flatten folder structure
+            description: Whether episodes are stored in a season folder structure
           scene:
             type: boolean
           defaultEpisodeStatus:

@@ -80,10 +80,7 @@ class QBittorrentAPI(GenericClient):
 
         self.url = '{host}command/upload'.format(host=self.host)
         files = {
-            'torrents': (
-                '{result}.torrent'.format(result=result.name),
-                result.content,
-            ),
+            'torrents': result.content
         }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
@@ -123,8 +120,9 @@ class QBittorrentAPI(GenericClient):
     def _set_torrent_pause(self, result):
         self.url = '{host}command/{state}'.format(host=self.host,
                                                   state='pause' if app.TORRENT_PAUSED else 'resume')
+        hashes_key = 'hashes' if self.api >= 18 else 'hash'
         data = {
-            'hash': result.hash,
+            hashes_key: result.hash.lower(),
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 

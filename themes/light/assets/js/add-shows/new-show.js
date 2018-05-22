@@ -148,14 +148,18 @@ MEDUSA.addShows.newShow = function() {
         $('#searchName').click();
     }
 
+    // @TODO: When switching to Vue - Don't forget about that generateBlackWhiteList...
     $('#addShowButton').click(() => {
+        /*
         // If they haven't picked a show don't let them submit
         if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length === 0) {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }
+        */
         generateBlackWhiteList(); // eslint-disable-line no-undef
-        $('#addShowForm').submit();
+        // The submit is handled by Vue
+        // $('#addShowForm').submit();
     });
 
     $('#skipShowButton').click(() => {

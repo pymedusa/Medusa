@@ -35,7 +35,7 @@ const startVue = () => {
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
-    <div class="col-md-12 horizontal-scroll">
+    <div class="col-md-12 horizontal-scroll" style="top: 12px">
         <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
             <% cur_season = -1 %>
             <% odd = 0 %>

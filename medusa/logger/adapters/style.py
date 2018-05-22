@@ -51,7 +51,7 @@ class BraceMessage(object):
         except Exception:
             log.error(
                 'BraceMessage string formatting failed. '
-                'Using representation instead.\n{0}'.format(
+                'Using representation instead.\n{0!r}'.format(
                     ''.join(traceback.format_stack()),
                 )
             )

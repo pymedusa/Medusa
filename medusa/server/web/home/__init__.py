@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
+
 from medusa.server.web.home.add_recommended import HomeAddRecommended
 from medusa.server.web.home.add_shows import HomeAddShows
 from medusa.server.web.home.change_log import HomeChangeLog

@@ -18,8 +18,11 @@ if TRAVIS:
 else:
     TRAVIS_PULL_REQUEST = '1234'
     TRAVIS_PR_TARGET_BRANCH = 'master'
-    TRAVIS_PR_SOURCE_BRANCH = 'develop'
+    TRAVIS_PR_SOURCE_BRANCH = 'develop'  # or 'release/release-0.2.3'
     TRAVIS_BUILD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+TRAVIS_PR_TARGET_BRANCH = TRAVIS_PR_TARGET_BRANCH.lower()
+TRAVIS_PR_SOURCE_BRANCH = TRAVIS_PR_SOURCE_BRANCH.lower()
 
 
 class Version(object):
@@ -44,12 +47,6 @@ class Version(object):
         return repr(self.version)
 
 
-def graceful_exit(exitcode):
-    if TRAVIS:
-        print('travis_fold:end:medusa.check-version')
-    sys.exit(exitcode)
-
-
 def search_file_for_version():
     version_file = VERSION_FILE.split('/')
     filename = os.path.abspath(os.path.join(TRAVIS_BUILD_DIR, *version_file))
@@ -62,30 +59,32 @@ def search_file_for_version():
             return Version(match[0])
 
 
-if TRAVIS:
-    print('travis_fold:start:medusa.check-version')
-# Are we merging develop into master in a pull request?
-if all((TRAVIS_PULL_REQUEST != 'false', TRAVIS_PR_TARGET_BRANCH == 'master', TRAVIS_PR_SOURCE_BRANCH == 'develop')):
+# Are we merging either develop or a release branch into master in a pull request?
+if all((
+        TRAVIS_PULL_REQUEST != 'false',
+        TRAVIS_PR_TARGET_BRANCH == 'master',
+        TRAVIS_PR_SOURCE_BRANCH == 'develop' or TRAVIS_PR_SOURCE_BRANCH.startswith('release/')
+        )):
     # Get lastest git tag on master branch
-    proc = subprocess.call(['git', 'fetch', 'origin', 'master:master'], shell=True)
+    proc = subprocess.call(['git', 'fetch', 'origin', 'master:master'])
     if proc > 0:
         print('Failed to fetch')
 
-    proc = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0', 'master'], stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0', 'master'], stdout=subprocess.PIPE)
     (output, err) = proc.communicate()
     latest_tag = output.strip()
     if err or not latest_tag:
         print('Error while getting latest tag commit hash')
-        graceful_exit(1)
+        sys.exit(1)
 
     git_version = Version(latest_tag)
     file_version = search_file_for_version()
     print('GIT Version: {}'.format(git_version))
     print('APP Version: {}'.format(file_version))
-    version_compare = file_version >= git_version
+    version_compare = file_version > git_version
     if not version_compare:
-        print('Please update app version in medusa/common.py')
-        graceful_exit(1)
+        print('Please update app version in {file}'.format(file=VERSION_FILE))
+        sys.exit(1)
 
 # If we got here, then everything is correct!
-graceful_exit(0)
+sys.exit(0)

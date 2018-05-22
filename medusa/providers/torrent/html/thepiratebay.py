@@ -17,6 +17,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
