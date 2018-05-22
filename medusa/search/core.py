@@ -50,11 +50,123 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
+from medusa.numdict import NumDict
 
 from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+# eventually, this can  go into the base class in common. Sadly, bitrate/bps can not be used, since we know them only AFTER the download...
+class ExtendedQuality(Quality):
+    """Add two size-related properties to Quality class."""
+
+    MINSIZE = 0  # 0
+    MAXSIZE = 1  # 1
+
+    # from - https://en.wikipedia.org/wiki/List_of_common_resolutions
+    QualityScreenPixels = NumDict({
+        None: -1,
+        Quality.NONE: -1,
+        Quality.UNKNOWN: -1,
+        Quality.SDTV: 414720,  # 720 ª 576
+        Quality.SDDVD: 414720,  # 720 ª 576
+        Quality.HDTV: 921600,  # 1280 ª 720
+        Quality.FULLHDTV: 2073600,  # 1920 ª 1080
+        Quality.HDWEBDL: 921600,  # 1280 ª 720
+        Quality.FULLHDWEBDL: 2073600,  # 1920 ª 1080
+        Quality.HDBLURAY: 921600,  # 1280 ª 720
+        Quality.FULLHDBLURAY: 2073600,  # 1920 ª 1080
+        Quality.UHD_4K_TV: 8294400,  # 3840 ª 2160
+        Quality.UHD_8K_TV: 33177600,  # 7680 ª 4320
+        Quality.UHD_4K_WEBDL: 8294400,  # 3840 ª 2160
+        Quality.UHD_8K_WEBDL: 33177600,  # 7680 ª 4320
+        Quality.UHD_4K_BLURAY: 8294400,  # 3840 ª 2160
+        Quality.UHD_8K_BLURAY: 33177600,  # 7680 ª 4320
+    })
+
+    # this will optionally hold [MIN/MAX] sizes per quality. It will be used globally (45min), and per-show. 
+    # at this point, values will be parsed from "gnore words" suffix. 
+    QualityFileSizes = NumDict({
+        None: [0, 0],  # [MIN, MAX]
+        Quality.NONE: [0, 0],
+        Quality.UNKNOWN: [0, 0],
+        Quality.SDTV: [0, 0],   # SD
+        Quality.SDDVD: [0, 0],  # SD
+        Quality.HDTV: [0, 0],      # 720
+        Quality.FULLHDTV: [0, 0],       # 1080
+        Quality.HDWEBDL: [0, 0],   # 720
+        Quality.FULLHDWEBDL: [0, 0],   # 1080
+        Quality.HDBLURAY: [0, 0],  # 720
+        Quality.FULLHDBLURAY: [0, 0],  # 1080
+        Quality.UHD_4K_TV: [0, 0],         # 4K
+        Quality.UHD_8K_TV: [0, 0],         # 8K
+        Quality.UHD_4K_WEBDL: [0, 0],      # 4K
+        Quality.UHD_8K_WEBDL: [0, 0],      # 8K
+        Quality.UHD_4K_BLURAY: [0, 0],     # 4K
+        Quality.UHD_8K_BLURAY: [0, 0],     # 8K
+    })
+
+
+def get_file_size_limit(configured_file_size, affective_list, result_quality, top_series_quality, series_runtime):
+    """
+    Get the min/max limit normelized for the current quality (in case undefined)
+
+    :param configured_file_size: File size limit as set in UI (now as %MAX/MINSIZE in ingnored words)
+    :param affective_list: local/show (1) or global (2) config/list the size is defined in
+    :param result_quality: the quality(ies) of that show
+    :param top_series_quality: max from allowed and preferred qualities
+    :param series_runtime: runtime
+    :return: file limit or -1 if not found
+    """
+
+    # log.info('configured_file_size {0}, affective_list {1}, result_quality_string {2}',
+    #     configured_file_size, affective_list, result_quality_string)
+    if configured_file_size >= 0:
+        # When series local size limit is set - adjust file size limit per the quality/screen size
+        if affective_list == 1:
+            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) / ExtendedQuality.QualityScreenPixels.get(top_series_quality)
+        # When only global size limit is set - adjust file size limit to runtime and 1080p quality
+        else:
+            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) / ExtendedQuality.QualityScreenPixels.get(Quality.FULLHDWEBDL) * series_runtime / 45
+        return file_size_limit
+    else:
+        return 0
+
+
+def get_word_value(word, series_list, global_list):
+    """
+    Get a value (size here) set for a keyword in ignore/preferred/etc  lists of words. Partial word is excepted.
+
+    :param word: key word
+    :param series_list: local list of words
+    :param global_list: glbal list of words
+    :return: value,  -1 if not found, size limit and the list found in 0,1-local,2-global
+    """
+    value = -1      # type: int
+    found_word = None # type: str
+    affective_list = 0 # type: int
+
+    found_word = next((s for s in series_list if word in s), None)
+    if found_word != None:
+        affective_list = 1
+    else:
+        found_word = next((s for s in global_list if word in s), None)
+        if found_word == None:
+            return -1, affective_list
+        else:
+            affective_list = 2
+    log.info('word: {0} series_list: {1} global_list: {2}; found_word: {3} list: {4}',
+        word , series_list, global_list, found_word, affective_list)
+    data = found_word.split("=")
+    data_len=len(data)
+    if data_len == 2:
+        log.info(u'Found word, key & value: {0} {1} {2} Affective list (1-series, 2-global): {3}', found_word, data[0], data[1], affective_list)
+        value = int(data[1])
+        return value, affective_list
+    else:
+        return -1, affective_list
 
 
 def _download_result(result):
@@ -254,11 +366,65 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
     :param results: list of result objects
     :return: best result object
     """
+    # Rafi: calculating of min/max size per the show quality-resolution
+    #
+    # min/max size setting in the Global "ignore list" is for 45 min of 1080p.
+    # In the show ignore setting - the size is per the show quality and runtime.
+    # in both cases the sizes are normelized for other qualities, and factored /3 for x265.
+    # The show's maximium allowed quality is sync to the size settings, or the "prefered"  if exsists.
+    #   0 if not used. This is  being entered in the GUI globally and per-show)
+    #   Logic:
+    #   - Check for show ignore setting
+    #       - if not set (or 0) - check for global setting
+    #         and use global
+    #
+
+    # Rafi: moved to here since this is all for a specific/same series, no need to do this per each result.
+    ignored_words = results[0].series.show_words().ignored_words
+    required_words = results[0].series.show_words().required_words
+    release_ignore_words = results[0].series.release_ignore_words
+    
+    min_size_word = '%MINSIZE'  # type: str
+    max_size_word = '%MAXSIZE'  # type: str
+    min_max_per_quality_suffixes = ['1080', '720', 'SD', '4K', '8K']  # used to normalize/estimate sizes
+    mbytes = 1024 * 1024  # type: int
+    hevc_format_words = ['hevc', 'x265', 'x.265']
+    min_set_file_size = -1  # type: int
+    max_set_file_size = -1  # type: int
+    min_file_size = 0  # type: int
+    max_file_size = 0  # type: int
+    # The list size limit found in - 1 - local, 2 - global, 0 - one
+    min_affective_list = 0
+    max_affective_list = 0
+    hevc_downscale_factor = 2
+
+    if len(results):
+        min_set_file_size, min_affective_list = get_word_value(
+            min_size_word, release_ignore_words, app.IGNORE_WORDS)
+        max_set_file_size, max_affective_list = get_word_value(
+            max_size_word, release_ignore_words, app.IGNORE_WORDS)
+        if min_set_file_size > -1:
+            min_set_file_size *= mbytes
+            # calculate correct file size limit for this show/episode
+        if max_set_file_size > -1:
+            max_set_file_size *= mbytes
+        min_file_size = min_set_file_size
+        max_file_size = max_set_file_size
+        series_runtime = results[0].series.runtime
+
     results = results if isinstance(results, list) else [results]
 
     log.debug(u'Picking the best result out of {0}', [x.name for x in results])
 
     best_result = None
+
+    allowed_qualities, preferred_qualities = results[0].series.current_qualities
+    if len(preferred_qualities):
+        # we will take to overall max, tho, it might be more correct to take only the preferred nax...
+        top_series_quality = max(preferred_qualities[-1], allowed_qualities[-1])
+    else:
+        top_series_quality = allowed_qualities[-1]
+    log.info('top_series_quality = {0} {1}', top_series_quality, Quality.qualityStrings[top_series_quality])
 
     # find the best result for the current episode
     for cur_result in results:
@@ -267,14 +433,33 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         # Every SearchResult object should have a show attribute available at this point.
         series_obj = cur_result.series
 
+        # log.info(u'file_size: {0}', series_obj.file_size)
+        log.info(u'cur_result.size: {0}', cur_result.size)
+        # log.info(u'size: {0}', series_obj.size)
+        # currently, we split to 4 groups-of-qualities per screen sizes in pixels. Can be later extended to the full 15 qualities
+
+        if min_set_file_size >= 0:
+            min_file_size = get_file_size_limit(min_set_file_size, min_affective_list,
+                cur_result.quality, top_series_quality, series_runtime)
+
+        if max_set_file_size >= 0:
+            max_file_size = get_file_size_limit(max_set_file_size, max_affective_list,
+                cur_result.quality, top_series_quality, series_runtime)
+
+        found_hevc_format = naming.contains_at_least_one_word(cur_result.name, hevc_format_words)
+        if found_hevc_format:
+            min_file_size = min_file_size / hevc_downscale_factor
+            max_file_size = max_file_size / hevc_downscale_factor
+
+        log.info(u'quality : {0} runtime: {1} min_file_size: {2} max_file_size: {3} found_hevc_format: {4} min/max_effective_list: {5}/{6}',
+                 Quality.qualityStrings[cur_result.quality], series_obj.runtime, int(min_file_size), int(max_file_size),
+                 found_hevc_format, min_affective_list, max_affective_list)
         # build the black and white list
         if series_obj.is_anime:
             if not series_obj.release_groups.is_valid(cur_result):
                 continue
 
         log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
-
-        allowed_qualities, preferred_qualities = series_obj.current_qualities
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
@@ -308,8 +493,32 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
             )
             continue
 
-        ignored_words = series_obj.show_words().ignored_words
-        required_words = series_obj.show_words().required_words
+        # If doesn't have min file size (testing with x bytes). Size is -1 if not available.
+        # min_file_size = 0/-1 means not set
+        if min_set_file_size >= 0 and cur_result.size < min_file_size and cur_result.size > 0:
+            log.info(
+                u'Discarding torrent because it does not meet the min file size requirement'
+                u'file Name:{0} Size:{1}',
+                cur_result.name,
+                cur_result.size,
+            )
+            continue
+        if max_set_file_size >= 0 and cur_result.size > max_file_size and cur_result.size > 0:
+            log.info(
+                u'Discarding torrent because it does not meet the max file size requirement'
+                u'file Name:{0} Size:{1}',
+                cur_result.name,
+                cur_result.size,
+            )
+            continue
+        if max_set_file_size >= 0 or min_set_file_size >= 0:
+            log.info(
+                u'Torrent meets the file size requirements'
+                u'file Name:{0} Size:{1}',
+                cur_result.name,
+                cur_result.size,
+            )
+
         found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
         found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
@@ -339,22 +548,23 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
 
         if not best_result:
             best_result = cur_result
-            continue
         if Quality.is_higher_quality(best_result.quality, cur_result.quality, allowed_qualities, preferred_qualities):
             best_result = cur_result
-            continue
         elif best_result.quality == cur_result.quality:
             if any(ext in cur_result.name.lower() for ext in preferred_words):
                 log.info(u'Preferring {0} (preferred words)', cur_result.name)
                 best_result = cur_result
-                continue
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
                 best_result = cur_result
-                continue
             if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
+
+            # Rafi: possibly - find the result with the largest file? (TBD)
+            # if cur_result.size > best_result.size:
+            #    log.info(u'Preferring release {0} (larger size [{1} > {2}])', cur_result.name, cur_result.size, best_result.size)
+            #    best_result = cur_result
 
     if best_result:
         log.debug(u'Picked {0} as the best', best_result.name)
