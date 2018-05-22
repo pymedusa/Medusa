@@ -574,23 +574,26 @@ class Quality(object):
     guessit_map = {
         '720p': {
             'HDTV': HDTV,
-            'WEB-DL': HDWEBDL,
-            'WEBRip': HDWEBDL,
-            'BluRay': HDBLURAY,
+            'Web': HDWEBDL,
+            'Blu-ray': HDBLURAY,
         },
         '1080i': RAWHDTV,
         '1080p': {
             'HDTV': FULLHDTV,
-            'WEB-DL': FULLHDWEBDL,
-            'WEBRip': FULLHDWEBDL,
-            'BluRay': FULLHDBLURAY
+            'Web': FULLHDWEBDL,
+            'Blu-ray': FULLHDBLURAY
         },
         '4K': {
             'HDTV': UHD_4K_TV,
-            'WEB-DL': UHD_4K_WEBDL,
-            'WEBRip': UHD_4K_WEBDL,
-            'BluRay': UHD_4K_BLURAY
+            'Web': UHD_4K_WEBDL,
+            'Blu-ray': UHD_4K_BLURAY
         }
+    }
+
+    guessit_source_map = {
+        ANYHDTV: 'HDTV',
+        ANYWEBDL: 'Web',
+        ANYBLURAY: 'Blu-ray'
     }
 
     to_guessit_source_list = [
@@ -601,7 +604,7 @@ class Quality(object):
         HDTV | HDWEBDL | HDBLURAY: '720p',
         RAWHDTV: '1080i',
         FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
-        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '2160p',
     }
 
     @staticmethod
@@ -790,7 +793,7 @@ class Quality(object):
         for q in Quality.to_guessit_source_list:
             if quality & q:
                 key = q & (512 - 1)  # 4k sources are bigger than 384 and are not part of ANY* bit set
-                return Quality.combinedQualityStrings.get(key)
+                return Quality.guessit_source_map.get(key)
 
     @staticmethod
     def to_guessit_screen_size(quality):
