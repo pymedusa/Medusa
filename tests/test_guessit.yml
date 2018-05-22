@@ -820,7 +820,7 @@
   proper_tag: REPACK
   screen_size: 720p
   source: Blu-ray
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264
@@ -1242,7 +1242,7 @@
   episode_title: Episode Name
   screen_size: 1080i
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '2.0'
   video_codec: H.264
   release_group: GroupName
@@ -1486,7 +1486,7 @@
   episode: 4
   screen_size: 1080i
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: BS666
@@ -1499,7 +1499,7 @@
   episode: 4
   screen_size: 1080i
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: ccs3
@@ -1512,7 +1512,7 @@
   episode: 4
   screen_size: 1080i
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: qqss44
@@ -1805,7 +1805,7 @@
   episode: 16
   screen_size: 1080p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: GOLF68
@@ -1994,7 +1994,7 @@
   episode: 12
   year: 2014
   video_codec: Xvid
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   subtitle_language: nl
   release_group: NLtoppers4ALL
@@ -2258,7 +2258,7 @@
   episode: 5
   video_codec: H.265
   video_encoder: x265
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '2.0'
   release_group: KTM3
   type: episode
@@ -2308,7 +2308,7 @@
   episode: 4
   video_codec: H.264
   language: it
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   source: HDTV
   other: Rip
   release_group: DEUS TEAM
@@ -2324,7 +2324,7 @@
   language: [it, en]
   source: Web
   other: Mux
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   subtitle_language: [it, en]
   release_group: GiuseppeTnT Littlelinx
   type: episode
@@ -2890,7 +2890,7 @@
   part: 1
   screen_size: 1080p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: GROUP
@@ -2907,7 +2907,7 @@
   part: 1
   screen_size: 1080p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: GROUP
@@ -3090,7 +3090,7 @@
   source: HDTV
   video_codec: H.264
   video_encoder: x264
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   screen_size: 1080p
   type: episode
 
@@ -3101,7 +3101,7 @@
   episode: 5
   screen_size: 720p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   release_group: Group
@@ -3163,7 +3163,7 @@
   part: 1 # not a big issue
   screen_size: 1080p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   container: mkv
@@ -3228,7 +3228,7 @@
   screen_size: 1080p
   source: Web
   streaming_service: Amazon Prime
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264
@@ -3342,7 +3342,7 @@
   episode_title: Super Title
   screen_size: 720p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   container: nzb
@@ -3432,7 +3432,7 @@
   screen_size: 720p
   streaming_service: HBO Go
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   other: Rip
@@ -3508,7 +3508,7 @@
   episode: 6
   screen_size: 720p
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264
@@ -3819,7 +3819,7 @@
   screen_size: 1080p
   streaming_service: Netflix
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264
@@ -4089,7 +4089,7 @@
   season: 1
   screen_size: 720p
   source: HDTV
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264
@@ -4138,7 +4138,7 @@
   season: 1
   screen_size: 720p
   source: Web
-  audio_codec: Dolby Digital
+  audio_codec: AC3
   audio_channels: '5.1'
   video_codec: H.264
   video_encoder: x264

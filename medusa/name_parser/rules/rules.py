@@ -82,7 +82,7 @@ class FixAnimeReleaseGroup(Rule):
             "season": 4,
             "episode": 62,
             "screen_size": "720p",
-            "video_profile": "10bit",
+            "color_depth": "10-bit",
             "release_group": "[SOMEPERSON].[Something]",
             "type": "episode"
         }
@@ -94,7 +94,7 @@ class FixAnimeReleaseGroup(Rule):
             "season": 4,
             "episode": 62,
             "screen_size": "720p",
-            "video_profile": "10bit",
+            "color_depth": "10-bit",
             "release_group": "RealGroup",
             "type": "episode"
         }
@@ -901,7 +901,7 @@ class FixMultipleSources(Rule):
                 "Web"
             ],
             "screen_size": "1080p",
-            "audio_codec": "DolbyDigital",
+            "audio_codec": "Dolby Digital",
             "audio_channels": "5.1",
             "video_codec": "H.264",
             "release_group": "GROUP",
@@ -919,7 +919,7 @@ class FixMultipleSources(Rule):
             "part": 1,
             "source": "Web",
             "screen_size": "1080p",
-            "audio_codec": "DolbyDigital",
+            "audio_codec": "Dolby Digital",
             "audio_channels": "5.1",
             "video_codec": "H.264",
             "release_group": "GROUP",
@@ -1018,9 +1018,9 @@ class CreateProperTags(Rule):
 
 
 class AudioCodecStandardizer(Rule):
-    """DolbyDigital is AC3.
+    """Dolby Digital is AC3.
 
-    Rename DolbyDigital to AC3
+    Rename Dolby Digital to AC3
     """
 
     priority = POST_PROCESS
@@ -1037,7 +1037,7 @@ class AudioCodecStandardizer(Rule):
         """
         to_remove = []
         to_append = []
-        for audio_codec in matches.named('audio_codec', predicate=lambda m: m.value in ('DolbyDigital', )):
+        for audio_codec in matches.named('audio_codec', predicate=lambda m: m.value in ('Dolby Digital', )):
             new_codec = copy.copy(audio_codec)
             new_codec.value = 'AC3'
             to_remove.append(audio_codec)
