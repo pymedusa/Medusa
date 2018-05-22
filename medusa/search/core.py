@@ -48,8 +48,8 @@ from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.providers.generic_provider import GenericProvider
 from medusa.numdict import NumDict
+from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
 from six import itervalues
@@ -70,20 +70,20 @@ class ExtendedQuality(Quality):
         None: -1,
         Quality.NONE: -1,
         Quality.UNKNOWN: -1,
-        Quality.SDTV: 414720,  # 720 ª 576
-        Quality.SDDVD: 414720,  # 720 ª 576
-        Quality.HDTV: 921600,  # 1280 ª 720
-        Quality.FULLHDTV: 2073600,  # 1920 ª 1080
-        Quality.HDWEBDL: 921600,  # 1280 ª 720
-        Quality.FULLHDWEBDL: 2073600,  # 1920 ª 1080
-        Quality.HDBLURAY: 921600,  # 1280 ª 720
-        Quality.FULLHDBLURAY: 2073600,  # 1920 ª 1080
-        Quality.UHD_4K_TV: 8294400,  # 3840 ª 2160
-        Quality.UHD_8K_TV: 33177600,  # 7680 ª 4320
-        Quality.UHD_4K_WEBDL: 8294400,  # 3840 ª 2160
-        Quality.UHD_8K_WEBDL: 33177600,  # 7680 ª 4320
-        Quality.UHD_4K_BLURAY: 8294400,  # 3840 ª 2160
-        Quality.UHD_8K_BLURAY: 33177600,  # 7680 ª 4320
+        Quality.SDTV: 414720,  # 720 x 576
+        Quality.SDDVD: 414720,  # 720 x 576
+        Quality.HDTV: 921600,  # 1280 x 720
+        Quality.FULLHDTV: 2073600,  # 1920 x 1080
+        Quality.HDWEBDL: 921600,  # 1280 x 720
+        Quality.FULLHDWEBDL: 2073600,  # 1920 x 1080
+        Quality.HDBLURAY: 921600,  # 1280 x 720
+        Quality.FULLHDBLURAY: 2073600,  # 1920 x 1080
+        Quality.UHD_4K_TV: 8294400,  # 3840 x 2160
+        Quality.UHD_8K_TV: 33177600,  # 7680 x 4320
+        Quality.UHD_4K_WEBDL: 8294400,  # 3840 x 2160
+        Quality.UHD_8K_WEBDL: 33177600,  # 7680 x 4320
+        Quality.UHD_4K_BLURAY: 8294400,  # 3840 x 2160
+        Quality.UHD_8K_BLURAY: 33177600,  # 7680 x 4320
     })
 
     # this will optionally hold [MIN/MAX] sizes per quality. It will be used globally (45min), and per-show.
@@ -111,7 +111,7 @@ class ExtendedQuality(Quality):
 
 def get_file_size_limit(configured_file_size, affective_list, result_quality, top_series_quality, series_runtime):
     """
-    Get the min/max limit normelized for the current quality (in case undefined)
+    Get the min/max limit normelized for the current quality (in case undefined).
 
     :param configured_file_size: File size limit as set in UI (now as %MAX/MINSIZE in ingnored words)
     :param affective_list: local/show (1) or global (2) config/list the size is defined in
@@ -120,16 +120,17 @@ def get_file_size_limit(configured_file_size, affective_list, result_quality, to
     :param series_runtime: runtime
     :return: file limit or -1 if not found
     """
-
     # log.info('configured_file_size {0}, affective_list {1}, result_quality_string {2}',
     #     configured_file_size, affective_list, result_quality_string)
     if configured_file_size >= 0:
         # When series local size limit is set - adjust file size limit per the quality/screen size
         if affective_list == 1:
-            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) / ExtendedQuality.QualityScreenPixels.get(top_series_quality)
+            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) /\
+                ExtendedQuality.QualityScreenPixels.get(top_series_quality)
         # When only global size limit is set - adjust file size limit to runtime and 1080p quality
         else:
-            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) / ExtendedQuality.QualityScreenPixels.get(Quality.FULLHDWEBDL) * series_runtime / 45
+            file_size_limit = configured_file_size * ExtendedQuality.QualityScreenPixels.get(result_quality) /\
+                ExtendedQuality.QualityScreenPixels.get(Quality.FULLHDWEBDL) * series_runtime / 45
         return file_size_limit
     else:
         return 0
@@ -158,9 +159,9 @@ def get_word_value(word, series_list, global_list):
         else:
             affective_list = 2
     log.info('word: {0} series_list: {1} global_list: {2}; found_word: {3} list: {4}',
-         word, series_list, global_list, found_word, affective_list)
+                word, series_list, global_list, found_word, affective_list)
     data = found_word.split("=")
-    data_len=len( data )
+    data_len = len( data )
     if data_len == 2:
         log.info(u'Found word, key & value: {0} {1} {2} Affective list (1-series, 2-global): {3}', found_word, data[0], data[1], affective_list)
         value = int(data[1])
@@ -439,11 +440,11 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
 
         if min_set_file_size >= 0:
             min_file_size = get_file_size_limit(min_set_file_size, min_affective_list,
-                 cur_result.quality, top_series_quality, series_runtime)
+                        cur_result.quality, top_series_quality, series_runtime)
 
         if max_set_file_size >= 0:
             max_file_size = get_file_size_limit(max_set_file_size, max_affective_list,
-                 cur_result.quality, top_series_quality, series_runtime)
+                        cur_result.quality, top_series_quality, series_runtime)
 
         found_hevc_format = naming.contains_at_least_one_word(cur_result.name, hevc_format_words)
         if found_hevc_format:
