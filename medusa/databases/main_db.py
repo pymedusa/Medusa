@@ -43,7 +43,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
-        query = "SELECT * from indexer_mapping where mindexer_id = ''"
+        query = "SELECT * from indexer_mapping WHERE mindexer_id = ''"
 
         sql_results = self.connection.select(query)
         if sql_results:
@@ -799,7 +799,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
 
         log.info(u'Remove the quality from the action field, as this is a composite status')
-        sql_results = self.connection.select("SELECT action from history GROUP BY action")
+        sql_results = self.connection.select("SELECT action FROM history GROUP BY action")
 
         for status in sql_results:
             split = common.Quality.split_composite_status(status[b'action'])
