@@ -1086,31 +1086,6 @@ class CreateProperTags(Rule):
         return to_append
 
 
-class ScreenSizeStandardizer(Rule):
-    """Standardize the screen size.
-
-    Fix 360i, 480i, 576i, etc which are detected as progressive.
-    Rename 4K to 2160p
-    """
-
-    priority = POST_PROCESS
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        for screen_size in matches.named('screen_size'):
-            if screen_size.raw.lower().endswith('i'):
-                screen_size.value = screen_size.value.replace('p', 'i')
-            elif screen_size.value == '4K':
-                screen_size.value = '2160p'
-
-
 class AudioCodecStandardizer(Rule):
     """DolbyDigital is AC3.
 
@@ -1364,7 +1339,6 @@ def rules():
         ReleaseGroupPostProcessor,
         FixMultipleSources,
         FixMultipleReleaseGroups,
-        ScreenSizeStandardizer,
         AudioCodecStandardizer,
         SourceStandardizer,
         VideoEncoderRule,
