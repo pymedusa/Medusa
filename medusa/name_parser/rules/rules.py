@@ -149,73 +149,6 @@ class FixAnimeReleaseGroup(Rule):
             return to_remove, to_append
 
 
-class FixSeasonRangeWithGap(Rule):
-    """Fix season range with gap.
-
-    guessit -t episode "Show.Name.-.Season.1.3.4-.Mp4.1080p"
-
-    Without this fix:
-        For: Show.Name.-.Season.1.3.4-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 1,
-            "episode": [
-                3,
-                4
-            ],
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-
-    with this fix:
-        For: Show.Name.-.Season.1.3.4-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": [1, 3, 4]
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [AppendMatch, RemoveMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            season = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season', index=0)
-            if not season:
-                continue
-
-            episodes = matches.range(season.end, filepart.end,
-                                     predicate=lambda match: match.name == 'episode' and 'weak-episode' in match.tags)
-            if not episodes:
-                continue
-
-            if len(episodes) != len(matches.holes(season.end, episodes[-1].start, predicate=lambda hole: hole.raw in simple_separator)):
-                continue
-
-            for episode in episodes:
-                new_season = copy.copy(episode)
-                new_season.name = 'season'
-                to_append.append(new_season)
-                to_remove.append(episode)
-
-        return to_append, to_remove
-
-
 class FixInvalidTitleOrAlternativeTitle(Rule):
     """Fix invalid title/alternative title due to absolute episode numbers range.
 
@@ -1329,7 +1262,6 @@ def rules():
         FixTvChaosUkWorkaround,
         FixAnimeReleaseGroup,
         FixInvalidTitleOrAlternativeTitle,
-        FixSeasonRangeWithGap,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
