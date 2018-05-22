@@ -35,7 +35,6 @@ from builtins import range
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
-from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
 
 from rebulk.processors import POST_PROCESS
@@ -103,7 +102,6 @@ class FixAnimeReleaseGroup(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    website_rebulk = website.website()
 
     def when(self, matches, context):
         """Evaluate the rule.
