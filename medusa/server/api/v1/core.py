@@ -2657,83 +2657,72 @@ class CMD_ShowStats(ApiCall):
 
         # show stats
         episode_status_counts_total = {'total': 0}
-        for status in statusStrings:
-            if status in [UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED]:
+        for status_code in statusStrings:
+            if status_code in [UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED]:
                 continue
-            episode_status_counts_total[status] = 0
+            episode_status_counts_total[status_code] = 0
 
         # add all the downloaded qualities
         episode_qualities_counts_download = {'total': 0}
-        # TODO: replace Quality status with normal status. But no idea what this does? medariox?
-        for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_download[statusCode] = 0
+        for status_code in (DOWNLOADED, ARCHIVED):
+            episode_qualities_counts_download[status_code] = 0
 
         # add all snatched qualities
         episode_qualities_counts_snatch = {'total': 0}
-        # TODO: replace Quality status with normal status. But no idea what this does? medariox?
-        for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_snatch[statusCode] = 0
+        for status_code in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+            episode_qualities_counts_snatch[status_code] = 0
 
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select('SELECT status, quality, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
                                          [INDEXER_TVDBV2, self.indexerid])
+
         # the main loop that goes through all episodes
         for row in sql_results:
             status, quality = int(row[b'status']), int(row[b'quality'])
 
             episode_status_counts_total['total'] += 1
+            episode_status_counts_total[status][quality] += 1
 
-            if status in DOWNLOADED + ARCHIVED:
+            if status in (DOWNLOADED, ARCHIVED):
                 episode_qualities_counts_download['total'] += 1
-                episode_qualities_counts_download[int(row[b'status'])] += 1
-            elif status in SNATCHED + SNATCHED_PROPER:
+                episode_qualities_counts_download[status][quality] += 1
+            elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                 episode_qualities_counts_snatch['total'] += 1
-                episode_qualities_counts_snatch[int(row[b'status'])] += 1
-            elif status == 0:  # we don't count NONE = 0 = N/A
-                pass
-            else:
-                episode_status_counts_total[status] += 1
+                episode_qualities_counts_snatch[status][quality] += 1
 
         # the outgoing container
         episodes_stats = {'downloaded': {}}
         # turning codes into strings
-        for statusCode in episode_qualities_counts_download:
-            if statusCode == 'total':
-                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[statusCode]
+        for status in episode_qualities_counts_download:
+            if status == 'total':
+                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
-            episodes_stats['downloaded'][status_string] = episode_qualities_counts_download[statusCode]
+            quality = episode_qualities_counts_download[status]
+            quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
+            episodes_stats['downloaded'][quality_string] = episode_qualities_counts_download[status]
 
         episodes_stats['snatched'] = {}
         # turning codes into strings
         # and combining proper and normal
-        for statusCode in episode_qualities_counts_snatch:
-            if statusCode == 'total':
-                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[statusCode]
+        for status in episode_qualities_counts_snatch:
+            if status == 'total':
+                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
+            quality = episode_qualities_counts_download[status]
+            quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
             if Quality.qualityStrings[quality] in episodes_stats['snatched']:
-                episodes_stats['snatched'][status_string] += episode_qualities_counts_snatch[statusCode]
+                episodes_stats['snatched'][quality_string] += episode_qualities_counts_snatch[status]
             else:
-                episodes_stats['snatched'][status_string] = episode_qualities_counts_snatch[statusCode]
+                episodes_stats['snatched'][quality_string] = episode_qualities_counts_snatch[status]
 
         # episodes_stats["total"] = {}
-        for statusCode in episode_status_counts_total:
-            if statusCode == 'total':
-                episodes_stats['total'] = episode_status_counts_total[statusCode]
+        for status in episode_status_counts_total:
+            if status == 'total':
+                episodes_stats['total'] = episode_status_counts_total[status]
                 continue
-            status_string = statusStrings[statusCode].lower().replace(' ', '_').replace('(', '').replace(
-                ')', '')
-            episodes_stats[status_string] = episode_status_counts_total[statusCode]
+            status_string = Quality.statusPrefixes[status].lower().replace(' ', '_').replace('(', '').replace(')', '')
+            episodes_stats[status_string] = episode_status_counts_total[status]
 
         return _responds(RESULT_SUCCESS, episodes_stats)
 
