@@ -7,7 +7,6 @@ from medusa.providers.torrent.html import (
     abnormal,
     alpharatio,
     anidex,
-    animebytes,
     animetorrents,
     archetorrent,
     avistaz,
@@ -41,6 +40,7 @@ from medusa.providers.torrent.html import (
     zooqle,
 )
 from medusa.providers.torrent.json import (
+    animebytes,
     bitcannon,
     btn,
     danishbits,
