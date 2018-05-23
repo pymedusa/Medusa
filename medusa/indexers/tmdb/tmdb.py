@@ -200,15 +200,25 @@ class Tmdb(BaseIndexer):
         if show_info and show_info.get('origin_country'):
             return show_info['origin_country'].split('|')
 
-    def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
+    def _get_show_by_id(self, tmdb_id, request_language='en', extra_info=None):
         """Retrieve tmdb show information by tmdb id.
 
         :param tmdb_id: The show's tmdb id
+        :param request_language: Language to get the show in
+        :type request_language: string or unicode
+        :extra_info: Extra details of the show to get (e.g. ['content_ratings', 'external_ids'])
+        :type extra_info: list, tuple or None
         :return: An ordered dict with the show searched for.
         """
+        if extra_info and isinstance(extra_info, (list, tuple)):
+            extra_info = ','.join(extra_info)
+
         log.debug('Getting all show data for {0}', tmdb_id)
         try:
-            results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
+            results = self.tmdb.TV(tmdb_id).info(
+                language='{0},null'.format(request_language),
+                append_to_response=extra_info
+            )
             if not results:
                 return
         except RequestException as error:
@@ -455,24 +465,24 @@ class Tmdb(BaseIndexer):
         log.debug('Getting all series data for {0}', tmdb_id)
 
         # Parse show information
-        series_info = self._get_show_by_id(tmdb_id, request_language=get_show_in_language)
+        extra_series_info = ('content_ratings', 'external_ids')
+        series_info = self._get_show_by_id(
+            tmdb_id,
+            request_language=get_show_in_language,
+            extra_info=extra_series_info
+        )
 
         if not series_info:
             log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
         # Get MPAA rating if available
-        try:
-            content_ratings = self.tmdb.TV(tmdb_id).content_ratings()
-            if content_ratings and content_ratings.get('results'):
-                mpaa_rating = next((r['rating'] for r in content_ratings['results']
-                                    if r['iso_3166_1'].upper() == 'US'), None)
-                if mpaa_rating:
-                    self._set_show_data(tmdb_id, 'contentrating', mpaa_rating)
-        except RequestException as error:
-            raise IndexerException('Could not get series data for series {series}. Cause: {cause}'.format(
-                series=tmdb_id, cause=error
-            ))
+        content_ratings = series_info.get('content_ratings', {}).get('results')
+        if content_ratings:
+            mpaa_rating = next((r['rating'] for r in content_ratings
+                                if r['iso_3166_1'].upper() == 'US'), None)
+            if mpaa_rating:
+                self._set_show_data(tmdb_id, 'contentrating', mpaa_rating)
 
         # get series data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.
@@ -490,14 +500,8 @@ class Tmdb(BaseIndexer):
             self._set_show_data(tmdb_id, k, v)
 
         # Get external ids.
-        # As the external id's are not part of the shows default response, we need to make an additional call for it.
-        try:
-            external_ids = self.tmdb.TV(tmdb_id).external_ids()
-            self._set_show_data(tmdb_id, 'externals', external_ids)
-        except RequestException as error:
-            raise IndexerException("Could not get external id's for series {series} Cause: {cause}".format(
-                series=tmdb_id, cause=error
-            ))
+        external_ids = series_info.get('external_ids', {})
+        self._set_show_data(tmdb_id, 'externals', external_ids)
 
         # get episode data
         if self.config['episodes_enabled']:
