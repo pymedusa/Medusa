@@ -259,7 +259,7 @@ class BTNProvider(TorrentProvider):
                 log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
                           {'msg': message})
 
-        except (socket.error, socket.timeout, ValueError) as error:
+        except (socket.error, ValueError) as error:
             log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})
         return parsed_json
 
