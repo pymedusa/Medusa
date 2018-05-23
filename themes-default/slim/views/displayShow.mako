@@ -4,7 +4,7 @@
     import urllib
     import ntpath
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
@@ -287,7 +287,7 @@ const startVue = () => {
                         <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
                     <td class="col-search triggerhighlight">
                         % if int(epResult["season"]) != 0:
-                            % if (int(epResult["status"]) in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.DOWNLOADED ) and app.USE_FAILED_DOWNLOADS:
+                            % if app.USE_FAILED_DOWNLOADS and (int(epResult["status"]) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED)):
                                 <app-link class="epRetry" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/retryEpisode?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" height="16" alt="retry" title="Retry Download" /></app-link>
                             % else:
                                 <app-link class="epSearch" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/searchEpisode?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
@@ -296,7 +296,7 @@ const startVue = () => {
                         % else:
                             <app-link class="epManualSearch" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/snatchSelection?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         % endif
-                        % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and app.USE_SUBTITLES and show.subtitles and epResult["location"]:
+                        % if app.USE_SUBTITLES and show.subtitles and epResult["location"] and (int(epResult["status"]) not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST)):
                             <app-link class="epSubtitlesSearch" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
                         % endif
                     </td>

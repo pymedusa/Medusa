@@ -271,7 +271,7 @@
                     % if not app.USE_FAILED_DOWNLOADS:
                     <% availableStatus.remove(FAILED) %>
                     % endif
-                    % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    % for cur_status in availableStatus + [DOWNLOADED, ARCHIVED]:
                         % if cur_status not in [DOWNLOADED, ARCHIVED]:
                         <option value="${cur_status}">${statusStrings[cur_status]}</option>
                         % endif

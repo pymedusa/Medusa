@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa import common
+    from medusa.common import statusStrings, SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa import app
 %>
 <%block name="scripts">
@@ -26,14 +26,14 @@ const startVue = () => {
 <h1 class="header">{{header}}</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
 % if whichStatus:
-<h2>None of your episodes have status ${common.statusStrings[whichStatus]}</h2>
+<h2>None of your episodes have status ${statusStrings[whichStatus]}</h2>
 <br>
 % endif
 <form action="manage/episodeStatuses" method="get">
 Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
-% for cur_status in [common.SKIPPED, common.SNATCHED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
-    %if cur_status not in [common.ARCHIVED, common.DOWNLOADED]:
-        <option value="${cur_status}">${common.statusStrings[cur_status]}</option>
+% for cur_status in (SKIPPED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, WANTED, IGNORED, DOWNLOADED, ARCHIVED):
+    %if cur_status not in (ARCHIVED, DOWNLOADED):
+        <option value="${cur_status}">${statusStrings[cur_status]}</option>
     %endif
 % endfor
 </select>
@@ -42,28 +42,28 @@ Manage episodes with status <select name="whichStatus" class="form-control form-
 % else:
 <form action="manage/changeEpisodeStatuses" method="post">
 <input type="hidden" id="oldStatus" name="oldStatus" value="${whichStatus}" />
-<h2>Shows containing ${common.statusStrings[whichStatus]} episodes</h2>
+<h2>Shows containing ${statusStrings[whichStatus]} episodes</h2>
 <br>
 <%
-    if int(whichStatus) in [common.IGNORED, common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
+    if int(whichStatus) in (IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
         row_class = "good"
     else:
-        row_class = common.Overview.overviewStrings[int(whichStatus)]
+        row_class = Overview.overviewStrings[int(whichStatus)]
 %>
 <input type="hidden" id="row_class" value="${row_class}" />
 Set checked shows/episodes to <select name="newStatus" class="form-control form-control-inline input-sm">
 <%
-    statusList = [common.SKIPPED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED
+    statusList = [SKIPPED, WANTED, IGNORED, DOWNLOADED, ARCHIVED]
     # Do not allow setting to bare downloaded or archived!
-    statusList.remove(common.DOWNLOADED)
-    statusList.remove(common.ARCHIVED)
+    statusList.remove(DOWNLOADED)
+    statusList.remove(ARCHIVED)
     if int(whichStatus) in statusList:
         statusList.remove(int(whichStatus))
-    if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and app.USE_FAILED_DOWNLOADS:
-        statusList.append(common.FAILED)
+    if app.USE_FAILED_DOWNLOADS and (int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED, DOWNLOADED)):
+        statusList.append(FAILED)
 %>
 % for cur_status in statusList:
-<option value="${cur_status}">${common.statusStrings[cur_status]}</option>
+<option value="${cur_status}">${statusStrings[cur_status]}</option>
 % endfor
 </select>
 <input class="btn-medusa btn-inline" type="submit" value="Go" />

@@ -90,14 +90,14 @@ NOTIFY_LOGIN_TEXT = 7
 NOTIFY_SNATCH_PROPER = 8
 
 notifyStrings = {
-    NOTIFY_SNATCH: "Started Download",
-    NOTIFY_DOWNLOAD: "Download Finished",
-    NOTIFY_SUBTITLE_DOWNLOAD: "Subtitle Download Finished",
-    NOTIFY_GIT_UPDATE: "Medusa Updated",
-    NOTIFY_GIT_UPDATE_TEXT: "Medusa Updated To Commit#: ",
-    NOTIFY_LOGIN: "Medusa new login",
-    NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
-    NOTIFY_SNATCH_PROPER: "Started PROPER Download"
+    NOTIFY_SNATCH: 'Started Download',
+    NOTIFY_DOWNLOAD: 'Download Finished',
+    NOTIFY_SUBTITLE_DOWNLOAD: 'Subtitle Download Finished',
+    NOTIFY_GIT_UPDATE: 'Medusa Updated',
+    NOTIFY_GIT_UPDATE_TEXT: 'Medusa Updated To Commit#: ',
+    NOTIFY_LOGIN: 'Medusa new login',
+    NOTIFY_LOGIN_TEXT: 'New login from IP: {0}. http://geomaplookup.net/?ip={0}',
+    NOTIFY_SNATCH_PROPER: 'Started Proper Download'
 }
 
 # Episode statuses
@@ -122,12 +122,28 @@ NAMING_SEPARATED_REPEAT = 16
 NAMING_LIMITED_EXTEND_E_PREFIXED = 32
 
 MULTI_EP_STRINGS = {
-    NAMING_REPEAT: "Repeat",
-    NAMING_SEPARATED_REPEAT: "Repeat (Separated)",
-    NAMING_DUPLICATE: "Duplicate",
-    NAMING_EXTEND: "Extend",
-    NAMING_LIMITED_EXTEND: "Extend (Limited)",
-    NAMING_LIMITED_EXTEND_E_PREFIXED: "Extend (Limited, E-prefixed)"
+    NAMING_REPEAT: 'Repeat',
+    NAMING_SEPARATED_REPEAT: 'Repeat (Separated)',
+    NAMING_DUPLICATE: 'Duplicate',
+    NAMING_EXTEND: 'Extend',
+    NAMING_LIMITED_EXTEND: 'Extend (Limited)',
+    NAMING_LIMITED_EXTEND_E_PREFIXED: 'Extend (Limited, E-prefixed)'
+}
+
+
+statusStrings = {
+    ARCHIVED: 'Archived',
+    DOWNLOADED: 'Downloaded',
+    FAILED: 'Failed',
+    IGNORED: 'Ignored',
+    SKIPPED: 'Skipped',
+    SNATCHED: 'Snatched',
+    SNATCHED_BEST: 'Snatched (Best)',
+    SNATCHED_PROPER: 'Snatched (Proper)',
+    SUBTITLED: 'Subtitled',
+    UNAIRED: 'Unaired',
+    UNSET: 'Unset',
+    WANTED: 'Wanted'
 }
 
 
@@ -159,87 +175,72 @@ class Quality(object):
     UNKNOWN = 1 << 15  # 32768
 
     qualityStrings = {
-        NONE: "N/A",
-        UNKNOWN: "Unknown",
-        SDTV: "SDTV",
-        SDDVD: "SD DVD",
-        HDTV: "720p HDTV",
-        RAWHDTV: "RawHD",
-        FULLHDTV: "1080p HDTV",
-        HDWEBDL: "720p WEB-DL",
-        FULLHDWEBDL: "1080p WEB-DL",
-        HDBLURAY: "720p BluRay",
-        FULLHDBLURAY: "1080p BluRay",
-        UHD_4K_TV: "4K UHD TV",
-        UHD_8K_TV: "8K UHD TV",
-        UHD_4K_WEBDL: "4K UHD WEB-DL",
-        UHD_8K_WEBDL: "8K UHD WEB-DL",
-        UHD_4K_BLURAY: "4K UHD BluRay",
-        UHD_8K_BLURAY: "8K UHD BluRay",
+        NONE: 'N/A',
+        UNKNOWN: 'Unknown',
+        SDTV: 'SDTV',
+        SDDVD: 'SD DVD',
+        HDTV: '720p HDTV',
+        RAWHDTV: 'RawHD',
+        FULLHDTV: '1080p HDTV',
+        HDWEBDL: '720p WEB-DL',
+        FULLHDWEBDL: '1080p WEB-DL',
+        HDBLURAY: '720p BluRay',
+        FULLHDBLURAY: '1080p BluRay',
+        UHD_4K_TV: '4K UHD TV',
+        UHD_8K_TV: '8K UHD TV',
+        UHD_4K_WEBDL: '4K UHD WEB-DL',
+        UHD_8K_WEBDL: '8K UHD WEB-DL',
+        UHD_4K_BLURAY: '4K UHD BluRay',
+        UHD_8K_BLURAY: '8K UHD BluRay',
     }
 
     sceneQualityStrings = {
-        NONE: "N/A",
-        UNKNOWN: "Unknown",
-        SDTV: "",
-        SDDVD: "",
-        HDTV: "720p",
-        RAWHDTV: "1080i",
-        FULLHDTV: "1080p",
-        HDWEBDL: "720p",
-        FULLHDWEBDL: "1080p",
-        HDBLURAY: "720p BluRay",
-        FULLHDBLURAY: "1080p BluRay",
-        UHD_4K_TV: "2160p",
-        UHD_8K_TV: "4320p",
-        UHD_4K_WEBDL: "2160p",
-        UHD_8K_WEBDL: "4320p",
-        UHD_4K_BLURAY: "2160p BluRay",
-        UHD_8K_BLURAY: "4320p BluRay",
+        NONE: 'N/A',
+        UNKNOWN: 'Unknown',
+        SDTV: '',
+        SDDVD: '',
+        HDTV: '720p',
+        RAWHDTV: '1080i',
+        FULLHDTV: '1080p',
+        HDWEBDL: '720p',
+        FULLHDWEBDL: '1080p',
+        HDBLURAY: '720p BluRay',
+        FULLHDBLURAY: '1080p BluRay',
+        UHD_4K_TV: '2160p',
+        UHD_8K_TV: '4320p',
+        UHD_4K_WEBDL: '2160p',
+        UHD_8K_WEBDL: '4320p',
+        UHD_4K_BLURAY: '2160p BluRay',
+        UHD_8K_BLURAY: '4320p BluRay',
     }
 
     combinedQualityStrings = {
-        ANYHDTV: "HDTV",
-        ANYWEBDL: "WEB-DL",
-        ANYBLURAY: "BluRay"
+        ANYHDTV: 'HDTV',
+        ANYWEBDL: 'WEB-DL',
+        ANYBLURAY: 'BluRay'
     }
 
     cssClassStrings = {
-        NONE: "N/A",
-        UNKNOWN: "Unknown",
-        SDTV: "SDTV",
-        SDDVD: "SDDVD",
-        HDTV: "HD720p",
-        RAWHDTV: "RawHD",
-        FULLHDTV: "HD1080p",
-        HDWEBDL: "HD720p",
-        FULLHDWEBDL: "HD1080p",
-        HDBLURAY: "HD720p",
-        FULLHDBLURAY: "HD1080p",
-        UHD_4K_TV: "UHD-4K",
-        UHD_8K_TV: "UHD-8K",
-        UHD_4K_WEBDL: "UHD-4K",
-        UHD_8K_WEBDL: "UHD-8K",
-        UHD_4K_BLURAY: "UHD-4K",
-        UHD_8K_BLURAY: "UHD-8K",
-        ANYHDTV: "any-hd",
-        ANYWEBDL: "any-hd",
-        ANYBLURAY: "any-hd"
-    }
-
-    statusPrefixes = {
-        UNSET: "Unset",
-        UNAIRED: "Unaired",
-        WANTED: "Wanted",
-        SKIPPED: "Skipped",
-        IGNORED: "Ignored",
-        SUBTITLED: "Subtitled",
-        DOWNLOADED: "Downloaded",
-        SNATCHED: "Snatched",
-        SNATCHED_PROPER: "Snatched (Proper)",
-        FAILED: "Failed",
-        SNATCHED_BEST: "Snatched (Best)",
-        ARCHIVED: "Archived"
+        NONE: 'N/A',
+        UNKNOWN: 'Unknown',
+        SDTV: 'SDTV',
+        SDDVD: 'SDDVD',
+        HDTV: 'HD720p',
+        RAWHDTV: 'RawHD',
+        FULLHDTV: 'HD1080p',
+        HDWEBDL: 'HD720p',
+        FULLHDWEBDL: 'HD1080p',
+        HDBLURAY: 'HD720p',
+        FULLHDBLURAY: 'HD1080p',
+        UHD_4K_TV: 'UHD-4K',
+        UHD_8K_TV: 'UHD-8K',
+        UHD_4K_WEBDL: 'UHD-4K',
+        UHD_8K_WEBDL: 'UHD-8K',
+        UHD_4K_BLURAY: 'UHD-4K',
+        UHD_8K_BLURAY: 'UHD-8K',
+        ANYHDTV: 'any-hd',
+        ANYWEBDL: 'any-hd',
+        ANYBLURAY: 'any-hd'
     }
 
     @staticmethod
@@ -447,8 +448,8 @@ class Quality(object):
 
         # TODO: Use knowledge information like 'resolution'
         base_filename = os.path.basename(file_path)
-        bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
-        webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
+        bluray = re.search(r'blue?-?ray|hddvd|b[rd](rip|mux)', base_filename, re.I) is not None
+        webdl = re.search(r'web.?dl|web(rip|mux|hd)', base_filename, re.I) is not None
 
         ret = Quality.UNKNOWN
         if 3240 < height:
@@ -850,68 +851,15 @@ qualityPresets = (
 )
 
 qualityPresetStrings = {
-    SD: "SD",
-    HD: "HD",
-    HD720p: "HD720p",
-    HD1080p: "HD1080p",
-    UHD: "UHD",
-    UHD_4K: "UHD-4K",
-    UHD_8K: "UHD-8K",
-    ANY: "Any",
+    SD: 'SD',
+    HD: 'HD',
+    HD720p: 'HD720p',
+    HD1080p: 'HD1080p',
+    UHD: 'UHD',
+    UHD_4K: 'UHD-4K',
+    UHD_8K: 'UHD-8K',
+    ANY: 'Any',
 }
-
-
-class StatusStrings(dict):
-    """Dictionary containing strings for status codes."""
-
-    # todo: Make views return Qualities too
-    statuses = list(Quality.statusPrefixes)
-    qualities = list(Quality.qualityStrings)
-
-    def __missing__(self, key):
-        """
-        If the key is not found try to determine a status from Quality.
-
-        :param key: A numeric key
-        :raise KeyError: if the key is invalid and can't be determined from Quality
-        """
-        try:
-            key = int(key)
-        except (TypeError, ValueError):
-            raise ValueError(key)
-
-        current = Quality.split_composite_status(key)
-        if current.quality in self.qualities:
-            return '{status} ({quality})'.format(
-                status=self[current.status],
-                quality=Quality.qualityStrings[current.quality]
-            )
-        else:  # the key wasn't found in qualities either
-            raise KeyError(key)  # ... so the key is invalid
-
-    def __contains__(self, key):
-        try:
-            key = int(key)
-            return key in self.statuses or key in self.qualities
-        except (TypeError, ValueError):
-            raise ValueError(key)
-
-
-# Assign strings to statuses
-statusStrings = StatusStrings({
-    UNSET: "Unset",
-    UNAIRED: "Unaired",
-    SNATCHED: "Snatched",
-    DOWNLOADED: "Downloaded",
-    SKIPPED: "Skipped",
-    SNATCHED_PROPER: "Snatched (Proper)",
-    WANTED: "Wanted",
-    ARCHIVED: "Archived",
-    IGNORED: "Ignored",
-    SUBTITLED: "Subtitled",
-    FAILED: "Failed",
-    SNATCHED_BEST: "Snatched (Best)"
-})
 
 
 class Overview(object):
@@ -927,16 +875,16 @@ class Overview(object):
     QUAL = 50
 
     overviewStrings = {
-        SKIPPED: "skipped",
-        WANTED: "wanted",
-        QUAL: "qual",
-        GOOD: "good",
-        UNAIRED: "unaired",
-        SNATCHED: "snatched",
+        SKIPPED: 'skipped',
+        WANTED: 'wanted',
+        QUAL: 'qual',
+        GOOD: 'good',
+        UNAIRED: 'unaired',
+        SNATCHED: 'snatched',
         # we can give these a different class later, otherwise
         # breaks checkboxes in displayShow for showing different statuses
-        SNATCHED_BEST: "snatched",
-        SNATCHED_PROPER: "snatched"
+        SNATCHED_BEST: 'snatched',
+        SNATCHED_PROPER: 'snatched'
     }
 
 
