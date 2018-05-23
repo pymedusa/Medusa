@@ -38,7 +38,7 @@ import knowit
 
 from medusa import app, db, helpers, history
 from medusa.cache import cache, memory_cache
-from medusa.common import Quality, cpu_presets
+from medusa.common import cpu_presets, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
 from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
@@ -867,7 +867,7 @@ class SubtitlesFinder(object):
                     logger.debug(u'%s cannot be parsed to an episode', filename)
                     continue
 
-                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                if tv_episode.status not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     continue
 
                 if not tv_episode.series.subtitles:
