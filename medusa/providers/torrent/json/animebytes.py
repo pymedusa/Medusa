@@ -137,10 +137,10 @@ class AnimeBytes(TorrentProvider):
                 continue
 
             for row in torrent_rows:
-                properties_string = row.get('Property').rstrip(' |').replace('|', '.').replace(' ', '')
+                properties_string = row.get('Property').rstrip(' |').replace(' ', '')
                 # Hack for the h264 10bit stuff
-                properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')
-                properties = properties_string.split('.')
+                properties_string = properties_string.replace('h26410-bit', 'h264|hi10p')
+                properties = properties_string.split('|')
                 if not all(properties):
                     continue
 
