@@ -235,6 +235,7 @@ class AnimeBytes(TorrentProvider):
 
                 seeders = row.get('Seeders')
                 leechers = row.get('Leechers')
+                pubdate = self.parse_pubdate(row.get('UploadTime'))
 
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
@@ -250,7 +251,7 @@ class AnimeBytes(TorrentProvider):
                     'size': row.get('Size'),
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
+                    'pubdate': pubdate,
                 }
 
                 if mode != 'RSS':
