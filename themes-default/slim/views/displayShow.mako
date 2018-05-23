@@ -236,9 +236,9 @@ const startVue = () => {
                         <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
                         ${epResult["name"]}
                     </td>
-                    <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
+                    <td class="col-name hidden-xs triggerhighlight">${epLoc if int(epResult['status']) in [DOWNLOADED, ARCHIVED] else ''}</td>
                     <td class="col-ep triggerhighlight">
-                        % if epResult["file_size"] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if epResult["file_size"] and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
                             ${pretty_file_size(epResult["file_size"])}
                         % endif
                     </td>
@@ -256,7 +256,7 @@ const startVue = () => {
                         % endif
                     </td>
                     <td class="triggerhighlight">
-                        % if app.DOWNLOAD_URL and epResult['location'] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if app.DOWNLOAD_URL and epResult['location'] and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
                             <%
                                 filename = epResult['location']
                                 for rootDir in app.ROOT_DIRS:
@@ -269,7 +269,7 @@ const startVue = () => {
                     </td>
                     <td class="col-subtitles triggerhighlight" align="center">
                     % for flag in (epResult["subtitles"] or '').split(','):
-                        % if flag.strip() and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if flag.strip() and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
                             % if flag != 'und':
                                 <app-link class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
                                     <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
@@ -280,12 +280,11 @@ const startVue = () => {
                         % endif
                     % endfor
                     </td>
-                        <% cur_status, cur_quality = Quality.split_composite_status(int(epResult["status"])) %>
-                        % if cur_quality != Quality.NONE:
-                            <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
-                        % else:
-                            <td class="col-status triggerhighlight">${statusStrings[cur_status]}</td>
-                        % endif
+                        <%
+                            cur_status = int(epResult['status'])
+                            cur_quality = int(epResult['quality'])
+                        %>
+                        <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
                     <td class="col-search triggerhighlight">
                         % if int(epResult["season"]) != 0:
                             % if (int(epResult["status"]) in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.DOWNLOADED ) and app.USE_FAILED_DOWNLOADS:

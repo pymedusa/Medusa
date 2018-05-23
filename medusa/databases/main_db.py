@@ -262,9 +262,9 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_status_qualities(self):
         """
-        Check for a status bigger then 12, and translate to a status + quality,
-        as these are old composite statussus.
-        This can be removed when all code that creates composite statussus has been migrated.
+        Check for a status bigger than 12, and translate to a status + quality,
+        as these are old composite statuses.
+        This can be removed when all code that creates composite statuses has been migrated.
         Until then this can be used to keep the DB sane.
         """
         log.info(u'Convert composite statussus in tv_episodes to status + quality.')
@@ -276,8 +276,6 @@ class MainSanityCheck(db.DBSanityCheck):
                 "UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?",
                 [split.status, split.quality, status[b'status']]
             )
-
-        self.connection.select("")
 
     def fix_remove_status_unknown(self):
         """Changes any `UNKNOWN` quality to 0."""

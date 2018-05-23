@@ -144,17 +144,14 @@ const startVue = () => {
                 </tr>
                 % for cur_result in showSQLResults[(cur_show.indexer, cur_show.series_id)]:
                     <%
-                        old_status, old_quality = Quality.split_composite_status(cur_result['status'])
-                        archived_status = Quality.composite_status(ARCHIVED, old_quality)
+                        old_status = cur_result['status']
+                        old_quality = cur_result['quality']
+                        archived_status = ARCHIVED
                     %>
-                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result["episode_string"]]]}">
-                        <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
+                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result['episode_string']]]}">
+                        <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
-                            % if old_quality != Quality.NONE:
-                                ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
-                            % else:
-                                ${statusStrings[old_status]}
-                            % endif
+                            ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
                         </td>
                         <td class="tableright" align="center" class="nowrap">
                             ${cur_result["name"]}
