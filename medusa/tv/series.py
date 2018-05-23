@@ -2268,7 +2268,7 @@ class Series(TV):
         sql_list = []
         for ep_obj in ep_list:
             with ep_obj.lock:
-                if ep_obj.status in Quality.DOWNLOADED:
+                if ep_obj.status == DOWNLOADED:
                     if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
