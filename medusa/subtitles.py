@@ -38,7 +38,7 @@ import knowit
 
 from medusa import app, db, helpers, history
 from medusa.cache import cache, memory_cache
-from medusa.common import cpu_presets, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+from medusa.common import SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, cpu_presets
 from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
