@@ -477,7 +477,7 @@ class Tmdb(BaseIndexer):
             raise IndexerError('Series result returned zero')
 
         # Get MPAA rating if available
-        content_ratings = series_info.get('content_ratings', {}).get('results')
+        content_ratings = series_info['series'].get('content_ratings', {}).get('results')
         if content_ratings:
             mpaa_rating = next((r['rating'] for r in content_ratings
                                 if r['iso_3166_1'].upper() == 'US'), None)
@@ -500,7 +500,7 @@ class Tmdb(BaseIndexer):
             self._set_show_data(tmdb_id, k, v)
 
         # Get external ids.
-        external_ids = series_info.get('external_ids', {})
+        external_ids = series_info['series'].get('external_ids', {})
         self._set_show_data(tmdb_id, 'externals', external_ids)
 
         # get episode data
