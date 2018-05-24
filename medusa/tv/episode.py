@@ -252,7 +252,7 @@ class Episode(TV):
         self.hasnfo = False
         self.hastbn = False
         self.status = UNSET
-        self.quality = 0
+        self.quality = Quality.NA
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
