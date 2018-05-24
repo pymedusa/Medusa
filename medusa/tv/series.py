@@ -1327,7 +1327,7 @@ class Series(TV):
                     continue
 
             else:
-                cur_ep.update_status(filepath)
+                cur_ep.update_state(filepath)
 
                 with cur_ep.lock:
                     cur_ep.check_for_meta_files()

@@ -22,7 +22,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 10
+CURRENT_MINOR_DB_VERSION = 11
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -39,8 +39,8 @@ class MainSanityCheck(db.DBSanityCheck):
         # self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
-        self.fix_remove_status_unknown()
         self.fix_status_qualities()
+        self.update_status_unknown()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -264,23 +264,24 @@ class MainSanityCheck(db.DBSanityCheck):
         """
         Check for a status bigger than 12, and translate to a status + quality,
         as these are old composite statuses.
+
         This can be removed when all code that creates composite statuses has been migrated.
         Until then this can be used to keep the DB sane.
         """
-        log.info(u'Convert composite statussus in tv_episodes to status + quality.')
+        log.info(u'Convert composite statuses in tv_episodes to status + quality.')
         sql_results = self.connection.select("SELECT status FROM tv_episodes where status > 12 GROUP BY status")
         for status in sql_results:
-            log.info(u'Split composite status in to ep_status and ep_quality for %s', status[b'status'])
+            log.info(u'Split composite status into status and quality for %s', status[b'status'])
             split = common.Quality.split_composite_status(status[b'status'])
             self.connection.select(
                 "UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?",
                 [split.status, split.quality, status[b'status']]
             )
 
-    def fix_remove_status_unknown(self):
-        """Changes any `UNKNOWN` quality to 0."""
-        log.info(u'Remove status UNKONWN from tv_episodes')
-        self.connection.select("UPDATE tv_episodes SET quality = 0 WHERE quality = 32768")
+    def update_status_unknown(self):
+        """Changes any `UNKNOWN` quality to 1."""
+        log.info(u'Update status UNKONWN from tv_episodes')
+        self.connection.select("UPDATE tv_episodes SET quality = 1 WHERE quality = 65536")
 
 
 def backupDatabase(version):
@@ -779,9 +780,8 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
 
-        log.info(u'Split composite status in to ep_status and ep_quality')
+        log.info(u'Split composite status into ep_status and ep_quality')
         sql_results = self.connection.select("SELECT status from tv_episodes GROUP BY status")
-
         for status in sql_results:
             split = common.Quality.split_composite_status(status[b'status'])
             self.connection.action("UPDATE tv_episodes SET ep_status = ?, ep_quality = ? WHERE status = ?",
@@ -819,10 +819,73 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         log.info(u'Remove the quality from the action field, as this is a composite status')
         sql_results = self.connection.select("SELECT action FROM history GROUP BY action")
-
         for status in sql_results:
             split = common.Quality.split_composite_status(status[b'action'])
             self.connection.action("UPDATE history SET action = ? WHERE action = ?",
                                    [split.status, status[b'action']])
 
         self.inc_minor_version()
+
+
+class ShiftQualities(AddSeparatedStatusQualityFields):
+    """Shift all qualities one place to the left."""
+
+    def test(self):
+        """Test if the version is at least 44.11"""
+        return self.connection.version >= (44, 11)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        self.shift_tv_qualities()
+        self.shift_episode_qualities()
+        self.shift_history_qualities()
+        self.inc_minor_version()
+
+    def shift_tv_qualities(self):
+        """
+        Shift all qualities << 1.
+
+        This makes it possible to set UNKNOWN as 1, making it the lowest quality.
+        """
+        log.info('Shift qualities in tv_shows one place to the left.')
+        sql_results = self.connection.select("SELECT quality FROM tv_shows")
+        for result in sql_results:
+            quality = result[b'quality']
+            new_quality = quality << 1
+            self.connection.select(
+                "UPDATE tv_shows SET quality = ? WHERE quality = ?",
+                [new_quality, quality]
+            )
+
+    def shift_episode_qualities(self):
+        """
+        Shift all qualities << 1.
+
+        This makes it possible to set UNKNOWN as 1, making it the lowest quality.
+        """
+        log.info('Shift qualities in tv_episodes one place to the left.')
+        sql_results = self.connection.select("SELECT quality FROM tv_episodes WHERE quality != 0")
+        for result in sql_results:
+            quality = result[b'quality']
+            new_quality = quality << 1
+            self.connection.select(
+                "UPDATE tv_episodes SET quality = ? WHERE quality = ?",
+                [new_quality, quality]
+            )
+
+    def shift_history_qualities(self):
+        """
+        Shift all qualities << 1.
+
+        This makes it possible to set UNKNOWN as 1, making it the lowest quality.
+        """
+        log.info('Shift qualities in history one place to the left.')
+        sql_results = self.connection.select("SELECT quality FROM history")
+        for result in sql_results:
+            quality = result[b'quality']
+            new_quality = quality << 1
+            self.connection.select(
+                "UPDATE history SET quality = ? WHERE quality = ?",
+                [new_quality, quality]
+            )

@@ -62,7 +62,7 @@ class HistoryStatus(History):
         return self.hasColumn('history', 'old_status')
 
     def execute(self):
-        self.addColumn('history', 'old_status', 'NUMERIC', Quality.NONE)
+        self.addColumn('history', 'old_status', 'NUMERIC', Quality.NA)
         self.addColumn('history', 'showid', 'NUMERIC', '-1')
         self.addColumn('history', 'season', 'NUMERIC', '-1')
         self.addColumn('history', 'episode', 'NUMERIC', '-1')

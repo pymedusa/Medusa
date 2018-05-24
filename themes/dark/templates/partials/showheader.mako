@@ -173,12 +173,12 @@
                             % if show.quality in qualityPresets:
                                 ${renderQualityPill(show.quality)}
                             % else:
-                            % if allowed_qualities:
-                                <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
-                            % endif
-                            % if preferred_qualities:
-                                <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
-                            % endif
+                                % if allowed_qualities:
+                                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                % endif
+                                % if preferred_qualities:
+                                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                % endif
                             % endif
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
@@ -269,12 +269,10 @@
                     <option value="">--------------------------------------------</option>
                     <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
                     % if not app.USE_FAILED_DOWNLOADS:
-                    <% availableStatus.remove(FAILED) %>
+                        <% availableStatus.remove(FAILED) %>
                     % endif
                     % for cur_status in availableStatus + [DOWNLOADED, ARCHIVED]:
-                        % if cur_status not in [DOWNLOADED, ARCHIVED]:
                         <option value="${cur_status}">${statusStrings[cur_status]}</option>
-                        % endif
                     % endfor
                     </select>
                     <input type="hidden" id="series-slug" value="${show.slug}" />

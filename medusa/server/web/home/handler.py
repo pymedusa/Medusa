@@ -1916,6 +1916,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
+        status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
             if direct:
@@ -1981,7 +1982,7 @@ class Home(WebRoot):
                             ep_obj.status in snatched_qualities + [DOWNLOADED]
                             and os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED'.format(
+                                   ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 

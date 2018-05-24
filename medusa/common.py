@@ -148,34 +148,30 @@ statusStrings = {
 
 
 class Quality(object):
-    """Determine quality and set status codes."""
 
-    NONE = 0  # 0
-    SDTV = 1  # 1
-    SDDVD = 1 << 1  # 2
-    HDTV = 1 << 2  # 4
-    RAWHDTV = 1 << 3  # 8  -- 720p/1080i mpeg2 (trollhd releases)
-    FULLHDTV = 1 << 4  # 16 -- 1080p HDTV (QCF releases)
-    HDWEBDL = 1 << 5  # 32
-    FULLHDWEBDL = 1 << 6  # 64 -- 1080p web-dl
-    HDBLURAY = 1 << 7  # 128
-    FULLHDBLURAY = 1 << 8  # 256
-    UHD_4K_TV = 1 << 9  # 512 -- 2160p aka 4K UHD aka UHD-1
-    UHD_4K_WEBDL = 1 << 10  # 1024
-    UHD_4K_BLURAY = 1 << 11  # 2048
-    UHD_8K_TV = 1 << 12  # 4096 -- 4320p aka 8K UHD aka UHD-2
-    UHD_8K_WEBDL = 1 << 13  # 8192
-    UHD_8K_BLURAY = 1 << 14  # 16384
-    ANYHDTV = HDTV | FULLHDTV  # 20
-    ANYWEBDL = HDWEBDL | FULLHDWEBDL  # 96
-    ANYBLURAY = HDBLURAY | FULLHDBLURAY  # 384
-
-    # put these bits at the other end of the spectrum,
-    # far enough out that they shouldn't interfere
-    UNKNOWN = 1 << 15  # 32768
+    NA = 0  # 0
+    UNKNOWN = 1  # 1
+    SDTV = 1 << 1  # 2
+    SDDVD = 1 << 2  # 4
+    HDTV = 1 << 3  # 8  -- 720p/1080i mpeg2 (trollhd releases)
+    RAWHDTV = 1 << 4  # 16 -- 1080p HDTV (QCF releases)
+    FULLHDTV = 1 << 5  # 32
+    HDWEBDL = 1 << 6  # 64 -- 1080p web-dl
+    FULLHDWEBDL = 1 << 7  # 128
+    HDBLURAY = 1 << 8  # 256
+    FULLHDBLURAY = 1 << 9  # 512 -- 2160p aka 4K UHD aka UHD-1
+    UHD_4K_TV = 1 << 10  # 1024
+    UHD_4K_WEBDL = 1 << 11  # 2048
+    UHD_4K_BLURAY = 1 << 12  # 4096 -- 4320p aka 8K UHD aka UHD-2
+    UHD_8K_TV = 1 << 13  # 8192
+    UHD_8K_WEBDL = 1 << 14  # 16384
+    UHD_8K_BLURAY = 1 << 15  # 32768
+    ANYHDTV = HDTV | FULLHDTV  # 40
+    ANYWEBDL = HDWEBDL | FULLHDWEBDL  # 192
+    ANYBLURAY = HDBLURAY | FULLHDBLURAY  # 768
 
     qualityStrings = {
-        NONE: 'N/A',
+        NA: 'N/A',
         UNKNOWN: 'Unknown',
         SDTV: 'SDTV',
         SDDVD: 'SD DVD',
@@ -195,7 +191,7 @@ class Quality(object):
     }
 
     sceneQualityStrings = {
-        NONE: 'N/A',
+        NA: 'N/A',
         UNKNOWN: 'Unknown',
         SDTV: '',
         SDDVD: '',
@@ -221,7 +217,7 @@ class Quality(object):
     }
 
     cssClassStrings = {
-        NONE: 'N/A',
+        NA: 'na',
         UNKNOWN: 'Unknown',
         SDTV: 'SDTV',
         SDDVD: 'SDDVD',
@@ -244,23 +240,6 @@ class Quality(object):
     }
 
     @staticmethod
-    def _get_status_strings(status):
-        """
-        Return string values associated with Status prefix.
-
-        :param status: Status prefix to resolve
-        :return: Human readable status value
-        """
-        to_return = {}
-        for quality in Quality.qualityStrings:
-            if quality is not None:
-                stat = Quality.statusPrefixes[status]
-                qual = Quality.qualityStrings[quality]
-                comp = Quality.composite_status(status, quality)
-                to_return[comp] = '%s (%s)' % (stat, qual)
-        return to_return
-
-    @staticmethod
     def combine_qualities(allowed_qualities, preferred_qualities):
         any_quality = 0
         best_quality = 0
@@ -272,13 +251,9 @@ class Quality(object):
 
     @staticmethod
     def split_quality(quality):
-        if quality is None:
-            quality = Quality.NONE
         allowed_qualities = []
         preferred_qualities = []
         for cur_qual in Quality.qualityStrings:
-            if cur_qual is None:
-                cur_qual = Quality.NONE
             if cur_qual & quality:
                 allowed_qualities.append(cur_qual)
             if cur_qual << 16 & quality:
@@ -289,14 +264,14 @@ class Quality(object):
     @staticmethod
     def name_quality(name, anime=False, extend=True):
         """
-        Return The quality from an episode File renamed by the application.
+        Return the quality from an episode filename.
 
-        If no quality is achieved it will try scene_quality regex
+        If no quality is achieved it will try scene_quality regex.
 
         :param name: to parse
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :param extend: boolean to extend methods to try
-        :return: Quality prefix
+        :return: Quality
         """
         # Try Scene names first
         quality = Quality.scene_quality(name, anime)
@@ -312,7 +287,7 @@ class Quality(object):
     @staticmethod
     def scene_quality(name, anime=False):
         """
-        Return The quality from the Scene episode File.
+        Return the quality from the episode filename with the regex.
 
         :param name: Episode filename to analyse
         :param anime: Boolean to indicate if the show we're resolving is Anime
@@ -468,16 +443,6 @@ class Quality(object):
     composite_status_quality = namedtuple('composite_status', ['status', 'quality'])
 
     @staticmethod
-    def composite_status(status, quality):
-        if quality is None:
-            quality = Quality.NONE
-        return status + 100 * quality
-
-    @staticmethod
-    def quality_downloaded(status):
-        return (status - DOWNLOADED) // 100
-
-    @staticmethod
     def split_composite_status(status):
         """
         Split a composite status code into a status and quality.
@@ -493,7 +458,7 @@ class Quality(object):
             if status > q * 100:
                 return Quality.composite_status_quality(status - q * 100, q)
 
-        return Quality.composite_status_quality(status, Quality.NONE)
+        return Quality.composite_status_quality(status, Quality.UNKNOWN)
 
     @staticmethod
     def scene_quality_from_name(name, quality):
@@ -560,18 +525,6 @@ class Quality(object):
 
         return rel_type + codec
 
-    @staticmethod
-    def status_from_name(name, anime=False):
-        """
-        Get a status object from filename.
-
-        :param name: Filename to check
-        :param anime: boolean to enable anime parsing
-        :return: Composite status/quality object
-        """
-        quality = Quality.name_quality(name, anime)
-        return Quality.composite_status(DOWNLOADED, quality)
-
     guessit_map = {
         '720p': {
             'HDTV': HDTV,
@@ -609,7 +562,6 @@ class Quality(object):
     def should_search(cur_status, cur_quality, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality.
 
-        If cur_quality is Quality.NONE, it will return True as its a invalid quality
         If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
 
         :param cur_status: current status of the episode
@@ -654,7 +606,6 @@ class Quality(object):
         if preferred quality, then new quality should be higher than existing one AND not be in preferred
         If new quality is already in preferred then is already final quality.
         Force (forced search) bypass episode status only or unknown quality
-        If old quality is Quality.NONE, it will be replaced
 
         :param ep_status: current status of the episode
         :param old_quality: current quality of the episode
@@ -667,14 +618,9 @@ class Quality(object):
         :param search_type: The search type, that started this method
         :return: True if the old quality should be replaced with new quality.
         """
-        if ep_status and ep_status not in [DOWNLOADED, SNATCHED, SNATCHED_PROPER]:
+        if ep_status and ep_status not in (DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
-
-        # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
-        if old_quality == Quality.UNKNOWN:
-            if not (force or preferred_qualities):
-                return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if manually_searched:
             if not force:
@@ -694,16 +640,14 @@ class Quality(object):
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.
             return True, 'Existing quality is no longer in any wanted quality lists. Accepting new quality'
 
-        if force and download_current_quality:
+        if download_current_quality and force and new_quality == old_quality:
             # If we already downloaded quality, just redownload it as long is still part of the wanted qualities
-            return new_quality == old_quality, 'Redownloading same quality'
+            return True, 'Re-downloading same quality'
 
         if preferred_qualities:
             # Don't replace because old quality is already best quality.
             if old_quality in preferred_qualities:
                 return False, 'Existing quality is already a preferred quality. Ignoring new quality'
-
-            # Old quality is not final. Check if we should replace:
 
             # Replace if preferred quality
             if new_quality in preferred_qualities:
@@ -761,11 +705,11 @@ class Quality(object):
 
     @staticmethod
     def to_guessit(quality):
-        """Return a guessit dict containing 'screen_size and format' from a Quality (status).
+        """Return a guessit dict containing 'screen_size and format' from a Quality.
 
         This was previously a composite status. But status/quality have been separated into their own attributes.
 
-        :param quality: a quality status
+        :param quality: a quality
         :type quality: int
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
         :rtype: dict (str, str)
@@ -807,28 +751,6 @@ class Quality(object):
             if quality & key:
                 return value
 
-    DOWNLOADED = None
-    SNATCHED = None
-    SNATCHED_PROPER = None
-    FAILED = None
-    SNATCHED_BEST = None
-    ARCHIVED = None
-
-
-Quality.DOWNLOADED = [Quality.composite_status(DOWNLOADED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED = [Quality.composite_status(SNATCHED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_BEST = [Quality.composite_status(SNATCHED_BEST, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_PROPER = [Quality.composite_status(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
-Quality.FAILED = [Quality.composite_status(FAILED, x) for x in Quality.qualityStrings if x is not None]
-Quality.ARCHIVED = [Quality.composite_status(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
-Quality.WANTED = [Quality.composite_status(WANTED, x) for x in Quality.qualityStrings if x is not None]
-
-Quality.DOWNLOADED.sort()
-Quality.SNATCHED.sort()
-Quality.SNATCHED_BEST.sort()
-Quality.SNATCHED_PROPER.sort()
-Quality.FAILED.sort()
-Quality.ARCHIVED.sort()
 
 HD720p = Quality.combine_qualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])
 HD1080p = Quality.combine_qualities([Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY], [])
@@ -839,9 +761,6 @@ SD = Quality.combine_qualities([Quality.SDTV, Quality.SDDVD], [])
 HD = Quality.combine_qualities([HD720p, HD1080p], [])
 UHD = Quality.combine_qualities([UHD_4K, UHD_8K], [])
 ANY = Quality.combine_qualities([SD, HD, UHD], [])
-
-# legacy template, cant remove due to reference in main_db upgrade?
-BEST = Quality.combine_qualities([Quality.SDTV, Quality.HDTV, Quality.HDWEBDL], [Quality.HDTV])
 
 qualityPresets = (
     ANY,

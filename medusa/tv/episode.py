@@ -245,7 +245,7 @@ class Episode(TV):
         self.episode = episode
         self.absolute_number = 0
         self.description = ''
-        self.subtitles = list()
+        self.subtitles = []
         self.subtitles_searchcount = 0
         self.subtitles_lastsearch = str(datetime.min)
         self.airdate = date.fromordinal(1)
@@ -914,21 +914,10 @@ class Episode(TV):
                         'status': statusStrings[self.status],
                     }
                 )
-        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
+        #  We only change the episode's state if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
         elif helpers.is_media_file(self.location):
             if self.status not in [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED]:
-                old_status = self.status
-                self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
-                log.debug(
-                    '{id}: {series} {ep} status changed from {old_status} to {new_status}'
-                    ' as current status is not SNATCHED|DOWNLOADED|ARCHIVED', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
-                        'ep': episode_num(season, episode),
-                        'old_status': statusStrings[old_status],
-                        'new_status': statusStrings[self.status],
-                    }
-                )
+                self.update_state(self.location)
             else:
                 log.debug(
                     '{id}: {series} {ep} status untouched: {status}', {
@@ -965,15 +954,7 @@ class Episode(TV):
         if self.location != '':
 
             if self.status == UNSET and helpers.is_media_file(self.location):
-                self.status = Quality.status_from_name(self.location, anime=self.series.is_anime)
-                log.debug(
-                    '{id}: {series} {ep} status changed from UNSET to {new_status}', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
-                        'ep': episode_num(self.season, self.episode),
-                        'new_status': statusStrings[self.status],
-                    }
-                )
+                self.update_state(self.location)
 
             nfo_file = replace_extension(self.location, 'nfo')
             log.debug('{id}: Using NFO name {nfo}',
@@ -1986,8 +1967,8 @@ class Episode(TV):
                 }
             )
 
-    def update_status(self, filepath):
-        """Update the episode status according to the file information.
+    def update_state(self, filepath):
+        """Update the episode state (status and quality) according to the file information.
 
         The status should only be changed if either the size or the filename changed.
         :param filepath: Path to the new episode file.
