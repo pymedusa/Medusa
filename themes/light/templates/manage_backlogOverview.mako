@@ -151,7 +151,11 @@ const startVue = () => {
                     <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result['episode_string']]]}">
                         <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
-                            ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                            % if old_quality != Quality.NA:
+                                ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                            % else:
+                                ${statusStrings[old_status]}
+                            % endif
                         </td>
                         <td class="tableright" align="center" class="nowrap">
                             ${cur_result["name"]}

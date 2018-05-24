@@ -284,7 +284,11 @@ const startVue = () => {
                             cur_status = int(epResult['status'])
                             cur_quality = int(epResult['quality'])
                         %>
-                        <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
+                        % if cur_quality != Quality.NA:
+                            <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
+                        % else:
+                            <td class="col-status triggerhighlight">${statusStrings[cur_status]}</td>
+                        % endif
                     <td class="col-search triggerhighlight">
                         % if int(epResult["season"]) != 0:
                             % if app.USE_FAILED_DOWNLOADS and (int(epResult["status"]) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED)):
