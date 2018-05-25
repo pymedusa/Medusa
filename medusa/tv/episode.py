@@ -2014,8 +2014,8 @@ class Episode(TV):
                 "{name}: Setting the status from '{status_old}' to '{status_new}' and"
                 " quality '{quality_old}' to '{quality_new}' based on file: {filepath}", {
                     'name': self.series.name,
-                    'status_old': Quality.statusPrefixes[old_status],
-                    'status_new': Quality.statusPrefixes[new_status],
+                    'status_old': statusStrings[old_status],
+                    'status_new': statusStrings[new_status],
                     'quality_old': Quality.qualityStrings[old_quality],
                     'quality_new': Quality.qualityStrings[new_quality],
                     'filepath': filepath,
@@ -2026,7 +2026,7 @@ class Episode(TV):
                 "{name}: Not changing current status '{status_old}' or"
                 " quality '{quality_old}' based on file: {filepath}", {
                     'name': self.series.name,
-                    'status_old': Quality.statusPrefixes[old_status],
+                    'status_old': statusStrings[old_status],
                     'quality_old': Quality.qualityStrings[old_quality],
                     'filepath': filepath,
                 }

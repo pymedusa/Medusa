@@ -2721,7 +2721,7 @@ class CMD_ShowStats(ApiCall):
             if status == 'total':
                 episodes_stats['total'] = episode_status_counts_total[status]
                 continue
-            status_string = Quality.statusPrefixes[status].lower().replace(' ', '_').replace('(', '').replace(')', '')
+            status_string = statusStrings[status].lower().replace(' ', '_').replace('(', '').replace(')', '')
             episodes_stats[status_string] = episode_status_counts_total[status]
 
         return _responds(RESULT_SUCCESS, episodes_stats)
