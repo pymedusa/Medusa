@@ -914,7 +914,7 @@ class Episode(TV):
                         'status': statusStrings[self.status],
                     }
                 )
-        #  We only change the episode's state if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
+        # Update the episode's status/quality if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
         elif helpers.is_media_file(self.location):
             if self.status not in [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED]:
                 self.update_status_quality(self.location)
