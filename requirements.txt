@@ -11,7 +11,7 @@ futures==3.2.0
 gntp==1.0.3
 guessit==2.1.4
 html5lib==1.0.1
-imdbpie==5.4.0
+imdbpie==5.4.5
 jsonrpclib-pelix==0.3.1
 knowit==0.2.4
 lockfile==0.12.2
