@@ -111,3 +111,39 @@ class AddIndexerIds(HistoryStatus):
             self.connection.action(
                 'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
             )
+
+class UpdateHistoryTableQuality(AddIndexerIds):
+    """
+    Add the quality field and separate
+    """
+    def test(self):
+        """Test if the table history already has the column quality."""
+        return self.hasColumn('history', 'quality')
+
+    def execute(self):
+        """
+        Add columns status and quality.
+
+        Translate composite status/quality from old_status to the new fields.
+        """
+        log.info(u'Transforming old_status (composite) to separated fields status + quality.')
+        self.connection.action('DROP TABLE IF EXISTS new_history;')
+
+        self.connection.action('CREATE TABLE new_history (date NUMERIC, size NUMERIC, release TEXT, provider TEXT, '
+                               'status NUMERIC DEFAULT -1, quality NUMERIC DEFAULT 0, showid NUMERIC DEFAULT -1, '
+                               'season NUMERIC DEFAULT -1, episode NUMERIC DEFAULT -1, indexer_id NUMERIC)')
+
+        self.connection.action('INSERT INTO new_history (date, size, release, provider, '
+                               'status, quality, showid, season, episode, indexer_id) '
+                               'SELECT date, size, release, provider, '
+                               'old_status, -1, showid, season, episode, indexer_id '
+                               'FROM history;')
+        self.connection.action('DROP TABLE IF EXISTS history;')
+        self.connection.action('ALTER TABLE new_history RENAME TO history;')
+        self.connection.action('DROP TABLE IF EXISTS new_history;')
+
+        sql_results = self.connection.select('SELECT status FROM history GROUP BY status')
+        for result in sql_results:
+            split = Quality.split_composite_status(result[b'status'])
+            self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?',
+                                   [split.status, split.quality, result[b'status']])
