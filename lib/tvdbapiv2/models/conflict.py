@@ -37,7 +37,7 @@ class Conflict(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'error': 'str'
+            'error': 'text_type'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class Conflict(object):
 
 
         :return: The error of this Conflict.
-        :rtype: str
+        :rtype: text_type
         """
         return self._error
 
@@ -64,7 +64,7 @@ class Conflict(object):
 
 
         :param error: The error of this Conflict.
-        :type: str
+        :type: text_type
         """
         self._error = error
 

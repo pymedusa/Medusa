@@ -42,9 +42,9 @@ class BasicEpisode(object):
             'aired_season': 'int',
             'dvd_episode_number': 'int',
             'dvd_season': 'int',
-            'episode_name': 'str',
+            'episode_name': 'text_type',
             'id': 'int',
-            'overview': 'str'
+            'overview': 'text_type'
         }
 
         self.attribute_map = {
@@ -184,7 +184,7 @@ class BasicEpisode(object):
 
 
         :return: The episode_name of this BasicEpisode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._episode_name
 
@@ -195,7 +195,7 @@ class BasicEpisode(object):
 
 
         :param episode_name: The episode_name of this BasicEpisode.
-        :type: str
+        :type: text_type
         """
         self._episode_name = episode_name
 
@@ -228,7 +228,7 @@ class BasicEpisode(object):
 
 
         :return: The overview of this BasicEpisode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._overview
 
@@ -239,7 +239,7 @@ class BasicEpisode(object):
 
 
         :param overview: The overview of this BasicEpisode.
-        :type: str
+        :type: text_type
         """
         self._overview = overview
 

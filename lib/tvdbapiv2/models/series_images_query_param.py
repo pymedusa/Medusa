@@ -37,10 +37,10 @@ class SeriesImagesQueryParam(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'key_type': 'str',
-            'language_id': 'str',
-            'resolution': 'list[str]',
-            'sub_key': 'list[str]'
+            'key_type': 'text_type',
+            'language_id': 'text_type',
+            'resolution': 'list[text_type]',
+            'sub_key': 'list[text_type]'
         }
 
         self.attribute_map = {
@@ -62,7 +62,7 @@ class SeriesImagesQueryParam(object):
 
 
         :return: The key_type of this SeriesImagesQueryParam.
-        :rtype: str
+        :rtype: text_type
         """
         return self._key_type
 
@@ -73,7 +73,7 @@ class SeriesImagesQueryParam(object):
 
 
         :param key_type: The key_type of this SeriesImagesQueryParam.
-        :type: str
+        :type: text_type
         """
         self._key_type = key_type
 
@@ -84,7 +84,7 @@ class SeriesImagesQueryParam(object):
 
 
         :return: The language_id of this SeriesImagesQueryParam.
-        :rtype: str
+        :rtype: text_type
         """
         return self._language_id
 
@@ -95,7 +95,7 @@ class SeriesImagesQueryParam(object):
 
 
         :param language_id: The language_id of this SeriesImagesQueryParam.
-        :type: str
+        :type: text_type
         """
         self._language_id = language_id
 
@@ -106,7 +106,7 @@ class SeriesImagesQueryParam(object):
 
 
         :return: The resolution of this SeriesImagesQueryParam.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._resolution
 
@@ -117,7 +117,7 @@ class SeriesImagesQueryParam(object):
 
 
         :param resolution: The resolution of this SeriesImagesQueryParam.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._resolution = resolution
 
@@ -128,7 +128,7 @@ class SeriesImagesQueryParam(object):
 
 
         :return: The sub_key of this SeriesImagesQueryParam.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._sub_key
 
@@ -139,7 +139,7 @@ class SeriesImagesQueryParam(object):
 
 
         :param sub_key: The sub_key of this SeriesImagesQueryParam.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._sub_key = sub_key
 

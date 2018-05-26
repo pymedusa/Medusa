@@ -37,7 +37,7 @@ class SeriesEpisodesQueryParams(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'data': 'list[str]'
+            'data': 'list[text_type]'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class SeriesEpisodesQueryParams(object):
 
 
         :return: The data of this SeriesEpisodesQueryParams.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._data
 
@@ -64,7 +64,7 @@ class SeriesEpisodesQueryParams(object):
 
 
         :param data: The data of this SeriesEpisodesQueryParams.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._data = data
 

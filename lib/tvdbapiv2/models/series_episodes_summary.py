@@ -37,10 +37,10 @@ class SeriesEpisodesSummary(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'aired_seasons': 'list[str]',
-            'aired_episodes': 'str',
-            'dvd_seasons': 'list[str]',
-            'dvd_episodes': 'str'
+            'aired_seasons': 'list[text_type]',
+            'aired_episodes': 'text_type',
+            'dvd_seasons': 'list[text_type]',
+            'dvd_episodes': 'text_type'
         }
 
         self.attribute_map = {
@@ -62,7 +62,7 @@ class SeriesEpisodesSummary(object):
 
 
         :return: The aired_seasons of this SeriesEpisodesSummary.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._aired_seasons
 
@@ -73,7 +73,7 @@ class SeriesEpisodesSummary(object):
 
 
         :param aired_seasons: The aired_seasons of this SeriesEpisodesSummary.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._aired_seasons = aired_seasons
 
@@ -84,7 +84,7 @@ class SeriesEpisodesSummary(object):
         Number of all aired episodes for this series
 
         :return: The aired_episodes of this SeriesEpisodesSummary.
-        :rtype: str
+        :rtype: text_type
         """
         return self._aired_episodes
 
@@ -95,7 +95,7 @@ class SeriesEpisodesSummary(object):
         Number of all aired episodes for this series
 
         :param aired_episodes: The aired_episodes of this SeriesEpisodesSummary.
-        :type: str
+        :type: text_type
         """
         self._aired_episodes = aired_episodes
 
@@ -106,7 +106,7 @@ class SeriesEpisodesSummary(object):
 
 
         :return: The dvd_seasons of this SeriesEpisodesSummary.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._dvd_seasons
 
@@ -117,7 +117,7 @@ class SeriesEpisodesSummary(object):
 
 
         :param dvd_seasons: The dvd_seasons of this SeriesEpisodesSummary.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._dvd_seasons = dvd_seasons
 
@@ -128,7 +128,7 @@ class SeriesEpisodesSummary(object):
         Number of all dvd episodes for this series
 
         :return: The dvd_episodes of this SeriesEpisodesSummary.
-        :rtype: str
+        :rtype: text_type
         """
         return self._dvd_episodes
 
@@ -139,7 +139,7 @@ class SeriesEpisodesSummary(object):
         Number of all dvd episodes for this series
 
         :param dvd_episodes: The dvd_episodes of this SeriesEpisodesSummary.
-        :type: str
+        :type: text_type
         """
         self._dvd_episodes = dvd_episodes
 
