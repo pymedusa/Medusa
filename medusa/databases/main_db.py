@@ -849,7 +849,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         This makes it possible to set UNKNOWN as 1, making it the lowest quality.
         """
         log.info('Shift qualities in tv_shows one place to the left.')
-        sql_results = self.connection.select("SELECT quality FROM tv_shows")
+        sql_results = self.connection.select("SELECT quality FROM tv_shows GROUP BY quality")
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
@@ -865,7 +865,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         This makes it possible to set UNKNOWN as 1, making it the lowest quality.
         """
         log.info('Shift qualities in tv_episodes one place to the left.')
-        sql_results = self.connection.select("SELECT quality FROM tv_episodes WHERE quality != 0")
+        sql_results = self.connection.select("SELECT quality FROM tv_episodes WHERE quality != 0 GROUP BY quality")
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
@@ -881,7 +881,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         This makes it possible to set UNKNOWN as 1, making it the lowest quality.
         """
         log.info('Shift qualities in history one place to the left.')
-        sql_results = self.connection.select("SELECT quality FROM history")
+        sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality")
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
