@@ -42,7 +42,7 @@ Vue.component('app-link', {
                 return url.startsWith('#')
             };
             const isAnonymised = url => {
-                return url.startsWith(MEDUSA.config.anonRedirect);
+                return MEDUSA.config.anonRedirect && url.startsWith(MEDUSA.config.anonRedirect);
             };
             const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : url;
             if (!to) {
