@@ -103,9 +103,9 @@ class Imdb(Auth):
 
     def title_exists(self, imdb_id):
         self.validate_imdb_id(imdb_id)
-        page_url = 'http://www.imdb.com/title/{0}/'.format(imdb_id)
+        page_url = 'https://www.imdb.com/title/{0}/'.format(imdb_id)
 
-        response = self.session.head(page_url)
+        response = self.session.get(page_url, allow_redirects=False)
 
         if response.status_code == httplib.OK:
             return True
@@ -207,20 +207,17 @@ class Imdb(Auth):
 
     def get_title_top_crew(self, imdb_id):
         """
-        Request detailed information about title's top crew (ie: directors, writters, etc.).
+        Request detailed information about title's top crew
+        (ie: directors, writters, etc.).
 
         :param imdb_id: The imdb id including the TT prefix.
         """
         logger.info('called get_title_top_crew %s', imdb_id)
-
         self.validate_imdb_id(imdb_id)
-
-        params = {
-            'tconst': imdb_id,
-        }
-
+        params = {'tconst': imdb_id}
         return self._get(urljoin(
-            BASE_URI, '/template/imdb-android-writable/7.3.top-crew.jstl/render'
+            BASE_URI,
+            '/template/imdb-android-writable/7.3.top-crew.jstl/render'
         ), params=params)
 
     @staticmethod
@@ -291,7 +288,6 @@ class Imdb(Auth):
 
         if resp_dict.get('error'):
             return None
-
         return resp_dict
 
     def _redirection_title_check(self, imdb_id):
@@ -302,8 +298,8 @@ class Imdb(Auth):
 
     def is_redirection_title(self, imdb_id):
         self.validate_imdb_id(imdb_id)
-        page_url = 'http://www.imdb.com/title/{0}/'.format(imdb_id)
-        response = self.session.head(page_url)
+        page_url = 'https://www.imdb.com/title/{0}/'.format(imdb_id)
+        response = self.session.get(page_url, allow_redirects=False)
         if response.status_code == httplib.MOVED_PERMANENTLY:
             return True
         else:
