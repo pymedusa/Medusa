@@ -224,8 +224,7 @@ class DBConnection(object):
                     break
                 except sqlite3.OperationalError as e:
                     sql_results = []
-                    if self.connection:
-                        self.connection.rollback()
+                    self._try_rollback()
                     if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
                         logger.log(u"DB error: " + ex(e), logger.WARNING)
                         attempt += 1
@@ -235,14 +234,23 @@ class DBConnection(object):
                         raise
                 except sqlite3.DatabaseError as e:
                     sql_results = []
-                    if self.connection:
-                        self.connection.rollback()
+                    self._try_rollback()
                     logger.log(u"Fatal error executing query: " + ex(e), logger.ERROR)
                     raise
 
             # time.sleep(0.02)
 
             return sql_results
+
+    def _try_rollback(self):
+        if not self.connection:
+            return
+        try:
+            self.connection.rollback()
+        except sqlite3.OperationalError:
+            # raised when a rollback is not needed
+            # see https://github.com/pymedusa/Medusa/issues/3190
+            pass
 
     def action(self, query, args=None, fetchall=False, fetchone=False):
         """
