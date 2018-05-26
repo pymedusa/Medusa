@@ -78,7 +78,7 @@ class ImdbPopular(object):
                 show_details = cached_get_imdb_series_details(imdb_id)
                 if show_details:
                     try:
-                        series['year'] = imdb_show['year']
+                        series['year'] = imdb_show.get('year')
                         series['name'] = imdb_show['title']
                         series['image_url_large'] = imdb_show['image']['url']
                         series['image_path'] = posixpath.join('images', 'imdb_popular',
@@ -89,7 +89,7 @@ class ImdbPopular(object):
                         series['outline'] = show_details['plot'].get('outline', {}).get('text')
                         series['rating'] = show_details['ratings'].get('rating', 0)
                     except Exception as error:
-                        log.warning('Could not parse show {imdb_id} with error: {error}',
+                        log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue

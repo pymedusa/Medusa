@@ -1527,7 +1527,13 @@ class Series(TV):
         self.imdb_info['countries'] = self.imdb_info.get('countries', '')
         self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
 
-        imdb_info = imdb_api.get_title(self.imdb_id)
+        try:
+            imdb_info = imdb_api.get_title(self.imdb_id)
+        except LookupError as error:
+            log.warning(u"{id}: IMDbPie error while loading show info: {error}",
+                        {'id': self.series_id, 'error': error})
+            imdb_info = None
+
         if not imdb_info:
             log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
                       {'id': self.series_id, 'imdb_id': self.imdb_id})
