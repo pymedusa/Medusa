@@ -142,7 +142,7 @@ MEDUSA.config.init = function() {
         title: 'Github Token',
         content: '<p>Copy the generated token and paste it in the token input box.</p>' +
             '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
-            '<input class="btn" type="button" value="Continue to Github..."></a></p><br/>'
+            '<input class="btn-medusa" type="button" value="Continue to Github..."></a></p><br/>'
     });
 
     $('#manage_tokens').on('click', () => {

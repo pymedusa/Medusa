@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+import os
 import re
 from collections import OrderedDict
 
@@ -16,6 +17,30 @@ from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+def get_torrent_subfolder(result):
+    """Retrieve the series destination-subfolder required for uTorrent WebUI 'start' action."""
+    # Get the subfolder name the user has assigned to that series
+    root_dirs = app.ROOT_DIRS
+    root_location = root_dirs[int(root_dirs[0]) + 1]
+    torrent_path = result.series.raw_location
+
+    if not root_location == torrent_path:
+        # Subfolder is under root, but possibly not directly under
+        if torrent_path.startswith(root_location):
+            torrent_subfolder = torrent_path.replace(root_location, '')
+        # Subfolder is NOT under root, use it too (WebUI limitation)
+        else:
+            torrent_subfolder = os.path.basename(torrent_path)
+    # Use the series name if there is no subfolder defined
+    else:
+        torrent_subfolder = result.series.name
+
+    log.debug('Show {name}: torrent download destination folder is: {path} (sub-folder: {sub})',
+              {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+
+    return torrent_subfolder
 
 
 class UTorrentAPI(GenericClient):
@@ -54,17 +79,27 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
+        """Send an 'add-url' download request to uTorrent when search provider is using a magnet link."""
+        # Set proper subfolder as download destination for uTorrent torrent
+        torrent_subfolder = get_torrent_subfolder(result)
+
         return self._request(params={
             'action': 'add-url',
             # limit the param length to 1024 chars (uTorrent bug)
             's': result.url[:1024],
+            'path': torrent_subfolder,
         })
 
     def _add_torrent_file(self, result):
+        """Send an 'add-file' download request to uTorrent when the search provider is using a .torrent file."""
+        # Set proper subfolder as download destination for uTorrent torrent
+        torrent_subfolder = get_torrent_subfolder(result)
+
         return self._request(
             method='post',
             params={
                 'action': 'add-file',
+                'path': torrent_subfolder,
             },
             files={
                 'torrent_file': (
@@ -75,17 +110,26 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
+        """Send a 'setprop' request to uTorrent to set a label for the torrent, optionally - the show name."""
+        torrent_new_label = result.series.name
+
         if result.series.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
             label = app.TORRENT_LABEL
 
-        return self._request(params={
-            'action': 'setprops',
-            'hash': result.hash,
-            's': 'label',
-            'v': label,
-        })
+        label = label.replace('%N', torrent_new_label)
+
+        log.debug('Torrent label is now set to {path}', {'path': label})
+
+        return self._request(
+            params={
+                'action': 'setprops',
+                'hash': result.hash,
+                's': 'label',
+                'v': label,
+            }
+        )
 
     def _set_torrent_ratio(self, result):
         ratio = result.ratio or None
@@ -109,7 +153,8 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-        if app.TORRENT_SEED_TIME:
+        #  Allow 0 - as unlimitted, and "-1" - that is used to disable
+        if float(app.TORRENT_SEED_TIME) >= 0:
             if self._request(params={
                 'action': 'setprops',
                 'hash': result.hash,
@@ -135,7 +180,8 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-            'action': 'pause' if app.TORRENT_PAUSED else 'start',
+            #  "stop" torrent, can always be resumed!
+            'action': 'stop' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
 

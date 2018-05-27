@@ -54,7 +54,10 @@ class Notifier(object):
             )
             resp.raise_for_status()
 
-            log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+            if resp.content:
+                log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+
+            log.info('EMBY: Successfully sent a test notification.')
             return True
 
         except (HTTPError, RequestException) as error:
@@ -123,7 +126,10 @@ class Notifier(object):
                 )
                 resp.raise_for_status()
 
-                log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+                if resp.content:
+                    log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+
+                log.info('EMBY: Successfully sent a "Series Library Updated" command.')
                 return True
 
             except (HTTPError, RequestException) as error:

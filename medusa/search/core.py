@@ -84,8 +84,8 @@ def _download_result(result):
 
         # save the data to disk
         try:
-            with open(file_name, u'w') as fileOut:
-                fileOut.write(result.extra_info[0])
+            with open(file_name, u'w') as file_out:
+                file_out.write(result.extra_info[0])
 
             chmod_as_parent(file_name)
 
