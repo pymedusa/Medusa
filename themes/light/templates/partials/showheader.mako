@@ -197,8 +197,8 @@
                             % else:
                                 <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
                             % endif
-                            % if all_scene_exceptions:
-                                <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
+                            % if show.exceptions:
+                                <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${'| '.join(_.series_name for _ in show.exceptions)}</td></tr>
                             % endif
                             % if show.show_words().required_words:
                                 <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'required'}">${', '.join(show.show_words().required_words)}</span></td></tr>
