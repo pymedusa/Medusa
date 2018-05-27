@@ -1,3 +1,4 @@
+<%namespace name="main" file="/layouts/main.mako" />
 <script type="text/x-template" id="quality-chooser-template">
     <div id="quality_chooser_wrapper">
         <select v-model.number="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
@@ -51,9 +52,8 @@
     </div>
 </script>
 <%!
-    import json
+
     from medusa import app
-    from medusa.numdict import NumDict
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
@@ -64,15 +64,6 @@ else:
 allowed_qualities, preferred_qualities = Quality.split_quality(__quality)
 overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
 
-def convert(obj):
-    ## This converts the keys to strings as keys can't be ints
-    if isinstance(obj, (NumDict, dict)):
-        new_obj = {}
-        for key in obj:
-            new_obj[str(key)] = obj[key]
-        obj = new_obj
-
-    return json.dumps(obj)
 %>
 <script>
 Vue.component('quality-chooser', {
@@ -93,11 +84,11 @@ Vue.component('quality-chooser', {
     },
     data() {
         // Python conversions
-        const qualityPresets = ${convert(qualityPresets)};
+        const qualityPresets = ${main.convert(qualityPresets)};
         return {
-            qualityStrings: ${convert(Quality.qualityStrings)},
+            qualityStrings: ${main.convert(Quality.qualityStrings)},
             qualityPresets,
-            qualityPresetStrings: ${convert(qualityPresetStrings)},
+            qualityPresetStrings: ${main.convert(qualityPresetStrings)},
 
             // JS only
             lock: false,

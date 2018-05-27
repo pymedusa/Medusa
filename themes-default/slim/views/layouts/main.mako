@@ -1,6 +1,23 @@
 <%!
     from medusa import app
 %>
+
+<%def name="convert(obj)">
+    <%
+    import json
+    from medusa.numdict import NumDict
+    ## This converts the keys to strings as keys can't be ints
+    print('test')
+    if isinstance(obj, (NumDict, dict)):
+        new_obj = {}
+        for key in obj:
+            new_obj[str(key)] = obj[key]
+        obj = new_obj
+
+    return json.dumps(obj)
+    %>
+</%def>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -82,7 +99,8 @@
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
+        <!-- <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script> -->
+        <script src="http://cdn.date-fns.org/v1.0.0/date_fns.js"></script>
         <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
