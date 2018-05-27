@@ -26,10 +26,17 @@ const startVue = () => {
         },
         data() {
             const multiEpStrings = ${main.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
+            const pattern = '${app.NAMING_PATTERN}';
+            const abdPattern = '${app.NAMING_ABD_PATTERN}';
+            const animePattern = '${app.NAMING_ANIME_PATTERN}';
+            const sportsPattern = '${app.NAMING_SPORTS_PATTERN}';
 
             return {
                 header: 'Post Processing',
-                pattern: 'lalalala',
+                pattern: pattern,
+                abdPattern: abdPattern,
+                animePattern: animePattern,
+                sportsPattern: sportsPattern,
                 presets: [
                     '%SN - %Sx%0E - %EN',
                     '%S.N.S%0SE%0E.%E.N',
@@ -285,13 +292,13 @@ const startVue = () => {
                             <name-pattern :pattern="pattern" :presets="presets"></name-pattern>
 
                             <!-- default sports name-pattern component -->
-                            <name-pattern :pattern="pattern" :presets="presets" naming-custom="sports" :enabled-naming-custom="enabledSports"></name-pattern>
+                            <name-pattern :pattern="sportsPattern" :presets="presets" naming-custom="sports" :enabled-naming-custom="enabledSports"></name-pattern>
 
                             <!-- default airs by date name-pattern component -->
-                            <name-pattern :pattern="pattern" :presets="presets" naming-custom="airs by date" :enabled-naming-custom="enabledAirByDate"></name-pattern>
+                            <name-pattern :pattern="abdPattern" :presets="presets" naming-custom="airs by date" :enabled-naming-custom="enabledAirByDate"></name-pattern>
 
-                            <!-- default sports name-pattern component -->
-                            <name-pattern :pattern="pattern" :presets="presets" naming-custom="anime" :anime-type="animeNamingType" :enabled-naming-custom="enabledAnime"></name-pattern>
+                            <!-- default anime name-pattern component -->
+                            <name-pattern :pattern="animePattern" :presets="presets" naming-custom="anime" :anime-type="animeNamingType" :enabled-naming-custom="enabledAnime"></name-pattern>
 
                             <div class="field-pair">
                                 <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if app.NAMING_STRIP_YEAR else ''}/>

@@ -1763,15 +1763,6 @@ td.col-group {
     border-radius: 3px;
 }
 
-
-/* =======================================================================
-editShow.mako
-========================================================================== */
-
-input.btn.btn-inline.fileBrowser {
-    margin: 2px 2px 2px 2px;
-}
-
 #editShow {
     width: 700px;
     padding-top: 10px;
@@ -2063,9 +2054,9 @@ config*.mako
     margin-right: 6px;
 }
 
-/* #config div.field-pair input {
+#config div.field-pair input {
     float: left;
-} */
+}
 
 #config .nocheck,
 #config div #customQuality,
@@ -3554,7 +3545,7 @@ div.formpaginate .next {
 
 div.field-pair input {
     margin-right: 6px;
-    /* float: left; */
+    float: left;
 }
 
 /* step 3 related */
@@ -4465,21 +4456,4 @@ CSS helper classes
 .scroll-wrapper.right {
     position: fixed;
     right: 90px;
-}
-
-
-/* =========================================================================
- Style for the anidbReleaseGroupUi.mako.
- Should be moved from here, when moving the .vue files.
- ========================================================================== */
-
-div#anidb_release_group_ui_wrapper {
-    clear: both;
-}
-
-div#anidb_release_group_ui_wrapper ul {
-    border-style: solid;
-    border-width: thin;
-    padding: 5px 2px 2px 5px;
-    list-style: none;
 }
