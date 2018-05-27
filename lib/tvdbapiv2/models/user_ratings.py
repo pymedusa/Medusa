@@ -37,7 +37,7 @@ class UserRatings(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'rating_type': 'str',
+            'rating_type': 'text_type',
             'rating_item_id': 'int',
             'rating': 'int'
         }
@@ -59,7 +59,7 @@ class UserRatings(object):
 
 
         :return: The rating_type of this UserRatings.
-        :rtype: str
+        :rtype: text_type
         """
         return self._rating_type
 
@@ -70,7 +70,7 @@ class UserRatings(object):
 
 
         :param rating_type: The rating_type of this UserRatings.
-        :type: str
+        :type: text_type
         """
         self._rating_type = rating_type
 

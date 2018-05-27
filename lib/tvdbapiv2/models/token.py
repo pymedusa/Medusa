@@ -37,7 +37,7 @@ class Token(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'token': 'unicode'
+            'token': 'text_type'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class Token(object):
 
 
         :return: The token of this Token.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._token
 
@@ -64,7 +64,7 @@ class Token(object):
 
 
         :param token: The token of this Token.
-        :type: unicode
+        :type: text_type
         """
         self._token = token
 

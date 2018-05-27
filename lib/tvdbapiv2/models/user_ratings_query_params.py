@@ -37,7 +37,7 @@ class UserRatingsQueryParams(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'data': 'list[str]'
+            'data': 'list[text_type]'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class UserRatingsQueryParams(object):
 
 
         :return: The data of this UserRatingsQueryParams.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._data
 
@@ -64,7 +64,7 @@ class UserRatingsQueryParams(object):
 
 
         :param data: The data of this UserRatingsQueryParams.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._data = data
 

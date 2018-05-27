@@ -27,7 +27,6 @@ from .exceptions import AuthError
 
 import os
 import re
-import sys
 import json
 import mimetypes
 import tempfile
@@ -38,7 +37,7 @@ from datetime import datetime
 from datetime import date
 
 # python 2 and python 3 compatibility library
-from six import iteritems, text_type
+from six import binary_type, iteritems, string_types, text_type
 from .auth.tvdb import TVDBAuth
 from .configuration import Configuration
 from .exceptions import ApiException
@@ -151,7 +150,7 @@ class ApiClient(object):
         if type(obj) == list:
             return ','.join(obj)
         else:
-            return str(obj)
+            return text_type(obj)
 
     def sanitize_for_serialization(self, obj):
         """
@@ -168,9 +167,7 @@ class ApiClient(object):
         :param obj: The data to serialize.
         :return: The serialized form of data.
         """
-        types = (str, int, float, bool, tuple)
-        if sys.version_info < (3, 0):
-            types = types + (unicode,)
+        types = string_types + (int, float, bool, tuple)
         if isinstance(obj, type(None)):
             return None
         elif isinstance(obj, types):
@@ -232,7 +229,7 @@ class ApiClient(object):
         if data is None:
             return None
 
-        if type(klass) in (str, unicode):
+        if type(klass) in (binary_type, text_type):
             if klass.startswith('list['):
                 sub_kls = re.match('list\[(.*)\]', klass).group(1)
                 return [self.__deserialize(sub_data, sub_kls)
@@ -245,14 +242,14 @@ class ApiClient(object):
 
             # convert str to class
             # for native types
-            if klass in ['int', 'float', 'str', 'bool',
-                         'date', 'datetime', 'object', 'unicode']:
+            if klass in ['int', 'float', 'binary_type', 'bool',
+                         'date', 'datetime', 'object', 'text_type']:
                 klass = eval(klass)
             # for model types
             else:
                 klass = eval('models.' + klass)
 
-        if klass in [int, float, str, bool, unicode]:
+        if klass in [int, float, binary_type, bool, text_type]:
             return self.__deserialize_primitive(data, klass)
         elif klass == object:
             return self.__deserialize_object(data)
@@ -483,7 +480,7 @@ class ApiClient(object):
         try:
             value = klass(data)
         except UnicodeEncodeError:
-            value = unicode(data)
+            value = text_type(data)
         except TypeError:
             value = data
         except ValueError:

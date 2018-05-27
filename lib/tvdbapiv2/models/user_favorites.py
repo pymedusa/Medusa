@@ -37,7 +37,7 @@ class UserFavorites(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'favorites': 'list[str]'
+            'favorites': 'list[text_type]'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class UserFavorites(object):
 
 
         :return: The favorites of this UserFavorites.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._favorites
 
@@ -64,7 +64,7 @@ class UserFavorites(object):
 
 
         :param favorites: The favorites of this UserFavorites.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._favorites = favorites
 
