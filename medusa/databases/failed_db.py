@@ -59,7 +59,7 @@ class HistoryStatus(History):
     """Store episode status before snatch to revert to if necessary."""
 
     def test(self):
-        return self.hasColumn('history', 'old_status')
+        return self.hasColumn('history', 'old_status') and self.hasColumn('history', 'showid')
 
     def execute(self):
         self.addColumn('history', 'old_status', 'NUMERIC', Quality.NA)
