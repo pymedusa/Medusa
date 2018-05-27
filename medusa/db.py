@@ -341,10 +341,11 @@ class DBConnection(object):
 
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict: [x + " = ?" for x in myDict]
+        def gen_params(my_dict):
+            return [x + " = ?" for x in my_dict]
 
-        query = "UPDATE [" + tableName + "] SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(
-            genParams(keyDict))
+        query = "UPDATE [" + tableName + "] SET " + ", ".join(gen_params(valueDict)) + " WHERE " + " AND ".join(
+            gen_params(keyDict))
 
         self.action(query, list(itervalues(valueDict)) + list(itervalues(keyDict)))
 
