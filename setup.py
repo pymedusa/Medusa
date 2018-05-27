@@ -35,7 +35,7 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['tornado==5.0.1', 'six', 'profilehooks', 'contextlib2', 'gi', ],
+    install_requires=['tornado==5.0.2', 'six', 'profilehooks', 'contextlib2', ],
     cmdclass={'test': PyTest},
     tests_require=[
         'dredd_hooks',
