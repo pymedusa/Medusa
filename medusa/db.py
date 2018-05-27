@@ -444,22 +444,6 @@ def prettyName(class_name):
     return ' '.join([x.group() for x in re.finditer("([A-Z])([a-z0-9]+)", class_name)])
 
 
-def restoreDatabase(version):
-    """
-    Restores a database to a previous version (backup file of version must still exist)
-
-    :param version: Version to restore to
-    :return: True if restore succeeds, False if it fails
-    """
-    from medusa import helpers
-    logger.log(u"Restoring database before trying upgrade again")
-    if not helpers.restore_versioned_file(DBConnection.path, version):
-        logger.log_error_and_exit(u"Database restore failed, abort upgrading database")
-        return False
-    else:
-        return True
-
-
 def _processUpgrade(connection, upgradeClass):
     instance = upgradeClass(connection)
     logger.log(u"Checking " + prettyName(upgradeClass.__name__) + " database upgrade", logger.DEBUG)
