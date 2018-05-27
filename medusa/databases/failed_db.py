@@ -6,6 +6,7 @@ import logging
 
 from medusa import db
 from medusa.common import Quality
+from medusa.databases import utils
 from medusa.logger.adapters.style import BraceAdapter
 
 
@@ -59,11 +60,11 @@ class HistoryStatus(History):
     """Store episode status before snatch to revert to if necessary."""
 
     def test(self):
-        return self.hasColumn('history', 'old_status') and self.hasColumn('history', 'showid')
+        return self.hasColumn('history', 'showid')
 
     def execute(self):
-        self.addColumn('history', 'old_status', 'NUMERIC', Quality.NA)
         self.addColumn('history', 'showid', 'NUMERIC', '-1')
+        self.addColumn('history', 'old_status', 'NUMERIC', Quality.NA)
         self.addColumn('history', 'season', 'NUMERIC', '-1')
         self.addColumn('history', 'episode', 'NUMERIC', '-1')
 
@@ -112,15 +113,23 @@ class AddIndexerIds(HistoryStatus):
                 'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
             )
 
+
 class UpdateHistoryTableQuality(AddIndexerIds):
     """
-    Add the quality field and separate
+    Add the quality field and separate status from quality
     """
+
     def test(self):
         """Test if the table history already has the column quality."""
         return self.hasColumn('history', 'quality')
 
     def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        self.translate_status()
+        self.inc_major_version()
+
+    def translate_status(self):
         """
         Add columns status and quality.
 
@@ -147,3 +156,45 @@ class UpdateHistoryTableQuality(AddIndexerIds):
             split = Quality.split_composite_status(result[b'status'])
             self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?',
                                    [split.status, split.quality, result[b'status']])
+
+    def inc_major_version(self):
+        major_version, minor_version = self.connection.version
+        major_version += 1
+        self.connection.action("UPDATE db_version SET db_version = ?", [major_version])
+        return self.connection.version
+
+
+class ShiftQualities(UpdateHistoryTableQuality):
+    """Shift all qualities one place to the left."""
+
+    def test(self):
+        """Test if the version is at least 3."""
+        return self.connection.version >= (3, None)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        self.shift_history_qualities()
+        self.update_status_unknown()
+        self.inc_major_version()
+
+    def shift_history_qualities(self):
+        """
+        Shift all qualities << 1.
+
+        This makes it possible to set UNKNOWN as 1, making it the lowest quality.
+        """
+        log.info('Shift qualities in history one place to the left.')
+        sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality")
+        for result in sql_results:
+            quality = result[b'quality']
+            new_quality = quality << 1
+            self.connection.select(
+                "UPDATE history SET quality = ? WHERE quality = ?",
+                [new_quality, quality]
+            )
+
+    def update_status_unknown(self):
+        """Changes any `UNKNOWN` quality to 1."""
+        log.info(u'Update status UNKONWN from tv_episodes')
+        self.connection.select("UPDATE history SET quality = 1 WHERE quality = 65536")
