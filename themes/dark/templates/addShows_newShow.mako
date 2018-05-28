@@ -6,7 +6,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-<script src="js/lib/frisbee.min.js"></script>
+<script src="js/lib/frisbee@2.0.4.min.js"></script>
 <script src="js/lib/vue-frisbee.min.js"></script>
 <script src="js/vue-submit-form.js"></script>
 <script>
