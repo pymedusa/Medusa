@@ -9,8 +9,7 @@ const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
     timeout: 10000,
     headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-Api-Key': idToken
+        'Content-Type': 'application/json'
     }
 });
 
