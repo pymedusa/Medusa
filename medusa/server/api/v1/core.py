@@ -883,7 +883,8 @@ class CMD_EpisodeSetStatus(ApiCall):
 
                 # don't let them mess up UN-AIRED episodes
                 if ep_obj.status == UNAIRED:
-                    if self.e is not None:  # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    if self.e is not None:
                         ep_results.append(
                             _ep_result(RESULT_FAILURE, ep_obj, 'Refusing to change status because it is UN-AIRED'))
                         failure = True
@@ -1649,6 +1650,9 @@ class CMD_SearchIndexers(ApiCall):
         results = []
         lang_id = self.valid_languages[self.lang]
 
+        if isinstance(self.name, binary_type):
+            self.name = self.name.decode('utf-8')
+
         if self.name and not self.indexerid:  # only name was given
             for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
                 indexer_api_params = indexerApi(_indexer).api_params.copy()
@@ -1662,7 +1666,7 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    api_data = indexer_api[binary_type(self.name).encode()]
+                    api_data = indexer_api[self.name]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
