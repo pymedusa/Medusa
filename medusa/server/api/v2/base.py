@@ -273,12 +273,16 @@ class BaseRequestHandler(RequestHandler):
             if last_page <= arg_page:
                 last_page = None
 
-        # Reconstruct the base URI
-        bare_uri = self.request.protocol + '://' + self.request.host + self.request.path
-        # Reconstruct the query arguments - always use the last value
-        query_args = {arg: values[-1] for arg, values in viewitems(self.request.query_arguments)
-                      if arg not in ('page', 'limit')}
-        bare_uri = url_concat(bare_uri, query_args)
+        # Reconstruct the query parameters
+        query_params = []
+        for arg, values in viewitems(self.request.query_arguments):
+            if arg in ('page', 'limit'):
+                continue
+            if not isinstance(values, list):
+                values = [values]
+            query_params += [(arg, value) for value in values]
+
+        bare_uri = url_concat(self.request.path, query_params)
 
         links = []
         for rel, page in (('next', next_page), ('last', last_page),
