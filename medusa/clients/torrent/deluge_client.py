@@ -226,8 +226,7 @@ class DelugeAPI(GenericClient):
             'id': 2,
         })
 
-        ok = self._request(method='post', data=post_data)
-        if not ok:
+        if not self._request(method='post', data=post_data):
             return False
 
         data = self.response.json()
@@ -247,8 +246,7 @@ class DelugeAPI(GenericClient):
             'id': 2,
         })
 
-        ok = self._request(method='post', data=post_data)
-        if not ok:
+        if not self._request(method='post', data=post_data):
             return False
 
         data = self.response.json()
