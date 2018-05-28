@@ -94,7 +94,7 @@ class AddIndexerIds(HistoryStatus):
             if series[b'indexer_id'] not in series_dict:
                 series_dict[series[b'indexer_id']] = series[b'indexer']
 
-        query = 'SELECT showid FROM history WHERE indexer_id is null'
+        query = 'SELECT showid FROM history WHERE indexer_id IS NULL'
         results = self.connection.select(query)
         if not results:
             return
@@ -115,9 +115,7 @@ class AddIndexerIds(HistoryStatus):
 
 
 class UpdateHistoryTableQuality(AddIndexerIds):
-    """
-    Add the quality field and separate status from quality
-    """
+    """Add the quality field and separate status from quality."""
 
     def test(self):
         """Test if the table history already has the column quality."""
@@ -151,16 +149,16 @@ class UpdateHistoryTableQuality(AddIndexerIds):
         self.connection.action('ALTER TABLE new_history RENAME TO history;')
         self.connection.action('DROP TABLE IF EXISTS new_history;')
 
-        sql_results = self.connection.select('SELECT status FROM history GROUP BY status')
+        sql_results = self.connection.select('SELECT status FROM history GROUP BY status;')
         for result in sql_results:
             split = Quality.split_composite_status(result[b'status'])
-            self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?',
+            self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?;',
                                    [split.status, split.quality, result[b'status']])
 
     def inc_major_version(self):
         major_version, minor_version = self.connection.version
         major_version += 1
-        self.connection.action("UPDATE db_version SET db_version = ?", [major_version])
+        self.connection.action("UPDATE db_version SET db_version = ?;", [major_version])
         return self.connection.version
 
 
@@ -185,16 +183,16 @@ class ShiftQualities(UpdateHistoryTableQuality):
         This makes it possible to set UNKNOWN as 1, making it the lowest quality.
         """
         log.info('Shift qualities in history one place to the left.')
-        sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality")
+        sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;")
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
-            self.connection.select(
-                "UPDATE history SET quality = ? WHERE quality = ?",
+            self.connection.action(
+                "UPDATE history SET quality = ? WHERE quality = ?;",
                 [new_quality, quality]
             )
 
     def update_status_unknown(self):
         """Changes any `UNKNOWN` quality to 1."""
         log.info(u'Update status UNKONWN from tv_episodes')
-        self.connection.select("UPDATE history SET quality = 1 WHERE quality = 65536")
+        self.connection.action("UPDATE history SET quality = 1 WHERE quality = 65536;")

@@ -33,6 +33,7 @@ from medusa.helper.exceptions import ex
 
 from six import itervalues, text_type
 
+
 db_cons = {}
 db_locks = {}
 
