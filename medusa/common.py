@@ -452,7 +452,7 @@ class Quality(object):
         """
         status = int(status)
         if status == UNSET:
-            return Quality.composite_status_quality(UNSET, Quality.UNKNOWN)
+            return Quality.composite_status_quality(UNSET, Quality.NA)
 
         for q in sorted(list(Quality.qualityStrings), reverse=True):
             if status > q * 100:
@@ -561,8 +561,6 @@ class Quality(object):
     @staticmethod
     def should_search(cur_status, cur_quality, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality.
-
-        If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
 
         :param cur_status: current status of the episode
         :param cur_quality: current quality of the episode
