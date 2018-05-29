@@ -47,7 +47,7 @@ const startVue = () => {
                     period: '${log_period}',
                     search: '${log_search}' === 'None' ? '' : '${log_search}'
                 },
-                logs: ${json.dumps(log_lines)},
+                logs: [],
                 disabled: false,
                 filters,
                 periods: {
@@ -77,9 +77,13 @@ const startVue = () => {
                     min_level: minLevel,
                     log_filter: filter,
                     log_period: period,
-                    log_search: search
+                    log_search: search,
+                    limit: 100
                 });
             }
+        },
+        async mounted() {
+            await this.getLogs();
         },
         methods: {
             viewLogAsText() {
@@ -93,10 +97,10 @@ const startVue = () => {
 
                 this.disabled = true;
 
-                const data = await $.get('errorlogs/viewlog/?' + params);
+                const { data } = await api.get('log/?' + params);
                 history.pushState('data', '', 'errorlogs/viewlog/?' + params);
 
-                this.logs = $(data).find('pre').html();
+                this.logs = data;
                 this.disabled = false;
             }
         },
@@ -176,7 +180,7 @@ pre {
 <div class="row">
     <div :class="{fanartOpacity: fanartOpacity}" class="col-md-12">
         <div class="notepad"><span @click="viewLogAsText"><img src="images/notepad.png"/></span></div>
-        <pre v-html="logs"></pre>
+        <pre><template v-for="log in logs">{{log.timestamp}} {{log.level}}    {{log.thread}} :: [{{log.commit}}]  {{log.message}}<br></template></pre>
     </div>
 </div>
 </%block>
