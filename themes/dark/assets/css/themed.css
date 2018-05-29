@@ -241,8 +241,36 @@ home_newShow.mako
     padding: 8px;
     overflow: hidden;
     font-size: 14px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: rgb(95, 95, 95);
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(125, 125, 125);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(95, 95, 95);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(72, 84, 93);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(95, 95, 95);
 }
 
 /* =======================================================================

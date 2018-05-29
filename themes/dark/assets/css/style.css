@@ -912,8 +912,65 @@ home_newShow.mako
     border: 1px solid rgb(223, 222, 222);
 }
 
-#searchResults input[type="radio"] {
-    vertical-align: -2px;
+div.search-results {
+    height: 100%;
+}
+
+div.search-results > div.no-results {
+    margin-top: 15px;
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(223, 222, 222);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(223, 222, 222);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results td.indexer img {
+    vertical-align: -3px;
+}
+
+table.search-results th {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(205, 233, 255);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results th.premiere,
+table.search-results td.premiere {
+    text-align: center;
+    max-width: 90px;
+}
+
+table.search-results th.network,
+table.search-results td.network {
+    max-width: 200px;
+}
+
+table.search-results th.indexer,
+table.search-results td.indexer {
+    text-align: center;
+    max-width: 100px;
+}
+
+table.search-results input[type="radio"] {
+    margin: 4px 0 0;
 }
 
 /* =======================================================================
