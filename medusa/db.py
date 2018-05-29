@@ -252,7 +252,7 @@ class DBConnection(object):
             if 'no transaction is active' in error.args[0]:
                 logger.log("Rollback not needed, skipping", logger.DEBUG)
             else:
-                logger.log("Failed to perform rollback: {0}".format(ex(error)), logger.ERROR)
+                logger.log("Failed to perform rollback: {error!r}".format(error=error), logger.ERROR)
 
     def action(self, query, args=None, fetchall=False, fetchone=False):
         """
