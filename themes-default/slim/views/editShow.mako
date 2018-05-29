@@ -150,7 +150,7 @@ const startVue = () => {
                 const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
-                return allowed | preferred << 16
+                return allowed | preferred << 16;
             },
             saveButton() {
                 return this.saving === false ? 'Save Changes' : 'Saving...';
