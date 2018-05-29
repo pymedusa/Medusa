@@ -261,15 +261,21 @@ class HomeAddShows(Home):
         if indexername != 'tvdb':
             series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
             if not series_id:
-                logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
+                logger.log(u'Unable to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
                     'Unable to add %s' % show_name,
                     'Could not add %s.  We were unable to locate the tvdb id at this time.' % show_name
                 )
-                return
+                return json_response(
+                    result=False,
+                    message='Unable to find tvdb ID to add {0}'.format(show=show_name)
+                )
 
         if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
-            return
+            return json_response(
+                result=False,
+                message='Show already exists'
+            )
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
         if any_qualities:
@@ -331,7 +337,10 @@ class HomeAddShows(Home):
         if not location:
             logger.log(u'There was an error creating the show, '
                        u'no root directory setting found', logger.WARNING)
-            return 'No root directories setup, please go back and add one.'
+            return json_response(
+                result=False,
+                message='No root directories set up, please go back and add one.'
+            )
 
         show_name = get_showname_from_indexer(INDEXER_TVDBV2, series_id)
         show_dir = None
@@ -344,7 +353,10 @@ class HomeAddShows(Home):
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 
         # done adding show
-        return self.redirect('/home/')
+        return json_response(
+            message='Adding the specified show {0}'.format(show_name),
+            redirect='home'
+        )
 
     def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
                    allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
