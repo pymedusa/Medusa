@@ -535,7 +535,13 @@ class HomeAddShows(Home):
 
         # if they want me to prompt for settings then I will just carry on to the newShow page
         if prompt_for_settings and shows_to_add:
-            return self.newShow(shows_to_add[0], shows_to_add[1:])
+            return json_response(
+                redirect='/addShows/newShow/',
+                params=[
+                    ('show_to_add' if not i else 'other_shows', cur_dir)
+                    for i, cur_dir in enumerate(shows_to_add)
+                ]
+            )
 
         # if they don't want me to prompt for settings then I can just add all the nfo shows now
         num_added = 0
@@ -562,7 +568,13 @@ class HomeAddShows(Home):
 
         # if we're done then go home
         if not dirs_only:
-            return self.redirect('/home/')
+            return json_response(redirect='/home/')
 
         # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
-        return self.newShow(dirs_only[0], dirs_only[1:])
+        return json_response(
+            redirect='/addShows/newShow/',
+            params=[
+                ('show_to_add' if not i else 'other_shows', cur_dir)
+                for i, cur_dir in enumerate(dirs_only)
+            ]
+        )
