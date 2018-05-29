@@ -420,7 +420,7 @@ def wanted_episodes(series_obj, from_date):
                 }
             )
         ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
+        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality]
         wanted.append(ep_obj)
 
     return wanted
@@ -686,7 +686,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
             for cur_result in found_results[cur_provider.name][cur_episode]:
-                if cur_result.quality != Quality.UNKNOWN and cur_result.quality > highest_quality_overall:
+                if cur_result.quality > highest_quality_overall:
                     highest_quality_overall = cur_result.quality
         log.debug(u'The highest quality of any match is {0}', Quality.qualityStrings[highest_quality_overall])
 
