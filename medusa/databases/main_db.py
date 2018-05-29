@@ -753,7 +753,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
                                '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
-                               'name TEXT, season NUMERIC, episode NUMERIC,description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
+                               'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
                                'hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
                                'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
                                'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
@@ -761,13 +761,13 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
                                'ep_status NUMERIC, ep_quality NUMERIC);')
 
         self.connection.action('INSERT INTO new_tv_episodes (showid, indexerid, indexer, '
-                               'name, season, episode,description, airdate, hasnfo, '
+                               'name, season, episode, description, airdate, hasnfo, '
                                'hastbn, status, location, file_size, release_name, '
                                'subtitles, subtitles_searchcount, subtitles_lastsearch, '
                                'is_proper, scene_season, scene_episode, absolute_number, '
                                'scene_absolute_number, version, release_group, manually_searched, '
                                'ep_status, ep_quality) SELECT showid, indexerid, indexer, '
-                               'name, season, episode,description, airdate, hasnfo, '
+                               'name, season, episode, description, airdate, hasnfo, '
                                'hastbn, status, location, file_size, release_name, '
                                'subtitles, subtitles_searchcount, subtitles_lastsearch, '
                                'is_proper, scene_season, scene_episode, absolute_number, '
