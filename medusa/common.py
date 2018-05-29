@@ -718,7 +718,7 @@ class Quality(object):
     def is_higher_quality(current_quality, new_quality, allowed_qualities, preferred_qualities):
         """Check is new quality is better than current quality based on allowed and preferred qualities."""
         if new_quality in preferred_qualities:
-            return new_quality > current_quality
+            return new_quality > current_quality or (current_quality == Quality.UNKNOWN and new_quality != Quality.UNKNOWN)
         elif new_quality in allowed_qualities:
             if current_quality in preferred_qualities:
                 return False
