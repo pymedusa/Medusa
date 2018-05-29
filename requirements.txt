@@ -21,7 +21,7 @@ git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6
 profilehooks==1.10.0
 PyGithub==1.38
 PyNMA==1.0
-python-dateutil==2.7.1
+python-dateutil==2.7.3
 requests==2.18.4
 SQLAlchemy==1.2.5
 stevedore==1.28.0
