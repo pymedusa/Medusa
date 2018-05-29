@@ -185,6 +185,19 @@ class ConfigHandler(BaseRequestHandler):
         config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         config_data['indexers'] = NonEmptyDict()
         config_data['indexers']['config'] = get_indexer_config()
+        config_data['postProcessing'] = NonEmptyDict()
+        config_data['postProcessing']['naming'] = NonEmptyDict()
+        config_data['postProcessing']['naming']['stripYear'] = app.NAMING_STRIP_YEAR
+        config_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
+        config_data['postProcessing']['naming']['multiEp'] = app.NAMING_MULTI_EP
+        config_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+        config_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+        config_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+        config_data['postProcessing']['naming']['customPatternAirByDate'] = app.NAMING_CUSTOM_ABD
+        config_data['postProcessing']['naming']['customPatternSports'] = app.NAMING_CUSTOM_SPORTS
+        config_data['postProcessing']['naming']['customPatternAnime'] = app.NAMING_CUSTOM_ANIME
+        config_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
+        config_data['postProcessing']['naming']['anime'] = app.NAMING_ANIME
 
         if not identifier:
             return self._paginate([config_data])

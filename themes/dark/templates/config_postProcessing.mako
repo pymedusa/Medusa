@@ -32,6 +32,7 @@ const startVue = () => {
             const sportsPattern = '${app.NAMING_SPORTS_PATTERN}';
 
             return {
+                config: MEDUSA.config,
                 header: 'Post Processing',
                 pattern: pattern,
                 abdPattern: abdPattern,
@@ -296,14 +297,14 @@ const startVue = () => {
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group1 //-->
-                    
+
                     <div id="episode-naming" class="component-group">
                         <div class="component-group-desc">
                             <h3>Episode Naming</h3>
                             <p>How Medusa will name and sort your episodes.</p>
                         </div>
                         <fieldset class="component-group-list">
-                            
+
                             <!-- default name-pattern component -->
                             <name-pattern :pattern="pattern" :presets="presets" @change="onChangePattern"></name-pattern>
 
