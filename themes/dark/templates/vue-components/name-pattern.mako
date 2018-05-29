@@ -1,15 +1,15 @@
 <script type="text/x-template" id="name-pattern-tempate">
     <div id="name_pattern_wrapper">
 
-        <div v-if="namingCustom" class="field-pair">
+        <div v-if="type" class="field-pair">
             <input type="checkbox" class="enabler" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled"/>
             <label for="enable_naming_custom">
-                <span class="component-title">Custom {{ namingCustom }}</span>
-                <span class="component-desc">Name {{ namingCustom }} shows differently than regular shows?</span>
+                <span class="component-title">Custom {{ type }}</span>
+                <span class="component-desc">Name {{ type }} shows differently than regular shows?</span>
             </label>
         </div>
 
-        <div v-if="!namingCustom || isEnabled" class="episode-naming">
+        <div v-if="!type || isEnabled" class="episode-naming">
                 <div class="field-pair">
                         <label class="nocheck" for="name_presets">
                             <span class="component-title">Name Pattern:</span>
@@ -275,7 +275,7 @@
              * If none provided we asume this is the default episode naming component.
              * And that means there will be no checkbox available to enable/disable it.
              */
-            namingCustom: {
+            type: {
                 type: String,
                 default: ''
             },
@@ -363,13 +363,15 @@
         },
         watch: {
             customName(newValue, oldValue) {
-                this.$emit('update:custom', {
-                    pattern: (this.isCustom) ? newValue : this.namingPattern
+                this.$emit('change', {
+                    pattern: (this.isCustom) ? newValue : this.namingPattern,
+                    type: this.type
                 });
             },
             namingPattern(newValue, oldValue) {
-                this.$emit('update:custom', {
-                    pattern: (this.isCustom) ? this.customName : this.namingPattern
+                this.$emit('change', {
+                    pattern: (this.isCustom) ? this.customName : this.namingPattern,
+                    type: this.type
                 });
             }
         }

@@ -51,6 +51,22 @@ const startVue = () => {
                 enabledAirByDate: false,
                 animeNamingType: 3
             };
+        },
+        methods: {
+            onChangePattern(pattern) {
+                const savePatternMap = new Map(
+                    [
+                        ['sports', 'sportsPattern'],
+                        ['airs by date', 'abdPattern'],
+                        ['anime', 'animePattern']
+                    ]
+                ).get(pattern.type)
+                if (savePatternMap) {
+                    this[savePatternMap] = pattern.pattern;
+                } else {
+                    this.pattern = pattern.pattern;
+                }
+            }
         }
     });
 };
@@ -289,16 +305,16 @@ const startVue = () => {
                         <fieldset class="component-group-list">
                             
                             <!-- default name-pattern component -->
-                            <name-pattern :pattern="pattern" :presets="presets"></name-pattern>
+                            <name-pattern :pattern="pattern" :presets="presets" @change="onChangePattern"></name-pattern>
 
                             <!-- default sports name-pattern component -->
-                            <name-pattern :pattern="sportsPattern" :presets="presets" naming-custom="sports" :enabled-naming-custom="enabledSports"></name-pattern>
+                            <name-pattern :pattern="sportsPattern" :presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
 
                             <!-- default airs by date name-pattern component -->
-                            <name-pattern :pattern="abdPattern" :presets="presets" naming-custom="airs by date" :enabled-naming-custom="enabledAirByDate"></name-pattern>
+                            <name-pattern :pattern="abdPattern" :presets="presets" type="airs by date" :enabled-naming-custom="enabledAirByDate" @change="onChangePattern"></name-pattern>
 
                             <!-- default anime name-pattern component -->
-                            <name-pattern :pattern="animePattern" :presets="presets" naming-custom="anime" :anime-type="animeNamingType" :enabled-naming-custom="enabledAnime"></name-pattern>
+                            <name-pattern :pattern="animePattern" :presets="presets" type="anime" :anime-type="animeNamingType" :enabled-naming-custom="enabledAnime" @change="onChangePattern"></name-pattern>
 
                             <div class="field-pair">
                                 <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if app.NAMING_STRIP_YEAR else ''}/>
