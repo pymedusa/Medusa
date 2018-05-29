@@ -264,7 +264,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     # Check if we have the combined sql strings
     if combined_sql_q:
         sql_prepend = b"SELECT * FROM ("
-        sql_append = b") ORDER BY CASE quality CAST(quality AS DECIMAL) END DESC, proper_tags DESC, seeders DESC"
+        sql_append = b") ORDER BY quality DESC, proper_tags DESC, seeders DESC"
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.
