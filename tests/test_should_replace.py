@@ -414,9 +414,9 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p37: Current quality is NONE: yes
+    {  # p37: Current quality is NA: yes
         'ep_status': SNATCHED,
-        'cur_quality': Quality.NONE,
+        'cur_quality': Quality.NA,
         'new_quality': Quality.HDTV,
         'allowed_qualities': [Quality.SDTV],
         'preferred_qualities': [Quality.HDTV],

@@ -98,7 +98,7 @@ def tvshow(create_tvshow):
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
     return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
-                            name='Episode Title', status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
+                            name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
                             release_group='SuperGroup')
 
 
