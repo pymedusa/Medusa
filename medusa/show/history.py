@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 from builtins import object
 from collections import namedtuple
 from datetime import datetime, timedelta
+
 from medusa.common import DOWNLOADED, SNATCHED
 from medusa.helper.common import try_int
 

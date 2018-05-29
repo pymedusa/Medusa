@@ -24,7 +24,7 @@ from builtins import str
 from datetime import datetime, timedelta
 
 from medusa import db, logger
-from medusa.common import FAILED, Quality, WANTED, statusStrings
+from medusa.common import FAILED, WANTED, statusStrings
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import EpisodeNotFoundException
 from medusa.show.history import History

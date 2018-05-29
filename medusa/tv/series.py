@@ -34,8 +34,8 @@ from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
-    IGNORED,
     FAILED,
+    IGNORED,
     Overview,
     Quality,
     SKIPPED,

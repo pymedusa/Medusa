@@ -260,8 +260,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_status_qualities(self):
         """
-        Check for a status bigger than 12, and translate to a status + quality,
-        as these are old composite statuses.
+        Check for a status bigger than 12, and translate to a status + quality, as these are old composite statuses.
 
         This can be removed when all code that creates composite statuses has been migrated.
         Until then this can be used to keep the DB sane.

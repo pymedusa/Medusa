@@ -20,11 +20,11 @@ from medusa import (
     ui,
 )
 from medusa.common import (
-    Overview,
     DOWNLOADED,
+    Overview,
     SNATCHED,
-    SNATCHED_PROPER,
     SNATCHED_BEST,
+    SNATCHED_PROPER,
 )
 from medusa.helper.common import (
     episode_num,
@@ -286,7 +286,7 @@ class Manage(Home, WebRoot):
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b"WHERE status = '4' " 
+                    b"WHERE status = '4' "
                     b'AND season != 0 '
                     b'AND indexer = ? '
                     b'AND showid = ? '
@@ -406,7 +406,7 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 b"""
-                SELECT e.status, e.quality, e.season, 
+                SELECT e.status, e.quality, e.season,
                 e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND

@@ -15,7 +15,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, helpers
-from medusa.common import cpu_presets, DOWNLOADED, SUBTITLED
+from medusa.common import DOWNLOADED, SUBTITLED, cpu_presets
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter

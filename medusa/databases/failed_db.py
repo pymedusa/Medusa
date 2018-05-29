@@ -193,6 +193,6 @@ class ShiftQualities(UpdateHistoryTableQuality):
             )
 
     def update_status_unknown(self):
-        """Changes any `UNKNOWN` quality to 1."""
+        """Change any `UNKNOWN` quality to 1."""
         log.info(u'Update status UNKONWN from tv_episodes')
         self.connection.action("UPDATE history SET quality = 1 WHERE quality = 65536;")

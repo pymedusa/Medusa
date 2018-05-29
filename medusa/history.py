@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import datetime
 
 from medusa import db
-from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
+from medusa.common import FAILED, SNATCHED, SUBTITLED
 from medusa.helper.encoding import ss
 from medusa.show.history import History
 
@@ -126,5 +126,4 @@ def log_failed(ep_obj, release, provider=None):
     :param release: Release group
     :param provider: Provider used for snatch
     """
-
     _log_history_item(FAILED, ep_obj, release, provider)
