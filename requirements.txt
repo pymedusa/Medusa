@@ -9,7 +9,7 @@ git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4
 future==0.16.0
 futures==3.2.0
 gntp==1.0.3
-guessit==2.1.4
+guessit==3.0.0
 html5lib==1.0.1
 imdbpie==5.4.0
 jsonrpclib-pelix==0.3.1
