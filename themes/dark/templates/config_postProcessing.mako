@@ -25,19 +25,13 @@ const startVue = () => {
             title: 'Config - Post Processing'
         },
         data() {
+            // FIXME: replace with MEUDSA.config.
             const multiEpStrings = ${main.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
-            const pattern = '${app.NAMING_PATTERN}';
-            const abdPattern = '${app.NAMING_ABD_PATTERN}';
-            const animePattern = '${app.NAMING_ANIME_PATTERN}';
-            const sportsPattern = '${app.NAMING_SPORTS_PATTERN}';
+            const config = MEDUSA.config;
 
             return {
-                config: MEDUSA.config,
+                config: config,
                 header: 'Post Processing',
-                pattern: pattern,
-                abdPattern: abdPattern,
-                animePattern: animePattern,
-                sportsPattern: sportsPattern,
                 presets: [
                     '%SN - %Sx%0E - %EN',
                     '%S.N.S%0SE%0E.%E.N',
@@ -45,12 +39,21 @@ const startVue = () => {
                     'S%0SE%0E - %EN',
                     'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG'
                 ],
+                pattern: config.postProcessing.naming.pattern,
                 multiEpStrings: multiEpStrings,
-                multiEpSelected: '1',
-                enabledSports: false,
-                enabledAnime: false,
-                enabledAirByDate: false,
-                animeNamingType: 3
+                multiEpSelected: config.postProcessing.naming.multiEp,
+
+                enabledSports: config.postProcessing.naming.enableCustomNamingSports,
+                sportsPattern: config.postProcessing.naming.patternSports,
+
+                enabledAirByDate: config.postProcessing.naming.enableCustomNamingAirByDate,
+                abdPattern: config.postProcessing.naming.patternAirByDate,
+                
+                enabledAnime: config.postProcessing.naming.enableCustomNamingAnime,
+                animePattern: config.postProcessing.naming.patternAnime,
+                animeMultiEpStrings: multiEpStrings,
+                animeMultiEpSelected: config.postProcessing.naming.animeMultiEp,      
+                animeNamingType: config.postProcessing.naming.animeNamingType
             };
         },
         methods: {
@@ -306,16 +309,16 @@ const startVue = () => {
                         <fieldset class="component-group-list">
 
                             <!-- default name-pattern component -->
-                            <name-pattern :pattern="pattern" :presets="presets" @change="onChangePattern"></name-pattern>
+                            <name-pattern :enabled="true" :naming-pattern="pattern" :naming-presets="presets" :multi-ep-style="multiEpSelected" :multi-ep-styles="multiEpStrings" @change="onChangePattern" ></name-pattern>
 
                             <!-- default sports name-pattern component -->
-                            <name-pattern :pattern="sportsPattern" :presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
+                            <name-pattern :enabled="enabledSports" :naming-pattern="sportsPattern" :naming-presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
 
                             <!-- default airs by date name-pattern component -->
-                            <name-pattern :pattern="abdPattern" :presets="presets" type="airs by date" :enabled-naming-custom="enabledAirByDate" @change="onChangePattern"></name-pattern>
+                            <name-pattern :enabled="enabledAirByDate" :naming-pattern="abdPattern" :naming-presets="presets" type="airs by date" :enabled-naming-custom="enabledAirByDate" @change="onChangePattern"></name-pattern>
 
                             <!-- default anime name-pattern component -->
-                            <name-pattern :pattern="animePattern" :presets="presets" type="anime" :anime-type="animeNamingType" :enabled-naming-custom="enabledAnime" @change="onChangePattern"></name-pattern>
+                            <name-pattern :enabled="enabledAnime" :naming-pattern="animePattern" :naming-presets="presets" type="anime" :multi-ep-style="animeMultiEpSelected" :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="animeNamingType" :enabled-naming-custom="enabledAnime" @change="onChangePattern"></name-pattern>
 
                             <div class="field-pair">
                                 <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if app.NAMING_STRIP_YEAR else ''}/>
