@@ -205,7 +205,7 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p18: Downloaded Unknown found 720p HDBLURAY: no
+    {  # p18: Downloaded Unknown found 720p HDBLURAY: yes
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.UNKNOWN,
         'new_quality': Quality.HDBLURAY,
@@ -214,7 +214,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'expected': False
+        'expected': True
     },
     {  # p19: Downloaded SDTV (not in quality system) and found 720p HDTV: yes
         'ep_status': DOWNLOADED,

@@ -492,7 +492,8 @@ class Quality(object):
             codec = ' DivX'
 
         # If any HDTV type or SDTV
-        if quality in (1, 4, 8, 16, 512, 4096):
+        if quality in (Quality.SDTV, Quality.HDTV, Quality.RAWHDTV, Quality.FULLHDTV,
+                       Quality.UHD_4K_TV, Quality.UHD_8K_TV):
             rel_type = ' HDTV'
             if 'ahdtv' in name:
                 rel_type = ' AHDTV'
@@ -507,8 +508,7 @@ class Quality(object):
             elif 'uhdtv' in name:
                 rel_type = ' UHDTV'
 
-        # If SDDVD
-        if quality == 2:
+        if quality == Quality.SDDVD:
             rel_type = ' BDRip'
             if re.search(r'br(-| |\.)?(rip|mux)', name):
                 rel_type = ' BRRip'
@@ -516,7 +516,8 @@ class Quality(object):
                 rel_type = ' DVDRip'
 
         # If any WEB type
-        if quality in (32, 64, 1024, 8192):
+        if quality in (Quality.HDWEBDL, Quality.FULLHDWEBDL, Quality.UHD_4K_WEBDL,
+                       Quality.UHD_8K_WEBDL):
             rel_type = ' WEB'
             if re.search(r'web(-| |\.)?dl', name):
                 rel_type = ' WEB-DL'
@@ -712,6 +713,9 @@ class Quality(object):
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
         :rtype: dict (str, str)
         """
+        if quality not in Quality.qualityStrings:
+            quality = Quality.UNKNOWN
+
         screen_size = Quality.to_guessit_screen_size(quality)
         fmt = Quality.to_guessit_format(quality)
         result = dict()
@@ -733,7 +737,7 @@ class Quality(object):
         """
         for q in Quality.to_guessit_format_list:
             if quality & q:
-                key = q & (512 - 1)  # 4k formats are bigger than 384 and are not part of ANY* bit set
+                key = q & (1024 - 1)  # 4k formats are bigger than 768 and are not part of ANY* bit set
                 return Quality.combinedQualityStrings.get(key)
 
     @staticmethod

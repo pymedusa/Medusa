@@ -8,12 +8,14 @@ import pytest
 
 @pytest.fixture
 def create_episode(tvshow, create_tvepisode, create_file):
-    def create(filepath, status, size):
+    def create(filepath, status, size, quality):
         path = create_file(filepath, size=size) if filepath else ''
         episode = create_tvepisode(tvshow, 2, 14, filepath=path)
         episode.location = path
         if status:
             episode.status = status
+        if quality:
+            episode.quality = quality
 
         return episode
 
@@ -148,7 +150,8 @@ def test_update_status_quality(p, create_episode, create_file):
     # Given
     location = p.get('location')
     status = p.get('status')
-    episode = create_episode(filepath=location, status=status, size=42)
+    quality = p.get('quality')
+    episode = create_episode(filepath=location, status=status, quality=quality, size=42)
     filepath = create_file(p['filepath'], size=p.get('new_size', 42))
     exp_status, exp_quality = p['expected']
 
