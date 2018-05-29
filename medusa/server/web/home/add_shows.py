@@ -4,16 +4,18 @@ from __future__ import unicode_literals
 
 import datetime
 import json
+import logging
 import os
 import re
 
-from medusa import app, config, helpers, logger, ui
+from medusa import app, config, helpers, ui
 from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.anidb import short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
@@ -31,6 +33,9 @@ from six import text_type
 from tornroutes import route
 
 from traktor import TraktApi
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def json_response(result=True, message=None, redirect=None, params=None):
@@ -235,8 +240,8 @@ class HomeAddShows(Home):
         except Exception as e:
             ui.notifications.error('Error!',
                                    "Unable to add show '{0}' to blacklist. Check logs.".format(show_name))
-            logger.log("Error while adding show '{0}' to trakt blacklist: {1}".format
-                       (show_name, e), logger.WARNING)
+            log.warning("Error while adding show '{name}' to trakt blacklist: {error}",
+                        {'name': show_name, 'error': e})
 
     def existingShows(self):
         """
@@ -261,7 +266,7 @@ class HomeAddShows(Home):
         if indexername != 'tvdb':
             series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
             if not series_id:
-                logger.log(u'Unable to find tvdb ID to add %s' % show_name)
+                log.info('Unable to find tvdb ID to add {name}', {'name': show_name})
                 ui.notifications.error(
                     'Unable to add %s' % show_name,
                     'Could not add %s.  We were unable to locate the tvdb id at this time.' % show_name
@@ -335,8 +340,7 @@ class HomeAddShows(Home):
                 location = None
 
         if not location:
-            logger.log(u'There was an error creating the show, '
-                       u'no root directory setting found', logger.WARNING)
+            log.warning('There was an error creating the show, no root directory setting found')
             return json_response(
                 result=False,
                 message='No root directories set up, please go back and add one.'
@@ -406,8 +410,8 @@ class HomeAddShows(Home):
         series_pieces = whichSeries.split('|')
         if (whichSeries and rootDir) or (whichSeries and fullShowPath and len(series_pieces) > 1):
             if len(series_pieces) < 6:
-                logger.log(u'Unable to add show due to show selection. Not enough arguments: %s' % (repr(series_pieces)),
-                           logger.ERROR)
+                log.error('Unable to add show due to show selection. Not enough arguments: {pieces!r}',
+                          {'pieces': series_pieces})
                 ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
                 return json_response(
                     result=False,
@@ -444,13 +448,13 @@ class HomeAddShows(Home):
 
         # don't create show dir if config says not to
         if app.ADD_SHOWS_WO_DIR:
-            logger.log(u'Skipping initial creation of {path} due to config.ini setting'.format
-                       (path=show_dir))
+            log.info('Skipping initial creation of {path} due to config.ini setting',
+                     {'path': show_dir})
         else:
             dir_exists = helpers.make_dir(show_dir)
             if not dir_exists:
-                logger.log(u'Unable to create the folder {path}, can\'t add the show'.format
-                           (path=show_dir), logger.ERROR)
+                log.error("Unable to create the folder {path}, can't add the show",
+                          {'path': show_dir})
                 ui.notifications.error('Unable to add show',
                                        'Unable to create the folder {path}, can\'t add the show'.format(path=show_dir))
                 # Don't redirect to default page because user wants to see the new show
