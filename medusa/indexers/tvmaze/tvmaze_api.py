@@ -72,7 +72,6 @@ class TVmaze(BaseIndexer):
             'screencap': 'filename',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'rating': 'contentrating',
         }
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
@@ -122,7 +121,7 @@ class TVmaze(BaseIndexer):
                             return_dict['tvdb_id'] = value.get('thetvdb')
                             return_dict['imdb_id'] = value.get('imdb')
                         if key == 'rating':
-                            return_dict['contentrating'] = value.get('average')\
+                            return_dict['rating'] = value.get('average') \
                                 if isinstance(value, dict) else value
                     else:
                         # Do some value sanitizing
