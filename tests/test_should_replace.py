@@ -505,6 +505,17 @@ import pytest
         'search_type': PROPER_SEARCH,
         'expected': False
     },
+    {  # p45: Downloaded UNKNOWN and it's Preferred: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.UNKNOWN,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [Quality.UNKNOWN],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_replace(p):
     """Run the test."""

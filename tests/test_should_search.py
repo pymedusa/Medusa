@@ -209,6 +209,15 @@ class TestTVShow(Series):
         'manually_searched': False,
         'expected': True
     },
+    {  # p21: Downloaded HDTV and it's in Allowed. Preferred is set (UNKNOWN): yes
+        'status': DOWNLOADED,
+        'quality': Quality.HDTV,
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [Quality.UNKNOWN])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_search(p):
     """Run the test."""
