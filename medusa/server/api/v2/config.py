@@ -193,11 +193,11 @@ class ConfigHandler(BaseRequestHandler):
         config_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
         config_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
         config_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
-        config_data['postProcessing']['naming']['customPatternAirByDate'] = app.NAMING_CUSTOM_ABD
-        config_data['postProcessing']['naming']['customPatternSports'] = app.NAMING_CUSTOM_SPORTS
-        config_data['postProcessing']['naming']['customPatternAnime'] = app.NAMING_CUSTOM_ANIME
+        config_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = app.NAMING_CUSTOM_ABD
+        config_data['postProcessing']['naming']['enableCustomNamingSports'] = app.NAMING_CUSTOM_SPORTS
+        config_data['postProcessing']['naming']['enableCustomNamingAnime'] = app.NAMING_CUSTOM_ANIME
         config_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
-        config_data['postProcessing']['naming']['anime'] = app.NAMING_ANIME
+        config_data['postProcessing']['naming']['animeNamingType'] = app.NAMING_ANIME
 
         if not identifier:
             return self._paginate([config_data])
