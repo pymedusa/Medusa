@@ -78,6 +78,8 @@ Vue.component('file-browser', {
     data() {
         return {
             lock: false,
+            unwatchProp: null,
+
             files: [],
             currentPath: '',
             lastPath: '',
@@ -119,6 +121,20 @@ Vue.component('file-browser', {
                 this.browse(file.path);
             }
         }
+    },
+    created() {
+        /**
+         * initialDir property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        this.unwatchProp = this.$watch('initialDir', (newValue, oldValue) => {
+            this.unwatchProp();
+
+            this.lock = true;
+            this.currentPath = this.currentPath || newValue;
+            this.$nextTick(() => this.lock = false);
+        });
     },
     mounted() {
         const vm = this;
@@ -295,16 +311,6 @@ Vue.component('file-browser', {
         });
     },
     watch: {
-        /**
-         * initialDir property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
-         */
-        initialDir(newValue, oldValue) {
-            this.lock = true;
-            this.currentPath = this.currentPath || newValue;
-            this.$nextTick(() => this.lock = false);
-        },
         currentPath(newValue, oldValue) {
             if (!this.lock) {
                 this.$emit('update:location', this.currentPath);
