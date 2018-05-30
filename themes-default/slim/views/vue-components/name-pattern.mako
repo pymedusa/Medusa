@@ -41,7 +41,7 @@
                     <label class="nocheck" for="naming_multi_ep">
                         <span class="component-title">Multi-Episode Style:</span>
                         <span class="component-desc">
-                            <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm">
+                            <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
                                 <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
                             </select>
                         </span>
@@ -221,7 +221,7 @@
                     </div>
                     <br>
                 </div>
-                <div id="naming_example_multi_div">
+                <div v-if="isMulti" id="naming_example_multi_div">
                     <h3>Multi-EP sample:</h3>
                     <div class="example">
                         <span class="jumbo" id="naming_example_multi">{{ namingExampleMulti }}</span>
@@ -231,7 +231,7 @@
         
                 <!-- Anime only -->
                 <div v-if="animeType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" />
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
                     <label for="naming_anime">
                         <span class="component-title">Add Absolute Number</span>
                         <span class="component-desc">Add the absolute number to the season/episode format?</span>
@@ -242,7 +242,7 @@
                     </label>
                 </div>
                 <div v-if="animeType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
                     <label for="naming_anime_only">
                         <span class="component-title">Only Absolute Number</span>
                         <span class="component-desc">Replace season/episode format with absolute number</span>
@@ -253,7 +253,7 @@
                     </label>
                 </div>
                 <div v-if="animeType > 0"  class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
                     <label for="naming_anime_none">
                         <span class="component-title">No Absolute Number</span>
                         <span class="component-desc">Dont include the absolute number</span>
@@ -328,7 +328,7 @@
                 namingExample: '',
                 namingExampleMulti: '',
                 isEnabled: false,
-                isMulti: true,
+                isMulti: false,
                 selectedMultiEpStyle: 1,
                 animeType: 0
             }
@@ -337,15 +337,15 @@
             getDateFormat(format) {
                 return dateFns.format(new Date(), format);
             },
-            async testNaming(pattern, isMulti, animeType) {
-                console.debug('Test pattern ' + pattern + ' for ' + (isMulti) ? 'multi' : 'single' + ' ep');
+            async testNaming(pattern, selectedMultiEpStyle, animeType) {
+                console.debug('Test pattern ' + pattern + ' for ' + (selectedMultiEpStyle) ? 'multi' : 'single' + ' ep');
                 const params = {
                     pattern: pattern,
                     anime_type: animeType
                 }
 
-                if (isMulti) {
-                    params.multi = (isMulti) ? 1 : 0 
+                if (selectedMultiEpStyle) {
+                    params.multi = selectedMultiEpStyle;
                 }
 
                 try {
@@ -360,12 +360,12 @@
                 const pattern = (this.isCustom) ? this.customName : this.pattern; 
                 
                 // Update single
-                this.namingExample = await this.testNaming(pattern, false, this.animeNamingType) + '.ext';
+                this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
                 console.debug('Result of naming pattern check: ' + this.namingExample);
                 
                 // Update multi if needed
                 if (this.isMulti) {
-                    this.namingExampleMulti = await this.testNaming(pattern, this.isMulti, this.animeNamingType) + '.ext';
+                    this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
                 }
             },
             update(newValue) {
@@ -407,6 +407,7 @@
             this.availableMultiEpStyles = this.multiEpStyles;
             this.selectedMultiEpStyle = this.multiEpStyle;
             this.animeType = this.animeNamingType;
+            this.isMulti = Boolean(this.multiEpStyle)
 
             // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
             this.isEnabled = (this.type) ? false : this.enabled;
