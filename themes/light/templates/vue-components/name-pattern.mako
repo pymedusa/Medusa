@@ -357,7 +357,7 @@
             },
             async updatePatternSamples() {
                 // If it's a custom pattern, we need to get the custom pattern from this.customName
-                const pattern = (this.isCustom) ? this.customName : this.pattern; 
+                const pattern = this.isCustom ? this.customName : this.pattern; 
                 
                 // Update single
                 this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
@@ -385,7 +385,7 @@
             },
             selectedNamingPattern: {
                 get: function() {
-                    return (this.isCustom) ? 'Custom...' : this.pattern;
+                    return this.isCustom ? 'Custom...' : this.pattern;
                 },
                 set: function(value) {
                     this.pattern = value;
@@ -410,20 +410,20 @@
             this.isMulti = Boolean(this.multiEpStyle)
 
             // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
-            this.isEnabled = (this.type) ? false : this.enabled;
+            this.isEnabled = this.type ? false : this.enabled;
 
             // Update the pattern samples
             this.updatePatternSamples();
 
         },
         watch: {
-            customName(newValue, oldValue) {
+            customName(newValue) {
                 this.update(newValue);
             },
-            pattern(newValue, oldValue) {
+            pattern() {
                 this.update();
             },
-            selectedMultiEpStyle(newValue) {
+            selectedMultiEpStyle() {
                 this.update();
             },
             isEnabled() {
