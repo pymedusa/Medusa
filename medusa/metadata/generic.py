@@ -736,6 +736,8 @@ class GenericMetadata(object):
         image_url = None
 
         indexer_show_obj = self._get_show_data(show_obj)
+        if not indexer_show_obj:
+            return None
 
         if image_type not in (u'fanart', u'poster', u'banner', u'thumbnail', u'poster_thumb', u'banner_thumb'):
             log.error(
