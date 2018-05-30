@@ -1,6 +1,23 @@
 <%!
     from medusa import app
 %>
+
+<%def name="convert(obj)">
+    <%
+    import json
+    from medusa.numdict import NumDict
+    ## This converts the keys to strings as keys can't be ints
+    print('test')
+    if isinstance(obj, (NumDict, dict)):
+        new_obj = {}
+        for key in obj:
+            new_obj[str(key)] = obj[key]
+        obj = new_obj
+
+    return json.dumps(obj)
+    %>
+</%def>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -46,7 +63,6 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
@@ -83,7 +99,8 @@
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
+        <!-- <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script> -->
+        <script src="http://cdn.date-fns.org/v1.0.0/date_fns.js"></script>
         <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
@@ -122,20 +139,14 @@
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
-        <script src="js/lib/vue-snotify.min.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
+        <%include file="/vue-components/saved-message.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
-        <script>
-            window.routes = [];
-            if ('${bool(app.DEVELOPER)}' === 'True') {
-                Vue.config.devtools = true;
-                Vue.config.performance = true;
-            }
-        </script>
+        <script>window.routes = [];</script>
         <%block name="scripts" />
         <script>
             if (!window.app) {
