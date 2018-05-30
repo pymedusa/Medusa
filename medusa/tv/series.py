@@ -1757,7 +1757,7 @@ class Series(TV):
                     with cur_ep.lock:
                         # if it used to have a file associated with it and it doesn't anymore then
                         # set it to app.EP_DEFAULT_DELETED_STATUS
-                        if cur_ep.location and cur_ep.status in DOWNLOADED:
+                        if cur_ep.location and cur_ep.status == DOWNLOADED:
 
                             if app.EP_DEFAULT_DELETED_STATUS == ARCHIVED:
                                 new_status = ARCHIVED
