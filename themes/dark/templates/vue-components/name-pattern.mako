@@ -230,8 +230,8 @@
                 </div>
         
                 <!-- Anime only -->
-                <div v-if="animeNamingType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeNamingType" />
+                <div v-if="animeType > 0" class="field-pair">
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" />
                     <label for="naming_anime">
                         <span class="component-title">Add Absolute Number</span>
                         <span class="component-desc">Add the absolute number to the season/episode format?</span>
@@ -241,8 +241,8 @@
                         <span class="component-desc">Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
                     </label>
                 </div>
-                <div v-if="animeNamingType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeNamingType"/>
+                <div v-if="animeType > 0" class="field-pair">
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType"/>
                     <label for="naming_anime_only">
                         <span class="component-title">Only Absolute Number</span>
                         <span class="component-desc">Replace season/episode format with absolute number</span>
@@ -252,8 +252,8 @@
                         <span class="component-desc">Only applies to animes.</span>
                     </label>
                 </div>
-                <div v-if="animeNamingType > 0"  class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeNamingType"/>
+                <div v-if="animeType > 0"  class="field-pair">
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType"/>
                     <label for="naming_anime_none">
                         <span class="component-title">No Absolute Number</span>
                         <span class="component-desc">Dont include the absolute number</span>
@@ -262,7 +262,7 @@
                         <span class="component-title">&nbsp;</span>
                         <span class="component-desc">Only applies to animes.</span>
                     </label>
-                </div>            
+                </div>
         </div>
 
     </div>
@@ -329,7 +329,8 @@
                 namingExampleMulti: '',
                 isEnabled: false,
                 isMulti: true,
-                selectedMultiEpStyle: 1
+                selectedMultiEpStyle: 1,
+                animeType: 0
             }
         },
         methods: {
@@ -373,7 +374,8 @@
                     type: this.type,
                     multiEpStyle: this.selectedMultiEpStyle,
                     custom: this.isCustom,
-                    enabled: this.isEnabled
+                    enabled: this.isEnabled,
+                    animeNamingType: this.animeType
                 });
             }
         },
@@ -404,6 +406,9 @@
             // Pass properties into local variables
             this.availableMultiEpStyles = this.multiEpStyles;
             this.selectedMultiEpStyle = this.multiEpStyle;
+            this.animeType = this.animeNamingType;
+
+            // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
             this.isEnabled = (this.type) ? false : this.enabled;
 
             // Update the pattern samples
@@ -421,6 +426,9 @@
                 this.update();
             },
             isEnabled() {
+                this.update();
+            },
+            animeType() {
                 this.update();
             }
         }
