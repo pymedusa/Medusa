@@ -226,11 +226,13 @@ class DelugeAPI(GenericClient):
             'id': 2,
         })
 
-        self._request(method='post', data=post_data)
+        if not self._request(method='post', data=post_data):
+            return False
 
-        result.hash = self.response.json()['result']
+        data = self.response.json()
+        result.hash = data['result']
 
-        return self.response.json()['result']
+        return data['result']
 
     def _add_torrent_file(self, result):
 
@@ -244,11 +246,13 @@ class DelugeAPI(GenericClient):
             'id': 2,
         })
 
-        self._request(method='post', data=post_data)
+        if not self._request(method='post', data=post_data):
+            return False
 
-        result.hash = self.response.json()['result']
+        data = self.response.json()
+        result.hash = data['result']
 
-        return self.response.json()['result']
+        return data['result']
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
