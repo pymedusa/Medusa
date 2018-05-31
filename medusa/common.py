@@ -440,26 +440,6 @@ class Quality(object):
 
         return ret
 
-    composite_status_quality = namedtuple('composite_status', ['status', 'quality'])
-
-    @staticmethod
-    def split_composite_status(status):
-        """
-        Split a composite status code into a status and quality.
-
-        :param status: to split
-        :returns: a namedtuple containing (status, quality)
-        """
-        status = int(status)
-        if status == UNSET:
-            return Quality.composite_status_quality(UNSET, Quality.NA)
-
-        for q in sorted(list(Quality.qualityStrings), reverse=True):
-            if status > q * 100:
-                return Quality.composite_status_quality(status - q * 100, q)
-
-        return Quality.composite_status_quality(status, Quality.UNKNOWN)
-
     @staticmethod
     def scene_quality_from_name(name, quality):
         """

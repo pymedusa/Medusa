@@ -720,18 +720,18 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         sql_results = self.connection.select('SELECT status from tv_episodes GROUP BY status;')
         for episode in sql_results:
             composite_status = episode[b'status']
-            split = common.Quality.split_composite_status(composite_status)
+            status, quality = utils.split_composite_status(composite_status)
             self.connection.action('UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?;',
-                                   [split.status, split.quality, composite_status])
+                                   [status, quality, composite_status])
 
         # Update `history` table: Remove the quality value from `action`
         log.info(u'Removing the quality from the action field, as this is a composite status')
         sql_results = self.connection.select("SELECT action FROM history GROUP BY action;")
         for item in sql_results:
             composite_action = item[b'action']
-            split = common.Quality.split_composite_status(composite_action)
+            status, quality = utils.split_composite_status(composite_action)
             self.connection.action('UPDATE history SET action = ? WHERE action = ?;',
-                                   [split.status, composite_action])
+                                   [status, composite_action])
 
         self.inc_minor_version()
 

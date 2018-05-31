@@ -151,9 +151,9 @@ class UpdateHistoryTableQuality(AddIndexerIds):
 
         sql_results = self.connection.select('SELECT status FROM history GROUP BY status;')
         for result in sql_results:
-            split = Quality.split_composite_status(result[b'status'])
+            status, quality = utils.split_composite_status(result[b'status'])
             self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?;',
-                                   [split.status, split.quality, result[b'status']])
+                                   [status, quality, result[b'status']])
 
     def inc_major_version(self):
         major_version, minor_version = self.connection.version
