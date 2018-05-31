@@ -37,7 +37,6 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_invalid_airdates()
         #  self.fix_subtitles_codes()
         self.fix_show_nfo_lang()
-        # self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
 
@@ -86,40 +85,6 @@ class MainSanityCheck(db.DBSanityCheck):
                                        "subtitles_searchcount = 0, subtitles_lastsearch = '' "
                                        "WHERE episode_id = %i" % (sql_result[b'episode_id'])
                                        )
-
-    # def convert_archived_to_compound(self):
-    #     log.debug(u'Checking for archived episodes not qualified')
-    #
-    #     query = "SELECT episode_id, showid, e.status, e.location, season, episode, anime " + \
-    #             "FROM tv_episodes e, tv_shows s WHERE e.ep_status = %s AND e.showid = s.indexer_id" % ARCHIVED
-    #
-    #     sql_results = self.connection.select(query)
-    #     if sql_results:
-    #         log.warning(u'Found {0} shows with bare archived status, '
-    #                     u'attempting automatic conversion...',
-    #                     len(sql_results))
-    #
-    #     for archivedEp in sql_results:
-    #         fixedStatus = common.Quality.composite_status(common.ARCHIVED, common.Quality.UNKNOWN)
-    #         existing = archivedEp[b'location'] and os.path.exists(archivedEp[b'location'])
-    #         if existing:
-    #             quality = common.Quality.name_quality(archivedEp[b'location'], archivedEp[b'anime'], extend=False)
-    #             fixedStatus = common.Quality.composite_status(common.ARCHIVED, quality)
-    #
-    #         log.info(
-    #             u'Changing status from {old_status} to {new_status} for'
-    #             u' {id}: {ep} at {location} (File {result})',
-    #             {'old_status': common.statusStrings[common.ARCHIVED],
-    #              'new_status': common.statusStrings[fixedStatus],
-    #              'id': archivedEp[b'showid'],
-    #              'ep': episode_num(archivedEp[b'season'],
-    #                                archivedEp[b'episode']),
-    #              'location': archivedEp[b'location'] or 'unknown location',
-    #              'result': 'EXISTS' if existing else 'NOT FOUND', }
-    #         )
-    #
-    #         self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" %
-    #                                (fixedStatus, archivedEp[b'episode_id']))
 
     def fix_duplicate_episodes(self):
 
