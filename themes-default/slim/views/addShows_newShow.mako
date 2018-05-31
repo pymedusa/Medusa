@@ -37,7 +37,7 @@ const startVue = () => {
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
-            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="/home" accept-charset="utf-8">
+            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="home" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
