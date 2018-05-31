@@ -1068,7 +1068,7 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            if cur_type in (statusStrings[cur_type.status].lower(), None):
+            if cur_type in (statusStrings[cur_item.action].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
@@ -1079,7 +1079,7 @@ class CMD_History(ApiCall):
                     'resource_path': os.path.dirname(cur_item.resource),
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
-                    'status': statusStrings[cur_item.status],
+                    'status': statusStrings[cur_item.action],
                     # Add tvdbid for backward compatibility
                     # TODO: Make this actual tvdb id for other indexers
                     'tvdbid': cur_item.show_id,
