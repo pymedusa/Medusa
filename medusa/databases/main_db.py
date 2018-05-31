@@ -540,14 +540,14 @@ class AddIndexerInteger(AddPKIndexerMapping):
 
         log.info(u'Make indexer and indexer_id as INTEGER in tv_episodes table')
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
-        self.connection.action("CREATE TABLE new_tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC,"
-                               "indexerid INTEGER, indexer INTEGER, name TEXT, season NUMERIC, episode NUMERIC,"
-                               "description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC,"
-                               "location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT,"
-                               "subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP,"
-                               "is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC,"
-                               "absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1,"
-                               "release_group TEXT, manually_searched NUMERIC);")
+        self.connection.action(
+            "CREATE TABLE new_tv_episodes "
+            "(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, name TEXT, "
+            "season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, "
+            "status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, "
+            "subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, "
+            "scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, "
+            "version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC);")
         self.connection.action("INSERT INTO new_tv_episodes SELECT * FROM tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
