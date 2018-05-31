@@ -1252,7 +1252,6 @@ class ConfigMigrator(object):
         app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_client_host'])
         app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
         app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
-        app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA']['nma_api'])
         app.EMAIL_LIST = convert_csv_string_to_list(self.config_obj['Email']['email_list'])
 
         try:

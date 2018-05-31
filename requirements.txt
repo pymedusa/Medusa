@@ -20,7 +20,6 @@ markdown2==2.3.5
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
 PyGithub==1.38
-PyNMA==1.0
 python-dateutil==2.7.1
 requests==2.18.4
 SQLAlchemy==1.2.5
