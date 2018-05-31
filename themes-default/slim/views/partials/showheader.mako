@@ -266,7 +266,6 @@
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                     <option selected value="">Change selected to:</option>
-                    <option value="">--------------------------------------------</option>
                     <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
                     % if not app.USE_FAILED_DOWNLOADS:
                         <% availableStatus.remove(FAILED) %>
