@@ -59,7 +59,7 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     statusList.remove(ARCHIVED)
     if int(whichStatus) in statusList:
         statusList.remove(int(whichStatus))
-    if app.USE_FAILED_DOWNLOADS and (int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED, DOWNLOADED)):
+    if app.USE_FAILED_DOWNLOADS and int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED, DOWNLOADED):
         statusList.append(FAILED)
 %>
 % for cur_status in statusList:
