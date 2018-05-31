@@ -405,7 +405,7 @@ def wanted_episodes(series_obj, from_date):
 
     # check through the list of statuses to see if we want any
     for episode in sql_results:
-        cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or 0)
+        cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
         should_search, should_search_reason = Quality.should_search(
             cur_status, cur_quality, series_obj, episode[b'manually_searched']
         )
