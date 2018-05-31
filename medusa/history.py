@@ -102,7 +102,7 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
     _log_history_item(action, ep_obj, filename, provider, version, size=size)
 
 
-def logSubtitle(ep_obj, subtitle_result):
+def log_subtitle(ep_obj, subtitle_result):
     """
     Log download of subtitle
 
