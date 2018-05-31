@@ -715,87 +715,58 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
 
-        log.info(u'Dropping the unique index on idx_sta_epi_air')
-        self.connection.action('DROP INDEX IF EXISTS idx_sta_epi_air;')
+        log.info(u'Adding new quality field in the tv_episodes table')
+        self.connection.action('DROP TABLE IF EXISTS old_tv_episodes;')
+        self.connection.action('ALTER TABLE tv_episodes RENAME TO old_tv_episodes;')
 
-        log.info(u'Dropping the unique index on idx_sta_epi_air')
-        self.connection.action('DROP INDEX IF EXISTS idx_sta_epi_sta_air;')
+        self.connection.action(
+            'CREATE TABLE IF NOT EXISTS tv_episodes '
+            '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
+            'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
+            'hastbn NUMERIC, status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
+            'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
+            'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
+            'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC);'
+        )
 
-        log.info(u'Dropping the unique index on idx_status')
-        self.connection.action('DROP INDEX IF EXISTS idx_status;')
+        # Re-insert old values, setting the new quality column to the invalid value of -1
+        self.connection.action(
+            'INSERT INTO tv_episodes '
+            '(showid, indexerid, indexer, name, season, episode, description, airdate, hasnfo, '
+            'hastbn, status, quality, location, file_size, release_name, subtitles, subtitles_searchcount, '
+            'subtitles_lastsearch, is_proper, scene_season, scene_episode, absolute_number, scene_absolute_number, '
+            'version, release_group, manually_searched) '
+            'SELECT showid, indexerid, indexer, '
+            'name, season, episode, description, airdate, hasnfo, '
+            'hastbn, status, -1 AS quality, location, file_size, release_name, '
+            'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+            'is_proper, scene_season, scene_episode, absolute_number, '
+            'scene_absolute_number, version, release_group, manually_searched '
+            'FROM old_tv_episodes;'
+        )
 
-        log.info(u'Adding new ep_status and ep_quality fields in the tv_episodes table')
-        self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
+        # We have all that we need, drop the old table
+        for index in ['idx_sta_epi_air', 'idx_sta_epi_sta_air', 'idx_status']:
+            log.info(u'Dropping the index on {0}', index)
+            self.connection.action('DROP INDEX IF EXISTS {index};'.format(index=index))
+        self.connection.action('DROP TABLE IF EXISTS old_tv_episodes;')
 
-        self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
-                               '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
-                               'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
-                               'hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
-                               'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
-                               'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
-                               'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC, '
-                               'ep_status NUMERIC, ep_quality NUMERIC);')
+        log.info(u'Splitting the composite status into status and quality')
+        sql_results = self.connection.select('SELECT status from tv_episodes GROUP BY status;')
+        for episode in sql_results:
+            composite_status = episode[b'status']
+            split = common.Quality.split_composite_status(composite_status)
+            self.connection.action('UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?;',
+                                   [split.status, split.quality, composite_status])
 
-        self.connection.action('INSERT INTO new_tv_episodes (showid, indexerid, indexer, '
-                               'name, season, episode, description, airdate, hasnfo, '
-                               'hastbn, status, location, file_size, release_name, '
-                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
-                               'is_proper, scene_season, scene_episode, absolute_number, '
-                               'scene_absolute_number, version, release_group, manually_searched, '
-                               'ep_status, ep_quality) SELECT showid, indexerid, indexer, '
-                               'name, season, episode, description, airdate, hasnfo, '
-                               'hastbn, status, location, file_size, release_name, '
-                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
-                               'is_proper, scene_season, scene_episode, absolute_number, '
-                               'scene_absolute_number, version, release_group, manually_searched, -1, 0 '
-                               'FROM tv_episodes;')
-        self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
-        self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
-        self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
-
-        log.info(u'Split composite status into ep_status and ep_quality')
-        sql_results = self.connection.select("SELECT status from tv_episodes GROUP BY status;")
-        for status in sql_results:
-            split = common.Quality.split_composite_status(status[b'status'])
-            self.connection.action("UPDATE tv_episodes SET ep_status = ?, ep_quality = ? WHERE status = ?;",
-                                   [split.status, split.quality, status[b'status']])
-
-        # Remove ep_status and ep_quality and add quality field.
-        # Move status from ep_status and quality from ep_quality
-        log.info(u'Adding data from ep_status and ep_quality fields to status/quality fields in the tv_episodes table')
-        self.connection.action('DROP TABLE IF EXISTS new_tv_episodes;')
-
-        self.connection.action('CREATE TABLE IF NOT EXISTS new_tv_episodes '
-                               '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
-                               'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
-                               'hastbn NUMERIC, status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
-                               'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
-                               'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
-                               'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC);')
-
-        self.connection.action('INSERT INTO new_tv_episodes (showid, indexerid, indexer, '
-                               'name, season, episode, description, airdate, hasnfo, '
-                               'hastbn, status, quality, location, file_size, release_name, '
-                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
-                               'is_proper, scene_season, scene_episode, absolute_number, '
-                               'scene_absolute_number, version, release_group, manually_searched) '
-                               'SELECT showid, indexerid, indexer, '
-                               'name, season, episode, description, airdate, hasnfo, '
-                               'hastbn, ep_status, ep_quality, location, file_size, release_name, '
-                               'subtitles, subtitles_searchcount, subtitles_lastsearch, '
-                               'is_proper, scene_season, scene_episode, absolute_number, '
-                               'scene_absolute_number, version, release_group, manually_searched '
-                               'FROM tv_episodes;')
-        self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
-        self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
-        self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
-
-        log.info(u'Remove the quality from the action field, as this is a composite status')
+        # Update `history` table: Remove the quality value from `action`
+        log.info(u'Removing the quality from the action field, as this is a composite status')
         sql_results = self.connection.select("SELECT action FROM history GROUP BY action;")
-        for status in sql_results:
-            split = common.Quality.split_composite_status(status[b'action'])
-            self.connection.action("UPDATE history SET action = ? WHERE action = ?;",
-                                   [split.status, status[b'action']])
+        for item in sql_results:
+            composite_action = item[b'action']
+            split = common.Quality.split_composite_status(composite_action)
+            self.connection.action('UPDATE history SET action = ? WHERE action = ?;',
+                                   [split.status, composite_action])
 
         self.inc_minor_version()
 
