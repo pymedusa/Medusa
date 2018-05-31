@@ -2197,7 +2197,7 @@ class Series(TV):
 
         :param ep_status: an Episode status
         :type ep_status: int
-        :param ep_quality: an Episode status
+        :param ep_quality: an Episode quality
         :type ep_quality: int
         :param backlog_mode: if we should return overview for backlogOverview
         :type backlog_mode: boolean
@@ -2206,7 +2206,8 @@ class Series(TV):
         :return: an Overview status
         :rtype: int
         """
-        ep_status = try_int(ep_status) or UNSET
+        ep_status = int(ep_status)
+        ep_quality = int(ep_quality)
 
         if backlog_mode:
             if ep_status == WANTED:
