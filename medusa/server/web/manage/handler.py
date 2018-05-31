@@ -229,7 +229,7 @@ class Manage(Home, WebRoot):
             b'WHERE tv_shows.subtitles = 1 '
             b"AND tv_episodes.status = '4' "
             b'AND tv_episodes.season != 0 '
-            b"AND tv_episodes.location != ''  "
+            b"AND tv_episodes.location != '' "
             b'AND tv_episodes.showid = tv_shows.indexer_id '
             b'AND tv_episodes.indexer = tv_shows.indexer '
             b'ORDER BY show_name'
