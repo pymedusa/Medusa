@@ -100,7 +100,7 @@ notifyStrings = {
 }
 
 # Episode statuses
-UNSET = -1  # should never happen
+UNSET = -1  # default episode status
 UNAIRED = 1  # episodes that haven't aired yet
 SNATCHED = 2  # qualified with quality
 WANTED = 3  # episodes we don't have but want to get
