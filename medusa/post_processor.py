@@ -1013,7 +1013,7 @@ class PostProcessor(object):
         old_ep_quality = ep_obj.quality
 
         # get the quality of the episode we're processing
-        if quality and common.Quality.qualityStrings[quality] != 'Unknown':
+        if quality and quality != common.Quality.UNKNOWN:
             self.log(u'The episode file has a quality in it, using that: {0}'.format
                      (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
