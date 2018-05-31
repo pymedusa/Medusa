@@ -41,7 +41,6 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
         self.fix_status_qualities()
-        self.update_status_unknown()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -274,11 +273,6 @@ class MainSanityCheck(db.DBSanityCheck):
                 "UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?;",
                 [split.status, split.quality, status[b'status']]
             )
-
-    def update_status_unknown(self):
-        """Changes any `UNKNOWN` quality to 1."""
-        log.info(u'Update status UNKONWN from tv_episodes')
-        self.connection.action("UPDATE tv_episodes SET quality = 1 WHERE quality = 65536;")
 
 
 # ======================
@@ -850,6 +844,14 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
+
+            # UNKNOWN quality value is 65536 (1 << 16) instead of 32768 (1 << 15) after the shift
+            # Qualities in the tv_shows table have the combined values of allowed and preferred qualities.
+            # Preferred quality couldn't contain UNKNOWN
+            if new_quality & 65536 > 0:  # If contains UNKNOWN allowed quality
+                new_quality -= 65536  # Remove it
+                new_quality |= common.Quality.UNKNOWN  # Then re-add it using the correct value
+
             self.connection.action(
                 "UPDATE tv_shows SET quality = ? WHERE quality = ?;",
                 [new_quality, quality]
@@ -867,6 +869,12 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
+
+            if quality == 32768:  # Old UNKNOWN quality (1 << 15)
+                new_quality = common.Quality.UNKNOWN
+            else:
+                new_quality = quality << 1
+
             self.connection.action(
                 "UPDATE tv_episodes SET quality = ? WHERE quality = ?;",
                 [new_quality, quality]
@@ -882,7 +890,12 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;")
         for result in sql_results:
             quality = result[b'quality']
-            new_quality = quality << 1
+
+            if quality == 32768:  # Old UNKNOWN quality (1 << 15)
+                new_quality = common.Quality.UNKNOWN
+            else:
+                new_quality = quality << 1
+
             self.connection.action(
                 "UPDATE history SET quality = ? WHERE quality = ?;",
                 [new_quality, quality]
