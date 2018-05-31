@@ -602,24 +602,24 @@ class Quality(object):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
-        if preferred quality, then new quality should be higher than existing one AND not be in preferred
-        If new quality is already in preferred then is already final quality.
+        If preferred quality, then new quality should be higher than existing one AND not be in preferred
+        If new quality is already in preferred then is already final quality
         Force (forced search) bypass episode status only or unknown quality
 
         :param ep_status: current status of the episode
         :param old_quality: current quality of the episode
-        :param new_quality: quality of the episode we found it and check if we should snatch it
+        :param new_quality: quality of the episode we found
         :param allowed_qualities: List of selected allowed qualities of the show we are checking
         :param preferred_qualities: List of selected preferred qualities of the show we are checking
         :param download_current_quality: True if user wants the same existing quality to be snatched
         :param force: True if user did a forced search for that episode
-        :param manually_searched: True if episode was manually searched by user
+        :param manually_searched: True if episode was manually searched
         :param search_type: The search type, that started this method
-        :return: True if the old quality should be replaced with new quality.
+        :return: True if the old quality should be replaced with new quality
         """
         if ep_status and ep_status not in (DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             if not force:
-                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+                return False, 'Episode status is not Downloaded, Snatched or Snatched Proper. Ignoring new quality'
 
         if manually_searched:
             if not force:
