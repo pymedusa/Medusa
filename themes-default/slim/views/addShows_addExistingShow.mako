@@ -84,8 +84,8 @@ const startVue = () => {
                 this.isLoading = true;
 
                 const indices = this.rootDirs
-                    .reduce((indices, rd, idx) => {
-                        if (rd.selected) indices.push(idx);
+                    .reduce((indices, rd, index) => {
+                        if (rd.selected) indices.push(index);
                         return indices;
                     }, []);
                 if (indices.length === 0) {
@@ -118,7 +118,7 @@ const startVue = () => {
                             }
                         })
                         // Fixes tablesorter not working after root dirs are refreshed
-                        .trigger("updateAll");
+                        .trigger('updateAll');
                 });
             },
             seriesIndexerUrl(curDir) {
@@ -183,7 +183,7 @@ const startVue = () => {
                 <hr>
                 <p><b>Displaying folders within these directories which aren't already added to Medusa:</b></p>
                 <ul id="rootDirStaticList">
-                    <li v-for="(rootDir, idx) in rootDirs" class="ui-state-default ui-corner-all" @click="rootDirs[idx].selected = !rootDirs[idx].selected">
+                    <li v-for="(rootDir, index) in rootDirs" class="ui-state-default ui-corner-all" @click="rootDirs[index].selected = !rootDirs[index].selected">
                         <input type="checkbox" class="rootDirCheck" v-model="rootDir.selected" :value="rootDir.path" style="cursor: pointer;">
                         <label><b style="cursor: pointer;">{{rootDir.path}}</b></label>
                     </li>
