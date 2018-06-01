@@ -54,7 +54,7 @@ class InternalHandler(BaseRequestHandler):
     # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""
-        root_dirs_indices = self.get_argument('root-dirs', '')
+        root_dirs_indices = self.get_argument('rootDirs', '')
 
         if root_dirs_indices:
             root_dirs_indices = set(root_dirs_indices.split(','))

@@ -94,7 +94,7 @@ const startVue = () => {
                     return;
                 }
 
-                const params = { 'root-dirs': indices.join(',') };
+                const params = { 'rootDirs': indices.join(',') };
                 const { data } = await api.get('internal/existingSeries', { params });
                 this.dirList = data
                     .map(dir => {
