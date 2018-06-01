@@ -505,39 +505,6 @@ class Quality(object):
 
         return rel_type + codec
 
-    guessit_map = {
-        '720p': {
-            'HDTV': HDTV,
-            'WEB-DL': HDWEBDL,
-            'WEBRip': HDWEBDL,
-            'BluRay': HDBLURAY,
-        },
-        '1080i': RAWHDTV,
-        '1080p': {
-            'HDTV': FULLHDTV,
-            'WEB-DL': FULLHDWEBDL,
-            'WEBRip': FULLHDWEBDL,
-            'BluRay': FULLHDBLURAY
-        },
-        '4K': {
-            'HDTV': UHD_4K_TV,
-            'WEB-DL': UHD_4K_WEBDL,
-            'WEBRip': UHD_4K_WEBDL,
-            'BluRay': UHD_4K_BLURAY
-        }
-    }
-
-    to_guessit_format_list = [
-        ANYHDTV, ANYWEBDL, ANYBLURAY, ANYHDTV | UHD_4K_TV, ANYWEBDL | UHD_4K_WEBDL, ANYBLURAY | UHD_4K_BLURAY
-    ]
-
-    to_guessit_screen_size_map = {
-        HDTV | HDWEBDL | HDBLURAY: '720p',
-        RAWHDTV: '1080i',
-        FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
-        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
-    }
-
     @staticmethod
     def should_search(cur_status, cur_quality, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality.
@@ -652,6 +619,44 @@ class Quality(object):
         """Check if new quality is wanted."""
         return new_quality in allowed_qualities + preferred_qualities
 
+    # Map guessit screen sizes and formats to our Quality values
+    guessit_map = {
+        '720p': {
+            'HDTV': HDTV,
+            'WEB-DL': HDWEBDL,
+            'WEBRip': HDWEBDL,
+            'BluRay': HDBLURAY,
+        },
+        '1080i': RAWHDTV,
+        '1080p': {
+            'HDTV': FULLHDTV,
+            'WEB-DL': FULLHDWEBDL,
+            'WEBRip': FULLHDWEBDL,
+            'BluRay': FULLHDBLURAY
+        },
+        '4K': {
+            'HDTV': UHD_4K_TV,
+            'WEB-DL': UHD_4K_WEBDL,
+            'WEBRip': UHD_4K_WEBDL,
+            'BluRay': UHD_4K_BLURAY
+        }
+    }
+
+    # Consolidate the guessit-supported screen sizes of each format
+    to_guessit_format_list = [
+        ANYHDTV | UHD_4K_TV,
+        ANYWEBDL | UHD_4K_WEBDL,
+        ANYBLURAY | UHD_4K_BLURAY
+    ]
+
+    # Consolidate the formats of each guessit-supported screen size
+    to_guessit_screen_size_map = {
+        HDTV | HDWEBDL | HDBLURAY: '720p',
+        RAWHDTV: '1080i',
+        FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+    }
+
     @staticmethod
     def from_guessit(guess):
         """
@@ -714,9 +719,11 @@ class Quality(object):
         :return: guessit format
         :rtype: str
         """
-        for q in Quality.to_guessit_format_list:
-            if quality & q:
-                key = q & (1024 - 1)  # 4k formats are bigger than 768 and are not part of ANY* bit set
+        for quality_set in Quality.to_guessit_format_list:
+            if quality_set & quality:  # If quality_set contains quality
+                # Remove all 4K (and above) formats as they are bigger than Quality.ANYBLURAY,
+                #   and they are not part of an "ANY*" bit set
+                key = quality_set & (Quality.UHD_4K_TV - 1)
                 return Quality.combinedQualityStrings.get(key)
 
     @staticmethod
