@@ -236,7 +236,7 @@ const startVue = () => {
                         <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
                         ${epResult["name"]}
                     </td>
-                    <td class="col-name hidden-xs triggerhighlight">${epLoc if int(epResult['status']) in [DOWNLOADED, ARCHIVED] else ''}</td>
+                    <td class="col-name hidden-xs triggerhighlight">${epLoc or ''}</td>
                     <td class="col-ep triggerhighlight">
                         % if epResult["file_size"] and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
                             ${pretty_file_size(epResult["file_size"])}
