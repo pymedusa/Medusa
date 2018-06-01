@@ -690,8 +690,6 @@ class Quality(object):
     def to_guessit(quality):
         """Return a guessit dict containing 'screen_size and format' from a Quality.
 
-        This was previously a composite status. But status/quality have been separated into their own attributes.
-
         :param quality: a quality
         :type quality: int
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
