@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -42,9 +45,9 @@ class BasicEpisode(object):
             'aired_season': 'int',
             'dvd_episode_number': 'int',
             'dvd_season': 'int',
-            'episode_name': 'str',
+            'episode_name': 'text_type',
             'id': 'int',
-            'overview': 'str'
+            'overview': 'text_type'
         }
 
         self.attribute_map = {
@@ -184,7 +187,7 @@ class BasicEpisode(object):
 
 
         :return: The episode_name of this BasicEpisode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._episode_name
 
@@ -195,7 +198,7 @@ class BasicEpisode(object):
 
 
         :param episode_name: The episode_name of this BasicEpisode.
-        :type: str
+        :type: text_type
         """
         self._episode_name = episode_name
 
@@ -228,7 +231,7 @@ class BasicEpisode(object):
 
 
         :return: The overview of this BasicEpisode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._overview
 
@@ -239,7 +242,7 @@ class BasicEpisode(object):
 
 
         :param overview: The overview of this BasicEpisode.
-        :type: str
+        :type: text_type
         """
         self._overview = overview
 
@@ -275,7 +278,7 @@ class BasicEpisode(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -286,4 +289,3 @@ class BasicEpisode(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

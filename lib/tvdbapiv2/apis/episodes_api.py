@@ -17,16 +17,12 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
-import sys
-import os
-
-# python 2 and python 3 compatibility library
 from six import iteritems
 
-from ..configuration import Configuration
 from ..api_client import ApiClient
+from ..configuration import Configuration
 
 
 class EpisodesApi(object):
@@ -60,7 +56,9 @@ class EpisodesApi(object):
         :param callback function: The callback function
             for asynchronous request. (optional)
         :param int id: ID of the episode (required)
-        :param str accept_language: Records are returned with the Episode name and Overview in the desired language, if it exists. If there is no translation for the given language, then the record is still returned but with empty values for the translated fields.
+        :param str accept_language: Records are returned with the Episode name and Overview in the desired language,
+                                    if it exists. If there is no translation for the given language, then the record
+                                    is still returned but with empty values for the translated fields.
         :return: EpisodeData
                  If the method is called asynchronously,
                  returns the request thread.
@@ -82,7 +80,7 @@ class EpisodesApi(object):
         if ('id' not in params) or (params['id'] is None):
             raise ValueError("Missing the required parameter `id` when calling `episodes_id_get`")
 
-        resource_path = '/episodes/{id}'.replace('{format}', 'json')
+        resource_path = '/episodes/{id}'
         method = 'GET'
 
         path_params = {}
@@ -101,13 +99,13 @@ class EpisodesApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
