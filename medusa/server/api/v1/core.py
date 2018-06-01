@@ -26,7 +26,6 @@ import json
 import logging
 import os
 import time
-from builtins import str
 from collections import OrderedDict
 from datetime import date, datetime
 
@@ -47,7 +46,7 @@ from medusa.helper.common import (
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
@@ -65,7 +64,7 @@ from medusa.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 
-from six import iteritems, text_type, viewitems
+from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
 
 from tornado.web import RequestHandler
 
@@ -75,7 +74,12 @@ standard_library.install_aliases()
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-INDEXER_IDS = ('indexerid', 'tvdbid', 'tvmazeid', 'tmdbid')
+INDEXER_IDS = {
+    0: 'indexerid',
+    INDEXER_TVDBV2: 'tvdbid',
+    INDEXER_TVMAZE: 'tvmazeid',
+    INDEXER_TMDB: 'tmdbid'
+}
 
 # basically everything except RESULT_SUCCESS / success is bad
 RESULT_SUCCESS = 10  # only use inside the run methods
@@ -336,11 +340,11 @@ class ApiCall(ApiHandler):
         """
 
         # auto-select indexer
-        if key in INDEXER_IDS:
+        if key in itervalues(INDEXER_IDS):
             if 'tvdbid' in kwargs:
                 key = 'tvdbid'
 
-            self.indexer = INDEXER_IDS.index(key)
+            self.indexer = next(k for k, v in iteritems(INDEXER_IDS) if v == key)
 
         missing = True
         org_default = default
@@ -786,7 +790,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = show_obj.get_episode(self.s, self.e)
-        if isinstance(ep_obj, str):
+        if isinstance(ep_obj, string_types):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
@@ -842,7 +846,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
         # convert the string status to a int
         for status in statusStrings:
-            if str(statusStrings[status]).lower() == str(self.status).lower():
+            if text_type(statusStrings[status]).lower() == text_type(self.status).lower():
                 self.status = status
                 break
         else:  # if we don't break out of the for loop we got here.
@@ -879,7 +883,8 @@ class CMD_EpisodeSetStatus(ApiCall):
 
                 # don't let them mess up UN-AIRED episodes
                 if ep_obj.status == UNAIRED:
-                    if self.e is not None:  # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    if self.e is not None:
                         ep_results.append(
                             _ep_result(RESULT_FAILURE, ep_obj, 'Refusing to change status because it is UN-AIRED'))
                         failure = True
@@ -960,7 +965,7 @@ class CMD_SubtitleSearch(ApiCall):
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = show_obj.get_episode(self.s, self.e)
-        if isinstance(ep_obj, str):
+        if isinstance(ep_obj, string_types):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         try:
@@ -1040,7 +1045,7 @@ class CMD_History(ApiCall):
         # optional
         self.limit, args = self.check_params(args, kwargs, 'limit', 100, False, 'int', [])
         self.type, args = self.check_params(args, kwargs, 'type', None, False, 'string', ['downloaded', 'snatched'])
-        self.type = self.type.lower() if isinstance(self.type, str) else None
+        self.type = self.type.lower() if isinstance(self.type, string_types) else None
 
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
@@ -1066,7 +1071,7 @@ class CMD_History(ApiCall):
                 :return: a formatted date string
                 """
                 return datetime.strptime(
-                    str(history_date),
+                    text_type(history_date),
                     History.date_format
                 ).strftime(dateTimeFormat)
 
@@ -1220,7 +1225,7 @@ class CMD_Logs(ApiCall):
     def run(self):
         """ Get the logs """
         # 10 = Debug / 20 = Info / 30 = Warning / 40 = Error
-        min_level = LOGGING_LEVELS[str(self.min_level).upper()]
+        min_level = LOGGING_LEVELS[text_type(self.min_level).upper()]
         data = [line for line in read_loglines(formatter=text_type, max_lines=50,
                                                predicate=lambda l: filter_logline(l, min_level=min_level,
                                                                                   thread_name=lambda
@@ -1645,6 +1650,9 @@ class CMD_SearchIndexers(ApiCall):
         results = []
         lang_id = self.valid_languages[self.lang]
 
+        if isinstance(self.name, binary_type):
+            self.name = self.name.decode('utf-8')
+
         if self.name and not self.indexerid:  # only name was given
             for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
                 indexer_api_params = indexerApi(_indexer).api_params.copy()
@@ -1658,9 +1666,9 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    api_data = indexer_api[str(self.name).encode()]
+                    api_data = indexer_api[self.name]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
-                    log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
+                    log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
 
                 for cur_series in api_data:
@@ -1792,7 +1800,7 @@ class CMD_SetDefaults(ApiCall):
         if self.status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.status).lower():
+                if statusStrings[status].lower() == text_type(self.status).lower():
                     self.status = status
                     break
             # this should be obsolete because of the above
@@ -1907,7 +1915,7 @@ class CMD_Show(ApiCall):
         show_dict['season_folders'] = (0, 1)[show_obj.season_folders]
         show_dict['sports'] = (0, 1)[show_obj.sports]
         show_dict['anime'] = (0, 1)[show_obj.anime]
-        show_dict['airs'] = str(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
+        show_dict['airs'] = text_type(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
         show_dict['dvdorder'] = (0, 1)[show_obj.dvd_order]
 
         if show_obj.rls_require_words:
@@ -2118,7 +2126,7 @@ class CMD_ShowAddNew(ApiCall):
         if self.status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.status).lower():
+                if statusStrings[status].lower() == text_type(self.status).lower():
                     self.status = status
                     break
 
@@ -2135,7 +2143,7 @@ class CMD_ShowAddNew(ApiCall):
         if self.future_status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.future_status).lower():
+                if statusStrings[status].lower() == text_type(self.future_status).lower():
                     self.future_status = status
                     break
 

@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -38,13 +41,13 @@ class SeriesImageQueryResult(object):
         """
         self.swagger_types = {
             'id': 'int',
-            'key_type': 'str',
-            'sub_key': 'str',
-            'file_name': 'str',
+            'key_type': 'text_type',
+            'sub_key': 'text_type',
+            'file_name': 'text_type',
             'language_id': 'int',
-            'resolution': 'str',
+            'resolution': 'text_type',
             'ratings_info': 'int',
-            'thumbnail': 'str'
+            'thumbnail': 'text_type'
         }
 
         self.attribute_map = {
@@ -96,7 +99,7 @@ class SeriesImageQueryResult(object):
 
 
         :return: The key_type of this SeriesImageQueryResult.
-        :rtype: str
+        :rtype: text_type
         """
         return self._key_type
 
@@ -107,7 +110,7 @@ class SeriesImageQueryResult(object):
 
 
         :param key_type: The key_type of this SeriesImageQueryResult.
-        :type: str
+        :type: text_type
         """
         self._key_type = key_type
 
@@ -118,7 +121,7 @@ class SeriesImageQueryResult(object):
 
 
         :return: The sub_key of this SeriesImageQueryResult.
-        :rtype: str
+        :rtype: text_type
         """
         return self._sub_key
 
@@ -129,7 +132,7 @@ class SeriesImageQueryResult(object):
 
 
         :param sub_key: The sub_key of this SeriesImageQueryResult.
-        :type: str
+        :type: text_type
         """
         self._sub_key = sub_key
 
@@ -140,7 +143,7 @@ class SeriesImageQueryResult(object):
 
 
         :return: The file_name of this SeriesImageQueryResult.
-        :rtype: str
+        :rtype: text_type
         """
         return self._file_name
 
@@ -151,7 +154,7 @@ class SeriesImageQueryResult(object):
 
 
         :param file_name: The file_name of this SeriesImageQueryResult.
-        :type: str
+        :type: text_type
         """
         self._file_name = file_name
 
@@ -184,7 +187,7 @@ class SeriesImageQueryResult(object):
 
 
         :return: The resolution of this SeriesImageQueryResult.
-        :rtype: str
+        :rtype: text_type
         """
         return self._resolution
 
@@ -195,7 +198,7 @@ class SeriesImageQueryResult(object):
 
 
         :param resolution: The resolution of this SeriesImageQueryResult.
-        :type: str
+        :type: text_type
         """
         self._resolution = resolution
 
@@ -228,7 +231,7 @@ class SeriesImageQueryResult(object):
 
 
         :return: The thumbnail of this SeriesImageQueryResult.
-        :rtype: str
+        :rtype: text_type
         """
         return self._thumbnail
 
@@ -239,7 +242,7 @@ class SeriesImageQueryResult(object):
 
 
         :param thumbnail: The thumbnail of this SeriesImageQueryResult.
-        :type: str
+        :type: text_type
         """
         self._thumbnail = thumbnail
 
@@ -275,7 +278,7 @@ class SeriesImageQueryResult(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -286,4 +289,3 @@ class SeriesImageQueryResult(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

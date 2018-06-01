@@ -158,7 +158,7 @@ class Tmdb(BaseIndexer):
             results = []
             while page <= last:
                 search_result = self.tmdb.Search().tv(query=show,
-                                                      language='request_language',
+                                                      language=request_language,
                                                       page=page)
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
@@ -178,7 +178,6 @@ class Tmdb(BaseIndexer):
         :param series: The query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode('utf-8')
         log.debug('Searching for show: {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
