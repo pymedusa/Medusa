@@ -10,8 +10,8 @@ import stat
 from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
-from medusa.common import DOWNLOADED
 from medusa.clients import torrent
+from medusa.common import DOWNLOADED
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
