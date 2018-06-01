@@ -62,9 +62,9 @@ def split_composite_status(status):
 
     status = int(status)
     if status == status_unset:
-        return (status_unset, qualities['NA'])
+        return (status_unset, qualities['NONE'])
 
-    for q in itervalues(qualities):
+    for q in sorted(itervalues(qualities), reverse=True):
         if status > q * 100:
             return (status - q * 100, q)
 
