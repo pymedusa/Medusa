@@ -49,7 +49,9 @@ const startVue = () => {
                 // Mark the root dir as bold in the path
                 return this.filteredDirList
                     .map(dir => {
-                        const rootDir = this.rootDirs.find(rd => dir.path.startsWith(rd.path)).path;
+                        const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
+                        if (!rootDirObj) return dir.path;
+                        const rootDir = rootDirObj.path;
                         const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
                         const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
