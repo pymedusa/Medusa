@@ -186,9 +186,9 @@ class Manage(Home, WebRoot):
             b'WHERE indexer = ? '
             b'AND showid = ? '
             b'AND season != 0 '
-            b"AND status = '4' "
+            b'AND status = ? '
             b"AND location != ''",
-            [int(indexer), int(seriesid)]
+            [int(indexer), int(seriesid), DOWNLOADED]
         )
 
         result = {}
@@ -227,12 +227,13 @@ class Manage(Home, WebRoot):
             b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
-            b"AND tv_episodes.status = '4' "
+            b'AND tv_episodes.status = ? '
             b'AND tv_episodes.season != 0 '
             b"AND tv_episodes.location != '' "
             b'AND tv_episodes.showid = tv_shows.indexer_id '
             b'AND tv_episodes.indexer = tv_shows.indexer '
-            b'ORDER BY show_name'
+            b'ORDER BY show_name',
+            [DOWNLOADED]
         )
 
         ep_counts = {}
@@ -286,12 +287,12 @@ class Manage(Home, WebRoot):
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b"WHERE status = '4' "
+                    b'WHERE status = ? '
                     b'AND season != 0 '
                     b'AND indexer = ? '
                     b'AND showid = ? '
                     b"AND location != ''",
-                    [cur_indexer_id, cur_series_id]
+                    [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
                 to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 

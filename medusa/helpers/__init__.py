@@ -43,7 +43,7 @@ import guessit
 from imdbpie import imdbpie
 
 from medusa import app, db
-from medusa.common import USER_AGENT
+from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
@@ -1710,9 +1710,9 @@ def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
-                                        "WHERE action = '4' "
+                                        'WHERE action = ? '
                                         'AND resource LIKE ?',
-                                        ['%' + full_filename])
+                                        [DOWNLOADED, '%' + full_filename])
     return bool(history_result)
 
 
@@ -1735,8 +1735,8 @@ def is_info_hash_processed(info_hash):
                                         'd.season = s.season AND '
                                         'd.episode = s.episode AND '
                                         'd.quality = s.quality '
-                                        'WHERE d.action = "4"',
-                                        [info_hash])
+                                        'WHERE d.action = ?',
+                                        [info_hash, DOWNLOADED])
     return bool(history_result)
 
 

@@ -1283,9 +1283,10 @@ class Home(WebRoot):
                 b'AND showid = ? '
                 b'AND season = ? '
                 b'AND episode = ? '
-                b"AND action in ('2', '4', '9', '11', '12') "  # SNATCHED, DOWN, SNATCH_PROP, FAILED, SNATCH_BEST
+                b'AND action in (?, ?, ?, ?, ?) '
                 b'ORDER BY date DESC',
-                [indexer_id, series_id, season, episode]
+                [indexer_id, series_id, season, episode,
+                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:

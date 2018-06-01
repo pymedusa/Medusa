@@ -15,7 +15,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, helpers
-from medusa.common import DOWNLOADED, SUBTITLED, cpu_presets
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED, cpu_presets
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter
@@ -108,7 +108,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # Episode status becomes downloaded only after found subtitles
             last_subtitled = search_date.strftime(History.date_format)
             recently_aired = main_db_con.select(b'SELECT indexer_id AS indexer, showid, season, episode FROM history '
-                                                b"WHERE date >= ? AND action = ?", [last_subtitled, SUBTITLED])
+                                                b'WHERE date >= ? AND action = ?', [last_subtitled, SUBTITLED])
 
         if not recently_aired:
             log.info('No recently aired new episodes, nothing to search for')
@@ -339,9 +339,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND action in ('2', '4', '9', '12')",
+                b'AND action in (?, ?, ?, ?)',
                 [cur_proper.indexerid, cur_proper.actual_season, cur_proper.actual_episode, cur_proper.quality,
-                 history_limit.strftime(History.date_format)])
+                 history_limit.strftime(History.date_format),
+                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
             # if the result exists in history already we need to skip it

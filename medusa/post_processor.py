@@ -789,6 +789,7 @@ class PostProcessor(object):
     def _priority_from_history(self, series_obj, season, episodes, quality):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
+        snatched_statuses = [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST]
         for episode in episodes:
             # First: check if the episode status is snatched
             tv_episodes_result = main_db_con.select(
@@ -798,8 +799,9 @@ class PostProcessor(object):
                 'AND showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                "AND status IN ('2', '9', '12') ",
-                [series_obj.indexer, series_obj.series_id, season, episode]
+                'AND status IN (?, ?, ?) ',
+                [series_obj.indexer, series_obj.series_id,
+                 season, episode] + snatched_statuses
             )
 
             if tv_episodes_result:
@@ -812,9 +814,11 @@ class PostProcessor(object):
                     'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
-                    "AND action IN ('2', '9', '12') "
+                    'AND action IN (?, ?, ?) '
                     'ORDER BY date DESC',
-                    [series_obj.indexer, series_obj.series_id, season, episode])
+                    [series_obj.indexer, series_obj.series_id,
+                     season, episode] + snatched_statuses
+                )
 
                 if history_result and history_result[0][b'quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
@@ -834,9 +838,11 @@ class PostProcessor(object):
                         'AND season = ? '
                         'AND episode = ? '
                         'AND quality = ? '
-                        "AND action = '4' "
+                        'AND action = ? '
                         'ORDER BY date DESC',
-                        [series_obj.indexer, series_obj.series_id, season, episode, quality])
+                        [series_obj.indexer, series_obj.series_id,
+                         season, episode, quality, common.DOWNLOADED]
+                    )
 
                     if download_result:
                         download_name = os.path.basename(download_result[0][b'resource'])
