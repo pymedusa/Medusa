@@ -1757,12 +1757,9 @@ class Series(TV):
                     with cur_ep.lock:
                         # if it used to have a file associated with it and it doesn't anymore then
                         # set it to app.EP_DEFAULT_DELETED_STATUS
-                        if cur_ep.location and cur_ep.status == DOWNLOADED:
+                        if cur_ep.location and cur_ep.status in [ARCHIVED, DOWNLOADED, IGNORED, SKIPPED]:
 
-                            if app.EP_DEFAULT_DELETED_STATUS == ARCHIVED:
-                                new_status = ARCHIVED
-                            else:
-                                new_status = app.EP_DEFAULT_DELETED_STATUS
+                            new_status = app.EP_DEFAULT_DELETED_STATUS
 
                             log.debug(
                                 u"{id}: Location for '{show}' {ep} doesn't exist and current status is '{old_status}',"
@@ -1783,6 +1780,10 @@ class Series(TV):
                         cur_ep.hasnfo = False
                         cur_ep.hastbn = False
                         cur_ep.release_name = ''
+                        cur_ep.release_group = ''
+                        cur_ep.is_proper = False
+                        cur_ep.version = 0
+                        cur_ep.manually_searched = False
 
                         sql_l.append(cur_ep.get_sql())
 
