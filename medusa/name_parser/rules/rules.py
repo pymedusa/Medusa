@@ -1325,7 +1325,7 @@ class ReleaseGroupPostProcessor(Rule):
                     break
 
             if value and matches.tagged('scene') and not matches.next(release_group):
-                value = value.split('-')[0]
+                value = value.split(b'-')[0]
 
             if release_group.value != value:
                 to_remove.append(release_group)
