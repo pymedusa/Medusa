@@ -36,7 +36,8 @@ const startVue = () => {
                         return {
                             // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
                             0: node => $(node).find('time').attr('datetime'),
-                            1: node => $(node).find('a').text()
+                            1: node => $(node).find('a').text(),
+                            4: node => $(node).attr('quality')
                         };
                     }
                     // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
@@ -49,10 +50,10 @@ const startVue = () => {
                     if ($.isMeta({ subtitles: 'enabled' }, [true])) {
                         // 4: Subtitled, 5: Quality
                         compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        compactExtract[5] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                        compactExtract[5] = node => $(node).attr('quality')
                     } else {
                         // 4: Quality
-                        compactExtract[4] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                        compactExtract[4] = node => $(node).attr('quality')
                     }
                     return compactExtract;
                 })(),
@@ -191,8 +192,9 @@ const startVue = () => {
                             % endif
                         % endif
                         </td>
-                        <span style="display: none;">${hItem.quality}</span>
-                        <td align="center" class="triggerhighlight">${renderQualityPill(hItem.quality)}</td>
+                        <td align="center" class="triggerhighlight" quality="${hItem.quality}">
+                            ${renderQualityPill(hItem.quality)}
+                        </td>
                     </tr>
                 % endfor
                 </tbody>
@@ -272,10 +274,8 @@ const startVue = () => {
                             % endfor
                         </td>
                         % endif
-                        <td align="center" class="triggerhighlight">
-                            % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
-                                <span> ${renderQualityPill(cur_action.quality, customTitle=statusStrings[cur_action.action])}</span>
-                            % endfor
+                        <td align="center" class="triggerhighlight" quality="${hItem.quality}">
+                            <span>${renderQualityPill(hItem.quality)}</span>
                         </td>
                     </tr>
                 % endfor

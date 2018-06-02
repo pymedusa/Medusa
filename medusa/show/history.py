@@ -60,10 +60,12 @@ class History(object):
         actions = History._get_actions(action)
         limit = max(try_int(limit), 0)
 
-        common_sql = 'SELECT show_name, h.indexer_id, showid, season, episode, action, h.quality, ' \
-                     ' provider, resource, date, h.proper_tags, h.manually_searched ' \
-                     'FROM history h, tv_shows s ' \
-                     'WHERE h.showid = s.indexer_id AND h.indexer_id = s.indexer '
+        common_sql = (
+            'SELECT show_name, h.indexer_id, showid AS show_id, season, episode, action, h.quality, '
+            'provider, resource, date, h.proper_tags, h.manually_searched '
+            'FROM history h, tv_shows s '
+            'WHERE h.showid = s.indexer_id AND h.indexer_id = s.indexer '
+        )
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
         order_sql = 'ORDER BY date DESC '
 
@@ -79,7 +81,7 @@ class History(object):
         # TODO: Convert to a defaultdict and compact items as needed
         # TODO: Convert to using operators to combine items
         for row in sql_results:
-            row = History.Item(*row)
+            row = History.Item(**row)
             if not limit or len(detailed) < limit:
                 detailed.append(row)
             if row.index in compact:
@@ -121,17 +123,17 @@ class History(object):
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
 
-    index_fields = ('indexer_id', 'show_id', 'season', 'episode')
+    index_fields = ('indexer_id', 'show_id', 'season', 'episode', 'quality')
     # An index for an item or compact item from history
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)
 
-    compact_fields = ('show_name', 'index', 'actions')
+    compact_fields = ('show_name', 'index', 'actions', 'quality')
     # Related items compacted with a list of actions from history
     CompactItem = namedtuple('CompactItem', compact_fields)
 
     item_fields = tuple(  # make it a tuple so its immutable
-        ['show_name'] + list(index_fields) + list(action_fields)
+        set(('show_name',) + index_fields + action_fields)  # unique only
     )
 
     class Item(namedtuple('Item', item_fields)):
@@ -152,7 +154,8 @@ class History(object):
                 self.indexer_id,
                 self.show_id,
                 self.season,
-                self.episode
+                self.episode,
+                self.quality,
             )
 
         @property
@@ -180,6 +183,7 @@ class History(object):
                 self.show_name,
                 self.index,
                 [self.cur_action],  # actions
+                self.quality,
             )
             return result
 
