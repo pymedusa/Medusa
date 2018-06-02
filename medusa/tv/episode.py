@@ -1740,7 +1740,7 @@ class Episode(TV):
                             ep_string += '-' + '%(#)03d' % {'#': rel_ep.episode}
 
             regex_replacement = None
-            if anime_type == 2:
+            if anime_type == 2 and not ep_only_match:
                 regex_replacement = r'\g<pre_sep>' + ep_string + r'\g<post_sep>'
             elif season_ep_match:
                 regex_replacement = r'\g<pre_sep>\g<2>\g<3>' + ep_string + r'\g<post_sep>'
