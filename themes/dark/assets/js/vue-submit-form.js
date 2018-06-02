@@ -16,12 +16,12 @@ window.vueSubmitForm = async function(formId) {
         .then(resp => {
             try {
                 const json = JSON.parse(resp.body);
-                const { redirect } = JSON.parse(resp.body);
+                const { redirect } = json;
                 if (redirect) {
                     window.location.href = base + redirect;
                     return;
                 }
-            } catch {
+            } catch (e) {
                 // Ignore
             }
 
