@@ -71,7 +71,7 @@ class ShowUpdater(object):
             try:
                 indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
-                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                u'connectivity issues. While trying to look for show updates on show: {show}',
                                indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
@@ -91,7 +91,7 @@ class ShowUpdater(object):
                             last_update, update_max_weeks
                         )
                     except IndexerUnavailable:
-                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                        logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'connectivity issues while trying to look for show updates on show: {show}',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
@@ -107,7 +107,7 @@ class ShowUpdater(object):
 
                         if isinstance(error, HTTPError):
                             if error.response.status_code == 503:
-                                logger.warning(u'API Service offline: '
+                                logger.info(u'API Service offline: '
                                                u'This service is temporarily offline, try again later.')
                             elif error.response.status_code == 429:
                                 logger.warning(u'Your request count (#) is over the allowed limit of (40).')
@@ -149,7 +149,7 @@ class ShowUpdater(object):
                     updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update,
                                                                            update_max_weeks)
                 except IndexerUnavailable:
-                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                    logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'connectivity issues while trying to look for showupdates on show: {show}',
                                    indexer_name=indexerApi(show.indexer).name, show=show.name)
                     continue
