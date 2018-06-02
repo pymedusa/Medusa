@@ -238,7 +238,7 @@ const startVue = () => {
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">${epLoc or ''}</td>
                     <td class="col-ep triggerhighlight">
-                        % if epResult["file_size"] and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
+                        % if epResult["file_size"]:
                             ${pretty_file_size(epResult["file_size"])}
                         % endif
                     </td>
@@ -269,9 +269,9 @@ const startVue = () => {
                     </td>
                     <td class="col-subtitles triggerhighlight" align="center">
                     % for flag in (epResult["subtitles"] or '').split(','):
-                        % if flag.strip() and int(epResult['status']) in [DOWNLOADED, ARCHIVED]:
+                        % if flag.strip() and int(epResult['status']) in [ARCHIVED, DOWNLOADED, IGNORED, SKIPPED]:
                             % if flag != 'und':
-                                <app-link class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
+                                <app-link class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
                                     <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
                                 </app-link>
                             % else:
