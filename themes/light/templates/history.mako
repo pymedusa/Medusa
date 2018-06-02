@@ -274,8 +274,8 @@ const startVue = () => {
                             % endfor
                         </td>
                         % endif
-                        <td align="center" class="triggerhighlight" quality="${hItem.quality}">
-                            <span>${renderQualityPill(hItem.quality)}</span>
+                        <td align="center" class="triggerhighlight" quality="${hItem.index.quality}">
+                            <span>${renderQualityPill(hItem.index.quality)}</span>
                         </td>
                     </tr>
                 % endfor

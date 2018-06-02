@@ -128,7 +128,7 @@ class History(object):
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)
 
-    compact_fields = ('show_name', 'index', 'actions', 'quality')
+    compact_fields = ('show_name', 'index', 'actions')
     # Related items compacted with a list of actions from history
     CompactItem = namedtuple('CompactItem', compact_fields)
 
@@ -183,7 +183,6 @@ class History(object):
                 self.show_name,
                 self.index,
                 [self.cur_action],  # actions
-                self.quality,
             )
             return result
 
