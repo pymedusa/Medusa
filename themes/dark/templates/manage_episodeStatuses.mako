@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa.common import statusStrings, SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import Overview, statusStrings, SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa import app
 %>
 <%block name="scripts">
@@ -26,14 +26,14 @@ const startVue = () => {
 <h1 class="header">{{header}}</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
 % if whichStatus:
-<h2>None of your episodes have status ${statusStrings[whichStatus]}</h2>
+<h2>None of your episodes have status ${statusStrings[int(whichStatus)]}</h2>
 <br>
 % endif
 <form action="manage/episodeStatuses" method="get">
 Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
 % for cur_status in (SKIPPED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, WANTED, IGNORED, DOWNLOADED, ARCHIVED):
     %if cur_status not in (ARCHIVED, DOWNLOADED):
-        <option value="${cur_status}">${statusStrings[cur_status]}</option>
+        <option value="${cur_status}">${statusStrings[int(cur_status)]}</option>
     %endif
 % endfor
 </select>
@@ -42,7 +42,7 @@ Manage episodes with status <select name="whichStatus" class="form-control form-
 % else:
 <form action="manage/changeEpisodeStatuses" method="post">
 <input type="hidden" id="oldStatus" name="oldStatus" value="${whichStatus}" />
-<h2>Shows containing ${statusStrings[whichStatus]} episodes</h2>
+<h2>Shows containing ${statusStrings[int(whichStatus)]} episodes</h2>
 <br>
 <%
     if int(whichStatus) in (IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
