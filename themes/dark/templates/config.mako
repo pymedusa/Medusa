@@ -21,7 +21,7 @@
             <tr><td><i class="icon16-config-user"></i> User:</td><td>{{localUser}}</td></tr>
             <tr><td><i class="icon16-config-dir"></i> Program Folder:</td><td>{{programDir}}</td></tr>
             <tr><td><i class="icon16-config-config"></i> Config File:</td><td>{{configFile}}</td></tr>
-            <tr><td><i class="icon16-config-db"></i> Database File:</td><td>{{dbFilename}}</td></tr>
+            <tr><td><i class="icon16-config-db"></i> Database File:</td><td>{{dbPath}}</td></tr>
             <tr><td><i class="icon16-config-cache"></i> Cache Folder:</td><td>{{cacheDir}}</td></tr>
             <tr><td><i class="icon16-config-log"></i> Log Folder:</td><td>{{logDir}}</td></tr>
             <tr v-if="appArgs"><td><i class="icon16-config-arguments"></i> Arguments:</td><td><pre>{{prettyPrintJSON(appArgs)}}</pre></td></tr>
@@ -50,7 +50,7 @@ const component = {
             commitHash: undefined,
             configFile: undefined,
             databaseVersion: undefined,
-            dbFilename: undefined,
+            dbPath: undefined,
             githubUrl: undefined,
             locale: undefined,
             localUser: undefined,
@@ -73,7 +73,7 @@ const component = {
         this.commitHash = data.commitHash;
         this.configFile = data.configFile;
         this.databaseVersion = data.databaseVersion;
-        this.dbFilename = data.dbFilename;
+        this.dbPath = data.dbPath;
         this.githubUrl = data.githubUrl;
         this.locale = data.locale;
         this.localUser = data.localUser;

@@ -30,7 +30,6 @@ function updateImages(data) {
         const img = el.children('img[data-ep-search]');
         const parent = el.parent();
         if (el) {
-            let rSearchTerm = '';
             if (ep.searchstatus.toLowerCase() === 'searching') {
                 // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
@@ -54,8 +53,11 @@ function updateImages(data) {
                 enableLink(el);
 
                 // Update Status and Quality
-                rSearchTerm = /(\w+(\s\((\bBest\b|\bProper\b)\))?)\s\((.+?)\)/;
-                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
+                let qualityPill = '';
+                if (ep.quality_style !== 'na') {
+                    qualityPill = ' <span class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
+                }
+                htmlContent = ep.status + qualityPill;
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
             // Update the status column if it exists
@@ -147,7 +149,6 @@ $.ajaxEpSearch = function(options) {
     function forcedSearch() {
         let imageName;
         let imageResult;
-        let htmlContent;
 
         const parent = selectedEpisode.parent();
 
@@ -186,11 +187,6 @@ $.ajaxEpSearch = function(options) {
                 if (options.colorRow) {
                     parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
                 }
-                // Applying the quality class
-                const rSearchTerm = /(\w+)\s\((.+?)\)/;
-                htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
-                // Update the status column if it exists
-                parent.siblings('.col-status').html(htmlContent);
                 // Only if the queuing was successful, disable the onClick event of the loading image
                 disableLink(link);
             }

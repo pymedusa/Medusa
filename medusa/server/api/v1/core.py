@@ -36,8 +36,8 @@ from medusa import (
     process_tv, sbdatetime, subtitles, ui,
 )
 from medusa.common import (
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNSET, WANTED, statusStrings,
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
+    SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings,
 )
 from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
@@ -723,7 +723,7 @@ class CMD_Episode(ApiCall):
 
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select(
-            'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
+            'SELECT name, description, airdate, status, quality, location, file_size, release_name, subtitles '
             'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
             [INDEXER_TVDBV2, self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
@@ -752,7 +752,7 @@ class CMD_Episode(ApiCall):
         else:
             episode[b'airdate'] = 'Never'
 
-        status, quality = Quality.split_composite_status(int(episode[b'status']))
+        status, quality = int(episode[b'status']), int(episode[b'quality'])
         episode[b'status'] = statusStrings[status]
         episode[b'quality'] = get_quality_string(quality)
         episode[b'file_size_human'] = pretty_file_size(episode[b'file_size'])
@@ -803,10 +803,8 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            _, quality = Quality.split_composite_status(ep_obj.status)
-            # TODO: split quality and status?
-            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(quality)},
-                             'Snatched ({0})'.format(get_quality_string(quality)))
+            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(ep_obj.quality)},
+                             'Snatched ({0})'.format(get_quality_string(ep_obj.quality)))
 
         return _responds(RESULT_FAILURE, msg='Unable to find episode')
 
@@ -897,7 +895,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     continue
 
                 # allow the user to force setting the status for an already downloaded episode
-                if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED and not self.force:
+                if ep_obj.status in [DOWNLOADED, ARCHIVED] and not self.force:
                     ep_results.append(
                         _ep_result(
                             RESULT_FAILURE, ep_obj,
@@ -1075,19 +1073,18 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            composite = Quality.split_composite_status(cur_item.action)
-            if cur_type in (statusStrings[composite.status].lower(), None):
+            if cur_type in (statusStrings[cur_item.action].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
                     'indexerid': cur_item.show_id,
                     'provider': cur_item.provider,
-                    'quality': get_quality_string(composite.quality),
+                    'quality': get_quality_string(cur_item.quality),
                     'resource': os.path.basename(cur_item.resource),
                     'resource_path': os.path.dirname(cur_item.resource),
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
-                    'status': statusStrings[composite.status],
+                    'status': statusStrings[cur_item.action],
                     # Add tvdbid for backward compatibility
                     # TODO: Make this actual tvdb id for other indexers
                     'tvdbid': cur_item.show_id,
@@ -1187,7 +1184,9 @@ class CMD_Backlog(ApiCall):
 
             for cur_result in sql_results:
 
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
+                cur_ep_cat = cur_show.get_overview(
+                    cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched']
+                )
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(cur_result)
 
@@ -2542,12 +2541,12 @@ class CMD_ShowSeasons(ApiCall):
 
         if self.season is None:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles '
+                'SELECT name, episode, airdate, status, quality, release_name, season, location, file_size, subtitles '
                 'FROM tv_episodes WHERE indexer = ? AND showid = ?',
                 [INDEXER_TVDBV2, self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = Quality.split_composite_status(int(row[b'status']))
+                status, quality = int(row[b'status']), int(row[b'quality'])
                 row[b'status'] = statusStrings[status]
                 row[b'quality'] = get_quality_string(quality)
                 if try_int(row[b'airdate'], 1) > 693595:  # 1900
@@ -2566,8 +2565,8 @@ class CMD_ShowSeasons(ApiCall):
 
         else:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
-                ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? ',
+                'SELECT name, episode, airdate, status, quality, location, file_size, release_name, subtitles'
+                ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ?',
                 [INDEXER_TVDBV2, self.indexerid, self.season])
             if not sql_results:
                 return _responds(RESULT_FAILURE, msg='Season not found')
@@ -2575,7 +2574,7 @@ class CMD_ShowSeasons(ApiCall):
             for row in sql_results:
                 cur_episode = int(row[b'episode'])
                 del row[b'episode']
-                status, quality = Quality.split_composite_status(int(row[b'status']))
+                status, quality = int(row[b'status']), int(row[b'quality'])
                 row[b'status'] = statusStrings[status]
                 row[b'quality'] = get_quality_string(quality)
                 if try_int(row[b'airdate'], 1) > 693595:  # 1900
@@ -2666,81 +2665,78 @@ class CMD_ShowStats(ApiCall):
 
         # show stats
         episode_status_counts_total = {'total': 0}
-        for status in statusStrings:
-            if status in [UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED]:
-                continue
-            episode_status_counts_total[status] = 0
+        for status_code in statusStrings:
+            if status_code not in (UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED):
+                episode_status_counts_total[status_code] = 0
 
         # add all the downloaded qualities
         episode_qualities_counts_download = {'total': 0}
-        for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_download[statusCode] = 0
+        for status_code in (DOWNLOADED, ARCHIVED):
+            episode_qualities_counts_download[status_code] = {}
 
         # add all snatched qualities
         episode_qualities_counts_snatch = {'total': 0}
-        for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_snatch[statusCode] = 0
+        for status_code in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+            episode_qualities_counts_snatch[status_code] = {}
 
         main_db_con = db.DBConnection(row_type='dict')
-        sql_results = main_db_con.select('SELECT status, season FROM tv_episodes '
+        sql_results = main_db_con.select('SELECT status, quality, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
                                          [INDEXER_TVDBV2, self.indexerid])
+
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = Quality.split_composite_status(int(row[b'status']))
+            status, quality = int(row[b'status']), int(row[b'quality'])
 
             episode_status_counts_total['total'] += 1
 
-            if status in Quality.DOWNLOADED + Quality.ARCHIVED:
+            if status in (DOWNLOADED, ARCHIVED):
                 episode_qualities_counts_download['total'] += 1
-                episode_qualities_counts_download[int(row[b'status'])] += 1
-            elif status in Quality.SNATCHED + Quality.SNATCHED_PROPER:
+                if quality not in episode_qualities_counts_download[status]:
+                    episode_qualities_counts_download[status][quality] = 1
+                else:
+                    episode_qualities_counts_download[status][quality] += 1
+            elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                 episode_qualities_counts_snatch['total'] += 1
-                episode_qualities_counts_snatch[int(row[b'status'])] += 1
-            elif status == 0:  # we don't count NONE = 0 = N/A
-                pass
-            else:
+                if quality not in episode_qualities_counts_snatch[status]:
+                    episode_qualities_counts_snatch[status][quality] = 1
+                else:
+                    episode_qualities_counts_snatch[status][quality] += 1
+            elif status not in (UNSET, ):
                 episode_status_counts_total[status] += 1
 
         # the outgoing container
         episodes_stats = {'downloaded': {}}
         # turning codes into strings
-        for statusCode in episode_qualities_counts_download:
-            if statusCode == 'total':
-                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[statusCode]
+        for status in episode_qualities_counts_download:
+            if status == 'total':
+                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
-            episodes_stats['downloaded'][status_string] = episode_qualities_counts_download[statusCode]
+            for quality in episode_qualities_counts_download[status]:
+                quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
+                if quality_string not in episodes_stats['downloaded']:
+                    episodes_stats['downloaded'][quality_string] = episode_qualities_counts_download[status][quality]
+                else:
+                    episodes_stats['downloaded'][quality_string] += episode_qualities_counts_download[status][quality]
 
         episodes_stats['snatched'] = {}
-        # turning codes into strings
-        # and combining proper and normal
-        for statusCode in episode_qualities_counts_snatch:
-            if statusCode == 'total':
-                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[statusCode]
+        for status in episode_qualities_counts_snatch:
+            if status == 'total':
+                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
-            if Quality.qualityStrings[quality] in episodes_stats['snatched']:
-                episodes_stats['snatched'][status_string] += episode_qualities_counts_snatch[statusCode]
-            else:
-                episodes_stats['snatched'][status_string] = episode_qualities_counts_snatch[statusCode]
+            for quality in episode_qualities_counts_snatch[status]:
+                quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
+                if quality_string not in episodes_stats['snatched']:
+                    episodes_stats['snatched'][quality_string] = episode_qualities_counts_snatch[status][quality]
+                else:
+                    episodes_stats['snatched'][quality_string] += episode_qualities_counts_snatch[status][quality]
 
-        # episodes_stats["total"] = {}
-        for statusCode in episode_status_counts_total:
-            if statusCode == 'total':
-                episodes_stats['total'] = episode_status_counts_total[statusCode]
+        for status in episode_status_counts_total:
+            if status == 'total':
+                episodes_stats['total'] = episode_status_counts_total[status]
                 continue
-            status_string = statusStrings[statusCode].lower().replace(' ', '_').replace('(', '').replace(
-                ')', '')
-            episodes_stats[status_string] = episode_status_counts_total[statusCode]
+            status_string = statusStrings[status].lower().replace(' ', '_').replace('(', '').replace(')', '')
+            episodes_stats[status_string] = episode_status_counts_total[status]
 
         return _responds(RESULT_SUCCESS, episodes_stats)
 

@@ -111,7 +111,7 @@ class ConfigHandler(BaseRequestHandler):
         config_data['localUser'] = app.OS_USER or 'Unknown'
         config_data['programDir'] = app.PROG_DIR
         config_data['configFile'] = app.CONFIG_FILE
-        config_data['dbFilename'] = db.dbFilename()
+        config_data['dbPath'] = db.DBConnection().path
         config_data['cacheDir'] = app.CACHE_DIR
         config_data['logDir'] = app.LOG_DIR
         config_data['appArgs'] = app.MY_ARGS

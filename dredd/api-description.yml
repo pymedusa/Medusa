@@ -1275,7 +1275,7 @@ definitions:
         properties:
           enabled:
             type: boolean
-      dbFilename:
+      dbPath:
         type: string
       pythonVersion:
         type: string

@@ -739,23 +739,21 @@ class PostProcessor(object):
 
         return root_ep
 
-    def _quality_from_status(self, status):
-        """
-        Determine the quality of the file that is being post processed with its status.
-
-        :param status: The status related to the file we are post processing
-        :return: A quality value found in common.Quality
-        """
-        quality = common.Quality.UNKNOWN
-
-        if status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, quality = common.Quality.split_composite_status(status)
-            if quality != common.Quality.UNKNOWN:
-                self.log(u'The snatched status has a quality in it, using that: {0}'.format
-                         (common.Quality.qualityStrings[quality]), logger.DEBUG)
-                return quality
-
-        return quality
+    # def _quality_from_status(self, ep_obj):
+    #     """
+    #     Determine the quality of the file that is being post processed with its status.
+    #
+    #     :param ep_obj: episode object.
+    #     :return: A quality value found in common.Quality
+    #     """
+    #
+    #     if ep_obj.status in (common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST):
+    #         if ep_obj.quality != common.Quality.UNKNOWN:
+    #             self.log(u'The snatched status has a quality in it, using that: {0}'.format
+    #                      (common.Quality.qualityStrings[ep_obj.quality]), logger.DEBUG)
+    #             return ep_obj.quality
+    #
+    #     return common.UNKNOWN
 
     def _get_quality(self, ep_obj):
         """
@@ -792,19 +790,19 @@ class PostProcessor(object):
     def _priority_from_history(self, series_obj, season, episodes, quality):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
+        snatched_statuses = [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST]
         for episode in episodes:
             # First: check if the episode status is snatched
             tv_episodes_result = main_db_con.select(
-                'SELECT status '
+                'SELECT status, quality '
                 'FROM tv_episodes '
                 'WHERE indexer = ? '
                 'AND showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                "AND (status LIKE '%02' "
-                "OR status LIKE '%09' "
-                "OR status LIKE '%12')",
-                [series_obj.indexer, series_obj.series_id, season, episode]
+                'AND status IN (?, ?, ?) ',
+                [series_obj.indexer, series_obj.series_id,
+                 season, episode] + snatched_statuses
             )
 
             if tv_episodes_result:
@@ -817,11 +815,11 @@ class PostProcessor(object):
                     'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
-                    "AND (action LIKE '%02' "
-                    "OR action LIKE '%09' "
-                    "OR action LIKE '%12') "
+                    'AND action IN (?, ?, ?) '
                     'ORDER BY date DESC',
-                    [series_obj.indexer, series_obj.series_id, season, episode])
+                    [series_obj.indexer, series_obj.series_id,
+                     season, episode] + snatched_statuses
+                )
 
                 if history_result and history_result[0][b'quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
@@ -841,9 +839,11 @@ class PostProcessor(object):
                         'AND season = ? '
                         'AND episode = ? '
                         'AND quality = ? '
-                        "AND action LIKE '%04' "
+                        'AND action = ? '
                         'ORDER BY date DESC',
-                        [series_obj.indexer, series_obj.series_id, season, episode, quality])
+                        [series_obj.indexer, series_obj.series_id,
+                         season, episode, quality, common.DOWNLOADED]
+                    )
 
                     if download_result:
                         download_name = os.path.basename(download_result[0][b'resource'])
@@ -897,8 +897,6 @@ class PostProcessor(object):
         :param preferred: Qualities that are preferred
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-        if current_quality is common.Quality.NONE:
-            return False, 'There is no current quality. Skipping as we can only replace existing qualities'
         if new_quality in preferred:
             if current_quality in preferred:
                 if new_quality > current_quality:
@@ -1019,15 +1017,16 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(series_obj, season, episodes)
-        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
+        old_ep_quality = ep_obj.quality
 
         # get the quality of the episode we're processing
-        if quality and common.Quality.qualityStrings[quality] != 'Unknown':
+        if quality and quality != common.Quality.UNKNOWN:
             self.log(u'The episode file has a quality in it, using that: {0}'.format
                      (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
-            new_ep_quality = self._quality_from_status(ep_obj.status)
+            # Fall back to the episode object's quality
+            new_ep_quality = ep_obj.quality
 
         # check snatched history to see if we should set the download as priority
         self._priority_from_history(series_obj, season, episodes, new_ep_quality)
@@ -1156,7 +1155,8 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep.status = common.Quality.composite_status(common.DOWNLOADED, new_ep_quality)
+                cur_ep.status = common.DOWNLOADED
+                cur_ep.quality = new_ep_quality
 
                 cur_ep.subtitles = u''
 

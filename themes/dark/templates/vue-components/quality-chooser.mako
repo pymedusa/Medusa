@@ -130,11 +130,11 @@ Vue.component('quality-chooser', {
         },
         allowedQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE});
+                .filter(val => val > ${Quality.NA});
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NA});
         }
     },
     asyncComputed: {
