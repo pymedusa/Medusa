@@ -819,8 +819,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
                 if not multi_needed_eps:
                     log.debug(
-                        u'All of these episodes were covered by another multi-episode nzb, '
-                        u'ignoring this multi-ep result'
+                        u'All of these episodes were covered by another multi-episode,'
+                        u' ignoring this multi-ep result'
                     )
                     continue
 
@@ -830,13 +830,12 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     if ep_obj.episode in found_results[cur_provider.name]:
                         log.debug(
                             u'A needed multi-episode result overlaps with a single-episode result for episode {0},'
-                            u' removing the single-episode results from the list',
+                            u' replacing the single-episode results from the list',
                             ep_obj.episode,
                         )
-                        del found_results[cur_provider.name][ep_obj.episode]
+                    found_results[cur_provider.name][ep_obj.episode] = multi_result
 
         # of all the single ep results narrow it down to the best one for each episode
-        final_results += set(multi_results.values())
         for cur_ep in found_results[cur_provider.name]:
             if cur_ep in (MULTI_EP_RESULT, SEASON_RESULT):
                 continue
