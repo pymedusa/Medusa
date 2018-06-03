@@ -2,8 +2,15 @@
 
 from __future__ import unicode_literals
 
+import logging
+
 from medusa import db
 from medusa.databases import utils
+from medusa.logger.adapters.style import BraceAdapter
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 # Add new migrations at the bottom of the list
@@ -174,6 +181,8 @@ class ClearProviderTables(AddIndexerIds):
 
         self.clear_provider_tables()
         self.inc_major_version()
+
+        log.info('Updated to: {}.{}', *self.connection.version)
 
     def clear_provider_tables(self):
         providers = self.connection.select(

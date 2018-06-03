@@ -176,6 +176,8 @@ class ShiftQualities(UpdateHistoryTableQuality):
         self.update_status_unknown()
         self.inc_major_version()
 
+        log.info(u'Updated to: {}.{}', *self.connection.version)
+
     def shift_history_qualities(self):
         """
         Shift all qualities << 1.

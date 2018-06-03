@@ -240,7 +240,7 @@ class InitialSchema(db.SchemaUpgrade):
                 "CREATE TABLE info(last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC);",
                 "CREATE TABLE scene_numbering(indexer TEXT, indexer_id INTEGER, season INTEGER, episode INTEGER, scene_season INTEGER, scene_episode INTEGER, absolute_number NUMERIC, scene_absolute_number NUMERIC, PRIMARY KEY(indexer_id, season, episode));",
                 "CREATE TABLE tv_shows(show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC DEFAULT -1);",
-                "CREATE TABLE tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT);",
+                "CREATE TABLE tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT);",
                 "CREATE TABLE blacklist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE whitelist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE xem_refresh (indexer TEXT, indexer_id INTEGER PRIMARY KEY, last_refreshed INTEGER);",
@@ -335,7 +335,7 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
 
 class AddMinorVersion(AlterTVShowsFieldTypes):
     def test(self):
-        return self.checkDBVersion() >= 42 and self.hasColumn(b'db_version', b'db_minor_version')
+        return self.checkDBVersion() >= 43 and self.hasColumn(b'db_version', b'db_minor_version')
 
     def incDBVersion(self):
         warnings.warn("Deprecated: Use inc_major_version or inc_minor_version instead", DeprecationWarning)
@@ -361,6 +361,7 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         log.info(u'Add minor version numbers to database')
         self.addColumn(b'db_version', b'db_minor_version')
 
+        self.inc_major_version()
         self.inc_minor_version()
 
         log.info(u'Updated to: {}.{}', *self.connection.version)
@@ -462,7 +463,10 @@ class AddInfoHash(AddManualSearched):
         log.info(u'Adding column info_hash in history')
         if not self.hasColumn("history", "info_hash"):
             self.addColumn("history", "info_hash", 'TEXT', None)
+
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPlot(AddInfoHash):
@@ -484,7 +488,10 @@ class AddPlot(AddInfoHash):
         log.info(u'Adding column plot in tv_show')
         if not self.hasColumn('tv_shows', 'plot'):
             self.addColumn('tv_shows', 'plot', 'TEXT', None)
+
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddResourceSize(AddPlot):
@@ -504,6 +511,8 @@ class AddResourceSize(AddPlot):
             self.addColumn("history", "size", 'NUMERIC', -1)
 
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPKIndexerMapping(AddResourceSize):
@@ -525,7 +534,10 @@ class AddPKIndexerMapping(AddResourceSize):
         self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
         self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
         self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerInteger(AddPKIndexerMapping):
@@ -544,7 +556,7 @@ class AddIndexerInteger(AddPKIndexerMapping):
             "CREATE TABLE new_tv_episodes "
             "(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, name TEXT, "
             "season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, "
-            "status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, "
+            "status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, "
             "subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, "
             "scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, "
             "version NUMERIC DEFAULT -1, release_group TEXT, manually_searched NUMERIC);")
@@ -552,7 +564,10 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
+
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerIds(AddIndexerInteger):
@@ -665,6 +680,9 @@ class AddIndexerIds(AddIndexerInteger):
                     [indexer_id, series_id])
 
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
+
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
@@ -735,6 +753,8 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         self.inc_minor_version()
 
+        log.info(u'Updated to: {}.{}', *self.connection.version)
+
 
 class ShiftQualities(AddSeparatedStatusQualityFields):
     """Shift all qualities one place to the left."""
@@ -750,6 +770,8 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         self.shift_episode_qualities()
         self.shift_history_qualities()
         self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
 
     def shift_tv_qualities(self):
         """
