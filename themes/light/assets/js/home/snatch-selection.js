@@ -150,7 +150,7 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         self.refreshResults = function() {
-            // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
+            // @FIXME: [Vue] We can't use jQuery.load because of reactivity, reload the page instead.
             /*
             $('#manualSearchTbody').loadContainer(
                 'home/snatchSelection' + urlParams,
@@ -159,6 +159,8 @@ MEDUSA.home.snatchSelection = function() {
                 toggleHistoryTable // This is a callback function
             );
             */
+            // [Vue] This prevents a refresh loop.
+            window.location.hash = '#no-search';
             window.location.reload();
         };
 
@@ -186,10 +188,13 @@ MEDUSA.home.snatchSelection = function() {
                 repeat = false;
             }
 
+            // @FIXME: [Vue] The results table should get updated as results arrive.
+            /*
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
             }
+            */
             if (data.result === 'searching') {
                 // Ep is searched, you will get a results any minute now
                 pollInterval = 5000;
@@ -203,6 +208,10 @@ MEDUSA.home.snatchSelection = function() {
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
             }
             if (data.result === 'finished') {
+                // @FIXME: [Vue]-[Workaround] Only refresh when search is finished.
+                self.refreshResults();
+                return;
+
                 // Ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
@@ -219,7 +228,14 @@ MEDUSA.home.snatchSelection = function() {
         });
     }
 
-    setTimeout(checkCacheUpdates, 2000);
+    // @FIXME: [Vue] This a temporary fix to prevent the refreshResults function from causing a refresh loop.
+    if (window.location.hash === '#no-search') {
+        window.location.hash = '';
+        updateSpinner('Search finished', false);
+        $('.manualSearchButton').removeAttr('disabled');
+    } else {
+        setTimeout(checkCacheUpdates, 2000);
+    }
 
     // Click event for the reload results and force search buttons
     $(document.body).on('click', '.manualSearchButton', event => {
