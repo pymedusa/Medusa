@@ -9,7 +9,7 @@
     from medusa import providers
     from medusa.sbdatetime import sbdatetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
-    from medusa.common import Quality, statusStrings, Overview
+    from medusa.common import statusStrings
     from medusa.show.history import History
     from medusa.providers.generic_provider import GenericProvider
 %>
@@ -36,7 +36,8 @@ const startVue = () => {
                         return {
                             // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
                             0: node => $(node).find('time').attr('datetime'),
-                            1: node => $(node).find('a').text()
+                            1: node => $(node).find('a').text(),
+                            4: node => $(node).attr('quality')
                         };
                     }
                     // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
@@ -49,10 +50,10 @@ const startVue = () => {
                     if ($.isMeta({ subtitles: 'enabled' }, [true])) {
                         // 4: Subtitled, 5: Quality
                         compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        compactExtract[5] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                        compactExtract[5] = node => $(node).attr('quality')
                     } else {
                         // 4: Quality
-                        compactExtract[4] = node => $(node).find("span").text() === undefined ? '' : $(node).find("span").text()
+                        compactExtract[4] = node => $(node).attr('quality')
                     }
                     return compactExtract;
                 })(),
@@ -149,7 +150,6 @@ const startVue = () => {
                 </tfoot>
                 <tbody>
                 % for hItem in historyResults:
-                    <% composite = Quality.split_composite_status(int(hItem.action)) %>
                     <tr>
                         <td align="center" class="triggerhighlight">
                             <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
@@ -157,11 +157,11 @@ const startVue = () => {
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
                         <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </app-link></td>
-                        <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
-                        % if composite.status == SUBTITLED:
+                        <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if hItem.action == SUBTITLED else ''}>
+                        % if hItem.action == SUBTITLED:
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                         % endif
-                            <span style="cursor: help; vertical-align:middle;" title="${os.path.basename(hItem.resource)}">${statusStrings[composite.status]}</span>
+                            <span style="cursor: help; vertical-align:middle;" title="${os.path.basename(hItem.resource)}">${statusStrings[hItem.action]}</span>
                             % if hItem.manually_searched:
                                 <img src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" title="Manual searched episode" />
                             % endif
@@ -169,8 +169,9 @@ const startVue = () => {
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem.proper_tags.replace('|', ', ')}"/>
                             % endif
                         </td>
+                        <!-- Provider column -->
                         <td align="center" class="triggerhighlight">
-                        % if composite.status in [DOWNLOADED, ARCHIVED]:
+                        % if hItem.action in [DOWNLOADED, ARCHIVED]:
                             % if hItem.provider != "-1":
                                 <span style="vertical-align:middle;"><i>${hItem.provider}</i></span>
                             % else:
@@ -178,7 +179,7 @@ const startVue = () => {
                             % endif
                         % else:
                             % if hItem.provider > 0:
-                                % if composite.status in [SNATCHED, FAILED]:
+                                % if hItem.action in [SNATCHED, FAILED]:
                                     <% provider = providers.get_provider_class(GenericProvider.make_id(hItem.provider)) %>
                                     % if provider is not None:
                                         <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${provider.name}</span>
@@ -191,8 +192,9 @@ const startVue = () => {
                             % endif
                         % endif
                         </td>
-                        <span style="display: none;">${composite.quality}</span>
-                        <td align="center" class="triggerhighlight">${renderQualityPill(composite.quality)}</td>
+                        <td align="center" class="triggerhighlight" quality="${hItem.quality}">
+                            ${renderQualityPill(hItem.quality)}
+                        </td>
                     </tr>
                 % endfor
                 </tbody>
@@ -230,8 +232,7 @@ const startVue = () => {
                         </td>
                         <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
-                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
-                                % if composite.status == SNATCHED:
+                                % if cur_action.action == SNATCHED:
                                     <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
                                     % if provider is not None:
                                         <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${cur_action.resource}"/>
@@ -245,15 +246,14 @@ const startVue = () => {
                                         <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="Missing provider: ${cur_action.provider}"/>
                                     % endif
                                 % endif
-                                % if composite.status == FAILED:
+                                % if cur_action.action == FAILED:
                                         <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name if provider else cur_action.provider} download failed: ${cur_action.resource}"/>
                                 % endif
                             % endfor
                         </td>
                         <td align="center" class="triggerhighlight">
                             % for cur_action in sorted(hItem.actions):
-                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
-                                % if composite.status in [DOWNLOADED, ARCHIVED]:
+                                % if cur_action.action in [DOWNLOADED, ARCHIVED]:
                                     % if cur_action.provider != "-1":
                                         <span style="cursor: help;" title="${os.path.basename(cur_action.resource)}"><i>${cur_action.provider}</i></span>
                                     % else:
@@ -265,8 +265,7 @@ const startVue = () => {
                         % if app.USE_SUBTITLES:
                         <td align="center" class="triggerhighlight">
                             % for cur_action in sorted(hItem.actions):
-                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
-                                % if composite.status == SUBTITLED:
+                                % if cur_action.action == SUBTITLED:
                                     <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${os.path.basename(cur_action.resource)}"/>
                                     <span style="vertical-align:middle;"> / </span>
                                     <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
@@ -275,7 +274,9 @@ const startVue = () => {
                             % endfor
                         </td>
                         % endif
-                        <td align="center" class="triggerhighlight" quality="${composite.quality}">${renderQualityPill(composite.quality)}</td>
+                        <td align="center" class="triggerhighlight" quality="${hItem.index.quality}">
+                            <span>${renderQualityPill(hItem.index.quality)}</span>
+                        </td>
                     </tr>
                 % endfor
                 </tbody>

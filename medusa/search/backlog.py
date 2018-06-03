@@ -9,7 +9,8 @@ import threading
 from builtins import object
 from builtins import str
 
-from medusa import app, common, db, scheduler, ui
+from medusa import app, db, scheduler, ui
+from medusa.common import Quality, UNSET
 from medusa.helper.common import episode_num
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
@@ -158,7 +159,7 @@ class BacklogSearcher(object):
 
         con = db.DBConnection()
         sql_results = con.select(
-            'SELECT status, season, episode, manually_searched '
+            'SELECT status, quality, season, episode, manually_searched '
             'FROM tv_episodes '
             'WHERE airdate > ?'
             ' AND indexer = ? '
@@ -167,19 +168,21 @@ class BacklogSearcher(object):
         )
 
         # check through the list of statuses to see if we want any
-        for sql_result in sql_results:
-            should_search, shold_search_reason = common.Quality.should_search(sql_result[b'status'], series_obj,
-                                                                              sql_result[b'manually_searched'])
+        for episode in sql_results:
+            cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
+            should_search, should_search_reason = Quality.should_search(
+                cur_status, cur_quality, series_obj, episode[b'manually_searched']
+            )
             if not should_search:
                 continue
             log.debug(
                 u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
                     'show': series_obj.name,
-                    'ep': episode_num(sql_result[b'season'], sql_result[b'episode']),
-                    'reason': shold_search_reason,
+                    'ep': episode_num(episode[b'season'], episode[b'episode']),
+                    'reason': should_search_reason,
                 }
             )
-            ep_obj = series_obj.get_episode(sql_result[b'season'], sql_result[b'episode'])
+            ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
 
             if ep_obj.season not in wanted:
                 wanted[ep_obj.season] = [ep_obj]

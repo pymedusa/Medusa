@@ -10,7 +10,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, ui
-from medusa.common import Quality, SKIPPED, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
 from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
@@ -223,17 +223,17 @@ class TraktChecker(object):
 
             params = []
             main_db_con = db.DBConnection()
-            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
+            statuses = [DOWNLOADED, ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
                             b'e.season, e.episode, e.status ' \
                             b'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
                             b's.indexer_id = e.showid and e.location = "" ' \
-                            b'AND e.status in ({0})'.format(','.join(selection_status))
+                            b'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
             if filter_show:
                 sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
                 params = [filter_show.series_id, filter_show.indexer]
 
-            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED + params)
+            sql_result = main_db_con.select(sql_selection, statuses + params)
             episodes = [dict(e) for e in sql_result]
 
             if episodes:
@@ -274,13 +274,13 @@ class TraktChecker(object):
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
+            statuses = [DOWNLOADED, ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s ' \
                             b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
-                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(selection_status))
+                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(['?'] * len(statuses)))
 
-            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED)
+            sql_result = main_db_con.select(sql_selection, statuses)
             episodes = [dict(e) for e in sql_result]
 
             if episodes:
@@ -337,13 +337,13 @@ class TraktChecker(object):
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            status = Quality.DOWNLOADED + Quality.ARCHIVED
-            selection_status = [b'?' for _ in status]
+            statuses = [DOWNLOADED, ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s ' \
                             b'WHERE e.indexer = s.indexer ' \
-                            b'AND s.indexer_id = e.showid AND e.status in ({0})'.format(b','.join(selection_status))
-            sql_result = main_db_con.select(sql_selection, status)
+                            b'AND s.indexer_id = e.showid AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
+
+            sql_result = main_db_con.select(sql_selection, statuses)
             episodes = [dict(i) for i in sql_result]
 
             if episodes:
@@ -382,13 +382,13 @@ class TraktChecker(object):
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            status = Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER + [WANTED]
-            selection_status = [b'?' for _ in status]
+            statuses = [SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED]
             sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s ' \
                             b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
-                            b'AND e.status in ({0})'.format(b','.join(selection_status))
-            sql_result = main_db_con.select(sql_selection, status)
+                            b'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
+
+            sql_result = main_db_con.select(sql_selection, statuses)
             episodes = [dict(i) for i in sql_result]
 
             if episodes:
@@ -489,6 +489,7 @@ class TraktChecker(object):
                     show_name = trakt_show['title']
 
                 show = None
+                indexer = None
                 for i in indexerConfig:
                     trakt_indexer = get_trakt_indexer(i)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
@@ -516,8 +517,7 @@ class TraktChecker(object):
                 else:
                     self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
-                if int(app.TRAKT_METHOD_ADD) == 1:
-                    # FIXME: Referenced before assigment
+                if int(app.TRAKT_METHOD_ADD) == 1 and indexer:
                     new_show = Show.find_by_id(app.showList, indexer, indexer_id)
 
                     if new_show:

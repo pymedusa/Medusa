@@ -33,10 +33,15 @@ from medusa import (
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
     ARCHIVED,
+    DOWNLOADED,
+    FAILED,
     IGNORED,
     Overview,
     Quality,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
     UNSET,
     WANTED,
@@ -1322,7 +1327,7 @@ class Series(TV):
                     continue
 
             else:
-                cur_ep.update_status(filepath)
+                cur_ep.update_status_quality(filepath)
 
                 with cur_ep.lock:
                     cur_ep.check_for_meta_files()
@@ -1752,13 +1757,9 @@ class Series(TV):
                     with cur_ep.lock:
                         # if it used to have a file associated with it and it doesn't anymore then
                         # set it to app.EP_DEFAULT_DELETED_STATUS
-                        if cur_ep.location and cur_ep.status in Quality.DOWNLOADED:
+                        if cur_ep.location and cur_ep.status in [ARCHIVED, DOWNLOADED, IGNORED, SKIPPED]:
 
-                            if app.EP_DEFAULT_DELETED_STATUS == ARCHIVED:
-                                _, old_quality = Quality.split_composite_status(cur_ep.status)
-                                new_status = Quality.composite_status(ARCHIVED, old_quality)
-                            else:
-                                new_status = app.EP_DEFAULT_DELETED_STATUS
+                            new_status = app.EP_DEFAULT_DELETED_STATUS
 
                             log.debug(
                                 u"{id}: Location for '{show}' {ep} doesn't exist and current status is '{old_status}',"
@@ -1779,6 +1780,10 @@ class Series(TV):
                         cur_ep.hasnfo = False
                         cur_ep.hastbn = False
                         cur_ep.release_name = ''
+                        cur_ep.release_group = ''
+                        cur_ep.is_proper = False
+                        cur_ep.version = 0
+                        cur_ep.manually_searched = False
 
                         sql_l.append(cur_ep.get_sql())
 
@@ -2135,7 +2140,7 @@ class Series(TV):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
-            b'  status, '
+            b'  status, quality, '
             b'  manually_searched '
             b'FROM '
             b'  tv_episodes '
@@ -2157,7 +2162,7 @@ class Series(TV):
             )
             return False
 
-        cur_status, cur_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
+        cur_status, cur_quality = int(sql_results[0][b'status']), int(sql_results[0][b'quality'])
         ep_status_text = statusStrings[cur_status]
         manually_searched = sql_results[0][b'manually_searched']
 
@@ -2188,11 +2193,13 @@ class Series(TV):
         )
         return should_replace
 
-    def get_overview(self, ep_status, backlog_mode=False, manually_searched=False):
+    def get_overview(self, ep_status, ep_quality, backlog_mode=False, manually_searched=False):
         """Get the Overview status from the Episode status.
 
         :param ep_status: an Episode status
         :type ep_status: int
+        :param ep_quality: an Episode quality
+        :type ep_quality: int
         :param backlog_mode: if we should return overview for backlogOverview
         :type backlog_mode: boolean
         :param manually_searched: if episode was manually searched
@@ -2200,12 +2207,13 @@ class Series(TV):
         :return: an Overview status
         :rtype: int
         """
-        ep_status = try_int(ep_status) or UNSET
+        ep_status = int(ep_status)
+        ep_quality = int(ep_quality)
 
         if backlog_mode:
             if ep_status == WANTED:
                 return Overview.WANTED
-            elif Quality.should_search(ep_status, self, manually_searched)[0]:
+            elif Quality.should_search(ep_status, ep_quality, self, manually_searched)[0]:
                 return Overview.QUAL
             return Overview.GOOD
 
@@ -2213,20 +2221,20 @@ class Series(TV):
             return Overview.UNAIRED
         elif ep_status in (SKIPPED, IGNORED):
             return Overview.SKIPPED
-        elif ep_status in Quality.WANTED:
+        elif ep_status == WANTED:
             return Overview.WANTED
-        elif ep_status in Quality.ARCHIVED:
+        elif ep_status == ARCHIVED:
             return Overview.GOOD
-        elif ep_status in Quality.FAILED:
+        elif ep_status == FAILED:
             return Overview.WANTED
-        elif ep_status in Quality.SNATCHED:
+        elif ep_status == SNATCHED:
             return Overview.SNATCHED
-        elif ep_status in Quality.SNATCHED_PROPER:
+        elif ep_status == SNATCHED_PROPER:
             return Overview.SNATCHED_PROPER
-        elif ep_status in Quality.SNATCHED_BEST:
+        elif ep_status == SNATCHED_BEST:
             return Overview.SNATCHED_BEST
-        elif ep_status in Quality.DOWNLOADED:
-            if Quality.should_search(ep_status, self, manually_searched)[0]:
+        elif ep_status == DOWNLOADED:
+            if Quality.should_search(ep_status, ep_quality, self, manually_searched)[0]:
                 return Overview.QUAL
             else:
                 return Overview.GOOD
@@ -2248,9 +2256,9 @@ class Series(TV):
             for ep_obj in ep_list:
                 if not include_wanted and ep_obj.status == WANTED:
                     continue
-                if Quality.should_search(ep_obj.status, show_obj, ep_obj.manually_searched)[0]:
+                if Quality.should_search(ep_obj.status, ep_obj.quality, show_obj, ep_obj.manually_searched)[0]:
                     new_backlogged += 1
-                if Quality.should_search(ep_obj.status, self, ep_obj.manually_searched)[0]:
+                if Quality.should_search(ep_obj.status, ep_obj.quality, self, ep_obj.manually_searched)[0]:
                     existing_backlogged += 1
         else:
             new_backlogged = existing_backlogged = -1
@@ -2268,12 +2276,11 @@ class Series(TV):
         sql_list = []
         for ep_obj in ep_list:
             with ep_obj.lock:
-                if ep_obj.status in Quality.DOWNLOADED:
-                    if final_status_only and Quality.should_search(ep_obj.status, self,
+                if ep_obj.status == DOWNLOADED:
+                    if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
-                    _, old_quality = Quality.split_composite_status(ep_obj.status)
-                    ep_obj.status = Quality.composite_status(ARCHIVED, old_quality)
+                    ep_obj.status = ARCHIVED
                     sql_list.append(ep_obj.get_sql())
         if sql_list:
             main_db_con = db.DBConnection()
