@@ -819,7 +819,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
                 if not multi_needed_eps:
                     log.debug(
-                        u'All of these episodes were covered by another multi-episode,'
+                        u'All of these episodes were covered by another multi-episode result,'
                         u' ignoring this multi-ep result'
                     )
                     continue
