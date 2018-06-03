@@ -54,7 +54,7 @@ function updateImages(data) {
 
                 // Update Status and Quality
                 let qualityPill = '';
-                if (ep.quality_style && ep.quality_style !== 'na') {
+                if (ep.quality_style !== 'na') {
                     qualityPill = ' <span class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
                 }
                 htmlContent = ep.status + qualityPill;
