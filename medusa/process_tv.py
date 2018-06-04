@@ -498,7 +498,7 @@ class ProcessResult(object):
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT * FROM history, manually_searched'
+            'SELECT * FROM history '
             'WHERE action = ? '
             'AND resource LIKE ? '
             'AND manually_searched = 0',
