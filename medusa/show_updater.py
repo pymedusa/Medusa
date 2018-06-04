@@ -71,6 +71,9 @@ class ShowUpdater(object):
             try:
                 indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
+                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                            u'connectivity issues. While trying to look for show updates.',
+                            indexer_name=indexerApi(show.indexer).name)
                 logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                             u'connectivity issues. While trying to look for show updates on show: {show}',
                             indexer_name=indexerApi(show.indexer).name, show=show.name)
