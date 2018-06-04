@@ -498,13 +498,14 @@ class ProcessResult(object):
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT * FROM history '
+            'SELECT * FROM history, manually_searched'
             'WHERE action = ? '
-            'AND resource LIKE ?',
+            'AND resource LIKE ? '
+            'AND manually_searched = 0',
             [DOWNLOADED, '%' + video_file])
 
         if history_result:
-            self.log("You're trying to post-process a file that has already "
+            self.log("You're trying to post-process an automated searched file that has already "
                      "been processed, skipping: {0}".format(video_file), logger.DEBUG)
             return True
 
