@@ -58,6 +58,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowAllreadyInLibrary,
     IndexerShowIncomplete,
+    IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
 )
 from medusa.tv import Series
@@ -437,6 +438,19 @@ class QueueItemAdd(ShowQueueItem):
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
+        except IndexerShowNotFound as e:
+            logger.log(u'{id}: Unable to look up show in {path} using id {id} on {indexer}. '
+                       u'Delete metadata files from the folder and try adding it again.'.format(
+                           id=self.indexer_id, path=self.showDir, indexer=indexerApi(self.indexer).name),
+                       logger.WARNING)
+            ui.notifications.error(
+                u'Unable to add show',
+                u'Unable to look up the show in {0} on {1} using ID {2}. '
+                u'Delete metadata files from the folder and try adding it again.'.
+                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+            )
+            self._finishEarly()
+            return
         except IndexerShowIncomplete as e:
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
@@ -461,12 +475,11 @@ class QueueItemAdd(ShowQueueItem):
             self._finishEarly()
             return
         except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.ERROR)
+            logger.log(u'%s Error while loading information from indexer %s. '
+                       u'Error: %r' % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.ERROR)
             ui.notifications.error(
-                u"Unable to add show",
-                u"Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
-                u"Delete .nfo and try adding manually again.".
+                u'Unable to add show',
+                u'Unable to look up the show in {0} on {1} using ID {2}.'.
                 format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
             )
             self._finishEarly()
