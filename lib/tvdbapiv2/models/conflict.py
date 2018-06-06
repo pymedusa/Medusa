@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -37,7 +40,7 @@ class Conflict(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'error': 'str'
+            'error': 'text_type'
         }
 
         self.attribute_map = {
@@ -53,7 +56,7 @@ class Conflict(object):
 
 
         :return: The error of this Conflict.
-        :rtype: str
+        :rtype: text_type
         """
         return self._error
 
@@ -64,7 +67,7 @@ class Conflict(object):
 
 
         :param error: The error of this Conflict.
-        :type: str
+        :type: text_type
         """
         self._error = error
 
@@ -100,7 +103,7 @@ class Conflict(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -111,4 +114,3 @@ class Conflict(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

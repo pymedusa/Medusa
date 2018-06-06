@@ -18,7 +18,7 @@ MEDUSA.config.subtitlesPage = function() {
         }
 
         if ($('#service_order_list > #' + id).length === 0 && showService !== false) {
-            const toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + MEDUSA.config.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+            const toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + (MEDUSA.config.anonRedirect || '') + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
 
             $('#service_order_list').append(toAdd);
             $('#service_order_list').sortable('refresh');

@@ -15,7 +15,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, helpers
-from medusa.common import Quality, cpu_presets
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED, cpu_presets
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter
@@ -96,20 +96,19 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         main_db_con = db.DBConnection()
         if not app.POSTPONE_IF_NO_SUBS:
             # Get the recently aired (last 2 days) shows from DB
-            search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
             recently_aired = main_db_con.select(
                 b'SELECT indexer, showid, season, episode, status, airdate'
                 b' FROM tv_episodes'
                 b' WHERE airdate >= ?'
-                b' AND status IN ({0})'.format(search_q_params),
-                [search_date.toordinal()] + Quality.DOWNLOADED
+                b' AND status = ?',
+                [search_date.toordinal(), DOWNLOADED]
             )
         else:
             # Get recently subtitled episodes (last 2 days) from DB
             # Episode status becomes downloaded only after found subtitles
             last_subtitled = search_date.strftime(History.date_format)
             recently_aired = main_db_con.select(b'SELECT indexer_id AS indexer, showid, season, episode FROM history '
-                                                b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
+                                                b'WHERE date >= ? AND action = ?', [last_subtitled, SUBTITLED])
 
         if not recently_aired:
             log.info('No recently aired new episodes, nothing to search for')
@@ -228,14 +227,15 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT status, release_name "
+            sql_results = main_db_con.select(b"SELECT status, quality, release_name "
                                              b"FROM tv_episodes WHERE indexer = ? "
                                              b"AND showid = ? AND season = ? "
-                                             b"AND episode = ? AND status LIKE '%04'",
+                                             b"AND episode = ? AND status = ?",
                                              [best_result.indexer,
                                               best_result.series.indexerid,
                                               best_result.actual_season,
-                                              best_result.actual_episodes[0]])
+                                              best_result.actual_episodes[0],
+                                              DOWNLOADED])
             if not sql_results:
                 log.info("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}", {
                     'name': best_result.name
@@ -243,7 +243,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
-            _, old_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
+            old_quality = int(sql_results[0][b'quality'])
             if old_quality != best_result.quality:
                 log.info('Ignoring proper because quality is different: {name}', {'name': best_result.name})
                 if cur_proper.name not in processed_propers_names:
@@ -339,9 +339,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND (action LIKE '%02' OR action LIKE '%04' OR action LIKE '%09' OR action LIKE '%12')",
+                b'AND action in (?, ?, ?, ?)',
                 [cur_proper.indexerid, cur_proper.actual_season, cur_proper.actual_episode, cur_proper.quality,
-                 history_limit.strftime(History.date_format)])
+                 history_limit.strftime(History.date_format),
+                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
             # if the result exists in history already we need to skip it

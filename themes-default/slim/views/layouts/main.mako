@@ -129,7 +129,13 @@
         <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
-        <script>window.routes = [];</script>
+        <script>
+            window.routes = [];
+            if ('${bool(app.DEVELOPER)}' === 'True') {
+                Vue.config.devtools = true;
+                Vue.config.performance = true;
+            }
+        </script>
         <%block name="scripts" />
         <script>
             if (!window.app) {
