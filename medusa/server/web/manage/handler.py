@@ -20,9 +20,11 @@ from medusa import (
     ui,
 )
 from medusa.common import (
+    DOWNLOADED,
     Overview,
-    Quality,
     SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
 )
 from medusa.helper.common import (
     episode_num,
@@ -58,7 +60,7 @@ class Manage(Home, WebRoot):
     def showEpisodeStatuses(indexername, seriesid, whichStatus):
         status_list = [int(whichStatus)]
         if status_list[0] == SNATCHED:
-            status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+            status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
@@ -86,7 +88,7 @@ class Manage(Home, WebRoot):
         if whichStatus:
             status_list = [int(whichStatus)]
             if status_list[0] == SNATCHED:
-                status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         else:
             status_list = []
 
@@ -136,7 +138,7 @@ class Manage(Home, WebRoot):
     def changeEpisodeStatuses(self, oldStatus, newStatus, *args, **kwargs):
         status_list = [int(oldStatus)]
         if status_list[0] == SNATCHED:
-            status_list = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+            status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
         to_change = {}
 
@@ -184,9 +186,9 @@ class Manage(Home, WebRoot):
             b'WHERE indexer = ? '
             b'AND showid = ? '
             b'AND season != 0 '
-            b'AND status LIKE \'%4\' '
-            b'AND location != \'\'',
-            [int(indexer), int(seriesid)]
+            b'AND status = ? '
+            b"AND location != ''",
+            [int(indexer), int(seriesid), DOWNLOADED]
         )
 
         result = {}
@@ -225,12 +227,13 @@ class Manage(Home, WebRoot):
             b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
-            b'AND tv_episodes.status LIKE \'%4\' '
+            b'AND tv_episodes.status = ? '
             b'AND tv_episodes.season != 0 '
-            b'AND tv_episodes.location != \'\' '
+            b"AND tv_episodes.location != '' "
             b'AND tv_episodes.showid = tv_shows.indexer_id '
             b'AND tv_episodes.indexer = tv_shows.indexer '
-            b'ORDER BY show_name'
+            b'ORDER BY show_name',
+            [DOWNLOADED]
         )
 
         ep_counts = {}
@@ -284,12 +287,12 @@ class Manage(Home, WebRoot):
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b'WHERE status LIKE \'%4\' '
+                    b'WHERE status = ? '
                     b'AND season != 0 '
                     b'AND indexer = ? '
                     b'AND showid = ? '
-                    b'AND location != \'\'',
-                    [cur_indexer_id, cur_series_id]
+                    b"AND location != ''",
+                    [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
                 to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
@@ -322,10 +325,10 @@ class Manage(Home, WebRoot):
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
                     continue
 
-                ep_status = Quality.split_composite_status(tv_episode.status).status
-                if ep_status in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                ep_status = tv_episode.status
+                if ep_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     status = 'snatched'
-                elif ep_status in Quality.DOWNLOADED:
+                elif ep_status in DOWNLOADED:
                     status = 'downloaded'
                 else:
                     continue
@@ -403,8 +406,9 @@ class Manage(Home, WebRoot):
             ep_cats = {}
 
             sql_results = main_db_con.select(
-                """
-                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
+                b"""
+                SELECT e.status, e.quality, e.season,
+                e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND
                       e.indexer = ? AND e.showid = ?
@@ -415,7 +419,7 @@ class Manage(Home, WebRoot):
             filtered_episodes = []
             backlogged_episodes = [dict(row) for row in sql_results]
             for cur_result in backlogged_episodes:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], cur_result[b'quality'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
                     if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:

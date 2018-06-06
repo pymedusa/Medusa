@@ -24,7 +24,7 @@ from builtins import str
 from datetime import datetime, timedelta
 
 from medusa import db, logger
-from medusa.common import FAILED, Quality, WANTED, statusStrings
+from medusa.common import FAILED, WANTED, statusStrings
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import EpisodeNotFoundException
 from medusa.show.history import History
@@ -145,7 +145,7 @@ def revert_episode(ep_obj):
     """Restore the episodes of a failed download to their original state."""
     failed_db_con = db.DBConnection('failed.db')
     sql_results = failed_db_con.select(
-        'SELECT episode, old_status '
+        'SELECT episode, status, quality '
         'FROM history '
         'WHERE showid=?'
         ' AND indexer_id=?'
@@ -160,7 +160,7 @@ def revert_episode(ep_obj):
                    (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
-                ep_obj.status = history_eps[ep_obj.episode]['old_status']
+                ep_obj.status = history_eps[ep_obj.episode]['status']
                 logger.log(u'Episode have a previous status to revert. Setting it back to {0}'.format
                            (statusStrings[ep_obj.status]), logger.DEBUG)
             else:
@@ -187,8 +187,7 @@ def mark_failed(ep_obj):
 
     try:
         with ep_obj.lock:
-            quality = Quality.split_composite_status(ep_obj.status)[1]
-            ep_obj.status = Quality.composite_status(FAILED, quality)
+            ep_obj.status = FAILED
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
@@ -221,10 +220,10 @@ def log_snatch(search_result):
         failed_db_con.action(
             'INSERT INTO history '
             '(date, size, release, provider, showid,'
-            ' season, episode, old_status, indexer_id)'
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            ' season, episode, status, quality, indexer_id)'
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [log_date, search_result.size, release, provider, show_obj.indexerid,
-             episode.season, episode.episode, episode.status, show_obj.indexer]
+             episode.season, episode.episode, episode.status, episode.quality, show_obj.indexer]
         )
 
 

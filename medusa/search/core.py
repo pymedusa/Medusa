@@ -189,9 +189,11 @@ def snatch_episode(result):
     for curEpObj in result.episodes:
         with curEpObj.lock:
             if is_first_best_match(result):
-                curEpObj.status = Quality.composite_status(SNATCHED_BEST, result.quality)
+                curEpObj.status = SNATCHED_BEST
+                curEpObj.quality = result.quality
             else:
-                curEpObj.status = Quality.composite_status(end_status, result.quality)
+                curEpObj.status = end_status
+                curEpObj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn
             curEpObj.hasnfo = False
@@ -217,7 +219,7 @@ def snatch_episode(result):
 
             sql_l.append(curEpObj.get_sql())
 
-        if curEpObj.splitted_status_status != common.DOWNLOADED:
+        if curEpObj.status != common.DOWNLOADED:
             notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
@@ -392,7 +394,7 @@ def wanted_episodes(series_obj, from_date):
     con = db.DBConnection()
 
     sql_results = con.select(
-        'SELECT status, season, episode, manually_searched '
+        'SELECT status, quality, season, episode, manually_searched '
         'FROM tv_episodes '
         'WHERE indexer = ? '
         ' AND showid = ?'
@@ -402,21 +404,23 @@ def wanted_episodes(series_obj, from_date):
     )
 
     # check through the list of statuses to see if we want any
-    for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNSET))
-        should_search, should_search_reason = Quality.should_search(result[b'status'], series_obj, result[b'manually_searched'])
+    for episode in sql_results:
+        cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
+        should_search, should_search_reason = Quality.should_search(
+            cur_status, cur_quality, series_obj, episode[b'manually_searched']
+        )
         if not should_search:
             continue
         else:
             log.debug(
                 u'Searching for {show} {ep}. Reason: {reason}', {
                     u'show': series_obj.name,
-                    u'ep': episode_num(result[b'season'], result[b'episode']),
+                    u'ep': episode_num(episode[b'season'], episode[b'episode']),
                     u'reason': should_search_reason,
                 }
             )
-        ep_obj = series_obj.get_episode(result[b'season'], result[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != Quality.UNKNOWN]
+        ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
+        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality]
         wanted.append(ep_obj)
 
     return wanted
@@ -682,7 +686,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
             for cur_result in found_results[cur_provider.name][cur_episode]:
-                if cur_result.quality != Quality.UNKNOWN and cur_result.quality > highest_quality_overall:
+                if cur_result.quality > highest_quality_overall:
                     highest_quality_overall = cur_result.quality
         log.debug(u'The highest quality of any match is {0}', Quality.qualityStrings[highest_quality_overall])
 

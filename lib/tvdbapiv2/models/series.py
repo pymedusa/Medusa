@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -38,24 +41,24 @@ class Series(object):
         """
         self.swagger_types = {
             'id': 'int',
-            'series_name': 'unicode',
-            'aliases': 'list[unicode]',
-            'banner': 'unicode',
-            'series_id': 'unicode',
-            'status': 'unicode',
-            'first_aired': 'unicode',
-            'network': 'unicode',
-            'network_id': 'unicode',
-            'runtime': 'unicode',
-            'genre': 'list[unicode]',
-            'overview': 'unicode',
+            'series_name': 'text_type',
+            'aliases': 'list[text_type]',
+            'banner': 'text_type',
+            'series_id': 'text_type',
+            'status': 'text_type',
+            'first_aired': 'text_type',
+            'network': 'text_type',
+            'network_id': 'text_type',
+            'runtime': 'text_type',
+            'genre': 'list[text_type]',
+            'overview': 'text_type',
             'last_updated': 'int',
-            'airs_day_of_week': 'unicode',
-            'airs_time': 'unicode',
-            'rating': 'unicode',
-            'imdb_id': 'unicode',
-            'zap2it_id': 'unicode',
-            'added': 'unicode',
+            'airs_day_of_week': 'text_type',
+            'airs_time': 'text_type',
+            'rating': 'text_type',
+            'imdb_id': 'text_type',
+            'zap2it_id': 'text_type',
+            'added': 'text_type',
             'site_rating': 'float'
         }
 
@@ -132,7 +135,7 @@ class Series(object):
 
 
         :return: The series_name of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._series_name
 
@@ -143,7 +146,7 @@ class Series(object):
 
 
         :param series_name: The series_name of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._series_name = series_name
 
@@ -154,7 +157,7 @@ class Series(object):
 
 
         :return: The aliases of this Series.
-        :rtype: list[unicode]
+        :rtype: list[text_type]
         """
         return self._aliases
 
@@ -165,7 +168,7 @@ class Series(object):
 
 
         :param aliases: The aliases of this Series.
-        :type: list[unicode]
+        :type: list[text_type]
         """
         self._aliases = aliases
 
@@ -176,7 +179,7 @@ class Series(object):
 
 
         :return: The banner of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._banner
 
@@ -187,7 +190,7 @@ class Series(object):
 
 
         :param banner: The banner of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._banner = banner
 
@@ -198,7 +201,7 @@ class Series(object):
 
 
         :return: The series_id of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._series_id
 
@@ -209,7 +212,7 @@ class Series(object):
 
 
         :param series_id: The series_id of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._series_id = series_id
 
@@ -220,7 +223,7 @@ class Series(object):
 
 
         :return: The status of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._status
 
@@ -231,7 +234,7 @@ class Series(object):
 
 
         :param status: The status of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._status = status
 
@@ -242,7 +245,7 @@ class Series(object):
 
 
         :return: The first_aired of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._first_aired
 
@@ -253,7 +256,7 @@ class Series(object):
 
 
         :param first_aired: The first_aired of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._first_aired = first_aired
 
@@ -264,7 +267,7 @@ class Series(object):
 
 
         :return: The network of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._network
 
@@ -275,7 +278,7 @@ class Series(object):
 
 
         :param network: The network of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._network = network
 
@@ -286,7 +289,7 @@ class Series(object):
 
 
         :return: The network_id of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._network_id
 
@@ -297,7 +300,7 @@ class Series(object):
 
 
         :param network_id: The network_id of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._network_id = network_id
 
@@ -308,7 +311,7 @@ class Series(object):
 
 
         :return: The runtime of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._runtime
 
@@ -319,7 +322,7 @@ class Series(object):
 
 
         :param runtime: The runtime of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._runtime = runtime
 
@@ -330,7 +333,7 @@ class Series(object):
 
 
         :return: The genre of this Series.
-        :rtype: list[unicode]
+        :rtype: list[text_type]
         """
         return self._genre
 
@@ -341,7 +344,7 @@ class Series(object):
 
 
         :param genre: The genre of this Series.
-        :type: list[unicode]
+        :type: list[text_type]
         """
         self._genre = genre
 
@@ -352,7 +355,7 @@ class Series(object):
 
 
         :return: The overview of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._overview
 
@@ -363,7 +366,7 @@ class Series(object):
 
 
         :param overview: The overview of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._overview = overview
 
@@ -396,7 +399,7 @@ class Series(object):
 
 
         :return: The airs_day_of_week of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._airs_day_of_week
 
@@ -407,7 +410,7 @@ class Series(object):
 
 
         :param airs_day_of_week: The airs_day_of_week of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._airs_day_of_week = airs_day_of_week
 
@@ -418,7 +421,7 @@ class Series(object):
 
 
         :return: The airs_time of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._airs_time
 
@@ -429,7 +432,7 @@ class Series(object):
 
 
         :param airs_time: The airs_time of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._airs_time = airs_time
 
@@ -440,7 +443,7 @@ class Series(object):
 
 
         :return: The rating of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._rating
 
@@ -451,7 +454,7 @@ class Series(object):
 
 
         :param rating: The rating of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._rating = rating
 
@@ -462,7 +465,7 @@ class Series(object):
 
 
         :return: The imdb_id of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._imdb_id
 
@@ -473,7 +476,7 @@ class Series(object):
 
 
         :param imdb_id: The imdb_id of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._imdb_id = imdb_id
 
@@ -484,7 +487,7 @@ class Series(object):
 
 
         :return: The zap2it_id of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._zap2it_id
 
@@ -495,7 +498,7 @@ class Series(object):
 
 
         :param zap2it_id: The zap2it_id of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._zap2it_id = zap2it_id
 
@@ -506,7 +509,7 @@ class Series(object):
 
 
         :return: The added of this Series.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._added
 
@@ -517,7 +520,7 @@ class Series(object):
 
 
         :param added: The added of this Series.
-        :type: unicode
+        :type: text_type
         """
         self._added = added
 
@@ -586,4 +589,3 @@ class Series(object):
         Returns true if both objects are not equal
         """
         return not self == other
-
