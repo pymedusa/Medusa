@@ -623,22 +623,19 @@ class Quality(object):
     guessit_map = {
         '720p': {
             'HDTV': HDTV,
-            'WEB-DL': HDWEBDL,
-            'WEBRip': HDWEBDL,
-            'BluRay': HDBLURAY,
+            'Web': HDWEBDL,
+            'Blu-ray': HDBLURAY,
         },
         '1080i': RAWHDTV,
         '1080p': {
             'HDTV': FULLHDTV,
-            'WEB-DL': FULLHDWEBDL,
-            'WEBRip': FULLHDWEBDL,
-            'BluRay': FULLHDBLURAY
+            'Web': FULLHDWEBDL,
+            'Blu-ray': FULLHDBLURAY
         },
-        '4K': {
+        '2160p': {
             'HDTV': UHD_4K_TV,
-            'WEB-DL': UHD_4K_WEBDL,
-            'WEBRip': UHD_4K_WEBDL,
-            'BluRay': UHD_4K_BLURAY
+            'Web': UHD_4K_WEBDL,
+            'Blu-ray': UHD_4K_BLURAY
         }
     }
 
@@ -654,7 +651,7 @@ class Quality(object):
         HDTV | HDWEBDL | HDBLURAY: '720p',
         RAWHDTV: '1080i',
         FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
-        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '2160p',
     }
 
     @staticmethod

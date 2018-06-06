@@ -1,7 +1,8 @@
 # coding=utf-8
 """Tests for medusa.common.py."""
 
-from medusa.common import DOWNLOADED, Quality
+from medusa.common import Quality
+
 import pytest
 
 
@@ -65,28 +66,28 @@ class TestQuality(object):
             'expected': Quality.FULLHDBLURAY
         },
         {  # p12
-            'screen_size': '4K',
+            'screen_size': '2160p',
             'source': 'HDTV',
             'expected': Quality.UHD_4K_TV
         },
         {  # p13
-            'screen_size': '4K',
+            'screen_size': '2160p',
             'source': 'Web',
             'expected': Quality.UHD_4K_WEBDL
         },
         {  # p14
-            'screen_size': '4K',
+            'screen_size': '2160p',
             'source': 'Web',
             'other': 'Rip',
             'expected': Quality.UHD_4K_WEBDL
         },
         {  # p15
-            'screen_size': '4K',
+            'screen_size': '2160p',
             'source': 'Blu-ray',
             'expected': Quality.UHD_4K_BLURAY
         },
         {  # p16: multiple screen sizes
-            'screen_size': ['4K', '720p'],
+            'screen_size': ['2160p', '720p'],
             'source': 'Blu-ray',
             'expected': Quality.UNKNOWN
         },
@@ -180,21 +181,21 @@ class TestQuality(object):
         {  # p10
             'quality': Quality.UHD_4K_TV,
             'expected': {
-                'screen_size': '4K',
+                'screen_size': '2160p',
                 'source': 'HDTV',
             }
         },
         {  # p11
             'quality': Quality.UHD_4K_WEBDL,
             'expected': {
-                'screen_size': '4K',
+                'screen_size': '2160p',
                 'source': 'Web',
             }
         },
         {  # p12
             'quality': Quality.UHD_4K_BLURAY,
             'expected': {
-                'screen_size': '4K',
+                'screen_size': '2160p',
                 'source': 'Blu-ray',
             }
         },
