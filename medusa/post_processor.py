@@ -828,6 +828,7 @@ class PostProcessor(object):
                     # Check if the last snatch was a manual snatch
                     if history_result[0][b'manually_searched']:
                         self.manually_searched = True
+
                     # Get info hash so we can move torrent if setting is enabled
                     self.info_hash = history_result[0][b'info_hash'] or None
 
@@ -1040,7 +1041,7 @@ class PostProcessor(object):
                    (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
-        priority_download = self._is_priority(old_ep_quality, new_ep_quality)
+        priority_download = self._is_priority(old_ep_quality, new_ep_quality) or self.manually_searched
         self.log(u'This episode is a priority download: {0}'.format(priority_download), logger.DEBUG)
 
         # get the version of the episode we're processing (default is -1)
