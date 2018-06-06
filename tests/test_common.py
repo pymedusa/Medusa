@@ -31,60 +31,57 @@ class TestQuality(object):
         },
         {  # p5
             'screen_size': '720p',
-            'source': 'Web',
-            'other': 'Rip',
-            'expected': Quality.HDWEBDL
-        },
-        {  # p6
-            'screen_size': '720p',
             'source': 'Blu-ray',
             'expected': Quality.HDBLURAY
         },
-        {  # p7
+        {  # p6
             'screen_size': '1080i',
             'expected': Quality.RAWHDTV
         },
-        {  # p8
+        {  # p7
             'screen_size': '1080p',
             'source': 'HDTV',
             'expected': Quality.FULLHDTV
         },
+        {  # p8
+            'screen_size': '1080p',
+            'source': 'Web',
+            'expected': Quality.FULLHDWEBDL
+        },
         {  # p9
-            'screen_size': '1080p',
-            'source': 'Web',
-            'expected': Quality.FULLHDWEBDL
-        },
-        {  # p10
-            'screen_size': '1080p',
-            'source': 'Web',
-            'other': 'Rip',
-            'expected': Quality.FULLHDWEBDL
-        },
-        {  # p11
             'screen_size': '1080p',
             'source': 'Blu-ray',
             'expected': Quality.FULLHDBLURAY
         },
-        {  # p12
+        {  # p10
             'screen_size': '2160p',
             'source': 'HDTV',
             'expected': Quality.UHD_4K_TV
         },
-        {  # p13
+        {  # p11
             'screen_size': '2160p',
             'source': 'Web',
             'expected': Quality.UHD_4K_WEBDL
         },
-        {  # p14
-            'screen_size': '2160p',
-            'source': 'Web',
-            'other': 'Rip',
-            'expected': Quality.UHD_4K_WEBDL
-        },
-        {  # p15
+        {  # p12
             'screen_size': '2160p',
             'source': 'Blu-ray',
             'expected': Quality.UHD_4K_BLURAY
+        },
+        {  # p13
+            'screen_size': '4320p',
+            'source': 'HDTV',
+            'expected': Quality.UHD_8K_TV
+        },
+        {  # p14
+            'screen_size': '4320p',
+            'source': 'Web',
+            'expected': Quality.UHD_8K_WEBDL
+        },
+        {  # p15
+            'screen_size': '4320p',
+            'source': 'Blu-ray',
+            'expected': Quality.UHD_8K_BLURAY
         },
         {  # p16: multiple screen sizes
             'screen_size': ['2160p', '720p'],
@@ -107,7 +104,6 @@ class TestQuality(object):
         guess = {
             'screen_size': p.get('screen_size'),
             'source': p.get('source'),
-            'other': p.get('other'),
         }
         expected = p['expected']
 
@@ -199,9 +195,26 @@ class TestQuality(object):
                 'source': 'Blu-ray',
             }
         },
-        {  # p13: guessit unsupported quality
+        {  # p11
+            'quality': Quality.UHD_8K_TV,
+            'expected': {
+                'screen_size': '4320p',
+                'source': 'HDTV',
+            }
+        },
+        {  # p12
+            'quality': Quality.UHD_8K_WEBDL,
+            'expected': {
+                'screen_size': '4320p',
+                'source': 'Web',
+            }
+        },
+        {  # p13
             'quality': Quality.UHD_8K_BLURAY,
-            'expected': dict()
+            'expected': {
+                'screen_size': '4320p',
+                'source': 'Blu-ray',
+            }
         }
     ])
     def test_to_guessit(self, p):

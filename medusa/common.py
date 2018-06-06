@@ -35,7 +35,7 @@ import knowit
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
-from six import PY3, iterkeys, viewitems
+from six import PY3, viewitems
 
 if PY3:
     long = int
@@ -636,14 +636,19 @@ class Quality(object):
             'HDTV': UHD_4K_TV,
             'Web': UHD_4K_WEBDL,
             'Blu-ray': UHD_4K_BLURAY
+        },
+        '4320p': {
+            'HDTV': UHD_8K_TV,
+            'Web': UHD_8K_WEBDL,
+            'Blu-ray': UHD_8K_BLURAY
         }
     }
 
     # Consolidate the guessit-supported screen sizes of each source
     to_guessit_source_map = {
-        ANYHDTV | UHD_4K_TV: 'HDTV',
-        ANYWEBDL | UHD_4K_WEBDL: 'Web',
-        ANYBLURAY | UHD_4K_BLURAY: 'Blu-ray'
+        ANYHDTV | UHD_4K_TV | UHD_8K_TV: 'HDTV',
+        ANYWEBDL | UHD_4K_WEBDL | UHD_8K_WEBDL: 'Web',
+        ANYBLURAY | UHD_4K_BLURAY | UHD_8K_BLURAY: 'Blu-ray'
     }
 
     # Consolidate the sources of each guessit-supported screen size
@@ -652,6 +657,7 @@ class Quality(object):
         RAWHDTV: '1080i',
         FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
         UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '2160p',
+        UHD_8K_TV | UHD_8K_WEBDL | UHD_8K_BLURAY: '4320p',
     }
 
     @staticmethod
@@ -716,12 +722,9 @@ class Quality(object):
         :return: guessit source
         :rtype: str
         """
-        for quality_set in iterkeys(Quality.to_guessit_source_map):
-            if quality_set & quality:  # If quality_set contains quality
-                # Remove all 8K sources as they are bigger than Quality.ANYBLURAY,
-                #   and they are not part of an "ANY*" bit set
-                key = quality_set & (Quality.UHD_8K_TV - 1)
-                return Quality.to_guessit_source_map.get(key)
+        for quality_set, source in viewitems(Quality.to_guessit_source_map):
+            if quality_set & quality:
+                return source
 
     @staticmethod
     def to_guessit_screen_size(quality):
@@ -733,9 +736,9 @@ class Quality(object):
         :return: guessit screen_size
         :rtype: str
         """
-        for key, value in viewitems(Quality.to_guessit_screen_size_map):
-            if quality & key:
-                return value
+        for quality_set, screen_size in viewitems(Quality.to_guessit_screen_size_map):
+            if quality_set & quality:
+                return screen_size
 
 
 HD720p = Quality.combine_qualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])
