@@ -11,7 +11,7 @@ from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
-from medusa.common import DOWNLOADED
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -489,6 +489,29 @@ class ProcessResult(object):
 
         return unpacked_files
 
+    def manually_searched(self, video_file):
+        """
+        Check the last occurrence for this release name in the history table is a manual searched.
+
+        :param video_file: File name
+        :return:
+        """
+        main_db_con = db.DBConnection()
+        history_result = main_db_con.select(
+            'SELECT resource LIKE ? '
+            'ORDER BY date DESC',
+            ['%' + video_file])
+
+        if all(
+            [history_result,
+            history_result['manually_searched'],
+            history_result['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
+        ):
+            self.log("You're trying to post-process a manual searched file that has already: {0}".format(
+                video_file
+            ), logger.DEBUG)
+            return True
+
     def already_postprocessed(self, video_file):
         """
         Check if we already post processed a file.
@@ -500,8 +523,7 @@ class ProcessResult(object):
         history_result = main_db_con.select(
             'SELECT * FROM history '
             'WHERE action = ? '
-            'AND resource LIKE ? '
-            'AND manually_searched = 0',
+            'AND resource LIKE ? ',
             [DOWNLOADED, '%' + video_file])
 
         if history_result:
@@ -524,7 +546,7 @@ class ProcessResult(object):
         for video in video_files:
             file_path = os.path.join(path, video)
 
-            if not force and self.already_postprocessed(video):
+            if not force and not self.manually_searched and self.already_postprocessed(video):
                 self.log('Skipping already processed file: {0}'.format(video), logger.DEBUG)
                 continue
 
