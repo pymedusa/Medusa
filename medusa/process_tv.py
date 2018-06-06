@@ -504,8 +504,8 @@ class ProcessResult(object):
 
         if all(
             [history_result,
-            history_result['manually_searched'],
-            history_result['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
+             history_result['manually_searched'] == '1',
+             history_result['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
         ):
             self.log("You're trying to post-process a manual searched file that has already: {0}".format(
                 video_file
