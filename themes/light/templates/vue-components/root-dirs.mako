@@ -17,8 +17,8 @@
 <script type="text/x-template" id="root-dirs-template">
     <div id="root-dirs-wrapper">
         <div class="root-dirs-selectbox">
-            ## @TODO: remove id attribute (use Vue $refs to access component data)
-            <select v-model="selectedRootDir" name="rootDir" id="rootDirs" size="6">
+            ## @TODO: Remove `id` and `name` attributes
+            <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" name="rootDir" id="rootDirs" size="6">
                 <option v-for="curDir in rootDirs" :value="curDir.path">{{markDefault(curDir)}}</option>
             </select>
         </div>
@@ -28,13 +28,14 @@
             <button type="button" class="btn-medusa" @click.prevent="remove" :disabled="!rootDirs.length">Delete</button>
             <button type="button" class="btn-medusa" @click.prevent="setDefault" :disabled="!rootDirs.length">Set as Default *</button>
         </div>
-        ## @TODO: remove this element (use Vue $emit events / jQuery $events)
+        ## @TODO: Remove this element (use a Vue events to watch for changes)
         <input type="text" style="display: none;" id="rootDirText" :value="rootDirsValue" />
     </div>
 </script>
 <script>
 Vue.component('root-dirs', {
     template: '#root-dirs-template',
+    inheritAttrs: false,
     data() {
         const rawRootDirs = MEDUSA.config.rootDirs;
         let rootDirs = [];
