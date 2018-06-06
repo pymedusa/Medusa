@@ -718,9 +718,9 @@ class Quality(object):
         """
         for quality_set in iterkeys(Quality.to_guessit_source_map):
             if quality_set & quality:  # If quality_set contains quality
-                # Remove all 4K (and above) sources as they are bigger than Quality.ANYBLURAY,
+                # Remove all 8K sources as they are bigger than Quality.ANYBLURAY,
                 #   and they are not part of an "ANY*" bit set
-                key = quality_set & (Quality.UHD_4K_TV - 1)
+                key = quality_set & (Quality.UHD_8K_TV - 1)
                 return Quality.to_guessit_source_map.get(key)
 
     @staticmethod
