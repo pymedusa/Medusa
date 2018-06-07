@@ -1,10 +1,16 @@
 # coding=utf-8
 
-from __future__ import print_function
 from __future__ import unicode_literals
 
-from tornado.ioloop import IOLoop
+import logging
+
+from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
+
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 clients = []
 backlogged_msgs = []
@@ -15,9 +21,9 @@ def push_to_web_socket(msg):
         # No clients so let's backlog this
         backlogged_msgs.append(msg)
         return
-    io_loop = IOLoop.current()
+    main_io_loop = app.instance.web_server.io_loop
     for client in clients:
-        io_loop.add_callback(client.write_message, msg)
+        main_io_loop.add_callback(client.write_message, msg)
 
 
 class WebSocketUIHandler(WebSocketHandler):
@@ -36,8 +42,12 @@ class WebSocketUIHandler(WebSocketHandler):
             else:
                 backlogged_msgs.remove(msg)
 
+    def write_message(self, message, binary=False):
+        super(WebSocketUIHandler, self).write_message(message, binary)
+
     def on_message(self, message):
-        print('Received: {0}'.format(message))
+        log.debug('WebSocket received message from {client}: {message}',
+                  {'client': self.request.remote_ip, 'message': message})
 
     def data_received(self, chunk):
         super(WebSocketUIHandler, self).data_received(chunk)
