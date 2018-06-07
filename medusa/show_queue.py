@@ -181,20 +181,21 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
-                u"{show_name} is still being added, wait until it is finished before you update."
-                .format(show_name=show.name))
+                '{show_name} is still being added,'
+                ' wait until it is finished before you update.'.format(show_name=show.name)
+            )
 
         if self.isBeingUpdated(show):
             raise CantUpdateShowException(
-                u"{show_name} is already being updated by Post-processor or manually started, "
-                u"can't update again until it's done."
-                .format(show_name=show.name))
+                "{show_name} is already being updated by Post-processor or manually started,"
+                " can't update again until it's done.".format(show_name=show.name)
+            )
 
         if self.isInUpdateQueue(show):
             raise CantUpdateShowException(
-                u"{show_name} is in process of being updated by Post-processor or manually started, "
-                u"can't update again until it's done."
-                .format(show_name=show.name))
+                "{show_name} is in process of being updated by Post-processor or manually started,"
+                " can't update again until it's done.".format(show_name=show.name)
+            )
 
         queue_item_update_show = QueueItemUpdate(show) if season is None else QueueItemSeasonUpdate(show, season)
 
@@ -205,7 +206,7 @@ class ShowQueue(generic_queue.GenericQueue):
     def refreshShow(self, show, force=False):
 
         if self.isBeingRefreshed(show) and not force:
-            raise CantRefreshShowException("This show is already being refreshed, not refreshing again.")
+            raise CantRefreshShowException('This show is already being refreshed, not refreshing again.')
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
             log.debug("A refresh was attempted but there is already an update queued or in progress."
@@ -253,16 +254,16 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def removeShow(self, show, full=False):
         if show is None:
-            raise CantRemoveShowException(u'Failed removing show: Show does not exist')
+            raise CantRemoveShowException('Failed removing show: Show does not exist')
 
-        if not hasattr(show, u'indexerid'):
-            raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
+        if not hasattr(show, 'indexerid'):
+            raise CantRemoveShowException('Failed removing show: Show does not have an indexer id')
 
         if self.isBeingRemoved(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.series_id))
+            raise CantRemoveShowException('[{!s}]: Show is already being removed'.format(show.series_id))
 
         if self.isInRemoveQueue(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.series_id))
+            raise CantRemoveShowException('[{!s}]: Show is already queued to be removed'.format(show.series_id))
 
         # remove other queued actions for this show.
         for item in self.queue:
@@ -412,10 +413,12 @@ class QueueItemAdd(ShowQueueItem):
                     {'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
                 )
 
-                ui.notifications.error(u'Unable to add show',
-                                       u'Show in {0} has no name on {1}, probably the wrong language. \
-                                       Delete .nfo and manually add the correct language.'
-                                       .format(self.showDir, indexerApi(self.indexer).name))
+                ui.notifications.error(
+                    'Unable to add show',
+                    'Show in {path} has no name on {indexer}, probably the wrong language.'
+                    ' Delete .nfo and manually add the correct language.'.format(
+                        path=self.showDir, indexer=indexerApi(self.indexer).name)
+                )
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
@@ -424,9 +427,11 @@ class QueueItemAdd(ShowQueueItem):
                     'Show {series_name} is on {indexer_name} but contains no season/episode data.',
                     {'series_name': s['seriesname'], 'indexer_name': indexerApi(self.indexer).name}
                 )
-                ui.notifications.error(u"Unable to add show",
-                                       u"Show {0} is on {1} but contains no season/episode data.".
-                                       format(s['seriesname'], indexerApi(self.indexer).name))
+                ui.notifications.error(
+                    'Unable to add show',
+                    'Show {series_name} is on {indexer_name} but contains no season/episode data.'.format(
+                        series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
+                )
                 self._finishEarly()
 
                 return
@@ -442,7 +447,7 @@ class QueueItemAdd(ShowQueueItem):
                 )
                 ui.notifications.error(
                     'Unable to add show',
-                    'reason: {0}' .format(error)
+                    'reason: {0}'.format(error)
                 )
                 self._finishEarly()
 
@@ -458,10 +463,10 @@ class QueueItemAdd(ShowQueueItem):
                 {'id': self.indexer_id, 'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
             )
             ui.notifications.error(
-                u'Unable to add show',
-                u'Unable to look up the show in {0} on {1} using ID {2}. '
-                u'Delete metadata files from the folder and try adding it again.'.
-                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+                'Unable to add show',
+                'Unable to look up the show in {path} using id {id} on {indexer}.'
+                ' Delete metadata files from the folder and try adding it again.'.format(
+                    path=self.showDir, id=self.indexer_id, indexer=indexerApi(self.indexer).name)
             )
             self._finishEarly()
             return
@@ -471,24 +476,25 @@ class QueueItemAdd(ShowQueueItem):
                 {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name, 'error': error}
             )
             ui.notifications.error(
-                u"Unable to add show",
-                u"Unable to look up the show in {0} on {1} using ID {2} "
-                u"Reason: {3}"
-                .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, error)
+                'Unable to add show',
+                'Unable to look up the show in {path} on {indexer} using ID {id}'
+                ' Reason: {error}'.format(
+                    path=self.showDir, indexer=indexerApi(self.indexer).name,
+                    id=self.indexer_id, error=error)
             )
             self._finishEarly()
             return
         except IndexerShowNotFoundInLanguage as error:
-            ui.notifications.error(u'Error adding show!',
-                                   u'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
-                                   format(indexer_id=self.indexer_id,
-                                          indexer=indexerApi(self.indexer).name,
-                                          language=error.language))
             log.warning(
                 '{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide'
                 ' show information in the searched language {language}. Aborting: {error_msg}',
                 {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name,
                  'language': error.language, 'error_msg': error}
+            )
+            ui.notifications.error(
+                'Error adding show!',
+                'Unable to add show {indexer_id} on {indexer} with this language: {language}'.format(
+                    indexer_id=self.indexer_id, indexer=indexerApi(self.indexer).name, language=error.language)
             )
             self._finishEarly()
             return
@@ -498,9 +504,9 @@ class QueueItemAdd(ShowQueueItem):
                 {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name, 'error': error}
             )
             ui.notifications.error(
-                u'Unable to add show',
-                u'Unable to look up the show in {0} on {1} using ID {2}.'.
-                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+                'Unable to add show',
+                'Unable to look up the show in {path} on {indexer} using ID {id}.'.format(
+                    path=self.showDir, indexer=indexerApi(self.indexer).name, id=self.indexer_id)
             )
             self._finishEarly()
             return
@@ -548,16 +554,12 @@ class QueueItemAdd(ShowQueueItem):
                 'Unable to add show due to an error with {indexer}: {error}',
                 {'indexer': indexerApi(self.indexer).name, 'error': error}
             )
-            if self.show:
-                ui.notifications.error(
-                    u"Unable to add {series_name} due to an error with {indexer_name}".format(
-                        series_name=self.show.name, indexer_name=indexerApi(self.indexer).name
-                    )
+            ui.notifications.error(
+                'Unable to add {series_name} due to an error with {indexer_name}'.format(
+                    series_name=self.show.name if self.show else 'show',
+                    indexer_name=indexerApi(self.indexer).name
                 )
-            else:
-                ui.notifications.error(
-                    u"Unable to add show due to an error with {indexer_name}".format(indexer_name=indexerApi(self.indexer).name)
-                )
+            )
             self._finishEarly()
             return
 
@@ -566,7 +568,11 @@ class QueueItemAdd(ShowQueueItem):
                 'The show in {show_dir} is already in your show list, skipping',
                 {'show_dir': self.showDir}
             )
-            ui.notifications.error(u'Show skipped', u"The show in {show_dir} is already in your show list".format(show_dir=self.showDir))
+            ui.notifications.error(
+                'Show skipped',
+                'The show in {show_dir} is already in your show list'.format(
+                    show_dir=self.showDir)
+            )
             self._finishEarly()
             return
 
@@ -803,11 +809,13 @@ class QueueItemUpdate(ShowQueueItem):
                 {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
                  'language': error.language, 'error_msg': error}
             )
-            ui.notifications.error(u'Error changing language show!',
-                                   u'Unable to change language for show {show_name} on {indexer} to language: {language}'.
-                                   format(show_name=self.show.name,
-                                          indexer=indexerApi(self.show.indexer).name,
-                                          language=error.language))
+            ui.notifications.error(
+                'Error changing language show!',
+                'Unable to change language for show {show_name}'
+                ' on {indexer} to language: {language}'.format(
+                    show_name=self.show.name, indexer=indexerApi(self.show.indexer).name,
+                    language=error.language)
+            )
             return
 
         log.debug(
