@@ -523,7 +523,7 @@ class ProcessResult(object):
         history_result = main_db_con.select(
             'SELECT * FROM history '
             'WHERE action = ? '
-            'AND resource LIKE ? ',
+            'AND resource LIKE ?',
             [DOWNLOADED, '%' + video_file])
 
         if history_result:
