@@ -3,19 +3,21 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from tornado.websocket import WebSocketHandler
+from tornado.ioloop import IOLoop
+from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 clients = []
 backlogged_msgs = []
 
 
 def push_to_web_socket(msg):
-    if len(clients):
-        for client in clients:
-            client.write_message(msg)
-    else:
+    if not clients:
         # No clients so let's backlog this
         backlogged_msgs.append(msg)
+        return
+    io_loop = IOLoop.current()
+    for client in clients:
+        io_loop.add_callback(client.write_message, msg)
 
 
 class WebSocketUIHandler(WebSocketHandler):
@@ -24,17 +26,21 @@ class WebSocketUIHandler(WebSocketHandler):
 
     def open(self, *args, **kwargs):
         clients.append(self)
-        WebSocketHandler.open(self, *args, **kwargs)
-        if len(clients) == 0 and len(backlogged_msgs):
-            # We have pending messages and a new client
-            for msg in backlogged_msgs:
-                push_to_web_socket(msg)
+        super(WebSocketUIHandler, self).open(*args, **kwargs)
+        # If we have pending messages send them to the new client
+        for msg in backlogged_msgs:
+            try:
+                self.write_message(msg)
+            except WebSocketClosedError:
+                pass
+            else:
+                backlogged_msgs.remove(msg)
 
     def on_message(self, message):
-        print(u"Received: " + message)
+        print('Received: {0}'.format(message))
 
     def data_received(self, chunk):
-        WebSocketHandler.data_received(self, chunk)
+        super(WebSocketUIHandler, self).data_received(chunk)
 
     def on_close(self):
         clients.remove(self)
