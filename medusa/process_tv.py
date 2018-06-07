@@ -499,15 +499,15 @@ class ProcessResult(object):
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
             'SELECT resource LIKE ? '
-            'ORDER BY date DESC',
+            'ORDER BY date DESC LIMIT 1',
             ['%' + video_file])
 
         if all(
             [history_result,
-             history_result['manually_searched'] == '1',
-             history_result['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
+             history_result[0]['manually_searched'] == '1',
+             history_result[0]['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
         ):
-            self.log("You're trying to post-process a manual searched file that has already: {0}".format(
+            self.log('Last snatch for this video was manual searched: {0}'.format(
                 video_file
             ), logger.DEBUG)
             return True
