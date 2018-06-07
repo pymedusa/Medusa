@@ -22,7 +22,8 @@ def push_to_websocket(msg):
     """Push a message to all connected WebSocket clients."""
     if not clients:
         # No clients so let's backlog this
-        backlogged_msgs.append(msg)
+        # @TODO: This has a chance to spam the user with notifications
+        # backlogged_msgs.append(msg)
         return
     main_io_loop = app.instance.web_server.io_loop
     for client in clients:
