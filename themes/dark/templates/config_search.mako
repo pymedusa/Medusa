@@ -2,7 +2,6 @@
 <%!
     import json
     from medusa import app
-    from medusa.clients import torrent
 %>
 <%block name="scripts">
 <%
@@ -216,17 +215,15 @@ const startVue = () => {
 
                 this.torrent.testStatus = MEDUSA.config.loading;
 
-                const data = await fetch('home/testTorrent?' + queryString.stringify({
+                const params = {
                     torrent_method: method,
                     host,
                     username,
                     password
-                }),
-                {
-                    credentials: 'same-origin'
-                });
+                };
+                const resp = await apiRoute.get('home/testTorrent', { params });
 
-                this.torrent.testStatus = await data.text();
+                this.torrent.testStatus = resp.data;
             },
             async testNzbget() {
                 const { nzb } = this;
@@ -235,17 +232,15 @@ const startVue = () => {
 
                 this.nzb.nzbget.testStatus = MEDUSA.config.loading;
 
-                const data = await fetch('home/testNZBget?' + queryString.stringify({
+                const params = {
                     host,
                     username,
                     password,
                     user_https: useHttps
-                }),
-                {
-                    credentials: 'same-origin'
-                });
+                };
+                const resp = await apiRoute.get('home/testNZBget', { params });
 
-                this.nzb.nzbget.testStatus = await data.text();
+                this.nzb.nzbget.testStatus = resp.data;
             },
             async testSabnzbd() {
                 const { nzb } = this;
@@ -254,17 +249,15 @@ const startVue = () => {
 
                 this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
-                const data = await fetch('home/testSABnzbd?' + queryString.stringify({
+                const params = {
                     host,
                     username,
                     password,
                     apikey: apiKey
-                }),
-                {
-                    credentials: 'same-origin'
-                });
+                };
+                const resp = await apiRoute.get('home/testSABnzbd', { params });
 
-                this.nzb.sabnzbd.testStatus = await data.text();
+                this.nzb.sabnzbd.testStatus = resp.data;
             }
         },
         watch: {
