@@ -157,7 +157,7 @@ class Track(object):
         type = element.get('TrackType')  # @ReservedAssignment
         number = element.get('TrackNumber', 0)
         name = element.get('Name')
-        language = element.get('Language')
+        language = element.get('Language', 'eng')
         enabled = bool(element.get('FlagEnabled', 1))
         default = bool(element.get('FlagDefault', 1))
         forced = bool(element.get('FlagForced', 0))
@@ -201,7 +201,7 @@ class VideoTrack(Track):
         videotrack.width = element['Video'].get('PixelWidth', 0)
         videotrack.height = element['Video'].get('PixelHeight', 0)
         videotrack.interlaced = bool(element['Video'].get('FlagInterlaced', False))
-        videotrack.stereo_mode = element['Video'].get('StereoMode')
+        videotrack.stereo_mode = element['Video'].get('StereoMode', 0)
         videotrack.crop = {}
         if 'PixelCropTop' in element['Video']:
             videotrack.crop['top'] = element['Video']['PixelCropTop']
@@ -211,10 +211,10 @@ class VideoTrack(Track):
             videotrack.crop['left'] = element['Video']['PixelCropLeft']
         if 'PixelCropRight' in element['Video']:
             videotrack.crop['right'] = element['Video']['PixelCropRight']
+        videotrack.display_unit = element['Video'].get('DisplayUnit')
         videotrack.display_width = element['Video'].get('DisplayWidth')
         videotrack.display_height = element['Video'].get('DisplayHeight')
-        videotrack.display_unit = element['Video'].get('DisplayUnit')
-        videotrack.aspect_ratio_type = element['Video'].get('AspectRatioType')
+        videotrack.aspect_ratio_type = element['Video'].get('AspectRatioType', 0)
         return videotrack
 
     def __repr__(self):
@@ -245,7 +245,7 @@ class AudioTrack(Track):
         audiotrack = super(AudioTrack, cls).fromelement(element)
         audiotrack.sampling_frequency = element['Audio'].get('SamplingFrequency', 8000.0)
         audiotrack.channels = element['Audio'].get('Channels', 1)
-        audiotrack.output_sampling_frequency = element['Audio'].get('OutputSamplingFrequency')
+        audiotrack.output_sampling_frequency = element['Audio'].get('OutputSamplingFrequency', audiotrack.sampling_frequency)
         audiotrack.bit_depth = element['Audio'].get('BitDepth')
         return audiotrack
 
