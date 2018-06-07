@@ -489,47 +489,42 @@ class ProcessResult(object):
 
         return unpacked_files
 
-    def manually_searched(self, video_file):
-        """
-        Check the last occurrence for this release name in the history table is a manual searched.
-
-        :param video_file: File name
-        :return:
-        """
-        main_db_con = db.DBConnection()
-        history_result = main_db_con.select(
-            'SELECT resource LIKE ? '
-            'ORDER BY date DESC LIMIT 1',
-            ['%' + video_file])
-
-        if all(
-            [history_result,
-             history_result[0]['manually_searched'] == '1',
-             history_result[0]['action'] in (SNATCHED, SNATCHED_BEST, SNATCHED_PROPER)]
-        ):
-            self.log('Last snatch for this video was manual searched: {0}'.format(
-                video_file
-            ), logger.DEBUG)
-            return True
-
     def already_postprocessed(self, video_file):
         """
-        Check if we already post processed a file.
+        Check if we already post-processed an auto snatched file.
 
         :param video_file: File name
         :return:
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT * FROM history '
+            'SELECT showid, season, episode, indexer_id FROM history '
             'WHERE action = ? '
-            'AND resource LIKE ?',
+            'AND resource LIKE ?'
+            'ORDER BY date DESC',
             [DOWNLOADED, '%' + video_file])
 
         if history_result:
-            self.log("You're trying to post-process an automated searched file that has already "
-                     "been processed, skipping: {0}".format(video_file), logger.DEBUG)
-            return True
+            snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+            tv_episodes_result = main_db_con.select(
+                'SELECT manually_searched '
+                'FROM tv_episodes '
+                'WHERE indexer = ? '
+                'AND showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND status IN (?, ?, ?) ',
+                [history_result[0][b'indexer_id'],
+                 history_result[0][b'showid'],
+                 history_result[0][b'season'],
+                 history_result[0][b'episode']
+                 ] + snatched_statuses
+            )
+            if tv_episodes_result and tv_episodes_result[0][b'manually_searched'] == 0:
+                self.log("You're trying to post-process an automated searched file that has already"
+                         " been processed, skipping: {0}".format(video_file), logger.DEBUG)
+                return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
         """
@@ -546,7 +541,7 @@ class ProcessResult(object):
         for video in video_files:
             file_path = os.path.join(path, video)
 
-            if not force and not self.manually_searched and self.already_postprocessed(video):
+            if not force and self.already_postprocessed(video):
                 self.log('Skipping already processed file: {0}'.format(video), logger.DEBUG)
                 continue
 
