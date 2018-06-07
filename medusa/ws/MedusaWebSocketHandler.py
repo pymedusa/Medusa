@@ -16,7 +16,7 @@ clients = []
 backlogged_msgs = []
 
 
-def push_to_web_socket(msg):
+def push_to_websocket(msg):
     if not clients:
         # No clients so let's backlog this
         backlogged_msgs.append(msg)
