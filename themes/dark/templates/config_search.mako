@@ -884,9 +884,9 @@ const startVue = () => {
                                             <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
                                             </span>
-                                            <span id="label_warning_utorrent" style="display:none;"><p> (<b>%N</b> can be used with other text)</p>
-                                                <div class="clear-left"><p>Global label for torrents. <br>
-                                                <b>%N:</b> use Series-Name as label</p></div>
+                                            <span v-show="torrent.method === 'utorrent'">
+                                                <div class="clear-left"><p>Global label for torrents.<br>
+                                                <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>
@@ -899,12 +899,12 @@ const startVue = () => {
                                             <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span v-show="torrent.method === 'qbittorrent'" style="display:none;"><p>(blank spaces are not allowed)</p>
-                                                <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up </p></div>
+                                            <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
+                                                <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
                                             </span>
-                                            <span id="label_anime_warning_utorrent" style="display:none;"><p> (<b>%N</b> can be used with other text)</p>
-                                                <div class="clear-left"><p>Global label for torrents. <br>
-                                                <b>%N:</b> use Series-Name as label</p></div>
+                                            <span v-show="torrent.method === 'utorrent'">
+                                                <div class="clear-left"><p>Global label for torrents.<br>
+                                                <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>
