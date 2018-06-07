@@ -122,7 +122,6 @@
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
-        <script src="js/lib/query-string.min.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
