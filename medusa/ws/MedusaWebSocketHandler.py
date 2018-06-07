@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""WebSocket handler."""
+
 from __future__ import unicode_literals
 
 import logging
@@ -17,6 +19,7 @@ backlogged_msgs = []
 
 
 def push_to_websocket(msg):
+    """Push a message to all connected WebSocket clients."""
     if not clients:
         # No clients so let's backlog this
         backlogged_msgs.append(msg)
@@ -27,10 +30,14 @@ def push_to_websocket(msg):
 
 
 class WebSocketUIHandler(WebSocketHandler):
+    """WebSocket handler to send and receive data to and from a web client."""
+
     def check_origin(self, origin):
+        """Allow alternate origins."""
         return True
 
     def open(self, *args, **kwargs):
+        """Client connected to the WebSocket."""
         clients.append(self)
         super(WebSocketUIHandler, self).open(*args, **kwargs)
         # If we have pending messages send them to the new client
@@ -43,14 +50,23 @@ class WebSocketUIHandler(WebSocketHandler):
                 backlogged_msgs.remove(msg)
 
     def write_message(self, message, binary=False):
+        """Send a message to the client."""
         super(WebSocketUIHandler, self).write_message(message, binary)
 
     def on_message(self, message):
+        """Received a message from the client."""
         log.debug('WebSocket received message from {client}: {message}',
                   {'client': self.request.remote_ip, 'message': message})
 
     def data_received(self, chunk):
+        """Received a streamed data chunk from the client."""
         super(WebSocketUIHandler, self).data_received(chunk)
 
     def on_close(self):
+        """Client disconnected from the WebSocket."""
         clients.remove(self)
+
+    def __repr__(self):
+        """Client representation."""
+        return '<{name} Client: {ip}>'.format(
+            name=type(self).__name__, ip=self.request.remote_ip)
