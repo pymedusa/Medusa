@@ -58,8 +58,6 @@ class HomeAddShows(Home):
         if not lang or lang == 'null':
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
-        search_term = search_term.encode('utf-8')
-
         search_terms = [search_term]
 
         # If search term ends with what looks like a year, enclose it in ()
@@ -78,25 +76,29 @@ class HomeAddShows(Home):
 
         # Query Indexers for each search term and build the list of results
         for indexer in indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            l_indexer_api_parms = indexerApi(indexer).api_params.copy()
-            l_indexer_api_parms['language'] = lang
-            l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
+            l_indexer_api_params = indexerApi(indexer).api_params.copy()
+            l_indexer_api_params['language'] = lang
+            l_indexer_api_params['custom_ui'] = classes.AllShowsListUI
             try:
-                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_parms)
+                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_params)
             except IndexerUnavailable as msg:
-                logger.log(u'Could not initialize Indexer {indexer}: {error}'.
-                           format(indexer=indexerApi(indexer).name, error=msg))
+                logger.log(u'Could not initialize indexer {indexer}: {error}'.format(
+                    indexer=indexerApi(indexer).name,
+                    error=msg
+                ))
                 continue
 
-            logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                search_terms, indexerApi(indexer).name), logger.DEBUG)
+            logger.log(u'Searching for Show with searchterm(s): {terms} on indexer: {indexer}'.format(
+                terms=', '.join(search_terms),
+                indexer=indexerApi(indexer).name
+            ), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
                     indexer_results = indexer_api[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerException as e:
-                    logger.log(u'Error searching for show: {error}'.format(error=e.message))
+                except IndexerException as error:
+                    logger.log(u'Error searching for show: {error}'.format(error=error))
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),

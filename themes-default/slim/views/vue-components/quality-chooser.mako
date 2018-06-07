@@ -100,6 +100,8 @@ Vue.component('quality-chooser', {
 
             // JS only
             lock: false,
+            unwatchProp: null,
+
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -128,11 +130,11 @@ Vue.component('quality-chooser', {
         },
         allowedQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE});
+                .filter(val => val > ${Quality.NA});
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NA});
         }
     },
     asyncComputed: {
@@ -178,6 +180,21 @@ Vue.component('quality-chooser', {
             return html;
         }
     },
+    created() {
+        /**
+         * overallQuality property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        this.unwatchProp = this.$watch('overallQuality', (newValue, oldValue) => {
+            this.unwatchProp();
+
+            this.lock = true;
+            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
+            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
+            this.$nextTick(() => this.lock = false);
+        });
+    },
     mounted() {
         this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
     },
@@ -217,17 +234,6 @@ Vue.component('quality-chooser', {
         }
     },
     watch: {
-        /**
-         * overallQuality property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
-         */
-        overallQuality(newValue, oldValue) {
-            this.lock = true;
-            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
-            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
-            this.$nextTick(() => this.lock = false);
-        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },

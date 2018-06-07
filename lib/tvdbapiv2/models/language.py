@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -38,9 +41,9 @@ class Language(object):
         """
         self.swagger_types = {
             'id': 'int',
-            'abbreviation': 'str',
-            'name': 'str',
-            'english_name': 'str'
+            'abbreviation': 'text_type',
+            'name': 'text_type',
+            'english_name': 'text_type'
         }
 
         self.attribute_map = {
@@ -84,7 +87,7 @@ class Language(object):
 
 
         :return: The abbreviation of this Language.
-        :rtype: str
+        :rtype: text_type
         """
         return self._abbreviation
 
@@ -95,7 +98,7 @@ class Language(object):
 
 
         :param abbreviation: The abbreviation of this Language.
-        :type: str
+        :type: text_type
         """
         self._abbreviation = abbreviation
 
@@ -106,7 +109,7 @@ class Language(object):
 
 
         :return: The name of this Language.
-        :rtype: str
+        :rtype: text_type
         """
         return self._name
 
@@ -117,7 +120,7 @@ class Language(object):
 
 
         :param name: The name of this Language.
-        :type: str
+        :type: text_type
         """
         self._name = name
 
@@ -128,7 +131,7 @@ class Language(object):
 
 
         :return: The english_name of this Language.
-        :rtype: str
+        :rtype: text_type
         """
         return self._english_name
 
@@ -139,7 +142,7 @@ class Language(object):
 
 
         :param english_name: The english_name of this Language.
-        :type: str
+        :type: text_type
         """
         self._english_name = english_name
 
@@ -175,7 +178,7 @@ class Language(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -186,4 +189,3 @@ class Language(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

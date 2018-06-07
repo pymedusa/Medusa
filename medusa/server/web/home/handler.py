@@ -32,6 +32,7 @@ from medusa.clients.nzb import (
     sab,
 )
 from medusa.common import (
+    ARCHIVED,
     DOWNLOADED,
     FAILED,
     IGNORED,
@@ -174,8 +175,8 @@ class Home(WebRoot):
     def show_statistics():
         main_db_con = db.DBConnection()
 
-        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
+        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
@@ -643,14 +644,6 @@ class Home(WebRoot):
             return 'ERROR: {error}'.format(error=notifiers.email_notifier.last_err)
 
     @staticmethod
-    def testNMA(nma_api=None, nma_priority=0):
-        result = notifiers.nma_notifier.test_notify(nma_api, nma_priority)
-        if result:
-            return 'Test NMA notice sent successfully'
-        else:
-            return 'Test NMA notice failed'
-
-    @staticmethod
     def testPushalot(authorizationToken=None):
         result = notifiers.pushalot_notifier.test_notify(authorizationToken)
         if result:
@@ -935,7 +928,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
+            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
@@ -1284,19 +1277,20 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource, size '
+                b'SELECT date, action, quality, provider, resource, size '
                 b'FROM history '
                 b'WHERE indexer_id = ? '
                 b'AND showid = ? '
                 b'AND season = ? '
                 b'AND episode = ? '
-                b'AND (action LIKE \'%02\' OR action LIKE \'%04\' OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') '
+                b'AND action in (?, ?, ?, ?, ?) '
                 b'ORDER BY date DESC',
-                [indexer_id, series_id, season, episode]
+                [indexer_id, series_id, season, episode,
+                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
-                i['status'], i['quality'] = Quality.split_composite_status(i['action'])
+                i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
@@ -1375,7 +1369,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'],
+            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
                                                  manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
@@ -1655,6 +1649,7 @@ class Home(WebRoot):
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
+                        changed_location = False
                         logger.log("New location '{location}' does not exist. "
                                    "Enable setting 'Create missing show dirs'".format
                                    (location=location), logger.WARNING)
@@ -1915,7 +1910,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        # Use .has_key() since it is overridden for statusStrings in common.py
+        status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
             if direct:
@@ -1975,24 +1970,24 @@ class Home(WebRoot):
                             series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                    snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
-                    if status in Quality.DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + Quality.DOWNLOADED
-                            and os.path.isfile(ep_obj.location)):
+                    if status == DOWNLOADED and not (
+                            ep_obj.status in snatched_qualities + [DOWNLOADED]
+                            or os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED'.format(
+                                   ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if status == FAILED and ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
                                         series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
-                        if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED:
+                        if ep_obj.status in [DOWNLOADED, ARCHIVED]:
                             logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
                                 series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.release_name = ''
@@ -2004,10 +1999,8 @@ class Home(WebRoot):
                             ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
-                    # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        # We're only setting the status (leaving the quality as is).
-                        ep_obj.splitted_status_status = status
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -2019,7 +2012,7 @@ class Home(WebRoot):
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
                     upd = 'Add'
-                elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
+                elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
                     upd = 'Remove'
 
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
@@ -2143,7 +2136,8 @@ class Home(WebRoot):
 
             ep_info = cur_ep.split('x')
 
-            # this is probably the worst possible way to deal with double eps but I've kinda painted myself into a corner here with this stupid database
+            # this is probably the worst possible way to deal with double eps
+            # but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
                 b'SELECT location '
                 b'FROM tv_episodes '

@@ -21,21 +21,18 @@ from __future__ import unicode_literals
 import datetime
 
 from medusa import db
-from medusa.common import FAILED, Quality, SNATCHED, SUBTITLED
+from medusa.common import FAILED, SNATCHED, SUBTITLED
 from medusa.helper.encoding import ss
 from medusa.show.history import History
 
 
-def _logHistoryItem(action, ep_obj, quality, resource,
-                    provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, size=-1):
+def _log_history_item(action, ep_obj, resource, provider, version=-1, proper_tags='',
+                      manually_searched=False, info_hash=None, size=-1):
     """
     Insert a history item in DB
 
     :param action: action taken (snatch, download, etc)
-    :param showid: showid this entry is about
-    :param season: show season
-    :param episode: show episode
-    :param quality: media quality
+    :param ep_obj: episode object
     :param resource: resource used
     :param provider: provider used
     :param version: tracked version of file (defaults to -1)
@@ -49,37 +46,37 @@ def _logHistoryItem(action, ep_obj, quality, resource,
         "(action, date, indexer_id, showid, season, episode, quality, "
         "resource, provider, version, proper_tags, manually_searched, info_hash, size) "
         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, quality,
+        [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, ep_obj.quality,
          resource, provider, version, proper_tags, manually_searched, info_hash, size])
 
 
-def log_snatch(searchResult):
+def log_snatch(search_result):
     """
     Log history of snatch
 
-    :param searchResult: search result object
+    :param search_result: search result object
     """
-    for ep_obj in searchResult.episodes:
+    for ep_obj in search_result.episodes:
 
-        quality = searchResult.quality
-        version = searchResult.version
-        proper_tags = '|'.join(searchResult.proper_tags)
-        manually_searched = searchResult.manually_searched
-        info_hash = searchResult.hash.lower() if searchResult.hash else None
-        size = searchResult.size
+        version = search_result.version
+        proper_tags = '|'.join(search_result.proper_tags)
+        manually_searched = search_result.manually_searched
+        info_hash = search_result.hash.lower() if search_result.hash else None
+        size = search_result.size
 
-        providerClass = searchResult.provider
+        providerClass = search_result.provider
         if providerClass is not None:
             provider = providerClass.name
         else:
             provider = "unknown"
 
-        action = Quality.composite_status(SNATCHED, searchResult.quality)
+        action = SNATCHED
+        ep_obj.quality = search_result.quality
 
-        resource = searchResult.name
+        resource = search_result.name
 
-        _logHistoryItem(action, ep_obj, quality, resource,
-                        provider, version, proper_tags, manually_searched, info_hash, size)
+        _log_history_item(action, ep_obj, resource,
+                          provider, version, proper_tags, manually_searched, info_hash, size)
 
 
 def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
@@ -94,8 +91,6 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
     """
     size = int(ep_obj.file_size)
 
-    quality = new_ep_quality
-
     # store the release group as the provider if possible
     if release_group:
         provider = release_group
@@ -104,10 +99,10 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
 
     action = ep_obj.status
 
-    _logHistoryItem(action, ep_obj, quality, filename, provider, version, size=size)
+    _log_history_item(action, ep_obj, filename, provider, version, size=size)
 
 
-def logSubtitle(ep_obj, status, subtitle_result):
+def log_subtitle(ep_obj, subtitle_result):
     """
     Log download of subtitle
 
@@ -120,10 +115,7 @@ def logSubtitle(ep_obj, status, subtitle_result):
     resource = subtitle_result.language.opensubtitles
     provider = subtitle_result.provider_name
 
-    status, quality = Quality.split_composite_status(status)
-    action = Quality.composite_status(SUBTITLED, quality)
-
-    _logHistoryItem(action, ep_obj, quality, resource, provider)
+    _log_history_item(SUBTITLED, ep_obj, resource, provider)
 
 
 def log_failed(ep_obj, release, provider=None):
@@ -134,7 +126,4 @@ def log_failed(ep_obj, release, provider=None):
     :param release: Release group
     :param provider: Provider used for snatch
     """
-    _, quality = Quality.split_composite_status(ep_obj.status)
-    action = Quality.composite_status(FAILED, quality)
-
-    _logHistoryItem(action, ep_obj, quality, release, provider)
+    _log_history_item(FAILED, ep_obj, release, provider)

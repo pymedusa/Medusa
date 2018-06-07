@@ -113,7 +113,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
                 log.warning(
                     u'Error getting external ids for other'
                     u' indexer {name}: {reason}',
-                    {'name': indexerApi(show.indexer).name, 'reason': error.message})
+                    {'name': indexerApi(other_indexer).name, 'reason': error.message})
 
     # Try to update with the Trakt externals.
     if app.USE_TRAKT:

@@ -32,12 +32,9 @@ class indexerApi(object):
     def config(self):
         if self.indexer_id:
             return indexerConfig[self.indexer_id]
-        _ = initConfig
-        if app.INDEXER_DEFAULT_LANGUAGE in _:
-            del _[_['valid_languages'].index(app.INDEXER_DEFAULT_LANGUAGE)]
-        _['valid_languages'].sort()
-        _['valid_languages'].insert(0, app.INDEXER_DEFAULT_LANGUAGE)
-        return _
+        # Sort and put the default language first
+        initConfig['valid_languages'].sort(key=lambda i: '\0' if i == app.INDEXER_DEFAULT_LANGUAGE else i)
+        return initConfig
 
     @property
     def name(self):

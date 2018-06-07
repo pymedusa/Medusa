@@ -247,18 +247,20 @@ class BTNProvider(TorrentProvider):
             )
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            if error.message == (-32001, 'Invalid API Key'):
+            message = error.args[0]
+            if message == (-32001, 'Invalid API Key'):
                 log.warning('Incorrect authentication credentials.')
-            elif error.message == (-32002, 'Call Limit Exceeded'):
-                log.warning('You have exceeded the limit of'
-                            ' 150 calls per hour.')
+            elif message == (-32002, 'Call Limit Exceeded'):
+                log.warning('You have exceeded the limit of 150 calls per hour.')
+            elif isinstance(message, tuple) and message[1] in (524, ):
+                log.warning('Provider is currently unavailable. Error: {code} {text}',
+                            {'code': message[1], 'text': message[2]})
             else:
-                log.error('JSON-RPC protocol error while accessing provider.'
-                          ' Error: {msg!r}', {'msg': error.message})
+                log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
+                          {'msg': message})
 
-        except (socket.error, socket.timeout, ValueError) as error:
-            log.warning('Error while accessing provider.'
-                        ' Error: {msg}', {'msg': error})
+        except (socket.error, ValueError) as error:
+            log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})
         return parsed_json
 
 

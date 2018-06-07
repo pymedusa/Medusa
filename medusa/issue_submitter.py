@@ -110,7 +110,6 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
-        log.debug('Issues loaded from Github: {0}', len(issues))
         for issue in issues:
             if hasattr(issue, 'pull_request') and issue.pull_request:
                 continue
@@ -131,6 +130,8 @@ class IssueSubmitter(object):
 
             if len(results) >= len(loglines):
                 break
+
+        log.debug('Found {0} similar issues.', len(results))
 
         return results
 

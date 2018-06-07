@@ -80,10 +80,7 @@ class QBittorrentAPI(GenericClient):
 
         self.url = '{host}command/upload'.format(host=self.host)
         files = {
-            'torrents': (
-                '{result}.torrent'.format(result=result.name),
-                result.content,
-            ),
+            'torrents': result.content
         }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 

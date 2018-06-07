@@ -6,7 +6,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-<script src="js/lib/frisbee.min.js"></script>
+<script src="js/lib/frisbee@2.0.4.min.js"></script>
 <script src="js/lib/vue-frisbee.min.js"></script>
 <script src="js/vue-submit-form.js"></script>
 <script>
@@ -37,7 +37,7 @@ const startVue = () => {
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
-            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="/" accept-charset="utf-8">
+            <form id="addShowForm" method="post" action="addShows/addNewShow" redirect="home" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
