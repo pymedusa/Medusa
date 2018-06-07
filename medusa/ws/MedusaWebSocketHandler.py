@@ -1,40 +1,73 @@
 # coding=utf-8
 
-from __future__ import print_function
+"""WebSocket handler."""
+
 from __future__ import unicode_literals
 
-from tornado.websocket import WebSocketHandler
+import logging
+
+from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
+
+from tornado.websocket import WebSocketClosedError, WebSocketHandler
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 clients = []
 backlogged_msgs = []
 
 
-def push_to_web_socket(msg):
-    if len(clients):
-        for client in clients:
-            client.write_message(msg)
-    else:
+def push_to_websocket(msg):
+    """Push a message to all connected WebSocket clients."""
+    if not clients:
         # No clients so let's backlog this
-        backlogged_msgs.append(msg)
+        # @TODO: This has a chance to spam the user with notifications
+        # backlogged_msgs.append(msg)
+        return
+    main_io_loop = app.instance.web_server.io_loop
+    for client in clients:
+        main_io_loop.add_callback(client.write_message, msg)
 
 
 class WebSocketUIHandler(WebSocketHandler):
+    """WebSocket handler to send and receive data to and from a web client."""
+
     def check_origin(self, origin):
+        """Allow alternate origins."""
         return True
 
     def open(self, *args, **kwargs):
+        """Client connected to the WebSocket."""
         clients.append(self)
-        WebSocketHandler.open(self, *args, **kwargs)
-        if len(clients) == 0 and len(backlogged_msgs):
-            # We have pending messages and a new client
-            for msg in backlogged_msgs:
-                push_to_web_socket(msg)
+        super(WebSocketUIHandler, self).open(*args, **kwargs)
+        # If we have pending messages send them to the new client
+        for msg in backlogged_msgs:
+            try:
+                self.write_message(msg)
+            except WebSocketClosedError:
+                pass
+            else:
+                backlogged_msgs.remove(msg)
+
+    def write_message(self, message, binary=False):
+        """Send a message to the client."""
+        super(WebSocketUIHandler, self).write_message(message, binary)
 
     def on_message(self, message):
-        print(u"Received: " + message)
+        """Received a message from the client."""
+        log.debug('WebSocket received message from {client}: {message}',
+                  {'client': self.request.remote_ip, 'message': message})
 
     def data_received(self, chunk):
-        WebSocketHandler.data_received(self, chunk)
+        """Received a streamed data chunk from the client."""
+        super(WebSocketUIHandler, self).data_received(chunk)
 
     def on_close(self):
+        """Client disconnected from the WebSocket."""
         clients.remove(self)
+
+    def __repr__(self):
+        """Client representation."""
+        return '<{name} Client: {ip}>'.format(
+            name=type(self).__name__, ip=self.request.remote_ip)
