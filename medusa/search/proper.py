@@ -209,8 +209,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.proper_tags = cur_proper.parse_result.proper_tags
 
             # filter release, in this case, it's just a quality gate. As we only send one result.
-            wanted_result = filter_results(cur_proper)
-            best_result = pick_result(wanted_result)
+            wanted_results = filter_results(cur_proper)
+            best_result = pick_result(wanted_results)
 
             if not best_result:
                 log.info('Rejected proper: {name}', {'name': cur_proper.name})
