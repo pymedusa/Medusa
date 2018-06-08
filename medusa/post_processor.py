@@ -801,7 +801,7 @@ class PostProcessor(object):
         for episode in episodes:
             # First: check if the episode status is snatched
             tv_episodes_result = main_db_con.select(
-                'SELECT manually_searched '
+                'SELECT quality, manually_searched '
                 'FROM tv_episodes '
                 'WHERE indexer = ? '
                 'AND showid = ? '
@@ -817,55 +817,56 @@ class PostProcessor(object):
                 if tv_episodes_result[0][b'manually_searched'] == 1:
                     self.manually_searched = True
 
-                # Second: get the quality of the last snatched epsiode
-                # and compare it to the quality we are post-processing
-                history_result = main_db_con.select(
-                    'SELECT quality, info_hash '
-                    'FROM history '
-                    'WHERE indexer_id = ? '
-                    'AND showid = ? '
-                    'AND season = ? '
-                    'AND episode = ? '
-                    'AND action IN (?, ?, ?) '
-                    'ORDER BY date DESC',
-                    [series_obj.indexer, series_obj.series_id,
-                     season, episode] + snatched_statuses
-                )
-
-                if history_result and history_result[0][b'quality'] == quality:
-                    # Third: make sure the file we are post-processing hasn't been
-                    # previously processed, as we wouldn't want it in that case
-
-                    # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0][b'info_hash'] or None
-
-                    download_result = main_db_con.select(
-                        'SELECT resource '
+                if tv_episodes_result[0][b'quality'] == quality:
+                    # Second: get the quality of the last snatched epsiode
+                    # and compare it to the quality we are post-processing
+                    history_result = main_db_con.select(
+                        'SELECT quality, info_hash '
                         'FROM history '
                         'WHERE indexer_id = ? '
                         'AND showid = ? '
                         'AND season = ? '
                         'AND episode = ? '
-                        'AND quality = ? '
-                        'AND action = ? '
+                        'AND action IN (?, ?, ?) '
                         'ORDER BY date DESC',
                         [series_obj.indexer, series_obj.series_id,
-                         season, episode, quality, DOWNLOADED]
+                         season, episode] + snatched_statuses
                     )
 
-                    if download_result:
-                        download_name = os.path.basename(download_result[0][b'resource'])
-                        # If the file name we are processing differs from the file
-                        # that was previously processed, we want this file
-                        if self.file_name != download_name:
+                    if history_result and history_result[0][b'quality'] == quality:
+                        # Third: make sure the file we are post-processing hasn't been
+                        # previously processed, as we wouldn't want it in that case
+
+                        # Get info hash so we can move torrent if setting is enabled
+                        self.info_hash = history_result[0][b'info_hash'] or None
+
+                        download_result = main_db_con.select(
+                            'SELECT resource '
+                            'FROM history '
+                            'WHERE indexer_id = ? '
+                            'AND showid = ? '
+                            'AND season = ? '
+                            'AND episode = ? '
+                            'AND quality = ? '
+                            'AND action = ? '
+                            'ORDER BY date DESC',
+                            [series_obj.indexer, series_obj.series_id,
+                             season, episode, quality, DOWNLOADED]
+                        )
+
+                        if download_result:
+                            download_name = os.path.basename(download_result[0][b'resource'])
+                            # If the file name we are processing differs from the file
+                            # that was previously processed, we want this file
+                            if self.file_name != download_name:
+                                self.in_history = True
+                                return
+
+                        else:
+                            # There aren't any other files processed before for this
+                            # episode and quality, we can safely say we want this file
                             self.in_history = True
                             return
-
-                    else:
-                        # There aren't any other files processed before for this
-                        # episode and quality, we can safely say we want this file
-                        self.in_history = True
-                        return
 
     def _is_priority(self, old_ep_quality, new_ep_quality):
         """

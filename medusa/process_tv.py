@@ -498,7 +498,8 @@ class ProcessResult(object):
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT showid, season, episode, indexer_id FROM history '
+            'SELECT showid, season, episode, indexer_id '
+            'FROM history '
             'WHERE action = ? '
             'AND resource LIKE ?'
             'ORDER BY date DESC',
@@ -521,9 +522,10 @@ class ProcessResult(object):
                  history_result[0][b'episode']
                  ] + snatched_statuses
             )
-            if tv_episodes_result and tv_episodes_result[0][b'manually_searched'] == 0:
-                self.log("You're trying to post-process an automated searched file that has already"
-                         " been processed, skipping: {0}".format(video_file), logger.DEBUG)
+
+            if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
+                self.log("You're trying to post-process an automatically searched file that has"
+                         " already been processed, skipping: {0}".format(video_file), logger.DEBUG)
                 return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
