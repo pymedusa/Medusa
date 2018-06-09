@@ -345,6 +345,9 @@ def pick_result(results):
         log.debug(u'No results to pick from.')
         return
 
+    sorted_results = sorted(results, key=operator.attrgetter('quality'), reverse=True)
+    log.debug(u'Picking the best result out of {0}', [x.name for x in sorted_results])
+
     preferred_words = []
     if app.PREFERRED_WORDS:
         preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
@@ -352,11 +355,9 @@ def pick_result(results):
     if app.UNDESIRED_WORDS:
         undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
-    log.debug(u'Picking the best result out of {0}', [x.name for x in results])
-
     wanted_results = []
 
-    for result in sorted(results, key=operator.attrgetter('quality'), reverse=True):
+    for result in sorted_results:
         score = 0
 
         if any(word in result.name.lower() for word in undesired_words):
@@ -371,11 +372,11 @@ def pick_result(results):
             allowed_qualities, preferred_qualities = result.series.current_qualities
             if Quality.is_higher_quality(wanted_results[0][0].quality, result.quality,
                                          allowed_qualities, preferred_qualities):
-                log.info(u'Rewarding release {0} (higher quality)', result.name)
+                log.debug(u'Rewarding release {0} (higher quality)', result.name)
                 score += 1
 
             elif result.proper_tags and wanted_results[0][0].quality == result.quality:
-                log.info(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
+                log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
                 score += 1
 
         wanted_results.append((result, score))
@@ -387,6 +388,7 @@ def pick_result(results):
         u'\n{0}', '\n'.join('{score}\t{name}'.format(score=item[1], name=item[0].name)
                             for item in wanted_results)
     )
+
     best_result = wanted_results[0][0]
     log.debug(u'Picked {0} as the best result.', best_result.name)
 
@@ -883,7 +885,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             for i, result in enumerate(final_results):
                 if cur_ep in result.episodes:
                     result_candidates.append(result)
-                    final_results.pop(i)
+                    del final_results[i]
 
             best_result = pick_result(result_candidates + wanted_results)
 
