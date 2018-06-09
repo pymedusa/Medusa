@@ -18,15 +18,13 @@ from six import iteritems
     },
     {  # p1
         'config': {
-            'IGNORE_WORDS': ['dubbed'],
-            'PREFERRED_WORDS': [],
-            'UNDESIRED_WORDS': ['internal'],
+            'IGNORE_WORDS': ['dubbed', 'whatever'],
             'REQUIRE_WORDS': [],
         },
         'series': {
             'quality': HD1080p,
             'rls_ignore_words': 'BadRobot',  # Comma separated
-            'rls_require_words': 'h264',  # Comma separated
+            'rls_require_words': 'h264,x265',  # Comma separated
         },
         'provider': {
             'minseed': 5,
@@ -41,8 +39,22 @@ from six import iteritems
                 'leechers': 300,
             },
             {
+                'expected': True,
+                'name': 'Show.Name.S03E04.1080p.BluRay.x265-RlsGrp',
+                'quality': Quality.FULLHDBLURAY,
+                'seeders': 5,
+                'leechers': 5,
+            },
+            {
                 'expected': False,  # Global ignored word: dubbed
                 'name': 'Show.Name.S03E04.DUBBED.1080p.HDTV.h264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'seeders': 10,
+                'leechers': 20,
+            },
+            {
+                'expected': False,  # Global ignored word: whatever + Series required word: x265
+                'name': 'Show.Name.S03E04.whatever.1080p.HDTV.x265-RlsGrp',
                 'quality': Quality.FULLHDTV,
                 'seeders': 10,
                 'leechers': 20,
@@ -62,14 +74,14 @@ from six import iteritems
                 'leechers': 17,
             },
             {
-                'expected': False,  # Series required word: h264
+                'expected': False,  # Series required words
                 'name': 'Show.Name.S03E04.1080p.BluRay.h265-RlsGrp',
                 'quality': Quality.FULLHDBLURAY,
                 'seeders': 5,
                 'leechers': 5,
             },
             {
-                'expected': False,  # Quality
+                'expected': False,  # Unwanted quality
                 'name': 'Show.Name.S03E04.720p.HDTV.h264-RlsGrp',
                 'quality': Quality.HDTV,
                 'seeders': 10,
