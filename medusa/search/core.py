@@ -365,7 +365,7 @@ def pick_result(results):
             score -= 2
 
         if any(word in result.name.lower() for word in preferred_words):
-            log.debug(u'Rewarding release {0} (preferred word(s))', result.name)
+            log.debug(u'Rewarding release {0} (contains preferred word(s))', result.name)
             score += 2
 
         if wanted_results:
