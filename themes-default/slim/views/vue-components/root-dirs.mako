@@ -24,9 +24,9 @@
         </div>
         <div class="root-dirs-controls">
             <button type="button" class="btn-medusa" @click.prevent="add">New</button>
-            <button type="button" class="btn-medusa" @click.prevent="edit" :disabled="!rootDirs.length">Edit</button>
-            <button type="button" class="btn-medusa" @click.prevent="remove" :disabled="!rootDirs.length">Delete</button>
-            <button type="button" class="btn-medusa" @click.prevent="setDefault" :disabled="!rootDirs.length">Set as Default *</button>
+            <button type="button" class="btn-medusa" @click.prevent="edit" :disabled="!selectedRootDir">Edit</button>
+            <button type="button" class="btn-medusa" @click.prevent="remove" :disabled="!selectedRootDir">Delete</button>
+            <button type="button" class="btn-medusa" @click.prevent="setDefault" :disabled="!selectedRootDir">Set as Default *</button>
         </div>
         ## @TODO: Remove this element (use a Vue events to watch for changes)
         <input type="text" style="display: none;" id="rootDirText" :value="rootDirsValue" />
@@ -40,7 +40,7 @@ Vue.component('root-dirs', {
         const rawRootDirs = MEDUSA.config.rootDirs;
         let rootDirs = [];
         if (rawRootDirs.length) {
-            // Transform raw root dirs in the form of in array, to an array of objects
+            // Transform raw root dirs in the form of an array, to an array of objects
             defaultDir = parseInt(rawRootDirs[0], 10);
             rootDirs = rawRootDirs.slice(1)
                 .map((rd, index) => {
@@ -74,11 +74,11 @@ Vue.component('root-dirs', {
         },
         selectedRootDir: {
             get() {
-                if (!this.rootDirs.length) return null;
-                return this.rootDirs.find(rd => rd.selected).path;
+                const selectedDir = this.rootDirs.find(rd => rd.selected);
+                if (!selectedDir || this.rootDirs.length === 0) return null;
+                return selectedDir.path;
             },
             set(newRootDir) {
-                if (newRootDir === null && !this.rootDirs.length) return;
                 this.rootDirs = this.rootDirs
                     .map(rd => {
                         rd.selected = (rd.path === newRootDir);
@@ -88,11 +88,11 @@ Vue.component('root-dirs', {
         },
         defaultRootDir: {
             get() {
-                if (!this.rootDirs.length) return null;
-                return this.rootDirs.find(rd => rd.default).path;
+                const defaultDir = this.rootDirs.find(rd => rd.default);
+                if (!defaultDir || this.rootDirs.length === 0) return null;
+                return defaultDir.path;
             },
             set(newRootDir) {
-                if (newRootDir === null && !this.rootDirs.length) return;
                 this.rootDirs = this.rootDirs
                     .map(rd => {
                         rd.default = (rd.path === newRootDir);
@@ -166,7 +166,7 @@ Vue.component('root-dirs', {
             const filteredRootDirs = this.rootDirs.filter(rd => !rd.selected);
 
             // Pick a new selection, or null
-            if (filteredRootDirs.length) {
+            if (filteredRootDirs.length > 0) {
                 const newSelected = (oldDirIndex > 0) ? oldDirIndex - 1 : 0;
                 this.selectedRootDir = filteredRootDirs[newSelected].path;
             } else {
