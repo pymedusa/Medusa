@@ -224,7 +224,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
             fh.seek(file_size - offset)
             buf = fh.read(min(remaining_size, buf_size))
             if os.name == 'nt':
-                buf = buf.decode(sys.getfilesystemencoding())
+                buf = buf.decode(encoding, errors='replace')
             if not isinstance(buf, text_type):
                 buf = text_type(buf, errors='replace')
             remaining_size -= buf_size
