@@ -54,16 +54,15 @@ class InternalHandler(BaseRequestHandler):
     # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""
+        if not app.ROOT_DIRS:
+            return self._not_found('No configured root dirs')
+
+        root_dirs = app.ROOT_DIRS[1:]
         root_dirs_indices = self.get_argument('rootDirs', '')
 
         if root_dirs_indices:
             root_dirs_indices = set(root_dirs_indices.split(','))
 
-        if not app.ROOT_DIRS:
-            return self._not_found('No configured root dirs')
-
-        root_dirs = app.ROOT_DIRS[1:]
-        if root_dirs_indices:
             try:
                 root_dirs_indices = sorted(map(int, root_dirs_indices))
             except ValueError as error:
