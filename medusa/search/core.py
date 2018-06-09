@@ -347,8 +347,7 @@ def pick_result(results):
 
     log.debug(u'Picking the best result out of {0}', [x.name for x in results])
 
-    wanted_results = {}
-    sorted_results = []
+    wanted_results = []
 
     preferred_words = []
     if app.PREFERRED_WORDS:
@@ -358,31 +357,32 @@ def pick_result(results):
         undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
     for result in results:
-        wanted_results[result] = 0
+        score = 0
 
         if any(word in result.name.lower() for word in undesired_words):
             log.info(u'Penalizing release {0} (contains undesired word(s))', result.name)
-            wanted_results[result] -= 2
+            score -= 2
 
         if any(word in result.name.lower() for word in preferred_words):
             log.info(u'Rewarding release {0} (preferred word(s))', result.name)
-            wanted_results[result] += 2
+            score += 2
 
-        if sorted_results:
+        if wanted_results:
             allowed_qualities, preferred_qualities = result.series.current_qualities
-            if Quality.is_higher_quality(sorted_results[0][0].quality, result.quality,
+            if Quality.is_higher_quality(wanted_results[0][0].quality, result.quality,
                                          allowed_qualities, preferred_qualities):
                 log.info(u'Rewarding release {0} (higher quality)', result.name)
-                wanted_results[result] += 1
+                score += 1
 
-            elif result.proper_tags and sorted_results[0][0].quality == result.quality:
+            elif result.proper_tags and wanted_results[0][0].quality == result.quality:
                 log.info(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
-                wanted_results[result] += 1
+                score += 1
 
-        sorted_results = sorted(iteritems(wanted_results), key=operator.itemgetter(1), reverse=True)
+        wanted_results.append((result, score))
+        wanted_results.sort(key=operator.itemgetter(1), reverse=True)
 
-    best_result = sorted_results[0][0]
-    log.debug(u'Picked {0} as the best result.', best_result)
+    best_result = wanted_results[0][0]
+    log.debug(u'Picked {0} as the best result.', best_result.name)
 
     return best_result
 
