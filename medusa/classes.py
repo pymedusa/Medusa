@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import logging
-from builtins import object
 
 from dateutil import parser
 
@@ -185,6 +184,17 @@ class SearchResult(object):
         my_string += u'Release Group: {0}\n'.format(self.release_group)
 
         return my_string
+
+    # Python 2 compatibility
+    __unicode__ = __str__
+
+    def __repr__(self):
+        if not self.provider:
+            result = '{0}'.format(self.name)
+        else:
+            result = '{0} from {1}'.format(self.name, self.provider.name)
+
+        return '<{0}: {1}>'.format(type(self).__name__, result)
 
     def file_name(self):
         return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
