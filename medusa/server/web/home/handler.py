@@ -1649,6 +1649,7 @@ class Home(WebRoot):
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
+                        changed_location = False
                         logger.log("New location '{location}' does not exist. "
                                    "Enable setting 'Create missing show dirs'".format
                                    (location=location), logger.WARNING)
@@ -1973,7 +1974,7 @@ class Home(WebRoot):
 
                     if status == DOWNLOADED and not (
                             ep_obj.status in snatched_qualities + [DOWNLOADED]
-                            and os.path.isfile(ep_obj.location)):
+                            or os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)

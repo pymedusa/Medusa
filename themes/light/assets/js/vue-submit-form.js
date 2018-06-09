@@ -14,10 +14,19 @@ window.vueSubmitForm = async function(formId) {
     // }), {});
     this.$http[method](path, { body: formData, redirect: 'follow' })
         .then(resp => {
-            // If the new url differs from our current url and the form action - we've been redirected
-            if (resp.url !== window.location.href && resp.url !== base + path) {
-                window.location.href = resp.url;
-            } else if (redirect) {
+            try {
+                const json = JSON.parse(resp.body);
+                const { redirect } = json;
+                if (redirect) {
+                    window.location.href = base + redirect;
+                    return;
+                }
+            } catch (e) {
+                // Ignore
+            }
+
+            // Fallback
+            if (redirect) {
                 window.location.href = base + redirect;
             }
         });
