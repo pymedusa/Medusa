@@ -1649,6 +1649,7 @@ class Home(WebRoot):
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
+                        changed_location = False
                         logger.log("New location '{location}' does not exist. "
                                    "Enable setting 'Create missing show dirs'".format
                                    (location=location), logger.WARNING)
