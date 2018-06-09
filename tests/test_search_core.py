@@ -4,12 +4,12 @@
 import functools
 import logging
 
-from medusa.common import Quality
+from medusa.common import HD1080p, Quality
 from medusa.search.core import filter_results, pick_result
 
-from six import iteritems
-
 import pytest
+
+from six import iteritems
 
 
 @pytest.mark.parametrize('p', [
@@ -24,10 +24,9 @@ import pytest
             'REQUIRE_WORDS': [],
         },
         'series': {
-            'qualities_allowed': [Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY],
-            'qualities_preferred': [],
-            'release_ignore_words': 'BadRobot',
-            'release_required_words': 'h264',
+            'quality': HD1080p,
+            'rls_ignore_words': 'BadRobot',  # Comma separated
+            'rls_require_words': 'h264',  # Comma separated
         },
         'provider': {
             'minseed': 5,
@@ -79,7 +78,7 @@ import pytest
         ]
     },
 ])
-def test_filter_results(p, app_config, create_search_result, search_provider, tvshow, tvepisode, caplog):
+def test_filter_results(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
 
     caplog.set_level(logging.DEBUG, logger='medusa')
 
@@ -89,8 +88,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, tv
         app_config(attr, value)
 
     series_attrs = p.get('series', {})
-    for attr, value in iteritems(series_attrs):
-        setattr(tvshow, attr, value)
+    series = create_tvshow(**series_attrs)
 
     provider_attrs = p.get('provider', {})
 
@@ -102,7 +100,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, tv
 
         result = create_search_result(
             provider=search_provider(**provider_attrs),
-            series=tvshow,
+            series=series,
             episodes=[tvepisode],
             **item
         )
@@ -129,8 +127,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, tv
             'UNDESIRED_WORDS': ['internal'],
         },
         'series': {
-            'qualities_allowed': [Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY],
-            'qualities_preferred': []
+            'quality': HD1080p,
         },
         'expected': 3,  # Index of the expected result
         'results': [
@@ -154,7 +151,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, tv
         ]
     },
 ])
-def test_pick_result(p, app_config, create_search_result, search_provider, tvshow, tvepisode, caplog):
+def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
 
     caplog.set_level(logging.DEBUG, logger='medusa')
 
@@ -164,15 +161,14 @@ def test_pick_result(p, app_config, create_search_result, search_provider, tvsho
         app_config(attr, value)
 
     series_attrs = p.get('series', {})
-    for attr, value in iteritems(series_attrs):
-        setattr(tvshow, attr, value)
+    series = create_tvshow(**series_attrs)
 
     provider_attrs = p.get('provider', {})
 
     make_result = functools.partial(
         create_search_result,
         provider=search_provider(**provider_attrs),
-        series=tvshow,
+        series=series,
         episodes=[tvepisode]
     )
 
