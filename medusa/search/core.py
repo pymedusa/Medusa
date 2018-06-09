@@ -883,7 +883,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             result_candidates = []
             for i, result in enumerate(final_results):
-                if cur_ep in result.episodes:
+                if cur_ep in result.actual_episodes:
                     result_candidates.append(result)
                     del final_results[i]
 
