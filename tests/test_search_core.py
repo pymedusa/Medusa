@@ -84,12 +84,12 @@ def test_filter_results(p, app_config, create_search_result, search_provider, tv
     caplog.set_level(logging.DEBUG, logger='medusa')
 
     # Given
-    config_atts = p.get('config', {})
-    for attr, value in iteritems(config_atts):
+    config_attrs = p.get('config', {})
+    for attr, value in iteritems(config_attrs):
         app_config(attr, value)
 
-    series_atts = p.get('series', {})
-    for attr, value in iteritems(series_atts):
+    series_attrs = p.get('series', {})
+    for attr, value in iteritems(series_attrs):
         setattr(tvshow, attr, value)
 
     provider_attrs = p.get('provider', {})
@@ -159,12 +159,12 @@ def test_pick_result(p, app_config, create_search_result, search_provider, tvsho
     caplog.set_level(logging.DEBUG, logger='medusa')
 
     # Given
-    config_atts = p.get('config', {})
-    for attr, value in iteritems(config_atts):
+    config_attrs = p.get('config', {})
+    for attr, value in iteritems(config_attrs):
         app_config(attr, value)
 
-    series_atts = p.get('series', {})
-    for attr, value in iteritems(series_atts):
+    series_attrs = p.get('series', {})
+    for attr, value in iteritems(series_attrs):
         setattr(tvshow, attr, value)
 
     provider_attrs = p.get('provider', {})
