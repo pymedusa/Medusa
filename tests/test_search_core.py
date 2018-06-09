@@ -133,10 +133,10 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
         'results': [],
         'expected': None
     },
-    {  # p1
+    {  # p1 - same quality - proper tags / preferred words / undesired words
         'config': {
-            'PREFERRED_WORDS': ['x265'],
-            'UNDESIRED_WORDS': ['internal'],
+            'PREFERRED_WORDS': ['x265', 'h265'],
+            'UNDESIRED_WORDS': ['internal', 'subbed'],
         },
         'series': {
             'quality': HD1080p,
@@ -153,15 +153,108 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
                 'proper_tags': ['REPACK']
             },
             {  # 2 - Global undesired word: internal
-                'name': 'Show.Name.S03E04.1080p.iNTERNAL.WEB-DL.h264-RlsGrp',
-                'quality': Quality.FULLHDWEBDL
+                'name': 'Show.Name.S03E04.iNTERNAL.1080p.HDTV.h264-RlsGrp',
+                'quality': Quality.FULLHDTV
             },
             {  # 3 - Global preferred word: x265
-                'name': 'Show.Name.S03E04.1080p.WEB-DL.x265-RlsGrp',
-                'quality': Quality.FULLHDWEBDL
-            }
+                'name': 'Show.Name.S03E04.1080p.HDTV.x265-RlsGrp',
+                'quality': Quality.FULLHDTV
+            },
         ]
     },
+    {  # p2 - quality upgrades + proper tags + words
+        'config': {
+            'PREFERRED_WORDS': ['x265', 'h265'],
+            'UNDESIRED_WORDS': ['internal', 'subbed'],
+        },
+        'series': {
+            'quality': HD1080p,
+        },
+        'expected': 4,  # Index of the expected result
+        'results': [
+            {  # 0 - Preferred: x265 + Proper tag: PROPER
+                'name': 'Show.Name.S03E04.PROPER.1080p.WEB-DL.x265-RlsGrp',
+                'quality': Quality.FULLHDWEBDL,
+                'proper_tags': ['PROPER']
+            },
+            {  # 1 - Preferred: x265 + Better quality
+                'name': 'Show.Name.S03E04.1080p.BluRay.x265-RlsGrp',
+                'quality': Quality.FULLHDBLURAY
+            },
+            {  # 2 - Better quality
+                'name': 'Show.Name.S03E04.1080p.BluRay.h264-RlsGrp',
+                'quality': Quality.FULLHDBLURAY
+            },
+            {  # 3 - Preferred: h265 + Better quality + Undesired: subbed
+                'name': 'Show.Name.S03E04.1080p.BluRay.h265.SUBBED-RlsGrp',
+                'quality': Quality.FULLHDBLURAY
+            },
+            {  # 4 - Preferred: h265 + Better quality + Proper tag: REPACK
+                'name': 'Show.Name.S03E04.REPACK.1080p.BluRay.h265-RlsGrp',
+                'quality': Quality.FULLHDBLURAY,
+                'proper_tags': ['REPACK']
+            },
+            {  # 5 - Preferred: h265 + Undesired: subbed
+                'name': 'Show.Name.S03E04.1080p.WEB-DL.h265.SUBBED-RlsGrp',
+                'quality': Quality.FULLHDWEBDL
+            },
+        ]
+    },
+    {  # p3 - everything undesired
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': ['internal', 'subbed'],
+        },
+        'series': {
+            'quality': HD1080p,
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.iNTERNAL.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.1080p.HDTV.x264.SUBBED-RlsGrp',
+                'quality': Quality.FULLHDTV
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.iNTERNAL.1080p.WEB-DL.x264-RlsGrp',
+                'quality': Quality.FULLHDWEBDL
+            },
+        ]
+    },
+    {  # p4 - preferred lower quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': Quality.combine_qualities(
+                [Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY],
+                [Quality.HDTV]
+            ),
+        },
+        'expected': 1,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.1080p.WEB-DL.x264-RlsGrp',
+                'quality': Quality.FULLHDWEBDL
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV
+            },
+            {  # 3
+                'name': 'Show.Name.S03E04.1080p.BluRay.x264-RlsGrp',
+                'quality': Quality.FULLHDBLURAY
+            },
+        ]
+    }
 ])
 def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
 

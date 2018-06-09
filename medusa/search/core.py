@@ -345,10 +345,6 @@ def pick_result(results):
         log.debug(u'No results to pick from.')
         return
 
-    log.debug(u'Picking the best result out of {0}', [x.name for x in results])
-
-    wanted_results = []
-
     preferred_words = []
     if app.PREFERRED_WORDS:
         preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
@@ -356,7 +352,11 @@ def pick_result(results):
     if app.UNDESIRED_WORDS:
         undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
-    for result in results:
+    log.debug(u'Picking the best result out of {0}', [x.name for x in results])
+
+    wanted_results = []
+
+    for result in sorted(results, key=operator.attrgetter('quality'), reverse=True):
         score = 0
 
         if any(word in result.name.lower() for word in undesired_words):
@@ -381,6 +381,12 @@ def pick_result(results):
         wanted_results.append((result, score))
         wanted_results.sort(key=operator.itemgetter(1), reverse=True)
 
+    log.debug(
+        u'Computed result scores:'
+        u'\nScore\tRelease'
+        u'\n{0}', '\n'.join('{score}\t{name}'.format(score=item[1], name=item[0].name)
+                            for item in wanted_results)
+    )
     best_result = wanted_results[0][0]
     log.debug(u'Picked {0} as the best result.', best_result.name)
 
