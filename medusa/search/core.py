@@ -361,11 +361,11 @@ def pick_result(results):
         score = 0
 
         if any(word in result.name.lower() for word in undesired_words):
-            log.info(u'Penalizing release {0} (contains undesired word(s))', result.name)
+            log.debug(u'Penalizing release {0} (contains undesired word(s))', result.name)
             score -= 2
 
         if any(word in result.name.lower() for word in preferred_words):
-            log.info(u'Rewarding release {0} (preferred word(s))', result.name)
+            log.debug(u'Rewarding release {0} (preferred word(s))', result.name)
             score += 2
 
         if wanted_results:
@@ -390,7 +390,7 @@ def pick_result(results):
     )
 
     best_result = wanted_results[0][0]
-    log.debug(u'Picked {0} as the best result.', best_result.name)
+    log.info(u'Picked {0} as the best result.', best_result.name)
 
     return best_result
 
