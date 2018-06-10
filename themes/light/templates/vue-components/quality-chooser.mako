@@ -224,13 +224,13 @@ Vue.component('quality-chooser', {
             // If preset is custom set to last preset
             if (parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset))) preset = oldPreset;
 
-            // Convert values to int, and filter selected/prefrred qualities
+            // Convert values to unsigned int, and filter selected/prefrred qualities
             this.allowedQualities = Object.keys(this.qualityStrings)
-                .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & quality) > 0);
+                .map(quality => quality >>> 0)
+                .filter(quality => ( (preset & quality) >>> 0 ) > 0);
             this.preferredQualities = Object.keys(this.qualityStrings)
-                .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & (quality << 16)) > 0);
+                .map(quality => quality >>> 0)
+                .filter(quality => ( (preset & (quality << 16)) >>> 0) > 0);
         }
     },
     watch: {
