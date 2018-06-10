@@ -24,8 +24,12 @@ from datetime import date
 
 from medusa import app
 from medusa.common import (
-    Quality,
+    ARCHIVED,
+    DOWNLOADED,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     WANTED,
 )
 from medusa.db import DBConnection
@@ -151,12 +155,12 @@ class Show(object):
         shows = app.showList
         today = date.today().toordinal()
 
-        downloaded_status = Quality.DOWNLOADED + Quality.ARCHIVED
-        snatched_status = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+        downloaded_status = [DOWNLOADED, ARCHIVED]
+        snatched_status = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         total_status = [SKIPPED, WANTED]
 
         results = db.select(
-            'SELECT airdate, status '
+            'SELECT airdate, status, quality '
             'FROM tv_episodes '
             'WHERE season > 0 '
             'AND episode > 0 '

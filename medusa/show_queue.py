@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
+import logging
 import os
 import traceback
 from builtins import object
@@ -26,7 +27,6 @@ from imdbpie.exceptions import ImdbAPIError
 from medusa import (
     app,
     generic_queue,
-    logger,
     name_cache,
     notifiers,
     scene_numbering,
@@ -58,13 +58,18 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowAllreadyInLibrary,
     IndexerShowIncomplete,
+    IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.tv import Series
 
 from six import binary_type, text_type, viewitems
 
 from traktor import TraktException
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class ShowQueueActions(object):
@@ -176,20 +181,21 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
-                u"{show_name} is still being added, wait until it is finished before you update."
-                .format(show_name=show.name))
+                '{show_name} is still being added,'
+                ' wait until it is finished before you update.'.format(show_name=show.name)
+            )
 
         if self.isBeingUpdated(show):
             raise CantUpdateShowException(
-                u"{show_name} is already being updated by Post-processor or manually started, "
-                u"can't update again until it's done."
-                .format(show_name=show.name))
+                "{show_name} is already being updated by Post-processor or manually started,"
+                " can't update again until it's done.".format(show_name=show.name)
+            )
 
         if self.isInUpdateQueue(show):
             raise CantUpdateShowException(
-                u"{show_name} is in process of being updated by Post-processor or manually started, "
-                u"can't update again until it's done."
-                .format(show_name=show.name))
+                "{show_name} is in process of being updated by Post-processor or manually started,"
+                " can't update again until it's done.".format(show_name=show.name)
+            )
 
         queue_item_update_show = QueueItemUpdate(show) if season is None else QueueItemSeasonUpdate(show, season)
 
@@ -200,18 +206,16 @@ class ShowQueue(generic_queue.GenericQueue):
     def refreshShow(self, show, force=False):
 
         if self.isBeingRefreshed(show) and not force:
-            raise CantRefreshShowException("This show is already being refreshed, not refreshing again.")
+            raise CantRefreshShowException('This show is already being refreshed, not refreshing again.')
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
-            logger.log(
-                u"A refresh was attempted but there is already an update queued or in progress. "
-                u"Since updates do a refresh at the end anyway I'm skipping this request.", logger.DEBUG)
+            log.debug("A refresh was attempted but there is already an update queued or in progress."
+                      " Since updates do a refresh at the end anyway I'm skipping this request.")
             return
 
         queueItemObj = QueueItemRefresh(show, force=force)
 
-        logger.log(u"{id}: Queueing show refresh for {show}".format
-                   (id=show.series_id, show=show.name), logger.DEBUG)
+        log.debug('{id}: Queueing show refresh for {show}', {'id': show.series_id, 'show': show.name})
 
         self.add_item(queueItemObj)
 
@@ -250,16 +254,16 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def removeShow(self, show, full=False):
         if show is None:
-            raise CantRemoveShowException(u'Failed removing show: Show does not exist')
+            raise CantRemoveShowException('Failed removing show: Show does not exist')
 
-        if not hasattr(show, u'indexerid'):
-            raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
+        if not hasattr(show, 'indexerid'):
+            raise CantRemoveShowException('Failed removing show: Show does not have an indexer id')
 
         if self.isBeingRemoved(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.series_id))
+            raise CantRemoveShowException('[{!s}]: Show is already being removed'.format(show.series_id))
 
         if self.isInRemoveQueue(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.series_id))
+            raise CantRemoveShowException('[{!s}]: Show is already queued to be removed'.format(show.series_id))
 
         # remove other queued actions for this show.
         for item in self.queue:
@@ -364,8 +368,12 @@ class QueueItemAdd(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"Starting to add show {0}".format(u"by ShowDir: {0}".format(self.showDir) if self.showDir else
-                   u"by Indexer Id: {0}".format(self.indexer_id)))
+        log.info(
+            'Starting to add show by {0}',
+            ('ShowDir: {0}'.format(self.showDir)
+             if self.showDir else
+             'Indexer Id: {0}'.format(self.indexer_id))
+        )
 
         # make sure the Indexer IDs are valid
         try:
@@ -373,9 +381,10 @@ class QueueItemAdd(ShowQueueItem):
             if self.lang:
                 l_indexer_api_params['language'] = self.lang
 
-            logger.log(u"{indexer_name}: {indexer_params!r}".format(
-                indexer_name=indexerApi(self.indexer).name, indexer_params=l_indexer_api_params
-            ))
+            log.info('{indexer_name}: {indexer_params!r}', {
+                'indexer_name': indexerApi(self.indexer).name,
+                'indexer_params': l_indexer_api_params
+            })
 
             indexer_api = indexerApi(self.indexer).indexer(**l_indexer_api_params)
             s = indexer_api[self.indexer_id]
@@ -388,34 +397,41 @@ class QueueItemAdd(ShowQueueItem):
                     self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
                     dir_exists = make_dir(self.showDir)
                     if not dir_exists:
-                        logger.log(u"Unable to create the folder {0}, can't add the show".format(self.showDir))
+                        log.info("Unable to create the folder {0}, can't add the show", self.showDir)
                         return
 
                     chmod_as_parent(self.showDir)
                 else:
-                    logger.log(u"Unable to get a show {0}, can't add the show".format(self.showDir))
+                    log.info("Unable to get a show {0}, can't add the show", self.showDir)
                     return
 
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
             # has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
-                logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
-                           (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
+                log.error(
+                    'Show in {path} has no name on {indexer}, probably searched with the wrong language.',
+                    {'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
+                )
 
-                ui.notifications.error(u'Unable to add show',
-                                       u'Show in {0} has no name on {1}, probably the wrong language. \
-                                       Delete .nfo and manually add the correct language.'
-                                       .format(self.showDir, indexerApi(self.indexer).name))
+                ui.notifications.error(
+                    'Unable to add show',
+                    'Show in {path} has no name on {indexer}, probably the wrong language.'
+                    ' Delete .nfo and manually add the correct language.'.format(
+                        path=self.showDir, indexer=indexerApi(self.indexer).name)
+                )
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
             if not s:
-                logger.log(u"Show {series_name} is on {indexer_name} but contains no season/episode data.".format(
-                    series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
+                log.info(
+                    'Show {series_name} is on {indexer_name} but contains no season/episode data.',
+                    {'series_name': s['seriesname'], 'indexer_name': indexerApi(self.indexer).name}
                 )
-                ui.notifications.error(u"Unable to add show",
-                                       u"Show {0} is on {1} but contains no season/episode data.".
-                                       format(s['seriesname'], indexerApi(self.indexer).name))
+                ui.notifications.error(
+                    'Unable to add show',
+                    'Show {series_name} is on {indexer_name} but contains no season/episode data.'.format(
+                        series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
+                )
                 self._finishEarly()
 
                 return
@@ -423,12 +439,15 @@ class QueueItemAdd(ShowQueueItem):
             # Check if we can already find this show in our current showList.
             try:
                 check_existing_shows(s, self.indexer)
-            except IndexerShowAllreadyInLibrary as e:
-                logger.log(u"Could not add the show %s, as it already is in your library."
-                           u" Error: %s" % (s['seriesname'], e.message), logger.WARNING)
+            except IndexerShowAllreadyInLibrary as error:
+                log.warning(
+                    'Could not add the show {series}, as it already is in your library.'
+                    ' Error: {error}',
+                    {'series': s['seriesname'], 'error': error}
+                )
                 ui.notifications.error(
                     'Unable to add show',
-                    'reason: {0}' .format(e.message)
+                    'reason: {0}'.format(error)
                 )
                 self._finishEarly()
 
@@ -437,37 +456,57 @@ class QueueItemAdd(ShowQueueItem):
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
-        except IndexerShowIncomplete as e:
-            logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
+        except IndexerShowNotFound as error:
+            log.warning(
+                '{id}: Unable to look up the show in {path} using id {id} on {indexer}.'
+                ' Delete metadata files from the folder and try adding it again.',
+                {'id': self.indexer_id, 'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
+            )
             ui.notifications.error(
-                u"Unable to add show",
-                u"Unable to look up the show in {0} on {1} using ID {2} "
-                u"Reason: {3}"
-                .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, e.message)
+                'Unable to add show',
+                'Unable to look up the show in {path} using id {id} on {indexer}.'
+                ' Delete metadata files from the folder and try adding it again.'.format(
+                    path=self.showDir, id=self.indexer_id, indexer=indexerApi(self.indexer).name)
             )
             self._finishEarly()
             return
-        except IndexerShowNotFoundInLanguage as e:
-            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
-                       u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (id=self.indexer_id, indexer=indexerApi(self.indexer).name,
-                        language=e.language, error_msg=e.message), logger.WARNING)
-            ui.notifications.error(u'Error adding show!',
-                                   u'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
-                                   format(indexer_id=self.indexer_id,
-                                          indexer=indexerApi(self.indexer).name,
-                                          language=e.language))
+        except IndexerShowIncomplete as error:
+            log.warning(
+                '{id}: Error while loading information from indexer {indexer}. Error: {error}',
+                {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add show',
+                'Unable to look up the show in {path} on {indexer} using ID {id}'
+                ' Reason: {error}'.format(
+                    path=self.showDir, indexer=indexerApi(self.indexer).name,
+                    id=self.indexer_id, error=error)
+            )
             self._finishEarly()
             return
-        except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.ERROR)
+        except IndexerShowNotFoundInLanguage as error:
+            log.warning(
+                '{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide'
+                ' show information in the searched language {language}. Aborting: {error_msg}',
+                {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name,
+                 'language': error.language, 'error_msg': error}
+            )
             ui.notifications.error(
-                u"Unable to add show",
-                u"Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
-                u"Delete .nfo and try adding manually again.".
-                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+                'Error adding show!',
+                'Unable to add show {indexer_id} on {indexer} with this language: {language}'.format(
+                    indexer_id=self.indexer_id, indexer=indexerApi(self.indexer).name, language=error.language)
+            )
+            self._finishEarly()
+            return
+        except Exception as error:
+            log.error(
+                '{id}: Error while loading information from indexer {indexer}. Error: {error!r}',
+                {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add show',
+                'Unable to look up the show in {path} on {indexer} using ID {id}.'.format(
+                    path=self.showDir, indexer=indexerApi(self.indexer).name, id=self.indexer_id)
             )
             self._finishEarly()
             return
@@ -489,8 +528,10 @@ class QueueItemAdd(ShowQueueItem):
             self.show.paused = self.paused if self.paused is not None else False
 
             # set up default new/missing episode status
-            logger.log(u"Setting all previously aired episodes to the specified status: {status}".format
-                       (status=statusStrings[self.default_status]))
+            log.info(
+                'Setting all previously aired episodes to the specified status: {status}',
+                {'status': statusStrings[self.default_status]}
+            )
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
@@ -508,48 +549,52 @@ class QueueItemAdd(ShowQueueItem):
             # if self.show.classification and "sports" in self.show.classification.lower():
             #     self.show.sports = 1
 
-        except IndexerException as e:
-            logger.log(
-                u"Unable to add show due to an error with " + indexerApi(self.indexer).name + ": " + e.message,
-                logger.ERROR)
-            if self.show:
-                ui.notifications.error(
-                    u"Unable to add {series_name} due to an error with {indexer_name}".format(
-                        series_name=self.show.name, indexer_name=indexerApi(self.indexer).name
-                    )
+        except IndexerException as error:
+            log.error(
+                'Unable to add show due to an error with {indexer}: {error}',
+                {'indexer': indexerApi(self.indexer).name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add {series_name} due to an error with {indexer_name}'.format(
+                    series_name=self.show.name if self.show else 'show',
+                    indexer_name=indexerApi(self.indexer).name
                 )
-            else:
-                ui.notifications.error(
-                    u"Unable to add show due to an error with {indexer_name}".format(indexer_name=indexerApi(self.indexer).name)
-                )
+            )
             self._finishEarly()
             return
 
         except MultipleShowObjectsException:
-            logger.log(u"The show in {show_dir} is already in your show list, skipping".format(show_dir=self.showDir), logger.WARNING)
-            ui.notifications.error(u'Show skipped', u"The show in {show_dir} is already in your show list".format(show_dir=self.showDir))
+            log.warning(
+                'The show in {show_dir} is already in your show list, skipping',
+                {'show_dir': self.showDir}
+            )
+            ui.notifications.error(
+                'Show skipped',
+                'The show in {show_dir} is already in your show list'.format(
+                    show_dir=self.showDir)
+            )
             self._finishEarly()
             return
 
-        except Exception as e:
-            logger.log(u"Error trying to add show: " + e.message, logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+        except Exception as error:
+            log.error('Error trying to add show: {0}', error)
+            log.debug(traceback.format_exc())
             self._finishEarly()
             raise
 
-        logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
+        log.debug('Retrieving show info from IMDb')
         try:
             self.show.load_imdb_info()
-        except ImdbAPIError as e:
-            logger.log(u"Something wrong on IMDb api: " + e.message, logger.INFO)
-        except Exception as e:
-            logger.log(u"Error loading IMDb info: " + e.message, logger.ERROR)
+        except ImdbAPIError as error:
+            log.info('Something wrong on IMDb api: {0}', error)
+        except Exception as error:
+            log.error('Error loading IMDb info: {0}', error)
 
         try:
             self.show.save_to_db()
-        except Exception as e:
-            logger.log(u"Error saving the show to the database: " + e.message, logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+        except Exception as error:
+            log.error('Error saving the show to the database: {0}', error)
+            log.debug(traceback.format_exc())
             self._finishEarly()
             raise
 
@@ -558,25 +603,26 @@ class QueueItemAdd(ShowQueueItem):
 
         try:
             self.show.load_episodes_from_indexer(tvapi=indexer_api)
-        except Exception as e:
-            logger.log(
-                u"Error with " + indexerApi(self.show.indexer).name + u", not creating episode list: " + e.message,
-                logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+        except Exception as error:
+            log.error(
+                'Error with {indexer}, not creating episode list: {error}',
+                {'indexer': indexerApi(self.show.indexer).name, 'error': error}
+            )
+            log.debug(traceback.format_exc())
 
         # update internal name cache
         name_cache.build_name_cache(self.show)
 
         try:
             self.show.load_episodes_from_dir()
-        except Exception as e:
-            logger.log(u"Error searching dir for episodes: " + e.message, logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+        except Exception as error:
+            log.error('Error searching dir for episodes: {0}', error)
+            log.debug(traceback.format_exc())
 
         # if they set default ep status to WANTED then run the backlog to search for episodes
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
-            logger.log(u"Launching backlog for this show since its episodes are WANTED")
+            log.info('Launching backlog for this show since its episodes are WANTED')
             app.backlog_search_scheduler.action.search_backlog([self.show])
 
         self.show.write_metadata()
@@ -594,7 +640,7 @@ class QueueItemAdd(ShowQueueItem):
                 app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
 
             if app.TRAKT_SYNC_WATCHLIST:
-                logger.log(u"update watchlist")
+                log.info('update watchlist')
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
         # Load XEM data to DB for show
@@ -631,7 +677,10 @@ class QueueItemRefresh(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"{id}: Performing refresh on {show}".format(id=self.show.series_id, show=self.show.name))
+        log.info(
+            '{id}: Performing refresh on {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
         try:
             self.show.refresh_dir()
@@ -642,9 +691,11 @@ class QueueItemRefresh(ShowQueueItem):
 
             # Load XEM data to DB for show
             scene_numbering.xem_refresh(self.show)
-        except Exception as e:
-            logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
-                       (id=self.show.series_id, show=self.show.name, error_msg=e.message), logger.ERROR)
+        except Exception as error:
+            log.error(
+                '{id}: Error while refreshing show {show}. Error: {error_msg}',
+                {'id': self.show.series_id, 'show': self.show.name, 'error_msg': error}
+            )
 
         self.finish()
 
@@ -657,12 +708,18 @@ class QueueItemRename(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"Performing rename on " + self.show.name)
+        log.info(
+            'Performing rename on {series_name}',
+            {'series_name': self.show.name}
+        )
 
         try:
             self.show.location
         except ShowDirectoryNotFoundException:
-            logger.log(u"Can't perform rename on {series_name} when the show dir is missing.".format(series_name=self.show.name), logger.WARNING)
+            log.warning(
+                "Can't perform rename on {series_name} when the show dir is missing.",
+                {'series_name': self.show.name}
+            )
             return
 
         ep_obj_rename_list = []
@@ -698,8 +755,10 @@ class QueueItemSubtitle(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u'{id}: Downloading subtitles for {show}'.format
-                   (id=self.show.series_id, show=self.show.name), logger.INFO)
+        log.info(
+            '{id}: Downloading subtitles for {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
         self.show.download_subtitles()
         self.finish()
@@ -718,80 +777,107 @@ class QueueItemUpdate(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u'{id}: Beginning update of {show}'.format(id=self.show.series_id,
-                   show=self.show.name), logger.DEBUG)
+        log.debug(
+            '{id}: Beginning update of {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
-        logger.log(u'{id}: Retrieving show info from {indexer}'.format
-                   (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name),
-                   logger.DEBUG)
+        log.debug(
+            '{id}: Retrieving show info from {indexer}',
+            {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name}
+        )
         try:
             # Let's make sure we refresh the indexer_api object attached to the show object.
             self.show.create_indexer()
             self.show.load_from_indexer()
-        except IndexerError as e:
-            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerError as error:
+            log.warning(
+                '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name, 'error_msg': error}
+            )
             return
-        except IndexerAttributeNotFound as e:
-            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerAttributeNotFound as error:
+            log.warning(
+                '{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name, 'error_msg': error}
+            )
             return
-        except IndexerShowNotFoundInLanguage as e:
-            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
-                       u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        language=e.language, error_msg=e.message), logger.WARNING)
-            ui.notifications.error(u'Error changing language show!',
-                                   u'Unable to change language for show {show_name} on {indexer} to language: {language}'.
-                                   format(show_name=self.show.name,
-                                          indexer=indexerApi(self.show.indexer).name,
-                                          language=e.language))
+        except IndexerShowNotFoundInLanguage as error:
+            log.warning(
+                '{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide'
+                ' show information in the searched language {language}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'language': error.language, 'error_msg': error}
+            )
+            ui.notifications.error(
+                'Error changing language show!',
+                'Unable to change language for show {show_name}'
+                ' on {indexer} to language: {language}'.format(
+                    show_name=self.show.name, indexer=indexerApi(self.show.indexer).name,
+                    language=error.language)
+            )
             return
 
-        logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.series_id), logger.DEBUG)
+        log.debug(
+            '{id}: Retrieving show info from IMDb',
+            {'id': self.show.series_id}
+        )
         try:
             self.show.load_imdb_info()
-        except ImdbAPIError as e:
-            logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.INFO)
-        except Exception as e:
-            logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
+        except ImdbAPIError as error:
+            log.info(
+                '{id}: Something wrong on IMDb api: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+        except Exception as error:
+            log.warning(
+                '{id}: Error loading IMDb info: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
 
         # have to save show before reading episodes from db
         try:
-            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.series_id), logger.DEBUG)
+            log.debug(
+                '{id}: Saving new IMDb show info to database',
+                {'id': self.show.series_id}
+            )
             self.show.save_to_db()
-        except Exception as e:
-            logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
-            logger.log(traceback.format_exc(), logger.ERROR)
+        except Exception as error:
+            log.warning(
+                '{id}: Error saving new IMDb show info to database: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+            log.error(traceback.format_exc())
 
         # get episode list from DB
         try:
             episodes_from_db = self.show.load_episodes_from_db()
-        except IndexerException as e:
-            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerException as error:
+            log.warning(
+                '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             return
 
         # get episode list from the indexer
         try:
             episodes_from_indexer = self.show.load_episodes_from_indexer()
-        except IndexerException as e:
-            logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
-                       u'Error: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name, error_msg=e.message),
-                       logger.WARNING)
+        except IndexerException as error:
+            log.warning(
+                '{id}: Unable to get info from {indexer}. The show info will not be refreshed.'
+                ' Error: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer} during full show update. Unable to update this show'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name),
-                       logger.WARNING)
+            log.warning(
+                '{id}: No data returned from {indexer} during full show update.'
+                ' Unable to update this show',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name}
+            )
         else:
             # for each ep we found on the Indexer delete it from the DB list
             for cur_season in episodes_from_indexer:
@@ -802,34 +888,47 @@ class QueueItemUpdate(ShowQueueItem):
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
             for cur_season in episodes_from_db:
                 for cur_episode in episodes_from_db[cur_season]:
-                    logger.log(u'{id}: Permanently deleting episode {show} {ep} from the database'.format
-                               (id=self.show.series_id, show=self.show.name, ep=episode_num(cur_season, cur_episode)),
-                               logger.DEBUG)
+                    log.debug(
+                        '{id}: Permanently deleting episode {show} {ep} from the database',
+                        {'id': self.show.series_id, 'show': self.show.name,
+                         'ep': episode_num(cur_season, cur_episode)}
+                    )
                     # Create the ep object only because Im going to delete it
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
-                                   (id=self.show.series_id, show=self.show.name,
-                                    ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
+                        log.debug(
+                            '{id}: Episode {show} {ep} successfully deleted from the database',
+                            {'id': self.show.series_id, 'show': self.show.name,
+                             'ep': episode_num(cur_season, cur_episode)}
+                        )
 
         # Save only after all changes were applied
         try:
-            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.series_id), logger.DEBUG)
+            log.debug(
+                '{id}: Saving all updated show info to database',
+                {'id': self.show.series_id}
+            )
             self.show.save_to_db()
-        except Exception as e:
-            logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
-            logger.log(traceback.format_exc(), logger.ERROR)
+        except Exception as error:
+            log.warning(
+                '{id}: Error saving all updated show info to database: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+            log.error(traceback.format_exc())
 
         # Replace the images in cache
-        logger.log(u'{id}: Replacing images for show {show}'.format
-                   (id=self.show.series_id, show=self.show.name), logger.INFO)
+        log.info(
+            '{id}: Replacing images for show {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
         replace_images(self.show)
 
-        logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.series_id, show=self.show.name), logger.DEBUG)
+        log.debug(
+            '{id}: Finished update of {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
         # Refresh show needs to be forced since current execution locks the queue
         app.show_queue_scheduler.action.refreshShow(self.show, True)
@@ -851,73 +950,99 @@ class QueueItemSeasonUpdate(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u'{id}: Beginning update of {show}{season}'.format
-                   (id=self.show.series_id,
-                    show=self.show.name,
-                    season=u' with season(s) [{0}]'.
-                    format(u','.join(text_type(s) for s in self.seasons) if self.seasons else u'')
-                    ), logger.INFO)
+        log.info(
+            '{id}: Beginning update of {show}{season}',
+            {'id': self.show.series_id,
+             'show': self.show.name,
+             'season': ' with season(s) [{0}]'.format(
+                 ','.join(text_type(s) for s in self.seasons) if self.seasons else '')
+             }
+        )
 
-        logger.log(u'{id}: Retrieving show info from {indexer}'.format
-                   (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name),
-                   logger.DEBUG)
+        log.debug(
+            '{id}: Retrieving show info from {indexer}',
+            {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name}
+        )
         try:
             # Let's make sure we refresh the indexer_api object attached to the show object.
             self.show.create_indexer()
             self.show.load_from_indexer()
-        except IndexerError as e:
-            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerError as error:
+            log.warning(
+                '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             return
-        except IndexerAttributeNotFound as e:
-            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerAttributeNotFound as error:
+            log.warning(
+                '{id}: Data retrieved from {indexer} was incomplete.'
+                ' Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             return
 
-        logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.series_id), logger.DEBUG)
+        log.debug(
+            '{id}: Retrieving show info from IMDb',
+            {'id': self.show.series_id}
+        )
         try:
             self.show.load_imdb_info()
-        except ImdbAPIError as e:
-            logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.INFO)
-        except Exception as e:
-            logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
+        except ImdbAPIError as error:
+            log.info(
+                '{id}: Something wrong on IMDb api: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+        except Exception as error:
+            log.warning(
+                '{id}: Error loading IMDb info: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
 
         # have to save show before reading episodes from db
         try:
-            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.series_id), logger.DEBUG)
+            log.debug(
+                '{id}: Saving new IMDb show info to database',
+                {'id': self.show.series_id}
+            )
             self.show.save_to_db()
-        except Exception as e:
-            logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
-            logger.log(traceback.format_exc(), logger.ERROR)
+        except Exception as error:
+            log.warning(
+                '{id}: Error saving new IMDb show info to database: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+            log.error(traceback.format_exc())
 
         # get episode list from DB
         try:
             episodes_from_db = self.show.load_episodes_from_db(self.seasons)
-        except IndexerException as e:
-            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=e.message), logger.WARNING)
+        except IndexerException as error:
+            log.warning(
+                '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             return
 
         # get episode list from the indexer
         try:
             episodes_from_indexer = self.show.load_episodes_from_indexer(self.seasons)
-        except IndexerException as e:
-            logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
-                       u'Error: {error_msg}'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name, error_msg=e.message),
-                       logger.WARNING)
+        except IndexerException as error:
+            log.warning(
+                '{id}: Unable to get info from {indexer}. The show info will not be refreshed.'
+                ' Error: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer} during season show update. Unable to update this show'.format
-                       (id=self.show.series_id, indexer=indexerApi(self.show.indexer).name),
-                       logger.WARNING)
+            log.warning(
+                '{id}: No data returned from {indexer} during season show update.'
+                ' Unable to update this show',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name}
+            )
         else:
             # for each ep we found on the Indexer delete it from the DB list
             for cur_season in episodes_from_indexer:
@@ -928,29 +1053,40 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
             for cur_season in episodes_from_db:
                 for cur_episode in episodes_from_db[cur_season]:
-                    logger.log(u'{id}: Permanently deleting episode {show} {ep} from the database'.format
-                               (id=self.show.series_id, show=self.show.name, ep=episode_num(cur_season, cur_episode)),
-                               logger.DEBUG)
+                    log.debug(
+                        '{id}: Permanently deleting episode {show} {ep} from the database',
+                        {'id': self.show.series_id, 'show': self.show.name,
+                         'ep': episode_num(cur_season, cur_episode)}
+                    )
                     # Create the ep object only because Im going to delete it
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
-                                   (id=self.show.series_id, show=self.show.name,
-                                    ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
+                        log.debug(
+                            '{id}: Episode {show} {ep} successfully deleted from the database',
+                            {'id': self.show.series_id, 'show': self.show.name,
+                             'ep': episode_num(cur_season, cur_episode)}
+                        )
 
         # Save only after all changes were applied
         try:
-            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.series_id), logger.DEBUG)
+            log.debug(
+                '{id}: Saving all updated show info to database',
+                {'id': self.show.series_id}
+            )
             self.show.save_to_db()
-        except Exception as e:
-            logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
-                       (id=self.show.series_id, error_msg=e.message), logger.WARNING)
-            logger.log(traceback.format_exc(), logger.ERROR)
+        except Exception as error:
+            log.warning(
+                '{id}: Error saving all updated show info to database: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+            log.error(traceback.format_exc())
 
-        logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.series_id, show=self.show.name), logger.INFO)
+        log.info(
+            '{id}: Finished update of {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
         self.finish()
 
@@ -967,17 +1103,23 @@ class QueueItemRemove(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u'{id}: Removing {show}'.format(id=self.show.series_id, show=self.show.name))
+        log.info(
+            '{id}: Removing {show}',
+            {'id': self.show.series_id, 'show': self.show.name}
+        )
 
         # Need to first remove the episodes from the Trakt collection, because we need the list of
         # Episodes from the db to know which eps to remove.
         if app.USE_TRAKT:
             try:
                 app.trakt_checker_scheduler.action.remove_show_trakt_library(self.show)
-            except TraktException as e:
-                logger.log(u'{id}: Unable to delete show {show} from Trakt. '
-                           u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format
-                           (id=self.show.series_id, show=self.show.name, error_msg=e.message), logger.WARNING)
+            except TraktException as error:
+                log.warning(
+                    '{id}: Unable to delete show {show} from Trakt.'
+                    ' Please remove manually otherwise it will be added again.'
+                    ' Error: {error_msg}',
+                    {'id': self.show.series_id, 'show': self.show.name, 'error_msg': error}
+                )
 
         self.show.delete_show(full=self.full)
 

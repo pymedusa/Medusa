@@ -6,9 +6,13 @@ from datetime import date
 
 from medusa import db
 from medusa.common import (
+    ARCHIVED,
+    DOWNLOADED,
     FAILED,
-    Quality,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
     WANTED
 )
@@ -36,8 +40,8 @@ class StatsHandler(BaseRequestHandler):
         """
         main_db_con = db.DBConnection()
 
-        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
+        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(

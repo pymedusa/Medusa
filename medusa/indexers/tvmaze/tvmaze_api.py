@@ -72,7 +72,6 @@ class TVmaze(BaseIndexer):
             'screencap': 'filename',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'rating': 'contentrating',
         }
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
@@ -122,7 +121,7 @@ class TVmaze(BaseIndexer):
                             return_dict['tvdb_id'] = value.get('thetvdb')
                             return_dict['imdb_id'] = value.get('imdb')
                         if key == 'rating':
-                            return_dict['contentrating'] = value.get('average')\
+                            return_dict['rating'] = value.get('average') \
                                 if isinstance(value, dict) else value
                     else:
                         # Do some value sanitizing
@@ -166,8 +165,9 @@ class TVmaze(BaseIndexer):
         try:
             results = self.tvmaze_api.get_show_list(show)
         except ShowNotFound as error:
+            # Use error.value because TVMaze API exceptions may be utf-8 encoded when using __str__
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: {0}'.format(error)
+                'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
         except BaseError as error:
             raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
@@ -184,7 +184,6 @@ class TVmaze(BaseIndexer):
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])

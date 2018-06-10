@@ -23,7 +23,7 @@ from medusa.show.recommendations.trakt import TraktPopular
 from medusa.show.show import Show
 
 from requests import RequestException
-from requests.compat import unquote_plus
+from requests.compat import quote_plus, unquote_plus
 
 from simpleanidb import REQUEST_HOT
 
@@ -32,6 +32,21 @@ from six import iteritems
 from tornroutes import route
 
 from traktor import TraktApi
+
+
+def json_redirect(url, params=None):
+    """
+    Make a JSON redirect.
+    :param url: URL to redirect to
+    :param params: Query params to append, as a list of tuple(key, value) items
+    """
+    if not params:
+        params = []
+    url = url.strip('/')
+    for index, param in enumerate(params):
+        url += '?' if not index else '&'
+        url += quote_plus(param[0]) + '=' + quote_plus(param[1])
+    return json.dumps({'redirect': url})
 
 
 @route('/addShows(/?.*)')
@@ -58,8 +73,6 @@ class HomeAddShows(Home):
         if not lang or lang == 'null':
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
-        search_term = search_term.encode('utf-8')
-
         search_terms = [search_term]
 
         # If search term ends with what looks like a year, enclose it in ()
@@ -78,25 +91,29 @@ class HomeAddShows(Home):
 
         # Query Indexers for each search term and build the list of results
         for indexer in indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            l_indexer_api_parms = indexerApi(indexer).api_params.copy()
-            l_indexer_api_parms['language'] = lang
-            l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
+            l_indexer_api_params = indexerApi(indexer).api_params.copy()
+            l_indexer_api_params['language'] = lang
+            l_indexer_api_params['custom_ui'] = classes.AllShowsListUI
             try:
-                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_parms)
+                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_params)
             except IndexerUnavailable as msg:
-                logger.log(u'Could not initialize Indexer {indexer}: {error}'.
-                           format(indexer=indexerApi(indexer).name, error=msg))
+                logger.log(u'Could not initialize indexer {indexer}: {error}'.format(
+                    indexer=indexerApi(indexer).name,
+                    error=msg
+                ))
                 continue
 
-            logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                search_terms, indexerApi(indexer).name), logger.DEBUG)
+            logger.log(u'Searching for Show with searchterm(s): {terms} on indexer: {indexer}'.format(
+                terms=', '.join(search_terms),
+                indexer=indexerApi(indexer).name
+            ), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
                     indexer_results = indexer_api[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerException as e:
-                    logger.log(u'Error searching for show: {error}'.format(error=e.message))
+                except IndexerException as error:
+                    logger.log(u'Error searching for show: {error}'.format(error=error))
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
@@ -415,14 +432,16 @@ class HomeAddShows(Home):
         def finishAddShow():
             # if there are no extra shows then go home
             if not other_shows:
-                return self.redirect('/home/')
-
-            # peel off the next one
-            next_show_dir = other_shows[0]
-            rest_of_show_dirs = other_shows[1:]
+                return json_redirect('/home/')
 
             # go to add the next show
-            return self.newShow(next_show_dir, rest_of_show_dirs)
+            return json_redirect(
+                '/addShows/newShow/',
+                [
+                    ('show_to_add' if not i else 'other_shows', cur_dir)
+                    for i, cur_dir in enumerate(other_shows)
+                ]
+            )
 
         # if we're skipping then behave accordingly
         if skipShow:
@@ -440,7 +459,7 @@ class HomeAddShows(Home):
                 logger.log(u'Unable to add show due to show selection. Not enough arguments: %s' % (repr(series_pieces)),
                            logger.ERROR)
                 ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
-                return self.redirect('/addShows/existingShows/')
+                return json_redirect('/addShows/existingShows/')
 
             indexer = int(series_pieces[1])
             indexer_id = int(series_pieces[3])
@@ -463,7 +482,7 @@ class HomeAddShows(Home):
         # blanket policy - if the dir exists you should have used 'add existing show' numbnuts
         if os.path.isdir(show_dir) and not fullShowPath:
             ui.notifications.error('Unable to add show', 'Folder {path} exists already'.format(path=show_dir))
-            return self.redirect('/addShows/existingShows/')
+            return json_redirect('/addShows/existingShows/')
 
         # don't create show dir if config says not to
         if app.ADD_SHOWS_WO_DIR:
@@ -477,7 +496,7 @@ class HomeAddShows(Home):
                 ui.notifications.error('Unable to add show',
                                        'Unable to create the folder {path}, can\'t add the show'.format(path=show_dir))
                 # Don't redirect to default page because user wants to see the new show
-                return self.redirect('/home/')
+                return json_redirect('/home/')
             else:
                 helpers.chmod_as_parent(show_dir)
 

@@ -509,27 +509,6 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
     });
 
-    $('#testNMA').on('click', function() {
-        const nma = {};
-        nma.api = $.trim($('#nma_api').val());
-        nma.priority = $('#nma_priority').val();
-        if (!nma.api) {
-            $('#testNMA-result').html('Please fill out the necessary fields above.');
-            $('#nma_api').addClass('warning');
-            return;
-        }
-        $('#nma_api').removeClass('warning');
-        $(this).prop('disabled', true);
-        $('#testNMA-result').html(MEDUSA.config.loading);
-        $.get('home/testNMA', {
-            nma_api: nma.api, // eslint-disable-line camelcase
-            nma_priority: nma.priority // eslint-disable-line camelcase
-        }).done(data => {
-            $('#testNMA-result').html(data);
-            $('#testNMA').prop('disabled', false);
-        });
-    });
-
     $('#testPushalot').on('click', function() {
         const pushalot = {};
         pushalot.authToken = $.trim($('#pushalot_authorizationtoken').val());

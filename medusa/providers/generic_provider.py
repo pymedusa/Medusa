@@ -80,6 +80,8 @@ class GenericProvider(object):
             'https://asnet.pw/download/{info_hash}/',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
+            'http://thetorrent.org/torrent/{info_hash}.torrent',
+            'https://cache.torrentgalaxy.org/get/{info_hash}',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -291,15 +293,6 @@ class GenericProvider(object):
         # sort qualities in descending order
         sorted_qualities = sorted(categorized_items, reverse=True)
         log.debug('Found qualities: {0}', sorted_qualities)
-
-        # move Quality.UNKNOWN to the end of the list
-        try:
-            sorted_qualities.remove(Quality.UNKNOWN)
-        except ValueError:
-            log.debug('No unknown qualities in results')
-        else:
-            sorted_qualities.append(Quality.UNKNOWN)
-            log.debug('Unknown qualities moved to end of results')
 
         # chain items sorted by quality
         sorted_items = chain.from_iterable(
