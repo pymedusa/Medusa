@@ -226,11 +226,11 @@ Vue.component('quality-chooser', {
 
             // Convert values to unsigned int, and filter selected/prefrred qualities
             this.allowedQualities = Object.keys(this.qualityStrings)
-                .map(quality => quality >>> 0)
+                .map(quality => parseInt(quality, 10))
                 .filter(quality => ( (preset & quality) >>> 0 ) > 0);
             this.preferredQualities = Object.keys(this.qualityStrings)
-                .map(quality => quality >>> 0)
-                .filter(quality => ( (preset & (quality << 16)) >>> 0) > 0);
+                .map(quality => parseInt(quality, 10))
+                .filter(quality => ( (preset & (quality << 16)) >>> 0 ) > 0);
         }
     },
     watch: {
