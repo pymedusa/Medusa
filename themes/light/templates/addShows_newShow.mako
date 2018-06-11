@@ -19,7 +19,8 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'New Show'
+                header: 'New Show',
+                rootDirs: []
             };
         },
         methods: {
@@ -78,7 +79,7 @@ const startVue = () => {
                             Pre-chosen Destination Folder: <b>${provided_show_dir}</b> <br>
                             <input type="hidden" id="fullShowPath" name="fullShowPath" value="${provided_show_dir}" /><br>
                         % else:
-                            <%include file="/inc_rootDirs.mako"/>
+                            <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
                         % endif
                     </div>
                 </fieldset>

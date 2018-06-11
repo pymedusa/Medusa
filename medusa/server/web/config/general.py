@@ -41,10 +41,6 @@ class ConfigGeneral(Config):
         return helpers.generate_api_key()
 
     @staticmethod
-    def saveRootDirs(rootDirString=None):
-        app.ROOT_DIRS = rootDirString.split('|')
-
-    @staticmethod
     def saveAddShowDefaults(default_status, allowed_qualities, preferred_qualities, default_season_folders,
                             subtitles=False, anime=False, scene=False, default_status_after=WANTED):
 

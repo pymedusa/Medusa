@@ -1,6 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import datetime
+    import json
     import locale
     from medusa import app, config, metadata
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
@@ -17,8 +18,15 @@ window.app = new Vue({
     metaInfo: {
         title: 'Config - General'
     },
-    data: {
-        header: 'General Configuration'
+    created() {
+        // @FIXME: This is a workaround to make sure `rootDirs` is available for the component.
+        MEDUSA.config.rootDirs = ${json.dumps(app.ROOT_DIRS)};
+    },
+    data() {
+        return {
+            header: 'General Configuration',
+            rootDirs: []
+        };
     }
 });
 </script>
@@ -115,7 +123,7 @@ window.app = new Vue({
                                     <span class="component-title">Show root directories</span>
                                     <span class="component-desc">
                                         <p>where the files of shows are located</p>
-                                        <%include file="/inc_rootDirs.mako"/>
+                                        <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
                                     </span>
                                 </label>
                             </div>
