@@ -214,7 +214,8 @@ class InternalHandler(BaseRequestHandler):
                     int(show['id']),
                     show['seriesname'].encode('utf-8'),
                     show['firstaired'] or 'N/A',
-                    show.get('network', '').encode('utf-8') or 'N/A'
+                    show.get('network', '').encode('utf-8') or 'N/A',
+                    sanitize_filename(show['seriesname']).encode('utf-8')
                 )
                 for show in shows
             }
@@ -226,16 +227,3 @@ class InternalHandler(BaseRequestHandler):
             'languageId': language_id
         }
         return self._ok(data=data)
-
-    # sanitizeFileName
-    def resource_sanitize_file_name(self):
-        """Remove specific characters from the provided `name`."""
-        name = self.get_argument('name', '')
-
-        if not name:
-            return self._bad_request('No name provided')
-
-        result = {
-            'sanitized': sanitize_filename(name)
-        }
-        return self._ok(data=result)

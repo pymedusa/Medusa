@@ -72,8 +72,6 @@ const startVue = () => {
                     indexerLanguage: 'en',
                 },
 
-                sanitizedNameCache: {},
-
                 selectedRootDir: '',
                 seriesIdentifier: ''
             };
@@ -156,11 +154,9 @@ const startVue = () => {
                 const themeSpinner = MEDUSA.config.themeSpinner;
                 if (themeSpinner === undefined) return '';
                 return 'images/loading32' + themeSpinner + '.gif';
-            }
-        },
-        asyncComputed: {
-            async showPath() {
-                const { selectedRootDir, showName, providedInfo } = this;
+            },
+            showPath() {
+                const { selectedRootDir, providedInfo, selectedSeries } = this;
 
                 const pathSep = path => {
                     if (path.indexOf('\\') > -1) return '\\';
@@ -168,7 +164,7 @@ const startVue = () => {
                     return '';
                 };
 
-                let showPath;
+                let showPath = 'unknown dir';
                 // If we provided a show path, use that
                 if (providedInfo.use && providedInfo.seriesDir) {
                     showPath = providedInfo.seriesDir;
@@ -183,27 +179,11 @@ const startVue = () => {
                     if (showPath.slice(-1) !== sepChar) {
                         showPath += sepChar;
                     }
-                    showPath += '<i>||</i>' + sepChar;
-                } else {
-                    return 'unknown dir';
+                    // If we have a show selected, use the sanitized name
+                    const dirName = selectedSeries ? selectedSeries.sanitizedName : '??';
+                    showPath += '<i>' + dirName + '</i>' + sepChar;
                 }
-
-                // If we have a show name then sanitize and use it for the dir name
-                if (showName) {
-                    let sanitizedName = this.sanitizedNameCache[showName];
-                    if (sanitizedName === undefined) {
-                        const params = {
-                            name: showName
-                        };
-                        const { data } = await api.get('internal/sanitizeFileName', { params });
-                        sanitizedName = data.sanitized;
-                        this.sanitizedNameCache[showName] = sanitizedName;
-                    }
-                    return showPath.replace('||', this.sanitizedNameCache[showName]);
-                // If not then it's unknown
-                } else {
-                    return showPath.replace('||', '??');
-                }
+                return showPath;
             }
         },
         methods: {
@@ -344,11 +324,20 @@ const startVue = () => {
                 const { languageId } = data;
                 this.searchResults = data.results
                     .map(result => {
-                        // Compute whichSeries value
-                        whichSeries = result.join('|')
+                        // Compute whichSeries value (without the last item - sanitizedName)
+                        whichSeries = result.slice(0, -1).join('|');
 
-                        // Unpack result items 0 through 6 (Array)
-                        let [ indexerName, indexerId, indexerShowUrl, seriesId, seriesName, premiereDate, network ] = result;
+                        // Unpack result items 0 through 7 (Array)
+                        let [
+                            indexerName,
+                            indexerId,
+                            indexerShowUrl,
+                            seriesId,
+                            seriesName,
+                            premiereDate,
+                            network,
+                            sanitizedName
+                        ] = result;
 
                         identifier = [indexers[indexerId].identifier, seriesId].join('')
 
@@ -376,7 +365,8 @@ const startVue = () => {
                             seriesId,
                             seriesName,
                             premiereDate,
-                            network
+                            network,
+                            sanitizedName
                         };
                     });
 
