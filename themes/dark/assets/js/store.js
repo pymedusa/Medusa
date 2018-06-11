@@ -4,6 +4,9 @@ const VueNativeSock = window.VueNativeSock.default;
 
 Vue.use(Puex);
 
+// These are used for mutation names
+// There are no naming conventions so try and match
+// similarly to what we already use when adding new ones.
 const mutationTypes = {
     LOGIN_PENDING: '🔒 Login Pending',
     LOGIN_SUCCESS: '🔒 ✅ Login Successful',
@@ -21,6 +24,8 @@ const mutationTypes = {
     ADD_SHOW: '📺 Show added to store'
 };
 
+// This will be moved up later on
+// once we move mutationTypes to a seperate file.
 const {
     LOGIN_PENDING,
     LOGIN_SUCCESS,
@@ -40,11 +45,13 @@ const {
 
 const store = new Puex({
     state: {
+        // Websocket
         socket: {
             isConnected: false,
             message: '',
             reconnectError: false
         },
+        // Main config
         config: {
             wikiUrl: null,
             localUser: null,
@@ -98,7 +105,12 @@ const store = new Puex({
             anonRedirect: null,
             torrents: null
         },
+        // Loaded show list
+        // New shows can be added via
+        // $store.dispatch('getShow', { indexer, id });
         shows: [],
+        // We use this so we can fallback to a
+        // default object that resides in the shows array
         defaults: {
             show: {
                 id: {
@@ -132,6 +144,8 @@ const store = new Puex({
             }
         }
     },
+    // The only place the state should be updated is here
+    // Please add new mutations in the same order as the mutatinType list
     mutations: {
         [LOGIN_PENDING]() {},
         [LOGIN_SUCCESS]() {},
@@ -148,11 +162,11 @@ const store = new Puex({
         [SOCKET_ONERROR](state, event) {
             console.error(state, event);
         },
-        // Default handler called for all socket methods
+        // Default handler called for all websocket methods
         [SOCKET_ONMESSAGE](state, message) {
             state.socket.message = message;
         },
-        // Mutations for socket reconnect methods
+        // Mutations for websocket reconnect methods
         [SOCKET_RECONNECT](state, count) {
             console.info(state, count);
         },
@@ -172,6 +186,9 @@ const store = new Puex({
             }
         }
     },
+    // Add all blocking code here
+    // No actions should write to the store
+    // Please use store.commit to fire off a mutation that'll update the store
     actions: {
         getConfig(store) {
             return api.get('/config/main').then(res => {
@@ -184,12 +201,20 @@ const store = new Puex({
             });
         }
     },
+    // @TODO Add logging here
     plugins: []
 });
 
-Vue.use(VueNativeSock, 'ws://localhost:8081/x/ws/ui', {
+const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const webRoot = MEDUSA.config.webRoot || '';
+const WSMessageUrl = '/ui';
+
+Vue.use(VueNativeSock, proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl, {
     store: window.store,
-    format: 'json'
+    format: 'json',
+    reconnection: true, // (Boolean) whether to reconnect automatically (false)
+    reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
+    reconnectionDelay: 1000 // (Number) how long to initially wait before attempting a new (1000)
 });
 
 window.store = store;
