@@ -1,8 +1,9 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import json
-    from medusa import subtitles
+
     from medusa import app
+    from medusa import subtitles
 %>
 <%block name="scripts">
 <script>
@@ -14,9 +15,17 @@ const startVue = () => {
             title: 'Config - Subtitles'
         },
         data() {
+            <%
+                subtitle_code_filter = [{'id': code, 'name': subtitles.name_from_code(code)}
+                                        for code in subtitles.subtitle_code_filter()]
+                wanted_languages = [{'id': code, 'name': subtitles.name_from_code(code)}
+                                    for code in subtitles.wanted_languages()]
+            %>
             return {
                 header: 'Subtitles',
-                services: JSON.parse('${json.dumps(subtitles.sorted_service_list())}')
+                services: ${json.dumps(subtitles.sorted_service_list())},
+                subtitleCodeFilter: ${json.dumps(subtitle_code_filter)},
+                wantedLanguages: ${json.dumps(wanted_languages)},
             };
         },
         computed: {
@@ -26,11 +35,12 @@ const startVue = () => {
             }
         },
         mounted() {
-            $("#subtitles_languages").tokenInput([${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.subtitle_code_filter())}], {
+            const { subtitleCodeFilter, wantedLanguages } = this;
+            $("#subtitles_languages").tokenInput(subtitleCodeFilter, {
                 method: 'POST',
                 hintText: 'Write to search a language and select it',
                 preventDuplicates: true,
-                prePopulate: [${','.join('{"id": "' + code + '", name: "' + subtitles.name_from_code(code) + '"}' for code in subtitles.wanted_languages())}],
+                prePopulate: wantedLanguages,
                 resultsFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>",
                 tokenFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>"
             });
