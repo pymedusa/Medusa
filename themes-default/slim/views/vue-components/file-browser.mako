@@ -167,7 +167,7 @@ Vue.component('file-browser', {
             } else {
                 // Make a fileBrowserDialog object if one doesn't exist already
                 // set up the jquery dialog
-                fileBrowserDialog = $('.fileBrowserDialog').dialog({
+                fileBrowserDialog = $(vm.$el).find('.fileBrowserButton').dialog({
                     dialogClass: 'browserDialog',
                     title: options.title,
                     position: {
@@ -291,7 +291,7 @@ Vue.component('file-browser', {
             if (options.showBrowseButton) {
                 // Append the browse button and give it a click behaviour
                 resultField.after(
-                    $('.fileBrowserButton').on('click', function() {
+                    $(vm.$el).find('.fileBrowserButton').on('click', function() {
                         const initialDir = vm.currentPath || (options.localStorageKey && path) || '';
                         const optionsWithInitialDir = $.extend({}, options, { initialDir });
                         $(this).nFileBrowser(callback, optionsWithInitialDir);
