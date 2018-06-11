@@ -1,15 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import datetime
-    import locale
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
-    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
-    from medusa import config
-    from medusa import metadata
-    from medusa.metadata.generic import GenericMetadata
-%>
 <%block name="scripts">
 <script>
 window.app = {};
@@ -82,10 +71,6 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <h1 class="header">{{header}}</h1>
-<% indexer = 0 %>
-% if app.INDEXER_DEFAULT:
-    <% indexer = app.INDEXER_DEFAULT %>
-% endif
 <div id="config">
     <div id="config-content">
         <form name="configForm" method="post" action="config/backuprestore">
