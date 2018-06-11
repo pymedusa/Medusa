@@ -34,8 +34,17 @@ const startVue = () => {
                 return services.map(service => service.name + ':' + (service.enabled ? '1' : '0')).join(' ');
             }
         },
+        methods: {
+            serviceOrderUpdated(event, ui) {
+                event.preventDefault(); // Stop sortable from changing the DOM, let Vue do it.
+                const newOrder = $('#service_order_list').sortable('toArray');
+                this.services = this.services.slice().sort((a, b) => {
+                    return newOrder.indexOf(a.name) - newOrder.indexOf(b.name);
+                });
+            }
+        },
         mounted() {
-            const { subtitleCodeFilter, wantedLanguages } = this;
+            const { subtitleCodeFilter, wantedLanguages, serviceOrderUpdated } = this;
             $("#subtitles_languages").tokenInput(subtitleCodeFilter, {
                 method: 'POST',
                 hintText: 'Write to search a language and select it',
@@ -46,52 +55,7 @@ const startVue = () => {
             });
             $('#config-components').tabs();
             $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
-            $('#service_order_list').disableSelection();
-
-            //
-            // Below this line is stuff that may or may not be doing anything?
-            // ----------------------------------------------------------------------------------------
-
-            $.fn.showHideServices = function() {
-                $('.serviceDiv').each(function() {
-                    const serviceName = $(this).attr('id');
-                    const selectedService = $('#editAService :selected').val();
-
-                    if (selectedService + 'Div' === serviceName) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            };
-
-            $.fn.addService = function(id, name, url, key, isDefault, showService) { // eslint-disable-line max-params
-                if (url.match('/$') === null) {
-                    url += '/';
-                }
-
-                if ($('#service_order_list > #' + id).length === 0 && showService !== false) {
-                    const toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + MEDUSA.config.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
-
-                    $('#service_order_list').append(toAdd);
-                    $('#service_order_list').sortable('refresh');
-                }
-            };
-
-            $.fn.deleteService = function(id) {
-                $('#service_order_list > #' + id).remove();
-            };
-
-            $('#editAService').on('change', () => {
-                $.showHideServices();
-            });
-
-            // Initialization stuff
-            $(this).showHideServices();
-
-            // ----------------------------------------------------------------------------------------
-            // Above this line is stuff that may or may not be doing anything?
-            //
+            $('#service_order_list').sortable({ update: serviceOrderUpdated }).disableSelection();
         },
         filters: {
             capitalize: str => str.replace(/\b\w/g, str => str.toUpperCase())
