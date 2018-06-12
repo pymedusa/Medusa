@@ -19,11 +19,17 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'New Show'
+                header: 'New Show',
+                rootDirs: [],
+                skipShow: ''
             };
         },
         methods: {
-            vueSubmitForm
+            vueSubmitForm,
+            submitSkipShow() {
+                this.skipShow = '1';
+                this.$nextTick(() => this.vueSubmitForm('addShowForm'));
+            }
         }
     });
 };
@@ -78,7 +84,7 @@ const startVue = () => {
                             Pre-chosen Destination Folder: <b>${provided_show_dir}</b> <br>
                             <input type="hidden" id="fullShowPath" name="fullShowPath" value="${provided_show_dir}" /><br>
                         % else:
-                            <%include file="/inc_rootDirs.mako"/>
+                            <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
                         % endif
                     </div>
                 </fieldset>
@@ -91,13 +97,13 @@ const startVue = () => {
                 % for curNextDir in other_shows:
                 <input type="hidden" name="other_shows" value="${curNextDir}" />
                 % endfor
-                <input type="hidden" name="skipShow" id="skipShow" value="" />
+                <input type="hidden" name="skipShow" v-model="skipShow" />
             </form>
             <br>
             <div style="width: 100%; text-align: center;">
                 <input @click.prevent="vueSubmitForm('addShowForm')" id="addShowButton" class="btn-medusa" type="button" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:
-                <input class="btn-medusa" type="button" id="skipShowButton" value="Skip Show" />
+                <input @click.prevent="submitSkipShow" class="btn-medusa" type="button" value="Skip Show" />
                 % endif
             </div>
         </div>
