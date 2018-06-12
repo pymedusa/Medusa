@@ -1,6 +1,7 @@
 /* globals Vue */
 const Puex = window.puex.default;
 const VueNativeSock = window.VueNativeSock.default;
+const displayNotification = window.displayNotification;
 
 Vue.use(Puex);
 
@@ -52,7 +53,10 @@ const store = new Puex({
         // Websocket
         socket: {
             isConnected: false,
+            // Current message
             message: '',
+            // Delivered messages for this session
+            messages: [],
             reconnectError: false
         },
         notifications: {
@@ -171,10 +175,34 @@ const store = new Puex({
         },
         // Default handler called for all websocket methods
         [SOCKET_ONMESSAGE](state, message) {
+            const { data, event } = message;
+            const { body, hash, type, title } = data;
+
+            // Set the current message
             state.socket.message = message;
+
+            // Show the notification to the user
+            if (event === 'notification') {
+                displayNotification(type, title, body, hash);
+            } else {
+                displayNotification('info', '', message);
+            }
+
+            // Save it so we can look it up later
+            const existingMessage = state.socket.messages.filter(message => message.hash === hash);
+            if (existingMessage.length === 1) {
+                state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
+            } else {
+                state.socket.messages.push(message);
+            }
         },
         // Mutations for websocket reconnect methods
         [SOCKET_RECONNECT](state, count) {
+            let error = '';
+            error += 'Error connecting to websocket. Please check your network connection. ';
+            error += 'If you are using a reverse proxy, please take a look at our wiki for config examples.';
+
+            displayNotification('notice', error);
             console.info(state, count);
         },
         [SOCKET_RECONNECT_ERROR](state) {
@@ -216,6 +244,9 @@ const store = new Puex({
         getShows(store, shows) {
             const { getShow } = this;
             return shows.forEach(show => getShow(show));
+        },
+        testNotifications() {
+            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
         }
     },
     // @TODO Add logging here
@@ -233,7 +264,7 @@ Vue.use(VueNativeSock, websocketUrl, {
     store,
     format: 'json',
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
-    reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
+    reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 1000 // (Number) how long to initially wait before attempting a new (1000)
 });
 
