@@ -134,7 +134,7 @@ Vue.component('file-browser', {
             this.unwatchProp();
 
             this.lock = true;
-            this.currentPath = this.currentPath || newValue;
+            this.currentPath = newValue;
             this.$nextTick(() => this.lock = false);
         });
     },
@@ -173,12 +173,12 @@ Vue.component('file-browser', {
                     title: options.title,
                     position: {
                         my: 'center top',
-                        at: 'center top+60',
+                        at: 'center top+100',
                         of: window
                     },
                     minWidth: Math.min($(document).width() - 80, 650),
-                    height: Math.min($(document).height() - 80, $(window).height() - 80),
-                    maxHeight: Math.min($(document).height() - 80, $(window).height() - 80),
+                    height: Math.min($(document).height() - 120, $(window).height() - 120),
+                    maxHeight: Math.min($(document).height() - 120, $(window).height() - 120),
                     maxWidth: $(document).width() - 80,
                     modal: true,
                     autoOpen: false
