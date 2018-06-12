@@ -141,6 +141,7 @@ Vue.component('file-browser', {
     mounted() {
         const vm = this;
         let fileBrowserDialog;
+        this.currentPath = this.initialDir;
 
         this.browse = async (path, url = this.url, includeFiles = this.includeFiles) => {
             console.debug('Browsing to ' + path);
@@ -153,8 +154,8 @@ Vue.component('file-browser', {
                 includeFiles: Number(includeFiles)
             });
 
-            this.currentPath = data.shift().currentPath;
-            this.files = data;
+            vm.currentPath = data.shift().currentPath;
+            vm.files = data;
             fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog');
         };
 

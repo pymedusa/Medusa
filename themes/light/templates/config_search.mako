@@ -115,8 +115,8 @@ const startVue = () => {
                     password: '${app.TORRENT_PASSWORD}',
                     label: '${app.TORRENT_LABEL}',
                     labelAnime: '${app.TORRENT_LABEL_ANIME}',
-                    path: '${app.TORRENT_PATH}',
-                    seedLocation: '${app.TORRENT_SEED_LOCATION}',
+                    path: ${json.dumps(app.TORRENT_PATH)},
+                    seedLocation: ${json.dumps(app.TORRENT_SEED_LOCATION)},
                     seedTime: '${app.TORRENT_SEED_TIME}',
                     testStatus: 'Click below to test',
                     authType: '${app.TORRENT_AUTH_TYPE}',
@@ -203,10 +203,6 @@ const startVue = () => {
         },
         mounted() {
             $('#config-components').tabs();
-            $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
-            $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
-            $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
-            $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
         },
         methods: {
             async testTorrentClient() {
@@ -582,7 +578,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="nzb_dir" id="nzb_dir" v-model="nzb.dir" class="form-control input-sm input350"/>
+                                            <file-browser name="nzb_dir" id="nzb_dir" title="Select nzb black hole Location" :initial-dir="nzb.dir" @update:location="nzb.dir = $event"/>
                                             <div class="clear-left">
                                                 <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -802,7 +798,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_dir" id="torrent_dir" v-model="torrent.dir" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_dir" id="torrent_dir" title="Select torrent black hole Location" :initial-dir="torrent.dir" @update:location="torrent.dir = $event"/>
                                             <div class="clear-left">
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -913,7 +909,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_path" id="torrent_path" v-model="torrent.path" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_path" id="torrent_path" title="Select torrent Location" :initial-dir="torrent.path" @update:location="torrent.path = $event"/>
                                             <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
                                                 <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
@@ -924,7 +920,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" v-model="torrent.seedLocation" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_seed_location" id="torrent_seed_location" title="Select torrent seed Location" :initial-dir="torrent.seedLocation" @update:location="torrent.seedLocation = $event"/>
                                             <div class="clear-left">
                                                 <p>
                                                     where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
