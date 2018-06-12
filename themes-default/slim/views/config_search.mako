@@ -578,7 +578,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <file-browser name="nzb_dir" id="nzb_dir" title="Select nzb black hole Location" :initial-dir="nzb.dir" @update="nzb.dir = $event"></file-browser>
+                                            <file-browser name="nzb_dir" title="Select nzb black hole location" :initial-dir="nzb.dir" @update="nzb.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -798,7 +798,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_dir" id="torrent_dir" title="Select torrent black hole Location" :initial-dir="torrent.dir" @update="torrent.dir = $event"></file-browser>
+                                            <file-browser name="torrent_dir" title="Select torrent black hole location" :initial-dir="torrent.dir" @update="torrent.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </div>

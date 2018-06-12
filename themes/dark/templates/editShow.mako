@@ -192,7 +192,7 @@ const startVue = () => {
                             <div class="col-sm-10 content">
                                 <input type="hidden" name="indexername" id="form-indexername" :value="indexerName"/>
                                 <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
-                                <file-browser name="location" id="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
+                                <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
                             </div>
                         </div>
 
