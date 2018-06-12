@@ -6,9 +6,6 @@ from __future__ import unicode_literals
 
 import medusa.helper.common as sut
 
-# convert_size, episode_num, http_code_description, is_sync_file, is_torrent_or_nzb_file,
-# pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
-
 import pytest
 
 from six import iteritems
