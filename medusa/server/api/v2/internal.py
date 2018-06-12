@@ -10,7 +10,7 @@ from medusa import app, db
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
-from medusa.tv.series import Series, SeriesIdentifier
+from medusa.tv.show import Show, ShowIdentifier
 
 from six import itervalues
 
@@ -51,9 +51,9 @@ class InternalHandler(BaseRequestHandler):
         data = resource_function()
         return self._ok(data=data)
 
-    # existingSeries
-    def resource_existing_series(self):
-        """Generate existing series folders data for adding existing shows."""
+    # existingShow
+    def resource_existing_show(self):
+        """Generate existing show folders data for adding existing shows."""
         if not app.ROOT_DIRS:
             return self._not_found('No configured root dirs')
 
@@ -82,8 +82,8 @@ class InternalHandler(BaseRequestHandler):
         )
         root_dirs_tuple = tuple(root_dirs)
         dir_results = [
-            series[b'location'] for series in dir_results
-            if series[b'location'].startswith(root_dirs_tuple)
+            show[b'location'] for show in dir_results
+            if show[b'location'].startswith(root_dirs_tuple)
         ]
 
         for root_dir in root_dirs:
@@ -108,8 +108,8 @@ class InternalHandler(BaseRequestHandler):
                     'path': cur_path,
                     'alreadyAdded': False,
                     'metadata': {
-                        'seriesId': None,
-                        'seriesName': None,
+                        'showId': None,
+                        'showName': None,
                         'indexer': None
                     }
                 }
@@ -121,17 +121,17 @@ class InternalHandler(BaseRequestHandler):
                     # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
                     # is reset. This will prevent errors, when using multiple indexers and caching.
                     for cur_provider in itervalues(app.metadata_provider_dict):
-                        (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
-                        if all((series_id, series_name, indexer)):
+                        (show_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
+                        if all((show_id, show_name, indexer)):
                             cur_dir['metadata'] = {
-                                'seriesId': try_int(series_id),
-                                'seriesName': series_name,
+                                'showId': try_int(show_id),
+                                'showName': show_name,
                                 'indexer': try_int(indexer)
                             }
                             break
 
-                    series_identifier = SeriesIdentifier(indexer, series_id)
-                    cur_dir['alreadyAdded'] = bool(Series.find_by_identifier(series_identifier))
+                    show_identifier = ShowIdentifier(indexer, show_id)
+                    cur_dir['alreadyAdded'] = bool(Show.find_by_identifier(show_identifier))
 
                 dir_list.append(cur_dir)
 

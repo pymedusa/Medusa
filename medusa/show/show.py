@@ -51,18 +51,18 @@ class Show(object):
         pass
 
     @staticmethod
-    def delete(indexer_id, series_id, remove_files=False):
+    def delete(indexer_id, show_id, remove_files=False):
         """
         Try to delete a show.
 
         :param indexer_id: The unique id of the indexer, used to add the show.
-        :param series_id: The unique id of the series.
+        :param show_id: The unique id of the show.
         :param remove_files: ``True`` to remove the files associated with the show, ``False`` otherwise
         :return: A tuple containing:
          - an error message if the show could not be deleted, ``None`` otherwise
          - the show object that was deleted, if it exists, ``None`` otherwise
         """
-        error, show = Show._validate_indexer_id(indexer_id, series_id)
+        error, show = Show._validate_indexer_id(indexer_id, show_id)
 
         if error is not None:
             return error, show
@@ -87,7 +87,7 @@ class Show(object):
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
         log.warning(
-            'Please use show.show.find_by_id() with indexer_id and series_id instead.',
+            'Please use show.show.find_by_id() with indexer_id and show_id instead.',
             DeprecationWarning,
         )
 
@@ -113,18 +113,18 @@ class Show(object):
         raise MultipleShowObjectsException()
 
     @staticmethod
-    def find_by_id(series, indexer_id, series_id):
+    def find_by_id(show, indexer_id, show_id):
         """
         Find a show by its indexer id in the provided list of shows.
 
-        :param series: The list of shows to search in
+        :param show: The list of shows to search in
         :param indexer_id: shows indexer
-        :param series_id: The indexers show id of the desired show
+        :param show_id: The indexers show id of the desired show
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
         from medusa.indexers.utils import indexer_name_to_id
-        if not indexer_id or not series_id:
+        if not indexer_id or not show_id:
             return None
 
         try:
@@ -133,15 +133,15 @@ class Show(object):
             indexer_id = indexer_name_to_id(indexer_id)
 
         try:
-            series_id = int(series_id)
+            show_id = int(show_id)
         except ValueError:
-            log.warning('Invalid series id: {series_id}', {'series_id': series_id})
+            log.warning('Invalid show id: {show_id}', {'show_id': show_id})
 
-        if series_id is None or series is None or len(series) == 0:
+        if show_id is None or show is None or len(show) == 0:
             return None
 
         # indexer_ids = [show_id] if not isinstance(show_id, list) else show_id
-        results = [show for show in series if show.indexer == indexer_id and show.indexerid == series_id]
+         results = [show for show in shows if show.indexer == indexer_id and show.indexerid == series_id]
 
         if not results:
             return None
@@ -192,7 +192,7 @@ class Show(object):
         return stats
 
     @staticmethod
-    def pause(indexer_id, series_id, pause=None):
+    def pause(indexer_id, show_id, pause=None):
         """
         Change the pause state of a show.
 
@@ -202,7 +202,7 @@ class Show(object):
          - an error message if the pause state could not be changed, ``None`` otherwise
          - the show object that was updated, if it exists, ``None`` otherwise
         """
-        error, show = Show._validate_indexer_id(indexer_id, series_id)
+        error, show = Show._validate_indexer_id(indexer_id, show_id)
 
         if error is not None:
             return error, show
@@ -217,7 +217,7 @@ class Show(object):
         return None, show
 
     @staticmethod
-    def refresh(indexer_id, series_id):
+    def refresh(indexer_id, show_id):
         """
         Try to refresh a show.
 
@@ -226,20 +226,20 @@ class Show(object):
          - an error message if the show could not be refreshed, ``None`` otherwise
          - the show object that was refreshed, if it exists, ``None`` otherwise
         """
-        error, series_obj = Show._validate_indexer_id(indexer_id, series_id)
+        error, show_obj = Show._validate_indexer_id(indexer_id, show_id)
 
         if error is not None:
-            return error, series_obj
+            return error, show_obj
 
         try:
-            app.show_queue_scheduler.action.refreshShow(series_obj)
+            app.show_queue_scheduler.action.refreshShow(show_obj)
         except CantRefreshShowException as exception:
-            return ex(exception), series_obj
+            return ex(exception), show_obj
 
-        return None, series_obj
+        return None, show_obj
 
     @staticmethod
-    def _validate_indexer_id(indexer_id, series_id):
+    def _validate_indexer_id(indexer_id, show_id):
         """
         Check that the provided indexer_id is valid and corresponds with a known show.
 
@@ -249,8 +249,8 @@ class Show(object):
          - the show object corresponding to ``indexer_id`` if it exists, ``None`` otherwise
         """
         try:
-            series = Show.find_by_id(app.showList, indexer_id, series_id)
+            show = Show.find_by_id(app.showList, indexer_id, show_id)
         except MultipleShowObjectsException:
             return 'Unable to find the specified show', None
 
-        return None, series
+        return None, show

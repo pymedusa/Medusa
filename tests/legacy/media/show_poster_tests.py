@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 from medusa.media.poster import ShowPoster
-from medusa.tv import Series
+from medusa.tv import Show
 
 from tests.legacy.media.generic_media_tests import GenericMediaTests
 
@@ -28,5 +28,5 @@ class ShowPosterTests(GenericMediaTests):
     """Test ShowPoster."""
 
     def test_default_media_name(self):
-        series_obj = Series(1, 70726)
-        self.assertEqual(ShowPoster(series_obj, '').default_media_name, 'poster.png')
+        show_obj = Show(1, 70726)
+        self.assertEqual(ShowPoster(show_obj, '').default_media_name, 'poster.png')

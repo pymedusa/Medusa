@@ -62,7 +62,7 @@ class RTorrentAPI(GenericClient):
 
         # Set label
         label = app.TORRENT_LABEL
-        if result.series.is_anime:
+        if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME
         if label:
             params.append('d.custom1.set={0}'.format(label))

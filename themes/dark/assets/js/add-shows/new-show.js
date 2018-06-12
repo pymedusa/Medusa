@@ -5,9 +5,9 @@ MEDUSA.addShows.newShow = function() {
         let showName;
         let sepChar;
         // If they've picked a radio button then use that
-        if ($('input:radio[name=whichSeries]:checked').length !== 0) {
-            showName = $('input:radio[name=whichSeries]:checked').val().split('|')[4];
-        } else if ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0) { // If we provided a show in the hidden field, use that
+        if ($('input:radio[name=whichShow]:checked').length !== 0) {
+            showName = $('input:radio[name=whichShow]:checked').val().split('|')[4];
+        } else if ($('input:hidden[name=whichShow]').length !== 0 && $('input:hidden[name=whichShow]').val().length !== 0) { // If we provided a show in the hidden field, use that
             showName = $('#providedName').val();
         } else {
             showName = '';
@@ -56,8 +56,8 @@ MEDUSA.addShows.newShow = function() {
         if (
             ($('#rootDirs option:selected').length !== 0 ||
             ($('#fullShowPath').length !== 0 && $('#fullShowPath').val().length !== 0)) && // eslint-disable-line no-mixed-operators
-            ($('input:radio[name=whichSeries]:checked').length !== 0) || // eslint-disable-line no-mixed-operators
-            ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0)
+            ($('input:radio[name=whichShow]:checked').length !== 0) || // eslint-disable-line no-mixed-operators
+            ($('input:hidden[name=whichShow]').length !== 0 && $('input:hidden[name=whichShow]').val().length !== 0)
         ) {
             $('#addShowButton').prop('disabled', false);
         } else {
@@ -106,10 +106,10 @@ MEDUSA.addShows.newShow = function() {
                         checked = '';
                     }
 
-                    const whichSeries = obj.join('|');
+                    const whichShow = obj.join('|');
                     const anonRedirect = MEDUSA.config.anonRedirect || '';
 
-                    resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
+                    resultStr += '<input type="radio" id="whichShow" name="whichShow" value="' + whichShow.replace(/"/g, '') + '"' + checked + ' /> ';
                     if (data.langid && data.langid !== '' && obj[1] === 1) { // For now only add the language id to the tvdb url, as the others might have different routes.
                         resultStr += '<a href="' + anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
                     } else {
@@ -153,7 +153,7 @@ MEDUSA.addShows.newShow = function() {
     $('#addShowButton').click(() => {
         /*
         // If they haven't picked a show don't let them submit
-        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length === 0) {
+        if (!$('input:radio[name="whichShow"]:checked').val() && $('input:hidden[name="whichShow"]').val().length === 0) {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }
@@ -188,14 +188,14 @@ MEDUSA.addShows.newShow = function() {
         revealfx: ['slide', 500],
         oninit() {
             updateSampleText();
-            if ($('input:hidden[name=whichSeries]').length !== 0 && $('#fullShowPath').length !== 0) {
+            if ($('input:hidden[name=whichShow]').length !== 0 && $('#fullShowPath').length !== 0) {
                 goToStep(3);
             }
         }
     });
 
     $(document.body).on('change', '#rootDirText', updateSampleText);
-    $('#searchResults').on('change', '#whichSeries', updateSampleText);
+    $('#searchResults').on('change', '#whichShow', updateSampleText);
 
     $('#nameToSearch').keyup(event => {
         if (event.keyCode === 13) {

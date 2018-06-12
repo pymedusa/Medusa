@@ -56,12 +56,12 @@ def create_key_encode_utf_8(namespace, fn, **kw):
 
 
 @anidb_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_encode_utf_8)
-def get_release_groups_for_anime(series_name):
+def get_release_groups_for_anime(show_name):
     """Get release groups for an anidb anime."""
     groups = []
     if set_up_anidb_connection():
         try:
-            anime = adba.Anime(app.ADBA_CONNECTION, name=series_name)
+            anime = adba.Anime(app.ADBA_CONNECTION, name=show_name)
             groups = anime.get_groups()
         except Exception as error:
             log.warning(u'Unable to retrieve Fansub Groups from AniDB. Error: {error}', {'error': error.message})

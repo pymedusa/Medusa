@@ -28,52 +28,52 @@ class BaseUI(object):
                           "The self.log attribute will be removed in the next version")
             self.log = logging.getLogger(__name__)
 
-    def select_series(self, all_series):
-        """Return all series."""
-        return all_series[0]
+    def select_show(self, all_show):
+        """Return all show."""
+        return all_show[0]
 
 
 class ConsoleUI(BaseUI):
     """Interactively allow the user to select a show from a console based UI."""
 
-    def _display_series(self, all_series, limit=6):
-        """List series with corresponding ID."""
+    def _display_show(self, all_show, limit=6):
+        """List show with corresponding ID."""
         if limit is not None:
-            toshow = all_series[:limit]
+            toshow = all_show[:limit]
         else:
-            toshow = all_series
+            toshow = all_show
 
         print('Show Search Results:')
         for i, cshow in enumerate(toshow):
             i_show = i + 1  # Start at more human readable number 1 (not 0)
-            log.debug('Showing all_series[{0}], series {1})', i_show, all_series[i]['seriesname'])
+            log.debug('Showing all_show[{0}], show {1})', i_show, all_show[i]['showname'])
             if i == 0:
                 extra = ' (default)'
             else:
                 extra = ''
 
             # TODO: Change into something more generic.
-            print('{0} -> {1} [{2}] # http://thetvdb.com/?tab=series&id={3}&lid={4}{5}'.format(
+            print('{0} -> {1} [{2}] # http://thetvdb.com/?tab=show&id={3}&lid={4}{5}'.format(
                 i_show,
-                cshow['seriesname'].encode('UTF-8', 'ignore'),
+                cshow['showname'].encode('UTF-8', 'ignore'),
                 cshow['language'].encode('UTF-8', 'ignore'),
                 str(cshow['id']),
                 cshow['lid'],
                 extra
             ))
 
-    def select_series(self, all_series):
+    def select_show(self, all_show):
         """Select and return shows, based on users input."""
-        self._display_series(all_series)
+        self._display_show(all_show)
 
-        if len(all_series) == 1:
+        if len(all_show) == 1:
             # Single result, return it!
             print('Automatically selecting only result')
-            return all_series[0]
+            return all_show[0]
 
         if self.config['select_first'] is True:
             print('Automatically returning first search result')
-            return all_series[0]
+            return all_show[0]
 
         while True:  # return breaks this loop
             try:
@@ -90,8 +90,8 @@ class ConsoleUI(BaseUI):
             except ValueError:  # Input was not number
                 if len(ans.strip()) == 0:
                     # Default option
-                    log.debug('Default option, returning first series')
-                    return all_series[0]
+                    log.debug('Default option, returning first show')
+                    return all_show[0]
                 if ans == 'q':
                     log.debug('Got quit command (q)')
                     raise IndexerUserAbort("User aborted ('q' quit command)")
@@ -104,14 +104,14 @@ class ConsoleUI(BaseUI):
                     print('# q - abort tvnamer')
                     print('# Press return with no input to select first result')
                 elif ans.lower() in ['a', 'all']:
-                    self._display_series(all_series, limit=None)
+                    self._display_show(all_show, limit=None)
                 else:
                     log.debug('Unknown keypress {0}', ans)
             else:
                 log.debug('Trying to return ID: {0}', selected_id)
                 try:
-                    return all_series[selected_id]
+                    return all_show[selected_id]
                 except IndexError:
                     log.debug('Invalid show number entered!')
                     print('Invalid number (%s) selected!')
-                    self._display_series(all_series)
+                    self._display_show(all_show)

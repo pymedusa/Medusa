@@ -31,10 +31,10 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <%
-    # pick a random series to show as background
+    # pick a random show to show as background
     random_show = choice(app.showList) if app.showList else None
 %>
-<input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
+<input type="hidden" id="background-show-slug" value="${getattr(random_show, 'slug', '')}" />
 
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">

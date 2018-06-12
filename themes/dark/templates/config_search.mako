@@ -886,7 +886,7 @@ const startVue = () => {
                                             </span>
                                             <span v-show="torrent.method === 'utorrent'">
                                                 <div class="clear-left"><p>Global label for torrents.<br>
-                                                <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
+                                                <b>%N:</b> use Show-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>
@@ -904,7 +904,7 @@ const startVue = () => {
                                             </span>
                                             <span v-show="torrent.method === 'utorrent'">
                                                 <div class="clear-left"><p>Global label for torrents.<br>
-                                                <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
+                                                <b>%N:</b> use Show-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>

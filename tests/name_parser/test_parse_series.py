@@ -16,7 +16,7 @@ import pytest
         'mocks': [
             ('medusa.scene_numbering.get_indexer_numbering', (6, 28))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'Regular Show',
             'is_scene': True
         },
@@ -29,7 +29,7 @@ import pytest
         'mocks': [
             ('medusa.scene_numbering.get_indexer_numbering', (8, 4))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'Inside West Coast Customs',
             'is_scene': True
         },
@@ -42,7 +42,7 @@ import pytest
         'mocks': [
             ('medusa.scene_numbering.get_indexer_numbering', (None, None))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'The 100',
             'is_scene': False
         },
@@ -55,14 +55,14 @@ import pytest
         'mocks': [
             ('medusa.scene_numbering.get_indexer_numbering', (15, 1))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'American Dad',
             'is_scene': True
         },
         'expected': ([1], [15], []),
     },
 ])
-def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
+def test_show_parsing(p, create_tvshow, monkeypatch_function_return):
 
     monkeypatch_function_return(p['mocks'])
 
@@ -71,10 +71,10 @@ def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
     result = parser.to_parse_result(p['name'], guess)
 
     # confirm passed in show object indexer id matches result show object indexer id
-    result.series = create_tvshow(name=p['series_info']['name'])
-    result.series.scene = p['series_info']['is_scene']
+    result.show = create_tvshow(name=p['show_info']['name'])
+    result.show.scene = p['show_info']['is_scene']
 
-    actual = parser._parse_series(result)
+    actual = parser._parse_show(result)
 
     expected = p['expected']
 

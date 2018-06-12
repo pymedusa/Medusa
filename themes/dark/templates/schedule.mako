@@ -101,8 +101,8 @@ const startVue = () => {
 </%block>
 
 <%block name="content">
-<% random_series = choice(results) if results else '' %>
-<input type="hidden" id="background-series-slug" value="${choice(results)['series_slug'] if results else ''}" />
+<% random_show = choice(results) if results else '' %>
+<input type="hidden" id="background-show-slug" value="${choice(results)['show_slug'] if results else ''}" />
 
 <div class="row">
     <div class="col-md-12">

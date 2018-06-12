@@ -397,7 +397,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.series.name
+    show_name = tv_episode.show.name
     season = tv_episode.season
     episode = tv_episode.episode
     release_name = tv_episode.release_name
@@ -467,11 +467,11 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.series.name
+    show_name = tv_episode.show.name
     season = tv_episode.season
     episode = tv_episode.episode
     episode_name = tv_episode.name
-    show_indexerid = tv_episode.series.indexerid
+    show_indexerid = tv_episode.show.indexerid
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
                                      single=not app.SUBTITLES_MULTI)
@@ -564,7 +564,7 @@ def get_min_score():
     """Return the min score to be used by subliminal.
 
     Perfect match = hash - resolution (subtitle for 720p is the same as for 1080p) - video_codec - audio_codec
-    Non-perfect match = series + year + season + episode
+    Non-perfect match = show + year + season + episode
 
     :return: min score to be used to download subtitles
     :rtype: int
@@ -574,7 +574,7 @@ def get_min_score():
                                          episode_scores['video_codec'] +
                                          episode_scores['audio_codec'])
 
-    return episode_scores['series'] + episode_scores['year'] + episode_scores['season'] + episode_scores['episode']
+    return episode_scores['show'] + episode_scores['year'] + episode_scores['season'] + episode_scores['episode']
 
 
 def get_current_subtitles(tv_episode):
@@ -743,7 +743,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
 
-        video.alternative_series = list(tv_episode.series.aliases)
+        video.alternative_show = list(tv_episode.show.aliases)
 
         payload['video'] = video
         memory_cache.set(key, payload)
@@ -870,7 +870,7 @@ class SubtitlesFinder(object):
                 if tv_episode.status not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     continue
 
-                if not tv_episode.series.subtitles:
+                if not tv_episode.show.subtitles:
                     logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
                     run_post_process = True
                     continue

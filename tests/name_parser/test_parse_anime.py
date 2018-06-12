@@ -20,7 +20,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
-        'series_info':{
+        'show_info':{
             'name': u'Cardcaptor Sakura',
             'is_scene': True
         },
@@ -39,7 +39,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'Cardcaptor Sakura',
             'is_scene': True
         },
@@ -58,7 +58,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 8),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [8]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u'Cardcaptor Sakura',
             'is_scene': True
         },
@@ -74,7 +74,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 26),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [26]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u"JoJo's.Bizarre.Adventure.(2012)",
             'is_scene': True
         },
@@ -90,7 +90,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [26]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
         },
@@ -106,7 +106,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (3, [26]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
         },
@@ -121,7 +121,7 @@ import pytest
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
-        'series_info': {
+        'show_info': {
             'name': u"Ajin",
             'is_scene': True
         },
@@ -136,7 +136,7 @@ import pytest
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
-        'series_info': {
+        'show_info': {
             'name': u"Ajin",
             'is_scene': True
         },
@@ -152,7 +152,7 @@ import pytest
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 2),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [2]))
         ],
-        'series_info': {
+        'show_info': {
             'name': u"Dragon Ball Super",
             'is_scene': False
         },
@@ -176,8 +176,8 @@ def test_anime_parsing(p, create_tvshow, monkeypatch_function_return):
     result = parser.to_parse_result(p['name'], guess)
 
     # confirm passed in show object indexer id matches result show object indexer id
-    result.series = create_tvshow(name=p['series_info']['name'])
-    result.scene = p['series_info']['is_scene']
+    result.show = create_tvshow(name=p['show_info']['name'])
+    result.scene = p['show_info']['is_scene']
 
     actual = parser._parse_anime(result)
 

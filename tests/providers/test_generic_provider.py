@@ -151,31 +151,31 @@ def test_parse_pubdate(p):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Standard series search string
-        'series_name': 'My Series',
+    {  # p0: Standard show search string
+        'show_name': 'My Show',
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Alternate title'],
+        'show_alias': ['My Show S1', 'My Show Alternate title'],
         'add_string': 'add_string',
         'expected': [
-            u'My Series+S01E12+add_string',
-            u'My Series S1+S01E12+add_string',
-            u'My Series Alternate title+S01E12+add_string'
+            u'My Show+S01E12+add_string',
+            u'My Show S1+S01E12+add_string',
+            u'My Show Alternate title+S01E12+add_string'
         ]
     },
 ])
 def test_create_search_string_default(p, create_tvshow, create_tvepisode):
-    series_name = p['series_name']
+    show_name = p['show_name']
     separator = p['separator']
-    series_alias = p['series_alias']
+    show_alias = p['show_alias']
     add_string = p['add_string']
     expected = p['expected']
 
-    mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_show = create_tvshow(indexer=1, name=show_name)
     provider = GenericProvider('mock_provider')
-    provider.series = mock_series
+    provider.show = mock_show
     provider.search_separator = separator
 
-    episode = create_tvepisode(mock_series, 1, 12)
+    episode = create_tvepisode(mock_show, 1, 12)
     episode.scene_season = 1
     episode.scene_episode = 12
 
@@ -184,7 +184,7 @@ def test_create_search_string_default(p, create_tvshow, create_tvepisode):
     }
 
     # Create search strings
-    for alias in [series_name] + series_alias:
+    for alias in [show_name] + show_alias:
         provider._create_default_search_string(alias, episode, search_string, add_string=add_string)
     actual = search_string['Episode']
 
@@ -192,31 +192,31 @@ def test_create_search_string_default(p, create_tvshow, create_tvepisode):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Standard series search string
-        'series_name': 'My Series',
+    {  # p0: Standard show search string
+        'show_name': 'My Show',
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Alternate title'],
+        'show_alias': ['My Show S1', 'My Show Alternate title'],
         'add_string': 'add_string',
         'expected': [
-            u'My Series+2018 01 10+add_string',
-            u'My Series S1+2018 01 10+add_string',
-            u'My Series Alternate title+2018 01 10+add_string'
+            u'My Show+2018 01 10+add_string',
+            u'My Show S1+2018 01 10+add_string',
+            u'My Show Alternate title+2018 01 10+add_string'
         ]
     },
 ])
 def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
-    series_name = p['series_name']
+    show_name = p['show_name']
     separator = p['separator']
-    series_alias = p['series_alias']
+    show_alias = p['show_alias']
     add_string = p['add_string']
     expected = p['expected']
 
-    mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_show = create_tvshow(indexer=1, name=show_name)
     provider = GenericProvider('mock_provider')
-    provider.series = mock_series
+    provider.show = mock_show
     provider.search_separator = separator
 
-    episode = create_tvepisode(mock_series, 1, 12)
+    episode = create_tvepisode(mock_show, 1, 12)
     episode.airdate = date(2018, 01, 10)
 
     search_string = {
@@ -224,7 +224,7 @@ def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
     }
 
     # Create search strings
-    for alias in [series_name] + series_alias:
+    for alias in [show_name] + show_alias:
         provider._create_air_by_date_search_string(alias, episode, search_string, add_string=add_string)
     actual = search_string['Episode']
 
@@ -232,31 +232,31 @@ def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Standard series search string
-        'series_name': 'My Series',
+    {  # p0: Standard show search string
+        'show_name': 'My Show',
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Alternate title'],
+        'show_alias': ['My Show S1', 'My Show Alternate title'],
         'add_string': 'add_string',
         'expected': [
-            u'My Series+2018 01 10|Jan+add_string',
-            u'My Series S1+2018 01 10|Jan+add_string',
-            u'My Series Alternate title+2018 01 10|Jan+add_string'
+            u'My Show+2018 01 10|Jan+add_string',
+            u'My Show S1+2018 01 10|Jan+add_string',
+            u'My Show Alternate title+2018 01 10|Jan+add_string'
         ]
     },
 ])
 def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
-    series_name = p['series_name']
+    show_name = p['show_name']
     separator = p['separator']
-    series_alias = p['series_alias']
+    show_alias = p['show_alias']
     add_string = p['add_string']
     expected = p['expected']
 
-    mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_show = create_tvshow(indexer=1, name=show_name)
     provider = GenericProvider('mock_provider')
-    provider.series = mock_series
+    provider.show = mock_show
     provider.search_separator = separator
 
-    episode = create_tvepisode(mock_series, 1, 12)
+    episode = create_tvepisode(mock_show, 1, 12)
     episode.airdate = date(2018, 01, 10)
 
     search_string = {
@@ -264,7 +264,7 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
     }
 
     # Create search strings
-    for alias in [series_name] + series_alias:
+    for alias in [show_name] + show_alias:
         provider._create_sports_search_string(alias, episode, search_string, add_string=add_string)
     actual = search_string['Episode']
 
@@ -272,30 +272,30 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Standard series search string
-        'series_name': 'My Series',
+    {  # p0: Standard show search string
+        'show_name': 'My Show',
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Season Scene title', 'My Series S2'],
+        'show_alias': ['My Show S1', 'My Show Season Scene title', 'My Show S2'],
         'add_string': 'add_string',
         'season': 2,
         'scene_season': 2,
         'episode': 6,
         'scene_episode': 6,
         'scene_episode_absolute': 12,
-        'season_scene_name_exceptions': {'My Series S1', 'My Series Season Scene title', 'My Series S2'},
+        'season_scene_name_exceptions': {'My Show S1', 'My Show Season Scene title', 'My Show S2'},
         'expected': [
-            u'My Series+12+add_string',
-            u'My Series S1+06+add_string',
-            u'My Series Season Scene title+06+add_string',
-            u'My Series S2+06+add_string'
+            u'My Show+12+add_string',
+            u'My Show S1+06+add_string',
+            u'My Show Season Scene title+06+add_string',
+            u'My Show S2+06+add_string'
         ]
     },
 ])
 def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypatch_function_return):
 
-    series_name = p['series_name']
+    show_name = p['show_name']
     separator = p['separator']
-    series_alias = p['series_alias']
+    show_alias = p['show_alias']
     add_string = p['add_string']
     expected = p['expected']
 
@@ -304,12 +304,12 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
         p['season_scene_name_exceptions']
     )])
 
-    mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_show = create_tvshow(indexer=1, name=show_name)
     provider = GenericProvider('mock_provider')
-    provider.series = mock_series
+    provider.show = mock_show
     provider.search_separator = separator
 
-    episode = create_tvepisode(mock_series, 1, 12)
+    episode = create_tvepisode(mock_show, 1, 12)
     episode.scene_episode = p['scene_episode']
     episode.scene_absolute_number = p['scene_episode_absolute']
     episode.scene_season = p['scene_season']
@@ -319,7 +319,7 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     }
 
     # Create search strings
-    for alias in [series_name] + series_alias:
+    for alias in [show_name] + show_alias:
         provider._create_anime_search_string(alias, episode, search_string, add_string=add_string)
     actual = search_string['Episode']
 

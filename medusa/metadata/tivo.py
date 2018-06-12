@@ -162,7 +162,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.series)
+        my_show = self._get_show_data(ep_obj.show)
         if not my_show:
             return None
 
@@ -174,7 +174,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 log.debug(
                     u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         'number': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
                 return None
@@ -185,9 +185,9 @@ class TIVOMetadata(generic.GenericMetadata):
             if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                 return None
 
-            if getattr(my_show, 'seriesname', None):
-                data += ('title : {title}\n'.format(title=my_show['seriesname']))
-                data += ('seriesTitle : {title}\n'.format(title=my_show['seriesname']))
+            if getattr(my_show, 'showname', None):
+                data += ('title : {title}\n'.format(title=my_show['showname']))
+                data += ('showTitle : {title}\n'.format(title=my_show['showname']))
 
             data += ('episodeTitle : {title}\n'.format(title=ep_to_write._format_pattern('%Sx%0E %EN')))
 
@@ -219,9 +219,9 @@ class TIVOMetadata(generic.GenericMetadata):
             data += ('description : {desc}\n'.format(desc=sanitized_description))
 
             # Usually starts with 'SH' and followed by 6-8 digits.
-            # TiVo uses zap2it for their data, so the series id is the zap2it_id.
+            # TiVo uses zap2it for their data, so the show id is the zap2it_id.
             if getattr(my_show, 'zap2it_id', None):
-                data += ('seriesId : {zap2it}\n'.format(zap2it=my_show['zap2it_id']))
+                data += ('showId : {zap2it}\n'.format(zap2it=my_show['zap2it_id']))
 
             # This is the call sign of the channel the episode was recorded from.
             if getattr(my_show, 'network', None):
@@ -256,8 +256,8 @@ class TIVOMetadata(generic.GenericMetadata):
                 data += ('tvRating : {rating}\n'.format(rating=my_show['contentrating']))
 
             # This field can be repeated as many times as necessary or omitted completely.
-            if ep_obj.series.genre:
-                for genre in ep_obj.series.genre.split('|'):
+            if ep_obj.show.genre:
+                for genre in ep_obj.show.genre.split('|'):
                     if genre:
                         data += ('vProgramGenre : {genre}\n'.format(genre=genre))
 
@@ -266,7 +266,7 @@ class TIVOMetadata(generic.GenericMetadata):
                         # showingBits
                         # displayMinorNumber
                         # colorCode
-                        # vSeriesGenre
+                        # vShowGenre
                         # vGuestStar, vDirector, vExecProducer, vProducer, vWriter, vHost, vChoreographer
                         # partCount
                         # partIndex

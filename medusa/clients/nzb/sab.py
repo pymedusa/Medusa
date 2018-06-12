@@ -40,13 +40,13 @@ def send_nzb(nzb):
     })
 
     category = app.SAB_CATEGORY
-    if nzb.series.is_anime:
+    if nzb.show.is_anime:
         category = app.SAB_CATEGORY_ANIME
 
     # if it aired more than 7 days ago, override with the backlog category IDs
     for cur_ep in nzb.episodes:
         if datetime.date.today() - cur_ep.airdate > datetime.timedelta(days=7):
-            category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.series.is_anime else app.SAB_CATEGORY_BACKLOG
+            category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else app.SAB_CATEGORY_BACKLOG
 
     # set up a dict with the URL params in it
     params = {

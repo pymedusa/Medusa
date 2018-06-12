@@ -31,7 +31,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
 
     The following file structure is used:
 
-    show_root/series.xml                       (show metadata)
+    show_root/show.xml                       (show metadata)
     show_root/folder.jpg                       (poster)
     show_root/backdrop.jpg                     (fanart)
     show_root/Season ##/folder.jpg             (season thumb)
@@ -66,12 +66,12 @@ class MediaBrowserMetadata(generic.GenericMetadata):
 
         self.name = u'MediaBrowser'
         self._ep_nfo_extension = u'xml'
-        self._show_metadata_filename = u'series.xml'
+        self._show_metadata_filename = u'show.xml'
         self.fanart_name = u'backdrop.jpg'
         self.poster_name = u'folder.jpg'
 
         # web-ui metadata template
-        self.eg_show_metadata = u'series.xml'
+        self.eg_show_metadata = u'show.xml'
         self.eg_episode_metadata = u'Season##\\metadata\\<i>filename</i>.xml'
         self.eg_fanart = u'backdrop.jpg'
         self.eg_poster = u'folder.jpg'
@@ -216,10 +216,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
 
     def _show_data(self, show_obj):
         """
-        Creates an elementTree XML structure for a MediaBrowser-style series.xml
+        Creates an elementTree XML structure for a MediaBrowser-style show.xml
         returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Show instance to create the NFO for
         """
         my_show = self._get_show_data(show_obj)
 
@@ -228,15 +228,15 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         if not my_show:
             return False
 
-        tv_node = etree.Element(u'Series')
+        tv_node = etree.Element(u'Show')
 
         if getattr(my_show, u'id', None):
             indexerid = etree.SubElement(tv_node, u'id')
             indexerid.text = str(my_show[u'id'])
 
-        if getattr(my_show, u'seriesname', None):
-            series_name = etree.SubElement(tv_node, u'SeriesName')
-            series_name.text = my_show[u'seriesname']
+        if getattr(my_show, u'showname', None):
+            show_name = etree.SubElement(tv_node, u'ShowName')
+            show_name.text = my_show[u'showname']
 
         if getattr(my_show, u'status', None):
             status = etree.SubElement(tv_node, u'Status')
@@ -269,7 +269,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
             certification.text = my_show[u'contentrating']
 
         metadata_type = etree.SubElement(tv_node, u'Type')
-        metadata_type.text = u'Series'
+        metadata_type.text = u'Show'
 
         if getattr(my_show, u'overview', None):
             overview = etree.SubElement(tv_node, u'Overview')
@@ -357,7 +357,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a MediaBrowser style episode.xml
         and returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Show instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
@@ -368,7 +368,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
             u'Writer': []
         }
 
-        my_show = self._get_show_data(ep_obj.series)
+        my_show = self._get_show_data(ep_obj.show)
         if not my_show:
             return None
 
@@ -383,7 +383,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                 log.info(
                     u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         u'number': episode_num(ep_to_write.season, ep_to_write.episode),
-                        u'indexer': indexerApi(ep_obj.series.indexer).name
+                        u'indexer': indexerApi(ep_obj.show.indexer).name
                     }
                 )
                 return None

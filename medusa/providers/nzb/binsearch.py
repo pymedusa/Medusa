@@ -177,7 +177,7 @@ class BinSearchProvider(NZBProvider):
     @staticmethod
     def clean_title(title, mode):
         """
-        Clean title field, using a series of regex.
+        Clean title field, using a show of regex.
 
         RSS search requires different cleaning then the other searches.
         When adding to this function, make sure you update the tests.

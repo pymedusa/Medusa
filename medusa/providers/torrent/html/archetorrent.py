@@ -72,14 +72,14 @@ class ArcheTorrentProvider(TorrentProvider):
         # c59=1&c73=1&c5=1&c41=1&c60=1&c66=1&c65=1&c67=1&c62=1&c64=1&c61=1&search=Good+Behavior+S01E01
         # &cat=0&incldead=0&freeleech=0&lang=0
         search_params = {
-            'c5': '1',   # Category: Series - DVDRip
-            'c41': '1',  # Category: Series - HD
-            'c60': '1',  # Category: Series - Pack TV
-            'c62': '1',  # Category: Series - BDRip
-            'c64': '1',  # Category: Series - VOSTFR
-            'c65': '1',  # Category: Series - TV 720p
-            'c66': '1',  # Category: Series - TV 1080p
-            'c67': '1',  # Category: Series - Pack TV HD
+            'c5': '1',   # Category: Show - DVDRip
+            'c41': '1',  # Category: Show - HD
+            'c60': '1',  # Category: Show - Pack TV
+            'c62': '1',  # Category: Show - BDRip
+            'c64': '1',  # Category: Show - VOSTFR
+            'c65': '1',  # Category: Show - TV 720p
+            'c66': '1',  # Category: Show - TV 1080p
+            'c67': '1',  # Category: Show - Pack TV HD
             'c73': '1',  # Category: Anime
             'incldead': '0',  # Include dead torrent - 0: off 1: yes 2: only dead
             'freeleech': freeleech,  # Only freeleech torrent - 0: off 1: no freeleech 2: Only freeleech

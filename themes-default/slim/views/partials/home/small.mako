@@ -12,7 +12,7 @@
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
     % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
-    <div id=${("seriesTabContent", "animeTabContent")[cur_list_type == "Anime"]}>
+    <div id=${("showTabContent", "animeTabContent")[cur_list_type == "Anime"]}>
     % elif len(show_lists) > 1:
     <h1 class="header">${cur_list_type}</h1>
     % endif
@@ -61,7 +61,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <app-link href="home/displayShow?indexername=${cur_loading_show.show.indexer_name}&seriesid=${cur_loading_show.show.series_id}">${cur_loading_show.show.name | h}</app-link>
+                        <app-link href="home/displayShow?indexername=${cur_loading_show.show.indexer_name}&showid=${cur_loading_show.show.show_id}">${cur_loading_show.show.name | h}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -88,20 +88,20 @@
                 cur_total = 0
                 show_size = 0
                 download_stat_tip = ''
-                if (cur_show.indexer, cur_show.series_id) in show_stat:
-                    series = (cur_show.indexer, cur_show.series_id)
-                    cur_airs_next = show_stat[series]['ep_airs_next']
-                    cur_airs_prev = show_stat[series]['ep_airs_prev']
-                    cur_snatched = show_stat[series]['ep_snatched']
+                if (cur_show.indexer, cur_show.show_id) in show_stat:
+                    show = (cur_show.indexer, cur_show.show_id)
+                    cur_airs_next = show_stat[show]['ep_airs_next']
+                    cur_airs_prev = show_stat[show]['ep_airs_prev']
+                    cur_snatched = show_stat[show]['ep_snatched']
                     if not cur_snatched:
                         cur_snatched = 0
-                    cur_downloaded = show_stat[series]['ep_downloaded']
+                    cur_downloaded = show_stat[show]['ep_downloaded']
                     if not cur_downloaded:
                         cur_downloaded = 0
-                    cur_total = show_stat[series]['ep_total']
+                    cur_total = show_stat[show]['ep_total']
                     if not cur_total:
                         cur_total = 0
-                    show_size = show_stat[series]['show_size']
+                    show_size = show_stat[show]['show_size']
                 download_stat = str(cur_downloaded)
                 download_stat_tip = "Downloaded: " + str(cur_downloaded)
                 if cur_snatched:
@@ -144,15 +144,15 @@
                 % endif
                     <td class="tvShow">
                         <div class="imgsmallposter small">
-                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name | h}">
-                                <img src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
+                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&showid=${cur_show.show_id}" title="${cur_show.name | h}">
+                                <img src="images/poster.png" lazy="on" show="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
                             </app-link>
-                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
+                            <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&showid=${cur_show.show_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
                         </div>
                     </td>
                     <td align="center">
                     % if cur_show.network:
-                        <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                        <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" lazy="on" show="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:
                         <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>

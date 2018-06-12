@@ -46,7 +46,7 @@ def _log_history_item(action, ep_obj, resource, provider, version=-1, proper_tag
         "(action, date, indexer_id, showid, season, episode, quality, "
         "resource, provider, version, proper_tags, manually_searched, info_hash, size) "
         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, ep_obj.quality,
+        [action, logDate, ep_obj.show.indexer, ep_obj.show.show_id, ep_obj.season, ep_obj.episode, ep_obj.quality,
          resource, provider, version, proper_tags, manually_searched, info_hash, size])
 
 

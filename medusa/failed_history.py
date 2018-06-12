@@ -150,14 +150,14 @@ def revert_episode(ep_obj):
         'WHERE showid=?'
         ' AND indexer_id=?'
         ' AND season=?',
-        [ep_obj.series.indexerid, ep_obj.series.indexer, ep_obj.season]
+        [ep_obj.show.indexerid, ep_obj.show.indexer, ep_obj.season]
     )
 
     history_eps = {res[b'episode']: res for res in sql_results}
 
     try:
         logger.log(u'Reverting episode status for {show} {ep}. Checking if we have previous status'.format
-                   (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
+                   (show=ep_obj.show.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
                 ep_obj.status = history_eps[ep_obj.episode]['status']
@@ -213,7 +213,7 @@ def log_snatch(search_result):
     else:
         provider = 'unknown'
 
-    show_obj = search_result.episodes[0].series
+    show_obj = search_result.episodes[0].show
 
     failed_db_con = db.DBConnection('failed.db')
     for episode in search_result.episodes:
@@ -286,7 +286,7 @@ def find_release(ep_obj):
         '               AND episode = {2}'
         '               AND indexer_id = {3}'
         '             )'.format
-        (ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer)
+        (ep_obj.show.indexerid, ep_obj.season, ep_obj.episode, ep_obj.show.indexer)
     )
 
     # Search for release in snatch history
@@ -297,7 +297,7 @@ def find_release(ep_obj):
         ' AND season=?'
         ' AND episode=?'
         ' AND indexer_id=?',
-        [ep_obj.series.indexerid, ep_obj.season, ep_obj.episode, ep_obj.series.indexer]
+        [ep_obj.show.indexerid, ep_obj.season, ep_obj.episode, ep_obj.show.indexer]
     )
 
     for result in results:
@@ -315,11 +315,11 @@ def find_release(ep_obj):
 
         # Found a previously failed release
         logger.log(u'Failed release found for {show} {ep}: {release}'.format
-                   (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode),
+                   (show=ep_obj.show.name, ep=episode_num(ep_obj.season, ep_obj.episode),
                     release=result[b'release']), logger.DEBUG)
         return release, provider
 
     # Release was not found
     logger.log(u'No releases found for {show} {ep}'.format
-               (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
+               (show=ep_obj.show.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
     return release, provider

@@ -120,7 +120,7 @@ const startVue = () => {
                 % endif
 
                 <div class="show-row" data-name="${cur_show.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_show.is_anime}">
-                    <div class="recommended-container default-poster ${('', 'show-in-list')[cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa]}">
+                    <div class="recommended-container default-poster ${('', 'show-in-list')[cur_show.show_in_list or cur_show.mapped_show_id in removed_from_medusa]}">
                         <div class="recommended-image">
                             <app-link href="${cur_show.image_href}">
                                 <img alt="" class="recommended-image" src="images/poster.png" data-original="${cur_show.image_src}" height="273px" width="186px"/>
@@ -144,17 +144,17 @@ const startVue = () => {
 
                             <div class="recommendedShowTitleIcons">
                                 % if cur_show.show_in_list:
-                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">In List</app-link></button>
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&showid=${cur_show.mapped_show_id}">In List</app-link></button>
                                 % else:
                                     <button class="btn-medusa btn-xs" data-isanime="1" data-indexer="${cur_show.mapped_indexer_name}"
-                                    data-indexer-id="${cur_show.mapped_series_id}" data-show-name="${cur_show.title | u}"
+                                    data-indexer-id="${cur_show.mapped_show_id}" data-show-name="${cur_show.title | u}"
                                     data-add-show>Add</button>
                                 % endif
-                                % if cur_show.mapped_series_id in removed_from_medusa:
-                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">Watched</app-link></button>
+                                % if cur_show.mapped_show_id in removed_from_medusa:
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&showid=${cur_show.mapped_show_id}">Watched</app-link></button>
                                 % endif
-                                % if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa):
-                                    <button data-indexer-id="${cur_show.mapped_series_id}" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
+                                % if trakt_b and not (cur_show.show_in_list or cur_show.mapped_show_id in removed_from_medusa):
+                                    <button data-indexer-id="${cur_show.mapped_show_id}" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
                                 % endif
                             </div>
                         </div>

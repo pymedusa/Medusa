@@ -79,7 +79,7 @@ class AnimeBytes(TorrentProvider):
             'sort': 'time_added',
             'way': 'desc',
             'hentai': '2',
-            'anime[tv_series]': '1',
+            'anime[tv_show]': '1',
             'anime[tv_special]': '1',
             'releasegroup': '',
             'epcount': '',
@@ -202,7 +202,7 @@ class AnimeBytes(TorrentProvider):
                     # Create the single episode release_name
                     # Single.Episode.TV.Show.SXXEXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
                     title = '{title}.{season}{episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
+                            '{release_group}'.format(title=group.get('ShowName'),
                                                      season='S{0}'.format(season) if season else 'S01',
                                                      episode='E{0}'.format(episode),
                                                      tags=tags,
@@ -211,7 +211,7 @@ class AnimeBytes(TorrentProvider):
                     # Create the multi-episode release_name
                     # Multiple.Episode.TV.Show.SXXEXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
                     title = '{title}.{season}{multi_episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
+                            '{release_group}'.format(title=group.get('ShowName'),
                                                      season='S{0}'.format(season) if season else 'S01',
                                                      multi_episode='E01-E{0}'.format(episode),
                                                      tags=tags,
@@ -219,7 +219,7 @@ class AnimeBytes(TorrentProvider):
                 if release_type == SEASON_PACK:
                     # Create the season pack release_name
                     title = '{title}.{season}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
+                            '{release_group}'.format(title=group.get('ShowName'),
                                                      season='S{0}'.format(season) if season else 'S01',
                                                      tags=tags,
                                                      release_group=release_group)
@@ -228,7 +228,7 @@ class AnimeBytes(TorrentProvider):
                     # Create the multi season pack release_name
                     # Multiple.Episode.TV.Show.EXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
                     title = '{title}.{episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
+                            '{release_group}'.format(title=group.get('ShowName'),
                                                      episode=episode,
                                                      tags=tags,
                                                      release_group=release_group)
@@ -271,7 +271,7 @@ class AnimeBytes(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -282,7 +282,7 @@ class AnimeBytes(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

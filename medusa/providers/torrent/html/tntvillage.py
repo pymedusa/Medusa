@@ -221,7 +221,7 @@ class TNTVillageProvider(TorrentProvider):
         if not result_info:
             return None
 
-        bad_words = ['[cura]', 'hot', 'season', 'stagione', 'series', 'premiere', 'finale', 'fine',
+        bad_words = ['[cura]', 'hot', 'season', 'stagione', 'show', 'premiere', 'finale', 'fine',
                      'full', 'Completa', 'supereroi', 'commedia', 'drammatico', 'poliziesco', 'azione',
                      'giallo', 'politico', 'sitcom', 'fantasy', 'funzionante']
 

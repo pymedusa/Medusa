@@ -148,12 +148,12 @@ class AddIndexerSceneExceptions(RemoveIndexerUpdateSchema):  # pylint:disable=to
 
 class AddIndexerIds(AddIndexerSceneExceptions):
     """
-    Add the indexer_id to all table's that have a series_id already.
+    Add the indexer_id to all table's that have a show_id already.
 
-    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
-    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    If the current show_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + show_id in a later iteration.
 
-    For example in this case, the table scene_names has used the fieldname `indexer_id` for the series id.
+    For example in this case, the table scene_names has used the fieldname `indexer_id` for the show id.
     This is unfortunate, but we can change that later.
     """
 

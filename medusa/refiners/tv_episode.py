@@ -18,8 +18,8 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 SHOW_MAPPING = {
-    'series_tvdb_id': 'tvdb_id',
-    'series_imdb_id': 'imdb_id',
+    'show_tvdb_id': 'tvdb_id',
+    'show_imdb_id': 'imdb_id',
     'year': 'start_year'
 }
 
@@ -35,7 +35,7 @@ ADDITIONAL_MAPPING = {
     'release_group': 'release_group',
 }
 
-series_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\))?$')
+show_re = re.compile(r'^(?P<show>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\))?$')
 
 
 def refine(video, tv_episode=None, **kwargs):
@@ -47,7 +47,7 @@ def refine(video, tv_episode=None, **kwargs):
     :type tv_episode: medusa.tv.Episode
     :param kwargs:
     """
-    if video.series_tvdb_id and video.tvdb_id:
+    if video.show_tvdb_id and video.tvdb_id:
         log.debug('No need to refine with Episode')
         return
 
@@ -60,11 +60,11 @@ def refine(video, tv_episode=None, **kwargs):
                   {'name': video.name})
         return
 
-    if tv_episode.series:
-        log.debug('Refining using Series information.')
-        series, year, _ = series_re.match(tv_episode.series.name).groups()
-        enrich({'series': series, 'year': int(year) if year else None}, video)
-        enrich(SHOW_MAPPING, video, tv_episode.series)
+    if tv_episode.show:
+        log.debug('Refining using Show information.')
+        show, year, _ = show_re.match(tv_episode.show.name).groups()
+        enrich({'show': show, 'year': int(year) if year else None}, video)
+        enrich(SHOW_MAPPING, video, tv_episode.show)
 
     log.debug('Refining using Episode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)

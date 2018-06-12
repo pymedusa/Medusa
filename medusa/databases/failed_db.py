@@ -71,10 +71,10 @@ class HistoryStatus(History):
 
 class AddIndexerIds(HistoryStatus):
     """
-    Add the indexer_id to all table's that have a series_id already.
+    Add the indexer_id to all table's that have a show_id already.
 
-    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
-    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    If the current show_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + show_id in a later iteration.
     """
 
     def test(self):
@@ -86,13 +86,13 @@ class AddIndexerIds(HistoryStatus):
 
         # get all the shows. Might need them.
         main_db_con = db.DBConnection()
-        all_series = main_db_con.select('SELECT indexer, indexer_id FROM tv_shows')
+        all_show = main_db_con.select('SELECT indexer, indexer_id FROM tv_shows')
 
-        series_dict = {}
+        show_dict = {}
         # check for double
-        for series in all_series:
-            if series[b'indexer_id'] not in series_dict:
-                series_dict[series[b'indexer_id']] = series[b'indexer']
+        for show in all_show:
+            if show[b'indexer_id'] not in show_dict:
+                show_dict[show[b'indexer_id']] = show[b'indexer']
 
         query = 'SELECT showid FROM history WHERE indexer_id IS NULL'
         results = self.connection.select(query)
@@ -101,16 +101,16 @@ class AddIndexerIds(HistoryStatus):
 
         log.info(u'Starting to update the history table in the failed.db database')
 
-        # Updating all rows, using the series id.
-        for series_id in series_dict:
+        # Updating all rows, using the show id.
+        for show_id in show_dict:
             # Update the value in the db.
-            # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
-            indexer_id = series_dict.get(series_id)
+            # Get the indexer (tvdb, tmdb, tvmaze etc, for this show_id).
+            indexer_id = show_dict.get(show_id)
             if not indexer_id:
                 continue
 
             self.connection.action(
-                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, series_id]
+                'UPDATE history SET indexer_id = ? WHERE showid = ?', [indexer_id, show_id]
             )
 
 

@@ -41,8 +41,8 @@ from medusa.post_processor import PostProcessor
 from medusa.server.web.core import PageTemplate, WebRoot
 from medusa.server.web.home import Home
 from medusa.show.show import Show
-from medusa.tv import Episode, Series
-from medusa.tv.series import SeriesIdentifier
+from medusa.tv import Episode, Show
+from medusa.tv.show import ShowIdentifier
 
 from tornroutes import route
 
@@ -57,7 +57,7 @@ class Manage(Home, WebRoot):
         return t.render(topmenu='manage', controller='manage', action='index')
 
     @staticmethod
-    def showEpisodeStatuses(indexername, seriesid, whichStatus):
+    def showEpisodeStatuses(indexername, showid, whichStatus):
         status_list = [int(whichStatus)]
         if status_list[0] == SNATCHED:
             status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
@@ -69,7 +69,7 @@ class Manage(Home, WebRoot):
             b'WHERE indexer = ? AND showid = ? '
             b'AND season != 0 AND status IN ({statuses})'.format(
                 statuses=','.join(['?'] * len(status_list))),
-            [int(indexer_name_to_id(indexername)), int(seriesid)] + status_list
+            [int(indexer_name_to_id(indexername)), int(showid)] + status_list
         )
 
         result = {}
@@ -119,15 +119,15 @@ class Manage(Home, WebRoot):
 
         for cur_status_result in status_results:
             cur_indexer = int(cur_status_result[b'indexer'])
-            cur_series_id = int(cur_status_result[b'indexer_id'])
-            if (cur_indexer, cur_series_id) not in ep_counts:
-                ep_counts[(cur_indexer, cur_series_id)] = 1
+            cur_show_id = int(cur_status_result[b'indexer_id'])
+            if (cur_indexer, cur_show_id) not in ep_counts:
+                ep_counts[(cur_indexer, cur_show_id)] = 1
             else:
-                ep_counts[(cur_indexer, cur_series_id)] += 1
+                ep_counts[(cur_indexer, cur_show_id)] += 1
 
-            show_names[(cur_indexer, cur_series_id)] = cur_status_result[b'show_name']
-            if (cur_indexer, cur_series_id) not in sorted_show_ids:
-                sorted_show_ids.append((cur_indexer, cur_series_id))
+            show_names[(cur_indexer, cur_show_id)] = cur_status_result[b'show_name']
+            if (cur_indexer, cur_show_id) not in sorted_show_ids:
+                sorted_show_ids.append((cur_indexer, cur_show_id))
 
         return t.render(
             title='Episode Overview', header='Episode Overview',
@@ -144,22 +144,22 @@ class Manage(Home, WebRoot):
 
         # make a list of all shows and their associated args
         for arg in kwargs:
-            indexer_id, series_id, what = arg.split('-')
+            indexer_id, show_id, what = arg.split('-')
 
             # we don't care about unchecked checkboxes
             if kwargs[arg] != 'on':
                 continue
 
-            if (indexer_id, series_id) not in to_change:
-                to_change[(indexer_id, series_id)] = []
+            if (indexer_id, show_id) not in to_change:
+                to_change[(indexer_id, show_id)] = []
 
-            to_change[(indexer_id, series_id)].append(what)
+            to_change[(indexer_id, show_id)].append(what)
 
         main_db_con = db.DBConnection()
-        for cur_indexer_id, cur_series_id in to_change:
+        for cur_indexer_id, cur_show_id in to_change:
 
             # get a list of all the eps we want to change if they just said 'all'
-            if 'all' in to_change[(cur_indexer_id, cur_series_id)]:
+            if 'all' in to_change[(cur_indexer_id, cur_show_id)]:
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
@@ -167,18 +167,18 @@ class Manage(Home, WebRoot):
                     b'AND season != 0 '
                     b'AND indexer = ? '
                     b'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
-                    status_list + [cur_indexer_id, cur_series_id]
+                    status_list + [cur_indexer_id, cur_show_id]
                 )
 
                 all_eps = ['{season}x{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
-                to_change[cur_indexer_id, cur_series_id] = all_eps
+                to_change[cur_indexer_id, cur_show_id] = all_eps
 
-            self.setStatus(indexer_id_to_name(int(cur_indexer_id)), cur_series_id, '|'.join(to_change[(cur_indexer_id, cur_series_id)]), newStatus, direct=True)
+            self.setStatus(indexer_id_to_name(int(cur_indexer_id)), cur_show_id, '|'.join(to_change[(cur_indexer_id, cur_show_id)]), newStatus, direct=True)
 
         return self.redirect('/manage/episodeStatuses/')
 
     @staticmethod
-    def showSubtitleMissed(indexer, seriesid, whichSubs):
+    def showSubtitleMissed(indexer, showid, whichSubs):
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
             b'SELECT season, episode, name, subtitles '
@@ -188,7 +188,7 @@ class Manage(Home, WebRoot):
             b'AND season != 0 '
             b'AND status = ? '
             b"AND location != ''",
-            [int(indexer), int(seriesid), DOWNLOADED]
+            [int(indexer), int(showid), DOWNLOADED]
         )
 
         result = {}
@@ -246,19 +246,19 @@ class Manage(Home, WebRoot):
             elif whichSubs in cur_status_result[b'subtitles']:
                 continue
 
-            # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
+            # FIXME: This will cause multi-indexer results where show_id overlaps for different indexers.
             # Fix by using tv_shows.show_id in stead.
 
             cur_indexer_id = int(cur_status_result[b'indexer'])
-            cur_series_id = int(cur_status_result[b'indexer_id'])
-            if (cur_indexer_id, cur_series_id) not in ep_counts:
-                ep_counts[(cur_indexer_id, cur_series_id)] = 1
+            cur_show_id = int(cur_status_result[b'indexer_id'])
+            if (cur_indexer_id, cur_show_id) not in ep_counts:
+                ep_counts[(cur_indexer_id, cur_show_id)] = 1
             else:
-                ep_counts[(cur_indexer_id, cur_series_id)] += 1
+                ep_counts[(cur_indexer_id, cur_show_id)] += 1
 
-            show_names[(cur_indexer_id, cur_series_id)] = cur_status_result[b'show_name']
-            if (cur_indexer_id, cur_series_id) not in sorted_show_ids:
-                sorted_show_ids.append((cur_indexer_id, cur_series_id))
+            show_names[(cur_indexer_id, cur_show_id)] = cur_status_result[b'show_name']
+            if (cur_indexer_id, cur_show_id) not in sorted_show_ids:
+                sorted_show_ids.append((cur_indexer_id, cur_show_id))
 
         return t.render(whichSubs=whichSubs, show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
                         title='Missing Subtitles', header='Missing Subtitles', topmenu='manage',
@@ -269,20 +269,20 @@ class Manage(Home, WebRoot):
 
         # make a list of all shows and their associated args
         for arg in kwargs:
-            indexer_id, series_id, what = arg.split('-')
+            indexer_id, show_id, what = arg.split('-')
 
             # we don't care about unchecked checkboxes
             if kwargs[arg] != 'on':
                 continue
 
-            if (indexer_id, series_id) not in to_download:
-                to_download[(indexer_id, series_id)] = []
+            if (indexer_id, show_id) not in to_download:
+                to_download[(indexer_id, show_id)] = []
 
-            to_download[(indexer_id, series_id)].append(what)
+            to_download[(indexer_id, show_id)].append(what)
 
-        for cur_indexer_id, cur_series_id in to_download:
+        for cur_indexer_id, cur_show_id in to_download:
             # get a list of all the eps we want to download subtitles if they just said 'all'
-            if 'all' in to_download[(cur_indexer_id, cur_series_id)]:
+            if 'all' in to_download[(cur_indexer_id, cur_show_id)]:
                 main_db_con = db.DBConnection()
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
@@ -292,15 +292,15 @@ class Manage(Home, WebRoot):
                     b'AND indexer = ? '
                     b'AND showid = ? '
                     b"AND location != ''",
-                    [DOWNLOADED, cur_indexer_id, cur_series_id]
+                    [DOWNLOADED, cur_indexer_id, cur_show_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_show_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
-            for epResult in to_download[(cur_indexer_id, cur_series_id)]:
+            for epResult in to_download[(cur_indexer_id, cur_show_id)]:
                 season, episode = epResult.split('x')
 
-                series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
-                series_obj.get_episode(season, episode).download_subtitles()
+                show_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_show_id)
+                show_obj.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')
 
@@ -333,7 +333,7 @@ class Manage(Home, WebRoot):
                 else:
                     continue
 
-                if not tv_episode.series.subtitles:
+                if not tv_episode.show.subtitles:
                     continue
 
                 related_files = PostProcessor(video_path).list_associated_files(video_path, subtitles_only=True)
@@ -352,21 +352,21 @@ class Manage(Home, WebRoot):
                     age_unit = 'm'
                     age_value = age_minutes
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'seriesid': tv_episode.series.indexerid,
-                                           'show_name': tv_episode.series.name, 'season': tv_episode.season,
+                app.RELEASES_IN_PP.append({'release': video_path, 'showid': tv_episode.show.indexerid,
+                                           'show_name': tv_episode.show.name, 'season': tv_episode.season,
                                            'episode': tv_episode.episode, 'status': status, 'age': age_value,
                                            'age_unit': age_unit, 'date': video_date,
-                                           'indexername': tv_episode.series.indexer_name})
+                                           'indexername': tv_episode.show.indexer_name})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, topmenu='manage',
                         controller='manage', action='subtitleMissedPP')
 
-    def backlogShow(self, indexername, seriesid):
+    def backlogShow(self, indexername, showid):
         indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        show_obj = Show.find_by_id(app.showList, indexer_id, showid)
 
-        if series_obj:
-            app.backlog_search_scheduler.action.search_backlog([series_obj])
+        if show_obj:
+            app.backlog_search_scheduler.action.search_backlog([show_obj])
 
         return self.redirect('/manage/backlogOverview/')
 
@@ -414,7 +414,7 @@ class Manage(Home, WebRoot):
                       e.indexer = ? AND e.showid = ?
                 ORDER BY e.season DESC, e.episode DESC
                 """,
-                [cur_show.indexer, cur_show.series_id]
+                [cur_show.indexer, cur_show.show_id]
             )
             filtered_episodes = []
             backlogged_episodes = [dict(row) for row in sql_results]
@@ -444,9 +444,9 @@ class Manage(Home, WebRoot):
                         cur_result[b'episode_string'] = episode_string
                         filtered_episodes.append(cur_result)
 
-            show_counts[(cur_show.indexer, cur_show.series_id)] = ep_counts
-            show_cats[(cur_show.indexer, cur_show.series_id)] = ep_cats
-            show_sql_results[(cur_show.indexer, cur_show.series_id)] = filtered_episodes
+            show_counts[(cur_show.indexer, cur_show.show_id)] = ep_counts
+            show_cats[(cur_show.indexer, cur_show.show_id)] = ep_cats
+            show_sql_results[(cur_show.indexer, cur_show.show_id)] = filtered_episodes
 
         return t.render(
             showCounts=show_counts, showCats=show_cats,
@@ -459,16 +459,16 @@ class Manage(Home, WebRoot):
         if not toEdit:
             return self.redirect('/manage/')
 
-        series_slugs = toEdit.split('|')
+        show_slugs = toEdit.split('|')
         show_list = []
         show_names = []
-        for slug in series_slugs:
-            identifier = SeriesIdentifier.from_slug(slug)
-            series_obj = Series.find_by_identifier(identifier)
+        for slug in show_slugs:
+            identifier = ShowIdentifier.from_slug(slug)
+            show_obj = Show.find_by_identifier(identifier)
 
-            if series_obj:
-                show_list.append(series_obj)
-                show_names.append(series_obj.name)
+            if show_obj:
+                show_list.append(show_obj)
+                show_names.append(show_obj.name)
 
         season_folders_all_same = True
         last_season_folders = None
@@ -603,80 +603,80 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        series_slugs = toEdit.split('|') if toEdit else []
+        show_slugs = toEdit.split('|') if toEdit else []
         errors = 0
-        for series_slug in series_slugs:
-            identifier = SeriesIdentifier.from_slug(series_slug)
-            series_obj = Series.find_by_identifier(identifier)
+        for show_slug in show_slugs:
+            identifier = ShowIdentifier.from_slug(show_slug)
+            show_obj = Show.find_by_identifier(identifier)
 
-            if not series_obj:
+            if not show_obj:
                 continue
 
-            cur_root_dir = os.path.dirname(series_obj._location)
-            cur_show_dir = os.path.basename(series_obj._location)
+            cur_root_dir = os.path.dirname(show_obj._location)
+            cur_show_dir = os.path.basename(show_obj._location)
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show._location} to {location}'.format
-                           (show=series_obj, location=new_show_dir))
+                           (show=show_obj, location=new_show_dir))
             else:
-                new_show_dir = series_obj._location
+                new_show_dir = show_obj._location
 
             if paused == 'keep':
-                new_paused = series_obj.paused
+                new_paused = show_obj.paused
             else:
                 new_paused = True if paused == 'enable' else False
             new_paused = 'on' if new_paused else 'off'
 
             if default_ep_status == 'keep':
-                new_default_ep_status = series_obj.default_ep_status
+                new_default_ep_status = show_obj.default_ep_status
             else:
                 new_default_ep_status = default_ep_status
 
             if anime == 'keep':
-                new_anime = series_obj.anime
+                new_anime = show_obj.anime
             else:
                 new_anime = True if anime == 'enable' else False
             new_anime = 'on' if new_anime else 'off'
 
             if sports == 'keep':
-                new_sports = series_obj.sports
+                new_sports = show_obj.sports
             else:
                 new_sports = True if sports == 'enable' else False
             new_sports = 'on' if new_sports else 'off'
 
             if scene == 'keep':
-                new_scene = series_obj.is_scene
+                new_scene = show_obj.is_scene
             else:
                 new_scene = True if scene == 'enable' else False
             new_scene = 'on' if new_scene else 'off'
 
             if air_by_date == 'keep':
-                new_air_by_date = series_obj.air_by_date
+                new_air_by_date = show_obj.air_by_date
             else:
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
             if dvd_order == 'keep':
-                new_dvd_order = series_obj.dvd_order
+                new_dvd_order = show_obj.dvd_order
             else:
                 new_dvd_order = True if dvd_order == 'enable' else False
             new_dvd_order = 'on' if new_dvd_order else 'off'
 
             if season_folders == 'keep':
-                new_season_folders = series_obj.season_folders
+                new_season_folders = show_obj.season_folders
             else:
                 new_season_folders = True if season_folders == 'enable' else False
             new_season_folders = 'on' if new_season_folders else 'off'
 
             if subtitles == 'keep':
-                new_subtitles = series_obj.subtitles
+                new_subtitles = show_obj.subtitles
             else:
                 new_subtitles = True if subtitles == 'enable' else False
 
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                allowed_qualities, preferred_qualities = series_obj.current_qualities
+                allowed_qualities, preferred_qualities = show_obj.current_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 
@@ -716,41 +716,41 @@ class Manage(Home, WebRoot):
         image_update = []
 
         for slug in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata + to_image_update):
-            identifier = SeriesIdentifier.from_slug(slug)
-            series_obj = Series.find_by_identifier(identifier)
+            identifier = ShowIdentifier.from_slug(slug)
+            show_obj = Show.find_by_identifier(identifier)
 
-            if not series_obj:
+            if not show_obj:
                 continue
 
             if slug in to_delete + to_remove:
-                app.show_queue_scheduler.action.removeShow(series_obj, slug in to_delete)
+                app.show_queue_scheduler.action.removeShow(show_obj, slug in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
             if slug in to_update:
                 try:
-                    app.show_queue_scheduler.action.updateShow(series_obj)
-                    updates.append(series_obj.name)
+                    app.show_queue_scheduler.action.updateShow(show_obj)
+                    updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif slug in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    app.show_queue_scheduler.action.refreshShow(series_obj)
-                    refreshes.append(series_obj.name)
+                    app.show_queue_scheduler.action.refreshShow(show_obj)
+                    refreshes.append(show_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
-                                  (show=series_obj, error=msg))
+                                  (show=show_obj, error=msg))
 
             if slug in to_rename:
-                app.show_queue_scheduler.action.renameShowEpisodes(series_obj)
-                renames.append(series_obj.name)
+                app.show_queue_scheduler.action.renameShowEpisodes(show_obj)
+                renames.append(show_obj.name)
 
             if slug in to_subtitle:
-                app.show_queue_scheduler.action.download_subtitles(series_obj)
-                subtitles.append(series_obj.name)
+                app.show_queue_scheduler.action.download_subtitles(show_obj)
+                subtitles.append(show_obj.name)
 
             if slug in to_image_update:
-                image_cache.replace_images(series_obj)
+                image_cache.replace_images(show_obj)
 
         if errors:
             ui.notifications.error('Errors encountered',

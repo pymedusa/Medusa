@@ -35,10 +35,10 @@ logger = logging.getLogger(__name__)
 class ItaSASubtitle(Subtitle):
     provider_name = 'itasa'
 
-    def __init__(self, sub_id, series, season, episode, video_format, year, tvdb_id, full_data):
+    def __init__(self, sub_id, show, season, episode, video_format, year, tvdb_id, full_data):
         super(ItaSASubtitle, self).__init__(Language('ita'))
         self.sub_id = sub_id
-        self.series = series
+        self.show = show
         self.season = season
         self.episode = episode
         self.format = video_format
@@ -53,9 +53,9 @@ class ItaSASubtitle(Subtitle):
     def get_matches(self, video, hearing_impaired=False):
         matches = set()
 
-        # series
-        if video.series and sanitize(self.series) == sanitize(video.series):
-            matches.add('series')
+        # show
+        if video.show and sanitize(self.show) == sanitize(video.show):
+            matches.add('show')
         # season
         if video.season and self.season == video.season:
             matches.add('season')
@@ -67,8 +67,8 @@ class ItaSASubtitle(Subtitle):
             matches.add('format')
         if video.year and self.year == video.year:
             matches.add('year')
-        if video.series_tvdb_id and self.tvdb_id == video.series_tvdb_id:
-            matches.add('series_tvdb_id')
+        if video.show_tvdb_id and self.tvdb_id == video.show_tvdb_id:
+            matches.add('show_tvdb_id')
 
         # other properties
         matches |= guess_matches(video, guessit(self.full_data), partial=True)
@@ -136,9 +136,9 @@ class ItaSAProvider(Provider):
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
-        """Get the ``dict`` of show ids per series by querying the `shows` page.
+        """Get the ``dict`` of show ids per show by querying the `shows` page.
 
-        :return: show id per series, lower case and without quotes.
+        :return: show id per show, lower case and without quotes.
         :rtype: dict
 
         """
@@ -160,16 +160,16 @@ class ItaSAProvider(Provider):
         return show_ids
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
-    def _search_show_id(self, series):
-        """Search the show id from the `series`
+    def _search_show_id(self, show):
+        """Search the show id from the `show`
 
-        :param str series: series of the episode.
+        :param str show: show of the episode.
         :return: the show id, if found.
         :rtype: int or None
 
         """
         # build the param
-        params = {'apikey': self.apikey, 'q': series}
+        params = {'apikey': self.apikey, 'q': show}
 
         # make the search
         logger.info('Searching show ids with %r', params)
@@ -183,7 +183,7 @@ class ItaSAProvider(Provider):
 
         # Looking for show in first page
         for show in root.findall('data/shows/show'):
-            if sanitize(show.find('name').text).lower() == sanitize(series.lower()):
+            if sanitize(show.find('name').text).lower() == sanitize(show.lower()):
                 show_id = int(show.find('id').text)
                 logger.debug('Found show id %d', show_id)
 
@@ -201,7 +201,7 @@ class ItaSAProvider(Provider):
 
             # Looking for show in following pages
             for show in root.findall('data/shows/show'):
-                if sanitize(show.find('name').text).lower() == sanitize(series.lower()):
+                if sanitize(show.find('name').text).lower() == sanitize(show.lower()):
                     show_id = int(show.find('id').text)
                     logger.debug('Found show id %d', show_id)
 
@@ -214,35 +214,35 @@ class ItaSAProvider(Provider):
 
         return None
 
-    def get_show_id(self, series, country_code=None):
-        """Get the best matching show id for `series`.
+    def get_show_id(self, show, country_code=None):
+        """Get the best matching show id for `show`.
 
         First search in the result of :meth:`_get_show_ids` and fallback on a search with :meth:`_search_show_id`
 
-        :param str series: series of the episode.
+        :param str show: show of the episode.
         :param str country_code: the country in which teh show is aired.
         :return: the show id, if found.
         :rtype: int or None
 
         """
-        series_sanitized = sanitize(series).lower()
+        show_sanitized = sanitize(show).lower()
         show_ids = self._get_show_ids()
         show_id = None
 
         # attempt with country
         if not show_id and country_code:
             logger.debug('Getting show id with country')
-            show_id = show_ids.get('%s %s' % (series_sanitized, country_code.lower()))
+            show_id = show_ids.get('%s %s' % (show_sanitized, country_code.lower()))
 
         # attempt clean
         if not show_id:
             logger.debug('Getting show id')
-            show_id = show_ids.get(series_sanitized)
+            show_id = show_ids.get(show_sanitized)
 
         # search as last resort
         if not show_id:
-            logger.warning('Series not found in show ids')
-            show_id = self._search_show_id(series)
+            logger.warning('Show not found in show ids')
+            show_id = self._search_show_id(show)
 
         return show_id
 
@@ -323,16 +323,16 @@ class ItaSAProvider(Provider):
 
         return subs
 
-    def query(self, series, season, episode, video_format, resolution, country=None):
+    def query(self, show, season, episode, video_format, resolution, country=None):
 
         # To make queries you need to be logged in
         if not self.logged_in:  # pragma: no cover
             raise ConfigurationError('Cannot query if not logged in')
 
         # get the show id
-        show_id = self.get_show_id(series, country)
+        show_id = self.get_show_id(show, country)
         if show_id is None:
-            logger.error('No show id found for %r ', series)
+            logger.error('No show id found for %r ', show)
             return []
 
         # get the page of the season of the show
@@ -483,7 +483,7 @@ class ItaSAProvider(Provider):
         return subtitles + additional_subs
 
     def list_subtitles(self, video, languages):
-        return self.query(video.series, video.season, video.episode, video.format, video.resolution)
+        return self.query(video.show, video.season, video.episode, video.format, video.resolution)
 
     def download_subtitle(self, subtitle):   # pragma: no cover
         pass

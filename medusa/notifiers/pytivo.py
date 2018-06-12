@@ -59,8 +59,8 @@ class Notifier(object):
         #
 
         # Calculated values
-        showPath = ep_obj.series.location
-        showName = ep_obj.series.name
+        showPath = ep_obj.show.location
+        showName = ep_obj.show.name
         rootShowAndSeason = os.path.dirname(ep_obj.location)
         absPath = ep_obj.location
 

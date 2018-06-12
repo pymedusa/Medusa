@@ -14,8 +14,8 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12" data-showname="${show.name | h}">
         <div>
-            <h1 class="title" data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
-                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name | h}</app-link>
+            <h1 class="title" data-indexer-name="${show.indexer_name}" data-show-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
+                <app-link href="home/displayShow?indexername=${show.indexer_name}&showid=${show.indexerid}" class="snatchTitle">${show.name | h}</app-link>
             </h1>
         </div>
 
@@ -86,7 +86,7 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <asset default="images/poster.png" series-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                    <asset default="images/poster.png" show-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
                 </div>
             </div>
         </div>
@@ -96,7 +96,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <asset default="images/banner.png" series-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                    <asset default="images/banner.png" show-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -134,13 +134,13 @@
                          <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                      </app-link>
                  % endif
-                     <app-link href="https://fanart.tv/series/${show.indexerid}" title="https://fanart.tv/series/${show.name | h}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
+                     <app-link href="https://fanart.tv/show/${show.indexerid}" title="https://fanart.tv/show/${show.name | h}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
                          % if show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
+                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_show&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % elif show.genre:
                              % for genre in show.genre.strip('|').split('|'):
@@ -260,7 +260,7 @@
                     <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
                     <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
                     <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-                    <button class="btn-medusa seriesCheck">Select Episodes</button>
+                    <button class="btn-medusa showCheck">Select Episodes</button>
                     <button class="btn-medusa clearAll">Clear</button>
                 </div>
                 <div class="pull-lg-right top-5">
@@ -274,8 +274,8 @@
                         <option value="${cur_status}">${statusStrings[cur_status]}</option>
                     % endfor
                     </select>
-                    <input type="hidden" id="series-slug" value="${show.slug}" />
-                    <input type="hidden" id="series-id" value="${show.indexerid}" />
+                    <input type="hidden" id="show-slug" value="${show.slug}" />
+                    <input type="hidden" id="show-id" value="${show.indexerid}" />
                     <input type="hidden" id="indexer" value="${show.indexer}" />
                     <input class="btn-medusa" type="button" id="changeStatus" value="Go" />
                 </div>

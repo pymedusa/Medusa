@@ -622,10 +622,10 @@ class ProcessResult(object):
 
             try:
                 parse_result = NameParser().parse(name)
-                if parse_result.series.indexerid:
+                if parse_result.show.indexerid:
                     main_db_con = db.DBConnection()
                     sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1",
-                                                     [parse_result.series.indexer, parse_result.series.indexerid])
+                                                     [parse_result.show.indexer, parse_result.show.indexerid])
                     return bool(sql_results[0][b'subtitles']) if sql_results else False
 
                 logger.log('Empty indexer ID for: {name}'.format(name=name), logger.WARNING)

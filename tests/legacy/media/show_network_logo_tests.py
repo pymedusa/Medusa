@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 
 from medusa.media.network_logo import ShowNetworkLogo
-from medusa.tv import Series
+from medusa.tv import Show
 
 from tests.legacy.media.generic_media_tests import GenericMediaTests
 
@@ -30,5 +30,5 @@ class ShowNetworkLogoTests(GenericMediaTests):
     """Test ShowNetworkLogo."""
 
     def test_default_media_name(self):
-        series_obj = Series(1, 70726)
-        self.assertEqual(ShowNetworkLogo(series_obj, '').default_media_name, os.path.join('network', 'nonetwork.png'))
+        show_obj = Show(1, 70726)
+        self.assertEqual(ShowNetworkLogo(show_obj, '').default_media_name, os.path.join('network', 'nonetwork.png'))

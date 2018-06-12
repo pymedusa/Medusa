@@ -184,7 +184,7 @@ def make_dir(path):
     return True
 
 
-def search_indexer_for_show_id(show_name, indexer=None, series_id=None, ui=None):
+def search_indexer_for_show_id(show_name, indexer=None, show_id=None, ui=None):
     """Contact indexer to check for information on shows by showid.
 
     :param show_name: Name of show
@@ -213,29 +213,29 @@ def search_indexer_for_show_id(show_name, indexer=None, series_id=None, ui=None)
                       {'name': name, 'indexer': indexer_api.name})
 
             try:
-                search = t[series_id] if series_id else t[name]
+                search = t[show_id] if show_id else t[name]
             except Exception:
                 continue
 
             try:
-                searched_series_name = search[0]['seriesname']
+                searched_show_name = search[0]['showname']
             except Exception:
-                searched_series_name = None
+                searched_show_name = None
 
             try:
-                searched_series_id = search[0]['id']
+                searched_show_id = search[0]['id']
             except Exception:
-                searched_series_id = None
+                searched_show_id = None
 
-            if not (searched_series_name and searched_series_id):
+            if not (searched_show_name and searched_show_id):
                 continue
-            series = Show.find_by_id(app.showList, i, searched_series_id)
+            show = Show.find_by_id(app.showList, i, searched_show_id)
             # Check if we can find the show in our list
             # if not, it's not the right show
-            if (series_id is None) and (series is not None) and (series.indexerid == int(searched_series_id)):
-                return searched_series_name, i, int(searched_series_id)
-            elif (series_id is not None) and (int(series_id) == int(searched_series_id)):
-                return searched_series_name, i, int(series_id)
+            if (show_id is None) and (show is not None) and (show.indexerid == int(searched_show_id)):
+                return searched_show_name, i, int(searched_show_id)
+            elif (show_id is not None) and (int(show_id) == int(searched_show_id)):
+                return searched_show_name, i, int(show_id)
 
         if indexer:
             break
@@ -758,7 +758,7 @@ def update_anime_support():
     app.ANIMESUPPORT = is_anime_in_show_list()
 
 
-def get_absolute_number_from_season_and_episode(series_obj, season, episode):
+def get_absolute_number_from_season_and_episode(show_obj, season, episode):
     """Find the absolute number for a show episode.
 
     :param show: Show object
@@ -771,20 +771,20 @@ def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     if season and episode:
         main_db_con = db.DBConnection()
         sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
-        sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
+        sql_results = main_db_con.select(sql, [show_obj.indexer, show_obj.show_id, season, episode])
 
         if len(sql_results) == 1:
             absolute_number = int(sql_results[0][b'absolute_number'])
             log.debug(
                 u'Found absolute number {absolute} for show {show} {ep}', {
                     'absolute': absolute_number,
-                    'show': series_obj.name,
+                    'show': show_obj.name,
                     'ep': episode_num(season, episode),
                 }
             )
         else:
             log.debug(u'No entries for absolute number for show {show} {ep}',
-                      {'show': series_obj.name, 'ep': episode_num(season, episode)})
+                      {'show': show_obj.name, 'ep': episode_num(season, episode)})
 
     return absolute_number
 
@@ -1000,56 +1000,56 @@ def full_sanitize_scene_name(name):
 
 def get_show(name, try_indexers=False):
     """
-    Retrieve a series object using the series name.
+    Retrieve a show object using the show name.
 
-    :param name: A series name or a list of series names, when the parsed series result, returned multiple.
-    :param try_indexers: Toggle the lookup of the series using the series name and one or more indexers.
+    :param name: A show name or a list of show names, when the parsed show result, returned multiple.
+    :param try_indexers: Toggle the lookup of the show using the show name and one or more indexers.
 
-    :return: The found series object or None.
+    :return: The found show object or None.
     """
     from medusa import classes, name_cache, scene_exceptions
     if not app.showList:
         return
 
-    series = None
+    show = None
     from_cache = False
 
     if not name:
-        return series
+        return show
 
-    for series_name in generate(name):
-        # check cache for series
-        indexer_id, series_id = name_cache.retrieveNameFromCache(series_name)
-        if series_id:
+    for show_name in generate(name):
+        # check cache for show
+        indexer_id, show_id = name_cache.retrieveNameFromCache(show_name)
+        if show_id:
             from_cache = True
-            series = Show.find_by_id(app.showList, indexer_id, series_id)
+            show = Show.find_by_id(app.showList, indexer_id, show_id)
 
         # try indexers
-        if not series and try_indexers:
-            _, found_indexer_id, found_series_id = search_indexer_for_show_id(full_sanitize_scene_name(series_name),
+        if not show and try_indexers:
+            _, found_indexer_id, found_show_id = search_indexer_for_show_id(full_sanitize_scene_name(show_name),
                                                                               ui=classes.ShowListUI)
-            series = Show.find_by_id(app.showList, found_indexer_id, found_series_id)
+            show = Show.find_by_id(app.showList, found_indexer_id, found_show_id)
 
         # try scene exceptions
-        if not series:
-            series_from_name = scene_exceptions.get_scene_exceptions_by_name(series_name)[0]
-            series_id = series_from_name[0]
-            indexer_id = series_from_name[2]
-            if series_id:
-                series = Show.find_by_id(app.showList, indexer_id, series_id)
+        if not show:
+            show_from_name = scene_exceptions.get_scene_exceptions_by_name(show_name)[0]
+            show_id = show_from_name[0]
+            indexer_id = show_from_name[2]
+            if show_id:
+                show = Show.find_by_id(app.showList, indexer_id, show_id)
 
-        if not series:
+        if not show:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
-                               series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
-            for found_series in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
-                            (name=series_name, series=found_series))
+                               show_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
+            for found_show in match_name_only:
+                log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
+                            (name=show_name, show=found_show))
 
         # add show to cache
-        if series and not from_cache:
-            name_cache.addNameToCache(series_name, series.indexer, series.indexerid)
+        if show and not from_cache:
+            name_cache.addNameToCache(show_name, show.indexer, show.indexerid)
 
-        return series
+        return show
 
 
 def is_hidden_folder(folder):
@@ -1478,29 +1478,29 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
+        url = "http://www.thetvdb.com/api/GetShowByRemoteID.php?imdbid=%s" % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter("Show"):
+                tvdb_id = show.findtext("showid")
 
         if tvdb_id:
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
+        url = "http://www.thetvdb.com/api/GetShowByRemoteID.php?zap2it=%s" % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter("Show"):
+                tvdb_id = show.findtext("showid")
 
         return tvdb_id
 
@@ -1549,7 +1549,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
         )
 
     data = getattr(s, 'data', {})
-    return data.get('seriesname')
+    return data.get('showname')
 
 
 # http://stackoverflow.com/a/20380514

@@ -46,7 +46,7 @@ const startVue = () => {
                         % if use_provided_info:
                             Show retrieved from existing metadata: <app-link href="${indexerApi(provided_indexer).config['show_url']}${provided_indexer_id}">${provided_indexer_name}</app-link>
                             <input type="hidden" id="indexer_lang" name="indexer_lang" value="en" />
-                            <input type="hidden" id="whichSeries" name="whichSeries" value="${provided_indexer_id}" />
+                            <input type="hidden" id="whichShow" name="whichShow" value="${provided_indexer_id}" />
                             <input type="hidden" id="providedIndexer" name="providedIndexer" value="${provided_indexer}" />
                             <input type="hidden" id="providedName" value="${provided_indexer_name}" />
                         % else:

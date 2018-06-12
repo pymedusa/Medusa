@@ -26,10 +26,10 @@ from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
-from medusa.server.api.v2.series import SeriesHandler
-from medusa.server.api.v2.series_asset import SeriesAssetHandler
-from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
-from medusa.server.api.v2.series_operation import SeriesOperationHandler
+from medusa.server.api.v2.show import ShowHandler
+from medusa.server.api.v2.show_asset import ShowAssetHandler
+from medusa.server.api.v2.show_legacy import ShowLegacyHandler
+from medusa.server.api.v2.show_operation import ShowOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
 from medusa.server.web import (
     CalendarHandler,
@@ -72,17 +72,17 @@ def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
         # Order: Most specific to most generic
-        # /api/v2/series/tvdb1234/episode
+        # /api/v2/show/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
 
-        # /api/v2/series/tvdb1234/operation
-        SeriesOperationHandler.create_app_handler(base),
-        # /api/v2/series/tvdb1234/asset
-        SeriesAssetHandler.create_app_handler(base),
-        # /api/v2/series/tvdb1234/legacy
-        SeriesLegacyHandler.create_app_handler(base),  # To be removed
-        # /api/v2/series/tvdb1234
-        SeriesHandler.create_app_handler(base),
+        # /api/v2/show/tvdb1234/operation
+        ShowOperationHandler.create_app_handler(base),
+        # /api/v2/show/tvdb1234/asset
+        ShowAssetHandler.create_app_handler(base),
+        # /api/v2/show/tvdb1234/legacy
+        ShowLegacyHandler.create_app_handler(base),  # To be removed
+        # /api/v2/show/tvdb1234
+        ShowHandler.create_app_handler(base),
 
         # /api/v2/config
         ConfigHandler.create_app_handler(base),

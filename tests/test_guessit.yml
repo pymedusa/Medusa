@@ -218,7 +218,7 @@
   type: episode
 
 # stupid
-# TO FIX: current parser doesn't return series_name
+# TO FIX: current parser doesn't return show_name
 #         guessit parser cannot parse this correctly, only using a parent folder
 ? /shows/Show.Name.Abbreviated.S01E02.1080p.BluRay.x264-TPZ/tzp-shownameabr102.mkv
 : title: Show Name Abbreviated
@@ -314,7 +314,7 @@
   type: episode
 
 # Part as episode number
-? /series/Show Name/Season 1/Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
+? /show/Show Name/Season 1/Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
 : title: Show Name
   season: 1
   episode: 4
@@ -1436,7 +1436,7 @@
 
 # https://github.com/guessit-io/guessit/issues/306
 ? - Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-  - Show.Name.-.Series.3.-.720p.BluRay.-.x264.-.Group
+  - Show.Name.-.Show.3.-.720p.BluRay.-.x264.-.Group
 : title: Show Name
   season: 3
   screen_size: 720p
@@ -2397,7 +2397,7 @@
   type: episode
 
 # Important: the suffix .hdtv.x264 is an existing workaround in the application for a certain provider. It should be removed when there's a video_codec conflict
-? 500.Bus.Stops.Series.1.XviD.hdtv.x264
+? 500.Bus.Stops.Show.1.XviD.hdtv.x264
 : title: 500 Bus Stops
   season: 1
   video_codec: XviD
@@ -2405,7 +2405,7 @@
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/310
-? Show.Name.COMPLETE.SERIES.DVDRip.XviD-AR
+? Show.Name.COMPLETE.SHOW.DVDRip.XviD-AR
 : title: Show Name
   other: Complete
   format: DVDRip
@@ -2624,8 +2624,8 @@
   release_group: QoQ
   type: episode
 
-# Regression test for wrong series
-? Show.Name.TV.Series.2016.S01.complete.480p.mp4
+# Regression test for wrong show
+? Show.Name.TV.Show.2016.S01.complete.480p.mp4
 : title: Show Name
   year: 2016
   season: 1
@@ -3134,7 +3134,7 @@
   type: episode
 
 # FixMultipleFormats: regression test for https://github.com/pymedusa/Medusa/issues/876
-? "/volume1/video/Series/Show Name/Season 02/Show.Name.S02E01.eps2.0_title-pt1.tc.1080p.WEB-DL.DD5.1.H.264.mkv"
+? "/volume1/video/Show/Show Name/Season 02/Show.Name.S02E01.eps2.0_title-pt1.tc.1080p.WEB-DL.DD5.1.H.264.mkv"
 : title: Show Name
   season: 2
   episode: 1
@@ -3226,7 +3226,7 @@
 
 # Regression Test for release group detection
 # https://github.com/guessit-io/guessit/issues/343
-? /series/Show.Name.S10E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-GROUP.mkv
+? /show/Show.Name.S10E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-GROUP.mkv
 : title: Show Name
   season: 10
   episode: 1
@@ -3430,7 +3430,7 @@
   type: episode
 
 # Regression test: Season repack shouldn't be detected as release_group: season
-? Show.Name.Series.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
+? Show.Name.Show.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
 : title: Show Name
   season: 1
   other: ['HD', 'Proper']

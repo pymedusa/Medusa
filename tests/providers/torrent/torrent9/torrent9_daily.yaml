@@ -7,7 +7,7 @@ interactions:
       Connection: [keep-alive]
       User-Agent: [!!python/unicode Medusa/0.0.1 (Windows; 10; b618ffb0-cb85-11e7-88d3-1c1b0d9d2a41)]
     method: GET
-    uri: http://www.torrents9.pe/torrents_series.html,trie-date-d
+    uri: http://www.torrents9.pe/torrents_show.html,trie-date-d
   response:
     body:
       string: !!binary |

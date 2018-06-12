@@ -43,8 +43,8 @@ class SearchResult(object):
         # the search provider
         self.provider = provider
 
-        # release series object
-        self.series = None
+        # release show object
+        self.show = None
 
         # URL to the NZB/torrent file
         self.url = ''
@@ -152,18 +152,18 @@ class SearchResult(object):
     @property
     def show(self):
         log.warning(
-            'Please use SearchResult.series and not show. Show has been deprecated.',
+            'Please use SearchResult.show and not show. Show has been deprecated.',
             DeprecationWarning,
         )
-        return self.series
+        return self.show
 
     @show.setter
     def show(self, value):
         log.warning(
-            'Please use SearchResult.series and not show. Show has been deprecated.',
+            'Please use SearchResult.show and not show. Show has been deprecated.',
             DeprecationWarning,
         )
-        self.series = value
+        self.show = value
 
     def __str__(self):
 
@@ -201,8 +201,8 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.actual_episodes and self.series:
-            self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        if self.actual_season and self.actual_episodes and self.show:
+            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
         return self.episodes
 
     def finish_search_result(self, provider):
@@ -246,27 +246,27 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.config = config
         self.log = log
 
-    def select_series(self, all_series):
+    def select_show(self, all_show):
         from medusa.helper.common import dateTimeFormat
 
         search_results = []
-        series_names = []
+        show_names = []
 
         # get all available shows
-        if all_series:
+        if all_show:
             if 'searchterm' in self.config:
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
-                for cur_show in all_series:
+                for cur_show in all_show:
                     if cur_show in search_results:
                         continue
 
-                    if 'seriesname' in cur_show:
-                        series_names.append(cur_show['seriesname'])
+                    if 'showname' in cur_show:
+                        show_names.append(cur_show['showname'])
                     if 'aliasnames' in cur_show:
-                        series_names.extend(cur_show['aliasnames'].split('|'))
+                        show_names.extend(cur_show['aliasnames'].split('|'))
 
-                    for name in series_names:
+                    for name in show_names:
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
@@ -291,18 +291,18 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     @staticmethod
-    def select_series(all_series):
+    def select_show(all_show):
         try:
             # try to pick a show that's in my show list
             show_id_list = [int(x.indexerid) for x in app.showList]
-            for cur_show in all_series:
+            for cur_show in all_show:
                 if int(cur_show['id']) in show_id_list:
                     return cur_show
         except Exception:
             pass
 
         # if nothing matches then return first result
-        return all_series[0]
+        return all_show[0]
 
 
 class Viewer(object):

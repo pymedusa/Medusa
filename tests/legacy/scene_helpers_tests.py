@@ -5,7 +5,7 @@ import unittest
 
 from medusa import common, db, name_cache, scene_exceptions
 from medusa.show import naming
-from medusa.tv import Series
+from medusa.tv import Show
 from tests.legacy import test_lib as test
 
 
@@ -21,7 +21,7 @@ class SceneTests(test.AppTestDBCase):
         :return:
         """
         expected = [] if expected is None else expected
-        show = Series(1, indexerid)
+        show = Show(1, indexerid)
         show.name = name
 
         result = show.get_all_possible_names(show)
@@ -73,14 +73,14 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         scene_exceptions.refresh_exceptions_cache()
 
     def test_scene_ex_empty(self):
-        series_obj = Series(1, 70725)
-        self.assertEqual(scene_exceptions.get_scene_exceptions(series_obj, 0), set())
+        show_obj = Show(1, 70725)
+        self.assertEqual(scene_exceptions.get_scene_exceptions(show_obj, 0), set())
 
     @unittest.expectedFailure
     def test_scene_ex_babylon_5(self):
-        series_obj = Series(1, 70726)
+        show_obj = Show(1, 70726)
         self.assertEqual(
-            sorted(scene_exceptions.get_scene_exceptions(series_obj, 1)),
+            sorted(scene_exceptions.get_scene_exceptions(show_obj, 1)),
             sorted({'Babylon 5', 'Babylon5'})
         )
 

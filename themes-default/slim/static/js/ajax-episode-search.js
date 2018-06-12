@@ -26,7 +26,7 @@ function updateImages(data) {
         const searchImage = 'search16.png';
         let htmlContent = '';
         // Try to get the <a> Element
-        const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const el = $('a[id=' + ep.indexer_id + 'x' + ep.show_id + 'x' + ep.season + 'x' + ep.episode + ']');
         const img = el.children('img[data-ep-search]');
         const parent = el.parent();
         if (el) {
@@ -63,7 +63,7 @@ function updateImages(data) {
             // Update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.show_id + 'x' + ep.season + 'x' + ep.episode + ']');
         const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
@@ -92,11 +92,11 @@ function updateImages(data) {
 function checkManualSearches() {
     let pollInterval = 5000;
 
-    // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
+    // Try to get a indexer name and show id. If we can't get any, we request the manual search status for all shows.
     const indexerName = $('#indexer-name').val();
-    const seriesId = $('#series-id').val();
+    const showId = $('#show-id').val();
 
-    const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+    const url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&showid=' + showId;
     $.ajax({
         url,
         error() {

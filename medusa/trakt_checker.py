@@ -231,7 +231,7 @@ class TraktChecker(object):
                             b'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
             if filter_show:
                 sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
-                params = [filter_show.series_id, filter_show.indexer]
+                params = [filter_show.show_id, filter_show.indexer]
 
             sql_result = main_db_con.select(sql_selection, statuses + params)
             episodes = [dict(e) for e in sql_result]

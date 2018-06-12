@@ -13,7 +13,7 @@ def data():
     return {
         'release_name': 'Show.Name.2012.S01E02.Episode.Title.1080p.HDTV.x265.AC3-Group',
         'release_properties': {
-            'series': 'Show Name',
+            'show': 'Show Name',
             'season': 1,
             'episode': 2,
             'title': 'Episode Title',
@@ -27,7 +27,7 @@ def data():
         'another_release_name': 'Different.Show.2013.S03E04.Another.Episode.720p.BluRay.x264-NoGroup',
         'video': Video.fromname('Show.Name.S01E02.mkv'),
         'video_properties': {
-            'series': 'Show Name',
+            'show': 'Show Name',
             'season': 1,
             'episode': 2,
             'title': None,
@@ -43,7 +43,7 @@ def data():
 
 def _to_properties(video):
     return {
-        'series': video.series,
+        'show': video.show,
         'season': video.season,
         'episode': video.episode,
         'title': video.title,

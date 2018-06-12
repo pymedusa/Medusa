@@ -65,7 +65,7 @@ class CalendarHandler(BaseHandler):
             b'SELECT show_name, indexer_id, network, airs, runtime '
             b'FROM tv_shows '
             b'WHERE ( status = ? OR status = ? ) AND paused != 1',
-            ('Continuing', 'Returning Series')
+            ('Continuing', 'Returning Show')
         )
         for show in calendar_shows:
             # Get all episodes of this show airing between today and next month

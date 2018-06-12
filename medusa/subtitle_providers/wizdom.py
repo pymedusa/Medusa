@@ -30,10 +30,10 @@ class WizdomSubtitle(Subtitle):
     """Wizdom Subtitle."""
     provider_name = 'wizdom'
 
-    def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, imdb_id, subtitle_id,
+    def __init__(self, language, hearing_impaired, page_link, show, season, episode, title, imdb_id, subtitle_id,
                  releases):
         super(WizdomSubtitle, self).__init__(language, hearing_impaired, page_link)
-        self.series = series
+        self.show = show
         self.season = season
         self.episode = episode
         self.title = title
@@ -51,9 +51,9 @@ class WizdomSubtitle(Subtitle):
 
         # episode
         if isinstance(video, Episode):
-            # series
-            if video.series and sanitize(self.series) == sanitize(video.series):
-                matches.add('series')
+            # show
+            if video.show and sanitize(self.show) == sanitize(video.show):
+                matches.add('show')
             # season
             if video.season and self.season == video.season:
                 matches.add('season')
@@ -61,8 +61,8 @@ class WizdomSubtitle(Subtitle):
             if video.episode and self.episode == video.episode:
                 matches.add('episode')
             # imdb_id
-            if video.series_imdb_id and self.imdb_id == video.series_imdb_id:
-                matches.add('series_imdb_id')
+            if video.show_imdb_id and self.imdb_id == video.show_imdb_id:
+                matches.add('show_imdb_id')
             # guess
             for release in self.releases:
                 matches |= guess_matches(video, guessit(release, {'type': 'episode'}))
@@ -135,7 +135,7 @@ class WizdomProvider(Provider):
         # search
         logger.debug('Using IMDB ID %r', imdb_id)
         url = 'http://json.{}/{}.json'.format(self.server_url, imdb_id)
-        page_link = 'http://{}/#/{}/{}'.format(self.server_url, 'movies' if is_movie else 'series', imdb_id)
+        page_link = 'http://{}/#/{}/{}'.format(self.server_url, 'movies' if is_movie else 'show', imdb_id)
 
         # get the list of subtitles
         logger.debug('Getting the list of subtitles')
@@ -183,10 +183,10 @@ class WizdomProvider(Provider):
         imdb_id = video.imdb_id
 
         if isinstance(video, Episode):
-            title = video.series
+            title = video.show
             season = video.season
             episode = video.episode
-            imdb_id = video.series_imdb_id
+            imdb_id = video.show_imdb_id
 
         return [s for s in self.query(title, season, episode, year, filename, imdb_id) if s.language in languages]
 

@@ -11,10 +11,10 @@ MEDUSA.common.init = function() {
 
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
-        const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
+        const showSlug = $('#show-slug').attr('value') || $('#background-show-slug').attr('value');
 
-        if (seriesSlug) {
-            const path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
+        if (showSlug) {
+            const path = apiRoot + 'show/' + showSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);

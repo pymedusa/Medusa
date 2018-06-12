@@ -24,7 +24,7 @@ const startVue = () => {
             };
         },
         mounted() {
-            $('.seriesCheck').on('click', function() {
+            $('.showCheck').on('click', function() {
                 const serCheck = this;
 
                 $('.seasonCheck:visible').each(function() {
@@ -63,7 +63,7 @@ const startVue = () => {
                 }
 
                 window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+                    '&showid=' + $('#show-id').attr('value') + '&eps=' + epArr.join('|');
             });
         }
     });
@@ -78,9 +78,9 @@ const startVue = () => {
 </div>
 </div>
     % endif
-<input type="hidden" id="series-id" value="${show.indexerid}" />
+<input type="hidden" id="show-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
-<input type="hidden" id="series-slug" value="${show.slug}" />
+<input type="hidden" id="show-slug" value="${show.slug}" />
 <h1 class="header">{{header}}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
@@ -100,20 +100,20 @@ const startVue = () => {
     <table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr class="seasoncols" id="selectall">
-                <th class="col-checkbox"><input type="checkbox" class="seriesCheck" id="SelectAll" /></th>
+                <th class="col-checkbox"><input type="checkbox" class="showCheck" id="SelectAll" /></th>
                 <th align="left" valign="top" class="nowrap">Select All</th>
             </tr>
         </thead>
     </table>
     </div>
     <div class="col-md-10">
-        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&showid=${show.show_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
     </div>
 </div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
-    curLoc = cur_ep_obj.location[len(cur_ep_obj.series.location)+1:]
+    curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]
     curExt = curLoc.split('.')[-1]
     newLoc = cur_ep_obj.proper_path() + '.' + curExt
 %>
@@ -155,5 +155,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
+<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&showid=${show.show_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
 </%block>

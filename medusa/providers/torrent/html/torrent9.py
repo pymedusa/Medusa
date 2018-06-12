@@ -38,7 +38,7 @@ class Torrent9Provider(TorrentProvider):
         self.url = 'http://www.torrent9.red'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html'),
-            'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
+            'daily': urljoin(self.url, '/torrents_show.html,trie-date-d'),
             'download': urljoin(self.url, '/get_torrent/{name}.torrent'),
         }
 

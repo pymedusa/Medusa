@@ -121,29 +121,29 @@ MEDUSA.home.snatchSelection = function() {
         repeat = repeat || true;
 
         const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
-        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const showId = $('meta[data-last-prov-updates]').attr('data-show-id');
         const season = $('meta[data-last-prov-updates]').attr('data-season');
         const episode = $('meta[data-last-prov-updates]').attr('data-episode');
         const data = $('meta[data-last-prov-updates]').data('last-prov-updates');
         const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+        const checkParams = [indexerName, showId, season, episode].every(checkIsTrue => {
             return checkIsTrue;
         });
 
         if (!checkParams) {
             console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
-                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                        showId: ${showId}, season: ${season}, episode: ${episode}```);
             return;
         }
 
-        let urlParams = '?indexername=' + indexerName + '&seriesid=' + seriesId + '&season=' + season + '&episode=' + episode;
+        let urlParams = '?indexername=' + indexerName + '&showid=' + showId + '&season=' + season + '&episode=' + episode;
 
         if (manualSearchType === 'season') {
             urlParams += '&manual_search_type=' + manualSearchType;
         }
 
-        if (!$.isNumeric(seriesId) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+        if (!$.isNumeric(showId) || !$.isNumeric(season) || !$.isNumeric(episode)) {
             setTimeout(() => {
                 checkCacheUpdates(true);
             }, 200);
@@ -226,27 +226,27 @@ MEDUSA.home.snatchSelection = function() {
         event.preventDefault();
         $('.manualSearchButton').prop('disabled', true);
         const indexerName = $('meta[data-last-prov-updates]').attr('data-indexer-name');
-        const seriesId = $('meta[data-last-prov-updates]').attr('data-series-id');
+        const showId = $('meta[data-last-prov-updates]').attr('data-show-id');
         const season = $('meta[data-last-prov-updates]').attr('data-season');
         const episode = $('meta[data-last-prov-updates]').attr('data-episode');
         const manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
         const forceSearch = $(event.currentTarget).attr('data-force-search');
 
-        const checkParams = [indexerName, seriesId, season, episode].every(checkIsTrue => {
+        const checkParams = [indexerName, showId, season, episode].every(checkIsTrue => {
             return checkIsTrue;
         });
 
         if (!checkParams) {
             console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                        seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                        showId: ${showId}, season: ${season}, episode: ${episode}```);
             return;
         }
 
-        if ($.isNumeric(seriesId) && $.isNumeric(season) && $.isNumeric(episode)) {
+        if ($.isNumeric(showId) && $.isNumeric(season) && $.isNumeric(episode)) {
             updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
                 indexername: indexerName,
-                seriesid: seriesId,
+                showid: showId,
                 season,
                 episode,
                 manual_search_type: manualSearchType, // eslint-disable-line camelcase

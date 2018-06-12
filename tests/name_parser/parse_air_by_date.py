@@ -19,7 +19,7 @@ def test_air_by_date_parsing(p, monkeypatch_function_return, create_tvshow):
     result = parser.to_parse_result(p['name'], guess)
 
     # confirm passed in show object indexer id matches result show object indexer id
-    result.series = create_tvshow(name=p['series_info']['name'])
+    result.show = create_tvshow(name=p['show_info']['name'])
 
     actual = parser._parse_anime(result)
 

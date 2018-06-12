@@ -11,13 +11,13 @@ from builtins import object
 from imdbpie import imdbpie
 
 from medusa import helpers
-from medusa.cache import recommended_series_cache
+from medusa.cache import recommended_show_cache
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, cached_get_imdb_series_details, create_key_from_series,
-    update_recommended_series_cache_index
+    RecommendedShow, cached_get_imdb_show_details, create_key_from_show,
+    update_recommended_show_cache_index
 )
 
 from requests import RequestException
@@ -31,7 +31,7 @@ imdb_api = imdbpie.Imdb()
 
 
 class ImdbPopular(object):
-    """Gets a list of most popular TV series from imdb."""
+    """Gets a list of most popular TV show from imdb."""
 
     def __init__(self):
         """Initialize class."""
@@ -40,27 +40,27 @@ class ImdbPopular(object):
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
 
-    @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_key=None):
+    @recommended_show_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_show)
+    def _create_recommended_show(self, show, storage_key=None):
         """Create the RecommendedShow object from the returned showobj."""
-        tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
+        tvdb_id = helpers.get_tvdb_from_id(show.get('imdb_tt'), 'IMDB')
 
         if not tvdb_id:
             return None
 
         rec_show = RecommendedShow(
             self,
-            series.get('imdb_tt'),
-            series.get('name'),
+            show.get('imdb_tt'),
+            show.get('name'),
             INDEXER_TVDBV2,
             int(tvdb_id),
-            **{'rating': series.get('rating'),
-               'votes': series.get('votes'),
-               'image_href': series.get('imdb_url')}
+            **{'rating': show.get('rating'),
+               'votes': show.get('votes'),
+               'image_href': show.get('imdb_url')}
         )
 
-        if series.get('image_url'):
-            rec_show.cache_image(series.get('image_url'))
+        if show.get('image_url'):
+            rec_show.cache_image(show.get('image_url'))
 
         return rec_show
 
@@ -71,47 +71,47 @@ class ImdbPopular(object):
         imdb_result = imdb_api.get_popular_shows()
 
         for imdb_show in imdb_result['ranks']:
-            series = {}
-            imdb_id = series['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
+            show = {}
+            imdb_id = show['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
 
             if imdb_id:
-                show_details = cached_get_imdb_series_details(imdb_id)
+                show_details = cached_get_imdb_show_details(imdb_id)
                 if show_details:
                     try:
-                        series['year'] = imdb_show.get('year')
-                        series['name'] = imdb_show['title']
-                        series['image_url_large'] = imdb_show['image']['url']
-                        series['image_path'] = posixpath.join('images', 'imdb_popular',
-                                                              os.path.basename(series['image_url_large']))
-                        series['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
-                        series['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
-                        series['votes'] = show_details['ratings'].get('ratingCount', 0)
-                        series['outline'] = show_details['plot'].get('outline', {}).get('text')
-                        series['rating'] = show_details['ratings'].get('rating', 0)
+                        show['year'] = imdb_show.get('year')
+                        show['name'] = imdb_show['title']
+                        show['image_url_large'] = imdb_show['image']['url']
+                        show['image_path'] = posixpath.join('images', 'imdb_popular',
+                                                              os.path.basename(show['image_url_large']))
+                        show['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
+                        show['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
+                        show['votes'] = show_details['ratings'].get('ratingCount', 0)
+                        show['outline'] = show_details['plot'].get('outline', {}).get('text')
+                        show['rating'] = show_details['ratings'].get('rating', 0)
                     except Exception as error:
                         log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue
 
-            if all([series['year'], series['name'], series['imdb_tt']]):
-                popular_shows.append(series)
+            if all([show['year'], show['name'], show['imdb_tt']]):
+                popular_shows.append(show)
 
         result = []
-        for series in popular_shows:
+        for show in popular_shows:
             try:
-                recommended_show = self._create_recommended_show(series, storage_key=b'imdb_{0}'.format(series['imdb_tt']))
+                recommended_show = self._create_recommended_show(show, storage_key=b'imdb_{0}'.format(show['imdb_tt']))
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:
                 log.warning(
                     u'Could not connect to indexers to check if you already have'
                     u' this show in your library: {show} ({year})',
-                    {'show': series['name'], 'year': series['name']}
+                    {'show': show['name'], 'year': show['name']}
                 )
 
         # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-        update_recommended_series_cache_index('imdb', [binary_type(s.series_id) for s in result])
+        update_recommended_show_cache_index('imdb', [binary_type(s.show_id) for s in result])
 
         return result
 

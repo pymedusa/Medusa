@@ -53,7 +53,7 @@ IMAGE_TYPES = {
 
 # TVDB aspect ratios and image sizes:
 #   https://www.thetvdb.com/wiki/index.php/Posters
-#   https://www.thetvdb.com/wiki/index.php/Series_Banners
+#   https://www.thetvdb.com/wiki/index.php/Show_Banners
 #   https://www.thetvdb.com/wiki/index.php/Fan_Art
 
 
@@ -68,49 +68,49 @@ ASPECT_RATIOS = {
 }
 
 
-def _cache_dir(series_obj):
+def _cache_dir(show_obj):
     """Build path to the image cache directory."""
-    return os.path.abspath(os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name))
+    return os.path.abspath(os.path.join(app.CACHE_DIR, 'images', show_obj.indexer_name))
 
 
-def _thumbnails_dir(series_obj):
+def _thumbnails_dir(show_obj):
     """Build path to the thumbnail image cache directory."""
-    return os.path.abspath(os.path.join(_cache_dir(series_obj), 'thumbnails'))
+    return os.path.abspath(os.path.join(_cache_dir(show_obj), 'thumbnails'))
 
 
-def get_path(img_type, series_obj):
+def get_path(img_type, show_obj):
     """
-    Build path to a series cached artwork.
+    Build path to a show cached artwork.
 
     :param img_type: integer constant representing an image type
-    :param series_obj: the series object
+    :param show_obj: the show object
 
     :return: full path and filename for artwork
     """
     image = IMAGE_TYPES[img_type]
     thumbnail = image.endswith('_thumb')
     if thumbnail:
-        location = _thumbnails_dir(series_obj)
+        location = _thumbnails_dir(show_obj)
         image = image[:-len('_thumb')]  # strip `_thumb` from the end
     else:
-        location = _cache_dir(series_obj)
-    filename = '{series_obj.series_id}.{image}.jpg'.format(
-        series_obj=series_obj,
+        location = _cache_dir(show_obj)
+    filename = '{show_obj.show_id}.{image}.jpg'.format(
+        show_obj=show_obj,
         image=image,
     )
     return os.path.join(location, filename)
 
 
-def get_artwork(img_type, series_obj):
+def get_artwork(img_type, show_obj):
     """
-    Get path to cached artwork for a series.
+    Get path to cached artwork for a show.
 
     :param img_type: integer constant representing an image type
-    :param series_obj: the series object
+    :param show_obj: the show object
 
     :return: full path and filename for artwork if it exists
     """
-    location = get_path(img_type, series_obj)
+    location = get_path(img_type, show_obj)
     if os.path.isfile(location):
         return location
 
@@ -157,29 +157,29 @@ def which_type(path):
         return
 
 
-def replace_images(series_obj):
+def replace_images(show_obj):
     """
-    Replace cached images for a series based on image type.
+    Replace cached images for a show based on image type.
 
-    :param series_obj: Series object
+    :param show_obj: Show object
     """
-    remove_images(series_obj)
-    fill_cache(series_obj)
+    remove_images(show_obj)
+    fill_cache(show_obj)
 
 
-def remove_images(series_obj, image_types=None):
+def remove_images(show_obj, image_types=None):
     """
-    Remove cached images for a series based on image type.
+    Remove cached images for a show based on image type.
 
-    :param series_obj: Series object
+    :param show_obj: Show object
     :param image_types: iterable of integers for image types to remove
         if no image types passed, remove all images
     """
     image_types = image_types or IMAGE_TYPES
-    series_name = series_obj.name
+    show_name = show_obj.name
 
     for image_type in image_types:
-        cur_path = get_path(image_type, series_obj)
+        cur_path = get_path(image_type, show_obj)
 
         # see if image exists
         if not os.path.isfile(cur_path):
@@ -190,39 +190,39 @@ def remove_images(series_obj, image_types=None):
             os.remove(cur_path)
         except OSError as error:
             log.error(
-                'Could not remove {img} for series {name} from cache'
+                'Could not remove {img} for show {name} from cache'
                 ' [{loc}]: {msg}', {
                     'img': IMAGE_TYPES[image_type],
-                    'name': series_name,
+                    'name': show_name,
                     'loc': cur_path,
                     'msg': error,
                 }
             )
         else:
-            log.info('Removed {img} for series {name}',
-                     {'img': IMAGE_TYPES[image_type], 'name': series_name})
+            log.info('Removed {img} for show {name}',
+                     {'img': IMAGE_TYPES[image_type], 'name': show_name})
 
 
-def _cache_image_from_file(image_path, img_type, series_obj):
+def _cache_image_from_file(image_path, img_type, show_obj):
     """
     Take the image provided and copy it to the cache folder.
 
     :param image_path: path to the image we're caching
     :param img_type: BANNER or POSTER or FANART
-    :param series_obj: Series object
+    :param show_obj: Show object
     :return: bool representing success
     """
     # generate the path based on the type and the indexer_id
     if img_type in (POSTER, BANNER, FANART):
-        location = get_path(img_type, series_obj)
+        location = get_path(img_type, show_obj)
     else:
         type_name = IMAGE_TYPES.get(img_type, img_type)
         log.error('Invalid cache image type: {0}', type_name)
         return
 
     directories = {
-        'image': _cache_dir(series_obj),
-        'thumbnail': _thumbnails_dir(series_obj),
+        'image': _cache_dir(show_obj),
+        'thumbnail': _thumbnails_dir(show_obj),
     }
 
     for cache in directories:
@@ -239,11 +239,11 @@ def _cache_image_from_file(image_path, img_type, series_obj):
     return True
 
 
-def _cache_image_from_indexer(series_obj, img_type):
+def _cache_image_from_indexer(show_obj, img_type):
     """
     Retrieve specified artwork from the indexer and save to the cache folder.
 
-    :param series_obj: Series object that we want to cache an image for
+    :param show_obj: Show object that we want to cache an image for
     :param img_type: BANNER or POSTER or FANART
     :return: bool representing success
     """
@@ -254,28 +254,28 @@ def _cache_image_from_indexer(series_obj, img_type):
         log.error('Invalid cache image type: {0}', img_type)
         return
 
-    location = get_path(img_type, series_obj)
+    location = get_path(img_type, show_obj)
 
     # retrieve the image from the indexer using the generic metadata class
     # TODO: refactor
     metadata_generator = GenericMetadata()
-    img_data = metadata_generator._retrieve_show_image(img_type_name, series_obj)
+    img_data = metadata_generator._retrieve_show_image(img_type_name, show_obj)
     result = metadata_generator._write_image(img_data, location)
 
     return result
 
 
-def fill_cache(series_obj):
+def fill_cache(show_obj):
     """
     Cache artwork for the given show.
 
-    Copy artwork from series directory if possible, or download from indexer.
+    Copy artwork from show directory if possible, or download from indexer.
 
-    :param series_obj: Series object to cache images for
+    :param show_obj: Show object to cache images for
     """
     # get expected paths for artwork
     images = {
-        img_type: get_path(img_type, series_obj)
+        img_type: get_path(img_type, show_obj)
         for img_type in IMAGE_TYPES
     }
     # check if artwork is cached
@@ -290,7 +290,7 @@ def fill_cache(series_obj):
         log.info('Cache check completed')
         return
 
-    log.debug('Searching for images for series id {0}', series_obj.series_id)
+    log.debug('Searching for images for show id {0}', show_obj.show_id)
 
     # check the show for poster, banner or fanart
     for img_type in BANNER, POSTER, FANART:
@@ -301,8 +301,8 @@ def fill_cache(series_obj):
                 log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
-                if os.path.isfile(provider.get_poster_path(series_obj)):
-                    path = provider.get_poster_path(series_obj)
+                if os.path.isfile(provider.get_poster_path(show_obj)):
+                    path = provider.get_poster_path(show_obj)
                     filename = os.path.abspath(path)
                     file_type = which_type(filename)
 
@@ -323,8 +323,8 @@ def fill_cache(series_obj):
 
                     if desired:
                         # cache the image
-                        _cache_image_from_file(filename, file_type, series_obj)
-                        log.debug('Cached {img} from series folder: {path}',
+                        _cache_image_from_file(filename, file_type, show_obj)
+                        log.debug('Cached {img} from show folder: {path}',
                                   {'img': type_name, 'path': filename})
                         # remove it from the needed image types
                         needed.pop(file_type)
@@ -334,68 +334,68 @@ def fill_cache(series_obj):
 
     # download missing images from indexer
     for img_type in needed:
-        log.debug('Searching for {img} for series {x}',
-                  {'img': IMAGE_TYPES[img_type], 'x': series_obj})
-        _cache_image_from_indexer(series_obj, img_type)
+        log.debug('Searching for {img} for show {x}',
+                  {'img': IMAGE_TYPES[img_type], 'x': show_obj})
+        _cache_image_from_indexer(show_obj, img_type)
 
     log.info('Cache check completed')
 
 
 def banner_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    """DEPRECATED: Build path to a show cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
     return get_path(BANNER, indexer_id)
 
 
 def banner_thumb_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    """DEPRECATED: Build path to a show cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
     return get_path(BANNER_THUMB, indexer_id)
 
 
 def fanart_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    """DEPRECATED: Build path to a show cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
     return get_path(FANART, indexer_id)
 
 
 def poster_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    """DEPRECATED: Build path to a show cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
     return get_path(POSTER, indexer_id)
 
 
 def poster_thumb_path(indexer_id):
-    """DEPRECATED: Build path to a series cached artwork. Use `get_path`."""
+    """DEPRECATED: Build path to a show cached artwork. Use `get_path`."""
     warnings.warn('Deprecated use get_path instead', DeprecationWarning)
     return get_path(POSTER_THUMB, indexer_id)
 
 
 def has_poster(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    """DEPRECATED: Check if artwork exists for show. Use `get_artwork`."""
     warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
     return get_artwork(POSTER, indexer_id)
 
 
 def has_banner(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    """DEPRECATED: Check if artwork exists for show. Use `get_artwork`."""
     warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
     return get_artwork(BANNER, indexer_id)
 
 
 def has_fanart(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    """DEPRECATED: Check if artwork exists for show. Use `get_artwork`."""
     warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
     return get_artwork(FANART, indexer_id)
 
 
 def has_poster_thumbnail(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    """DEPRECATED: Check if artwork exists for show. Use `get_artwork`."""
     warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
     return get_artwork(POSTER_THUMB, indexer_id)
 
 
 def has_banner_thumbnail(indexer_id):
-    """DEPRECATED: Check if artwork exists for series. Use `get_artwork`."""
+    """DEPRECATED: Check if artwork exists for show. Use `get_artwork`."""
     warnings.warn('Deprecated use get_artwork instead', DeprecationWarning)
     return get_artwork(BANNER_THUMB, indexer_id)

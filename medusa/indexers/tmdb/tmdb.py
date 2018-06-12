@@ -49,10 +49,10 @@ class Tmdb(BaseIndexer):
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
-        # An api to indexer series/episode object mapping
-        self.series_map = {
+        # An api to indexer show/episode object mapping
+        self.show_map = {
             'id': 'id',
-            'name': 'seriesname',
+            'name': 'showname',
             'original_name': 'aliasnames',
             'overview': 'overview',
             'air_date': 'firstaired',
@@ -172,21 +172,21 @@ class Tmdb(BaseIndexer):
             return OrderedDict({'data': None})
 
     # Tvdb implementation
-    def search(self, series):
-        """Search TMDB (themoviedb.org) for the series name.
+    def search(self, show):
+        """Search TMDB (themoviedb.org) for the show name.
 
-        :param series: The query for the series name
-        :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
+        :param show: The query for the show name
+        :return: An ordered dict with the show searched for. In the format of OrderedDict{"show": [list of shows]}
         """
-        log.debug('Searching for show: {0}', series)
+        log.debug('Searching for show: {0}', show)
 
-        results = self._show_search(series, request_language=self.config['language'])
+        results = self._show_search(show, request_language=self.config['language'])
         if not results:
             return
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        mapped_results = self._map_results(results, self.show_map, '|')
 
-        return OrderedDict({'series': mapped_results})['series']
+        return OrderedDict({'show': mapped_results})['show']
 
     def get_show_country_codes(self, tmdb_id):
         """Retrieve show's 2 letter country codes from TMDB.
@@ -194,7 +194,7 @@ class Tmdb(BaseIndexer):
         :param tmdb_id: The show's tmdb id
         :return: A list with the show's country codes
         """
-        show_info = self._get_show_by_id(tmdb_id)['series']
+        show_info = self._get_show_by_id(tmdb_id)['show']
 
         if show_info and show_info.get('origin_country'):
             return show_info['origin_country'].split('|')
@@ -225,14 +225,14 @@ class Tmdb(BaseIndexer):
                 cause=error
             ))
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        mapped_results = self._map_results(results, self.show_map, '|')
 
-        return OrderedDict({'series': mapped_results})
+        return OrderedDict({'show': mapped_results})
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """Get all the episodes for a show by TMDB id.
 
-        :param tmdb_id: Series tmdb id.
+        :param tmdb_id: Show tmdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         results = []
@@ -257,13 +257,13 @@ class Tmdb(BaseIndexer):
                 results += season_info['episodes']
             except RequestException as error:
                 raise IndexerException(
-                    'Could not get episodes for series {series} using indexer TMDB. Cause: {cause}'.format(
-                        series=tmdb_id, cause=error
+                    'Could not get episodes for show {show} using indexer TMDB. Cause: {cause}'.format(
+                        show=tmdb_id, cause=error
                     )
                 )
 
         if not results:
-            log.debug('Series results incomplete')
+            log.debug('Show results incomplete')
             raise IndexerShowIncomplete(
                 'Show search returned incomplete results (cannot find complete show on TheMovieDb)'
             )
@@ -326,10 +326,10 @@ class Tmdb(BaseIndexer):
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
         typecasts = {'rating': float, 'ratingcount': int}
 
-        log.debug('Getting show banners for {series}', series=tmdb_id)
+        log.debug('Getting show banners for {show}', show=tmdb_id)
         _images = {}
 
-        # Let's get the different type of images available for this series
+        # Let's get the different type of images available for this show
         params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
 
         try:
@@ -398,7 +398,7 @@ class Tmdb(BaseIndexer):
 
     def _parse_season_images(self, tmdb_id):
         """Get all season posters for a TMDB show."""
-        # Let's fget the different type of images available for this series
+        # Let's fget the different type of images available for this show
         season_posters = getattr(self[tmdb_id], 'seasons', None)
         if not season_posters:
             return
@@ -445,10 +445,10 @@ class Tmdb(BaseIndexer):
         self._set_show_data(tmdb_id, '_actors', cur_actors)
 
     def _get_show_data(self, tmdb_id, language='en'):
-        """Take a series ID, gets the epInfo URL and parses the TMDB json response.
+        """Take a show ID, gets the epInfo URL and parses the TMDB json response.
 
         into the shows dict in layout:
-        shows[series_id][season_number][episode_number]
+        shows[show_id][season_number][episode_number]
         """
         if self.config['language'] is None:
             log.debug('Config language is none, using show language')
@@ -461,35 +461,35 @@ class Tmdb(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log.debug('Getting all series data for {0}', tmdb_id)
+        log.debug('Getting all show data for {0}', tmdb_id)
 
         # Parse show information
-        extra_series_info = ('content_ratings', 'external_ids')
-        series_info = self._get_show_by_id(
+        extra_show_info = ('content_ratings', 'external_ids')
+        show_info = self._get_show_by_id(
             tmdb_id,
             request_language=get_show_in_language,
-            extra_info=extra_series_info
+            extra_info=extra_show_info
         )
 
-        if not series_info:
-            log.debug('Series result returned zero')
-            raise IndexerError('Series result returned zero')
+        if not show_info:
+            log.debug('Show result returned zero')
+            raise IndexerError('Show result returned zero')
 
         # Get MPAA rating if available
-        content_ratings = series_info['series'].get('content_ratings', {}).get('results')
+        content_ratings = show_info['show'].get('content_ratings', {}).get('results')
         if content_ratings:
             mpaa_rating = next((r['rating'] for r in content_ratings
                                 if r['iso_3166_1'].upper() == 'US'), None)
             if mpaa_rating:
                 self._set_show_data(tmdb_id, 'contentrating', mpaa_rating)
 
-        # get series data / add the base_url to the image urls
+        # get show data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.
         # possitlbe widths can also be retrieved from self.configuration.images['poster_sizes'] and
         # self.configuration.images['still_sizes']
         image_width = {'fanart': 'w1280', 'poster': 'w500'}
 
-        for k, v in viewitems(series_info['series']):
+        for k, v in viewitems(show_info['show']):
             if v is not None:
                 if k in ['fanart', 'banner', 'poster']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
@@ -499,7 +499,7 @@ class Tmdb(BaseIndexer):
             self._set_show_data(tmdb_id, k, v)
 
         # Get external ids.
-        external_ids = series_info['series'].get('external_ids', {})
+        external_ids = show_info['show'].get('external_ids', {})
         self._set_show_data(tmdb_id, 'externals', external_ids)
 
         # get episode data
@@ -516,7 +516,7 @@ class Tmdb(BaseIndexer):
 
         return True
 
-    def _get_series_season_updates(self, tmdb_id, start_date=None, end_date=None):
+    def _get_show_season_updates(self, tmdb_id, start_date=None, end_date=None):
         """
         Retrieve all updates (show,season,episode) from TMDB.
 
@@ -537,8 +537,8 @@ class Tmdb(BaseIndexer):
                     total_pages = updates.get('total_pages', 0)
                 page += 1
         except RequestException as error:
-            raise IndexerException('Could not get latest series season updates for series {series}. Cause: {cause}'.format(
-                series=tmdb_id, cause=error
+            raise IndexerException('Could not get latest show season updates for show {show}. Cause: {cause}'.format(
+                show=tmdb_id, cause=error
             ))
 
         return set(results)
@@ -565,7 +565,7 @@ class Tmdb(BaseIndexer):
         return set(results)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    def get_last_updated_show(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
@@ -616,7 +616,7 @@ class Tmdb(BaseIndexer):
                 if search_from > datetime.today():
                     break
                 # Get the updates
-                total_updates += self._get_series_season_updates(show, search_from.strftime('%Y-%m-%d'),
+                total_updates += self._get_show_season_updates(show, search_from.strftime('%Y-%m-%d'),
                                                                  search_until.strftime('%Y-%m-%d'))
             show_season_updates[show] = list(set(total_updates))
 

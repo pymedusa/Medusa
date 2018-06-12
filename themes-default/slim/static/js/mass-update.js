@@ -4,7 +4,7 @@ $(document).ready(() => {
 
         $('.editCheck').each((index, element) => {
             if (element.checked === true) {
-                editArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                editArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
@@ -34,37 +34,37 @@ $(document).ready(() => {
 
         $('.updateCheck').each((index, element) => {
             if (element.checked === true) {
-                updateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                updateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
         $('.refreshCheck').each((index, element) => {
             if (element.checked === true) {
-                refreshArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                refreshArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
         $('.renameCheck').each((index, element) => {
             if (element.checked === true) {
-                renameArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                renameArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
         $('.subtitleCheck').each((index, element) => {
             if (element.checked === true) {
-                subtitleArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                subtitleArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
         $('.removeCheck').each((index, element) => {
             if (element.checked === true) {
-                removeArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                removeArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
         $('.imageCheck').each((index, element) => {
             if (element.checked === true) {
-                imageUpdateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                imageUpdateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
             }
         });
 
@@ -89,7 +89,7 @@ $(document).ready(() => {
                 confirm() {
                     $('.deleteCheck').each((index, element) => {
                         if (element.checked === true) {
-                            deleteArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                            deleteArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-show-id')}`);
                         }
                     });
                     if (totalCount === 0) {

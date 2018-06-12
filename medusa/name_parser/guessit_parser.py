@@ -53,7 +53,7 @@ allowed_countries = [
     'gb',
 ]
 
-series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
+show_re = re.compile(r'^(?P<show>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
 
 
 def guessit(name, options=None):
@@ -86,7 +86,7 @@ def get_expected_titles(show_list):
     (since they can confuse guessit).
 
     :param show_list:
-    :type show_list: list of medusa.tv.Series
+    :type show_list: list of medusa.tv.Show
     :return:
     :rtype: list of str
     """
@@ -98,17 +98,17 @@ def get_expected_titles(show_list):
                 # do not add numbers to expected titles.
                 continue
 
-            match = series_re.match(name)
+            match = show_re.match(name)
             if not match:
                 continue
 
-            series, year, _ = match.groups()
+            show, year, _ = match.groups()
             if year and not valid_year(int(year)):
-                series = name
+                show = name
 
-            if not any([char.isdigit() for char in series]):
+            if not any([char.isdigit() for char in show]):
                 continue
 
-            expected_titles.append(series)
+            expected_titles.append(show)
 
     return expected_titles

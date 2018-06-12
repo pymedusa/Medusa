@@ -46,8 +46,8 @@ class AnimeTorrentsProvider(TorrentProvider):
         self.supports_absolute_numbering = True
         self.anime_only = True
         self.categories = {
-            2: 'Anime Series',
-            7: 'Anime Series HD',
+            2: 'Anime Show',
+            7: 'Anime Show HD',
         }
 
         # Proper Strings
@@ -233,10 +233,10 @@ class AnimeTorrentsProvider(TorrentProvider):
         }
 
         season_scene_names = scene_exceptions.get_scene_exceptions(
-            episode.series, episode.scene_season
+            episode.show, episode.scene_season
         )
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             if show_name in season_scene_names:
                 episode_season = int(episode.scene_episode)
             else:
@@ -258,7 +258,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.season):
+        for show_name in episode.show.get_all_possible_names(season=episode.season):
             search_string['Season'].append(show_name)
 
         return [search_string]

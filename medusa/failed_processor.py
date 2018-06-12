@@ -57,15 +57,15 @@ class FailedProcessor(object):
         if not parse_result.episode_numbers:
             # Get all episode objects from that season
             self.log(logger.DEBUG, 'Detected as season pack: {release}'.format(release=releaseName))
-            segment.extend(parse_result.series.get_all_episodes(parse_result.season_number))
+            segment.extend(parse_result.show.get_all_episodes(parse_result.season_number))
         else:
             self.log(logger.DEBUG, u'Detected as single/multi episode: {release}'.format(release=releaseName))
             for episode in parse_result.episode_numbers:
-                segment.append(parse_result.series.get_episode(parse_result.season_number, episode))
+                segment.append(parse_result.show.get_episode(parse_result.season_number, episode))
 
         if segment:
             self.log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=releaseName))
-            cur_failed_queue_item = FailedQueueItem(parse_result.series, segment)
+            cur_failed_queue_item = FailedQueueItem(parse_result.show, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
         return True

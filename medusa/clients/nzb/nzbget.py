@@ -80,7 +80,7 @@ def sendNZB(nzb, proper=False):
     addToTop = False
     nzbgetprio = 0
     category = app.NZBGET_CATEGORY
-    if nzb.series.is_anime:
+    if nzb.show.is_anime:
         category = app.NZBGET_CATEGORY_ANIME
 
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
@@ -99,17 +99,17 @@ def sendNZB(nzb, proper=False):
     # if it aired recently make it high priority and generate DupeKey/Score
     for cur_ep in nzb.episodes:
         if dupekey == '':
-            if cur_ep.series.indexer == 1:
-                dupekey = 'Medusa-' + text_type(cur_ep.series.indexerid)
-            elif cur_ep.series.indexer == 2:
-                dupekey = 'Medusa-tvr' + text_type(cur_ep.series.indexerid)
+            if cur_ep.show.indexer == 1:
+                dupekey = 'Medusa-' + text_type(cur_ep.show.indexerid)
+            elif cur_ep.show.indexer == 2:
+                dupekey = 'Medusa-tvr' + text_type(cur_ep.show.indexerid)
         dupekey += '-' + text_type(cur_ep.season) + '.' + text_type(cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
             addToTop = True
             nzbgetprio = app.NZBGET_PRIORITY
         else:
             category = app.NZBGET_CATEGORY_BACKLOG
-            if nzb.series.is_anime:
+            if nzb.show.is_anime:
                 category = app.NZBGET_CATEGORY_ANIME_BACKLOG
 
     if nzb.quality != Quality.UNKNOWN:

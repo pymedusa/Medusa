@@ -96,7 +96,7 @@ class GenericProvider(object):
         self.search_mode = None
         self.session = MedusaSafeSession(cloudflare=True)
         self.session.headers.update(self.headers)
-        self.series = None
+        self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
         self.url = ''
@@ -105,7 +105,7 @@ class GenericProvider(object):
         # Ability to override the search separator. As for example anizb is using '*' instead of space.
         self.search_separator = ' '
         self.season_templates = (
-            'S{season:0>2}',  # example: 'Series.Name.S03'
+            'S{season:0>2}',  # example: 'Show.Name.S03'
         )
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
@@ -195,11 +195,11 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
+            show_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
 
-            if series_obj:
-                self.series = series_obj
-                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+            if show_obj:
+                self.show = show_obj
+                episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
@@ -218,7 +218,7 @@ class GenericProvider(object):
 
                         search_result.search_type = PROPER_SEARCH
                         search_result.date = datetime.today()
-                        search_result.series = series_obj
+                        search_result.show = show_obj
 
         return results
 
@@ -239,11 +239,11 @@ class GenericProvider(object):
             )
         )
 
-    def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
         self._check_auth()
-        self.series = series
+        self.show = show
 
         results = {}
         items_list = []
@@ -287,7 +287,7 @@ class GenericProvider(object):
         # categorize the items into lists by quality
         categorized_items = defaultdict(list)
         for item in unique_items:
-            quality = self.get_quality(item, anime=series.is_anime)
+            quality = self.get_quality(item, anime=show.is_anime)
             categorized_items[quality].append(item)
 
         # sort qualities in descending order
@@ -326,7 +326,7 @@ class GenericProvider(object):
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
+                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',
@@ -337,7 +337,7 @@ class GenericProvider(object):
 
             # I don't know why i'm doing this. Maybe remove it later on all together, now i've added the parsed_result
             # to the search_result.
-            search_result.series = search_result.parsed_result.series
+            search_result.show = search_result.parsed_result.show
             search_result.quality = search_result.parsed_result.quality
             search_result.release_group = search_result.parsed_result.release_group
             search_result.version = search_result.parsed_result.version
@@ -345,7 +345,7 @@ class GenericProvider(object):
             search_result.actual_episodes = search_result.parsed_result.episode_numbers
 
             if not manual_search:
-                if not (search_result.series.air_by_date or search_result.series.sports):
+                if not (search_result.show.air_by_date or search_result.show.sports):
                     if search_mode == 'sponly':
                         if search_result.parsed_result.episode_numbers:
                             log.debug(
@@ -356,7 +356,7 @@ class GenericProvider(object):
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
-                                  [ep.series.is_scene]]:
+                                  [ep.show.is_scene]]:
                             log.debug(
                                 'This season result {0} is for a season we are not searching for, '
                                 'skipping it', search_result.name
@@ -387,7 +387,7 @@ class GenericProvider(object):
                         if not [searched_episode for searched_episode in episodes
                                 if searched_episode.season == search_result.parsed_result.season_number and
                                 (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.series.is_scene] in
+                                [searched_episode.show.is_scene] in
                                 search_result.parsed_result.episode_numbers]:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
@@ -418,7 +418,7 @@ class GenericProvider(object):
                         db = DBConnection()
                         sql_results = db.select(
                             'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
-                            [search_result.series.indexer, search_result.series.series_id, air_date]
+                            [search_result.show.indexer, search_result.show.show_id, air_date]
                         )
 
                         if len(sql_results) == 2:
@@ -603,7 +603,7 @@ class GenericProvider(object):
         return SearchResult(episodes)
 
     def _create_air_by_date_search_string(self, show_scene_name, episode, search_string, add_string=None):
-        """Create a search string used for series that are indexed by air date."""
+        """Create a search string used for show that are indexed by air date."""
         episode_string = show_scene_name + self.search_separator
         episode_string += str(episode.airdate).replace('-', ' ')
 
@@ -613,7 +613,7 @@ class GenericProvider(object):
         search_string['Episode'].append(episode_string.strip())
 
     def _create_sports_search_string(self, show_scene_name, episode, search_string, add_string=None):
-        """Create a search string used for sport series."""
+        """Create a search string used for sport show."""
         episode_string = show_scene_name + self.search_separator
 
         episode_string += str(episode.airdate).replace('-', ' ')
@@ -631,7 +631,7 @@ class GenericProvider(object):
 
         # If the show name is a season scene exception, we want to use the indexer episode number.
         if (episode.scene_season > 1 and
-                show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.series, episode.scene_season)):
+                show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.show, episode.scene_season)):
             # This is apparently a season exception, let's use the scene_episode instead of absolute
             ep = episode.scene_episode
         else:
@@ -647,7 +647,7 @@ class GenericProvider(object):
         search_string['Episode'].append(episode_string.strip())
 
     def _create_default_search_string(self, show_scene_name, episode, search_string, add_string=None):
-        """Create a default search string, used for standard type S01E01 tv series."""
+        """Create a default search string, used for standard type S01E01 tv show."""
         episode_string = show_scene_name + self.search_separator
 
         episode_string += config.naming_ep_type[2] % {
@@ -669,19 +669,19 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        all_possible_show_names = episode.series.get_all_possible_names()
+        all_possible_show_names = episode.show.get_all_possible_names()
         if episode.scene_season:
             all_possible_show_names = all_possible_show_names.union(
-                episode.series.get_all_possible_names(season=episode.scene_season)
+                episode.show.get_all_possible_names(season=episode.scene_season)
             )
 
         for show_name in all_possible_show_names:
 
-            if episode.series.air_by_date:
+            if episode.show.air_by_date:
                 self._create_air_by_date_search_string(show_name, episode, search_string, add_string=add_string)
-            elif episode.series.sports:
+            elif episode.show.sports:
                 self._create_sports_search_string(show_name, episode, search_string, add_string=add_string)
-            elif episode.series.anime:
+            elif episode.show.anime:
                 self._create_anime_search_string(show_name, episode, search_string, add_string=add_string)
             else:
                 self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
@@ -690,22 +690,22 @@ class GenericProvider(object):
 
     def _get_tvdb_id(self):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
-        if not self.series:
+        if not self.show:
             return None
 
-        return self.series.indexerid if self.series.indexer == INDEXER_TVDBV2 else self.series.externals.get('tvdb_id')
+        return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
         search_string = {
             'Season': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator
 
-            if episode.series.air_by_date or episode.series.sports:
+            if episode.show.air_by_date or episode.show.sports:
                 search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
-            elif episode.series.anime:
+            elif episode.show.anime:
                 search_string['Season'].append(episode_string + 'Season')
             else:
                 for season_template in self.season_templates:

@@ -42,11 +42,11 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
 STATUS_MAP = {
-    'returning series': 'Continuing',
+    'returning show': 'Continuing',
     'canceled/ended': 'Ended',
     'tbd/on the bubble': 'Continuing',
     'in development': 'Continuing',
-    'new series': 'Continuing',
+    'new show': 'Continuing',
     'never aired': 'Ended',
     'final season': 'Continuing',
     'on hiatus': 'Continuing',
@@ -78,7 +78,7 @@ indexerConfig = {
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com/',
-        'show_url': 'http://thetvdb.com/?tab=series&id=',
+        'show_url': 'http://thetvdb.com/?tab=show&id=',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },

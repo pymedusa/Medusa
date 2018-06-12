@@ -33,22 +33,22 @@ logger = logging.getLogger(__name__)
 class BlackAndWhiteList(object):
     """Black and White List."""
 
-    def __init__(self, series_obj):
+    def __init__(self, show_obj):
         """Init method.
 
-        :param series_obj:
-        :type series_obj: Series
+        :param show_obj:
+        :type show_obj: Show
         """
-        if not series_obj.indexerid:
+        if not show_obj.indexerid:
             raise BlackWhitelistNoShowIDException()
-        self.series_obj = series_obj
+        self.show_obj = show_obj
         self.blacklist = []
         self.whitelist = []
         self.load()
 
     def load(self):
         """Build black and whitelist."""
-        logger.debug('Building black and white list for {id}', id=self.series_obj.name)
+        logger.debug('Building black and white list for {id}', id=self.show_obj.name)
         self.blacklist = self._load_list(b'blacklist')
         self.whitelist = self._load_list(b'whitelist')
 
@@ -63,7 +63,7 @@ class BlackAndWhiteList(object):
             main_db_con.action(
                 b'INSERT INTO [{table}] (show_id, keyword, indexer_id) '
                 b'VALUES (?, ?, ?)'.format(table=table),
-                [self.series_obj.series_id, value, self.series_obj.indexer]
+                [self.show_obj.show_id, value, self.show_obj.indexer]
             )
 
     def set_black_keywords(self, values):
@@ -95,7 +95,7 @@ class BlackAndWhiteList(object):
         main_db_con.action(
             b'DELETE FROM [{table}] '
             b'WHERE show_id = ? AND indexer_id = ?'.format(table=table),
-            [self.series_obj.series_id, self.series_obj.indexer]
+            [self.show_obj.show_id, self.show_obj.indexer]
         )
 
     def _load_list(self, table):
@@ -110,7 +110,7 @@ class BlackAndWhiteList(object):
             b'SELECT keyword '
             b'FROM [{table}] '
             b'WHERE show_id = ? AND indexer_id = ?'.format(table=table),
-            [self.series_obj.series_id, self.series_obj.indexer]
+            [self.show_obj.show_id, self.show_obj.indexer]
         )
 
         groups = [result[b'keyword']
@@ -119,7 +119,7 @@ class BlackAndWhiteList(object):
 
         if groups:
             logger.debug('BWL: {id} loaded keywords from {table}: {groups}',
-                         id=self.series_obj.series_id, table=table, groups=groups)
+                         id=self.show_obj.show_id, table=table, groups=groups)
 
         return groups
 

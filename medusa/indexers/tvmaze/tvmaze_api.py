@@ -43,7 +43,7 @@ class TVmaze(BaseIndexer):
         ]
 
         # thetvdb.com should be based around numeric language codes,
-        # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
+        # but to link to a show like http://thetvdb.com/?tab=show&id=79349&lid=16
         # requires the language ID, thus this mapping is required (mainly
         # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
         self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
@@ -56,11 +56,11 @@ class TVmaze(BaseIndexer):
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
-        # An api to indexer series/episode object mapping
-        self.series_map = {
+        # An api to indexer show/episode object mapping
+        self.show_map = {
             'id': 'id',
             'maze_id': 'id',
-            'name': 'seriesname',
+            'name': 'showname',
             'summary': 'overview',
             'premiered': 'firstaired',
             'image': 'fanart',
@@ -178,22 +178,22 @@ class TVmaze(BaseIndexer):
             return None
 
     # Tvdb implementation
-    def search(self, series):
-        """Search tvmaze.com for the series name.
+    def search(self, show):
+        """Search tvmaze.com for the show name.
 
-        :param series: the query for the series name
-        :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
+        :param show: the query for the show name
+        :return: An ordered dict with the show searched for. In the format of OrderedDict{"show": [list of shows]}
         """
-        log.debug('Searching for show {0}', series)
+        log.debug('Searching for show {0}', show)
 
-        results = self._show_search(series, request_language=self.config['language'])
+        results = self._show_search(show, request_language=self.config['language'])
 
         if not results:
             return
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        mapped_results = self._map_results(results, self.show_map, '|')
 
-        return OrderedDict({'series': mapped_results})['series']
+        return OrderedDict({'show': mapped_results})['show']
 
     def _get_show_by_id(self, tvmaze_id, request_language='en'):  # pylint: disable=unused-argument
         """
@@ -210,15 +210,15 @@ class TVmaze(BaseIndexer):
         if not results:
             return
 
-        mapped_results = self._map_results(results, self.series_map)
+        mapped_results = self._map_results(results, self.show_map)
 
-        return OrderedDict({'series': mapped_results})
+        return OrderedDict({'show': mapped_results})
 
     def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id.
 
-        :param tvmaze_id: Series tvmaze id.
+        :param tvmaze_id: Show tvmaze id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         # Parse episode data
@@ -231,7 +231,7 @@ class TVmaze(BaseIndexer):
         except BaseError as e:
             raise IndexerException('Show episodes search failed in getting a result with error: {0!r}'.format(e))
 
-        episodes = self._map_results(results, self.series_map)
+        episodes = self._map_results(results, self.show_map)
 
         if not episodes:
             return False
@@ -278,7 +278,7 @@ class TVmaze(BaseIndexer):
 
         >>> indexer_api = TVMaze(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
-        ['fanart', 'poster', 'series', 'season']
+        ['fanart', 'poster', 'show', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvmaze.com/banners/posters/76156-2.jpg'
         >>>
@@ -337,7 +337,7 @@ class TVmaze(BaseIndexer):
 
     def _parse_actors(self, tvmaze_id):
         """Parsers actors XML, from
-        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        http://thetvmaze.com/api/[APIKEY]/show/[SHOW ID]/actors.xml
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
@@ -381,10 +381,10 @@ class TVmaze(BaseIndexer):
         self._set_show_data(tvmaze_id, '_actors', cur_actors)
 
     def _get_show_data(self, tvmaze_id, language='en'):
-        """Take a series ID, gets the epInfo URL and parses the tvmaze json response.
+        """Take a show ID, gets the epInfo URL and parses the tvmaze json response.
 
         into the shows dict in layout:
-        shows[series_id][season_number][episode_number]
+        shows[show_id][season_number][episode_number]
         """
         if self.config['language'] is None:
             log.debug('Config language is none, using show language')
@@ -400,17 +400,17 @@ class TVmaze(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log.debug('Getting all series data for {0}', tvmaze_id)
+        log.debug('Getting all show data for {0}', tvmaze_id)
 
         # Parse show information
-        series_info = self._get_show_by_id(tvmaze_id, request_language=get_show_in_language)
+        show_info = self._get_show_by_id(tvmaze_id, request_language=get_show_in_language)
 
-        if not series_info:
-            log.debug('Series result returned zero')
-            raise IndexerError('Series result returned zero')
+        if not show_info:
+            log.debug('Show result returned zero')
+            raise IndexerError('Show result returned zero')
 
         # save all retrieved show information to Show object.
-        for k, v in viewitems(series_info['series']):
+        for k, v in viewitems(show_info['show']):
             if v is not None:
                 self._set_show_data(tvmaze_id, k, v)
 
@@ -454,7 +454,7 @@ class TVmaze(BaseIndexer):
         return results
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    def get_last_updated_show(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time

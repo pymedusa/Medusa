@@ -21,7 +21,7 @@
 from __future__ import print_function
 
 from medusa import app
-from medusa.tv import Episode, Series
+from medusa.tv import Episode, Show
 from tests.legacy import test_lib as test
 
 
@@ -34,11 +34,11 @@ class TVShowTests(test.AppTestDBCase):
         app.showList = []
 
     def test_init_indexerid(self):
-        show = Series(1, 1, "en")
+        show = Show(1, 1, "en")
         self.assertEqual(show.indexerid, 1)
 
     def test_change_indexerid(self):
-        show = Series(1, 1, "en")
+        show = Show(1, 1, "en")
         show.name = "show name"
         show.network = "cbs"
         show.genre = "crime"
@@ -58,7 +58,7 @@ class TVShowTests(test.AppTestDBCase):
         self.assertEqual(show.indexerid, 2)
 
     def test_set_name(self):
-        show = Series(1, 1, "en")
+        show = Show(1, 1, "en")
         show.name = "newName"
         show.save_to_db()
         show._load_from_db()
@@ -74,7 +74,7 @@ class TVEpisodeTests(test.AppTestDBCase):
         app.showList = []
 
     def test_init_empty_db(self):
-        show = Series(1, 1, "en")
+        show = Show(1, 1, "en")
         episode = Episode(show, 1, 1)
         episode.name = "asdasdasdajkaj"
         episode.save_to_db()
@@ -92,7 +92,7 @@ class TVTests(test.AppTestDBCase):
 
     @staticmethod
     def test_get_episode():
-        show = Series(1, 1, "en")
+        show = Show(1, 1, "en")
         show.name = "show name"
         show.network = "cbs"
         show.genre = "crime"

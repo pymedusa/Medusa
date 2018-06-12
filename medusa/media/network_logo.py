@@ -34,8 +34,8 @@ class ShowNetworkLogo(GenericMedia):
     @property
     def media_path(self):
         """Get the relative path to the media."""
-        series = self.series
-        if series:
-            return join(self.get_media_root(), 'img', 'network', series.network_logo_name + '.png')
+        show = self.show
+        if show:
+            return join(self.get_media_root(), 'img', 'network', show.network_logo_name + '.png')
         else:
             return ''
