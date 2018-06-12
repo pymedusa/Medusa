@@ -578,7 +578,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <file-browser name="nzb_dir" id="nzb_dir" title="Select nzb black hole Location" :initial-dir="nzb.dir" @update:location="nzb.dir = $event"/>
+                                            <file-browser name="nzb_dir" id="nzb_dir" title="Select nzb black hole Location" :initial-dir="nzb.dir" @update:location="nzb.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -798,7 +798,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_dir" id="torrent_dir" title="Select torrent black hole Location" :initial-dir="torrent.dir" @update:location="torrent.dir = $event"/>
+                                            <file-browser name="torrent_dir" id="torrent_dir" title="Select torrent black hole Location" :initial-dir="torrent.dir" @update:location="torrent.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -909,7 +909,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_path" id="torrent_path" title="Select torrent Location" :initial-dir="torrent.path" @update:location="torrent.path = $event"/>
+                                            <file-browser name="torrent_path" id="torrent_path" title="Select torrent Location" :initial-dir="torrent.path" @update:location="torrent.path = $event"></file-browser>
                                             <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
                                                 <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
@@ -920,7 +920,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_seed_location" id="torrent_seed_location" title="Select torrent seed Location" :initial-dir="torrent.seedLocation" @update:location="torrent.seedLocation = $event"/>
+                                            <file-browser name="torrent_seed_location" id="torrent_seed_location" title="Select torrent seed Location" :initial-dir="torrent.seedLocation" @update:location="torrent.seedLocation = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p>
                                                     where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
