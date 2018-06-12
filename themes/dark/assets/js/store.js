@@ -14,12 +14,14 @@ const mutationTypes = {
     LOGOUT: '🔒 Logout',
     REFRESH_TOKEN: '🔒 Refresh Token',
     REMOVE_AUTH_ERROR: '🔒 Remove Auth Error',
-    SOCKET_ONOPEN: '',
-    SOCKET_ONCLOSE: '',
-    SOCKET_ONERROR: '',
-    SOCKET_ONMESSAGE: '',
-    SOCKET_RECONNECT: '',
-    SOCKET_RECONNECT_ERROR: '',
+    SOCKET_ONOPEN: 'SOCKET_ONOPEN',
+    SOCKET_ONCLOSE: 'SOCKET_ONCLOSE',
+    SOCKET_ONERROR: 'SOCKET_ONERROR',
+    SOCKET_ONMESSAGE: 'SOCKET_ONMESSAGE',
+    SOCKET_RECONNECT: 'SOCKET_RECONNECT',
+    SOCKET_RECONNECT_ERROR: 'SOCKET_RECONNECT_ERROR',
+    NOTIFICATIONS_ENABLED: '🔔 Notifications Enabled',
+    NOTIFICATIONS_DISABLED: '🔔 Notifications Disabled',
     ADD_CONFIG: '⚙️ Global config added to store',
     ADD_SHOW: '📺 Show added to store'
 };
@@ -39,6 +41,8 @@ const {
     SOCKET_ONMESSAGE,
     SOCKET_RECONNECT,
     SOCKET_RECONNECT_ERROR,
+    NOTIFICATIONS_ENABLED,
+    NOTIFICATIONS_DISABLED,
     ADD_CONFIG,
     ADD_SHOW
 } = mutationTypes;
@@ -50,6 +54,9 @@ const store = new Puex({
             isConnected: false,
             message: '',
             reconnectError: false
+        },
+        notifications: {
+            enabled: true
         },
         // Main config
         config: {
@@ -173,6 +180,12 @@ const store = new Puex({
         [SOCKET_RECONNECT_ERROR](state) {
             state.socket.reconnectError = true;
         },
+        [NOTIFICATIONS_ENABLED](state) {
+            state.notifications.enabled = true;
+        },
+        [NOTIFICATIONS_DISABLED](state) {
+            state.notifications.enabled = false;
+        },
         [ADD_CONFIG](state, config) {
             state.config = config;
         },
@@ -199,18 +212,25 @@ const store = new Puex({
             return api.get('/series/' + indexer + id).then(res => {
                 store.commit(ADD_SHOW, res.data);
             });
+        },
+        getShows(store, shows) {
+            const { getShow } = this;
+            return shows.forEach(show => getShow(show));
         }
     },
     // @TODO Add logging here
     plugins: []
 });
 
-const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const webRoot = MEDUSA.config.webRoot || '';
-const WSMessageUrl = '/ui';
+const websocketUrl = (() => {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const webRoot = apiRoot.replace('/api/v2/', '');
+    const WSMessageUrl = '/ui';
+    return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
+})();
 
-Vue.use(VueNativeSock, proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl, {
-    store: window.store,
+Vue.use(VueNativeSock, websocketUrl, {
+    store,
     format: 'json',
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
