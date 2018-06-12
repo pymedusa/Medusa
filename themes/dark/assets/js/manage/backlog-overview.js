@@ -5,8 +5,8 @@ MEDUSA.manage.backlogOverview = function() {
         let pollInterval = 5000;
         const searchStatusUrl = 'home/getManualSearchStatus';
         const indexerName = $('#indexer-name').val();
-        const seriesId = $('#series-id').val();
-        const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+        const showId = $('#show-id').val();
+        const url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&showid=' + showId;
         $.ajax({
             url,
             error() {
@@ -30,7 +30,7 @@ MEDUSA.manage.backlogOverview = function() {
 
     function updateForcedSearch(data) {
         $.each(data.episodes, (name, ep) => {
-            const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+            const el = $('a[id=' + ep.indexer_id + 'x' + ep.show_id + 'x' + ep.season + 'x' + ep.episode + ']');
             const img = el.children('img[data-ep-search]');
             const episodeStatus = ep.status.toLowerCase();
             const episodeSearchStatus = ep.searchstatus.toLowerCase();

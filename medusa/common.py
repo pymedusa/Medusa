@@ -511,7 +511,7 @@ class Quality(object):
 
         :param cur_status: current status of the episode
         :param cur_quality: current quality of the episode
-        :param show_obj: Series object of the episode we will check if we should search or not
+        :param show_obj: Show object of the episode we will check if we should search or not
         :param manually_searched: if episode was manually searched by user
         :return: True if need to run a search for given episode
         """

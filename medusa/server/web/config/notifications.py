@@ -63,7 +63,7 @@ class ConfigNotifications(Config):
                           use_trakt=None, trakt_username=None, trakt_pin=None,
                           trakt_remove_watchlist=None, trakt_sync_watchlist=None, trakt_remove_show_from_application=None, trakt_method_add=None,
                           trakt_start_paused=None, trakt_use_recommended=None, trakt_sync=None, trakt_sync_remove=None,
-                          trakt_default_indexer=None, trakt_remove_serieslist=None, trakt_timeout=None, trakt_blacklist_name=None,
+                          trakt_default_indexer=None, trakt_remove_showlist=None, trakt_timeout=None, trakt_blacklist_name=None,
                           use_synologynotifier=None, synologynotifier_notify_onsnatch=None,
                           synologynotifier_notify_ondownload=None, synologynotifier_notify_onsubtitledownload=None,
                           use_pytivo=None, pytivo_notify_onsnatch=None, pytivo_notify_ondownload=None,
@@ -204,7 +204,7 @@ class ConfigNotifications(Config):
         config.change_USE_TRAKT(use_trakt)
         app.TRAKT_USERNAME = trakt_username
         app.TRAKT_REMOVE_WATCHLIST = config.checkbox_to_value(trakt_remove_watchlist)
-        app.TRAKT_REMOVE_SERIESLIST = config.checkbox_to_value(trakt_remove_serieslist)
+        app.TRAKT_REMOVE_SHOWLIST = config.checkbox_to_value(trakt_remove_showlist)
         app.TRAKT_REMOVE_SHOW_FROM_APPLICATION = config.checkbox_to_value(trakt_remove_show_from_application)
         app.TRAKT_SYNC_WATCHLIST = config.checkbox_to_value(trakt_sync_watchlist)
         app.TRAKT_METHOD_ADD = int(trakt_method_add)

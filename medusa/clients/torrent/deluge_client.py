@@ -299,7 +299,7 @@ class DelugeAPI(GenericClient):
     def _set_torrent_label(self, result):
 
         label = app.TORRENT_LABEL.lower()
-        if result.series.is_anime:
+        if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
             log.error('{name}: Invalid label. Label must not contain a space',

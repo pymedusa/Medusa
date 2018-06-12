@@ -28,9 +28,9 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="series-id" value="${show.series_id}" />
+<input type="hidden" id="show-id" value="${show.show_id}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
-<input type="hidden" id="series-slug" value="${show.slug}" />
+<input type="hidden" id="show-slug" value="${show.slug}" />
 
 <%include file="/partials/showheader.mako"/>
 
@@ -103,7 +103,7 @@ const startVue = () => {
                     <th class="row-seasonheader ${'displayShowTable' if app.FANART_BACKGROUND else 'displayShowTableFanArt'}" colspan="15" style="vertical-align: bottom; width: auto;">
                         <h3 style="display: inline;"><app-link name="season-${epResult["season"]}"></app-link>${"Season " + str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}
                         % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
-                        <app-link class="epManualSearch" href="home/snatchSelection?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                        <app-link class="epManualSearch" href="home/snatchSelection?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
@@ -147,7 +147,7 @@ const startVue = () => {
                     <th class="row-seasonheader ${'displayShowTableFanArt' if app.FANART_BACKGROUND else 'displayShowTable'}" colspan="15" style="vertical-align: bottom; width: auto;">
                         <h3 style="display: inline;"><app-link name="season-${epResult["season"]}"></app-link>${"Season " + str(epResult["season"]) if int(epResult["season"]) else "Specials"}
                         % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
-                        <app-link class="epManualSearch" href="home/snatchSelection?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                        <app-link class="epManualSearch" href="home/snatchSelection?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
@@ -233,7 +233,7 @@ const startVue = () => {
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">
                         <% has_plot = 'has-plot' if epResult['description'] else '' %>
-                        <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
+                        <plot-info ${has_plot} show-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
                         ${epResult["name"]}
                     </td>
                     <td class="col-name hidden-xs triggerhighlight">${epLoc or ''}</td>
@@ -271,7 +271,7 @@ const startVue = () => {
                     % for flag in (epResult["subtitles"] or '').split(','):
                         % if flag.strip() and int(epResult['status']) in [ARCHIVED, DOWNLOADED, IGNORED, SKIPPED]:
                             % if flag != 'und':
-                                <app-link class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
+                                <app-link class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
                                     <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
                                 </app-link>
                             % else:
@@ -292,16 +292,16 @@ const startVue = () => {
                     <td class="col-search triggerhighlight">
                         % if int(epResult["season"]) != 0:
                             % if app.USE_FAILED_DOWNLOADS and int(epResult["status"]) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED):
-                                <app-link class="epRetry" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/retryEpisode?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" height="16" alt="retry" title="Retry Download" /></app-link>
+                                <app-link class="epRetry" id="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/retryEpisode?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" height="16" alt="retry" title="Retry Download" /></app-link>
                             % else:
-                                <app-link class="epSearch" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/searchEpisode?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+                                <app-link class="epSearch" id="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/searchEpisode?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
                             % endif
-                            <app-link class="epManualSearch" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/snatchSelection?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                            <app-link class="epManualSearch" id="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/snatchSelection?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         % else:
-                            <app-link class="epManualSearch" id="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.series_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/snatchSelection?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                            <app-link class="epManualSearch" id="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexer)}x${str(show.show_id)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/snatchSelection?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         % endif
                         % if app.USE_SUBTITLES and show.subtitles and epResult["location"] and int(epResult["status"]) not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                            <app-link class="epSubtitlesSearch" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&seriesid=${show.series_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
+                            <app-link class="epSubtitlesSearch" href="home/searchEpisodeSubtitles?indexername=${show.indexer_name}&showid=${show.show_id}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
                         % endif
                     </td>
                 </tr>

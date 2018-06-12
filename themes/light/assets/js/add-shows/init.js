@@ -85,7 +85,7 @@ MEDUSA.addShows.init = function() {
     };
 
     /*
-     * Blacklist a show by series id.
+     * Blacklist a show by show id.
      */
     $.initBlackListShowById = function() {
         $(document.body).on('click', 'button[data-blacklist-show]', function(e) {
@@ -98,7 +98,7 @@ MEDUSA.addShows.init = function() {
             $(this).html('Blacklisted').prop('disabled', true);
             $(this).parent().find('button[data-add-show]').prop('disabled', true);
 
-            $.get('addShows/addShowToBlacklist?seriesid=' + $(this).attr('data-indexer-id'));
+            $.get('addShows/addShowToBlacklist?showid=' + $(this).attr('data-indexer-id'));
             return false;
         });
     };
@@ -129,7 +129,7 @@ MEDUSA.addShows.init = function() {
 
             const configureShowOptions = $('#configure_show_options').prop('checked');
 
-            $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
+            $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&showid=' + $(this).attr('data-indexer-id'), {
                 root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
                 configure_show_options: configureShowOptions, // eslint-disable-line camelcase
                 show_name: $(this).attr('data-show-name'), // eslint-disable-line camelcase
@@ -156,7 +156,7 @@ MEDUSA.addShows.init = function() {
             $('#blackwhitelist').show();
             if (showName) {
                 $.getJSON('home/fetch_releasegroups', {
-                    series_name: showName // eslint-disable-line camelcase
+                    show_name: showName // eslint-disable-line camelcase
                 }, data => {
                     if (data.result === 'success') {
                         $.each(data.groups, (i, group) => {

@@ -23,15 +23,15 @@ import unittest
 
 from medusa import app
 from medusa.media.generic import GenericMedia
-from medusa.tv import Series
+from medusa.tv import Show
 
 
 class GenericMediaTests(unittest.TestCase):
     """Test GenericMedia."""
 
     def test_default_media_name(self):
-        series_obj = Series(1, 70726)
-        self.assertEqual(GenericMedia(series_obj, '').default_media_name, '')
+        show_obj = Show(1, 70726)
+        self.assertEqual(GenericMedia(show_obj, '').default_media_name, '')
 
     def test_media_root(self):
         app.PROG_DIR = os.path.join('some', 'path', 'to', 'application')

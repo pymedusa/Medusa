@@ -572,10 +572,10 @@ class AddIndexerInteger(AddPKIndexerMapping):
 
 class AddIndexerIds(AddIndexerInteger):
     """
-    Add the indexer_id to all table's that have a series_id already.
+    Add the indexer_id to all table's that have a show_id already.
 
-    If the current series_id is named indexer_id or indexerid, use the field `indexer` for now.
-    The namings should be renamed to: indexer_id + series_id in a later iteration.
+    If the current show_id is named indexer_id or indexerid, use the field `indexer` for now.
+    The namings should be renamed to: indexer_id + show_id in a later iteration.
     """
 
     def test(self):
@@ -632,22 +632,22 @@ class AddIndexerIds(AddIndexerInteger):
                                'SELECT CAST(indexer AS INTEGER), indexer_id, last_refreshed FROM tmp_xem_refresh')
         self.connection.action('DROP TABLE tmp_xem_refresh')
 
-        series_dict = {}
+        show_dict = {}
 
-        def create_series_dict():
-            """Create a dict with series[indexer]: series_id."""
-            if not series_dict:
+        def create_show_dict():
+            """Create a dict with show[indexer]: show_id."""
+            if not show_dict:
 
                 # get all the shows. Might need them.
-                all_series = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
+                all_show = self.connection.select('SELECT indexer, indexer_id FROM tv_shows')
 
                 # check for double
-                for series in all_series:
-                    if series[b'indexer_id'] not in series_dict:
-                        series_dict[series[b'indexer_id']] = series[b'indexer']
+                for show in all_show:
+                    if show[b'indexer_id'] not in show_dict:
+                        show_dict[show[b'indexer_id']] = show[b'indexer']
                     else:
-                        log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
-                                    series[b'indexer_id'], series[b'indexer'])
+                        log.warning(u'Found a duplicate show id for indexer_id: {0} and indexer: {1}',
+                                    show[b'indexer_id'], show[b'indexer'])
 
         # Check if it's required for the main.db tables.
         for migration_config in (('blacklist', 'show_id', 'indexer_id'),
@@ -656,7 +656,7 @@ class AddIndexerIds(AddIndexerInteger):
                                  ('imdb_info', 'indexer_id', 'indexer')):
 
             log.info(
-                u'Updating indexer field on table {0}. Using the series id to match with field {1}',
+                u'Updating indexer field on table {0}. Using the show id to match with field {1}',
                 migration_config[0], migration_config[1]
             )
 
@@ -665,19 +665,19 @@ class AddIndexerIds(AddIndexerInteger):
             if not results:
                 continue
 
-            create_series_dict()
+            create_show_dict()
 
-            # Updating all rows, using the series id.
-            for series_id in series_dict:
+            # Updating all rows, using the show id.
+            for show_id in show_dict:
                 # Update the value in the db.
-                # Get the indexer (tvdb, tmdb, tvmaze etc, for this series_id).
-                indexer_id = series_dict.get(series_id)
+                # Get the indexer (tvdb, tmdb, tvmaze etc, for this show_id).
+                indexer_id = show_dict.get(show_id)
                 if not indexer_id:
                     continue
 
                 self.connection.action(
                     'UPDATE {config[0]} SET {config[2]} = ? WHERE {config[1]} = ?'.format(config=migration_config),
-                    [indexer_id, series_id])
+                    [indexer_id, show_id])
 
         self.inc_minor_version()
 

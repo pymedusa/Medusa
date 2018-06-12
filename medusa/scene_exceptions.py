@@ -43,16 +43,16 @@ def refresh_exceptions_cache():
     # Start building up a new exceptions_cache.
     for exception in exceptions:
         indexer_id = int(exception[b'indexer'])
-        series_id = int(exception[b'indexer_id'])
+        show_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
         show = exception[b'show_name']
 
-        # To support multiple indexers with same series_id, we have to combine the min a tuple.
-        series = (indexer_id, series_id)
+        # To support multiple indexers with same show_id, we have to combine the min a tuple.
+        show = (indexer_id, show_id)
 
         # exceptions_cache[(1, 12345)][season] = ['showname 1', 'showname 2']
-        if show not in exceptions_cache[series][season]:
-            exceptions_cache[series][season].add(show)
+        if show not in exceptions_cache[show][season]:
+            exceptions_cache[show][season].add(show)
 
     logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
@@ -94,49 +94,49 @@ def set_last_refresh(source):
     )
 
 
-def get_scene_exceptions(series_obj, season=-1):
-    """Get scene exceptions from exceptions_cache for a series."""
-    exceptions_list = exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]
+def get_scene_exceptions(show_obj, season=-1):
+    """Get scene exceptions from exceptions_cache for a show."""
+    exceptions_list = exceptions_cache[(show_obj.indexer, show_obj.show_id)][season]
 
     if season != -1 and not exceptions_list:
-        exceptions_list = get_scene_exceptions(series_obj)
+        exceptions_list = get_scene_exceptions(show_obj)
 
     # Return a set to avoid duplicates and it makes a copy of the list so the
     # original doesn't get modified
     return set(exceptions_list)
 
 
-def get_season_scene_exceptions(series_obj, season=-1):
+def get_season_scene_exceptions(show_obj, season=-1):
     """
-    Get season scene exceptions from exceptions_cache for a series.
+    Get season scene exceptions from exceptions_cache for a show.
 
-    Use this method if you expect to get back a season exception, or a series exception.
+    Use this method if you expect to get back a season exception, or a show exception.
     But without any fallback between the two. As opposed to the function get_scene_exceptions.
-    :param series_obj: A Series object.
-    :param season: The season to return exceptions for. Or -1 for the series exceptions.
+    :param show_obj: A Show object.
+    :param season: The season to return exceptions for. Or -1 for the show exceptions.
 
     :return: A set of exception names.
     """
-    exceptions_list = exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]
+    exceptions_list = exceptions_cache[(show_obj.indexer, show_obj.show_id)][season]
 
     # Return a set to avoid duplicates and it makes a copy of the list so the
     # original doesn't get modified
     return set(exceptions_list)
 
 
-def get_all_scene_exceptions(series_obj):
+def get_all_scene_exceptions(show_obj):
     """
     Get all scene exceptions for a show ID.
 
     :param indexer_id: Indexer.
-    :param series_id: Series id.
+    :param show_id: Show id.
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
-    return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
+    return exceptions_cache.get((show_obj.indexer, show_obj.show_id), defaultdict(set))
 
 
 def get_scene_exceptions_by_name(show_name):
-    """Look for a series_id, season and indexer for a given series scene exception."""
+    """Look for a show_id, season and indexer for a given show scene exception."""
     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
     # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
     # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
@@ -180,7 +180,7 @@ def get_scene_exceptions_by_name(show_name):
     return result or [(None, None, None)]
 
 
-def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
+def update_scene_exceptions(show_obj, scene_exceptions, season=-1):
     """Update database with all show scene exceptions by indexer_id."""
     logger.info('Updating scene exceptions...')
 
@@ -190,25 +190,25 @@ def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
         b'WHERE indexer_id=? AND '
         b'    season=? AND '
         b'    indexer=?',
-        [series_obj.series_id, season, series_obj.indexer]
+        [show_obj.show_id, season, show_obj.indexer]
     )
 
     # A change has been made to the scene exception list.
     # Let's clear the cache, to make this visible
 
-    exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
+    exceptions_cache[(show_obj.indexer, show_obj.show_id)].clear()
 
     for exception in scene_exceptions:
-        if exception not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]:
+        if exception not in exceptions_cache[(show_obj.indexer, show_obj.show_id)][season]:
             # Add to cache
-            exceptions_cache[(series_obj.indexer, series_obj.series_id)][season].add(exception)
+            exceptions_cache[(show_obj.indexer, show_obj.show_id)][season].add(exception)
 
             # Add to db
             cache_db_con.action(
                 b'INSERT INTO scene_exceptions '
                 b'    (indexer, indexer_id, show_name, season)'
                 b'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception, season]
+                [show_obj.indexer, show_obj.show_id, exception, season]
             )
 
 
@@ -426,8 +426,8 @@ def _get_anidb_exceptions(force):
                     continue
 
                 if anime and anime.name != show.name:
-                    series_id = int(show.series_id)
-                    exceptions[series_id] = [{anime.name.decode('utf-8'): -1}]
+                    show_id = int(show.show_id)
+                    exceptions[show_id] = [{anime.name.decode('utf-8'): -1}]
 
         set_last_refresh('anidb')
 

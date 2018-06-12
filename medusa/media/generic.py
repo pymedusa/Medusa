@@ -27,21 +27,21 @@ from medusa.helper.exceptions import MultipleShowObjectsException
 
 
 class GenericMedia(object):
-    """Base class for series media."""
+    """Base class for show media."""
 
     img_type = None
     default_media_name = ''
 
-    def __init__(self, series_obj, media_format='normal'):
+    def __init__(self, show_obj, media_format='normal'):
         """
-        Initialize media for a series.
+        Initialize media for a show.
 
-        :param series_obj: The series object.
+        :param show_obj: The show object.
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
         """
 
-        self.series_obj = series_obj
-        self.series_id = series_obj.series_id
+        self.show_obj = show_obj
+        self.show_id = show_obj.show_id
 
         if media_format in ('normal', 'thumb'):
             self.media_format = media_format
@@ -50,11 +50,11 @@ class GenericMedia(object):
 
     @property
     def indexerid(self):
-        return self.series_id
+        return self.show_id
 
     @indexerid.setter
     def indexerid(self, value):
-        self.series_id = value
+        self.show_id = value
 
     @property
     def media(self):
@@ -71,8 +71,8 @@ class GenericMedia(object):
     @property
     def media_path(self):
         """Get the relative path to the media."""
-        if self.series:
-            return image_cache.get_path(self.img_type, self.series_obj)
+        if self.show:
+            return image_cache.get_path(self.img_type, self.show_obj)
         else:
             return ''
 
@@ -92,17 +92,17 @@ class GenericMedia(object):
         return ''
 
     @property
-    def series(self):
-        """Find the series by indexer id."""
+    def show(self):
+        """Find the show by indexer id."""
         try:
-            return self.series_obj
+            return self.show_obj
         except MultipleShowObjectsException:
             return None
 
     @property
     def static_media_path(self):
         """Get the full path to the media."""
-        if self.series:
+        if self.show:
             media_path = self.media_path
 
             if isfile(media_path):

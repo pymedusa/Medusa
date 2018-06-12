@@ -103,9 +103,9 @@ class Notifier(object):
                         log.warning('EMBY: TVRage indexer no longer valid')
                     else:
                         log.warning(
-                            'EMBY: Unable to find a TVDB ID for {series},'
+                            'EMBY: Unable to find a TVDB ID for {show},'
                             ' and {indexer} indexer is unsupported',
-                            {'series': show.name, 'indexer': indexer_id_to_name(show.indexer)}
+                            {'show': show.name, 'indexer': indexer_id_to_name(show.indexer)}
                         )
                     return False
 
@@ -115,7 +115,7 @@ class Notifier(object):
             else:
                 params = {}
 
-            url = 'http://{host}/emby/Library/Series/Updated'.format(host=app.EMBY_HOST)
+            url = 'http://{host}/emby/Library/Show/Updated'.format(host=app.EMBY_HOST)
             try:
                 resp = self.session.post(
                     url=url,
@@ -129,7 +129,7 @@ class Notifier(object):
                 if resp.content:
                     log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
 
-                log.info('EMBY: Successfully sent a "Series Library Updated" command.')
+                log.info('EMBY: Successfully sent a "Show Library Updated" command.')
                 return True
 
             except (HTTPError, RequestException) as error:

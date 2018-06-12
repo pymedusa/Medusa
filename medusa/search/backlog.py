@@ -102,22 +102,22 @@ class BacklogSearcher(object):
             log.info(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
-        for series_obj in show_list:
+        for show_obj in show_list:
 
-            if series_obj.paused:
+            if show_obj.paused:
                 continue
 
-            segments = self._get_segments(series_obj, from_date)
+            segments = self._get_segments(show_obj, from_date)
 
             for season, segment in iteritems(segments):
-                self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=series_obj.name,
+                self.currentSearchInfo = {'title': '{show_name} Season {season}'.format(show_name=show_obj.name,
                                                                                           season=season)}
 
-                backlog_queue_item = BacklogQueueItem(series_obj, segment)
+                backlog_queue_item = BacklogQueueItem(show_obj, segment)
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
-                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', series_obj.name)
+                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', show_obj.name)
 
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
@@ -148,14 +148,14 @@ class BacklogSearcher(object):
         return self._last_backlog
 
     @staticmethod
-    def _get_segments(series_obj, from_date):
+    def _get_segments(show_obj, from_date):
         """Get episodes that should be backlog searched."""
         wanted = {}
-        if series_obj.paused:
-            log.debug(u'Skipping backlog for {0} because the show is paused', series_obj.name)
+        if show_obj.paused:
+            log.debug(u'Skipping backlog for {0} because the show is paused', show_obj.name)
             return wanted
 
-        log.debug(u'Seeing if we need anything from {0}', series_obj.name)
+        log.debug(u'Seeing if we need anything from {0}', show_obj.name)
 
         con = db.DBConnection()
         sql_results = con.select(
@@ -164,25 +164,25 @@ class BacklogSearcher(object):
             'WHERE airdate > ?'
             ' AND indexer = ? '
             ' AND showid = ?',
-            [from_date.toordinal(), series_obj.indexer, series_obj.series_id]
+            [from_date.toordinal(), show_obj.indexer, show_obj.show_id]
         )
 
         # check through the list of statuses to see if we want any
         for episode in sql_results:
             cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
             should_search, should_search_reason = Quality.should_search(
-                cur_status, cur_quality, series_obj, episode[b'manually_searched']
+                cur_status, cur_quality, show_obj, episode[b'manually_searched']
             )
             if not should_search:
                 continue
             log.debug(
                 u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
-                    'show': series_obj.name,
+                    'show': show_obj.name,
                     'ep': episode_num(episode[b'season'], episode[b'episode']),
                     'reason': should_search_reason,
                 }
             )
-            ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
+            ep_obj = show_obj.get_episode(episode[b'season'], episode[b'episode'])
 
             if ep_obj.season not in wanted:
                 wanted[ep_obj.season] = [ep_obj]

@@ -39,9 +39,9 @@ class NewpctProvider(TorrentProvider):
         self.urls = OrderedDict([
             ('daily', urljoin(self.url, 'ultimas-descargas')),
             ('torrent_url', urljoin(self.url, 'descargar-torrent/{0}_{1}.html')),
-            ('download_series', urljoin(self.url, 'descargar-serie/{0}/capitulo-{1}/hdtv/')),
-            ('download_series_hd', urljoin(self.url, 'descargar-seriehd/{0}/capitulo-{1}/hdtv-720p-ac3-5-1/')),
-            ('download_series_vo', urljoin(self.url, 'descargar-serievo/{0}/capitulo-{1}/')),
+            ('download_show', urljoin(self.url, 'descargar-serie/{0}/capitulo-{1}/hdtv/')),
+            ('download_show_hd', urljoin(self.url, 'descargar-seriehd/{0}/capitulo-{1}/hdtv-720p-ac3-5-1/')),
+            ('download_show_vo', urljoin(self.url, 'descargar-serievo/{0}/capitulo-{1}/')),
         ])
 
         # Proper Strings
@@ -66,12 +66,12 @@ class NewpctProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        lang_info = '' if not ep_obj or not ep_obj.series else ep_obj.series.lang
+        lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            if self.series and (self.series.air_by_date or self.series.is_sports):
+            if self.show and (self.show.air_by_date or self.show.is_sports):
                 log.debug("Provider doesn't support air by date or sports search")
                 continue
 
@@ -184,7 +184,7 @@ class NewpctProvider(TorrentProvider):
         return items
 
     def _parse_title(self, search_string):
-        if self.series and self.series.is_anime:
+        if self.show and self.show.is_anime:
             search_matches = NewpctProvider.anime_search_regex.match(search_string)
             name = search_matches.group(1)
             chapter = '1{0}'.format(search_matches.group(2))

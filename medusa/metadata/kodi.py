@@ -93,7 +93,7 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         """
         Returns the full path to the file for a given season poster.
 
-        show_obj: a Series instance for which to generate the path
+        show_obj: a Show instance for which to generate the path
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """

@@ -567,7 +567,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
     There are animes where the title contains the season number.
 
     Medusa rule:
-    - The season should be part of the series name
+    - The season should be part of the show name
     - The episode should still use absolute numbering
 
     e.g.: [Group].Show.Name.S2.-.19.[1080p]
@@ -625,7 +625,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                                                                       match.end <= filepart.end and
                                                                       match.value.isdigit()))
 
-                # the previous match before the season is the series name and
+                # the previous match before the season is the show name and
                 # the match after season is episode title and episode title is a number
                 if not title or not episode_title:
                     continue
@@ -633,7 +633,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 to_remove = []
                 to_append = []
 
-                # adjust title to append the series name.
+                # adjust title to append the show name.
                 # Only the season.parent contains the S prefix in its value
                 new_title = copy.copy(title)
                 new_title.value = ' '.join([title.value, season.parent.value])

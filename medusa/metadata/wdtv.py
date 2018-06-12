@@ -166,12 +166,12 @@ class WDTVMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a WDTV style episode.xml
         and returns the resulting data object.
 
-        ep_obj: a Series instance to create the NFO for
+        ep_obj: a Show instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.series)
+        my_show = self._get_show_data(ep_obj.show)
         if not my_show:
             return None
 
@@ -186,7 +186,7 @@ class WDTVMetadata(generic.GenericMetadata):
                 log.info(
                     'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         'number': ep_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
                 return None
@@ -209,9 +209,9 @@ class WDTVMetadata(generic.GenericMetadata):
             title = etree.SubElement(episode, 'title')
             title.text = ep_obj.pretty_name()
 
-            if getattr(my_show, 'seriesname', None):
-                series_name = etree.SubElement(episode, 'series_name')
-                series_name.text = my_show['seriesname']
+            if getattr(my_show, 'showname', None):
+                show_name = etree.SubElement(episode, 'show_name')
+                show_name.text = my_show['showname']
 
             if ep_to_write.name:
                 episode_name = etree.SubElement(episode, 'episode_name')

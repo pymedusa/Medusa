@@ -81,7 +81,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
         window.location.href = $('base').attr('href') + 'home/setStatus?' +
             'indexername=' + $('#indexer-name').attr('value') +
-            '&seriesid=' + $('#series-id').attr('value') +
+            '&showid=' + $('#show-id').attr('value') +
             '&eps=' + epArr.join('|') +
             '&status=' + $('#statusSelect').val();
     });
@@ -125,7 +125,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // Selects all visible episode checkboxes.
-    $('.seriesCheck').on('click', () => {
+    $('.showCheck').on('click', () => {
         $('.epCheck:visible').each(function() {
             this.checked = true;
         });
@@ -148,11 +148,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('#select-show').on('change', evt => {
         const selectedOption = evt.currentTarget.selectedOptions[0];
         const indexerName = $(selectedOption).attr('data-indexer-name');
-        const seriesId = $(selectedOption).attr('data-series-id');
-        if (seriesId === 0 || !indexerName) {
+        const showId = $(selectedOption).attr('data-show-id');
+        if (showId === 0 || !indexerName) {
             return;
         }
-        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + indexerName + '&seriesid=' + seriesId;
+        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + indexerName + '&showid=' + showId;
     });
 
     // Show/hide different types of rows when the checkboxes are changed
@@ -202,7 +202,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     function setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
         const indexerName = $('#indexer-name').val();
-        const seriesId = $('#series-id').val();
+        const showId = $('#show-id').val();
 
         if (sceneSeason === '') {
             sceneSeason = null;
@@ -213,7 +213,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
         $.getJSON('home/setSceneNumbering', {
             indexername: indexerName,
-            seriesid: seriesId,
+            showid: showId,
             forSeason,
             forEpisode,
             sceneSeason,
@@ -221,9 +221,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }, data => {
             // Set the values we get back
             if (data.sceneSeason === null || data.sceneEpisode === null) {
-                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val('');
+                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val('');
             } else {
-                $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                $('#sceneSeasonXEpisode_' + showId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
             }
             if (!data.success) {
                 if (data.errorMessage) {
@@ -237,7 +237,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     function setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
         const indexerName = $('#indexer-name').val();
-        const seriesId = $('#series-id').val();
+        const showId = $('#show-id').val();
 
         if (sceneAbsolute === '') {
             sceneAbsolute = null;
@@ -245,15 +245,15 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
         $.getJSON('home/setSceneNumbering', {
             indexername: indexerName,
-            seriesid: seriesId,
+            showid: showId,
             forAbsolute,
             sceneAbsolute
         }, data => {
             // Set the values we get back
             if (data.sceneAbsolute === null) {
-                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val('');
+                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val('');
             } else {
-                $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val(data.sceneAbsolute);
+                $('#sceneAbsolute_' + showId + '_' + forAbsolute).val(data.sceneAbsolute);
             }
 
             if (!data.success) {
@@ -416,7 +416,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
         indexername: $('#indexer-name').val(),
-        seriesid: $('#series-id').val() // eslint-disable-line camelcase
+        showid: $('#show-id').val() // eslint-disable-line camelcase
     }, data => {
         setSeasonSceneException(data);
     });

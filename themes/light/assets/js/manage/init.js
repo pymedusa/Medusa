@@ -1,10 +1,10 @@
 MEDUSA.manage.init = function() {
-    $.makeEpisodeRow = function(indexerId, seriesId, season, episode, name, checked) { // eslint-disable-line max-params
+    $.makeEpisodeRow = function(indexerId, showId, season, episode, name, checked) { // eslint-disable-line max-params
         let row = '';
-        const series = indexerId + '-' + seriesId;
+        const show = indexerId + '-' + showId;
 
-        row += ' <tr class="' + $('#row_class').val() + ' show-' + series + '">';
-        row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
+        row += ' <tr class="' + $('#row_class').val() + ' show-' + show + '">';
+        row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + show + '-epcheck" name="' + show + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
         row += '  <td>' + season + 'x' + episode + '</td>';
         row += '  <td class="tableright" style="width: 100%">' + name + '</td>';
         row += ' </tr>';
@@ -12,12 +12,12 @@ MEDUSA.manage.init = function() {
         return row;
     };
 
-    $.makeSubtitleRow = function(indexerId, seriesId, season, episode, name, subtitles, checked) { // eslint-disable-line max-params
+    $.makeSubtitleRow = function(indexerId, showId, season, episode, name, subtitles, checked) { // eslint-disable-line max-params
         let row = '';
-        const series = indexerId + '-' + seriesId;
+        const show = indexerId + '-' + showId;
 
-        row += '<tr class="good show-' + series + '">';
-        row += '<td align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
+        row += '<tr class="good show-' + show + '">';
+        row += '<td align="center"><input type="checkbox" class="' + show + '-epcheck" name="' + show + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
         row += '<td style="width: 2%;">' + season + 'x' + episode + '</td>';
         if (subtitles.length > 0) {
             row += '<td style="width: 8%;">';

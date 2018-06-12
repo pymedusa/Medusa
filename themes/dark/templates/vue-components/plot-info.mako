@@ -5,7 +5,7 @@
 Vue.component('plot-info', {
     props: {
         hasPlot: Boolean,
-        seriesSlug: {
+        showSlug: {
             type: String,
             required: true
         },
@@ -24,14 +24,14 @@ Vue.component('plot-info', {
         }
     },
     mounted() {
-        const {hasPlot, seriesSlug, season, episode} = this;
+        const {hasPlot, showSlug, season, episode} = this;
         if (!hasPlot) {
             return false;
         }
         $(this.$el).qtip({
             content: {
                 text(event, qt) {
-                    api.get('series/' + seriesSlug + '/episode/s' + season + 'e' + episode + '/description').then(response => {
+                    api.get('show/' + showSlug + '/episode/s' + season + 'e' + episode + '/description').then(response => {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
                     }, xhr => {

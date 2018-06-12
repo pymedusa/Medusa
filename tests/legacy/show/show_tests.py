@@ -24,7 +24,7 @@ from medusa import app
 from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.show import Show
-from medusa.tv import Series
+from medusa.tv import Show
 
 from six import iteritems
 
@@ -87,7 +87,7 @@ class ShowTests(unittest.TestCase):
             show789,
         ]
 
-        series_id_list = [
+        show_id_list = [
             None, '', u'789', 123,
         ]
         results_list = [
@@ -95,20 +95,20 @@ class ShowTests(unittest.TestCase):
         ]
 
         self.assertEqual(
-            len(series_id_list), len(results_list),
-            'Number of parameters (%d) and results (%d) does not match' % (len(series_id_list), len(results_list))
+            len(show_id_list), len(results_list),
+            'Number of parameters (%d) and results (%d) does not match' % (len(show_id_list), len(results_list))
         )
 
-        for (index, series_id) in enumerate(series_id_list):
-            self.assertEqual(Show._validate_indexer_id(1, series_id), results_list[index])
+        for (index, show_id) in enumerate(show_id_list):
+            self.assertEqual(Show._validate_indexer_id(1, show_id), results_list[index])
 
 
-class TestTVShow(Series):
-    """A test `Series` object that does not need DB access."""
+class TestTVShow(Show):
+    """A test `Show` object that does not need DB access."""
 
     def __init__(self, indexer, indexer_id):
         super(TestTVShow, self).__init__(indexer, indexer_id)
 
     def _load_from_db(self):
-        """Override Series._load_from_db to avoid DB access during testing."""
+        """Override Show._load_from_db to avoid DB access during testing."""
         pass

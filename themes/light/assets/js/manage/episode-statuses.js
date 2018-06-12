@@ -1,35 +1,35 @@
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
-        const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
-        $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
+        const showId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-show-id');
+        $('.' + showId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
         const indexerId = $(this).attr('data-indexer-id');
         const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
-        const seriesId = $(this).attr('data-series-id');
-        const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
-        const lastRow = $('tr#' + indexerId + '-' + seriesId);
+        const showId = $(this).attr('data-show-id');
+        const checked = $('#allCheck-' + indexerId + '-' + showId).prop('checked');
+        const lastRow = $('tr#' + indexerId + '-' + showId);
         const clicked = $(this).data('clicked');
         const action = $(this).attr('value');
 
         if (clicked) {
             if (action.toLowerCase() === 'collapse') {
-                $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
+                $('table tr').filter('.show-' + indexerId + '-' + showId).hide();
                 $(this).prop('value', 'Expand');
             } else if (action.toLowerCase() === 'expand') {
-                $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
+                $('table tr').filter('.show-' + indexerId + '-' + showId).show();
                 $(this).prop('value', 'Collapse');
             }
         } else {
             $.getJSON('manage/showEpisodeStatuses', {
                 indexername: indexerName,
-                seriesid: seriesId, // eslint-disable-line camelcase
+                showid: showId, // eslint-disable-line camelcase
                 whichStatus: $('#oldStatus').val()
             }, data => {
                 $.each(data, (season, eps) => {
                     $.each(eps, (episode, name) => {
-                        lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
+                        lastRow.after($.makeEpisodeRow(indexerId, showId, season, episode, name, checked));
                     });
                 });
             });

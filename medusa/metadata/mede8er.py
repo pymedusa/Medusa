@@ -32,7 +32,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
     The following file structure is used:
 
-    show_root/series.xml                    (show metadata)
+    show_root/show.xml                    (show metadata)
     show_root/folder.jpg                    (poster)
     show_root/fanart.jpg                    (fanart)
     show_root/Season ##/folder.jpg          (season thumb)
@@ -64,7 +64,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         self.fanart_name = 'fanart.jpg'
 
         # web-ui metadata template
-        # self.eg_show_metadata = 'series.xml'
+        # self.eg_show_metadata = 'show.xml'
         self.eg_episode_metadata = 'Season##\\<i>filename</i>.xml'
         self.eg_fanart = 'fanart.jpg'
         # self.eg_poster = 'folder.jpg'
@@ -85,10 +85,10 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
     # SHOW DATA
     def _show_data(self, show_obj):
         """
-        Creates an elementTree XML structure for a MediaBrowser-style series.xml
+        Creates an elementTree XML structure for a MediaBrowser-style show.xml
         returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Show instance to create the NFO for
         """
         my_show = self._get_show_data(show_obj)
 
@@ -104,7 +104,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         tv_node.attrib['isTV'] = 'true'
 
         title = etree.SubElement(tv_node, 'title')
-        title.text = my_show['seriesname']
+        title.text = my_show['showname']
 
         if getattr(my_show, 'genre', None):
             genres = etree.SubElement(tv_node, 'genres')
@@ -177,12 +177,12 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Creates an elementTree XML structure for a MediaBrowser style episode.xml
         and returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Show instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.series)
+        my_show = self._get_show_data(ep_obj.show)
         if not my_show:
             return None
 
@@ -203,7 +203,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     'Unable to find episode {ep_num} on {indexer}...'
                     ' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
                 return None
@@ -309,7 +309,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Generates and writes show_obj's metadata under the given path to the
         filename given by get_show_file_path()
 
-        show_obj: Series object for which to create the metadata
+        show_obj: Show object for which to create the metadata
 
         path: An absolute or relative path where we should put the file. Note that
                 the file name will be the default show_file_name.

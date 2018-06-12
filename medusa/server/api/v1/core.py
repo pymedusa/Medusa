@@ -1180,7 +1180,7 @@ class CMD_Backlog(ApiCall):
                 'INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id '
                 'AND tv_episodes.indexer = tv_shows.indexer '
                 'WHERE tv_episodes.indexer = ? AND showid = ? AND paused = 0 ORDER BY season DESC, episode DESC',
-                [cur_show.indexer, cur_show.series_id])
+                [cur_show.indexer, cur_show.show_id])
 
             for cur_result in sql_results:
 
@@ -1670,10 +1670,10 @@ class CMD_SearchIndexers(ApiCall):
                     log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
 
-                for cur_series in api_data:
-                    results.append({INDEXER_IDS[_indexer]: int(cur_series['id']),
-                                    'name': cur_series['seriesname'],
-                                    'first_aired': cur_series['firstaired'],
+                for cur_show in api_data:
+                    results.append({INDEXER_IDS[_indexer]: int(cur_show['id']),
+                                    'name': cur_show['showname'],
+                                    'first_aired': cur_show['firstaired'],
                                     'indexer': int(_indexer)})
 
             return _responds(RESULT_SUCCESS, {'results': results, 'langid': lang_id})
@@ -1695,7 +1695,7 @@ class CMD_SearchIndexers(ApiCall):
                     log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
                     return _responds(RESULT_SUCCESS, {'results': [], 'langid': lang_id})
 
-                if not my_show.data['seriesname']:
+                if not my_show.data['showname']:
                     log.debug(
                         u'API :: Found show with indexerid: {0}, however it contained no show name', self.indexerid
                     )
@@ -1703,7 +1703,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 # found show
                 results = [{INDEXER_IDS[_indexer]: int(my_show.data['id']),
-                            'name': text_type(my_show.data['seriesname']),
+                            'name': text_type(my_show.data['showname']),
                             'first_aired': my_show.data['firstaired'],
                             'indexer': int(_indexer)}]
                 break
@@ -2215,8 +2215,8 @@ class CMD_ShowCache(ApiCall):
     def run(self):
         """Check cache to see if the images for a show are valid."""
         # TODO: Add support for additional types
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
-        if not series_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
         # TODO: catch if cache dir is missing/invalid.. so it doesn't break show/show.cache
@@ -2225,7 +2225,7 @@ class CMD_ShowCache(ApiCall):
         image_types = image_cache.IMAGE_TYPES
 
         results = {
-            image_types[img]: 1 if image_cache.get_artwork(img, series_obj) else 0
+            image_types[img]: 1 if image_cache.get_artwork(img, show_obj) else 0
             for img in image_types
         }
 
@@ -2313,12 +2313,12 @@ class CMD_ShowGetPoster(ApiCall):
 
     def run(self):
         """ Get the poster a show """
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
-        if not series_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowPoster(series_obj),
+            'image': ShowPoster(show_obj),
         }
 
 
@@ -2342,12 +2342,12 @@ class CMD_ShowGetBanner(ApiCall):
 
     def run(self):
         """ Get the banner of a show """
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
-        if not series_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowBanner(series_obj),
+            'image': ShowBanner(show_obj),
         }
 
 
@@ -2373,12 +2373,12 @@ class CMD_ShowGetNetworkLogo(ApiCall):
         """
         :return: Get the network logo of a show
         """
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
-        if not series_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowNetworkLogo(series_obj),
+            'image': ShowNetworkLogo(show_obj),
         }
 
 
@@ -2402,12 +2402,12 @@ class CMD_ShowGetFanArt(ApiCall):
 
     def run(self):
         """ Get the fan art of a show """
-        series_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
-        if not series_obj:
+        show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
+        if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
         return {
             'outputType': 'image',
-            'image': ShowFanArt(series_obj),
+            'image': ShowFanArt(show_obj),
         }
 
 

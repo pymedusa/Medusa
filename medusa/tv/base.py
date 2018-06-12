@@ -21,7 +21,7 @@ class Identifier(object):
 
 
 class TV(object):
-    """Base class for Series and Episode."""
+    """Base class for Show and Episode."""
 
     def __init__(self, indexer, indexerid, ignored_properties):
         """Initialize class.
@@ -40,8 +40,8 @@ class TV(object):
         self.lock = threading.Lock()
 
     @property
-    def series_id(self):
-        """To make a clear distinction between an indexer and the id for the series. You can now also use series_id."""
+    def show_id(self):
+        """To make a clear distinction between an indexer and the id for the show. You can now also use show_id."""
         return self.indexerid
 
     def __setattr__(self, key, value):

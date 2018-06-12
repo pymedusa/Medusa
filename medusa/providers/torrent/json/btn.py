@@ -170,8 +170,8 @@ class BTNProvider(TorrentProvider):
         if not title:
             # If we don't have a release name we need to get creative
             title = ''
-            if 'Series' in parsed_json:
-                title += parsed_json['Series']
+            if 'Show' in parsed_json:
+                title += parsed_json['Show']
             if 'GroupName' in parsed_json:
                 title += '.' + parsed_json['GroupName']
             if 'Resolution' in parsed_json:
@@ -194,8 +194,8 @@ class BTNProvider(TorrentProvider):
         searches = []
         season = 'Season' if mode == 'Season' else ''
 
-        air_by_date = ep_obj.series.air_by_date
-        sports = ep_obj.series.sports
+        air_by_date = ep_obj.show.air_by_date
+        sports = ep_obj.show.sports
 
         if not season_numbering and (air_by_date or sports):
             date_fmt = '%Y' if season else '%Y.%m.%d'
@@ -214,15 +214,15 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.series.indexer == INDEXER_TVDBV2:
+        if ep_obj.show.indexer == INDEXER_TVDBV2:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:
-            name_exceptions = scene_exceptions.get_scene_exceptions(ep_obj.series)
-            name_exceptions.add(ep_obj.series.name)
+            name_exceptions = scene_exceptions.get_scene_exceptions(ep_obj.show)
+            name_exceptions.add(ep_obj.show.name)
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
-                params['series'] = name
+                params['show'] = name
                 searches.append(params)
 
         # extend air by date searches to include season numbering

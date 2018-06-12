@@ -388,7 +388,7 @@ const startVue = () => {
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
-                        <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
+                        <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-show.</p>
                     </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -409,7 +409,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">IP address of Popcorn 200-series (eg. 192.168.1.100)</span>
+                                        <span class="component-desc">IP address of Popcorn 200-show (eg. 192.168.1.100)</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -451,7 +451,7 @@ const startVue = () => {
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
-                        <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
+                        <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-show.</p>
                     </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -472,7 +472,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">IP address of Popcorn 300/400-series (eg. 192.168.1.100)</span>
+                                        <span class="component-desc">IP address of Popcorn 300/400-show (eg. 192.168.1.100)</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1573,11 +1573,11 @@ const startVue = () => {
                                         </label>
                                     </div>
                                     <div class="field-pair">
-                                        <label for="trakt_remove_serieslist">
-                                            <span class="component-title">Remove series</span>
+                                        <label for="trakt_remove_showlist">
+                                            <span class="component-title">Remove show</span>
                                             <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_serieslist" id="trakt_remove_serieslist" ${'checked="checked"' if app.TRAKT_REMOVE_SERIESLIST else ''}/>
-                                                <p>remove the whole series from your watchlist after any download.</p>
+                                                <input type="checkbox" name="trakt_remove_showlist" id="trakt_remove_showlist" ${'checked="checked"' if app.TRAKT_REMOVE_SHOWLIST else ''}/>
+                                                <p>remove the whole show from your watchlist after any download.</p>
                                             </span>
                                         </label>
                                     </div>

@@ -20,11 +20,11 @@ log.logger.addHandler(logging.NullHandler())
 
 
 def get_torrent_subfolder(result):
-    """Retrieve the series destination-subfolder required for uTorrent WebUI 'start' action."""
-    # Get the subfolder name the user has assigned to that series
+    """Retrieve the show destination-subfolder required for uTorrent WebUI 'start' action."""
+    # Get the subfolder name the user has assigned to that show
     root_dirs = app.ROOT_DIRS
     root_location = root_dirs[int(root_dirs[0]) + 1]
-    torrent_path = result.series.raw_location
+    torrent_path = result.show.raw_location
 
     if not root_location == torrent_path:
         # Subfolder is under root, but possibly not directly under
@@ -33,12 +33,12 @@ def get_torrent_subfolder(result):
         # Subfolder is NOT under root, use it too (WebUI limitation)
         else:
             torrent_subfolder = os.path.basename(torrent_path)
-    # Use the series name if there is no subfolder defined
+    # Use the show name if there is no subfolder defined
     else:
-        torrent_subfolder = result.series.name
+        torrent_subfolder = result.show.name
 
     log.debug('Show {name}: torrent download destination folder is: {path} (sub-folder: {sub})',
-              {'name': result.series.name, 'path': torrent_path, 'sub': torrent_subfolder})
+              {'name': result.show.name, 'path': torrent_path, 'sub': torrent_subfolder})
 
     return torrent_subfolder
 
@@ -111,9 +111,9 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_label(self, result):
         """Send a 'setprop' request to uTorrent to set a label for the torrent, optionally - the show name."""
-        torrent_new_label = result.series.name
+        torrent_new_label = result.show.name
 
-        if result.series.is_anime and app.TORRENT_LABEL_ANIME:
+        if result.show.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
             label = app.TORRENT_LABEL

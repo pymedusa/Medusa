@@ -25,30 +25,30 @@ produces:
   - "image/jpeg"
 security: [ { x-api-key: [] }, { Bearer: []  } ]
 paths:
-  /series:
+  /show:
     post:
-      summary: Add series
+      summary: Add show
       description: |
-        Given an indexer and its id, adds the series to Medusa.
+        Given an indexer and its id, adds the show to Medusa.
       parameters:
-        - name: series
+        - name: show
           in: body
           required: true
           description: Only id (with indexer information) should be specified
           schema:
-            $ref: '#/definitions/Series'
+            $ref: '#/definitions/Show'
             example:
               id:
                 tvdb: 301824
       responses:
         201:
-          description: Series added
+          description: Show added
           headers:
             Location:
               type: string
-              description: The location of the newly added series
+              description: The location of the newly added show
           schema:
-            $ref: '#/definitions/Series'
+            $ref: '#/definitions/Show'
         400:
           $ref: '#/responses/error'
           description: Invalid request
@@ -56,23 +56,23 @@ paths:
             body: {}
         404:
           $ref: '#/responses/error'
-          description: Series not found in the indexer
+          description: Show not found in the indexer
           x-request:
             body:
               id:
                 tvdb: 99999999
         409:
           $ref: '#/responses/error'
-          description: Series already added
+          description: Show already added
     get:
-      summary: Return series that the user has access to
+      summary: Return show that the user has access to
       description: |
-        The Series endpoint returns information about the Series added to Medusa.
+        The Show endpoint returns information about the Show added to Medusa.
       parameters:
         - name: paused
           in: query
           required: false
-          description: Filter series based on paused status
+          description: Filter show based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
         - $ref: '#/parameters/page'
@@ -81,29 +81,29 @@ paths:
       responses:
         200:
           $ref: '#/responses/pagination'
-          description: A paged array of series
+          description: A paged array of show
           schema:
             type: array
             items:
-              $ref: '#/definitions/Series'
+              $ref: '#/definitions/Show'
         400:
           $ref: '#/responses/error'
           description: Invalid pagination parameters
           x-request:
             query-params:
               sort: abc
-  /series/{id}:
+  /show/{id}:
     get:
-      summary: Return information about a specific series
-      description: Retrieves information about a specific series
+      summary: Return information about a specific show
+      description: Retrieves information about a specific show
       parameters:
-        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/show-id'
           name: id
       responses:
         200:
-          description: The series information
+          description: The show information
           schema:
-            $ref: '#/definitions/Series'
+            $ref: '#/definitions/Show'
         400:
           $ref: '#/responses/error'
           description: Invalid id
@@ -112,27 +112,27 @@ paths:
               id: 123456
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             path-params:
               id: tvdb999999999
     patch:
-      summary: Partial update series
-      description: Partial update series
+      summary: Partial update show
+      description: Partial update show
       parameters:
-        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/show-id'
           name: id
-        - name: series
+        - name: show
           in: body
           required: false
           description: Currently, only pause field is supported
           schema:
-            $ref: '#/definitions/Series'
+            $ref: '#/definitions/Show'
       responses:
         200:
           description: Response with only the updated fields
           schema:
-            $ref: '#/definitions/Series'
+            $ref: '#/definitions/Show'
         400:
           $ref: '#/responses/error'
           description: Invalid id
@@ -144,7 +144,7 @@ paths:
               id: tvdb301824
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             body:
               id:
@@ -152,19 +152,19 @@ paths:
             path-params:
               id: tvdb999999999
     delete:
-      summary: Delete a series
-      description: Delete a series
+      summary: Delete a show
+      description: Delete a show
       parameters:
-        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/show-id'
           name: id
         - name: remove-files
           in: query
           required: false
-          description: Whether files from the series should be removed
+          description: Whether files from the show should be removed
           type: boolean
       responses:
         204:
-          description: Series is deleted successfully
+          description: Show is deleted successfully
         400:
           $ref: '#/responses/error'
           description: Invalid id
@@ -173,29 +173,29 @@ paths:
               id: 123456
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             path-params:
               id: tvdb999999999
         409:
           $ref: '#/responses/error'
-          description: Unable to delete series
-  /series/{id}/{field}:
+          description: Unable to delete show
+  /show/{id}/{field}:
     get:
-      summary: Return a specific field from a given series
-      description: Retrieves a specific field from a given series
+      summary: Return a specific field from a given show
+      description: Retrieves a specific field from a given show
       parameters:
-        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/show-id'
           name: id
         - name: field
           in: path
           required: true
-          description: Any series field
+          description: Any show field
           x-example: network
           type: string
       responses:
         200:
-          description: The series information
+          description: The show information
           schema: {}
         400:
           $ref: '#/responses/error'
@@ -205,18 +205,18 @@ paths:
               field: abc
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             path-params:
               id: tvdb999999999
-  /series/{seriesid}/episode:
+  /show/{showid}/episode:
     get:
-      summary: Return episodes from a given series
+      summary: Return episodes from a given show
       description: |
-        The Episode endpoint returns information about the Episodes from a given Series.
+        The Episode endpoint returns information about the Episodes from a given Show.
       parameters:
-        - $ref: '#/parameters/series-id'
-          name: seriesid
+        - $ref: '#/parameters/show-id'
+          name: showid
         - name: season
           in: query
           required: false
@@ -237,23 +237,23 @@ paths:
               $ref: '#/definitions/Episode'
         400:
           $ref: '#/responses/error'
-          description: Invalid series id or pagination parameters
+          description: Invalid show id or pagination parameters
           x-request:
             query-params:
               sort: abc
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             path-params:
-              seriesid: tvdb999999999
-  /series/{seriesid}/episode/{id}:
+              showid: tvdb999999999
+  /show/{showid}/episode/{id}:
     get:
-      summary: Return a specific episode from a given series
-      description: Retrieve a specific episode from a given series
+      summary: Return a specific episode from a given show
+      description: Retrieve a specific episode from a given show
       parameters:
-        - $ref: '#/parameters/series-id'
-          name: seriesid
+        - $ref: '#/parameters/show-id'
+          name: showid
         - $ref: '#/parameters/episode-id'
           name: id
         - $ref: '#/parameters/detailed'
@@ -264,23 +264,23 @@ paths:
             $ref: '#/definitions/Episode'
         400:
           $ref: '#/responses/error'
-          description: Invalid series or episode id
+          description: Invalid show or episode id
           x-request:
             path-params:
               id: abc
         404:
           $ref: '#/responses/error'
-          description: Series or episode not found
+          description: Show or episode not found
           x-request:
             path-params:
               id: e999
-  /series/{seriesid}/episode/{id}/{field}:
+  /show/{showid}/episode/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
       description: Retrieve a specific field from a given episode
       parameters:
-        - $ref: '#/parameters/series-id'
-          name: seriesid
+        - $ref: '#/parameters/show-id'
+          name: showid
         - $ref: '#/parameters/episode-id'
           name: id
         - name: field
@@ -295,23 +295,23 @@ paths:
           schema: {}
         400:
           $ref: '#/responses/error'
-          description: Invalid series or episode id or invalid field
+          description: Invalid show or episode id or invalid field
           x-request:
             path-params:
               field: abc
         404:
           $ref: '#/responses/error'
-          description: Series or episode not found
+          description: Show or episode not found
           x-request:
             path-params:
               id: "2050-12-31"
-  /series/{seriesid}/episode/{id}/metadata:
+  /show/{showid}/episode/{id}/metadata:
     get:
       summary: Return the video metadata from a specific episode
       description: Retrieve the video metadata from a specific episode
       parameters:
-        - $ref: '#/parameters/series-id'
-          name: seriesid
+        - $ref: '#/parameters/show-id'
+          name: showid
         - $ref: '#/parameters/episode-id'
           name: id
       responses:
@@ -321,25 +321,25 @@ paths:
             $ref: '#/definitions/Metadata'
         400:
           $ref: '#/responses/error'
-          description: Invalid series or episode id
+          description: Invalid show or episode id
           x-request:
             path-params:
               id: s01
         404:
           $ref: '#/responses/error'
-          description: Series or episode not found
+          description: Show or episode not found
           x-request:
             path-params:
               id: s99e99
-  /series/{seriesid}/asset/{id}:
+  /show/{showid}/asset/{id}:
     get:
-      summary: Return a specific asset from a given series
-      description: Retrieves a specific asset from a given series
+      summary: Return a specific asset from a given show
+      description: Retrieves a specific asset from a given show
       produces:
         - "image/jpeg"
       parameters:
-        - $ref: '#/parameters/series-id'
-          name: seriesid
+        - $ref: '#/parameters/show-id'
+          name: showid
         - $ref: '#/parameters/asset-id'
           name: id
       responses:
@@ -349,24 +349,24 @@ paths:
             no-body: true
         400:
           $ref: '#/responses/error'
-          description: Invalid series id
+          description: Invalid show id
           x-request:
             path-params:
-              seriesid: abc
+              showid: abc
         404:
           $ref: '#/responses/error'
-          description: Series or asset not found
+          description: Show or asset not found
           x-request:
             path-params:
               id: abc
-  /series/{id}/operation:
+  /show/{id}/operation:
     post:
-      summary: Create an operation that relates to a specific series
+      summary: Create an operation that relates to a specific show
       description: >
-        Create an operation that relates to a specific series.
+        Create an operation that relates to a specific show.
         Currently only type='ARCHIVE_EPISODES' is supported
       parameters:
-        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/show-id'
           name: id
         - name: operation
           in: body
@@ -389,7 +389,7 @@ paths:
               type: SUPER_OPERATION
         404:
           $ref: '#/responses/error'
-          description: Series not found
+          description: Show not found
           x-request:
             path-params:
               id: tvmaze999999999
@@ -398,10 +398,10 @@ paths:
       summary: Return existing aliases
       description: Retrieve existing aliases
       parameters:
-        - name: series
+        - name: show
           in: query
           required: false
-          description: "Series identifier. E.g.: tvdb1234"
+          description: "Show identifier. E.g.: tvdb1234"
           type: string
         - name: season
           in: query
@@ -428,7 +428,7 @@ paths:
               $ref: '#/definitions/Alias'
         400:
           $ref: '#/responses/error'
-          description: Invalid series or pagination parameters
+          description: Invalid show or pagination parameters
           x-request:
             query-params:
               limit: 0
@@ -539,7 +539,7 @@ paths:
               id: "${stash['alias-id']}"
             body:
               id: "${stash['alias-id']}"
-              series: tvdb301824
+              show: tvdb301824
               name: TheBig
               type: local
         400:
@@ -554,7 +554,7 @@ paths:
           x-request:
             body:
               id: 999999999
-              series: tvdb301824
+              show: tvdb301824
               name: TheBig
               type: local
             path-params:
@@ -827,13 +827,13 @@ paths:
           x-request:
             body: {}
 definitions:
-  Series:
+  Show:
     type: object
     properties:
       id:
         type: object
         description: |
-          All of the ids mapped to a certain Series, at least one of these is required.
+          All of the ids mapped to a certain Show, at least one of these is required.
         properties:
           tvdb:
             type: integer
@@ -855,8 +855,8 @@ definitions:
       title:
         type: string
         description: |
-          This is the title of the series, this should be in the main
-          language the series was originally created in. If other
+          This is the title of the show, this should be in the main
+          language the show was originally created in. If other
           titles exist for other languages they will be part of the "akas" field.
       indexer:
         type: string
@@ -881,7 +881,7 @@ definitions:
         example: en
       showType:
         type: string
-        enum: [series, anime, sports]
+        enum: [show, anime, sports]
       akas:
         type: object
         description: Also known as
@@ -955,12 +955,12 @@ definitions:
           description: Country codes
       config:
         type: object
-        description: Series configuration and preferences
+        description: Show configuration and preferences
         properties:
           location:
             type: string
-            description: Series home folder
-            example: "/library/My Series"
+            description: Show home folder
+            example: "/library/My Show"
           qualities:
             type: object
             description: Qualities settings
@@ -977,7 +977,7 @@ definitions:
                   format: int32
           paused:
             type: boolean
-            description: Whether series is paused
+            description: Whether show is paused
           airByDate:
             type: boolean
             description: Whether episodes are indexed by air date
@@ -997,10 +997,10 @@ definitions:
             description: Initial status for newly added episodes
           aliases:
             type: array
-            description: Local aliases for the series
+            description: Local aliases for the show
             items:
               type: string
-            example: [MySeries, MS]
+            example: [MyShow, MS]
           release:
             type: object
             description: Release configuration
@@ -1144,7 +1144,7 @@ definitions:
           location:
             type: string
             description: The episode file location
-            example: '/library/My Series/Season 10/My Series - S03E07 - Super Episode.avi'
+            example: '/library/My Show/Season 10/My Show - S03E07 - Super Episode.avi'
           size:
             type: integer
             format: int64
@@ -1385,7 +1385,7 @@ definitions:
       id:
         type: integer
         minimum: 1
-      series:
+      show:
         type: string
       name:
         type: string
@@ -1396,7 +1396,7 @@ definitions:
         type: string
         enum: [local]
     example:
-      series: tvdb301824
+      show: tvdb301824
       name: TheBig
       type: local
   Metadata:
@@ -1702,11 +1702,11 @@ parameters:
     required: false
     description: The field (or list of fields) to be used while sorting. Use + or - prefix to define sorting order.
     type: string
-  series-id:
-    name: series-id
+  show-id:
+    name: show-id
     in: path
     required: true
-    description: The series id to retrieve. E.g. tvdb1234
+    description: The show id to retrieve. E.g. tvdb1234
     x-example: tvdb301824
     type: string
   episode-id:

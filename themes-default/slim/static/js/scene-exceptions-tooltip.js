@@ -1,7 +1,7 @@
 $(() => {
     $('.title a').each(function() {
         const indexerName = $(this).parent().attr('data-indexer-name');
-        const seriesId = $(this).parent().attr('data-series-id');
+        const showId = $(this).parent().attr('data-show-id');
         $(this).qtip({
             content: {
                 text: 'Loading...',
@@ -10,7 +10,7 @@ $(() => {
                     type: 'GET',
                     data: {
                         indexername: indexerName,
-                        seriesid: seriesId
+                        showid: showId
                     },
                     success(data) {
                         this.set('content.text', data);

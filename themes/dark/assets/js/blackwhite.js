@@ -19,7 +19,7 @@ function updateBlackWhiteList(showName) { // eslint-disable-line no-unused-vars
     $('#blackwhitelist').show();
     if (showName) {
         $.getJSON('home/fetch_releasegroups', {
-            series_name: showName // eslint-disable-line camelcase
+            show_name: showName // eslint-disable-line camelcase
         }, data => {
             if (data.result === 'success') {
                 $.each(data.groups, (i, group) => {

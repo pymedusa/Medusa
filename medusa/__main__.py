@@ -88,7 +88,7 @@ from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
-from medusa.tv import Series
+from medusa.tv import Show
 
 from six import text_type
 
@@ -142,9 +142,9 @@ class Application(object):
     def migrate_images():
         """Migrate pre-multi-indexer images to their correct place."""
         if hasattr(app, 'MIGRATE_IMAGES'):
-            for series_obj in app.showList:
+            for show_obj in app.showList:
                 try:
-                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', series_obj.indexer_name)
+                    images_root_indexer = os.path.join(app.CACHE_DIR, 'images', show_obj.indexer_name)
                     images_root_indexer_thumbnails = os.path.join(images_root_indexer, 'thumbnails')
 
                     # Create the cache/images/tvdb folder if not exists
@@ -156,7 +156,7 @@ class Application(object):
 
                     # Check for the different possible images and move them.
                     for image_type in ('poster', 'fanart', 'banner'):
-                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        image_name = '{show_id}.{image_type}.jpg'.format(show_id=show_obj.show_id, image_type=image_type)
                         src = os.path.join(app.CACHE_DIR, 'images', image_name)
                         dst = os.path.join(images_root_indexer, image_name)
                         if os.path.isfile(src) and not os.path.isfile(dst):
@@ -169,9 +169,9 @@ class Application(object):
                             # image found, let's try to move it
                             os.rename(src_thumb, dst_thumb)
                 except Exception as error:
-                    logger.warning('Error while trying to move the images for series {series}. '
+                    logger.warning('Error while trying to move the images for show {show}. '
                                    'Try to refresh the show, or move the images manually if you know '
-                                   'what you are doing. Error: {error}', series=series_obj.name, error=error)
+                                   'what you are doing. Error: {error}', show=show_obj.name, error=error)
 
     def start(self, args):
         """Start Application."""
@@ -812,7 +812,7 @@ class Application(object):
             app.TRAKT_ACCESS_TOKEN = check_setting_str(app.CFG, 'Trakt', 'trakt_access_token', '', censor_log='low')
             app.TRAKT_REFRESH_TOKEN = check_setting_str(app.CFG, 'Trakt', 'trakt_refresh_token', '', censor_log='low')
             app.TRAKT_REMOVE_WATCHLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_remove_watchlist', 0))
-            app.TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_remove_serieslist', 0))
+            app.TRAKT_REMOVE_SHOWLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_remove_showlist', 0))
 
             # Check if user has legacy setting and store value in new setting
             if check_setting_int(app.CFG, 'Trakt', 'trakt_remove_show_from_sickrage', None) is not None:
@@ -1793,7 +1793,7 @@ class Application(object):
         new_config['Trakt']['trakt_access_token'] = app.TRAKT_ACCESS_TOKEN
         new_config['Trakt']['trakt_refresh_token'] = app.TRAKT_REFRESH_TOKEN
         new_config['Trakt']['trakt_remove_watchlist'] = int(app.TRAKT_REMOVE_WATCHLIST)
-        new_config['Trakt']['trakt_remove_serieslist'] = int(app.TRAKT_REMOVE_SERIESLIST)
+        new_config['Trakt']['trakt_remove_showlist'] = int(app.TRAKT_REMOVE_SHOWLIST)
         new_config['Trakt']['trakt_remove_show_from_application'] = int(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
         new_config['Trakt']['trakt_sync_watchlist'] = int(app.TRAKT_SYNC_WATCHLIST)
         new_config['Trakt']['trakt_method_add'] = int(app.TRAKT_METHOD_ADD)
@@ -2091,7 +2091,7 @@ class Application(object):
         app.showList = []
         for sql_show in sql_results:
             try:
-                cur_show = Series(sql_show[b'indexer'], sql_show[b'indexer_id'])
+                cur_show = Show(sql_show[b'indexer'], sql_show[b'indexer_id'])
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

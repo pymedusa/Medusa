@@ -34,7 +34,7 @@
                 </div>
                 <div v-else>Please select at least one allowed quality.</div>
             </div>
-            <div v-if="seriesSlug && (allowedQualities.length + preferredQualities.length) >= 1">
+            <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
                 <h5 class="red-text" id="backloggedEpisodes" v-html="backloggedEpisodes"></h5>
             </div>
             <div id="archive" v-if="archive">
@@ -104,7 +104,7 @@ Vue.component('quality-chooser', {
 
             allowedQualities: [],
             preferredQualities: [],
-            seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
+            showSlug: $('#show-slug').attr('value'), // This should be moved to medusa-lib
             selectedQualityPreset: this.keep === 'keep' ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
             archive: false,
             archivedStatus: '',
@@ -139,8 +139,8 @@ Vue.component('quality-chooser', {
     },
     asyncComputed: {
         async backloggedEpisodes() {
-            // Skip if no seriesSlug as that means were on a addShow page
-            if (!this.seriesSlug) return;
+            // Skip if no showSlug as that means were on a addShow page
+            if (!this.showSlug) return;
 
             const allowedQualities = this.allowedQualities;
             const preferredQualities = this.preferredQualities;
@@ -148,8 +148,8 @@ Vue.component('quality-chooser', {
             // Skip if no qualities are selected
             if (!allowedQualities.length && !preferredQualities.length) return;
 
-            // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
-            const url = 'series/' + this.seriesSlug +
+            // @TODO: $('#show-slug').attr('value') needs to be replaced with this.show.slug
+            const url = 'show/' + this.showSlug +
                         '/legacy/backlogged' +
                         '?allowed=' + allowedQualities +
                         '&preferred=' + preferredQualities;
@@ -202,7 +202,7 @@ Vue.component('quality-chooser', {
         async archiveEpisodes() {
             this.archivedStatus = 'Archiving...';
 
-            const url = 'series/' + this.seriesSlug + '/operation';
+            const url = 'show/' + this.showSlug + '/operation';
             const response = await api.post(url, { type: 'ARCHIVE_EPISODES' });
 
             if (response.status === 201) {

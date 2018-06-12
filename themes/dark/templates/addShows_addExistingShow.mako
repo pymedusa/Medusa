@@ -97,7 +97,7 @@ const startVue = () => {
                 }
 
                 const params = { 'rootDirs': indices.join(',') };
-                const { data } = await api.get('internal/existingSeries', { params });
+                const { data } = await api.get('internal/existingShow', { params });
                 this.dirList = data
                     .map(dir => {
                         // Pre-select all dirs not already added
@@ -123,31 +123,31 @@ const startVue = () => {
                         .trigger('updateAll');
                 });
             },
-            seriesIndexerUrl(curDir) {
-                return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
+            showIndexerUrl(curDir) {
+                return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.showId.toString();
             },
-            submitSeriesDirs() {
+            submitShowDirs() {
                 const dirArr = this.filteredDirList
                     .reduce((accumlator, dir) => {
                         if (!dir.selected) return accumlator;
 
                         const originalIndexer = dir.metadata.indexer;
-                        let seriesId = dir.metadata.seriesId;
+                        let showId = dir.metadata.showId;
                         if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-                            seriesId = '';
+                            showId = '';
                         }
 
-                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
+                        const showToAdd = [dir.selectedIndexer, dir.path, showId, dir.metadata.showName]
                             .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
-                        accumlator.push(encodeURIComponent(seriesToAdd));
+                        accumlator.push(encodeURIComponent(showToAdd));
                         return accumlator;
                     }, []);
 
                 if (dirArr.length === 0) return false;
 
                 const promptForSettings = 'promptForSettings=' + (this.promptForSettings ? 'on' : 'off');
-                const seriesToAdd = 'shows_to_add=' + dirArr.join('&shows_to_add=');
-                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?' + promptForSettings + '&' + seriesToAdd;
+                const showToAdd = 'shows_to_add=' + dirArr.join('&shows_to_add=');
+                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?' + promptForSettings + '&' + showToAdd;
             }
         },
         watch: {
@@ -205,14 +205,14 @@ const startVue = () => {
                     <tbody>
                         <tr v-for="(curDir, curDirIndex) in filteredDirList">
                             <td class="col-checkbox">
-                                <input type="checkbox" v-model="curDir.selected" :value="curDir.path" class="seriesDirCheck" />
+                                <input type="checkbox" v-model="curDir.selected" :value="curDir.path" class="showDirCheck" />
                             </td>
                             <td>
                                 <label @click="curDir.selected = !curDir.selected" v-html="displayPaths[curDirIndex]"></label>
                             </td>
                             <td>
-                                <app-link v-if="curDir.metadata.seriesName && curDir.metadata.indexer > 0"
-                                          :href="seriesIndexerUrl(curDir)">{{curDir.metadata.seriesName}}</app-link>
+                                <app-link v-if="curDir.metadata.showName && curDir.metadata.indexer > 0"
+                                          :href="showIndexerUrl(curDir)">{{curDir.metadata.showName}}</app-link>
                                 <span v-else>?</span>
                             </td>
                             <td align="center">
@@ -226,7 +226,7 @@ const startVue = () => {
                 </table>
                 <br>
                 <br>
-                <input class="btn-medusa" type="button" value="Submit" :disabled="isLoading" @click="submitSeriesDirs" />
+                <input class="btn-medusa" type="button" value="Submit" :disabled="isLoading" @click="submitShowDirs" />
             </form>
         </div>
     </div>

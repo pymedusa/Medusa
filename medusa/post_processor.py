@@ -588,10 +588,10 @@ class PostProcessor(object):
         return show, season, episodes, quality, version, airdate
 
     def _find_info(self):
-        series_obj, season, episodes, quality, version, airdate = self._parse_info()
+        show_obj, season, episodes, quality, version, airdate = self._parse_info()
         # TODO: Move logic below to a single place -> NameParser
 
-        if airdate and series_obj:
+        if airdate and show_obj:
             # Ignore season 0 when searching for episode
             # (conflict between special and regular episode, same air date)
             main_db_con = db.DBConnection()
@@ -602,7 +602,7 @@ class PostProcessor(object):
                 'AND indexer = ? '
                 'AND airdate = ? '
                 'AND season != 0',
-                [series_obj.series_id, series_obj.indexer, airdate])
+                [show_obj.show_id, show_obj.indexer, airdate])
 
             if sql_result:
                 season = int(sql_result[0][b'season'])
@@ -615,20 +615,20 @@ class PostProcessor(object):
                     'WHERE showid = ? '
                     'AND indexer = ? '
                     'AND airdate = ?',
-                    [series_obj.series_id, series_obj.indexer, airdate])
+                    [show_obj.show_id, show_obj.indexer, airdate])
 
                 if sql_result:
                     season = int(sql_result[0][b'season'])
                     episodes = [int(sql_result[0][b'episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
-                             (episodes[0], series_obj.indexerid), logger.DEBUG)
+                             (episodes[0], show_obj.indexerid), logger.DEBUG)
                     # we don't want to leave dates in the episode list
                     # if we couldn't convert them to real episode numbers
                     episodes = []
 
         # If there's no season, we assume it's the first season
-        elif season is None and series_obj:
+        elif season is None and show_obj:
             main_db_con = db.DBConnection()
             numseasons_result = main_db_con.select(
                 'SELECT COUNT(DISTINCT season) '
@@ -636,14 +636,14 @@ class PostProcessor(object):
                 'WHERE showid = ? '
                 'AND indexer = ? '
                 'AND season != 0',
-                [series_obj.series_id, series_obj.indexer])
+                [show_obj.show_id, show_obj.indexer])
 
             if int(numseasons_result[0][0]) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
                          u"to have only 1 season, setting season number to 1...", logger.DEBUG)
                 season = 1
 
-        return series_obj, season, episodes, quality, version
+        return show_obj, season, episodes, quality, version
 
     def _analyze_name(self, name):
         """
@@ -666,7 +666,7 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
-        if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
+        if parse_result.show and all([parse_result.show.air_by_date or parse_result.show.is_sports,
                                         parse_result.is_air_by_date]):
             season = -1
             episodes = [parse_result.air_date]
@@ -674,7 +674,7 @@ class PostProcessor(object):
             season = parse_result.season_number
             episodes = parse_result.episode_numbers
 
-        to_return = (parse_result.series, season, episodes, parse_result.quality, parse_result.version)
+        to_return = (parse_result.show, season, episodes, parse_result.quality, parse_result.version)
 
         self._finalize(parse_result)
         return to_return
@@ -691,7 +691,7 @@ class PostProcessor(object):
         self.is_proper = bool(parse_result.proper_tags)
 
         # if the result is complete set release name
-        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
+        if parse_result.show_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
                                          parse_result.air_date) and parse_result.release_group:
 
             if not self.release_name:
@@ -700,14 +700,14 @@ class PostProcessor(object):
         else:
             logger.log(u"Parse result not sufficient (all following have to be set). Won't save release name",
                        logger.DEBUG)
-            logger.log(u'Parse result (series_name): {0}'.format(parse_result.series_name), logger.DEBUG)
+            logger.log(u'Parse result (show_name): {0}'.format(parse_result.show_name), logger.DEBUG)
             logger.log(u'Parse result (season_number): {0}'.format(parse_result.season_number), logger.DEBUG)
             logger.log(u'Parse result (episode_numbers): {0}'.format(parse_result.episode_numbers), logger.DEBUG)
             logger.log(u'Parse result (ab_episode_numbers): {0}'.format(parse_result.ab_episode_numbers), logger.DEBUG)
             logger.log(u'Parse result (air_date): {0}'.format(parse_result.air_date), logger.DEBUG)
             logger.log(u'Parse result (release_group): {0}'.format(parse_result.release_group), logger.DEBUG)
 
-    def _get_ep_obj(self, series_obj, season, episodes):
+    def _get_ep_obj(self, show_obj, season, episodes):
         """
         Retrieve the Episode object requested.
 
@@ -720,11 +720,11 @@ class PostProcessor(object):
         root_ep = None
         for cur_episode in episodes:
             self.log(u'Retrieving episode object for {0} {1}'.format
-                     (series_obj.name, episode_num(season, cur_episode)), logger.DEBUG)
+                     (show_obj.name, episode_num(season, cur_episode)), logger.DEBUG)
 
             # now that we've figured out which episode this file is just load it manually
             try:
-                cur_ep = series_obj.get_episode(season, cur_episode)
+                cur_ep = show_obj.get_episode(season, cur_episode)
                 if not cur_ep:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
@@ -768,7 +768,7 @@ class PostProcessor(object):
             if not cur_name:
                 continue
 
-            ep_quality = common.Quality.name_quality(cur_name, ep_obj.series.is_anime, extend=False)
+            ep_quality = common.Quality.name_quality(cur_name, ep_obj.show.is_anime, extend=False)
             self.log(u"Looking up quality for '{0}', got {1}".format
                      (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             if ep_quality != common.Quality.UNKNOWN:
@@ -777,7 +777,7 @@ class PostProcessor(object):
                 return ep_quality
 
         # Try using other methods to get the file quality
-        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.series.is_anime)
+        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.show.is_anime)
         self.log(u"Trying other methods to get quality for '{0}', got {1}".format
                  (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
         if ep_quality != common.Quality.UNKNOWN:
@@ -787,7 +787,7 @@ class PostProcessor(object):
 
         return ep_quality
 
-    def _priority_from_history(self, series_obj, season, episodes, quality):
+    def _priority_from_history(self, show_obj, season, episodes, quality):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
         snatched_statuses = [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST]
@@ -801,7 +801,7 @@ class PostProcessor(object):
                 'AND season = ? '
                 'AND episode = ? '
                 'AND status IN (?, ?, ?) ',
-                [series_obj.indexer, series_obj.series_id,
+                [show_obj.indexer, show_obj.show_id,
                  season, episode] + snatched_statuses
             )
 
@@ -817,7 +817,7 @@ class PostProcessor(object):
                     'AND episode = ? '
                     'AND action IN (?, ?, ?) '
                     'ORDER BY date DESC',
-                    [series_obj.indexer, series_obj.series_id,
+                    [show_obj.indexer, show_obj.show_id,
                      season, episode] + snatched_statuses
                 )
 
@@ -841,7 +841,7 @@ class PostProcessor(object):
                         'AND quality = ? '
                         'AND action = ? '
                         'ORDER BY date DESC',
-                        [series_obj.indexer, series_obj.series_id,
+                        [show_obj.indexer, show_obj.show_id,
                          season, episode, quality, common.DOWNLOADED]
                     )
 
@@ -942,7 +942,7 @@ class PostProcessor(object):
 
         file_path = _attempt_to_encode(self.file_path, encoding)
         ep_location = _attempt_to_encode(ep_obj.location, encoding)
-        indexer_id = str(ep_obj.series.indexerid)
+        indexer_id = str(ep_obj.show.indexerid)
         season = str(ep_obj.season)
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
@@ -1008,15 +1008,15 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         # try to find the file info
-        (series_obj, season, episodes, quality, version) = self._find_info()
-        if not series_obj:
+        (show_obj, season, episodes, quality, version) = self._find_info()
+        if not show_obj:
             raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
                                                        u"before post-processing an episode")
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
         # retrieve/create the corresponding Episode objects
-        ep_obj = self._get_ep_obj(series_obj, season, episodes)
+        ep_obj = self._get_ep_obj(show_obj, season, episodes)
         old_ep_quality = ep_obj.quality
 
         # get the quality of the episode we're processing
@@ -1029,7 +1029,7 @@ class PostProcessor(object):
             new_ep_quality = ep_obj.quality
 
         # check snatched history to see if we should set the download as priority
-        self._priority_from_history(series_obj, season, episodes, new_ep_quality)
+        self._priority_from_history(show_obj, season, episodes, new_ep_quality)
         if self.in_history:
             self.log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
@@ -1061,7 +1061,7 @@ class PostProcessor(object):
                     self.log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed_qualities, preferred_qualities = series_obj.current_qualities
+                    allowed_qualities, preferred_qualities = show_obj.current_qualities
                     self.log(u'Checking if new quality {0} should replace current quality: {1}'.format
                              (common.Quality.qualityStrings[new_ep_quality],
                               common.Quality.qualityStrings[old_ep_quality]))
@@ -1081,7 +1081,7 @@ class PostProcessor(object):
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
                     "SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?",
-                    [series_obj.series_id, series_obj.indexer])
+                    [show_obj.show_id, show_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0][0]), skip the file
@@ -1101,7 +1101,7 @@ class PostProcessor(object):
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.is_file_locked(self.file_path, False):
-            if not verify_freespace(self.file_path, ep_obj.series._location, [ep_obj] + ep_obj.related_episodes):
+            if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.related_episodes):
                 self.log(u'Not enough space to continue post-processing, exiting', logger.WARNING)
                 return False
         else:
@@ -1113,7 +1113,7 @@ class PostProcessor(object):
                 self._delete(cur_ep.location, associated_files=True)
                 # clean up any left over folders
                 if cur_ep.location:
-                    helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.series._location)
+                    helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.show._location)
             except (OSError, IOError) as error:
                 raise EpisodePostProcessingFailedException(u'Unable to delete the existing files. '
                                                            u'Error: {msg}'.format(msg=error))
@@ -1123,21 +1123,21 @@ class PostProcessor(object):
             #    cur_ep.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if desired
-        if not os.path.isdir(ep_obj.series._location) and app.CREATE_MISSING_SHOW_DIRS:
+        if not os.path.isdir(ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:
             self.log(u"Show directory doesn't exist, creating it", logger.DEBUG)
             try:
-                os.mkdir(ep_obj.series._location)
-                helpers.chmod_as_parent(ep_obj.series._location)
+                os.mkdir(ep_obj.show._location)
+                helpers.chmod_as_parent(ep_obj.show._location)
 
                 # do the library update for synoindex
-                notifiers.synoindex_notifier.addFolder(ep_obj.series._location)
+                notifiers.synoindex_notifier.addFolder(ep_obj.show._location)
             except (OSError, IOError) as error:
                 raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {location}. '
-                                                           u'Error: {msg}'.format(location=ep_obj.series._location,
+                                                           u'Error: {msg}'.format(location=ep_obj.show._location,
                                                                                   msg=error))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
-            ep_obj.series.write_metadata(True)
+            ep_obj.show.write_metadata(True)
 
         # update the ep info before we rename so the quality & release name go into the name properly
         sql_l = []
@@ -1185,11 +1185,11 @@ class PostProcessor(object):
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = os.path.join(ep_obj.series.location, proper_path)
+            proper_absolute_path = os.path.join(ep_obj.show.location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.show.raw_location))
 
         self.log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
@@ -1209,7 +1209,7 @@ class PostProcessor(object):
             new_file_name = self.file_name
 
         # add to anidb
-        if ep_obj.series.is_anime and app.ANIDB_USE_MYLIST:
+        if ep_obj.show.is_anime and app.ANIDB_USE_MYLIST:
             self._add_to_anidb_mylist(self.file_path)
 
         try:
@@ -1220,7 +1220,7 @@ class PostProcessor(object):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
 
                 self.post_process_action(self.file_path, dest_path, new_base_name,
-                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.series.subtitles)
+                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
@@ -1231,7 +1231,7 @@ class PostProcessor(object):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
-        if app.USE_SUBTITLES and ep_obj.series.subtitles:
+        if app.USE_SUBTITLES and ep_obj.show.subtitles:
             for cur_ep in [ep_obj] + ep_obj.related_episodes:
                 with cur_ep.lock:
                     cur_ep.location = os.path.join(dest_path, new_file_name)
@@ -1270,11 +1270,11 @@ class PostProcessor(object):
         # send notifications
         notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
         # do the library update for KODI
-        notifiers.kodi_notifier.update_library(ep_obj.series.name)
+        notifiers.kodi_notifier.update_library(ep_obj.show.name)
         # do the library update for Plex
         notifiers.plex_notifier.update_library(ep_obj)
         # do the library update for EMBY
-        notifiers.emby_notifier.update_library(ep_obj.series)
+        notifiers.emby_notifier.update_library(ep_obj.show)
         # do the library update for NMJ
         # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
         # do the library update for Synology Indexer

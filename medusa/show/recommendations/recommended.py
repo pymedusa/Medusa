@@ -28,7 +28,7 @@ from medusa import (
     app,
     helpers,
 )
-from medusa.cache import recommended_series_cache
+from medusa.cache import recommended_show_cache
 from medusa.helpers import ensure_list
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
@@ -70,12 +70,12 @@ class MissingTvdbMapping(Exception):
 class RecommendedShow(object):
     """Base class for show recommendations."""
 
-    def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
+    def __init__(self, rec_show_prov, show_id, title, mapped_indexer, mapped_show_id, **show_attr):
         """Create a show recommendation.
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
                               which facilitated the recommended shows list.
-        :param series_id: as provided by the list provider
+        :param show_id: as provided by the list provider
         :param title: of the show as displayed in the recommended show page
         :param indexer: used to map the show to
         :param indexer_id: a mapped indexer_id for indexer
@@ -89,14 +89,14 @@ class RecommendedShow(object):
         self.cache_subfolder = rec_show_prov.cache_subfolder or 'recommended'
         self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
 
-        self.series_id = series_id
+        self.show_id = show_id
         self.title = title
         self.mapped_indexer = int(mapped_indexer)
         self.mapped_indexer_name = indexer_id_to_name(mapped_indexer)
         try:
-            self.mapped_series_id = int(mapped_series_id)
+            self.mapped_show_id = int(mapped_show_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
+            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_show_id)
 
         self.rating = show_attr.get('rating') or 0
 
@@ -112,7 +112,7 @@ class RecommendedShow(object):
 
         # Check if the show is currently already in the db
         self.show_in_list = bool([show.indexerid for show in app.showList
-                                 if show.series_id == self.mapped_series_id
+                                 if show.show_id == self.mapped_show_id
                                  and show.indexer == self.mapped_indexer])
         self.session = session
 
@@ -168,7 +168,7 @@ class RecommendedShow(object):
 
 
 @load_anidb_api
-@recommended_series_cache.cache_on_arguments()
+@recommended_show_cache.cache_on_arguments()
 def cached_tvdb_to_aid(tvdb_id):
     """
     Try to match an anidb id with a tvdb id.
@@ -179,7 +179,7 @@ def cached_tvdb_to_aid(tvdb_id):
 
 
 @load_anidb_api
-@recommended_series_cache.cache_on_arguments()
+@recommended_show_cache.cache_on_arguments()
 def cached_aid_to_tvdb(aid):
     """
     Try to match a tvdb id with an anidb id.
@@ -189,17 +189,17 @@ def cached_aid_to_tvdb(aid):
     return anidb_api.aid_to_tvdb_id(aid=aid)
 
 
-@recommended_series_cache.cache_on_arguments()
-def cached_get_imdb_series_details(imdb_id):
+@recommended_show_cache.cache_on_arguments()
+def cached_get_imdb_show_details(imdb_id):
     """
-    Request the series details from the imdbpie api.
+    Request the show details from the imdbpie api.
 
     Use dogpile cache to return a cached id if available.
     """
     return imdb_api.get_title(imdb_id)
 
 
-def create_key_from_series(namespace, fn, **kw):
+def create_key_from_show(namespace, fn, **kw):
     """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
     def generate_key(*arg, **kwargs):
         """
@@ -217,39 +217,39 @@ def create_key_from_series(namespace, fn, **kw):
     return generate_key
 
 
-def update_recommended_series_cache_index(indexer, new_index):
+def update_recommended_show_cache_index(indexer, new_index):
     """
     Create a key that's used to store an index with all shows saved in cache for a specific indexer. For example 'imdb'.
 
     :param indexer: Indexer in the form of a string. For example: 'imdb', 'trakt', 'anidb'.
-    :new_index: Iterable with series id's.
+    :new_index: Iterable with show id's.
     """
-    index = recommended_series_cache.get(binary_type(indexer)) or set()
+    index = recommended_show_cache.get(binary_type(indexer)) or set()
     index.update(set(new_index))
-    recommended_series_cache.set(binary_type(indexer), index)
+    recommended_show_cache.set(binary_type(indexer), index)
 
 
-def get_all_recommended_series_from_cache(indexers):
+def get_all_recommended_show_from_cache(indexers):
     """
     Retrieve all recommended show objects from the dogpile cache for a specific indexer or a number of indexers.
 
-    For example: `get_all_recommended_series_from_cache(['imdb', 'anidb'])` will return all recommended show objects, for the
+    For example: `get_all_recommended_show_from_cache(['imdb', 'anidb'])` will return all recommended show objects, for the
     indexers imdb and anidb.
 
     :param indexers: indexer or list of indexers. Indexers need to be passed as a string. For example: 'imdb', 'anidb' or 'trakt'.
     :return: List of recommended show objects.
     """
     indexers = ensure_list(indexers)
-    all_series = []
+    all_show = []
     for indexer in indexers:
-        index = recommended_series_cache.get(binary_type(indexer))
+        index = recommended_show_cache.get(binary_type(indexer))
         if not index:
             continue
 
         for index_item in index:
-            key = b'{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
-            series = recommended_series_cache.get(binary_type(key))
-            if series:
-                all_series.append(series)
+            key = b'{indexer}_{show_id}'.format(indexer=indexer, show_id=index_item)
+            show = recommended_show_cache.get(binary_type(key))
+            if show:
+                all_show.append(show)
 
-    return all_series
+    return all_show

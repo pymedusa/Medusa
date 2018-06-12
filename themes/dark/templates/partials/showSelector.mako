@@ -10,7 +10,7 @@
                                 <optgroup label="${cur_show_type}">
                             % endif
                                 % for cur_show in cur_show_list:
-                                <option data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" value="${cur_show.series_id}" ${'selected="selected"' if cur_show == show else ''}>${cur_show.name}</option>
+                                <option data-indexer-name="${cur_show.indexer_name}" data-show-id="${cur_show.show_id}" value="${cur_show.show_id}" ${'selected="selected"' if cur_show == show else ''}>${cur_show.name}</option>
                                 % endfor
                             % if len(sortedShowLists) > 1:
                                 </optgroup>

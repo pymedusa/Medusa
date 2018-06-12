@@ -8,7 +8,7 @@
 Vue.component('asset', {
     mixins: [ window.vueInViewportMixin ],
     props: {
-        seriesSlug: String,
+        showSlug: String,
         type: {
             type: String,
             required: true
@@ -27,15 +27,15 @@ Vue.component('asset', {
     },
     computed: {
         src() {
-            const {seriesSlug, type, isVisible} = this;
+            const {showSlug, type, isVisible} = this;
             const apiRoot = document.getElementsByTagName('body')[0].getAttribute('api-root');
             const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
 
-            if (!isVisible || !seriesSlug || !type) {
+            if (!isVisible || !showSlug || !type) {
                 return this.default;
             }
 
-            return apiRoot + 'series/' + seriesSlug + '/asset/' + type + '?api_key=' + apiKey;
+            return apiRoot + 'show/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
         },
         href() {
             // Compute a link to the full asset, if applicable

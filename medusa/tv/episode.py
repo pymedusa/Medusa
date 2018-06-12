@@ -222,15 +222,15 @@ class Episode(TV):
     """Represent a TV Show episode."""
 
     __refactored = {
-        'show': 'series',
+        'series': 'show',
     }
 
-    def __init__(self, series, season, episode, filepath=''):
+    def __init__(self, show, season, episode, filepath=''):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
-            int(series.indexer) if series else 0,
+            int(show.indexer) if show else 0,
             0,
-            {'series',
+            {'show',
              'scene_season',
              'scene_episode',
              'scene_absolute_number',
@@ -239,7 +239,7 @@ class Episode(TV):
              'loaded'
              }
         )
-        self.series = series
+        self.show = show
         self.name = ''
         self.season = season
         self.episode = episode
@@ -266,7 +266,7 @@ class Episode(TV):
         self.related_episodes = []
         self.wanted_quality = []
         self.loaded = False
-        if series:
+        if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
 
@@ -304,23 +304,23 @@ class Episode(TV):
                 return super(Episode, self).__getattribute__(refactor)
 
     @classmethod
-    def find_by_series_and_episode(cls, series, episode_number):
-        """Find Episode based on series and episode number.
+    def find_by_show_and_episode(cls, show, episode_number):
+        """Find Episode based on show and episode number.
 
-        :param series:
-        :type series: medusa.tv.series.Series
+        :param show:
+        :type show: medusa.tv.show.Show
         :param episode_number:
         :type episode_number: EpisodeNumber
         :return:
         :rtype: medusa.tv.Episode
         """
         if isinstance(episode_number, RelativeNumber):
-            episode = series.get_episode(season=episode_number.season, episode=episode_number.episode)
+            episode = show.get_episode(season=episode_number.season, episode=episode_number.episode)
         elif isinstance(episode_number, AbsoluteNumber):
-            episode = series.get_episode(absolute_number=episode_number.episode)
+            episode = show.get_episode(absolute_number=episode_number.episode)
 
         elif isinstance(episode_number, AirByDateNumber):
-            episode = series.get_episode(air_date=episode_number.air_date)
+            episode = show.get_episode(air_date=episode_number.air_date)
         else:
             # if this happens then it's a bug!
             raise ValueError
@@ -335,7 +335,7 @@ class Episode(TV):
 
         IMPORTANT: The filepath is not kept in the Episode.location
         Episode.location should only be set after it's post-processed and it's in the correct location.
-        As of now, Episode is also not cached in Series.episodes since this method is only used during postpone PP.
+        As of now, Episode is also not cached in Show.episodes since this method is only used during postpone PP.
         Goal here is to slowly move to use this method to create TVEpisodes. New parameters might be introduced.
 
         :param filepath:
@@ -346,12 +346,12 @@ class Episode(TV):
         try:
             parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
             results = []
-            if parse_result.series.is_anime and parse_result.ab_episode_numbers:
-                results = [parse_result.series.get_episode(absolute_number=episode_number, should_cache=False)
+            if parse_result.show.is_anime and parse_result.ab_episode_numbers:
+                results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
                            for episode_number in parse_result.ab_episode_numbers]
 
-            if not parse_result.series.is_anime and parse_result.episode_numbers:
-                results = [parse_result.series.get_episode(season=parse_result.season_number,
+            if not parse_result.show.is_anime and parse_result.episode_numbers:
+                results = [parse_result.show.get_episode(season=parse_result.season_number,
                                                            episode=episode_number, should_cache=False)
                            for episode_number in parse_result.episode_numbers]
 
@@ -370,9 +370,9 @@ class Episode(TV):
         :return:
         :rtype: string
         """
-        if self.series.air_by_date and self.airdate != date.fromordinal(1):
+        if self.show.air_by_date and self.airdate != date.fromordinal(1):
             return self.airdate.strftime(dateFormat)
-        if self.series.is_anime and self.absolute_number is not None:
+        if self.show.is_anime and self.absolute_number is not None:
             return 'e{0:02d}'.format(self.absolute_number)
 
         return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
@@ -389,7 +389,7 @@ class Episode(TV):
     @location.setter
     def location(self, value):
         log.debug('{id}: Setter sets location to {location}',
-                  {'id': self.series.series_id, 'location': value})
+                  {'id': self.show.show_id, 'location': value})
         self._location = value
         self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
 
@@ -404,8 +404,8 @@ class Episode(TV):
         return sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
-                self.series.airs,
-                self.series.network
+                self.show.airs,
+                self.show.network
             )
         ).isoformat(b'T')
 
@@ -440,26 +440,26 @@ class Episode(TV):
                   episode_num(self.season, self.episode, numbering='absolute'))
         if self.subtitles == current_subtitles:
             log.debug(
-                '{id}: No changed subtitles for {series} {ep}. Current subtitles: {subs}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: No changed subtitles for {show} {ep}. Current subtitles: {subs}', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': ep_num,
                     'subs': current_subtitles
                 }
             )
         else:
             log.debug(
-                '{id}: Subtitle changes detected for {series} {ep}.'
+                '{id}: Subtitle changes detected for {show} {ep}.'
                 ' Current subtitles: {subs}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': ep_num,
                     'subs': current_subtitles
                 }
             )
             self.subtitles = current_subtitles if current_subtitles else []
             log.debug('{id}: Saving subtitles changes to database',
-                      {'id': self.series.series_id})
+                      {'id': self.show.show_id})
             self.save_to_db()
 
     def download_subtitles(self, lang=None):
@@ -470,9 +470,9 @@ class Episode(TV):
         """
         if not self.is_location_valid():
             log.debug(
-                '{id}: {series} {ep} does not exist, unable to download subtitles', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} does not exist, unable to download subtitles', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': (episode_num(self.season, self.episode) or
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
@@ -486,16 +486,16 @@ class Episode(TV):
         self.subtitles_searchcount += 1 if self.subtitles_searchcount else 1
         self.subtitles_lastsearch = datetime.now().strftime(dateTimeFormat)
         log.debug('{id}: Saving last subtitles search to database',
-                  {'id': self.series.series_id})
+                  {'id': self.show.show_id})
         self.save_to_db()
 
         if new_subtitles:
             subtitle_list = ', '.join([subtitles.name_from_code(code) for code in new_subtitles])
             log.info(
-                '{id}: Downloaded {subs} subtitles for {series} {ep}', {
-                    'id': self.series.series_id,
+                '{id}: Downloaded {subs} subtitles for {show} {ep}', {
+                    'id': self.show.show_id,
                     'subs': subtitle_list,
-                    'series': self.series.name,
+                    'show': self.show.name,
                     'ep': (episode_num(self.season, self.episode) or
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
@@ -503,9 +503,9 @@ class Episode(TV):
             notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
         else:
             log.info(
-                '{id}: No subtitles found for {series} {ep}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: No subtitles found for {show} {ep}', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': (episode_num(self.season, self.episode) or
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
@@ -557,9 +557,9 @@ class Episode(TV):
                     self.__load_from_nfo(self.location)
                 except NoNFOException:
                     log.error(
-                        '{id}: There was an error loading the NFO for {series} {ep}', {
-                            'id': self.series.series_id,
-                            'series': self.series.name,
+                        '{id}: There was an error loading the NFO for {show} {ep}', {
+                            'id': self.show.show_id,
+                            'show': self.show.name,
                             'ep': episode_num(season, episode),
                         }
                     )
@@ -573,8 +573,8 @@ class Episode(TV):
 
                     # if we failed SQL *and* NFO, Indexers then fail
                     if not result:
-                        raise EpisodeNotFoundException('{id}: Unable to find {series} {ep}'.format
-                                                       (id=self.series.series_id, series=self.series.name,
+                        raise EpisodeNotFoundException('{id}: Unable to find {show} {ep}'.format
+                                                       (id=self.show.show_id, show=self.show.name,
                                                         ep=episode_num(season, episode)))
 
     def load_from_db(self, season, episode):
@@ -599,15 +599,15 @@ class Episode(TV):
             b'  indexer = ? '
             b'  AND showid = ? '
             b'  AND season = ? '
-            b'  AND episode = ?', [self.series.indexer, self.series.series_id, season, episode])
+            b'  AND episode = ?', [self.show.indexer, self.show.show_id, season, episode])
 
         if len(sql_results) > 1:
-            raise MultipleEpisodesInDatabaseException('Your DB has two records for the same series somehow.')
+            raise MultipleEpisodesInDatabaseException('Your DB has two records for the same show somehow.')
         elif not sql_results:
             log.debug(
-                '{id}: {series} {ep} not found in the database', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} not found in the database', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(self.season, self.episode),
                 }
             )
@@ -641,7 +641,7 @@ class Episode(TV):
             self.indexerid = int(sql_results[0][b'indexerid'])
             self.indexer = int(sql_results[0][b'indexer'])
 
-            xem_refresh(self.series)
+            xem_refresh(self.show)
 
             self.scene_season = try_int(sql_results[0][b'scene_season'], 0)
             self.scene_episode = try_int(sql_results[0][b'scene_episode'], 0)
@@ -649,13 +649,13 @@ class Episode(TV):
 
             if self.scene_absolute_number == 0:
                 self.scene_absolute_number = get_scene_absolute_numbering(
-                    self.series,
+                    self.show,
                     self.absolute_number
                 )
 
             if self.scene_season == 0 or self.scene_episode == 0:
                 self.scene_season, self.scene_episode = get_scene_numbering(
-                    self.series,
+                    self.show,
                     self.season, self.episode
                 )
 
@@ -685,17 +685,17 @@ class Episode(TV):
         if season is None:
             season = self.season
 
-        if indexer_api is None or indexer_api.indexer != self.series.indexer_api.indexer:
-            api = self.series.indexer_api
+        if indexer_api is None or indexer_api.indexer != self.show.indexer_api.indexer:
+            api = self.show.indexer_api
         else:
             api = indexer_api
 
         try:
-            api._get_episodes(self.series.series_id, aired_season=season)
+            api._get_episodes(self.show.show_id, aired_season=season)
         except IndexerError as error:
             log.warning(
                 '{id}: {indexer} threw up an error: {error_msg}', {
-                    'id': self.series.series_id,
+                    'id': self.show.show_id,
                     'indexer': indexerApi(self.indexer).name,
                     'error_msg': ex(error),
                 }
@@ -725,13 +725,13 @@ class Episode(TV):
             if cached_season:
                 my_ep = cached_season[episode]
             else:
-                series = self.series.indexer_api[self.series.series_id]
-                my_ep = series[season][episode]
+                show = self.show.indexer_api[self.show.show_id]
+                my_ep = show[season][episode]
 
         except (IndexerError, IOError) as error:
             log.warning(
                 '{id}: {indexer} threw up an error: {error_msg}', {
-                    'id': self.series.series_id,
+                    'id': self.show.show_id,
                     'indexer': indexerApi(self.indexer).name,
                     'error_msg': ex(error),
                 }
@@ -741,7 +741,7 @@ class Episode(TV):
             if self.name:
                 log.debug(
                     '{id}: {indexer} timed out but we have enough info from other sources, allowing the error', {
-                        'id': self.series.series_id,
+                        'id': self.show.show_id,
                         'indexer': indexerApi(self.indexer).name,
                     }
                 )
@@ -749,7 +749,7 @@ class Episode(TV):
             else:
                 log.warning(
                     '{id}: {indexer} timed out, unable to create the episode', {
-                        'id': self.series.series_id,
+                        'id': self.show.show_id,
                         'indexer': indexerApi(self.indexer).name,
                     }
                 )
@@ -757,7 +757,7 @@ class Episode(TV):
         except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
             log.debug(
                 '{id}: Unable to find the episode on {indexer}. Deleting it from db', {
-                    'id': self.series.series_id,
+                    'id': self.show.show_id,
                     'indexer': indexerApi(self.indexer).name,
                 }
             )
@@ -768,9 +768,9 @@ class Episode(TV):
 
         if getattr(my_ep, 'episodename', None) is None:
             log.info(
-                '{id}: {series} {ep} has no name on {indexer}. Setting to an empty string', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} has no name on {indexer}. Setting to an empty string', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                     'indexer': indexerApi(self.indexer).name,
                 }
@@ -779,9 +779,9 @@ class Episode(TV):
 
         if getattr(my_ep, 'absolute_number', None) is None:
             log.debug(
-                '{id}: {series} {ep} has no absolute number on {indexer}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} has no absolute number on {indexer}', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                     'indexer': indexerApi(self.indexer).name,
                 }
@@ -789,9 +789,9 @@ class Episode(TV):
         else:
             self.absolute_number = int(my_ep['absolute_number'])
             log.debug(
-                '{id}: {series} {ep} has absolute number: {absolute} ', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} has absolute number: {absolute} ', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                     'absolute': self.absolute_number,
                 }
@@ -801,15 +801,15 @@ class Episode(TV):
         self.season = season
         self.episode = episode
 
-        xem_refresh(self.series)
+        xem_refresh(self.show)
 
         self.scene_absolute_number = get_scene_absolute_numbering(
-            self.series,
+            self.show,
             self.absolute_number
         )
 
         self.scene_season, self.scene_episode = get_scene_numbering(
-            self.series,
+            self.show,
             self.season, self.episode
         )
 
@@ -824,11 +824,11 @@ class Episode(TV):
             self.airdate = date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
         except (ValueError, IndexError):
             log.warning(
-                '{id}: Malformed air date of {aired} retrieved from {indexer} for {series} {ep}', {
-                    'id': self.series.series_id,
+                '{id}: Malformed air date of {aired} retrieved from {indexer} for {show} {ep}', {
+                    'id': self.show.show_id,
                     'aired': firstaired,
                     'indexer': indexerApi(self.indexer).name,
-                    'series': self.series.name,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                 }
             )
@@ -843,7 +843,7 @@ class Episode(TV):
         if self.indexerid is None:
             log.error(
                 '{id}: Failed to retrieve ID from {indexer}', {
-                    'id': self.series.series_id,
+                    'id': self.show.show_id,
                     'aired': firstaired,
                     'indexer': indexerApi(self.indexer).name,
                 }
@@ -852,24 +852,24 @@ class Episode(TV):
                 self.delete_episode()
             return False
 
-        # don't update series status if series directory is missing, unless it's missing on purpose
-        if all([not self.series.is_location_valid(),
+        # don't update show status if show directory is missing, unless it's missing on purpose
+        if all([not self.show.is_location_valid(),
                 not app.CREATE_MISSING_SHOW_DIRS,
                 not app.ADD_SHOWS_WO_DIR]):
             log.warning(
-                '{id}: {series} episode statuses unchanged. Location is missing: {location}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
-                    'location': self.series.raw_location,
+                '{id}: {show} episode statuses unchanged. Location is missing: {location}', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
+                    'location': self.show.raw_location,
                 }
             )
             return
 
         if self.location:
             log.debug(
-                '{id}: {series} {ep} status is {status!r}. Location: {location}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} status is {status!r}. Location: {location}', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                     'status': statusStrings[self.status],
                     'location': self.location,
@@ -886,9 +886,9 @@ class Episode(TV):
                 # and code below will make it UNAIRED again
                 self.status = UNAIRED
                 log.debug(
-                    '{id}: {series} {ep} airs in the future or has no air date, marking it {status}', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
+                    '{id}: {show} {ep} airs in the future or has no air date, marking it {status}', {
+                        'id': self.show.show_id,
+                        'show': self.show.name,
                         'ep': episode_num(season, episode),
                         'status': statusStrings[self.status],
                     }
@@ -896,20 +896,20 @@ class Episode(TV):
             elif self.status in (UNSET, UNAIRED):
                 # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self.status = self.show.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
-                    '{id}: {series} {ep} has already aired, marking it {status}', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
+                    '{id}: {show} {ep} has already aired, marking it {status}', {
+                        'id': self.show.show_id,
+                        'show': self.show.name,
                         'ep': episode_num(season, episode),
                         'status': statusStrings[self.status],
                     }
                 )
             else:
                 log.debug(
-                    '{id}: {series} {ep} status untouched: {status}', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
+                    '{id}: {show} {ep} status untouched: {status}', {
+                        'id': self.show.show_id,
+                        'show': self.show.name,
                         'ep': episode_num(season, episode),
                         'status': statusStrings[self.status],
                     }
@@ -920,9 +920,9 @@ class Episode(TV):
                 self.update_status_quality(self.location)
             else:
                 log.debug(
-                    '{id}: {series} {ep} status untouched: {status}', {
-                        'id': self.series.series_id,
-                        'series': self.series.name,
+                    '{id}: {show} {ep} status untouched: {status}', {
+                        'id': self.show.show_id,
+                        'show': self.show.name,
                         'ep': episode_num(season, episode),
                         'status': statusStrings[self.status],
                     }
@@ -930,9 +930,9 @@ class Episode(TV):
         # shouldn't get here probably
         else:
             log.warning(
-                '{id}: {series} {ep} status changed from {old_status} to UNSET', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
+                '{id}: {show} {ep} status changed from {old_status} to UNSET', {
+                    'id': self.show.show_id,
+                    'show': self.show.name,
                     'ep': episode_num(season, episode),
                     'old_status': statusStrings[self.status],
                 }
@@ -941,13 +941,13 @@ class Episode(TV):
 
     def __load_from_nfo(self, location):
 
-        if not self.series.is_location_valid():
-            log.warning('{id}: The series location {location} is missing, unable to load metadata',
-                        {'id': self.series.series_id, 'location': location})
+        if not self.show.is_location_valid():
+            log.warning('{id}: The show location {location} is missing, unable to load metadata',
+                        {'id': self.show.show_id, 'location': location})
             return
 
         log.debug('{id}: Loading episode details from the NFO file associated with {location}',
-                  {'id': self.series.series_id, 'location': location})
+                  {'id': self.show.show_id, 'location': location})
 
         self.location = location
 
@@ -958,29 +958,29 @@ class Episode(TV):
 
             nfo_file = replace_extension(self.location, 'nfo')
             log.debug('{id}: Using NFO name {nfo}',
-                      {'id': self.series.series_id, 'nfo': nfo_file})
+                      {'id': self.show.show_id, 'nfo': nfo_file})
 
             if os.path.isfile(nfo_file):
                 try:
-                    series_xml = ETree.ElementTree(file=nfo_file)
+                    show_xml = ETree.ElementTree(file=nfo_file)
                 except (SyntaxError, ValueError) as error:
                     log.error('{id}: Error loading the NFO, backing up the NFO and skipping for now: {error_msg}',
-                              {'id': self.series.series_id, 'error_msg': ex(error)})
+                              {'id': self.show.show_id, 'error_msg': ex(error)})
                     try:
                         os.rename(nfo_file, nfo_file + '.old')
                     except Exception as error:
                         log.warning('{id}: Error renaming the NFO. Delete it or fix it: {error_msg}',
-                                    {'id': self.series.series_id, 'error_msg': ex(error)})
+                                    {'id': self.show.show_id, 'error_msg': ex(error)})
                     raise NoNFOException('Error in NFO format')
 
-                for ep_details in list(series_xml.iter('episodedetails')):
+                for ep_details in list(show_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
                             ep_details.findtext('episode') is None or
                             int(ep_details.findtext('episode')) != self.episode):
                         log.debug(
                             '{id}: NFO has an <episodedetails> block for a different episode -'
                             ' wanted {ep_wanted} but got {ep_found}', {
-                                'id': self.series.series_id,
+                                'id': self.show.show_id,
                                 'ep_wanted': episode_num(self.season, self.episode),
                                 'ep_found': episode_num(ep_details.findtext('season'),
                                                         ep_details.findtext('episode')),
@@ -996,13 +996,13 @@ class Episode(TV):
                     self.season = int(ep_details.findtext('season'))
 
                     self.scene_absolute_number = get_scene_absolute_numbering(
-                        self.series,
+                        self.show,
                         self.absolute_number
                     )
 
                     self.scene_season, self.scene_episode = get_scene_numbering(
-                        self.series.series_id,
-                        self.series.indexer,
+                        self.show.show_id,
+                        self.show.indexer,
                         self.season, self.episode
                     )
 
@@ -1029,7 +1029,7 @@ class Episode(TV):
         :rtype: unicode
         """
         result = ''
-        result += '%r - %r - %r\n' % (self.series.name, episode_num(self.season, self.episode), self.name)
+        result += '%r - %r - %r\n' % (self.show.name, episode_num(self.season, self.episode), self.name)
         result += 'location: %r\n' % self.location
         result += 'description: %r\n' % self.description
         result += 'subtitles: %r\n' % ','.join(self.subtitles)
@@ -1095,9 +1095,9 @@ class Episode(TV):
 
     def create_meta_files(self):
         """Create episode metadata files."""
-        if not self.series.is_location_valid():
-            log.warning('{id}: The series directory is missing, unable to create metadata',
-                        {'id': self.series.series_id})
+        if not self.show.is_location_valid():
+            log.warning('{id}: The show directory is missing, unable to create metadata',
+                        {'id': self.show.show_id})
             return
 
         for metadata_provider in itervalues(app.metadata_provider_dict):
@@ -1106,7 +1106,7 @@ class Episode(TV):
 
         if self.check_for_meta_files():
             log.debug('{id}: Saving metadata changes to database',
-                      {'id': self.series.series_id})
+                      {'id': self.show.show_id})
             self.save_to_db()
 
     def __create_nfo(self, metadata_provider):
@@ -1132,29 +1132,29 @@ class Episode(TV):
     def delete_episode(self):
         """Delete episode from database."""
         log.debug(
-            '{id}: Deleting {series} {ep} from the DB', {
-                'id': self.series.series_id,
-                'series': self.series.name,
+            '{id}: Deleting {show} {ep} from the DB', {
+                'id': self.show.show_id,
+                'show': self.show.name,
                 'ep': episode_num(self.season, self.episode),
             }
         )
 
-        # remove myself from the series dictionary
-        if self.series.get_episode(self.season, self.episode, no_create=True) == self:
-            log.debug('{id}: Removing episode from series',
-                      {'id': self.series.series_id})
-            del self.series.episodes[self.season][self.episode]
+        # remove myself from the show dictionary
+        if self.show.get_episode(self.season, self.episode, no_create=True) == self:
+            log.debug('{id}: Removing episode from show',
+                      {'id': self.show.show_id})
+            del self.show.episodes[self.season][self.episode]
 
         # delete myself from the DB
         log.debug('{id}: Deleting episode from the database',
-                  {'id': self.series.series_id})
+                  {'id': self.show.show_id})
         main_db_con = db.DBConnection()
         main_db_con.action(
             b'DELETE FROM tv_episodes '
             b'WHERE showid = ?'
             b' AND season = ?'
             b' AND episode = ?',
-            [self.series.series_id, self.season, self.episode]
+            [self.show.show_id, self.season, self.episode]
         )
         raise EpisodeDeletedException()
 
@@ -1163,7 +1163,7 @@ class Episode(TV):
         try:
             if not self.dirty:
                 log.debug('{id}: Not creating SQL queue - record is not dirty',
-                          {'id': self.series.series_id})
+                          {'id': self.show.show_id})
                 return
 
             main_db_con = db.DBConnection()
@@ -1178,7 +1178,7 @@ class Episode(TV):
                 b'  AND showid = ? '
                 b'  AND season = ? '
                 b'  AND episode = ?',
-                [self.series.indexer, self.series.series_id, self.season, self.episode])
+                [self.show.indexer, self.show.show_id, self.season, self.episode])
 
             ep_id = None
             if rows:
@@ -1220,7 +1220,7 @@ class Episode(TV):
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
-                         self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
+                         self.is_proper, self.show.show_id, self.season, self.episode, self.absolute_number,
                          self.version, self.release_group, self.manually_searched, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
@@ -1256,7 +1256,7 @@ class Episode(TV):
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
-                         self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
+                         self.is_proper, self.show.show_id, self.season, self.episode, self.absolute_number,
                          self.version, self.release_group, self.manually_searched, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
@@ -1289,14 +1289,14 @@ class Episode(TV):
                     b'VALUES '
                     b'  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
                     b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-                    [self.series.indexer, self.series.series_id, self.season, self.episode, self.indexerid, self.series.indexer, self.name,
+                    [self.show.indexer, self.show.show_id, self.season, self.episode, self.indexerid, self.show.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.quality, self.location,
-                     self.file_size, self.release_name, self.is_proper, self.series.series_id, self.season, self.episode,
+                     self.file_size, self.release_name, self.is_proper, self.show.show_id, self.season, self.episode,
                      self.absolute_number, self.version, self.release_group]]
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
-                      {'id': self.series.series_id, 'error_msg': error})
+                      {'id': self.show.show_id, 'error_msg': error})
 
     def save_to_db(self):
         """Save this episode to the database if any of its data has been changed since the last save."""
@@ -1324,8 +1324,8 @@ class Episode(TV):
                           b'manually_searched': self.manually_searched}
 
         control_value_dict = {
-            b'indexer': self.series.indexer,
-            b'showid': self.series.series_id,
+            b'indexer': self.show.indexer,
+            b'showid': self.show.show_id,
             b'season': self.season,
             b'episode': self.episode
         }
@@ -1345,7 +1345,7 @@ class Episode(TV):
         if self.location is None or self.location == '':
             return None
         else:
-            return os.path.join(self.series.location, self.location)
+            return os.path.join(self.show.location, self.location)
 
     def pretty_name(self):
         """Return the name of this episode in a "pretty" human-readable format.
@@ -1355,9 +1355,9 @@ class Episode(TV):
         :return: A string representing the episode's name and season/ep numbers
         :rtype: str
         """
-        if self.series.anime and not self.series.scene:
+        if self.show.anime and not self.show.scene:
             return self._format_pattern('%SN - %AB - %EN')
-        elif self.series.air_by_date:
+        elif self.show.air_by_date:
             return self._format_pattern('%SN - %AD - %EN')
 
         return self._format_pattern('%SN - S%0SE%0E - %EN')
@@ -1423,14 +1423,14 @@ class Episode(TV):
                 name = remove_extension(name)
             return name
 
-        def release_group(series, name):
+        def release_group(show, name):
             if name:
                 name = remove_extension(name)
             else:
                 return ''
 
             try:
-                parse_result = NameParser(series=series, naming_pattern=True).parse(name)
+                parse_result = NameParser(show=show, naming_pattern=True).parse(name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Unable to parse release_group: {error_msg}',
                           {'error_msg': ex(error)})
@@ -1441,16 +1441,16 @@ class Episode(TV):
             return parse_result.release_group.strip('.- []{}')
 
         if app.NAMING_STRIP_YEAR:
-            series_name = re.sub(r'\(\d+\)$', '', self.series.name).rstrip()
+            show_name = re.sub(r'\(\d+\)$', '', self.show.name).rstrip()
         else:
-            series_name = self.series.name
+            show_name = self.show.name
 
         # try to get the release group
         rel_grp = {
             app.UNKNOWN_RELEASE_GROUP: app.UNKNOWN_RELEASE_GROUP
         }
         if hasattr(self, 'location'):  # from the location name
-            rel_grp['location'] = release_group(self.series, self.location)
+            rel_grp['location'] = release_group(self.show, self.location)
             if not rel_grp['location']:
                 del rel_grp['location']
         if hasattr(self, 'release_group'):  # from the release group field in db
@@ -1458,7 +1458,7 @@ class Episode(TV):
             if not rel_grp['database']:
                 del rel_grp['database']
         if hasattr(self, 'release_name'):  # from the release name field in db
-            rel_grp['release_name'] = release_group(self.series, self.release_name)
+            rel_grp['release_name'] = release_group(self.show, self.release_name)
             if not rel_grp['release_name']:
                 del rel_grp['release_name']
 
@@ -1475,13 +1475,13 @@ class Episode(TV):
         # try to get the release encoder to comply with scene naming standards
         encoder = Quality.scene_quality_from_name(self.release_name.replace(rel_grp[relgrp], ''), self.quality)
         if encoder:
-            log.debug('Found codec for {series} {ep}',
-                      {'series': series_name, 'ep': ep_name})
+            log.debug('Found codec for {show} {ep}',
+                      {'show': show_name, 'ep': ep_name})
 
         return {
-            '%SN': series_name,
-            '%S.N': dot(series_name),
-            '%S_N': us(series_name),
+            '%SN': show_name,
+            '%S.N': dot(show_name),
+            '%S_N': us(show_name),
             '%EN': ep_name,
             '%E.N': dot(ep_name),
             '%E_N': us(ep_name),
@@ -1572,13 +1572,13 @@ class Episode(TV):
         if replace_map['%RG'] and replace_map['%RG'] != app.UNKNOWN_RELEASE_GROUP:
             if not hasattr(self, 'release_group') or not self.release_group:
                 log.debug('{id}: Episode has no release group, replacing it with {rg}',
-                          {'id': self.series.series_id, 'rg': replace_map['%RG']})
+                          {'id': self.show.show_id, 'rg': replace_map['%RG']})
                 self.release_group = replace_map['%RG']  # if release_group is not in the db, put it there
 
         # if there's no release name then replace it with a reasonable facsimile
         if not replace_map['%RN']:
 
-            if self.series.air_by_date or self.series.sports:
+            if self.show.air_by_date or self.show.sports:
                 result_name = result_name.replace('%RN', '%S.N.%A.D.%E.N-' + replace_map['%RG'])
                 result_name = result_name.replace('%rn', '%s.n.%A.D.%e.n-' + replace_map['%RG'].lower())
 
@@ -1714,27 +1714,27 @@ class Episode(TV):
             result_name = result_name.strip('-. ')
             parsed_result_name = self.__format_string(result_name, replace_map)
             log.debug('{id}: Cutting off the episode name, as the total filename is too long. > 255 chars.',
-                      {'id': self.series.series_id})
+                      {'id': self.show.show_id})
 
         log.debug('{id}: Formatting pattern: {pattern} -> {result}',
-                  {'id': self.series.series_id, 'pattern': result_name, 'result': parsed_result_name})
+                  {'id': self.show.show_id, 'pattern': result_name, 'result': parsed_result_name})
 
         return parsed_result_name
 
     def proper_path(self):
-        """Figure out the path where this episode SHOULD be according to the renaming rules, relative from the series dir.
+        """Figure out the path where this episode SHOULD be according to the renaming rules, relative from the show dir.
 
         :return:
         :rtype: str
         """
         anime_type = app.NAMING_ANIME
-        if not self.series.is_anime:
+        if not self.show.is_anime:
             anime_type = 3
 
         result = self.formatted_filename(anime_type=anime_type)
 
         # if they want us to flatten it and we're allowed to flatten it then we will
-        if not self.series.season_folders and not app.NAMING_FORCE_FOLDERS:
+        if not self.show.season_folders and not app.NAMING_FORCE_FOLDERS:
             return result
 
         # if not we append the folder on and use that
@@ -1754,12 +1754,12 @@ class Episode(TV):
         :rtype: str
         """
         if pattern is None:
-            # we only use ABD if it's enabled, this is an ABD series, AND this is not a multi-ep
-            if self.series.air_by_date and app.NAMING_CUSTOM_ABD and not self.related_episodes:
+            # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
+            if self.show.air_by_date and app.NAMING_CUSTOM_ABD and not self.related_episodes:
                 pattern = app.NAMING_ABD_PATTERN
-            elif self.series.sports and app.NAMING_CUSTOM_SPORTS and not self.related_episodes:
+            elif self.show.sports and app.NAMING_CUSTOM_SPORTS and not self.related_episodes:
                 pattern = app.NAMING_SPORTS_PATTERN
-            elif self.series.anime and app.NAMING_CUSTOM_ANIME:
+            elif self.show.anime and app.NAMING_CUSTOM_ANIME:
                 pattern = app.NAMING_ANIME_PATTERN
             else:
                 pattern = app.NAMING_PATTERN
@@ -1785,12 +1785,12 @@ class Episode(TV):
         :rtype: str
         """
         if pattern is None:
-            # we only use ABD if it's enabled, this is an ABD series, AND this is not a multi-ep
-            if self.series.air_by_date and app.NAMING_CUSTOM_ABD and not self.related_episodes:
+            # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
+            if self.show.air_by_date and app.NAMING_CUSTOM_ABD and not self.related_episodes:
                 pattern = app.NAMING_ABD_PATTERN
-            elif self.series.sports and app.NAMING_CUSTOM_SPORTS and not self.related_episodes:
+            elif self.show.sports and app.NAMING_CUSTOM_SPORTS and not self.related_episodes:
                 pattern = app.NAMING_SPORTS_PATTERN
-            elif self.series.anime and app.NAMING_CUSTOM_ANIME:
+            elif self.show.anime and app.NAMING_CUSTOM_ANIME:
                 pattern = app.NAMING_ANIME_PATTERN
             else:
                 pattern = app.NAMING_PATTERN
@@ -1808,7 +1808,7 @@ class Episode(TV):
             return
 
         proper_path = self.proper_path()
-        absolute_proper_path = os.path.join(self.series.location, proper_path)
+        absolute_proper_path = os.path.join(self.show.location, proper_path)
         absolute_current_path_no_ext, file_ext = os.path.splitext(self.location)
         absolute_current_path_no_ext_length = len(absolute_current_path_no_ext)
 
@@ -1816,8 +1816,8 @@ class Episode(TV):
 
         current_path = absolute_current_path_no_ext
 
-        if absolute_current_path_no_ext.startswith(self.series.location):
-            current_path = absolute_current_path_no_ext[len(self.series.location):]
+        if absolute_current_path_no_ext.startswith(self.show.location):
+            current_path = absolute_current_path_no_ext[len(self.show.location):]
 
         log.debug(
             '{id}: Renaming/moving episode from the base path {location} to {new_location}', {
@@ -1842,7 +1842,7 @@ class Episode(TV):
             self.location, subfolders=True)
 
         # This is wrong. Cause of pp not moving subs.
-        if self.series.subtitles and app.SUBTITLES_DIR != '':
+        if self.show.subtitles and app.SUBTITLES_DIR != '':
             related_subs = post_processor.PostProcessor(
                 self.location).list_associated_files(app.SUBTITLES_DIR, subfolders=True, subtitles_only=True)
 
@@ -1904,12 +1904,12 @@ class Episode(TV):
             main_db_con.mass_action(sql_l)
 
     def airdate_modify_stamp(self):
-        """Make the modify date and time of a file reflect the series air date and time.
+        """Make the modify date and time of a file reflect the show air date and time.
 
         Note: Also called from post_processor
         """
         if not all([app.AIRDATE_EPISODES, self.airdate, self.location,
-                    self.series, self.series.airs, self.series.network]):
+                    self.show, self.show.airs, self.show.network]):
             return
 
         try:
@@ -1917,7 +1917,7 @@ class Episode(TV):
             if airdate_ordinal < 1:
                 return
 
-            airdatetime = network_timezones.parse_date_time(airdate_ordinal, self.series.airs, self.series.network)
+            airdatetime = network_timezones.parse_date_time(airdate_ordinal, self.show.airs, self.show.network)
 
             if app.FILE_TIMESTAMP_TIMEZONE == 'local':
                 airdatetime = airdatetime.astimezone(network_timezones.app_timezone)
@@ -1928,8 +1928,8 @@ class Episode(TV):
             if filemtime != airdatetime:
                 airdatetime = airdatetime.timetuple()
                 log.debug(
-                    '{id}: About to modify date of {location} to series air date {air_date}', {
-                        'id': self.series.series_id,
+                    '{id}: About to modify date of {location} to show air date {air_date}', {
+                        'id': self.show.show_id,
                         'location': self.location,
                         'air_date': time.strftime('%b %d,%Y (%H:%M)', airdatetime),
                     }
@@ -1937,24 +1937,24 @@ class Episode(TV):
                 try:
                     if helpers.touch_file(self.location, time.mktime(airdatetime)):
                         log.info(
-                            '{id}: Changed modify date of {location} to series air date {air_date}', {
-                                'id': self.series.series_id,
+                            '{id}: Changed modify date of {location} to show air date {air_date}', {
+                                'id': self.show.show_id,
                                 'location': os.path.basename(self.location),
                                 'air_date': time.strftime('%b %d,%Y (%H:%M)', airdatetime),
                             }
                         )
                     else:
                         log.warning(
-                            '{id}: Unable to modify date of {location} to series air date {air_date}', {
-                                'id': self.series.series_id,
+                            '{id}: Unable to modify date of {location} to show air date {air_date}', {
+                                'id': self.show.show_id,
                                 'location': os.path.basename(self.location),
                                 'air_date': time.strftime('%b %d,%Y (%H:%M)', airdatetime),
                             }
                         )
                 except Exception:
                     log.warning(
-                        '{id}: Failed to modify date of {location} to series air date {air_date}', {
-                            'id': self.series.series_id,
+                        '{id}: Failed to modify date of {location} to show air date {air_date}', {
+                            'id': self.show.show_id,
                             'location': os.path.basename(self.location),
                             'air_date': time.strftime('%b %d,%Y (%H:%M)', airdatetime),
                         }
@@ -1962,7 +1962,7 @@ class Episode(TV):
         except Exception:
             log.warning(
                 '{id}: Failed to modify date of {location}', {
-                    'id': self.series.series_id,
+                    'id': self.show.show_id,
                     'location': os.path.basename(self.location),
                 }
             )
@@ -1990,10 +1990,10 @@ class Episode(TV):
             log.debug(
                 '{name}: The old episode had a different file associated with it, '
                 're-checking the quality using the new filename {filepath}',
-                {'name': self.series.name, 'filepath': filepath}
+                {'name': self.show.name, 'filepath': filepath}
             )
 
-            new_quality = Quality.name_quality(filepath, self.series.is_anime)
+            new_quality = Quality.name_quality(filepath, self.show.is_anime)
 
             if old_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) or (
                     old_status == DOWNLOADED and old_location) or (
@@ -2013,7 +2013,7 @@ class Episode(TV):
             log.debug(
                 "{name}: Setting the status from '{status_old}' to '{status_new}' and"
                 " quality '{quality_old}' to '{quality_new}' based on file: {filepath}", {
-                    'name': self.series.name,
+                    'name': self.show.name,
                     'status_old': statusStrings[old_status],
                     'status_new': statusStrings[new_status],
                     'quality_old': Quality.qualityStrings[old_quality],
@@ -2025,7 +2025,7 @@ class Episode(TV):
             log.debug(
                 "{name}: Not changing current status '{status_old}' or"
                 " quality '{quality_old}' based on file: {filepath}", {
-                    'name': self.series.name,
+                    'name': self.show.name,
                     'status_old': statusStrings[old_status],
                     'quality_old': Quality.qualityStrings[old_quality],
                     'filepath': filepath,

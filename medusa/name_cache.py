@@ -24,21 +24,21 @@ name_cache = {}
 nameCacheLock = threading.Lock()
 
 
-def addNameToCache(name, indexer_id=1, series_id=0):
+def addNameToCache(name, indexer_id=1, show_id=0):
     """
     Add the show & tvdb id to the scene_names table in cache.db.
 
     :param name: The show name to cache
     :param indexer_id: the indexer's id.
-    :param series_id: the TVDB id that this show should be cached with (can be None/0 for unknown)
+    :param show_id: the TVDB id that this show should be cached with (can be None/0 for unknown)
     """
     cache_db_con = db.DBConnection('cache.db')
 
     # standardize the name we're using to account for small differences in providers
     name = full_sanitize_scene_name(name)
     if name not in name_cache:
-        name_cache[name] = (indexer_id, series_id)
-        cache_db_con.action('INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)', [series_id, name, indexer_id])
+        name_cache[name] = (indexer_id, show_id)
+        cache_db_con.action('INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)', [show_id, name, indexer_id])
 
 
 def retrieveNameFromCache(name):
@@ -46,7 +46,7 @@ def retrieveNameFromCache(name):
     Look up the given name in the scene_names table in cache.db.
 
     :param name: The show name to look up.
-    :return: Return a tuple with two items. First: indexer_id, Second: series_id.
+    :return: Return a tuple with two items. First: indexer_id, Second: show_id.
     """
     name = full_sanitize_scene_name(name)
     if name in name_cache:
@@ -54,22 +54,22 @@ def retrieveNameFromCache(name):
     return None, None
 
 
-def clear_cache(indexer_id=0, series_id=0):
-    """Delete all "unknown" entries from the cache (names with indexer_id (series_id) of 0)."""
+def clear_cache(indexer_id=0, show_id=0):
+    """Delete all "unknown" entries from the cache (names with indexer_id (show_id) of 0)."""
     indexer_ids = (0, indexer_id)
-    series_ids = (0, series_id)
+    show_ids = (0, show_id)
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
         "DELETE FROM scene_names "
         "WHERE (indexer_id = 0 AND indexer = ?) OR"
         "      (indexer_id = ? AND indexer = ?) ",
-        [series_id, indexer_id, series_id]
+        [show_id, indexer_id, show_id]
     )
 
     keys = []
     for key, value in iteritems(name_cache):
         i_id, s_id = value
-        if i_id in indexer_ids and s_id in series_ids:
+        if i_id in indexer_ids and s_id in show_ids:
             keys.append(key)
 
     for key in keys:
@@ -80,37 +80,37 @@ def saveNameCacheToDb():
     """Commit cache to database file."""
     cache_db_con = db.DBConnection('cache.db')
 
-    for name, series in iteritems(name_cache):
-        indexer_id, series_id = series
-        cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)", [series_id, name, indexer_id])
+    for name, show in iteritems(name_cache):
+        indexer_id, show_id = show
+        cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)", [show_id, name, indexer_id])
 
 
-def build_name_cache(series_obj=None):
+def build_name_cache(show_obj=None):
     """Build internal name cache.
 
-    :param series_obj: Specify series to build name cache for, if None, just do all series
+    :param show_obj: Specify show to build name cache for, if None, just do all show
     :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
-    def _cache_name(cache_series_obj):
+    def _cache_name(cache_show_obj):
         """Build the name cache for a single show."""
-        clear_cache(cache_series_obj.indexer, cache_series_obj.series_id)
+        clear_cache(cache_show_obj.indexer, cache_show_obj.show_id)
 
-        series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
-        scene_exceptions = exceptions_cache[series_identifier].copy()
+        show_identifier = (cache_show_obj.indexer, cache_show_obj.show_id)
+        scene_exceptions = exceptions_cache[show_identifier].copy()
         names = {
-            full_sanitize_scene_name(name): series_identifier
+            full_sanitize_scene_name(name): show_identifier
             for season_exceptions in itervalues(scene_exceptions)
             for name in season_exceptions
         }
         # Add original name to name cache
-        series_name = full_sanitize_scene_name(cache_series_obj.name)
-        names[series_name] = series_identifier
+        show_name = full_sanitize_scene_name(cache_show_obj.name)
+        names[show_name] = show_identifier
 
         # Add scene exceptions to name cache
         name_cache.update(names)
 
-        log.debug(u'Internal name cache for {series} set to: {names}', {
-            'series': series_name,
+        log.debug(u'Internal name cache for {show} set to: {names}', {
+            'show': show_name,
             'names': u', '.join(list(names))
         })
 
@@ -120,10 +120,10 @@ def build_name_cache(series_obj=None):
     # Create cache from db for the scene_exceptions.
     refresh_exceptions_cache()
 
-    if not series_obj:
+    if not show_obj:
         log.info(u'Building internal name cache for all shows')
         for show in app.showList:
             _cache_name(show)
     else:
-        log.info(u'Building internal name cache for {series}', {'series': series_obj.name})
-        _cache_name(series_obj)
+        log.info(u'Building internal name cache for {show}', {'show': show_obj.name})
+        _cache_name(show_obj)

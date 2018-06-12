@@ -95,15 +95,15 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         return {x.strip().title() for x in re.sub(r'[,/]+', '|', info_string).split('|') if x.strip()}
 
     # SHOW DATA
-    def _show_data(self, series_obj):
+    def _show_data(self, show_obj):
         """
         Creates an elementTree XML structure for an KODI-style tvshow.nfo and
         returns the resulting data object.
 
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Show instance to create the NFO for
         """
 
-        my_show = self._get_show_data(series_obj)
+        my_show = self._get_show_data(show_obj)
 
         # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
         # as that pretty useless.
@@ -113,7 +113,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         tv_node = etree.Element('tvshow')
 
         title = etree.SubElement(tv_node, 'title')
-        title.text = my_show['seriesname']
+        title.text = my_show['showname']
 
         if getattr(my_show, 'rating', None):
             rating = etree.SubElement(tv_node, 'rating')
@@ -134,7 +134,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         # For now we're only using this for tvdb indexed shows. We should come with a proper strategy as how to use the
         # metadata for TMDB/TVMAZE shows. We could try to map it a tvdb show. Or keep mixing it.
-        if series_obj.indexer == INDEXER_TVDBV2 and getattr(my_show, 'id', None):
+        if show_obj.indexer == INDEXER_TVDBV2 and getattr(my_show, 'id', None):
             episode_guide = etree.SubElement(tv_node, 'episodeguide')
             episode_guide_url = etree.SubElement(episode_guide, 'url', cache='auth.json', post='yes')
             episode_guide_url.text = '{url}/login?{{"apikey":"{apikey}","id":{id}}}' \
@@ -155,8 +155,8 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 cur_genre = etree.SubElement(tv_node, 'genre')
                 cur_genre.text = genre
 
-        if 'country_codes' in series_obj.imdb_info:
-            for country in self._split_info(series_obj.imdb_info['country_codes']):
+        if 'country_codes' in show_obj.imdb_info:
+            for country in self._split_info(show_obj.imdb_info['country_codes']):
                 try:
                     cur_country_name = Country(country.upper()).name.title()
                 except Exception:
@@ -217,8 +217,8 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         """
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        series_obj = self._get_show_data(ep_obj.series)
-        if not series_obj:
+        show_obj = self._get_show_data(ep_obj.show)
+        if not show_obj:
             return None
 
         if len(eps_to_write) > 1:
@@ -230,13 +230,13 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         for ep_to_write in eps_to_write:
 
             try:
-                my_ep = series_obj[ep_to_write.season][ep_to_write.episode]
+                my_ep = show_obj[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 log.info(
                     u'Unable to find episode {ep_num} on {indexer}...'
                     u' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                        'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
                 return None
@@ -260,9 +260,9 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 title = etree.SubElement(episode, 'title')
                 title.text = my_ep['episodename']
 
-            if getattr(series_obj, 'seriesname', None):
+            if getattr(show_obj, 'showname', None):
                 showtitle = etree.SubElement(episode, 'showtitle')
-                showtitle.text = series_obj['seriesname']
+                showtitle.text = show_obj['showname']
 
             season = etree.SubElement(episode, 'season')
             season.text = str(ep_to_write.season)
@@ -281,9 +281,9 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 plot = etree.SubElement(episode, 'plot')
                 plot.text = my_ep['overview']
 
-            if ep_to_write.season and getattr(series_obj, 'runtime', None):
+            if ep_to_write.season and getattr(show_obj, 'runtime', None):
                 runtime = etree.SubElement(episode, 'runtime')
-                runtime.text = str(series_obj['runtime'])
+                runtime.text = str(show_obj['runtime'])
 
             if getattr(my_ep, 'airsbefore_season', None):
                 displayseason = etree.SubElement(episode, 'displayseason')
@@ -320,8 +320,8 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_name = etree.SubElement(cur_actor, 'name')
                     cur_actor_name.text = actor
 
-            if getattr(series_obj, '_actors', None):
-                for actor in series_obj['_actors']:
+            if getattr(show_obj, '_actors', None):
+                for actor in show_obj['_actors']:
                     cur_actor = etree.SubElement(episode, 'actor')
 
                     if 'name' in actor and actor['name'].strip():

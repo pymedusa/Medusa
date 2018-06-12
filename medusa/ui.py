@@ -195,4 +195,4 @@ class QueueProgressIndicator(object):
 class LoadingTVShow(object):
     def __init__(self, show_dir):
         self.show_dir = show_dir
-        self.series = None
+        self.show = None

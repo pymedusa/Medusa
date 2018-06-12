@@ -100,6 +100,6 @@ Vue.component('app-link', {
 </script>
 <style>
 /* @NOTE: This fixes the header blocking elements when using a hash link */
-/* e.g. displayShow?indexername=tvdb&seriesid=83462#season-5  */
+/* e.g. displayShow?indexername=tvdb&showid=83462#season-5  */
 [false-link]:before { content: ''; display: block; position: relative; width: 0; height: 100px; margin-top: -100px }
 </style>

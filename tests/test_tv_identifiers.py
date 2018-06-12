@@ -5,7 +5,7 @@ from datetime import datetime
 
 from medusa.tv.episode import AbsoluteNumber, AirByDateNumber, EpisodeNumber, RelativeNumber
 from medusa.tv.indexer import Indexer
-from medusa.tv.series import SeriesIdentifier
+from medusa.tv.show import ShowIdentifier
 import pytest
 
 
@@ -48,28 +48,28 @@ def test_indexer_identifier(p):
 @pytest.mark.parametrize('p', [
     {  # p0: tvdb
         'slug': 'tvdb1234',
-        'expected': SeriesIdentifier(Indexer(1), 1234),
+        'expected': ShowIdentifier(Indexer(1), 1234),
     },
     {  # p1: tvmaze
         'slug': 'tvmaze567',
-        'expected': SeriesIdentifier(Indexer(3), 567),
+        'expected': ShowIdentifier(Indexer(3), 567),
     },
     {  # p2: tmdb
         'slug': 'tmdb89',
-        'expected': SeriesIdentifier(Indexer(4), 89),
+        'expected': ShowIdentifier(Indexer(4), 89),
     },
     {  # p3: invalid one
         'slug': 'another1122',
         'expected': None,
     }
 ])
-def test_series_identifier(p):
+def test_show_identifier(p):
     # Given
     slug = p['slug']
     expected = p['expected']
 
     # When
-    actual = SeriesIdentifier.from_slug(slug)
+    actual = ShowIdentifier.from_slug(slug)
 
     # Then
     if expected is None:

@@ -117,7 +117,7 @@ class HomeAddShows(Home):
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
-                                   show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
+                                   show['showname'].encode('utf-8'), show['firstaired'] or 'N/A',
                                    show.get('network', '').encode('utf-8') or 'N/A') for show in shows})
 
         lang_id = indexerApi().config['langabbv_to_id'][lang]
@@ -281,16 +281,16 @@ class HomeAddShows(Home):
                         topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
                         controller="addShows", action="recommendedShows", realpage="popularAnime")
 
-    def addShowToBlacklist(self, seriesid):
+    def addShowToBlacklist(self, showid):
         # URL parameters
-        data = {'shows': [{'ids': {'tvdb': seriesid}}]}
+        data = {'shows': [{'ids': {'tvdb': showid}}]}
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
                           'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
                           'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
-        show_name = get_showname_from_indexer(INDEXER_TVDBV2, seriesid)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, showid)
         try:
             trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
             trakt_api.request('users/{0}/lists/{1}/items'.format
@@ -311,7 +311,7 @@ class HomeAddShows(Home):
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
                         topmenu='home', controller='addShows', action='addExistingShow')
 
-    def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
+    def addShowByID(self, indexername=None, showid=None, show_name=None, which_show=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     season_folders=None, subtitles=None, full_show_path=None,
@@ -322,10 +322,10 @@ class HomeAddShows(Home):
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
         """
-        series_id = seriesid
+        show_id = showid
         if indexername != 'tvdb':
-            series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
-            if not series_id:
+            show_id = helpers.get_tvdb_from_id(showid, indexername.upper())
+            if not show_id:
                 logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
                     'Unable to add %s' % show_name,
@@ -333,7 +333,7 @@ class HomeAddShows(Home):
                 )
                 return
 
-        if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
+        if Show.find_by_id(app.showList, INDEXER_TVDBV2, show_id):
             return
 
         # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
@@ -398,11 +398,11 @@ class HomeAddShows(Home):
                        u'no root directory setting found', logger.WARNING)
             return 'No root directories setup, please go back and add one.'
 
-        show_name = get_showname_from_indexer(INDEXER_TVDBV2, series_id)
+        show_name = get_showname_from_indexer(INDEXER_TVDBV2, show_id)
         show_dir = None
 
         # add the show
-        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(show_id), show_dir, int(default_status), quality,
                                                 season_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 
@@ -411,7 +411,7 @@ class HomeAddShows(Home):
         # done adding show
         return self.redirect('/home/')
 
-    def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
+    def addNewShow(self, whichShow=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
                    allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
@@ -448,29 +448,29 @@ class HomeAddShows(Home):
             return finishAddShow()
 
         # sanity check on our inputs
-        if (not rootDir and not fullShowPath) or not whichSeries:
-            return 'Missing params, no Indexer ID or folder:{series!r} and {root!r}/{path!r}'.format(
-                series=whichSeries, root=rootDir, path=fullShowPath)
+        if (not rootDir and not fullShowPath) or not whichShow:
+            return 'Missing params, no Indexer ID or folder:{show!r} and {root!r}/{path!r}'.format(
+                show=whichShow, root=rootDir, path=fullShowPath)
 
         # figure out what show we're adding and where
-        series_pieces = whichSeries.split('|')
-        if (whichSeries and rootDir) or (whichSeries and fullShowPath and len(series_pieces) > 1):
-            if len(series_pieces) < 6:
-                logger.log(u'Unable to add show due to show selection. Not enough arguments: %s' % (repr(series_pieces)),
+        show_pieces = whichShow.split('|')
+        if (whichShow and rootDir) or (whichShow and fullShowPath and len(show_pieces) > 1):
+            if len(show_pieces) < 6:
+                logger.log(u'Unable to add show due to show selection. Not enough arguments: %s' % (repr(show_pieces)),
                            logger.ERROR)
                 ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
                 return json_redirect('/addShows/existingShows/')
 
-            indexer = int(series_pieces[1])
-            indexer_id = int(series_pieces[3])
-            show_name = series_pieces[4]
+            indexer = int(show_pieces[1])
+            indexer_id = int(show_pieces[3])
+            show_name = show_pieces[4]
         else:
             # if no indexer was provided use the default indexer set in General settings
             if not provided_indexer:
                 provided_indexer = app.INDEXER_DEFAULT
 
             indexer = int(provided_indexer)
-            indexer_id = int(whichSeries)
+            indexer_id = int(whichShow)
             show_name = os.path.basename(os.path.normpath(fullShowPath))
 
         # use the whole path if it's given, or else append the show name to the root dir to get the full show path

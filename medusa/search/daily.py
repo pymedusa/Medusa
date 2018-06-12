@@ -67,36 +67,36 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         )
 
         new_releases = []
-        series_obj = None
+        show_obj = None
 
         for db_episode in episodes_from_db:
             indexer_id = db_episode[b'indexer']
-            series_id = db_episode[b'showid']
+            show_id = db_episode[b'showid']
             try:
-                if not series_obj or series_id != series_obj.indexerid:
-                    series_obj = Show.find_by_id(app.showList, indexer_id, series_id)
+                if not show_obj or show_id != show_obj.indexerid:
+                    show_obj = Show.find_by_id(app.showList, indexer_id, show_id)
 
-                # for when there is orphaned series in the database but not loaded into our show list
-                if not series_obj or series_obj.paused:
+                # for when there is orphaned show in the database but not loaded into our show list
+                if not show_obj or show_obj.paused:
                     continue
 
             except MultipleShowObjectsException:
                 log.info('ERROR: expected to find a single show matching {id}',
-                         {'id': series_id})
+                         {'id': show_id})
                 continue
 
-            if series_obj.airs and series_obj.network:
+            if show_obj.airs and show_obj.network:
                 # This is how you assure it is always converted to local time
-                show_air_time = parse_date_time(db_episode[b'airdate'], series_obj.airs, series_obj.network)
-                end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(series_obj.runtime, 60))
+                show_air_time = parse_date_time(db_episode[b'airdate'], show_obj.airs, show_obj.network)
+                end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(show_obj.runtime, 60))
 
                 # filter out any episodes that haven't finished airing yet,
                 if end_time > cur_time:
                     continue
 
-            cur_ep = series_obj.get_episode(db_episode[b'season'], db_episode[b'episode'])
+            cur_ep = show_obj.get_episode(db_episode[b'season'], db_episode[b'episode'])
             with cur_ep.lock:
-                cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
+                cur_ep.status = show_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(
                     'Setting status ({status}) for show airing today: {name} {special}', {
                         'name': cur_ep.pretty_name(),

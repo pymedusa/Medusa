@@ -379,7 +379,7 @@ class Cache(object):
             log.debug('{0}', error)
             return None
 
-        if not parse_result or not parse_result.series_name:
+        if not parse_result or not parse_result.show_name:
             return None
 
         # add the parsed result to cache for usage later on
@@ -422,9 +422,9 @@ class Cache(object):
                     b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.series.series_id, url,
+                    [name, season, episode_text, parse_result.show.show_id, url,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.show.indexer]
                 ]
             else:
                 log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
@@ -436,7 +436,7 @@ class Cache(object):
                     b'WHERE url=?'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
+                    [name, season, episode_text, parse_result.show.indexer, parse_result.show.show_id,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, url]
                 ]
@@ -474,7 +474,7 @@ class Cache(object):
                 b'      indexerid = ? AND'
                 b'      season = ? AND'
                 b'      episodes LIKE ?'.format(name=self.provider_id),
-                [episode.series.indexer, episode.series.series_id, episode.season,
+                [episode.show.indexer, episode.show.show_id, episode.season,
                  b'%|{0}|%'.format(episode.episode)]
             )
         else:
@@ -490,7 +490,7 @@ class Cache(object):
                         qualities=','.join((str(x)
                                             for x in ep_obj.wanted_quality))
                     ),
-                    [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season,
+                    [ep_obj.show.indexer, ep_obj.show.show_id, ep_obj.season,
                      b'%|{0}|%'.format(ep_obj.episode)]]
                 )
 
@@ -501,10 +501,10 @@ class Cache(object):
             else:
                 sql_results = []
                 log.debug(
-                    '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
-                        'id': episode[0].series.series_id,
+                    '{id}: No cached results in {provider} for show {show_name!r} episode {ep}', {
+                        'id': episode[0].show.show_id,
                         'provider': self.provider.name,
-                        'show_name': episode[0].series.name,
+                        'show_name': episode[0].show.name,
                         'ep': episode_num(episode[0].season, episode[0].episode),
                     }
                 )
@@ -523,13 +523,13 @@ class Cache(object):
                 continue
 
             # get the show, or ignore if it's not one of our shows
-            series_obj = Show.find_by_id(app.showList, int(cur_result[b'indexer']), int(cur_result[b'indexerid']))
-            if not series_obj:
+            show_obj = Show.find_by_id(app.showList, int(cur_result[b'indexer']), int(cur_result[b'indexerid']))
+            if not show_obj:
                 continue
 
             # skip if provider is anime only and show is not anime
-            if self.provider.anime_only and not series_obj.is_anime:
-                log.debug('{0} is not an anime, skipping', series_obj.name)
+            if self.provider.anime_only and not show_obj.is_anime:
+                log.debug('{0} is not an anime, skipping', show_obj.name)
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
@@ -548,12 +548,12 @@ class Cache(object):
             search_result.version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
+            if not show_obj.want_episode(search_result.season, cur_ep, search_result.quality,
                                            forced_search, down_cur_quality):
                 log.debug('Ignoring {0}', cur_result[b'name'])
                 continue
 
-            search_result.episodes = [series_obj.get_episode(search_result.season, cur_ep)]
+            search_result.episodes = [show_obj.get_episode(search_result.season, cur_ep)]
 
             search_result.actual_episodes = [search_result.episodes[0].episode]
             search_result.actual_season = search_result.season
@@ -563,16 +563,16 @@ class Cache(object):
             search_result.url = cur_result[b'url']
 
             log.debug(
-                '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
-                    'id': search_result.episodes[0].series.series_id,
+                '{id}: Using cached results from {provider} for show {show_name!r} episode {ep}', {
+                    'id': search_result.episodes[0].show.show_id,
                     'provider': self.provider.name,
-                    'show_name': search_result.episodes[0].series.name,
+                    'show_name': search_result.episodes[0].show.name,
                     'ep': episode_num(search_result.episodes[0].season, search_result.episodes[0].episode),
                 }
             )
 
             # Map the remaining attributes
-            search_result.series = series_obj
+            search_result.show = show_obj
             search_result.seeders = cur_result[b'seeders']
             search_result.leechers = cur_result[b'leechers']
             search_result.size = cur_result[b'size']

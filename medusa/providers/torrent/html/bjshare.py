@@ -84,8 +84,8 @@ class BJShareProvider(TorrentProvider):
             self.max_back_pages = 20
 
         anime = False
-        if ep_obj and ep_obj.series:
-            anime = ep_obj.series.anime == 1
+        if ep_obj and ep_obj.show:
+            anime = ep_obj.show.anime == 1
 
         search_params = {
             'order_by': 'time',

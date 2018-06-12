@@ -24,7 +24,7 @@ MOVIE_ATTRIBUTES = {
     'audio_codec': 'audio_codec',
 }
 EPISODE_ATTRIBUTES = {
-    'series': 'title',
+    'show': 'title',
     'season': 'season',
     'episode': 'episode',
     'title': 'episode_title',
@@ -51,7 +51,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     Several :class:`~subliminal.video.Video` attributes can be found:
 
       * :attr:`~subliminal.video.Video.title`
-      * :attr:`~subliminal.video.Video.series`
+      * :attr:`~subliminal.video.Video.show`
       * :attr:`~subliminal.video.Video.season`
       * :attr:`~subliminal.video.Video.episode`
       * :attr:`~subliminal.video.Video.year`

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from medusa import db
 from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
-from medusa.tv.series import SeriesIdentifier
+from medusa.tv.show import ShowIdentifier
 
 from tornado.escape import json_decode
 
@@ -40,21 +40,21 @@ class AliasHandler(BaseRequestHandler):
             sql_where.append(b'exception_id')
             params += [identifier]
         else:
-            series_slug = self.get_query_argument('series', None)
-            series_identifier = SeriesIdentifier.from_slug(series_slug)
+            show_slug = self.get_query_argument('show', None)
+            show_identifier = ShowIdentifier.from_slug(show_slug)
 
-            if series_slug and not series_identifier:
-                return self._bad_request('Invalid series')
+            if show_slug and not show_identifier:
+                return self._bad_request('Invalid show')
 
             season = self._parse(self.get_query_argument('season', None))
             exception_type = self.get_query_argument('type', None)
             if exception_type and exception_type not in ('local', ):
                 return self._bad_request('Invalid type')
 
-            if series_identifier:
+            if show_identifier:
                 sql_where.append(b'indexer')
                 sql_where.append(b'indexer_id')
-                params += [series_identifier.indexer.id, series_identifier.id]
+                params += [show_identifier.indexer.id, show_identifier.id]
 
             if season is not None:
                 sql_where.append(b'season')
@@ -73,7 +73,7 @@ class AliasHandler(BaseRequestHandler):
         for item in sql_results:
             d = NonEmptyDict()
             d['id'] = item[0]
-            d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
+            d['show'] = ShowIdentifier.from_id(item[1], item[2]).slug
             d['name'] = item[3]
             d['season'] = item[4] if item[4] >= 0 else None
             d['type'] = 'local' if item[5] else None
@@ -101,13 +101,13 @@ class AliasHandler(BaseRequestHandler):
 
         data = json_decode(self.request.body)
 
-        if not data or not all([data.get('id'), data.get('series'), data.get('name'),
+        if not data or not all([data.get('id'), data.get('show'), data.get('name'),
                                 data.get('type')]) or data['id'] != identifier:
             return self._bad_request('Invalid request body')
 
-        series_identifier = SeriesIdentifier.from_slug(data.get('series'))
-        if not series_identifier:
-            return self._bad_request('Invalid series')
+        show_identifier = ShowIdentifier.from_slug(data.get('show'))
+        if not show_identifier:
+            return self._bad_request('Invalid show')
 
         cache_db_con = db.DBConnection('cache.db')
         last_changes = cache_db_con.connection.total_changes
@@ -118,8 +118,8 @@ class AliasHandler(BaseRequestHandler):
                             b', season = ?'
                             b', custom = 1'
                             b' WHERE exception_id = ?',
-                            [series_identifier.indexer.id,
-                             series_identifier.id,
+                            [show_identifier.indexer.id,
+                             show_identifier.id,
                              data['name'],
                              data.get('season'),
                              identifier])
@@ -136,21 +136,21 @@ class AliasHandler(BaseRequestHandler):
 
         data = json_decode(self.request.body)
 
-        if not data or not all([data.get('series'), data.get('name'),
+        if not data or not all([data.get('show'), data.get('name'),
                                 data.get('type')]) or 'id' in data or data['type'] != 'local':
             return self._bad_request('Invalid request body')
 
-        series_identifier = SeriesIdentifier.from_slug(data.get('series'))
-        if not series_identifier:
-            return self._bad_request('Invalid series')
+        show_identifier = ShowIdentifier.from_slug(data.get('show'))
+        if not show_identifier:
+            return self._bad_request('Invalid show')
 
         cache_db_con = db.DBConnection('cache.db')
         last_changes = cache_db_con.connection.total_changes
         cursor = cache_db_con.action(b'INSERT INTO scene_exceptions'
                                      b' (indexer, indexer_id, show_name, season, custom) '
                                      b' values (?,?,?,?,1)',
-                                     [series_identifier.indexer.id,
-                                      series_identifier.id,
+                                     [show_identifier.indexer.id,
+                                      show_identifier.id,
                                       data['name'],
                                       data.get('season')])
 

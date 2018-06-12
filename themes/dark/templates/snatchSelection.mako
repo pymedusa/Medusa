@@ -20,8 +20,8 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="series-id" value="${show.indexerid}" />
-<input type="hidden" id="series-slug" value="${show.slug}" />
+<input type="hidden" id="show-id" value="${show.indexerid}" />
+<input type="hidden" id="show-slug" value="${show.slug}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <%include file="/partials/showheader.mako"/>
@@ -88,7 +88,7 @@ const startVue = () => {
             % endif
             <!-- add provider meta data -->
                 <div id='manualSearchMeta'>
-                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-indexer-name="${show.indexer_name}" data-show-id="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
                 </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">

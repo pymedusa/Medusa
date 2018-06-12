@@ -163,9 +163,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
-            if not cur_proper.series.episodes.get(cur_proper.parse_result.season_number) or \
+            if not cur_proper.show.episodes.get(cur_proper.parse_result.season_number) or \
                     any([ep for ep in cur_proper.parse_result.episode_numbers
-                         if not cur_proper.series.episodes[cur_proper.parse_result.season_number].get(ep)]):
+                         if not cur_proper.show.episodes[cur_proper.parse_result.season_number].get(ep)]):
                 log.info('Skipping proper for wrong season/episode: {name}', {'name': cur_proper.name})
                 continue
 
@@ -174,7 +174,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 'tags': cur_proper.parse_result.proper_tags
             })
 
-            if not cur_proper.parse_result.series_name:
+            if not cur_proper.parse_result.show_name:
                 log.debug('Ignoring invalid show: {name}', {'name': cur_proper.name})
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
@@ -188,17 +188,17 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             log.debug('Successful match! Matched {original_name} to show {new_name}',
                       {'original_name': cur_proper.parse_result.original_name,
-                       'new_name': cur_proper.parse_result.series.name
+                       'new_name': cur_proper.parse_result.show.name
                        })
 
             # Map the indexerid in the db to the show's indexerid
-            cur_proper.indexerid = cur_proper.parse_result.series.indexerid
+            cur_proper.indexerid = cur_proper.parse_result.show.indexerid
 
             # Map the indexer in the db to the show's indexer
-            cur_proper.indexer = cur_proper.parse_result.series.indexer
+            cur_proper.indexer = cur_proper.parse_result.show.indexer
 
             # Map our Proper instance
-            cur_proper.series = cur_proper.parse_result.series
+            cur_proper.show = cur_proper.parse_result.show
             cur_proper.actual_season = cur_proper.parse_result.season_number \
                 if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
@@ -218,7 +218,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only get anime proper if it has release group and version
-            if best_result.series.is_anime:
+            if best_result.show.is_anime:
                 if not best_result.release_group and best_result.version == -1:
                     log.info('Ignoring proper without release group and version: {name}', {'name': best_result.name})
                     if cur_proper.name not in processed_propers_names:
@@ -232,7 +232,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                                              b"AND showid = ? AND season = ? "
                                              b"AND episode = ? AND status = ?",
                                              [best_result.indexer,
-                                              best_result.series.indexerid,
+                                              best_result.show.indexerid,
                                               best_result.actual_season,
                                               best_result.actual_episodes[0],
                                               DOWNLOADED])
@@ -276,13 +276,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 })
 
             # check if we actually want this proper (if it's the right release group and a higher version)
-            if best_result.series.is_anime:
+            if best_result.show.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
                     b'SELECT release_group, version '
                     b'FROM tv_episodes WHERE indexer = ? AND showid = ? '
                     b'AND season = ? AND episode = ?',
-                    [best_result.indexer, best_result.series.indexerid, best_result.actual_season,
+                    [best_result.indexer, best_result.show.indexerid, best_result.actual_season,
                      best_result.actual_episodes[0]])
 
                 old_version = int(sql_results[0][b'version'])

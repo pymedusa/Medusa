@@ -17,7 +17,7 @@
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
     % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
-    <div id=${("seriesTabContent", "animeTabContent")[cur_list_type == "Anime"]}>
+    <div id=${("showTabContent", "animeTabContent")[cur_list_type == "Anime"]}>
     % endif
     <div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix" data-list="${cur_list_type}">
         % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
@@ -59,20 +59,20 @@
             download_stat_tip = ''
             display_status = cur_show.status
             if None is not display_status:
-                if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
+                if re.search(r'(?i)(?:new|returning)\s*show', cur_show.status):
                     display_status = 'Continuing'
                 elif re.search(r'(?i)(?:nded)', cur_show.status):
                     display_status = 'Ended'
-            if (cur_show.indexer, cur_show.series_id) in show_stat:
-                series = (cur_show.indexer, cur_show.series_id)
-                cur_airs_next = show_stat[series]['ep_airs_next']
-                cur_snatched = show_stat[series]['ep_snatched']
+            if (cur_show.indexer, cur_show.show_id) in show_stat:
+                show = (cur_show.indexer, cur_show.show_id)
+                cur_airs_next = show_stat[show]['ep_airs_next']
+                cur_snatched = show_stat[show]['ep_snatched']
                 if not cur_snatched:
                     cur_snatched = 0
-                cur_downloaded = show_stat[series]['ep_downloaded']
+                cur_downloaded = show_stat[show]['ep_downloaded']
                 if not cur_downloaded:
                     cur_downloaded = 0
-                cur_total = show_stat[series]['ep_total']
+                cur_total = show_stat[show]['ep_total']
                 if not cur_total:
                     cur_total = 0
             download_stat = str(cur_downloaded)
@@ -106,7 +106,7 @@
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></app-link>
+                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&showid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" show="${cur_show.slug}" asset="posterThumb"/></app-link>
                     </div>
                 </div>
                 <div class="show-poster-footer row">
@@ -152,7 +152,7 @@
                                     </td>
                                     <td class="show-table">
                                     % if cur_show.network:
-                                        <span title="${cur_show.network}"><img class="show-network-image" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                                        <span title="${cur_show.network}"><img class="show-network-image" src="images/network/nonetwork.png" lazy="on" show="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                                     % else:
                                         <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                     % endif

@@ -87,7 +87,7 @@ class ShowUpdater(object):
             if last_update and last_update > time.time() - (604800 * update_max_weeks):
                 if show.indexer not in indexer_updated_shows:
                     try:
-                        indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
+                        indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_show(
                             last_update, update_max_weeks
                         )
                     except IndexerUnavailable:

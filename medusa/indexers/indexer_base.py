@@ -65,7 +65,7 @@ class BaseIndexer(object):
 
         self.config['custom_ui'] = custom_ui
 
-        self.config['interactive'] = interactive  # prompt for correct series?
+        self.config['interactive'] = interactive  # prompt for correct show?
 
         self.config['select_first'] = select_first
 
@@ -110,7 +110,7 @@ class BaseIndexer(object):
         ]
 
         # thetvdb.com should be based around numeric language codes,
-        # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
+        # but to link to a show like http://thetvdb.com/?tab=show&id=79349&lid=16
         # requires the language ID, thus this mapping is required (mainly
         # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
         self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
@@ -145,23 +145,23 @@ class BaseIndexer(object):
         """Return dummy _get_show_data method."""
         return None
 
-    def _get_series(self, series):
-        """Search themoviedb.org for the series name.
+    def _get_show(self, show):
+        """Search themoviedb.org for the show name.
 
         If a custom_ui UI is configured, it uses this to select the correct
-        series. If not, and interactive == True, ConsoleUI is used, if not
+        show. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
 
-        :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :param show: the query for the show name
+        :return: A list of show mapped to a UI (for example: a BaseUi or CustomUI).
         """
-        all_series = self.search(series)
-        if not all_series:
-            log.debug('Series result returned zero')
+        all_show = self.search(show)
+        if not all_show:
+            log.debug('Show result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
 
-        if not isinstance(all_series, list):
-            all_series = [all_series]
+        if not isinstance(all_show, list):
+            all_show = [all_show]
 
         if self.config['custom_ui'] is not None:
             log.debug('Using custom UI {0!r}', self.config['custom_ui'])
@@ -175,7 +175,7 @@ class BaseIndexer(object):
                 log.debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
-        return ui.select_series(all_series)
+        return ui.select_show(all_show)
 
     def _set_show_data(self, sid, key, value):
         """Set self.shows[sid] to a new Show instance, or sets the data."""
@@ -210,12 +210,12 @@ class BaseIndexer(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
-    def _save_images_by_type(self, image_type, series_id, images):
+    def _save_images_by_type(self, image_type, show_id, images):
         """
         Save the highest rated images for a show by image type.
 
         :param image_type: Image type being processed (e.g. `fanart`)
-        :param series: ID of series being processed
+        :param show: ID of show being processed
         :param images: Images to be processed
         """
         def pop_stats(it, key):
@@ -270,22 +270,22 @@ class BaseIndexer(object):
             # add all current resolution images to the merged list
             merged_images.extend(list(itervalues(images_by_resolution)))
             log.debug(
-                u'Found {x} {image}s at {res} ({res_index}) resolution for series {id}', {
+                u'Found {x} {image}s at {res} ({res_index}) resolution for show {id}', {
                     'x': len(images_by_resolution),
                     'image': image_type,
                     'res': image['resolution'],
                     'res_index': image['res_index'],
-                    'id': series_id,
+                    'id': show_id,
                 }
             )
 
         # Get population statistics
         num_items = len(merged_images)
         log.debug(
-            u'Found {x} total {image}s for series {id}', {
+            u'Found {x} total {image}s for show {id}', {
                 'x': num_items,
                 'image': image_type,
-                'id': series_id,
+                'id': show_id,
             }
         )
 
@@ -309,11 +309,11 @@ class BaseIndexer(object):
         # sort results by score
         sorted_results = sorted(rated_images, key=itemgetter(0), reverse=True)
         log.debug(
-            u'Weighted {image} results for series {id}:'
+            u'Weighted {image} results for show {id}:'
             u'\n{header}'
             u'\n{items}', {
                 'image': image_type,
-                'id': series_id,
+                'id': show_id,
                 'header': column_header,
                 'items': '\n'.join(
                     format_result(item)
@@ -329,11 +329,11 @@ class BaseIndexer(object):
         ]
         if len(best_results) > 1:
             log.debug(
-                u'Multiple {image}s at highest weighted score for series {id}:'
+                u'Multiple {image}s at highest weighted score for show {id}:'
                 u'\n{header}'
                 u'\n{results}', {
                     'image': image_type,
-                    'id': series_id,
+                    'id': show_id,
                     'header': column_header,
                     'results': '\n'.join(
                         format_result(item)
@@ -346,10 +346,10 @@ class BaseIndexer(object):
         img_res = img['resolution']
         img_bay_score = img['score_rated']
         log.info(
-            u'Selected {image} for series {id}'
+            u'Selected {image} for show {id}'
             u' (score={x}, score_bay={b}, rating={y}, votes={z}, res={r}): {url}', {
                 'image': image_type,
-                'id': series_id,
+                'id': show_id,
                 'x': img_score,
                 'b': img_bay_score,
                 'y': img_rating,
@@ -358,16 +358,16 @@ class BaseIndexer(object):
                 'url': img_url,
             }
         )
-        log.debug(u'Full info for best {image} for series {id}: {info}',
-                  {'image': image_type, 'id': series_id, 'info': img})
+        log.debug(u'Full info for best {image} for show {id}: {info}',
+                  {'image': image_type, 'id': show_id, 'info': img})
 
-        self._set_show_data(series_id, image_type, img_url)
+        self._set_show_data(show_id, image_type, img_url)
 
-    def _save_images(self, series_id, images):
+    def _save_images(self, show_id, images):
         """
         Save the highest rated images for the show.
 
-        :param series_id: The series ID
+        :param show_id: The show ID
         :param images: A nested mapping of image info
             images[type][res][id] = image_info_mapping
                 type: image type such as `banner`, `poster`, etc
@@ -382,17 +382,17 @@ class BaseIndexer(object):
                 images_by_type = images[img_type]
             except KeyError:
                 log.debug(
-                    u'No {image}s found for {series}', {
+                    u'No {image}s found for {show}', {
                         'image': img_type,
-                        'series': series_id,
+                        'show': show_id,
                     }
                 )
                 continue
 
-            self._save_images_by_type(img_type, series_id, images_by_type)
+            self._save_images_by_type(img_type, show_id, images_by_type)
 
     def __getitem__(self, key):
-        """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
+        """Handle tvdbv2_instance['showname'] calls. The dict index should be the show id."""
         if isinstance(key, (integer_types, int)):
             # Item is integer, treat as show id
             if key not in self.shows:
@@ -401,23 +401,23 @@ class BaseIndexer(object):
 
         key = text_type(key).lower()
         self.config['searchterm'] = key
-        selected_series = self._get_series(key)
-        if isinstance(selected_series, dict):
-            selected_series = [selected_series]
+        selected_show = self._get_show(key)
+        if isinstance(selected_show, dict):
+            selected_show = [selected_show]
 
-        for show in selected_series:
+        for show in selected_show:
             for k, v in viewitems(show):
                 self._set_show_data(show['id'], k, v)
-        return selected_series
+        return selected_show
 
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    def get_last_updated_show(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
         :param weeks: number of weeks to get updates for.
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
-        raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
+        raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_show not implemented by this indexer")
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
         self._get_episodes(show_id, *args, **kwargs)
@@ -425,7 +425,7 @@ class BaseIndexer(object):
 
 
 class ShowContainer(dict):
-    """Simple dict that holds a series of Show instances."""
+    """Simple dict that holds a show of Show instances."""
 
     def __init__(self):
         """Init for ShowContainer."""
@@ -460,7 +460,7 @@ class Show(dict):
     def __repr__(self):
         """Represent a Show object."""
         return '<Show {0} (containing {1} seasons)>'.format(
-            self.data.get(u'seriesname', 'instance'),
+            self.data.get(u'showname', 'instance'),
             len(self)
         )
 

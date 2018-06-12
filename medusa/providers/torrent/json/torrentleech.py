@@ -94,7 +94,7 @@ class TorrentLeechProvider(TorrentProvider):
 
                     search_params['categories'] = ['35']
                     search_params['categories'] += ['26', '32', '44'] if mode == 'Episode' else ['27']
-                    if self.series and self.series.is_anime:
+                    if self.show and self.show.is_anime:
                         search_params['categories'] += ['34']
 
                     search_params['query'] = search_string

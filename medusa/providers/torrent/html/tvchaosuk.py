@@ -85,7 +85,7 @@ class TVChaosUKProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode == 'Season':
-                    search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
+                    search_string = re.sub(r'(.*)S0?', r'\1Show ', search_string)
 
                 elif mode != 'RSS':
                     log.debug('Search string: {search}',
@@ -166,9 +166,9 @@ class TVChaosUKProvider(TorrentProvider):
                         if not title.startswith(show_name_first_word):
                             title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
 
-                    # Change title from Series to Season, or we can't parse
+                    # Change title from Show to Season, or we can't parse
                     if mode == 'Season':
-                        title = re.sub(r'(.*)(?i)Series', r'\1Season', title)
+                        title = re.sub(r'(.*)(?i)Show', r'\1Season', title)
 
                     # Strip year from the end or we can't parse it!
                     title = re.sub(r'(.*)[\. ]?\(\d{4}\)', r'\1', title)

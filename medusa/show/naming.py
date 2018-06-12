@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Series naming helpers for selecting results."""
+"""Show naming helpers for selecting results."""
 
 from __future__ import unicode_literals
 

@@ -7,7 +7,7 @@ import os
 from builtins import object
 
 from medusa import app
-from medusa.cache import recommended_series_cache
+from medusa.cache import recommended_show_cache
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.indexers.indexer_api import indexerApi
@@ -15,7 +15,7 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, create_key_from_series, update_recommended_series_cache_index
+    RecommendedShow, create_key_from_show, update_recommended_show_cache_index
 )
 
 from six import binary_type, text_type
@@ -45,38 +45,38 @@ class TraktPopular(object):
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
-    @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_key=None):
+    @recommended_show_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_show)
+    def _create_recommended_show(self, show, storage_key=None):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
-            series['show']['ids'], series['show']['title'],
+            show['show']['ids'], show['show']['title'],
             INDEXER_TVDBV2,  # indexer
-            series['show']['ids']['tvdb'],
-            **{'rating': series['show']['rating'],
-                'votes': try_int(series['show']['votes'], '0'),
-                'image_href': 'http://www.trakt.tv/shows/{0}'.format(series['show']['ids']['slug']),
+            show['show']['ids']['tvdb'],
+            **{'rating': show['show']['rating'],
+                'votes': try_int(show['show']['votes'], '0'),
+                'image_href': 'http://www.trakt.tv/shows/{0}'.format(show['show']['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': series['show']['ids']
+                'ids': show['show']['ids']
                }
         )
 
         use_default = None
         image = None
         try:
-            if not missing_posters.has(series['show']['ids']['tvdb']):
-                image = self.check_cache_for_poster(series['show']['ids']['tvdb']) or \
-                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
-                            series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+            if not missing_posters.has(show['show']['ids']['tvdb']):
+                image = self.check_cache_for_poster(show['show']['ids']['tvdb']) or \
+                        self.tvdb_api_v2.config['session'].show_api.show_id_images_query_get(
+                            show['show']['ids']['tvdb'], key_type='poster').data[0].file_name
             else:
-                log.info('CACHE: Missing poster on TVDB for show {0}', series['show']['title'])
+                log.info('CACHE: Missing poster on TVDB for show {0}', show['show']['title'])
                 use_default = self.default_img_src
         except ApiException as error:
             use_default = self.default_img_src
             if getattr(error, 'status', None) == 404:
-                log.info('Missing poster on TheTVDB for show {0}', series['show']['title'])
-                missing_posters.append(series['show']['ids']['tvdb'])
+                log.info('Missing poster on TheTVDB for show {0}', show['show']['title'])
+                missing_posters.append(show['show']['ids']['tvdb'])
         except Exception as error:
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
@@ -89,8 +89,8 @@ class TraktPopular(object):
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
-        if 'jp' in [series['show']['country'], series['show']['language']]:
-            rec_show.flag_as_anime(series['show']['ids']['tvdb'])
+        if 'jp' in [show['show']['country'], show['show']['language']]:
+            rec_show.flag_as_anime(show['show']['ids']['tvdb'])
 
         return rec_show
 
@@ -148,12 +148,12 @@ class TraktPopular(object):
             else:
                 limit_show = '?'
 
-            series = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
+            show = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
 
             # Let's trigger a cache cleanup.
             missing_posters.clean()
 
-            for show in series:
+            for show in show:
                 try:
                     if 'show' not in show:
                         show['show'] = show
@@ -171,7 +171,7 @@ class TraktPopular(object):
                     continue
 
             # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
+            update_recommended_show_cache_index('trakt', [binary_type(s.show_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as error:

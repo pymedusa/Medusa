@@ -28,7 +28,7 @@ from medusa.helper.encoding import ss
 from medusa.notifiers.emailnotify import Notifier as EmailNotifier
 from medusa.notifiers.prowl import Notifier as ProwlNotifier
 from medusa.server.web import Home
-from medusa.tv import Episode, Series
+from medusa.tv import Episode, Show
 from tests.legacy import test_lib as test
 
 
@@ -51,7 +51,7 @@ class NotifierTests(test.AppTestDBCase):
         # store emails in the old method (legacy method) and then other shows that will use
         # the new method.
         for show_counter in range(100, 100 + num_legacy_shows):
-            show = Series(1, show_counter)
+            show = Show(1, show_counter)
             show.name = "Show " + str(show_counter)
             show.episodes = []
             for episode_counter in range(0, num_episodes_per_show):
@@ -63,7 +63,7 @@ class NotifierTests(test.AppTestDBCase):
             cls.legacy_shows.append(show)
 
         for show_counter in range(200, 200 + num_shows):
-            show = Series(1, show_counter)
+            show = Show(1, show_counter)
             show.name = "Show " + str(show_counter)
             show.episodes = []
             for episode_counter in range(0, num_episodes_per_show):
@@ -94,7 +94,7 @@ class NotifierTests(test.AppTestDBCase):
 
         for show in self.shows:
             showid = self._get_showid_by_showname(show.name)
-            Home.saveShowNotifyList(indexername='tvdb', seriesid=showid, emails=test_emails)
+            Home.saveShowNotifyList(indexername='tvdb', showid=showid, emails=test_emails)
 
         # Now, iterate through all shows using the email list generation routines that are used in the notifier proper
         shows = self.legacy_shows + self.shows
@@ -120,7 +120,7 @@ class NotifierTests(test.AppTestDBCase):
 
         for show in self.shows:
             showid = self._get_showid_by_showname(show.name)
-            Home.saveShowNotifyList(indexername='tvdb', seriesid=showid, prowlAPIs=test_prowl_apis)
+            Home.saveShowNotifyList(indexername='tvdb', showid=showid, prowlAPIs=test_prowl_apis)
 
         # Now, iterate through all shows using the Prowl API generation routines that are used in the notifier proper
         for show in self.shows:

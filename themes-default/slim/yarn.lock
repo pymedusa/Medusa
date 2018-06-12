@@ -425,9 +425,9 @@ astw@^2.0.0:
   dependencies:
     acorn "^4.0.3"
 
-async-each-series@^1.1.0:
+async-each-show@^1.1.0:
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/async-each-series/-/async-each-series-1.1.0.tgz#f42fd8155d38f21a5b8ea07c28e063ed1700b138"
+  resolved "https://registry.yarnpkg.com/async-each-show/-/async-each-show-1.1.0.tgz#f42fd8155d38f21a5b8ea07c28e063ed1700b138"
 
 async-each@^1.0.0:
   version "1.0.1"
@@ -932,7 +932,7 @@ bin-build@^2.0.0:
     archive-type "^3.0.1"
     decompress "^3.0.0"
     download "^4.1.2"
-    exec-series "^1.0.0"
+    exec-show "^1.0.0"
     rimraf "^2.2.6"
     tempfile "^1.0.0"
     url-regex "^3.0.0"
@@ -944,7 +944,7 @@ bin-build@^3.0.0:
     decompress "^4.0.0"
     download "^6.2.2"
     execa "^0.7.0"
-    p-map-series "^1.0.0"
+    p-map-show "^1.0.0"
     tempfile "^2.0.0"
 
 bin-check@^2.0.0:
@@ -3105,11 +3105,11 @@ exec-buffer@^3.0.0:
     rimraf "^2.5.4"
     tempfile "^2.0.0"
 
-exec-series@^1.0.0:
+exec-show@^1.0.0:
   version "1.0.3"
-  resolved "https://registry.yarnpkg.com/exec-series/-/exec-series-1.0.3.tgz#6d257a9beac482a872c7783bc8615839fc77143a"
+  resolved "https://registry.yarnpkg.com/exec-show/-/exec-show-1.0.3.tgz#6d257a9beac482a872c7783bc8615839fc77143a"
   dependencies:
-    async-each-series "^1.1.0"
+    async-each-show "^1.1.0"
     object-assign "^4.1.0"
 
 execa@^0.10.0:
@@ -6651,9 +6651,9 @@ p-locate@^2.0.0:
   dependencies:
     p-limit "^1.1.0"
 
-p-map-series@^1.0.0:
+p-map-show@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.yarnpkg.com/p-map-series/-/p-map-series-1.0.0.tgz#bf98fe575705658a9e1351befb85ae4c1f07bdca"
+  resolved "https://registry.yarnpkg.com/p-map-show/-/p-map-show-1.0.0.tgz#bf98fe575705658a9e1351befb85ae4c1f07bdca"
   dependencies:
     p-reduce "^1.0.0"
 

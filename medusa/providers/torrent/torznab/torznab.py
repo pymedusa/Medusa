@@ -54,8 +54,8 @@ class TorznabProvider(TorrentProvider):
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
         # construction.
         self.season_templates = (
-            'S{season:0>2}',  # example: 'Series.Name S03'
-            'Season {season}',  # example: 'Series.Name Season 3'
+            'S{season:0>2}',  # example: 'Show.Name S03'
+            'Season {season}',  # example: 'Show.Name Season 3'
         )
 
         self.cache = tv.Cache(self)
@@ -96,7 +96,7 @@ class TorznabProvider(TorrentProvider):
                     search_params['t'] = 'tvsearch'
                     search_params.update(match_indexer)
 
-                    if ep_obj.series.air_by_date or ep_obj.series.sports:
+                    if ep_obj.show.air_by_date or ep_obj.show.sports:
                         date_str = str(ep_obj.airdate)
                         search_params['season'] = date_str.partition('-')[0]
                         search_params['ep'] = date_str.partition('-')[2].replace('-', '/')
@@ -249,7 +249,7 @@ class TorznabProvider(TorrentProvider):
         """
         indexer_mapping = {}
 
-        if not self.series:
+        if not self.show:
             return indexer_mapping
 
         supported_params = self.cap_tv_search
@@ -261,12 +261,12 @@ class TorznabProvider(TorrentProvider):
         indexer_params = ((x, v) for x, v in iteritems(INDEXERS_PARAM) if v in supported_params)
         for indexer, indexer_param in indexer_params:
             # We have a direct match on the indexer used, no need to try the externals.
-            if self.series.indexer == indexer:
-                indexer_mapping[indexer_param] = self.series.indexerid
+            if self.show.indexer == indexer:
+                indexer_mapping[indexer_param] = self.show.indexerid
                 break
 
             # No direct match, let's see if one of the externals provides a valid indexer_param.
-            external_indexerid = self.series.externals.get(mappings[indexer])
+            external_indexerid = self.show.externals.get(mappings[indexer])
             if external_indexerid:
                 indexer_mapping[indexer_param] = external_indexerid
                 break

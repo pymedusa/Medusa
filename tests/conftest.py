@@ -17,7 +17,7 @@ from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
-from medusa.tv import Episode, Series
+from medusa.tv import Episode, Show
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
@@ -97,7 +97,7 @@ def tvshow(create_tvshow):
 
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
-    return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
+    return create_tvepisode(show=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
                             name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
                             release_group='SuperGroup')
 
@@ -105,9 +105,9 @@ def tvepisode(tvshow, create_tvepisode):
 @pytest.fixture
 def parse_method(create_tvshow):
     def parse(self, name):
-        """Parse the string and add a TVShow object with the parsed series name."""
+        """Parse the string and add a TVShow object with the parsed show name."""
         result = self._parse_string(name)
-        result.series = create_tvshow(name=result.series_name)
+        result.show = create_tvshow(name=result.show_name)
         return result
     return parse
 
@@ -130,8 +130,8 @@ def create_sub(monkeypatch):
 def create_tvshow(monkeypatch):
     def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.NA, season_folders=1,
                enabled_subtitles=0, **kwargs):
-        monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
-        target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
+        monkeypatch.setattr(Show, '_load_from_db', lambda method: None)
+        target = Show(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
                         season_folders=season_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
 
@@ -140,9 +140,9 @@ def create_tvshow(monkeypatch):
 
 @pytest.fixture
 def create_tvepisode(monkeypatch):
-    def create(series, season, episode, filepath='', **kwargs):
+    def create(show, season, episode, filepath='', **kwargs):
         monkeypatch.setattr(Episode, '_specify_episode', lambda method, season, episode: None)
-        target = Episode(series=series, season=season, episode=episode, filepath=filepath)
+        target = Episode(show=show, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
