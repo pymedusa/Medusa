@@ -166,7 +166,7 @@ const startVue = () => {
 
                 let showPath = 'unknown dir';
                 // If we provided a show path, use that
-                if (providedInfo.use && providedInfo.seriesDir) {
+                if (providedInfo.seriesDir) {
                     showPath = providedInfo.seriesDir;
                     const sepChar = pathSep(showPath);
                     if (showPath.slice(-1) !== sepChar) {
@@ -184,6 +184,9 @@ const startVue = () => {
                     showPath += '<i>' + dirName + '</i>' + sepChar;
                 }
                 return showPath;
+            },
+            showPathPreposition() {
+                return this.providedInfo.seriesDir ? 'from' : 'into';
             }
         },
         methods: {
@@ -399,7 +402,7 @@ const startVue = () => {
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
-            <div id="displayText">Adding show <b v-html="showName"></b> into <b v-html="showPath"></b></div>
+            <div id="displayText">Adding show <b v-html="showName"></b> {{showPathPreposition}} <b v-html="showPath"></b></div>
             <br />
             <form id="addShowForm" ref="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
@@ -486,7 +489,7 @@ const startVue = () => {
                 </fieldset>
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Pick the parent folder</legend>
-                    <div v-if="providedInfo.use && providedInfo.seriesDir" class="stepDiv">
+                    <div v-if="providedInfo.seriesDir" class="stepDiv">
                         Pre-chosen Destination Folder: <b>{{ providedInfo.seriesDir }}</b><br />
                         <input type="hidden" name="fullShowPath" :value="providedInfo.seriesDir" /><br />
                     </div>
