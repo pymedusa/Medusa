@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.logger.py."""
+import os.path
 from datetime import datetime
 
 import medusa.logger as sut
@@ -340,8 +341,9 @@ def test_read_loglines__max_traceback_depth(logger):
     assert len(actual[3].traceback_lines) == 0
 
 
-def test_format_to_html(logger, read_loglines):
+def test_format_to_html(logger, read_loglines, app_config):
     # When
+    prog_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     base_url = '../base'
     try:
         1 / 0
@@ -351,7 +353,9 @@ def test_format_to_html(logger, read_loglines):
     logline = loglines[0]
 
     # When
+    app_config('PROG_DIR', prog_dir)
     actual = logline.format_to_html(base_url)
 
     # Then
     assert '<a href="../base/' in actual
+    assert '">tests' + os.path.sep + 'test_logger.py</a>' in actual

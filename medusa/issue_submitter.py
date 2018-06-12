@@ -60,6 +60,8 @@ class IssueSubmitter(object):
     TITLE_DIFF_RATIO_OVERRIDES = [
         # "Missing time zone for network" errors should match
         ('missing time zone for network', 1.0),
+        # "AttributeError: 'NoneType' object has no attribute" etc.
+        ("attributeerror: 'nonetype' object has no attribute", 1.0),
     ]
 
     def __init__(self):
