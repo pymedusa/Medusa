@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 if PY3:
-    long = int  # pragma: no cover
+    long = int
 
 dateFormat = '%Y-%m-%d'
 dateTimeFormat = '%Y-%m-%d %H:%M:%S'
