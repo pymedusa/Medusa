@@ -141,7 +141,7 @@ class Show(object):
             return None
 
         # indexer_ids = [show_id] if not isinstance(show_id, list) else show_id
-        results = [show for show in show if show.indexer == indexer_id and show.indexerid == show_id]
+         results = [show for show in shows if show.indexer == indexer_id and show.indexerid == series_id]
 
         if not results:
             return None
