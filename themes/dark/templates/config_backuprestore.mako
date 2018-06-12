@@ -81,7 +81,8 @@ const startVue = () => {
                         <div class="field-pair">
                             Select the folder you wish to save your backup file to:
                             <br><br>
-                            <file-browser name="backupDir" title="Select Show Location" @update="backup.dir = $event"></file-browser>
+                            <file-browser name="backupDir" title="Select backup folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
+                            <br>
                             <input @click="runBackup" :disabled="backup.disabled" class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>
                         </div>
@@ -97,7 +98,8 @@ const startVue = () => {
                         <div class="field-pair">
                             Select the backup file you wish to restore:
                             <br><br>
-                            <file-browser name="backupFile" title="Select Show Location" :initial-dir="restore.file" include-files @update="restore.file = $event"></file-browser>
+                            <file-browser name="backupFile" title="Select backup file to restore" local-storage-key="backupFile" include-files @update="restore.file = $event"></file-browser>
+                            <br>
                             <input @click="runRestore" :disabled="restore.disabled" class="btn-medusa btn-inline" type="button" value="Restore" id="Restore" />
                             <br>
                         </div>
