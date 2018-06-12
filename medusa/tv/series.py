@@ -1968,7 +1968,7 @@ class Series(TV):
         data['akas'] = self.imdb_akas
         data['year'] = NonEmptyDict()
         data['year']['start'] = self.imdb_year or self.start_year
-        data['nextAirDate'] = self.next_airdate
+        data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = NonEmptyDict()
@@ -1999,7 +1999,7 @@ class Series(TV):
         data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = self.aliases
+        data['config']['aliases'] = list(self.aliases)
         data['config']['release'] = NonEmptyDict()
         # These are for now considered anime-only options, as they query anidb for available release groups.
         if self.is_anime:
