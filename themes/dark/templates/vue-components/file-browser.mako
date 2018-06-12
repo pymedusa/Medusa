@@ -92,7 +92,9 @@ Vue.component('file-browser', {
                 localStorageKey: '',
                 initialDir: ''
             },
-            browse: null
+            browse: null,
+            fileBrowserDialog: null,
+            nFileBrowser: null
         };
     },
     computed: {
@@ -116,7 +118,7 @@ Vue.component('file-browser', {
             // Otherwise browse to dir
             if (file.isFile) {
                 this.currentPath = file.path;
-                $('.browserDialog .ui-button:contains("Ok")').click();
+                $(this.$el).find('.browserDialog .ui-button:contains("Ok")').click();
             } else {
                 this.browse(file.path);
             }
@@ -138,7 +140,6 @@ Vue.component('file-browser', {
     },
     mounted() {
         const vm = this;
-
         let fileBrowserDialog;
 
         this.browse = async (path, url = this.url, includeFiles = this.includeFiles) => {
@@ -157,7 +158,7 @@ Vue.component('file-browser', {
             fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog');
         };
 
-        $.fn.nFileBrowser = function(callback, options) {
+        vm.nFileBrowser = function(callback, options) {
             const {browse} = vm;
             options = Object.assign({}, vm.defaults, options);
 
@@ -167,7 +168,7 @@ Vue.component('file-browser', {
             } else {
                 // Make a fileBrowserDialog object if one doesn't exist already
                 // set up the jquery dialog
-                fileBrowserDialog = $(vm.$el).find('.fileBrowserButton').dialog({
+                fileBrowserDialog = $(vm.$el).find('.fileBrowserDialog').dialog({
                     dialogClass: 'browserDialog',
                     title: options.title,
                     position: {
@@ -183,7 +184,7 @@ Vue.component('file-browser', {
                     autoOpen: false
                 });
 
-                $('.fileBrowserSearchBox')
+                $(vm.$el).find('.fileBrowserSearchBox')
                     .removeAttr('style')
                     .appendTo(fileBrowserDialog)
                     .fileBrowser({ showBrowseButton: false })
@@ -215,7 +216,7 @@ Vue.component('file-browser', {
             // Set lastPath so we can reset currentPath if we cancel dialog
             vm.lastPath = vm.currentPath;
 
-            const list = $('.fileBrowserFileList').removeAttr('style').appendTo(fileBrowserDialog);
+            const list = $(vm.$el).find('.fileBrowserFileList').removeAttr('style').appendTo(fileBrowserDialog);
 
             return false;
         };
@@ -250,7 +251,7 @@ Vue.component('file-browser', {
                         });
                     },
                     open() {
-                        $('.ui-autocomplete li.ui-menu-item a').removeClass('ui-corner-all');
+                        $(vm.$el).find('.ui-autocomplete li.ui-menu-item a').removeClass('ui-corner-all');
                     }
                 }).data('ui-autocomplete')._renderItem = function(ul, item) {
                     // Highlight the matched search term from the item -- note that this is global and will match anywhere
@@ -294,14 +295,16 @@ Vue.component('file-browser', {
                     $(vm.$el).find('.fileBrowserButton').on('click', function() {
                         const initialDir = vm.currentPath || (options.localStorageKey && path) || '';
                         const optionsWithInitialDir = $.extend({}, options, { initialDir });
-                        $(this).nFileBrowser(callback, optionsWithInitialDir);
+                        vm.nFileBrowser(callback, optionsWithInitialDir);
                         return false;
                     })
                 );
             }
+            
             return resultField;
         };
 
+        // Initialize the fileBrowser.
         const { title, localStorageKey } = this;
         $(this.$refs.locationInput).fileBrowser({
             title: title,

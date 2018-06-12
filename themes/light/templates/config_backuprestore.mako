@@ -14,41 +14,29 @@ const startVue = () => {
                 backup: {
                     disabled: false,
                     status: '',
-                    // dir: ''
+                    dir: ''
                 },
                 restore: {
                     disabled: false,
                     status: '',
-                    // file: ''
+                    file: ''
                 }
             };
         },
         mounted() {
-            /** $('#backupDir').fileBrowser({
-                title: 'Select backup folder to save to',
-                key: 'backupPath'
-            });
-            $('#backupFile').fileBrowser({
-                title: 'Select backup files to restore',
-                key: 'backupFile',
-                includeFiles: 1
-            }); 
-            */
-
             $('#config-components').tabs();
         },
         methods: {
             runBackup() {
                 const { backup } = this;
-                const dir = $('#backupDir').val();
 
-                if (!dir) return;
+                if (!backup.dir) return;
 
                 backup.disabled = true;
                 backup.status = MEDUSA.config.loading;
 
                 $.get('config/backuprestore/backup', {
-                    backupDir: dir
+                    backupDir: backup.dir
                 }).done(data => {
                     backup.status = data;
                     backup.disabled = false;
@@ -56,15 +44,14 @@ const startVue = () => {
             },
             runRestore() {
                 const { restore } = this;
-                const dir = $('#backupFile').val();
 
-                if (!dir) return;
+                if (!restore.file) return;
 
                 restore.disabled = true;
                 restore.status = MEDUSA.config.loading;
 
                 $.get('config/backuprestore/restore', {
-                    backupFile: dir
+                    backupFile: restore.file
                 }).done(data => {
                     restore.status = data;
                     restore.disabled = false;
@@ -112,7 +99,7 @@ const startVue = () => {
                             Select the backup file you wish to restore:
                             <br><br>
                             <!-- <input v-model="restore.file" type="text" name="backupFile" id="backupFile" class="form-control input-sm input350"/> -->
-                            <file-browser name="backupFile" ref="backupFileBrowser" id="backupFile" title="Select Show Location" :initial-dir="restore.file" @update:location="restore.file = $event"/>
+                            <file-browser name="backupFile" ref="backupFileBrowser" id="backupFile" title="Select Show Location" :initial-dir="restore.file" :include-files="true" @update:location="restore.file = $event"/>
                             <input @click="runRestore" :disabled="restore.disabled" class="btn-medusa btn-inline" type="button" value="Restore" id="Restore" />
                             <br>
                         </div>
