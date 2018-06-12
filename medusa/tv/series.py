@@ -1983,7 +1983,7 @@ class Series(TV):
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
         data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
-        data['plot'] = self.imdb_plot or self.plot
+        data['plot'] = self.plot or self.imdb_plot
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
         data['config']['qualities'] = NonEmptyDict()
