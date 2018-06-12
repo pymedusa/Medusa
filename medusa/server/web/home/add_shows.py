@@ -566,20 +566,21 @@ class HomeAddShows(Home):
         dirs_only = []
         # separate all the ones with Indexer IDs
         for cur_dir in shows_to_add:
-            if '|' in cur_dir:
-                split_vals = cur_dir.split('|')
-                if len(split_vals) < 3:
-                    dirs_only.append(cur_dir)
             if '|' not in cur_dir:
+                # 'series_dir'
                 dirs_only.append(cur_dir)
             else:
                 indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
                 if indexer and show_dir and not indexer_id:
+                    # 'indexer_id|show_dir' or 'indexer_id|show_dir|show_name'
                     dirs_only.append(cur_dir)
-
-                if not show_dir or not indexer_id or not show_name:
                     continue
 
+                if not (show_dir and indexer_id and show_name):
+                    # 'indexer_id'
+                    continue
+
+                # 'indexer_id|show_dir|series_id|series_name'
                 indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
 
         # if they want me to prompt for settings then I will just carry on to the newShow page

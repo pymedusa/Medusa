@@ -163,11 +163,6 @@ MEDUSA.addShows.newShow = function() {
         // $('#addShowForm').submit();
     });
 
-    $('#skipShowButton').click(() => {
-        $('#skipShow').val('1');
-        $('#addShowForm').submit();
-    });
-
     /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
     *  This notice MUST stay intact for legal use
     *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
