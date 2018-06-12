@@ -1,7 +1,6 @@
 # coding=utf-8
 """Tests for medusa.helper.common module."""
 
-from __future__ import print_function
 from __future__ import unicode_literals
 
 import medusa.helper.common as sut
