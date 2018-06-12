@@ -316,7 +316,7 @@ Vue.component('file-browser', {
     watch: {
         currentPath(newValue, oldValue) {
             if (!this.lock) {
-                this.$emit('update:location', this.currentPath);
+                this.$emit('update', this.currentPath);
             }
         }
     }
