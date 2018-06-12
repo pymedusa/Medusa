@@ -11,7 +11,7 @@ from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
-from medusa.common import DOWNLOADED
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -491,22 +491,42 @@ class ProcessResult(object):
 
     def already_postprocessed(self, video_file):
         """
-        Check if we already post processed a file.
+        Check if we already post-processed an auto snatched file.
 
         :param video_file: File name
         :return:
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT * FROM history '
+            'SELECT showid, season, episode, indexer_id '
+            'FROM history '
             'WHERE action = ? '
-            'AND resource LIKE ?',
+            'AND resource LIKE ?'
+            'ORDER BY date DESC',
             [DOWNLOADED, '%' + video_file])
 
         if history_result:
-            self.log("You're trying to post-process a file that has already "
-                     "been processed, skipping: {0}".format(video_file), logger.DEBUG)
-            return True
+            snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+            tv_episodes_result = main_db_con.select(
+                'SELECT manually_searched '
+                'FROM tv_episodes '
+                'WHERE indexer = ? '
+                'AND showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND status IN (?, ?, ?) ',
+                [history_result[0][b'indexer_id'],
+                 history_result[0][b'showid'],
+                 history_result[0][b'season'],
+                 history_result[0][b'episode']
+                 ] + snatched_statuses
+            )
+
+            if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
+                self.log("You're trying to post-process an automatically searched file that has"
+                         " already been processed, skipping: {0}".format(video_file), logger.DEBUG)
+                return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
         """
