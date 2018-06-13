@@ -203,11 +203,12 @@ const store = new Puex({
         [SOCKET_RECONNECT_ERROR](state) {
             state.socket.reconnectError = true;
 
+            const title = 'Error connecting to websocket';
             let error = '';
-            error += 'Error connecting to websocket. Please check your network connection. ';
+            error += 'Please check your network connection. ';
             error += 'If you are using a reverse proxy, please take a look at our wiki for config examples.';
 
-            displayNotification('notice', error);
+            displayNotification('notice', title, error);
         },
         [NOTIFICATIONS_ENABLED](state) {
             state.notifications.enabled = true;
