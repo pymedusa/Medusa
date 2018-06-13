@@ -227,7 +227,7 @@ const startVue = () => {
                             <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
                             <div class="col-sm-10 content">
                                 <medusa-toggle id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled"></medusa-toggle>
-                                <span>search for subtitles</span>s
+                                <span>search for subtitles</span>
                             </div>
                         </div>
 
