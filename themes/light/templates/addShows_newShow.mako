@@ -252,6 +252,11 @@ const startVue = () => {
                     form.submit();
                 }
             },
+            selectResult(result) {
+                const { alreadyAdded, identifier } = result;
+                if (alreadyAdded) return;
+                this.selectedShowSlug = result.slug;
+            },
             rootDirsUpdated(rootDirs) {
                 this.selectedRootDir = rootDirs.length === 0 ? '' : rootDirs.find(rd => rd.selected).path;
             },
@@ -327,10 +332,10 @@ const startVue = () => {
                 const { languageId } = data;
                 this.searchResults = data.results
                     .map(result => {
-                        // Compute whichSeries value (without the last item - sanitizedName)
-                        whichSeries = result.slice(0, -1).join('|');
+                        // Compute whichSeries value (without the 2 last items - sanitizedName and alreadyAdded)
+                        whichSeries = result.slice(0, -2).join('|');
 
-                        // Unpack result items 0 through 7 (Array)
+                        // Unpack result items 0 through 8 (Array)
                         let [
                             indexerName,
                             indexerId,
@@ -339,7 +344,8 @@ const startVue = () => {
                             showName,
                             premiereDate,
                             network,
-                            sanitizedName
+                            sanitizedName,
+                            alreadyAdded
                         ] = result;
 
                         slug = [indexers[indexerId].identifier, showId].join('')
@@ -359,6 +365,14 @@ const startVue = () => {
 
                         indexerIcon = 'images/' + indexers[indexerId].icon;
 
+                        alreadyAdded = (() => {
+                            if (!alreadyAdded) return false;
+                            // Extract existing show info
+                            const [ mIndexerId, mShowId ] = alreadyAdded;
+                            const indexerIdentifier = indexers[mIndexerId] ? indexers[mIndexerId].identifier : mIndexerId;
+                            return 'home/displayShow?indexername=' + indexerIdentifier + '&seriesid=' + mShowId;
+                        })();
+
                         return {
                             slug,
                             whichSeries,
@@ -370,13 +384,15 @@ const startVue = () => {
                             showName,
                             premiereDate,
                             network,
-                            sanitizedName
+                            sanitizedName,
+                            alreadyAdded
                         };
                     });
 
-                if (this.searchResults.length !== 0) {
-                    // Select the first result
-                    this.selectedShowSlug = this.searchResults[0].identifier;
+                // Select the first available result
+                const firstAvailableResult = this.searchResults.find(result => !result.alreadyAdded);
+                if (firstAvailableResult) {
+                    this.selectedShowSlug = firstAvailableResult.slug;
                 }
 
                 this.searchStatus = '';
@@ -464,9 +480,12 @@ const startVue = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="result in searchResults" @click="selectedShowSlug = result.slug" :class="{ selected: selectedShowSlug === result.slug }">
+                                    <tr v-for="result in searchResults" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
                                         <td class="search-result">
-                                            <input v-model="selectedShowSlug" type="radio" :value="result.slug" />
+                                            <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug" />
+                                            <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                <img height="16" width="16" src="images/ico/favicon-16.png" />
+                                            </app-link>
                                         </td>
                                         <td>
                                             <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">

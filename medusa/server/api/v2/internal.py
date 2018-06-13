@@ -10,6 +10,7 @@ from medusa import app, classes, db
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
@@ -150,7 +151,7 @@ class InternalHandler(BaseRequestHandler):
         :param language: 2-letter language code to search the indexer(s) in
         """
         query = self.get_argument('query', '').strip()
-        indexer_id = self.get_argument('indexerId', '0')
+        indexer_id = self.get_argument('indexerId', '0').strip()
         language = self.get_argument('language', '').strip()
 
         if not query:
@@ -204,22 +205,24 @@ class InternalHandler(BaseRequestHandler):
                 except IndexerException as error:
                     log.info('Error searching for show: {error}', {'error': error})
 
+        # Get possible show ids
+        all_show_ids = [(show.indexer, show.series_id) for show in app.showList]
+
         for indexer, shows in iteritems(results):
             indexer_api = indexerApi(indexer)
-            indexer_results_set = {
-                (
+            for show in shows:
+                show_id = int(show['id'])
+                final_results.append([
                     indexer_api.name,
                     indexer,
                     indexer_api.config['show_url'],
-                    int(show['id']),
+                    show_id,
                     show['seriesname'].encode('utf-8'),
                     show['firstaired'] or 'N/A',
                     show.get('network', '').encode('utf-8') or 'N/A',
-                    sanitize_filename(show['seriesname']).encode('utf-8')
-                )
-                for show in shows
-            }
-            final_results.extend(indexer_results_set)
+                    sanitize_filename(show['seriesname']).encode('utf-8'),
+                    (indexer, show_id) in all_show_ids and (indexer, show_id)
+                ])
 
         language_id = indexerApi().config['langabbv_to_id'][language]
         data = {
