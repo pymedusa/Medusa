@@ -11,6 +11,7 @@
   <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Percentage of issues still open">
     <img src="http://isitmaintained.com/badge/open/pymedusa/Medusa.svg" alt="Percentage of issues still open"/>
   </a>
+  <br>
   <a href="https://codebeat.co/projects/github-com-pymedusa-medusa-develop" title="">
     <img src="https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0" alt="codebeat badge"/>
   </a>
@@ -19,6 +20,9 @@
   </a>
   <a href="https://codecov.io/gh/pymedusa/Medusa" title="">
     <img src="https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg" alt="codecov"/>
+  </a>
+  <a href="https://pyup.io/repos/github/pymedusa/Medusa/" title="">
+    <img src="https://pyup.io/repos/github/pymedusa/Medusa/python-3-shield.svg" alt="Python 3"/>
   </a>
 </p>
 
