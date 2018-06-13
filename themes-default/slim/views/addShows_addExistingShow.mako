@@ -126,28 +126,57 @@ const startVue = () => {
             seriesIndexerUrl(curDir) {
                 return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
             },
-            submitSeriesDirs() {
-                const dirArr = this.filteredDirList
-                    .reduce((accumlator, dir) => {
-                        if (!dir.selected) return accumlator;
+            async submitSeriesDirs() {
+                const dirList = this.filteredDirList.filter(dir => dir.selected);
+                if (dirList.length === 0) return false;
 
-                        const originalIndexer = dir.metadata.indexer;
-                        let seriesId = dir.metadata.seriesId;
-                        if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-                            seriesId = '';
-                        }
+                const formData = new FormData();
+                formData.append('promptForSettings', this.promptForSettings);
+                dirList.forEach(dir => {
+                    const originalIndexer = dir.metadata.indexer;
+                    let seriesId = dir.metadata.seriesId;
+                    if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
+                        seriesId = '';
+                    }
 
-                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
-                            .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
-                        accumlator.push(encodeURIComponent(seriesToAdd));
-                        return accumlator;
-                    }, []);
+                    const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
+                        .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                if (dirArr.length === 0) return false;
+                    formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                });
 
-                const promptForSettings = 'promptForSettings=' + (this.promptForSettings ? 'on' : 'off');
-                const seriesToAdd = 'shows_to_add=' + dirArr.join('&shows_to_add=');
-                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?' + promptForSettings + '&' + seriesToAdd;
+                const response = await apiRoute.post('addShows/addExistingShows', formData);
+                const { data } = response;
+                const { result, message, redirect, params } = data;
+
+                if (message) {
+                    if (result === false) {
+                        console.log('Error: ' + message);
+                    } else {
+                        console.log('Response: ' + message);
+                    }
+                }
+                if (redirect) {
+                    const baseUrl = apiRoute.defaults.baseURL;
+                    if (params.length === 0) {
+                        window.location.href = baseUrl + redirect;
+                        return;
+                    }
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = baseUrl + redirect;
+                    form.acceptCharset = 'utf-8';
+
+                    params.forEach(param => {
+                        const element = document.createElement('input');
+                        [ element.name, element.value ] = param; // Unpack
+                        form.appendChild(element);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             }
         },
         watch: {
@@ -168,8 +197,8 @@ const startVue = () => {
             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
-                        <li><app-link href="addShows/existingShows/#tabs-1">Manage Directories</app-link></li>
-                        <li><app-link href="addShows/existingShows/#tabs-2">Customize Options</app-link></li>
+                        <li><app-link href="#tabs-1">Manage Directories</app-link></li>
+                        <li><app-link href="#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
                         <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
