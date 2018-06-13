@@ -147,6 +147,10 @@ const startVue = () => {
                 if (providedInfo.use) return providedInfo.showId === 0;
                 return !(providedInfo.showDir || selectedRootDir) || selectedShowSlug === '';
             },
+            skipShowVisible() {
+                const { otherShows, providedInfo } = this;
+                return otherShows.length !== 0 || providedInfo.use || providedInfo.showDir;
+            },
             spinnerSrc() {
                 const themeSpinner = MEDUSA.config.themeSpinner;
                 if (themeSpinner === undefined) return '';
@@ -524,8 +528,9 @@ const startVue = () => {
             <br>
             <div style="width: 100%; text-align: center;">
                 <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled" />
-                <input v-if="otherShows.length !== 0" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show" />
+                <input v-if="skipShowVisible" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show" />
                 <p v-if="otherShows.length !== 0"><i>({{ otherShows.length }} more {{ otherShows.length > 1 ? 'shows' : 'show' }} left)</i></p>
+                <p v-else-if="skipShowVisible"><i>(last show)</i></p>
             </div>
         </div>
     </div>
