@@ -3,9 +3,8 @@
 <%block name="scripts">
 <%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
+<%include file="/vue-components/medusa-toggle.mako"/>
 <script>
-
-Vue.use(window['vue-js-toggle-button'].default)
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
@@ -52,8 +51,7 @@ const startVue = () => {
                     {text: 'Ignored', value: 'Ignored'}
                 ],
                 seriesLoaded: false,
-                saving: false,
-                enableButton: true
+                saving: false
             }
         },
         async mounted() {
@@ -228,7 +226,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" :sync="true"></toggle-button>
+                                <medusa-toggle id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled"></medusa-toggle>
                                 <span>search for subtitles</span>s
                             </div>
                         </div>
@@ -236,7 +234,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="paused" class="col-sm-2 control-label">Paused</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="paused" name="paused" v-model="series.config.paused" :sync="true"></toggle-button>
+                                <medusa-toggle id="paused" name="paused" v-model="series.config.paused"></medusa-toggle>
                                 <span>pause this show (Medusa will not download episodes)</span>
                             </div>
                         </div>
@@ -251,7 +249,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="airbydate" name="air_by_date" v-model="series.config.airByDate" :sync="true"></toggle-button>
+                                <medusa-toggle id="airbydate" name="air_by_date" v-model="series.config.airByDate"></medusa-toggle>
                                 <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                 <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                             </div>
@@ -260,7 +258,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="anime" class="col-sm-2 control-label">Anime</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="anime" name="anime" v-model="series.config.anime" :sync="true"></toggle-button>
+                                <medusa-toggle id="anime" name="anime" v-model="series.config.anime"></medusa-toggle>
                                 <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                             </div>
                         </div>
@@ -275,7 +273,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="sports" class="col-sm-2 control-label">Sports</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="sports" name="sports" v-model="series.config.sports" :sync="true"></toggle-button>
+                                <medusa-toggle id="sports" name="sports" v-model="series.config.sports"></medusa-toggle>
                                 <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<span>
                                 <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                             </div>
@@ -284,7 +282,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" :sync="true"></toggle-button>
+                                <medusa-toggle id="season_folders" name="season_folders" v-model="series.config.seasonFolders"></medusa-toggle>
                                 <span>group episodes by season folder (disable to store in a single folder)</span>
                             </div>
                         </div>
@@ -292,7 +290,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="scene" name="scene" v-model="series.config.scene" :sync="true"></toggle-button>
+                                <medusa-toggle id="scene" name="scene" v-model="series.config.scene"></medusa-toggle>
                                 <span>search by scene numbering (disable to search by indexer numbering)</span>
                             </div>
                         </div>
@@ -300,7 +298,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                <toggle-button width.number="45" height.number="22" id="scene" name="scene" v-model="series.config.scene" :sync="true"></toggle-button>
+                                <medusa-toggle id="scene" name="scene" v-model="series.config.scene"></medusa-toggle>
                                 <span>use the DVD order instead of the air order</span>
                                 <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
