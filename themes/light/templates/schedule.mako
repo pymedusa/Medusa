@@ -42,7 +42,7 @@ const startVue = () => {
             $store.dispatch('getConfig');
             $store.dispatch('getShows');
 
-            if (layout == 'list') {
+            if (layout === 'list') {
                 const sortCodes = {
                     date: 0,
                     show: 2,
@@ -80,7 +80,7 @@ const startVue = () => {
                 $.ajaxEpSearch();
             }
 
-            if (layout in ['banner', 'poster']) {
+            if (['banner', 'poster'].includes(layout)) {
                 $.ajaxEpSearch({
                     size: 16,
                     loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
