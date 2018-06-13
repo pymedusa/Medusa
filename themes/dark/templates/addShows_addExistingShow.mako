@@ -197,8 +197,8 @@ const startVue = () => {
             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
-                        <li><app-link href="addShows/existingShows/#tabs-1">Manage Directories</app-link></li>
-                        <li><app-link href="addShows/existingShows/#tabs-2">Customize Options</app-link></li>
+                        <li><app-link href="#tabs-1">Manage Directories</app-link></li>
+                        <li><app-link href="#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
                         <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
