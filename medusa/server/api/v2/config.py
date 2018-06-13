@@ -2,6 +2,7 @@
 """Request handler for configuration."""
 from __future__ import unicode_literals
 
+import inspect
 import logging
 import platform
 import sys
@@ -81,51 +82,25 @@ class ConfigHandler(BaseRequestHandler):
         :param path_param:
         :type path_param: str
         """
-        config_sections = {
-            'main',
-            'qualities',
-            'statuses',
-        }
+        # Get the available sections from the DataGenerator class
+        config_sections = [
+            name[5:]
+            for (name, function) in inspect.getmembers(DataGenerator, predicate=inspect.isfunction)
+            if name.startswith('data_')
+        ]
+
+        if identifier and identifier not in config_sections:
+            return self._not_found('Config not found')
 
         if not identifier:
-            sections = None
-        else:
-            if identifier not in config_sections:
-                return self._not_found('Config not found')
-
-            sections = {identifier}
-
-        arg_append = self.get_argument('append', default=None)
-        if arg_append:
-            if not identifier or path_param:
-                return self._bad_request()  # @TODO:
-
-            for section in arg_append.split(','):
-                section = section.strip()
-                if not section:
-                    continue
-
-                if section not in config_sections:
-                    continue
-                    log.warning('Unrecognized config "{0}" ignored', section)
-
-                sections.add(section)
-
-        def generate_sections(sections):
             config_data = NonEmptyDict()
-            for section in sections:
-                config_data[section] = NonEmptyDict()
-                getattr(DataGenerator, 'data_' + section)(config_data)
-            return config_data
 
-        if not sections:
-            config_data = generate_sections(config_sections)
+            for section in config_sections:
+                config_data[section] = getattr(DataGenerator, 'data_' + section)()
+
             return self._paginate([config_data])
 
-        config_data = generate_sections(sections)
-        if len(sections) == 1:
-            section = ''.join(sections)
-            config_data = config_data[section]
+        config_data = getattr(DataGenerator, 'data_' + identifier)()
 
         if path_param:
             if path_param not in config_data:
@@ -166,9 +141,10 @@ class DataGenerator(object):
     """Generate the requested config data on demand."""
 
     @staticmethod
-    def data_main(config_data):
+    def data_main():
         """Main."""
-        section_data = config_data['main']
+        section_data = NonEmptyDict()
+
         section_data['anonRedirect'] = app.ANON_REDIRECT
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
@@ -273,10 +249,13 @@ class DataGenerator(object):
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
 
+        return section_data
+
     @staticmethod
-    def data_qualities(config_data):
+    def data_qualities():
         """Qualities."""
-        section_data = config_data['qualities']
+        section_data = NonEmptyDict()
+
         section_data['values'] = NonEmptyDict()
         section_data['values']['na'] = common.Quality.NA
         section_data['values']['unknown'] = common.Quality.UNKNOWN
@@ -317,10 +296,13 @@ class DataGenerator(object):
         section_data['strings']['presets'] = common.qualityPresetStrings
         section_data['strings']['cssClass'] = common.Quality.cssClassStrings
 
+        return section_data
+
     @staticmethod
-    def data_statuses(config_data):
+    def data_statuses():
         """Statuses."""
-        section_data = config_data['statuses']
+        section_data = NonEmptyDict()
+
         section_data['values'] = NonEmptyDict()
         section_data['values']['unset'] = common.UNSET
         section_data['values']['unaired'] = common.UNAIRED
@@ -335,3 +317,5 @@ class DataGenerator(object):
         section_data['values']['failed'] = common.FAILED
         section_data['values']['snatchedBest'] = common.SNATCHED_BEST
         section_data['strings'] = common.statusStrings
+
+        return section_data
