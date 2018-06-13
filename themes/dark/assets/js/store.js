@@ -233,17 +233,17 @@ const store = new Puex({
     // No actions should write to the store
     // Please use store.commit to fire off a mutation that'll update the store
     actions: {
-        getConfig(store) {
+        getConfig() {
             return api.get('/config/main').then(res => {
                 store.commit(ADD_CONFIG, res.data);
             });
         },
-        getShow(store, { indexer, id }) {
+        getShow(context, { indexer, id }) {
             return api.get('/series/' + indexer + id).then(res => {
                 store.commit(ADD_SHOW, res.data);
             });
         },
-        getShows(store, shows) {
+        getShows(context, shows) {
             const { dispatch } = store;
 
             // If no shows are provided get all of them
@@ -261,18 +261,14 @@ const store = new Puex({
         testNotifications() {
             return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
         },
-        setLayout(store, { page, layout }) {
-            const { dispatch } = store;
-
+        setLayout(context, { page, layout }) {
             return api.patch('config/main', {
                 layout: {
                     [page]: layout
                 }
-            }).then(setTimeout(() => {
-                dispatch('getConfig');
-                // For now we reload the page since the layouts use python still
-                location.reload();
-            }, 500));
+            // }).then(setTimeout(() => dispatch('getConfig'), 500));
+            // For now we reload the page since the layouts use python still
+            }).then(location.reload());
         }
     },
     // @TODO Add logging here
