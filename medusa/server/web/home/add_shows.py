@@ -400,10 +400,13 @@ class HomeAddShows(Home):
 
         # sanity check on our inputs
         if (not rootDir and not fullShowPath) or not whichSeries:
+            error_msg = 'Missing params, no Indexer ID or folder: {series!r} and {root!r}/{path!r}'.format(
+                series=whichSeries, root=rootDir, path=fullShowPath)
+            log.error(error_msg)
             return json_response(
                 result=False,
-                message='Missing params, no Indexer ID or folder: {series!r} and {root!r}/{path!r}'.format(
-                             series=whichSeries, root=rootDir, path=fullShowPath)
+                message=error_msg,
+                redirect='/home/'
             )
 
         # figure out what show we're adding and where
