@@ -215,19 +215,24 @@ class InternalHandler(BaseRequestHandler):
 
         for indexer, shows in iteritems(results):
             indexer_api = indexerApi(indexer)
+            indexer_results_set = set()
             for show in shows:
                 show_id = int(show['id'])
-                final_results.append([
-                    indexer_api.name,
-                    indexer,
-                    indexer_api.config['show_url'],
-                    show_id,
-                    show['seriesname'].encode('utf-8'),
-                    show['firstaired'] or 'N/A',
-                    show.get('network', '').encode('utf-8') or 'N/A',
-                    sanitize_filename(show['seriesname']).encode('utf-8'),
-                    show_id in all_show_ids.get(indexer, []) and (indexer, show_id)
-                ])
+                indexer_results_set.add(
+                    (
+                        indexer_api.name,
+                        indexer,
+                        indexer_api.config['show_url'],
+                        show_id,
+                        show['seriesname'].encode('utf-8'),
+                        show['firstaired'] or 'N/A',
+                        show.get('network', '').encode('utf-8') or 'N/A',
+                        sanitize_filename(show['seriesname']).encode('utf-8'),
+                        show_id in all_show_ids.get(indexer, []) and (indexer, show_id)
+                    )
+                )
+
+            final_results.extend(indexer_results_set)
 
         language_id = indexerApi().config['langabbv_to_id'][language]
         data = {
