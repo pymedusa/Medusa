@@ -87,14 +87,88 @@ class ConfigHandler(BaseRequestHandler):
             'statuses',
         }
 
-        if identifier and identifier not in config_sections:
+        if not identifier:
+            sections = None
+        else:
+            if identifier not in config_sections:
+                return self._not_found('Config not found')
+
+            sections = {identifier}
+
+        arg_append = self.get_argument('append', default=None)
+        if arg_append:
+            if not identifier or path_param:
+                return self._bad_request()  # @TODO:
+
+            for section in arg_append.split(','):
+                section = section.strip()
+                if not section:
+                    continue
+
+                if section not in config_sections:
+                    continue
+                    log.warning('Unrecognized config "{0}" ignored', section)
+
+                sections.add(section)
+
+        def generate_sections(sections):
+            config_data = NonEmptyDict()
+            for section in sections:
+                config_data[section] = NonEmptyDict()
+                getattr(DataGenerator, 'data_' + section)(config_data)
+            return config_data
+
+        if not sections:
+            config_data = generate_sections(config_sections)
+            return self._paginate([config_data])
+
+        config_data = generate_sections(sections)
+        if len(sections) == 1:
+            section = ''.join(sections)
+            config_data = config_data[section]
+
+        if path_param:
+            if path_param not in config_data:
+                return self._bad_request('{key} is a invalid path'.format(key=path_param))
+
+            config_data = config_data[path_param]
+
+        return self._ok(data=config_data)
+
+    def patch(self, identifier, *args, **kwargs):
+        """Patch general configuration."""
+        if not identifier:
+            return self._bad_request('Config identifier not specified')
+
+        if identifier != 'main':
             return self._not_found('Config not found')
 
-        config_data = NonEmptyDict()
-        for section in config_sections:
-            config_data[section] = NonEmptyDict()
+        data = json_decode(self.request.body)
+        accepted = {}
+        ignored = {}
 
-        # main
+        for key, value in iter_nested_items(data):
+            patch_field = self.patches.get(key)
+            if patch_field and patch_field.patch(app, value):
+                set_nested_value(accepted, key, value)
+            else:
+                set_nested_value(ignored, key, value)
+
+        if ignored:
+            log.warning('Config patch ignored %r', ignored)
+
+        # Make sure to update the config file after everything is updated
+        app.instance.save_config()
+        self._ok(data=accepted)
+
+
+class DataGenerator(object):
+    """Generate the requested config data on demand."""
+
+    @staticmethod
+    def data_main(config_data):
+        """Main."""
+
         section_data = config_data['main']
         section_data['anonRedirect'] = app.ANON_REDIRECT
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -199,7 +273,10 @@ class ConfigHandler(BaseRequestHandler):
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
 
-        # qualities
+    @staticmethod
+    def data_qualities(config_data):
+        """Qualities."""
+
         section_data = config_data['qualities']
         section_data['values'] = NonEmptyDict()
         section_data['values']['na'] = common.Quality.NA
@@ -241,7 +318,10 @@ class ConfigHandler(BaseRequestHandler):
         section_data['strings']['presets'] = common.qualityPresetStrings
         section_data['strings']['cssClass'] = common.Quality.cssClassStrings
 
-        # statuses
+    @staticmethod
+    def data_statuses(config_data):
+        """Statuses."""
+
         section_data = config_data['statuses']
         section_data['values'] = NonEmptyDict()
         section_data['values']['unset'] = common.UNSET
@@ -257,42 +337,3 @@ class ConfigHandler(BaseRequestHandler):
         section_data['values']['failed'] = common.FAILED
         section_data['values']['snatchedBest'] = common.SNATCHED_BEST
         section_data['strings'] = common.statusStrings
-
-        if not identifier:
-            return self._paginate([config_data])
-        else:
-            config_data = config_data[identifier]
-
-        if path_param:
-            if path_param not in config_data:
-                return self._bad_request('{key} is a invalid path'.format(key=path_param))
-
-            config_data = config_data[path_param]
-
-        return self._ok(data=config_data)
-
-    def patch(self, identifier, *args, **kwargs):
-        """Patch general configuration."""
-        if not identifier:
-            return self._bad_request('Config identifier not specified')
-
-        if identifier != 'main':
-            return self._not_found('Config not found')
-
-        data = json_decode(self.request.body)
-        accepted = {}
-        ignored = {}
-
-        for key, value in iter_nested_items(data):
-            patch_field = self.patches.get(key)
-            if patch_field and patch_field.patch(app, value):
-                set_nested_value(accepted, key, value)
-            else:
-                set_nested_value(ignored, key, value)
-
-        if ignored:
-            log.warning('Config patch ignored %r', ignored)
-
-        # Make sure to update the config file after everything is updated
-        app.instance.save_config()
-        self._ok(data=accepted)
