@@ -198,15 +198,16 @@ const store = new Puex({
         },
         // Mutations for websocket reconnect methods
         [SOCKET_RECONNECT](state, count) {
+            console.info(state, count);
+        },
+        [SOCKET_RECONNECT_ERROR](state) {
+            state.socket.reconnectError = true;
+
             let error = '';
             error += 'Error connecting to websocket. Please check your network connection. ';
             error += 'If you are using a reverse proxy, please take a look at our wiki for config examples.';
 
             displayNotification('notice', error);
-            console.info(state, count);
-        },
-        [SOCKET_RECONNECT_ERROR](state) {
-            state.socket.reconnectError = true;
         },
         [NOTIFICATIONS_ENABLED](state) {
             state.notifications.enabled = true;
