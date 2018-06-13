@@ -294,7 +294,12 @@ class Home(WebRoot):
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
         host = config.clean_url(host)
 
-        connection, acces_msg = sab.get_sab_access_method(host)
+        try:
+            connection, acces_msg = sab.get_sab_access_method(host)
+        except Exception as error:
+            logger.log('Error while testing SABnzbd connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
+
         if connection:
             authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
             if authed:
@@ -307,7 +312,11 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
-        connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        try:
+            connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        except Exception as error:
+            logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
         if connected_status:
             return 'Success. Connected and authenticated'
         else:
@@ -318,9 +327,14 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = torrent.get_client_class(torrent_method)
+        try:
+            client = torrent.get_client_class(torrent_method)
 
-        _, acces_msg = client(host, username, password).test_authentication()
+            _, acces_msg = client(host, username, password).test_authentication()
+        except Exception as error:
+            logger.log('Error while testing {torrent} connection: {error}'.format(
+                torrent=torrent_method or 'torrent', error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
 
         return acces_msg
 
