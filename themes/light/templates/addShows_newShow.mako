@@ -144,8 +144,8 @@ const startVue = () => {
             },
             addButtonDisabled() {
                 const { selectedShowSlug, selectedRootDir, providedInfo } = this;
-                if (providedInfo.use) return !providedInfo.showDir || providedInfo.showId === 0;
-                return !selectedRootDir.length || selectedShowSlug === '';
+                if (providedInfo.use) return providedInfo.showId === 0;
+                return !(providedInfo.showDir || selectedRootDir) || selectedShowSlug === '';
             },
             spinnerSrc() {
                 const themeSpinner = MEDUSA.config.themeSpinner;
