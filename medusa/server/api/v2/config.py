@@ -84,6 +84,7 @@ class ConfigHandler(BaseRequestHandler):
         config_sections = {
             'main',
             'qualities',
+            'statuses',
         }
 
         if identifier and identifier not in config_sections:
@@ -239,6 +240,23 @@ class ConfigHandler(BaseRequestHandler):
         section_data['strings']['anySets'] = common.Quality.combinedQualityStrings
         section_data['strings']['presets'] = common.qualityPresetStrings
         section_data['strings']['cssClass'] = common.Quality.cssClassStrings
+
+        # statuses
+        section_data = config_data['statuses']
+        section_data['values'] = NonEmptyDict()
+        section_data['values']['unset'] = common.UNSET
+        section_data['values']['unaired'] = common.UNAIRED
+        section_data['values']['snatched'] = common.SNATCHED
+        section_data['values']['wanted'] = common.WANTED
+        section_data['values']['downloaded'] = common.DOWNLOADED
+        section_data['values']['skipped'] = common.SKIPPED
+        section_data['values']['archived'] = common.ARCHIVED
+        section_data['values']['ignored'] = common.IGNORED
+        section_data['values']['snatchedProper'] = common.SNATCHED_PROPER
+        section_data['values']['subtitled'] = common.SUBTITLED
+        section_data['values']['failed'] = common.FAILED
+        section_data['values']['snatchedBest'] = common.SNATCHED_BEST
+        section_data['strings'] = common.statusStrings
 
         if not identifier:
             return self._paginate([config_data])
