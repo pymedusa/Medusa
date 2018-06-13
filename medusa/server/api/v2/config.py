@@ -174,6 +174,7 @@ class DataGenerator(object):
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['comingEpsSort'] = app.COMING_EPS_SORT
+        section_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['datePreset'] = app.DATE_PRESET
         section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
         section_data['themeName'] = app.THEME_NAME
