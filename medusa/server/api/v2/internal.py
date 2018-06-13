@@ -205,8 +205,13 @@ class InternalHandler(BaseRequestHandler):
                 except IndexerException as error:
                     log.info('Error searching for show: {error}', {'error': error})
 
-        # Get possible show ids
-        all_show_ids = [(show.indexer, show.series_id) for show in app.showList]
+        # Get all possible show ids
+        all_show_ids = {}
+        for show in app.showList:
+            for external in show.externals:
+                indexer_id = reverse_mappings.get(external)
+                show_id = show.externals[external]
+                all_show_ids.setdefault(indexer_id, []).append(show_id)
 
         for indexer, shows in iteritems(results):
             indexer_api = indexerApi(indexer)
@@ -221,7 +226,7 @@ class InternalHandler(BaseRequestHandler):
                     show['firstaired'] or 'N/A',
                     show.get('network', '').encode('utf-8') or 'N/A',
                     sanitize_filename(show['seriesname']).encode('utf-8'),
-                    (indexer, show_id) in all_show_ids and (indexer, show_id)
+                    show_id in all_show_ids.get(indexer, []) and (indexer, show_id)
                 ])
 
         language_id = indexerApi().config['langabbv_to_id'][language]
