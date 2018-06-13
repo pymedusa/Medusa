@@ -117,6 +117,7 @@
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
+        <script src="js/lib/vue-js-toggle-button.js"></script>
         <script src="js/lib/puex.js"></script>
         <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
         <script src="js/notifications.js"></script>
