@@ -11,9 +11,6 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-## <script src="js/lib/frisbee@2.0.4.min.js"></script>
-## <script src="js/lib/vue-frisbee.min.js"></script>
-## <script src="js/vue-submit-form.js"></script>
 <%
     valid_indexers = {
         '0': {
@@ -420,7 +417,7 @@ const startVue = () => {
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText">Adding show <b v-html="showName"></b> {{showPathPreposition}} <b v-html="showPath"></b></div>
-            <br />
+            <br>
             <form id="addShowForm" ref="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
@@ -430,7 +427,7 @@ const startVue = () => {
                             <app-link :href="indexers[providedInfo.indexerId].showUrl + providedInfo.showId.toString()">
                                 <b>{{ providedInfo.showName }}</b>
                             </app-link>
-                            <br />
+                            <br>
                             Show indexer:
                             <b>{{ indexers[providedInfo.indexerId].name }}</b>
                             <img height="16" width="16" :src="'images/' + indexers[providedInfo.indexerId].icon" />
@@ -455,7 +452,7 @@ const startVue = () => {
                         <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers" />
 
                         <p style="padding: 20px 0;">
-                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br />
+                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
                             This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
                         </p>
 
@@ -510,8 +507,8 @@ const startVue = () => {
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Pick the parent folder</legend>
                     <div v-if="providedInfo.showDir" class="stepDiv">
-                        Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br />
-                        <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br />
+                        Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
+                        <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br>
                     </div>
                     <div v-else class="stepDiv">
                         <root-dirs @update:root-dirs="rootDirsUpdated"></root-dirs>
@@ -524,7 +521,7 @@ const startVue = () => {
                     </div>
                 </fieldset>
             </form>
-            <br />
+            <br>
             <div style="width: 100%; text-align: center;">
                 <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled" />
                 <input v-if="otherShows.length !== 0" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show" />
