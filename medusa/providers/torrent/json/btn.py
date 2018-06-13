@@ -183,7 +183,12 @@ class BTNProvider(TorrentProvider):
             if title:
                 title = title.replace(' ', '.')
 
-        url = parsed_json.get('DownloadURL').replace('\\/', '/')
+        url = parsed_json.get('DownloadURL')
+        if not url:
+            log.debug('Download URL is missing from response for release "{0}"', title)
+        else:
+            url = url.replace('\\/', '/')
+
         return title, url
 
     def _search_params(self, ep_obj, mode, season_numbering=None):

@@ -27,7 +27,7 @@ class BJShareProvider(TorrentProvider):
         super(BJShareProvider, self).__init__('BJ-Share')
 
         # URLs
-        self.url = 'https://bj-share.me'
+        self.url = 'https://bj-share.info'
         self.urls = {
             'search': urljoin(self.url, 'torrents.php')
         }
