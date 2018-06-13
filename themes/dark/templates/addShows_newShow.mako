@@ -65,15 +65,15 @@ const startVue = () => {
                 // Provided info
                 providedInfo: {
                     use: ${json.dumps(use_provided_info)},
-                    seriesId: ${provided_indexer_id},
-                    seriesName: ${json.dumps(provided_indexer_name)},
-                    seriesDir: ${json.dumps(provided_show_dir)},
+                    showId: ${provided_indexer_id},
+                    showName: ${json.dumps(provided_indexer_name)},
+                    showDir: ${json.dumps(provided_show_dir)},
                     indexerId: ${provided_indexer},
                     indexerLanguage: 'en',
                 },
 
                 selectedRootDir: '',
-                seriesIdentifier: ''
+                selectedShowSlug: ''
             };
         },
         mounted() {
@@ -86,8 +86,8 @@ const startVue = () => {
 
                 this.updateBlackWhiteList();
                 const { providedInfo } = this;
-                const { use, seriesId, seriesDir } = providedInfo;
-                if (use && seriesId !== 0 && seriesDir) {
+                const { use, showId, showDir } = providedInfo;
+                if (use && showId !== 0 && showDir) {
                     goToStep(3);
                 }
 
@@ -131,24 +131,24 @@ const startVue = () => {
             });
         },
         computed: {
-            selectedSeries() {
-                const { searchResults, seriesIdentifier } = this;
-                if (searchResults.length === 0 || !seriesIdentifier) return null;
-                return searchResults.find(s => s.identifier === seriesIdentifier);
+            selectedShow() {
+                const { searchResults, selectedShowSlug } = this;
+                if (searchResults.length === 0 || !selectedShowSlug) return null;
+                return searchResults.find(s => s.slug === selectedShowSlug);
             },
             showName() {
-                const { providedInfo, selectedSeries } = this;
+                const { providedInfo, selectedShow } = this;
                 // If we provided a show, use that
-                if (providedInfo.use && providedInfo.seriesName) return providedInfo.seriesName;
+                if (providedInfo.use && providedInfo.showName) return providedInfo.showName;
                 // If they've picked a radio button then use that
-                if (selectedSeries !== null) return selectedSeries.seriesName;
+                if (selectedShow !== null) return selectedShow.showName;
                 // Not selected / not searched
                 return '';
             },
             addButtonDisabled() {
-                const { seriesIdentifier, selectedRootDir, providedInfo } = this;
-                if (providedInfo.use) return !providedInfo.seriesDir || providedInfo.seriesId === 0;
-                return !selectedRootDir.length || seriesIdentifier === '';
+                const { selectedShowSlug, selectedRootDir, providedInfo } = this;
+                if (providedInfo.use) return !providedInfo.showDir || providedInfo.showId === 0;
+                return !selectedRootDir.length || selectedShowSlug === '';
             },
             spinnerSrc() {
                 const themeSpinner = MEDUSA.config.themeSpinner;
@@ -156,7 +156,7 @@ const startVue = () => {
                 return 'images/loading32' + themeSpinner + '.gif';
             },
             showPath() {
-                const { selectedRootDir, providedInfo, selectedSeries } = this;
+                const { selectedRootDir, providedInfo, selectedShow } = this;
 
                 const pathSep = path => {
                     if (path.indexOf('\\') > -1) return '\\';
@@ -166,8 +166,8 @@ const startVue = () => {
 
                 let showPath = 'unknown dir';
                 // If we provided a show path, use that
-                if (providedInfo.seriesDir) {
-                    showPath = providedInfo.seriesDir;
+                if (providedInfo.showDir) {
+                    showPath = providedInfo.showDir;
                     const sepChar = pathSep(showPath);
                     if (showPath.slice(-1) !== sepChar) {
                         showPath += sepChar;
@@ -180,13 +180,13 @@ const startVue = () => {
                         showPath += sepChar;
                     }
                     // If we have a show selected, use the sanitized name
-                    const dirName = selectedSeries ? selectedSeries.sanitizedName : '??';
+                    const dirName = selectedShow ? selectedShow.sanitizedName : '??';
                     showPath += '<i>' + dirName + '</i>' + sepChar;
                 }
                 return showPath;
             },
             showPathPreposition() {
-                return this.providedInfo.seriesDir ? 'from' : 'into';
+                return this.providedInfo.showDir ? 'from' : 'into';
             }
         },
         methods: {
@@ -283,7 +283,7 @@ const startVue = () => {
                 currentSearch.indexerName = indexerName;
                 currentSearch.languageName = indexerLanguageName;
 
-                this.seriesIdentifier = '';
+                this.selectedShowSlug = '';
                 this.searchResults = [];
 
                 const config = {
@@ -335,21 +335,22 @@ const startVue = () => {
                             indexerName,
                             indexerId,
                             indexerShowUrl,
-                            seriesId,
-                            seriesName,
+                            showId,
+                            showName,
                             premiereDate,
                             network,
                             sanitizedName
                         ] = result;
 
-                        identifier = [indexers[indexerId].identifier, seriesId].join('')
+                        slug = [indexers[indexerId].identifier, showId].join('')
 
-                        // Append seriesId to indexer show url
-                        indexerShowUrl += seriesId;
+                        // Append showId to indexer show url
+                        indexerShowUrl += showId;
+                        // TheTVDB.com no longer supports that feature
                         // For now only add the languageId id to the tvdb url, as the others might have different routes.
-                        if (languageId && languageId !== '' && indexerId === 1) {
+                        /* if (languageId && languageId !== '' && indexerId === 1) {
                             indexerShowUrl += '&lid=' + languageId
-                        }
+                        } */
 
                         // Discard 'N/A' and '1900-01-01'
                         const filter = string => ['N/A', '1900-01-01'].includes(string) ? '' : string;
@@ -359,14 +360,14 @@ const startVue = () => {
                         indexerIcon = 'images/' + indexers[indexerId].icon;
 
                         return {
-                            identifier,
+                            slug,
                             whichSeries,
                             indexerName,
                             indexerId,
                             indexerShowUrl,
                             indexerIcon,
-                            seriesId,
-                            seriesName,
+                            showId,
+                            showName,
                             premiereDate,
                             network,
                             sanitizedName
@@ -375,7 +376,7 @@ const startVue = () => {
 
                 if (this.searchResults.length !== 0) {
                     // Select the first result
-                    this.seriesIdentifier = this.searchResults[0].identifier;
+                    this.selectedShowSlug = this.searchResults[0].identifier;
                 }
 
                 this.searchStatus = '';
@@ -409,9 +410,9 @@ const startVue = () => {
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div v-if="providedInfo.use" class="stepDiv">
                         Show retrieved from existing metadata:
-                        <span v-if="providedInfo.indexerId !== 0 && providedInfo.seriesId !== 0">
-                            <app-link :href="indexers[providedInfo.indexerId].showUrl + providedInfo.seriesId.toString()">
-                                <b>{{ providedInfo.seriesName }}</b>
+                        <span v-if="providedInfo.indexerId !== 0 && providedInfo.showId !== 0">
+                            <app-link :href="indexers[providedInfo.indexerId].showUrl + providedInfo.showId.toString()">
+                                <b>{{ providedInfo.showName }}</b>
                             </app-link>
                             <br />
                             Show indexer:
@@ -419,10 +420,10 @@ const startVue = () => {
                             <img height="16" width="16" :src="'images/' + indexers[providedInfo.indexerId].icon" />
                         </span>
                         <span v-else>
-                            <b>{{ providedInfo.seriesName }}</b>
+                            <b>{{ providedInfo.showName }}</b>
                         </span>
                         <input type="hidden" name="indexer_lang" :value="providedInfo.indexerLanguage" />
-                        <input type="hidden" name="whichSeries" :value="providedInfo.seriesId" />
+                        <input type="hidden" name="whichSeries" :value="providedInfo.showId" />
                         <input type="hidden" name="providedIndexer" :value="providedInfo.indexerId" />
                     </div>
                     <div v-else class="stepDiv">
@@ -455,7 +456,7 @@ const startVue = () => {
                                 <thead>
                                     <tr>
                                         ## @TODO: Remove the need for the whichSeries value
-                                        <th><input v-if="selectedSeries !== null" type="hidden" name="whichSeries" :value="selectedSeries.whichSeries" /></th>
+                                        <th><input v-if="selectedShow !== null" type="hidden" name="whichSeries" :value="selectedShow.whichSeries" /></th>
                                         <th>Show Name</th>
                                         <th class="premiere">Premiere</th>
                                         <th class="network">Network</th>
@@ -463,13 +464,13 @@ const startVue = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="result in searchResults" @click="seriesIdentifier = result.identifier" :class="{ selected: seriesIdentifier === result.identifier }">
-                                        <td style="text-align: center; vertical-align: middle;">
-                                            <input v-model="seriesIdentifier" type="radio" :value="result.identifier" />
+                                    <tr v-for="result in searchResults" @click="selectedShowSlug = result.slug" :class="{ selected: selectedShowSlug === result.slug }">
+                                        <td class="search-result">
+                                            <input v-model="selectedShowSlug" type="radio" :value="result.slug" />
                                         </td>
                                         <td>
                                             <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                <b>{{ result.seriesName }}</b>
+                                                <b>{{ result.showName }}</b>
                                             </app-link>
                                         </td>
                                         <td class="premiere">{{ result.premiereDate }}</td>
@@ -489,9 +490,9 @@ const startVue = () => {
                 </fieldset>
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Pick the parent folder</legend>
-                    <div v-if="providedInfo.seriesDir" class="stepDiv">
-                        Pre-chosen Destination Folder: <b>{{ providedInfo.seriesDir }}</b><br />
-                        <input type="hidden" name="fullShowPath" :value="providedInfo.seriesDir" /><br />
+                    <div v-if="providedInfo.showDir" class="stepDiv">
+                        Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br />
+                        <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br />
                     </div>
                     <div v-else class="stepDiv">
                         <root-dirs @update:root-dirs="rootDirsUpdated"></root-dirs>

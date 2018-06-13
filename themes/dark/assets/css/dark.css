@@ -264,13 +264,13 @@ table.search-results th {
     background-color: rgb(95, 95, 95);
 }
 
+table.search-results tbody tr:hover {
+    background-color: rgb(95, 95, 95);
+}
+
 table.search-results tbody tr.selected,
 table.search-results tbody tr.selected:hover {
     background-color: rgb(72, 84, 93);
-}
-
-table.search-results tbody tr:hover {
-    background-color: rgb(95, 95, 95);
 }
 
 /* =======================================================================
