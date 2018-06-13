@@ -244,11 +244,33 @@ const store = new Puex({
             });
         },
         getShows(store, shows) {
-            const { getShow } = this;
-            return shows.forEach(show => getShow(show));
+            const { dispatch } = store;
+
+            // If no shows are provided get all of them
+            if (!shows) {
+                return api.get('/series?limit=1000').then(res => {
+                    const shows = res.data;
+                    return shows.forEach(show => {
+                        store.commit(ADD_SHOW, show);
+                    });
+                });
+            }
+
+            return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
             return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
+        },
+        setLayout(store, { page, layout }) {
+            const { dispatch } = store;
+
+            return api.patch('config/main', {
+                layout: {
+                    [page]: layout
+                }
+            }).then(setTimeout(() => {
+                dispatch('getConfig');
+            }, 500));
         }
     },
     // @TODO Add logging here
