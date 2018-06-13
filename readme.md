@@ -11,10 +11,10 @@
   <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Percentage of issues still open">
     <img src="http://isitmaintained.com/badge/open/pymedusa/Medusa.svg" alt="Percentage of issues still open"/>
   </a>
+  <br>
   <a href="https://codebeat.co/projects/github-com-pymedusa-medusa-develop" title="">
     <img src="https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0" alt="codebeat badge"/>
   </a>
-  <br>
   <a href="https://github.com/sindresorhus/xo" title="">
     <img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="XO code style"/>
   </a>
