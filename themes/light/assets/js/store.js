@@ -270,6 +270,8 @@ const store = new Puex({
                 }
             }).then(setTimeout(() => {
                 dispatch('getConfig');
+                // For now we reload the page since the layouts use python still
+                location.reload();
             }, 500));
         }
     },
