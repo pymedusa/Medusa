@@ -168,7 +168,6 @@ class DataGenerator(object):
     @staticmethod
     def data_main(config_data):
         """Main."""
-
         section_data = config_data['main']
         section_data['anonRedirect'] = app.ANON_REDIRECT
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -277,7 +276,6 @@ class DataGenerator(object):
     @staticmethod
     def data_qualities(config_data):
         """Qualities."""
-
         section_data = config_data['qualities']
         section_data['values'] = NonEmptyDict()
         section_data['values']['na'] = common.Quality.NA
@@ -322,7 +320,6 @@ class DataGenerator(object):
     @staticmethod
     def data_statuses(config_data):
         """Statuses."""
-
         section_data = config_data['statuses']
         section_data['values'] = NonEmptyDict()
         section_data['values']['unset'] = common.UNSET
