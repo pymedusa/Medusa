@@ -407,24 +407,6 @@ inc_bottom.mako
 }
 
 /* =======================================================================
-inc_rootDirs.mako
-========================================================================== */
-.rootdir-selectbox,
-.rootdir-selectbox #rootDirs,
-.rootdir-controls {
-    width: 100%;
-    max-width: 430px;
-}
-
-.rootdir-selectbox {
-    padding: 0 0 5px;
-}
-
-.rootdir-controls {
-    text-align: center;
-}
-
-/* =======================================================================
 history.mako
 ========================================================================== */
 .layout-controls {
@@ -3398,7 +3380,8 @@ pre {
 input sizing (for config pages)
 ========================================================================== */
 
-#config select {
+/* Don't style root-dirs select */
+#config select:not([size]) {
     width: auto;
     display: inline;
 }

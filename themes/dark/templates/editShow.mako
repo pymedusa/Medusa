@@ -153,7 +153,7 @@ const startVue = () => {
                 const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
                 const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
-                return allowed | preferred << 16;
+                return (allowed | preferred << 16) >>> 0;  // Unsigned int
             },
             saveButton() {
                 return this.saving === false ? 'Save Changes' : 'Saving...';
@@ -195,7 +195,7 @@ const startVue = () => {
                             <div class="col-sm-10 content">
                                 <input type="hidden" name="indexername" id="form-indexername" :value="indexerName"/>
                                 <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
-                                <file-browser name="location" ref="locationBrowser" id="location" title="Select Show Location" :initial-dir="series.config.location" @update:location="series.config.location = $event"/>
+                                <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
                             </div>
                         </div>
 
