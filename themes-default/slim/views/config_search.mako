@@ -224,7 +224,7 @@ const startVue = () => {
             async testNzbget() {
                 const { nzb } = this;
                 const { nzbget } = nzb;
-                const { host, username, password } = nzbget;
+                const { host, username, password, useHttps } = nzbget;
 
                 this.nzb.nzbget.testStatus = MEDUSA.config.loading;
 
@@ -232,7 +232,7 @@ const startVue = () => {
                     host,
                     username,
                     password,
-                    user_https: useHttps
+                    use_https: useHttps
                 };
                 const resp = await apiRoute.get('home/testNZBget', { params });
 
@@ -241,7 +241,7 @@ const startVue = () => {
             async testSabnzbd() {
                 const { nzb } = this;
                 const { sabnzbd } = nzb;
-                const { host, username, password, apiKey } = nzbget;
+                const { host, username, password, apiKey } = sabnzbd;
 
                 this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
@@ -670,7 +670,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
-                                <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
+                                <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
                             <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
@@ -753,14 +753,14 @@ const startVue = () => {
                                         <span class="component-title">NZBget priority</span>
                                         <span class="component-desc">
                                             <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
-                                                <option v-for="(title, value) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
+                                                <option v-for="(value, title) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
                                             </select>
                                             <span>priority for daily snatches (no backlog)</span>
                                         </span>
                                     </label>
                                 </div>
                                 <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
-                                <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div><!-- /nzb.enabled //-->
                         </div>
