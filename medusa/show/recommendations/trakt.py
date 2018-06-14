@@ -86,9 +86,9 @@ class TraktPopular(object):
         else:
             rec_show.cache_image('', default=use_default)
 
-        # As the method below requires allot of resources, i've only enabled it when
+        # As the method below requires a lot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
-        # but alternative is allot of resource used
+        # but alternative is a lot of resource used
         if 'jp' in [series['show']['country'], series['show']['language']]:
             rec_show.flag_as_anime(series['show']['ids']['tvdb'])
 
