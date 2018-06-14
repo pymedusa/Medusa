@@ -93,7 +93,7 @@ class ConfigHandler(BaseRequestHandler):
             for section in config_sections:
                 config_data[section] = DataGenerator.get_data(section)
 
-            return self._paginate([config_data])
+            return self._ok(data=config_data)
 
         config_data = DataGenerator.get_data(identifier)
 
