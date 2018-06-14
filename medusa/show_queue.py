@@ -56,7 +56,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerError,
     IndexerException,
-    IndexerShowAllreadyInLibrary,
+    IndexerShowAlreadyInLibrary,
     IndexerShowIncomplete,
     IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
@@ -439,7 +439,7 @@ class QueueItemAdd(ShowQueueItem):
             # Check if we can already find this show in our current showList.
             try:
                 check_existing_shows(s, self.indexer)
-            except IndexerShowAllreadyInLibrary as error:
+            except IndexerShowAlreadyInLibrary as error:
                 log.warning(
                     'Could not add the show {series}, as it already is in your library.'
                     ' Error: {error}',
