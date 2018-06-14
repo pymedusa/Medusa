@@ -287,8 +287,8 @@ class DataGenerator(object):
         section_data['presets']['hd720p'] = common.HD720p
         section_data['presets']['hd1080p'] = common.HD1080p
         section_data['presets']['uhd'] = common.UHD
-        section_data['presets']['uhd_4k'] = common.UHD_4K
-        section_data['presets']['uhd_8k'] = common.UHD_8K
+        section_data['presets']['uhd4k'] = common.UHD_4K
+        section_data['presets']['uhd8k'] = common.UHD_8K
 
         section_data['strings'] = NonEmptyDict()
         section_data['strings']['values'] = common.Quality.qualityStrings
