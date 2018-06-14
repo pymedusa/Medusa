@@ -82,12 +82,7 @@ class ConfigHandler(BaseRequestHandler):
         :param path_param:
         :type path_param: str
         """
-        # Get the available sections from the DataGenerator class
-        config_sections = [
-            name[5:]
-            for (name, function) in inspect.getmembers(DataGenerator, predicate=inspect.isfunction)
-            if name.startswith('data_')
-        ]
+        config_sections = DataGenerator.sections()
 
         if identifier and identifier not in config_sections:
             return self._not_found('Config not found')
@@ -96,11 +91,11 @@ class ConfigHandler(BaseRequestHandler):
             config_data = NonEmptyDict()
 
             for section in config_sections:
-                config_data[section] = getattr(DataGenerator, 'data_' + section)()
+                config_data[section] = DataGenerator.get_data(section)
 
             return self._paginate([config_data])
 
-        config_data = getattr(DataGenerator, 'data_' + identifier)()
+        config_data = DataGenerator.get_data(identifier)
 
         if path_param:
             if path_param not in config_data:
@@ -139,6 +134,20 @@ class ConfigHandler(BaseRequestHandler):
 
 class DataGenerator(object):
     """Generate the requested config data on demand."""
+
+    @classmethod
+    def sections(cls):
+        """Get the available section names."""
+        return [
+            name[5:]
+            for (name, function) in inspect.getmembers(cls, predicate=inspect.isfunction)
+            if name.startswith('data_')
+        ]
+
+    @classmethod
+    def get_data(cls, section):
+        """Return the requested section data."""
+        return getattr(cls, 'data_' + section)()
 
     @staticmethod
     def data_main():
