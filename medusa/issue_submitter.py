@@ -112,6 +112,9 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
+        log.debug('Searching for issues similar to:\n{titles}', {
+            'titles': '\n'.join([line.issue_title for line in loglines])
+        })
         for issue in issues:
             if hasattr(issue, 'pull_request') and issue.pull_request:
                 continue
@@ -121,19 +124,24 @@ class IssueSubmitter(object):
 
             for logline in loglines:
                 log_title = logline.issue_title
-                log.debug('Searching for issues similar to: {0}', log_title)
 
                 # Apply diff ratio overrides on first-matched basis, default = 0.9
                 diff_ratio = next((override[1] for override in cls.TITLE_DIFF_RATIO_OVERRIDES
                                    if override[0] in log_title.lower()), 0.9)
 
                 if cls.similar(log_title, issue_title, diff_ratio):
+                    log.debug(
+                        'Found issue #{number} ({issue})'
+                        ' to be similar ({ratio:.0%}}) to {log}',
+                        {'number': issue.number, 'issue': issue_title, 'ratio': diff_ratio,
+                         'log': log_title}
+                    )
                     results[logline.key] = issue
 
             if len(results) >= len(loglines):
                 break
 
-        log.debug('Found {0} similar issues.', len(results))
+        log.debug('Found {0} similar issues out of {1} log lines.', len(results), len(loglines))
 
         return results
 
