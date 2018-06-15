@@ -23,7 +23,7 @@ const mutationTypes = {
     SOCKET_RECONNECT_ERROR: 'SOCKET_RECONNECT_ERROR',
     NOTIFICATIONS_ENABLED: '🔔 Notifications Enabled',
     NOTIFICATIONS_DISABLED: '🔔 Notifications Disabled',
-    ADD_CONFIG: '⚙️ Global config added to store',
+    ADD_CONFIG: '⚙️ Config added to store',
     ADD_SHOW: '📺 Show added to store'
 };
 
@@ -242,7 +242,7 @@ const store = new Puex({
     actions: {
         getConfig(context, section) {
             return api.get('/config/' + (section || '')).then(res => {
-                if (!section) {
+                if (section) {
                     const config = res.data;
                     return store.commit(ADD_CONFIG, { section, config });
                 }
