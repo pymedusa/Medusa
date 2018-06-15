@@ -1,5 +1,5 @@
 <script type="text/x-template" id="asset-template">
-    <img v-if="!link" :src="src" :class="cls">
+    <img v-if="!link" :src="src" :class="cls" @error="error = true">
     <app-link v-else :href="href">
         <img :src="src" :class="cls" @error="error = true">
     </app-link>
