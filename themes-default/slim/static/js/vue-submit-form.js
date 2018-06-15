@@ -21,7 +21,7 @@ window.vueSubmitForm = async function(formId) {
                     window.location.href = base + redirect;
                     return;
                 }
-            } catch (e) {
+            } catch (err) {
                 // Ignore
             }
 

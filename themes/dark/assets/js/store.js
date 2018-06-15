@@ -252,17 +252,37 @@ const store = new Puex({
                 });
             });
         },
-        getShow(store, { indexer, id }) {
+        getShow(context, { indexer, id }) {
             return api.get('/series/' + indexer + id).then(res => {
                 store.commit(ADD_SHOW, res.data);
             });
         },
-        getShows(store, shows) {
-            const { getShow } = this;
-            return shows.forEach(show => getShow(show));
+        getShows(context, shows) {
+            const { dispatch } = store;
+
+            // If no shows are provided get all of them
+            if (!shows) {
+                return api.get('/series?limit=1000').then(res => {
+                    const shows = res.data;
+                    return shows.forEach(show => {
+                        store.commit(ADD_SHOW, show);
+                    });
+                });
+            }
+
+            return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
             return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
+        },
+        setLayout(context, { page, layout }) {
+            return api.patch('config/main', {
+                layout: {
+                    [page]: layout
+                }
+            // }).then(setTimeout(() => dispatch('getConfig'), 500));
+            // For now we reload the page since the layouts use python still
+            }).then(location.reload());
         }
     },
     // @TODO Add logging here
