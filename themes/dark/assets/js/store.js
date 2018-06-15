@@ -216,8 +216,13 @@ const store = new Puex({
         [NOTIFICATIONS_DISABLED](state) {
             state.notifications.enabled = false;
         },
-        [ADD_CONFIG](state, config) {
-            state.config = config;
+        [ADD_CONFIG](state, { section, config }) {
+            if (section === 'main') {
+                state.config = config;
+            }
+            if (['qualities', 'statuses'].includes(section)) {
+                state[section] = config;
+            }
         },
         [ADD_SHOW](state, show) {
             const { shows } = state;
@@ -233,9 +238,16 @@ const store = new Puex({
     // No actions should write to the store
     // Please use store.commit to fire off a mutation that'll update the store
     actions: {
-        getConfig(store) {
-            return api.get('/config/main').then(res => {
-                store.commit(ADD_CONFIG, res.data);
+        getConfig(context, section) {
+            return api.get('/config/' + (section || '')).then(res => {
+                if (!section) {
+                    const config = res.data;
+                    return store.commit(ADD_CONFIG, { section, config });
+                }
+                Object.keys(res.data).forEach(section => {
+                    const config = res.data[section];
+                    store.commit(ADD_CONFIG, { section, config });
+                });
             });
         },
         getShow(store, { indexer, id }) {
