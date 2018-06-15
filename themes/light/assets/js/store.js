@@ -23,7 +23,7 @@ const mutationTypes = {
     SOCKET_RECONNECT_ERROR: 'SOCKET_RECONNECT_ERROR',
     NOTIFICATIONS_ENABLED: '🔔 Notifications Enabled',
     NOTIFICATIONS_DISABLED: '🔔 Notifications Disabled',
-    ADD_CONFIG: '⚙️ Global config added to store',
+    ADD_CONFIG: '⚙️ Config added to store',
     ADD_SHOW: '📺 Show added to store'
 };
 
@@ -62,6 +62,8 @@ const store = new Puex({
         notifications: {
             enabled: true
         },
+        qualities: {},
+        statuses: {},
         // Main config
         config: {
             wikiUrl: null,
@@ -216,8 +218,13 @@ const store = new Puex({
         [NOTIFICATIONS_DISABLED](state) {
             state.notifications.enabled = false;
         },
-        [ADD_CONFIG](state, config) {
-            state.config = config;
+        [ADD_CONFIG](state, { section, config }) {
+            if (section === 'main') {
+                state.config = config;
+            }
+            if (['qualities', 'statuses'].includes(section)) {
+                state[section] = config;
+            }
         },
         [ADD_SHOW](state, show) {
             const { shows } = state;
@@ -233,9 +240,16 @@ const store = new Puex({
     // No actions should write to the store
     // Please use store.commit to fire off a mutation that'll update the store
     actions: {
-        getConfig() {
-            return api.get('/config/main').then(res => {
-                store.commit(ADD_CONFIG, res.data);
+        getConfig(context, section) {
+            return api.get('/config/' + (section || '')).then(res => {
+                if (section) {
+                    const config = res.data;
+                    return store.commit(ADD_CONFIG, { section, config });
+                }
+                Object.keys(res.data).forEach(section => {
+                    const config = res.data[section];
+                    store.commit(ADD_CONFIG, { section, config });
+                });
             });
         },
         getShow(context, { indexer, id }) {

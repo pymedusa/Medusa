@@ -28,6 +28,7 @@ def config(monkeypatch, app_config):
     config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
     config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
+    config_data['comingEpsDisplayPaused'] = app.COMING_EPS_DISPLAY_PAUSED
     config_data['datePreset'] = app.DATE_PRESET
     config_data['fuzzyDating'] = app.FUZZY_DATING
     config_data['themeName'] = app.THEME_NAME
