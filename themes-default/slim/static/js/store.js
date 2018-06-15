@@ -62,6 +62,8 @@ const store = new Puex({
         notifications: {
             enabled: true
         },
+        qualities: {},
+        statuses: {},
         // Main config
         config: {
             wikiUrl: null,
