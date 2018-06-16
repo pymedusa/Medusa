@@ -133,15 +133,6 @@ const startVue = () => {
                 if (searchResults.length === 0 || !selectedShowSlug) return null;
                 return searchResults.find(s => s.slug === selectedShowSlug);
             },
-            showName() {
-                const { providedInfo, selectedShow } = this;
-                // If we provided a show, use that
-                if (providedInfo.use && providedInfo.showName) return providedInfo.showName;
-                // If they've picked a radio button then use that
-                if (selectedShow !== null) return selectedShow.showName;
-                // Not selected / not searched
-                return '';
-            },
             addButtonDisabled() {
                 const { selectedShowSlug, selectedRootDir, providedInfo } = this;
                 if (providedInfo.use) return providedInfo.showId === 0;
@@ -151,10 +142,14 @@ const startVue = () => {
                 const { otherShows, providedInfo } = this;
                 return otherShows.length !== 0 || providedInfo.use || providedInfo.showDir;
             },
-            spinnerSrc() {
-                const themeSpinner = MEDUSA.config.themeSpinner;
-                if (themeSpinner === undefined) return '';
-                return 'images/loading32' + themeSpinner + '.gif';
+            showName() {
+                const { providedInfo, selectedShow } = this;
+                // If we provided a show, use that
+                if (providedInfo.use && providedInfo.showName) return providedInfo.showName;
+                // If they've picked a radio button then use that
+                if (selectedShow !== null) return selectedShow.showName;
+                // Not selected / not searched
+                return '';
             },
             showPath() {
                 const { selectedRootDir, providedInfo, selectedShow } = this;
@@ -188,6 +183,17 @@ const startVue = () => {
             },
             showPathPreposition() {
                 return this.providedInfo.showDir ? 'from' : 'into';
+            },
+            spinnerSrc() {
+                const themeSpinner = MEDUSA.config.themeSpinner;
+                if (themeSpinner === undefined) return '';
+                return 'images/loading32' + themeSpinner + '.gif';
+            },
+            displayStatus() {
+                const { currentSearch, firstSearch, searchStatus } = this;
+                if (currentSearch.cancel !== null) return 'searching';
+                if (!firstSearch || searchStatus !== '') return 'status';
+                return 'results';
             }
         },
         methods: {
@@ -460,14 +466,14 @@ const startVue = () => {
                             This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
                         </p>
 
-                        <div v-if="currentSearch.cancel !== null">
+                        <div v-show="displayStatus === 'searching'">
                             <img :src="spinnerSrc" height="32" width="32" />
                             Searching <b>{{ currentSearch.query }}</b>
                             on {{ currentSearch.indexerName }}
                             in {{ currentSearch.languageName }}...
                         </div>
-                        <div v-else-if="!firstSearch || searchStatus !== ''" v-html="searchStatus"></div>
-                        <div v-else class="search-results">
+                        <div v-show="displayStatus === 'status'" v-html="searchStatus"></div>
+                        <div v-if="displayStatus === 'results'" class="search-results">
                             <legend class="legendStep">Search Results:</legend>
                             <table v-if="searchResults.length !== 0" class="search-results">
                                 <thead>
