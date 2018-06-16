@@ -619,7 +619,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     found_results = {}
     manual_search_results = []
     multi_results = []
-    final_results = []
+    single_results = []
 
     # build name cache for show
     name_cache.build_name_cache(series_obj)
@@ -720,13 +720,13 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
+        # Collect candidates for multi episode or season results
         candidates = (candidate for result, candidate in iteritems(found_results[cur_provider.name])
                       if result in (SEASON_RESULT, MULTI_EP_RESULT))
         candidates = list(itertools.chain(*candidates))
-
         if candidates:
             multi_candidates, single_candidates = collect_multi_condidates(
-                series_obj, episodes, down_cur_quality, candidates)
+                candidates, series_obj, episodes, down_cur_quality)
 
             multi_results.extend(multi_candidates)
 
@@ -736,27 +736,10 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 else:
                     found_results[cur_provider.name][number] = [candidate]
 
-        # of all the single ep results narrow it down to the best one for each episode
-        for cur_ep in found_results[cur_provider.name]:
-            if cur_ep in (MULTI_EP_RESULT, SEASON_RESULT):
-                continue
-
-            # if all results were rejected move on to the next episode
-            wanted_results = filter_results(found_results[cur_provider.name][cur_ep])
-            if not wanted_results:
-                continue
-
-            result_candidates = []
-            for i, result in enumerate(final_results):
-                if cur_ep in result.actual_episodes:
-                    result_candidates.append(result)
-                    del final_results[i]
-
-            best_result = pick_result(result_candidates + wanted_results)
-
-            # Skip the result if search delay is enabled for the provider.
-            if not delay_search(best_result):
-                final_results += [best_result]
+        # Collect candidates for single episode results
+        single_candidates = collect_single_candidates(found_results[cur_provider.name],
+                                                      single_results)
+        single_results.extend(single_candidates)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -765,13 +748,38 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         # If results in manual search return True, else False
         return any(manual_search_results)
     else:
-        if multi_results:
-            final_results = filter_multi_results(multi_results, final_results)
-
-        return final_results
+        return combine_results(multi_results, single_results)
 
 
-def collect_multi_condidates(series_obj, episodes, down_cur_quality, candidates):
+def collect_single_candidates(candidates, results):
+    single_candidates = []
+
+    # of all the single ep results narrow it down to the best one for each episode
+    for episode in candidates:
+        if episode in (MULTI_EP_RESULT, SEASON_RESULT):
+            continue
+
+        # if all results were rejected move on to the next episode
+        wanted_results = filter_results(candidates[episode])
+        if not wanted_results:
+            continue
+
+        result_candidates = []
+        for i, candidate in enumerate(results):
+            if episode in candidate.actual_episodes:
+                result_candidates.append(candidate)
+                del results[i]
+
+        best_result = pick_result(result_candidates + wanted_results)
+
+        # Skip the result if search delay is enabled for the provider.
+        if not delay_search(best_result):
+            single_candidates.append(best_result)
+
+    return single_candidates
+
+
+def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality):
     multi_candidates = []
     single_candidates = []
 
@@ -799,7 +807,8 @@ def collect_multi_condidates(series_obj, episodes, down_cur_quality, candidates)
         any_wanted = False
         for cur_ep_num in all_eps:
             for season in {x.season for x in episodes}:
-                if not series_obj.want_episode(season, cur_ep_num, season_quality, down_cur_quality):
+                if not series_obj.want_episode(season, cur_ep_num, season_quality,
+                                               down_cur_quality):
                     all_wanted = False
                 else:
                     any_wanted = True
@@ -815,7 +824,9 @@ def collect_multi_condidates(series_obj, episodes, down_cur_quality, candidates)
                 for season in {x.season for x in episodes}:
                     ep_objs.append(series_obj.get_episode(season, cur_ep_num))
             candidate.episodes = ep_objs
-            multi_candidates.append(candidate)
+
+            if not delay_search(candidate):
+                multi_candidates.append(candidate)
 
         elif not any_wanted:
             log.debug(u'No episodes in this season are needed at this quality, ignoring {0} {1}',
@@ -856,8 +867,8 @@ def collect_multi_condidates(series_obj, episodes, down_cur_quality, candidates)
     return multi_candidates, single_candidates
 
 
-def filter_multi_results(multi_results, single_results):
-    log.debug(u'Seeing if we want to bother with multi-episode results')
+def combine_results(multi_results, single_results):
+    log.debug(u'Combining single and multi episode results')
     result_candidates = []
 
     multi_results = sort_results(multi_results)
@@ -888,7 +899,6 @@ def filter_multi_results(multi_results, single_results):
         result_candidates.append(candidate)
 
     for multi_result in result_candidates:
-
         # see how many of the eps that this result covers aren't covered by single results
         needed_eps = []
         not_needed_eps = []
