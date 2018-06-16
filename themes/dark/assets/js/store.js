@@ -75,39 +75,87 @@ const store = new Puex({
             webRoot: null,
             namingForceFolders: null,
             cacheDir: null,
-            databaseVersion: null,
+            databaseVersion: {
+                major: null,
+                minor: null
+            },
             programDir: null,
             animeSplitHomeInTabs: null,
+            torrents: {
+                highBandwidth: null,
+                seedTime: null,
+                rpcurl: null,
+                enabled: null,
+                authType: null,
+                label: null,
+                paused: null,
+                method: null,
+                verifySSL: null
+            },
             layout: {
                 show: {
+                    specials: null,
+                    showListOrder: [],
                     allSeasons: null
-                }
+                },
+                home: null,
+                history: null,
+                schedule: null
             },
             dbPath: null,
-            nzb: null,
+            nzb: {
+                username: null,
+                priority: null,
+                password: null,
+                enabled: null
+            },
             configFile: null,
             fanartBackground: null,
             trimZero: null,
             animeSplitHome: null,
             branch: null,
             commitHash: null,
-            indexers: null,
+            indexers: {
+                config: {}
+            },
             sourceUrl: null,
-            rootDirs: null,
+            rootDirs: [],
             fanartBackgroundOpacity: null,
-            appArgs: null,
-            emby: {},
-            logDir: null,
+            appArgs: [],
+            emby: {
+                enabled: null
+            },
+            comingEpsDisplayPaused: null,
             sortArticle: null,
             timePreset: null,
-            plex: {},
+            plex: {
+                client: {
+                    host: [],
+                    enabled: null
+                },
+                server: {
+                    updateLibrary: null,
+                    host: [],
+                    enabled: null,
+                    notify: {
+                        download: null,
+                        subtitleDownload: null,
+                        snatch: null
+                    }
+                }
+            },
             subtitles: {
                 enabled: null
             },
             fuzzyDating: null,
-            backlogOverview: null,
+            backlogOverview: {
+                status: null,
+                period: null
+            },
             posterSortby: null,
-            kodi: {},
+            kodi: {
+                enabled: null
+            },
             sslVersion: null,
             pythonVersion: null,
             comingEpsSort: null,
@@ -116,7 +164,7 @@ const store = new Puex({
             subtitlesMulti: null,
             os: null,
             anonRedirect: null,
-            torrents: null
+            logDir: null
         },
         // Loaded show list
         // New shows can be added via
