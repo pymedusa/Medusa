@@ -737,13 +737,16 @@ class Home(WebRoot):
             if branch:
                 checkversion.updater.branch = branch
 
+            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
+            t = PageTemplate(rh=self, filename='restart.mako')
+            restart_rendered = t.render(title='Home', header='Restarting Medusa', topmenu='home',
+                                        controller='home', action='restart')
+
             if checkversion.updater.need_update() and checkversion.updater.update():
                 # do a hard restart
                 app.events.put(app.events.SystemEvent.RESTART)
 
-                t = PageTemplate(rh=self, filename='restart.mako')
-                return t.render(title='Home', header='Restarting Medusa', topmenu='home',
-                                controller='home', action='restart')
+                return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
                                             'Update wasn\'t successful, not restarting. Check your log for more information.')

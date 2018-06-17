@@ -145,6 +145,7 @@
                     routes
                 });
             }
+            Vue.use(window['vue-js-toggle-button'].default);
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({

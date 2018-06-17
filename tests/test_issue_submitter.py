@@ -1,6 +1,8 @@
 # coding=utf-8
 """Tests for medusa.server.web.core.error_logs.py."""
 
+import logging
+
 from github.GithubException import BadCredentialsException, RateLimitExceededException
 from medusa import app, classes
 from medusa.classes import ErrorViewer
@@ -104,26 +106,37 @@ def test_submit_github_issue__basic_validations(monkeypatch, logger, version_che
     {  # p0: Same Title
         'text1': 'My Issue Title',
         'text2': 'My Issue Title',
+        'ratio': None,
         'expected': True
     },
     {  # p1: Similar
         'text1': 'My Issue Title',
         'text2': 'My Issue Title 1',
+        'ratio': None,
         'expected': True
     },
-    {  # p2: Similar
-        'text1': 'SSLError: [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)',
-        'text2': '[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:645)',
-        'expected': True
+    {  # p2: Unsimilar with a different ratio
+        'text1': 'My Issue Title',
+        'text2': 'My Issue\'s Title',
+        'ratio': 1.0,
+        'expected': False
     },
     {  # p3: Similar
-        'text1': 'SSLError: [Errno 1] _ssl.c:504: error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
-        'text2': '[Errno 1] _ssl.c:510: error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
+        'text1': 'SSLError: [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)',
+        'text2': '[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:645)',
+        'ratio': None,
         'expected': True
     },
     {  # p4: Similar
+        'text1': 'SSLError: [Errno 1] _ssl.c:504: error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
+        'text2': '[Errno 1] _ssl.c:510: error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
+        'ratio': None,
+        'expected': True
+    },
+    {  # p5: Unsimilar
         'text1': 'Another Issue',
         'text2': 'My Issue',
+        'ratio': None,
         'expected': False
     }
 ])
@@ -131,10 +144,14 @@ def test_similar(p):
     # Given
     text1 = p['text1']
     text2 = p['text2']
+    ratio = p['ratio']
     expected = p['expected']
 
     # When
-    actual = sut.similar(text1, text2)
+    if ratio:
+        actual = sut.similar(text1, text2, ratio)
+    else:
+        actual = sut.similar(text1, text2)
 
     # Then
     assert expected == actual
@@ -157,26 +174,44 @@ def test_create_gist(logger, read_loglines, github):
     assert line in actual.files[filename]
 
 
-def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, create_github_issue):
+def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, create_github_issue, caplog):
     # Given
-    line1 = 'Some Issue Like This'
-    line2 = 'Unexpected thing happened'
-    line3 = 'Really strange this one'
-    for line in [line1, line2, line3]:
-        logger.warn(line)
+    lines = {
+        1: 'Some Issue Like This',
+        2: 'Unexpected thing happened',
+        3: 'Really strange this one',
+        4: 'Missing time zone for network: USA Network',
+        5: "AttributeError: 'NoneType' object has no attribute 'findall'",
+    }
+    for line_number in lines:
+        logger.warning(lines[line_number])
     loglines = list(read_loglines)
-    issue1 = create_github_issue('[APP SUBMITTED]: Really strange that one')
-    issue2 = create_github_issue('Some Issue like This')
-    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: [issue1, issue2])
+
+    issues = {
+        1: '[APP SUBMITTED]: Really strange that one',
+        2: 'Some Issue like This',
+        3: '[APP SUBMITTED]: Missing time zone for network: Hub Network',
+        4: '[APP SUBMITTED]: Missing time zone for network: USA Network',
+        5: "AttributeError: 'NoneType' object has no attribute 'findall'",
+        6: "AttributeError: 'NoneType' object has no attribute 'lower'",
+    }
+    for issue_number in issues:
+        issues[issue_number] = create_github_issue(issues[issue_number], number=issue_number)
+    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: issues.values())
+
     expected = {
-        line1: issue2,
-        line3: issue1,
+        lines[1]: issues[2],
+        lines[3]: issues[1],
+        lines[4]: issues[4],
+        lines[5]: issues[5],
     }
 
     # When
-    actual = sut.find_similar_issues(github_repo, list(loglines))
+    caplog.set_level(logging.DEBUG, logger='medusa')
+    actual = sut.find_similar_issues(github_repo, loglines)
 
     # Then
+    assert len(set(issues.values())) == len(issues)  # all issues should be different
     assert expected == actual
 
 
