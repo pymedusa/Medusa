@@ -303,7 +303,7 @@ class AppWebServer(threading.Thread):
 
     def log_request(self, handler):
         """
-        Writes a completed HTTP request to the logs.
+        Write a completed HTTP request to the logs.
 
         This method handles logging Tornado requests.
         """
