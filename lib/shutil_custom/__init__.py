@@ -30,7 +30,7 @@ def copyfile_custom(src, dst):
 
     fdin = os.open(src, READ_FLAGS)
     fdout = os.open(dst, WRITE_FLAGS)
-    with os.fdopen(fdin) as fin, os.fdopen(fdout) as fout:
+    with open(fdin) as fin, open(fdout) as fout:
         if _samefile(src, dst):
             raise SameFileError("`%s` and `%s` are the same file" % (src, dst))
 
