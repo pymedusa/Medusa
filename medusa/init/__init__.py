@@ -23,7 +23,7 @@ def initialize():
     _configure_mimetypes()
     _handle_old_tornado()
     _unload_system_dogpile()
-    _use_shutil_custom()
+    _patch_shutil_copyfileobj()
     _urllib3_disable_warnings()
     _strptime_workaround()
     _configure_guessit()
@@ -106,9 +106,15 @@ def _unload_system_dogpile():
         pass
 
 
-def _use_shutil_custom():
-    import shutil_custom
-    shutil.copyfile = shutil_custom.copyfile_custom
+def _patch_shutil_copyfileobj():
+    copyfileobj_orig = shutil.copyfileobj
+
+    # Improves copy performance for large files
+    def _copyfileobj(fsrc, fdst, length=10485760):
+        """Run shutil.copyfileobj with a bigger buffer."""
+        return copyfileobj_orig(fsrc, fdst, length)
+
+    shutil.copyfileobj = _copyfileobj
 
 
 def _urllib3_disable_warnings():
