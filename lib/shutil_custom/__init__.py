@@ -26,10 +26,10 @@ def copyfile_custom(src, dst):
     if _samefile(src, dst):
         raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
 
-    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
-        special_file(src)
-        special_file(dst)
+    special_file(src)
+    special_file(dst)
 
+    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
         while True:
             buf = fsrc.read(BUFFER_SIZE)
             if not buf:
