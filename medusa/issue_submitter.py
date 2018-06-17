@@ -191,6 +191,7 @@ class IssueSubmitter(object):
         except RateLimitExceededException:
             return result(self.RATE_LIMIT)
         except (GithubException, IOError) as error:
+            log.debug('Issue submitter failed with error: {!r}', error)
             # If the api return http status 404, authentication or permission issue(token right to create gists)
             if isinstance(error, UnknownObjectException):
                 return result(self.GITHUB_UNKNOWNOBJECTEXCEPTION)
