@@ -28,7 +28,9 @@ def copyfile_custom(src, dst):
             if stat.S_ISFIFO(st.st_mode):
                 raise SpecialFileError("`%s` is a named pipe" % fn)
 
-    with open(src, READ_FLAGS) as fin, open(dst, WRITE_FLAGS) as fout:
+    fdin = os.open(src, READ_FLAGS)
+    fdout = os.open(dst, WRITE_FLAGS)
+    with os.fdopen(fdin) as fin, os.fdopen(fdout) as fout:
         if _samefile(src, dst):
             raise SameFileError("`%s` and `%s` are the same file" % (src, dst))
 
