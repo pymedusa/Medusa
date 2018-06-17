@@ -112,10 +112,12 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
+        issue_count = 0  # issues is a PaginatedList, can't do len() on it
         log.debug('Searching for issues similar to:\n{titles}', {
             'titles': '\n'.join([line.issue_title for line in loglines])
         })
         for issue in issues:
+            issue_count += 1
             if hasattr(issue, 'pull_request') and issue.pull_request:
                 continue
             issue_title = issue.title
@@ -141,7 +143,8 @@ class IssueSubmitter(object):
             if len(results) >= len(loglines):
                 break
 
-        log.debug('Found {0} similar issues out of {1} log lines.', len(results), len(loglines))
+        log.debug('Found {similar} similar issues out of {logs} log lines and {issues}.',
+                  {'similar': len(results), 'logs': len(loglines), 'issues': issue_count})
 
         return results
 
