@@ -29,7 +29,7 @@ def copyfile_custom(src, dst):
         special_file(src)
         special_file(dst)
 
-        while 1:
+        while True:
             buf = fsrc.read(BUFFER_SIZE)
             if not buf:
                 break
