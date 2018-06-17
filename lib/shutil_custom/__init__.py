@@ -12,8 +12,6 @@ except AttributeError:
     O_BINARY = 0
 
 
-READ_FLAGS = os.O_RDONLY | O_BINARY
-WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | O_BINARY
 BUFFER_SIZE = 128*1024
 
 
@@ -28,9 +26,7 @@ def copyfile_custom(src, dst):
             if stat.S_ISFIFO(st.st_mode):
                 raise SpecialFileError("`%s` is a named pipe" % fn)
 
-    fdin = os.open(src, READ_FLAGS)
-    fdout = os.open(dst, WRITE_FLAGS)
-    with open(fdin) as fin, open(fdout) as fout:
+    with open(src, 'rb') as fin, open(dst, 'wb') as fout:
         if _samefile(src, dst):
             raise SameFileError("`%s` and `%s` are the same file" % (src, dst))
 
