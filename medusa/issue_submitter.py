@@ -134,7 +134,7 @@ class IssueSubmitter(object):
                 if cls.similar(log_title, issue_title, diff_ratio):
                     log.debug(
                         'Found issue #{number} ({issue})'
-                        ' to be similar ({ratio:.0%}}) to {log}',
+                        ' to be similar ({ratio:.0%}) to {log}',
                         {'number': issue.number, 'issue': issue_title, 'ratio': diff_ratio,
                          'log': log_title}
                     )
@@ -194,7 +194,7 @@ class IssueSubmitter(object):
         except RateLimitExceededException:
             return result(self.RATE_LIMIT)
         except (GithubException, IOError) as error:
-            log.debug('Issue submitter failed with error: {!r}', error)
+            log.debug('Issue submitter failed with error: {0!r}', error)
             # If the api return http status 404, authentication or permission issue(token right to create gists)
             if isinstance(error, UnknownObjectException):
                 return result(self.GITHUB_UNKNOWNOBJECTEXCEPTION)
