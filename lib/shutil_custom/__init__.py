@@ -22,10 +22,10 @@ def copyfile_custom(src, dst):
             if stat.S_ISFIFO(st.st_mode):
                 raise SpecialFileError("{!r} is a named pipe".format(fn))
 
-    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
-        if _samefile(src, dst):
-            raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
+    if _samefile(src, dst):
+        raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
 
+    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
         special_file(src)
         special_file(dst)
 
