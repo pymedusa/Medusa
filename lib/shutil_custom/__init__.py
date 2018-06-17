@@ -1,5 +1,6 @@
 import os
 import stat
+from io import open
 from shutil import SpecialFileError, _samefile
 try:
     from shutil import SameFileError
