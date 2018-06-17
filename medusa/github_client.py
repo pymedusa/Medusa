@@ -92,7 +92,7 @@ def get_github_repo(organization, repo, gh=None):
     :rtype github.Repository.Repository
     """
     try:
-        gh = gh or github.MainClass.Github(user_agent='Medusa')
+        gh = gh or github.MainClass.Github(user_agent='Medusa', per_page=100)
         return gh.get_organization(organization).get_repo(repo)
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
