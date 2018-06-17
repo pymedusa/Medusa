@@ -30,7 +30,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('@eaDir', '#recycle',)
+    IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
     def __init__(self, path, process_method=None):
 
