@@ -175,8 +175,8 @@ class Home(WebRoot):
     def show_statistics():
         main_db_con = db.DBConnection()
 
-        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
+        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
@@ -294,7 +294,12 @@ class Home(WebRoot):
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
         host = config.clean_url(host)
 
-        connection, acces_msg = sab.get_sab_access_method(host)
+        try:
+            connection, acces_msg = sab.get_sab_access_method(host)
+        except Exception as error:
+            logger.log('Error while testing SABnzbd connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
+
         if connection:
             authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
             if authed:
@@ -307,7 +312,11 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
-        connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        try:
+            connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        except Exception as error:
+            logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
         if connected_status:
             return 'Success. Connected and authenticated'
         else:
@@ -318,9 +327,14 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = torrent.get_client_class(torrent_method)
+        try:
+            client = torrent.get_client_class(torrent_method)
 
-        _, acces_msg = client(host, username, password).test_authentication()
+            _, acces_msg = client(host, username, password).test_authentication()
+        except Exception as error:
+            logger.log('Error while testing {torrent} connection: {error}'.format(
+                torrent=torrent_method or 'torrent', error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
 
         return acces_msg
 
@@ -644,14 +658,6 @@ class Home(WebRoot):
             return 'ERROR: {error}'.format(error=notifiers.email_notifier.last_err)
 
     @staticmethod
-    def testNMA(nma_api=None, nma_priority=0):
-        result = notifiers.nma_notifier.test_notify(nma_api, nma_priority)
-        if result:
-            return 'Test NMA notice sent successfully'
-        else:
-            return 'Test NMA notice failed'
-
-    @staticmethod
     def testPushalot(authorizationToken=None):
         result = notifiers.pushalot_notifier.test_notify(authorizationToken)
         if result:
@@ -731,13 +737,16 @@ class Home(WebRoot):
             if branch:
                 checkversion.updater.branch = branch
 
+            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
+            t = PageTemplate(rh=self, filename='restart.mako')
+            restart_rendered = t.render(title='Home', header='Restarting Medusa', topmenu='home',
+                                        controller='home', action='restart')
+
             if checkversion.updater.need_update() and checkversion.updater.update():
                 # do a hard restart
                 app.events.put(app.events.SystemEvent.RESTART)
 
-                t = PageTemplate(rh=self, filename='restart.mako')
-                return t.render(title='Home', header='Restarting Medusa', topmenu='home',
-                                controller='home', action='restart')
+                return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
                                             'Update wasn\'t successful, not restarting. Check your log for more information.')
@@ -936,7 +945,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
+            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
@@ -1285,19 +1294,20 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource, size '
+                b'SELECT date, action, quality, provider, resource, size '
                 b'FROM history '
                 b'WHERE indexer_id = ? '
                 b'AND showid = ? '
                 b'AND season = ? '
                 b'AND episode = ? '
-                b'AND (action LIKE \'%02\' OR action LIKE \'%04\' OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') '
+                b'AND action in (?, ?, ?, ?, ?) '
                 b'ORDER BY date DESC',
-                [indexer_id, series_id, season, episode]
+                [indexer_id, series_id, season, episode,
+                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
-                i['status'], i['quality'] = Quality.split_composite_status(i['action'])
+                i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
@@ -1376,7 +1386,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'],
+            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
                                                  manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
@@ -1656,6 +1666,7 @@ class Home(WebRoot):
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
+                        changed_location = False
                         logger.log("New location '{location}' does not exist. "
                                    "Enable setting 'Create missing show dirs'".format
                                    (location=location), logger.WARNING)
@@ -1916,11 +1927,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        # statusStrings is a custom type. Which does some "magic" itself. But we want to move away from this.
-        # FIXME: Always check status with status and quality with quality.
-        status_with_quality = status
-        status = Quality.split_composite_status(status).status
-
+        status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
             if direct:
@@ -1980,24 +1987,24 @@ class Home(WebRoot):
                             series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                    snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + Quality.DOWNLOADED
-                            and os.path.isfile(ep_obj.location)):
+                            ep_obj.status in snatched_qualities + [DOWNLOADED]
+                            or os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED'.format(
+                                   ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
-                    if status == FAILED and ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
                                         series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
-                        if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED:
+                        if ep_obj.status in [DOWNLOADED, ARCHIVED]:
                             logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
                                 series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.release_name = ''
@@ -2009,9 +2016,8 @@ class Home(WebRoot):
                             ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
-                    # We need current snatched quality to log 'quality' column in failed action in history
                     if status != FAILED:
-                        ep_obj.status = status_with_quality
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -2147,7 +2153,8 @@ class Home(WebRoot):
 
             ep_info = cur_ep.split('x')
 
-            # this is probably the worst possible way to deal with double eps but I've kinda painted myself into a corner here with this stupid database
+            # this is probably the worst possible way to deal with double eps
+            # but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
                 b'SELECT location '
                 b'FROM tv_episodes '

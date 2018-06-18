@@ -294,15 +294,6 @@ class GenericProvider(object):
         sorted_qualities = sorted(categorized_items, reverse=True)
         log.debug('Found qualities: {0}', sorted_qualities)
 
-        # move Quality.UNKNOWN to the end of the list
-        try:
-            sorted_qualities.remove(Quality.UNKNOWN)
-        except ValueError:
-            log.debug('No unknown qualities in results')
-        else:
-            sorted_qualities.append(Quality.UNKNOWN)
-            log.debug('Unknown qualities moved to end of results')
-
         # chain items sorted by quality
         sorted_items = chain.from_iterable(
             categorized_items[quality]

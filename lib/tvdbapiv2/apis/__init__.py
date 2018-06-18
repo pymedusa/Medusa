@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 # import apis into api package
 from .users_api import UsersApi

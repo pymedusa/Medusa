@@ -2,8 +2,7 @@
 
 """Base class for indexer api's."""
 
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import getpass
 import logging
@@ -11,8 +10,6 @@ import os
 import tempfile
 import time
 import warnings
-from builtins import object
-from builtins import str
 from operator import itemgetter
 
 from medusa import statistics as stats
@@ -30,7 +27,7 @@ from medusa.statistics import weights
 
 import requests
 
-from six import integer_types, itervalues, string_types, viewitems
+from six import integer_types, itervalues, string_types, text_type, viewitems
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -188,7 +185,7 @@ class BaseIndexer(object):
 
     def __repr__(self):
         """Indexer representation, returning representation of all shows indexed."""
-        return str(self.shows)
+        return text_type(self.shows)
 
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Create a new episode, creating Show(), Season() and Episode()s as required.
@@ -402,7 +399,7 @@ class BaseIndexer(object):
                 self._get_show_data(key, self.config['language'])
             return self.shows[key]
 
-        key = str(key).lower()
+        key = text_type(key).lower()
         self.config['searchterm'] = key
         selected_series = self._get_series(key)
         if isinstance(selected_series, dict):
@@ -500,7 +497,7 @@ class Show(dict):
 
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""
-        ret = self.search(str(date), 'firstaired')
+        ret = self.search(text_type(date), 'firstaired')
         if len(ret) == 0:
             raise IndexerEpisodeNotFound('Could not find any episodes that aired on {0}'.format(date))
         return ret
@@ -629,13 +626,13 @@ class Episode(dict):
         if term is None:
             raise TypeError('must supply string to search for (contents)')
 
-        term = str(term).lower()
+        term = text_type(term).lower()
         for cur_key, cur_value in viewitems(self):
-            cur_key, cur_value = str(cur_key).lower(), str(cur_value).lower()
+            cur_key, cur_value = text_type(cur_key).lower(), text_type(cur_value).lower()
             if key is not None and cur_key != key:
                 # Do not search this key
                 continue
-            if cur_value.find(str(term).lower()) > -1:
+            if cur_value.find(text_type(term).lower()) > -1:
                 return self
 
 

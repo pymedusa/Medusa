@@ -36,9 +36,8 @@ SEARCH_STATUS_SEARCHING = 'searching'
 
 def get_quality_class(ep_obj):
     """Find the quality class for the episode."""
-    _, ep_quality = Quality.split_composite_status(ep_obj.status)
-    if ep_quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_quality]
+    if ep_obj.quality in Quality.cssClassStrings:
+        quality_class = Quality.cssClassStrings[ep_obj.quality]
     else:
         quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
 
@@ -103,9 +102,10 @@ def get_episodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
-            'quality': get_quality_class(ep),
+            'quality_name': Quality.qualityStrings[ep.quality],
+            'quality_style': get_quality_class(ep),
             'overview': Overview.overviewStrings[series_obj.get_overview(
-                ep.status,
+                ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
         })
@@ -265,8 +265,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     # Check if we have the combined sql strings
     if combined_sql_q:
         sql_prepend = b"SELECT * FROM ("
-        sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality AS DECIMAL) END DESC, " \
-                     b" proper_tags DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
+        sql_append = b") ORDER BY quality DESC, proper_tags DESC, seeders DESC"
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.

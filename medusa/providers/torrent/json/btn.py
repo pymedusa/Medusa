@@ -183,7 +183,12 @@ class BTNProvider(TorrentProvider):
             if title:
                 title = title.replace(' ', '.')
 
-        url = parsed_json.get('DownloadURL').replace('\\/', '/')
+        url = parsed_json.get('DownloadURL')
+        if not url:
+            log.debug('Download URL is missing from response for release "{0}"', title)
+        else:
+            url = url.replace('\\/', '/')
+
         return title, url
 
     def _search_params(self, ep_obj, mode, season_numbering=None):
@@ -252,7 +257,7 @@ class BTNProvider(TorrentProvider):
                 log.warning('Incorrect authentication credentials.')
             elif message == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of 150 calls per hour.')
-            elif isinstance(message, tuple) and message[1] in (524, ):
+            elif isinstance(message, tuple) and message[1] in (500, 524, ):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
                             {'code': message[1], 'text': message[2]})
             else:

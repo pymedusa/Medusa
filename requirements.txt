@@ -5,6 +5,7 @@ git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a89
 configobj==5.0.6
 contextlib2==0.5.5
 dogpile.cache==0.6.5
+git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
 git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
 future==0.16.0
 futures==3.2.0
@@ -20,7 +21,6 @@ markdown2==2.3.5
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
 PyGithub==1.38
-PyNMA==1.0
 python-dateutil==2.7.1
 requests==2.18.4
 SQLAlchemy==1.2.5

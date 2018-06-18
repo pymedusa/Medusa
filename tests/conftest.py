@@ -98,7 +98,7 @@ def tvshow(create_tvshow):
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
     return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
-                            name='Episode Title', status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
+                            name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
                             release_group='SuperGroup')
 
 
@@ -128,7 +128,7 @@ def create_sub(monkeypatch):
 
 @pytest.fixture
 def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, season_folders=1,
+    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.NA, season_folders=1,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
         target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
@@ -276,12 +276,16 @@ def github_repo():
 @pytest.fixture
 def create_github_issue(monkeypatch):
     def create(title, body=None, locked=False, number=1, **kwargs):
-        target = Issue(Mock(), Mock(), dict(), True)
         raw_data = {
+            'title': title,
+            'body': body,
+            'number': number,
             'locked': locked
         }
-        _patch_object(monkeypatch, target, number=number, title=title, body=body, raw_data=raw_data)
-        return target
+        raw_data.update(kwargs)
+        # Set url to a unique value, because that's how issues are compared
+        raw_data['url'] = str(hash(tuple(raw_data.values())))
+        return Issue(Mock(), Mock(), raw_data, True)
 
     return create
 

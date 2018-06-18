@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -34,22 +33,9 @@ from medusa.helper.exceptions import ex
 
 from six import itervalues, text_type
 
+
 db_cons = {}
 db_locks = {}
-
-
-def dbFilename(filename=None, suffix=None):
-    """
-    @param filename: The sqlite database filename to use. If not specified,
-                     will be made to be application db file
-    @param suffix: The suffix to append to the filename. A '.' will be added
-                   automatically, i.e. suffix='v0' will make dbfile.db.v0
-    @return: the correct location of the database file.
-    """
-    filename = filename or app.APPLICATION_DB
-    if suffix:
-        filename = "%s.%s" % (filename, suffix)
-    return os.path.join(app.DATA_DIR, filename)
 
 
 class DBConnection(object):
@@ -63,7 +49,7 @@ class DBConnection(object):
             if self.filename not in db_cons or not db_cons[self.filename]:
                 db_locks[self.filename] = threading.Lock()
 
-                self.connection = sqlite3.connect(dbFilename(self.filename, self.suffix), 20, check_same_thread=False)
+                self.connection = sqlite3.connect(self.path, 20, check_same_thread=False)
                 self.connection.text_factory = DBConnection._unicode_text_factory
 
                 db_cons[self.filename] = self.connection
@@ -80,10 +66,26 @@ class DBConnection(object):
                 self._set_row_factory()
 
         except sqlite3.OperationalError:
-            logger.log(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)), logger.WARNING)
+            logger.log(u'Please check your database owner/permissions: {}'.format(
+                       self.path, logger.WARNING))
         except Exception as e:
             logger.log(u"DB error: " + ex(e), logger.ERROR)
             raise
+
+    @property
+    def path(self):
+        """
+        @param filename: The sqlite database filename to use. If not specified,
+                        will be made to be application db file
+        @param suffix: The suffix to append to the filename. A '.' will be added
+                    automatically, i.e. suffix='v0' will make dbfile.db.v0
+        @return: the path to the database file.
+        """
+        filename = self.filename
+        if self.suffix:
+            filename = '%s.%s' % (filename, self.suffix)
+
+        return os.path.join(app.DATA_DIR, filename)
 
     def _set_row_factory(self):
         """
@@ -452,22 +454,6 @@ def upgradeDatabase(connection, schema):
 
 def prettyName(class_name):
     return ' '.join([x.group() for x in re.finditer("([A-Z])([a-z0-9]+)", class_name)])
-
-
-def restoreDatabase(version):
-    """
-    Restores a database to a previous version (backup file of version must still exist)
-
-    :param version: Version to restore to
-    :return: True if restore succeeds, False if it fails
-    """
-    from medusa import helpers
-    logger.log(u"Restoring database before trying upgrade again")
-    if not helpers.restore_versioned_file(dbFilename(suffix='v' + str(version)), version):
-        logger.log_error_and_exit(u"Database restore failed, abort upgrading database")
-        return False
-    else:
-        return True
 
 
 def _processUpgrade(connection, upgradeClass):

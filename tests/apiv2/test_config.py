@@ -28,6 +28,7 @@ def config(monkeypatch, app_config):
     config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
     config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
+    config_data['comingEpsDisplayPaused'] = app.COMING_EPS_DISPLAY_PAUSED
     config_data['datePreset'] = app.DATE_PRESET
     config_data['fuzzyDating'] = app.FUZZY_DATING
     config_data['themeName'] = app.THEME_NAME
@@ -52,7 +53,7 @@ def config(monkeypatch, app_config):
     config_data['localUser'] = os_user
     config_data['programDir'] = app.PROG_DIR
     config_data['configFile'] = app.CONFIG_FILE
-    config_data['dbFilename'] = db.dbFilename()
+    config_data['dbPath'] = db.DBConnection().path
     config_data['cacheDir'] = app.CACHE_DIR
     config_data['logDir'] = app.LOG_DIR
     config_data['appArgs'] = app.MY_ARGS
@@ -151,7 +152,7 @@ def test_config_get(http_client, create_url, auth_headers, config):
     'locale',
     'localUser',
     'githubUrl',
-    'dbFilename',
+    'dbPath',
 ])
 def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
     # given

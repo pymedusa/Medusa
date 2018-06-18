@@ -97,12 +97,29 @@ Vue.component('select-list', {
     data() {
         return {
             lock: false,
+            unwatchProp: null,
+
             editItems: [],
             newItem: '',
             indexCounter: 0,
             csv: '',
             csvEnabled: false
         }
+    },
+    created() {
+        /**
+         * listItems property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        this.unwatchProp = this.$watch('listItems', () => {
+            this.unwatchProp();
+
+            this.lock = true;
+            this.editItems = this.sanitize(this.listItems);
+            this.$nextTick(() => this.lock = false);
+            this.csv = this.editItems.map(x => x.value).join(', ');
+        });
     },
     methods: {
         addItem: function(item) {
@@ -173,17 +190,6 @@ Vue.component('select-list', {
         }
     },
     watch: {
-        /**
-         * listItems property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
-         */
-        listItems() {
-            this.lock = true;
-            this.editItems = this.sanitize(this.listItems);
-            this.$nextTick(() => this.lock = false);
-            this.csv = this.editItems.map(x => x.value).join(', ');
-        },
         editItems: {
             handler: function() {
                 if (!this.lock) {

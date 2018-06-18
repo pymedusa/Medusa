@@ -103,7 +103,8 @@ class TVEpisode(tv.Episode):  # pylint: disable=too-many-instance-attributes
         self.scene_episode = episode
         self.scene_absolute_number = absolute_number
         self.airdate = datetime.date(2010, 3, 9)
-        self.status = Quality.composite_status(common.DOWNLOADED, common.Quality.SDTV)
+        self.status = common.DOWNLOADED
+        self.quality = common.Quality.SDTV
         self.release_name = 'Show.Name.S02E03.HDTV.x264-RLSGROUP'
         self.is_proper = True
         self.series = TVShow()
@@ -241,7 +242,8 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
     ep = TVEpisode(2, 3, 3, "Ep Name")
 
     # pylint: disable=protected-access
-    ep.status = Quality.composite_status(DOWNLOADED, Quality.HDTV)
+    ep.status = DOWNLOADED
+    ep.quality = Quality.HDTV
     ep.airdate = datetime.date(2011, 3, 9)
 
     if abd:
@@ -266,7 +268,8 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
             ep.release_name = 'Show.Name.003-004.HDTV.x264-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
-            secondEp.status = Quality.composite_status(DOWNLOADED, Quality.HDTV)
+            secondEp.status = DOWNLOADED
+            secondEp.quality = Quality.HDTV
             secondEp.release_name = ep.release_name
 
             ep.related_episodes.append(secondEp)
@@ -274,11 +277,13 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
             ep.release_name = 'Show.Name.S02E03E04E05.HDTV.x264-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
-            secondEp.status = Quality.composite_status(DOWNLOADED, Quality.HDTV)
+            secondEp.status = DOWNLOADED
+            secondEp.quality = Quality.HDTV
             secondEp.release_name = ep.release_name
 
             thirdEp = TVEpisode(2, 5, 5, "Ep Name (3)")
-            thirdEp.status = Quality.composite_status(DOWNLOADED, Quality.HDTV)
+            thirdEp.status = DOWNLOADED
+            thirdEp.quality = Quality.HDTV
             thirdEp.release_name = ep.release_name
 
             ep.related_episodes.append(secondEp)
