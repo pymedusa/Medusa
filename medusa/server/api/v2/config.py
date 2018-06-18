@@ -53,13 +53,45 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
+        'torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
+        'torrents.dir': StringField(app, 'TORRENT_DIR'),
         'torrents.enabled': BooleanField(app, 'USE_TORRENTS'),
-        'torrents.username': StringField(app, 'TORRENT_USERNAME'),
-        'torrents.password': StringField(app, 'TORRENT_PASSWORD'),
+        'torrents.highBandwidth': StringField(app, 'TORRENT_HIGH_BANDWIDTH'),
+        'torrents.host': StringField(app, 'TORRENT_HOST'),
         'torrents.label': StringField(app, 'TORRENT_LABEL'),
         'torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
-        'torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
+        'torrents.method': StringField(app, 'TORRENT_METHOD'),
+        'torrents.password': StringField(app, 'TORRENT_PASSWORD'),
         'torrents.path': BooleanField(app, 'TORRENT_PATH'),
+        'torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
+        'torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
+        'torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
+        'torrents.seedTime': StringField(app, 'TORRENT_SEED_TIME'),
+        'torrents.username': StringField(app, 'TORRENT_USERNAME'),
+        'torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
+        'nzb.enabled': BooleanField(app, 'USE_NZBS'),
+        'nzb.username': StringField(app, 'NZBGET_USERNAME'),
+        'nzb.password': StringField(app, 'NZBGET_PASSWORD'),
+        'nzb.dir': StringField(app, 'NZB_DIR'),
+        'nzb.method': StringField(app, 'NZB_METHOD'),
+        'nzb.nzbget.category': StringField(app, 'NZBGET_CATEGORY'),
+        'nzb.nzbget.categoryAnime': StringField(app, 'NZBGET_CATEGORY_ANIME'),
+        'nzb.nzbget.categoryAnimeBacklog': StringField(app, 'NZBGET_CATEGORY_ANIME_BACKLOG'),
+        'nzb.nzbget.categoryBacklog': StringField(app, 'NZBGET_CATEGORY_BACKLOG'),
+        'nzb.nzbget.host': StringField(app, 'NZBGET_HOST'),
+        'nzb.nzbget.password': StringField(app, 'NZBGET_PASSWORD'),
+        'nzb.nzbget.priority': StringField(app, 'NZBGET_PRIORITY'),
+        'nzb.nzbget.useHttps': BooleanField(app, 'NZBGET_USE_HTTPS'),
+        'nzb.nzbget.username': StringField(app, 'NZBGET_USERNAME'),
+        'nzb.sabnzbd.apiKey': StringField(app, 'SAB_APIKEY'),
+        'nzb.sabnzbd.category': StringField(app, 'SAB_CATEGORY'),
+        'nzb.sabnzbd.categoryAnime': StringField(app, 'SAB_CATEGORY_ANIME'),
+        'nzb.sabnzbd.categoryAnimeBacklog': StringField(app, 'SAB_CATEGORY_ANIME_BACKLOG'),
+        'nzb.sabnzbd.categoryBacklog': StringField(app, 'SAB_CATEGORY_BACKLOG'),
+        'nzb.sabnzbd.forced': BooleanField(app, 'SAB_FORCED'),
+        'nzb.sabnzbd.host': StringField(app, 'SAB_HOST'),
+        'nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
+        'nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
         'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
         'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
                                      default_value='banner', post_processor=layout_schedule_post_processor),
@@ -196,8 +228,10 @@ class DataGenerator(object):
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
         section_data['subtitles'] = NonEmptyDict()
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
+
         section_data['kodi'] = NonEmptyDict()
         section_data['kodi']['enabled'] = bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
+
         section_data['plex'] = NonEmptyDict()
         section_data['plex']['server'] = NonEmptyDict()
         section_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
@@ -205,44 +239,66 @@ class DataGenerator(object):
         section_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
         section_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
         section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
-
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
-        section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
+        # section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
         section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
-        section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
+        # section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
         section_data['plex']['client'] = NonEmptyDict()
         section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
         section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
-        section_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
+        # section_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
         section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
+
         section_data['emby'] = NonEmptyDict()
         section_data['emby']['enabled'] = bool(app.USE_EMBY)
+
         section_data['torrents'] = NonEmptyDict()
+        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE,
+        section_data['torrents']['dir'] = app.TORRENT_DIR,
         section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
-        section_data['torrents']['method'] = app.TORRENT_METHOD
-        section_data['torrents']['username'] = app.TORRENT_USERNAME
-        section_data['torrents']['password'] = app.TORRENT_PASSWORD
-        section_data['torrents']['label'] = app.TORRENT_LABEL
-        section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
-        section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
-        section_data['torrents']['path'] = app.TORRENT_PATH
-        section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
-        section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
         section_data['torrents']['host'] = app.TORRENT_HOST
+        section_data['torrents']['label'] = app.TORRENT_LABEL
+        section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
+        section_data['torrents']['method'] = app.TORRENT_METHOD
+        # section_data['torrents']['password'] = app.TORRENT_PASSWORD
+        section_data['torrents']['path'] = app.TORRENT_PATH
+        section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
+        section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION,
+        section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
+        section_data['torrents']['username'] = app.TORRENT_USERNAME
+        section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+
         section_data['nzb'] = NonEmptyDict()
         section_data['nzb']['enabled'] = bool(app.USE_NZBS)
         section_data['nzb']['username'] = app.NZBGET_USERNAME
-        section_data['nzb']['password'] = app.NZBGET_PASSWORD
-        # app.NZBGET_CATEGORY
-        # app.NZBGET_CATEGORY_BACKLOG
-        # app.NZBGET_CATEGORY_ANIME
-        # app.NZBGET_CATEGORY_ANIME_BACKLOG
-        section_data['nzb']['host'] = app.NZBGET_HOST
-        section_data['nzb']['priority'] = app.NZBGET_PRIORITY
+        # section_data['nzb']['password'] = app.NZBGET_PASSWORD
+        section_data['nzb']['dir'] = app.NZB_DIR
+        section_data['nzb']['method'] = app.NZB_METHOD
+        section_data['nzb']['nzbget'] = NonEmptyDict()
+        section_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
+        section_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
+        section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
+        section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
+        section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
+            # section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
+        section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
+        section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
+        section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
+
+        section_data['nzb']['sabnzbd'] = NonEmptyDict()
+        # section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
+        section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
+        section_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
+        section_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
+        section_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
+        section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
+        section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
+        # section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
+        section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
+
         section_data['layout'] = NonEmptyDict()
         section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
         section_data['layout']['history'] = app.HISTORY_LAYOUT
@@ -251,10 +307,13 @@ class DataGenerator(object):
         section_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
         section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
+
         section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
+
         section_data['backlogOverview'] = NonEmptyDict()
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
 

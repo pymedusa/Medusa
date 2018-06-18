@@ -82,14 +82,15 @@ const store = new Puex({
             programDir: null,
             animeSplitHomeInTabs: null,
             torrents: {
-                highBandwidth: null,
-                seedTime: null,
-                rpcurl: null,
-                enabled: null,
                 authType: null,
+                dir: null,
+                enabled: null,
+                highBandwidth: null,
                 label: null,
-                paused: null,
                 method: null,
+                paused: null,
+                rpcurl: null,
+                seedTime: null,
                 verifySSL: null
             },
             layout: {
@@ -104,10 +105,26 @@ const store = new Puex({
             },
             dbPath: null,
             nzb: {
-                username: null,
-                priority: null,
+                enabled: null,
+                method: null,
+                nzbget: {
+                    category: null,
+                    categoryAnime: null,
+                    categoryAnimeBacklog: null,
+                    categoryBacklog: null,
+                    priority: null,
+                    useHttps: null,
+                    username: null
+                },
                 password: null,
-                enabled: null
+                sabnzbd: {
+                    category: null,
+                    forced: null,
+                    categoryAnime: null,
+                    categoryBacklog: null,
+                    categoryAnimeBacklog: null
+                },
+                username: null
             },
             configFile: null,
             fanartBackground: null,
