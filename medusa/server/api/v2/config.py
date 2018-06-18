@@ -283,7 +283,7 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
         section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
         section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-            # section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
+        # section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
         section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
         section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
