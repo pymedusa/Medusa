@@ -1,6 +1,5 @@
 <script type="text/x-template" id="name-pattern-tempate">
     <div id="name_pattern_wrapper">
-
         <!-- If a 'type' is passed, it means that where checking a custom naming pattern. As for example sports, air-by-date etc.
         In that case, we're showing this checkbox, to display the rest of the form.
         If type evaulates to an empty string, we're asuming this is the default name pattern. And it's enabled by default. -->
@@ -274,10 +273,16 @@
     Vue.component('name-pattern', {
         template: '#name-pattern-tempate',
         props: {
+            /**
+             * Current naming pattern.
+            */
             namingPattern: {
                 type: String,
                 default: ''
             },
+            /**
+             * An array of available preset naming patterns.
+            */
             namingPresets: {
                 type: Array,
                 default: () => []
@@ -313,9 +318,13 @@
                 type: String,
                 default: ''
             },
+            /**
+             * Used icw with the type property.
+             * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings. 
+            */
             enabled: {
                 type: Boolean,
-                default: false
+                default: true
             }
         },
         data() {

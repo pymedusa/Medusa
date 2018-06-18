@@ -309,7 +309,7 @@ const startVue = () => {
                         <fieldset class="component-group-list">
 
                             <!-- default name-pattern component -->
-                            <name-pattern :enabled="true" :naming-pattern="pattern" :naming-presets="presets" :multi-ep-style="multiEpSelected" :multi-ep-styles="multiEpStrings" @change="onChangePattern" ></name-pattern>
+                            <name-pattern :naming-pattern="pattern" :naming-presets="presets" :multi-ep-style="multiEpSelected" :multi-ep-styles="multiEpStrings" @change="onChangePattern" ></name-pattern>
 
                             <!-- default sports name-pattern component -->
                             <name-pattern :enabled="enabledSports" :naming-pattern="sportsPattern" :naming-presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
