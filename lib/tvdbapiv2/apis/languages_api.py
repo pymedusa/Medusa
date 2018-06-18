@@ -17,16 +17,12 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
-import sys
-import os
-
-# python 2 and python 3 compatibility library
 from six import iteritems
 
-from ..configuration import Configuration
 from ..api_client import ApiClient
+from ..configuration import Configuration
 
 
 class LanguagesApi(object):
@@ -48,7 +44,10 @@ class LanguagesApi(object):
     def languages_get(self, **kwargs):
         """
 
-        All available languages. These language abbreviations can be used in the `Accept-Language` header for routes that return translation records.
+        All available languages.
+
+        These language abbreviations can be used in the `Accept-Language` header
+        for routes that return translation records.
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please define a `callback` function
@@ -77,7 +76,7 @@ class LanguagesApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/languages'.replace('{format}', 'json')
+        resource_path = '/languages'
         method = 'GET'
 
         path_params = {}
@@ -153,7 +152,7 @@ class LanguagesApi(object):
         if ('id' not in params) or (params['id'] is None):
             raise ValueError("Missing the required parameter `id` when calling `languages_id_get`")
 
-        resource_path = '/languages/{id}'.replace('{format}', 'json')
+        resource_path = '/languages/{id}'
         method = 'GET'
 
         path_params = {}

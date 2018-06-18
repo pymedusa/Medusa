@@ -407,24 +407,6 @@ inc_bottom.mako
 }
 
 /* =======================================================================
-inc_rootDirs.mako
-========================================================================== */
-.rootdir-selectbox,
-.rootdir-selectbox #rootDirs,
-.rootdir-controls {
-    width: 100%;
-    max-width: 430px;
-}
-
-.rootdir-selectbox {
-    padding: 0 0 5px;
-}
-
-.rootdir-controls {
-    text-align: center;
-}
-
-/* =======================================================================
 history.mako
 ========================================================================== */
 .layout-controls {
@@ -930,8 +912,70 @@ home_newShow.mako
     border: 1px solid rgb(223, 222, 222);
 }
 
-#searchResults input[type="radio"] {
-    vertical-align: -2px;
+div.search-results {
+    height: 100%;
+}
+
+div.search-results > div.no-results {
+    margin-top: 15px;
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(223, 222, 222);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(223, 222, 222);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(205, 233, 255);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results td.search-result {
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.search-results th.premiere,
+table.search-results td.premiere {
+    text-align: center;
+    max-width: 90px;
+}
+
+table.search-results th.network,
+table.search-results td.network {
+    max-width: 200px;
+}
+
+table.search-results th.indexer,
+table.search-results td.indexer {
+    text-align: center;
+    max-width: 100px;
+}
+
+table.search-results td.indexer img {
+    vertical-align: -3px;
+}
+
+table.search-results input[type="radio"] {
+    margin: 4px 0 0;
 }
 
 /* =======================================================================
@@ -2441,95 +2485,91 @@ div.metadataDiv .disabled {
 }
 
 .icon-notifiers-plex {
-    background-position: -35px 0;
+    background-position: -32px 0;
 }
 
 .icon-notifiers-plexth {
-    background-position: -69px 0;
+    background-position: -64px 0;
 }
 
 .icon-notifiers-emby {
-    background-position: -104px 0;
+    background-position: -96px 0;
 }
 
 .icon-notifiers-nmj {
-    background-position: -136px 0;
+    background-position: -128px 0;
 }
 
 .icon-notifiers-syno1 {
-    background-position: -168px 0;
+    background-position: -160px 0;
 }
 
 .icon-notifiers-syno2 {
-    background-position: -202px 0;
+    background-position: -192px 0;
 }
 
 .icon-notifiers-pytivo {
-    background-position: -237px 0;
+    background-position: -224px 0;
 }
 
 .icon-notifiers-growl {
-    background-position: -272px 0;
+    background-position: -256px 0;
 }
 
 .icon-notifiers-prowl {
-    background-position: -308px 0;
+    background-position: -288px 0;
 }
 
 .icon-notifiers-libnotify {
-    background-position: -345px 0;
+    background-position: -320px 0;
 }
 
 .icon-notifiers-pushover {
-    background-position: -377px 0;
+    background-position: -352px 0;
 }
 
 .icon-notifiers-boxcar2 {
-    background-position: -414px 0;
-}
-
-.icon-notifiers-nma {
-    background-position: -450px 0;
+    background-position: -384px 0;
 }
 
 .icon-notifiers-pushalot {
-    background-position: -486px 0;
+    background-position: -416px 0;
 }
 
 .icon-notifiers-pushbullet {
-    background-position: -519px 0;
+    background-position: -448px 0;
 }
 
 .icon-notifiers-freemobile {
-    background-position: -551px 0;
+    background-position: -480px 0;
 }
 
 .icon-notifiers-telegram {
-    background-position: -587px 0;
+    background-position: -512px 0;
 }
 
 .icon-notifiers-twitter {
-    background-position: -624px 0;
+    background-position: -544px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -660px 0;
+    background-position: -576px 0;
 }
 
 .icon-notifiers-email {
-    background-position: -695px 0;
+    background-position: -608px 0;
 }
 
 .icon-notifiers-anime {
-    background-position: -733px 0;
+    background-position: -640px 0;
 }
 
 .icon-notifiers-look {
-    background-position: -769px 0;
+    background-position: -672px 0;
 }
 
 .icon-notifiers-slack {
-    background-position: -804px 0;
+    background-position: -704px 0;
 }
 
 div#config-components h3 > a {
@@ -3402,7 +3442,8 @@ pre {
 input sizing (for config pages)
 ========================================================================== */
 
-#config select {
+/* Don't style root-dirs select */
+#config select:not([size]) {
     width: auto;
     display: inline;
 }

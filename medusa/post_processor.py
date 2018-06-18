@@ -31,13 +31,19 @@ import adba
 
 from medusa import (
     app,
-    common,
     db,
     failed_history,
     helpers,
     history,
     logger,
     notifiers,
+)
+from medusa.common import (
+    DOWNLOADED,
+    Quality,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
 )
 from medusa.helper.common import (
     episode_num,
@@ -577,7 +583,7 @@ class PostProcessor(object):
                     continue
 
             if counter < (len(self.item_resources) - 1):
-                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
+                if Quality.qualityStrings[cur_quality] == 'Unknown':
                     continue
             quality = cur_quality
 
@@ -666,7 +672,8 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
-        if parse_result.series and all([parse_result.series.air_by_date, parse_result.is_air_by_date]):
+        if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
+                                        parse_result.is_air_by_date]):
             season = -1
             episodes = [parse_result.air_date]
         else:
@@ -738,23 +745,21 @@ class PostProcessor(object):
 
         return root_ep
 
-    def _quality_from_status(self, status):
-        """
-        Determine the quality of the file that is being post processed with its status.
-
-        :param status: The status related to the file we are post processing
-        :return: A quality value found in common.Quality
-        """
-        quality = common.Quality.UNKNOWN
-
-        if status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, quality = common.Quality.split_composite_status(status)
-            if quality != common.Quality.UNKNOWN:
-                self.log(u'The snatched status has a quality in it, using that: {0}'.format
-                         (common.Quality.qualityStrings[quality]), logger.DEBUG)
-                return quality
-
-        return quality
+    # def _quality_from_status(self, ep_obj):
+    #     """
+    #     Determine the quality of the file that is being post processed with its status.
+    #
+    #     :param ep_obj: episode object.
+    #     :return: A quality value found in common.Quality
+    #     """
+    #
+    #     if ep_obj.status in (common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST):
+    #         if ep_obj.quality != common.Quality.UNKNOWN:
+    #             self.log(u'The snatched status has a quality in it, using that: {0}'.format
+    #                      (common.Quality.qualityStrings[ep_obj.quality]), logger.DEBUG)
+    #             return ep_obj.quality
+    #
+    #     return common.UNKNOWN
 
     def _get_quality(self, ep_obj):
         """
@@ -769,21 +774,21 @@ class PostProcessor(object):
             if not cur_name:
                 continue
 
-            ep_quality = common.Quality.name_quality(cur_name, ep_obj.series.is_anime, extend=False)
+            ep_quality = Quality.name_quality(cur_name, ep_obj.series.is_anime, extend=False)
             self.log(u"Looking up quality for '{0}', got {1}".format
-                     (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-            if ep_quality != common.Quality.UNKNOWN:
+                     (cur_name, Quality.qualityStrings[ep_quality]), logger.DEBUG)
+            if ep_quality != Quality.UNKNOWN:
                 self.log(u"Looks like {0} '{1}' has quality {2}, using that".format
-                         (resource_name, cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                         (resource_name, cur_name, Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
         # Try using other methods to get the file quality
-        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.series.is_anime)
+        ep_quality = Quality.name_quality(self.file_path, ep_obj.series.is_anime)
         self.log(u"Trying other methods to get quality for '{0}', got {1}".format
-                 (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-        if ep_quality != common.Quality.UNKNOWN:
+                 (self.file_name, Quality.qualityStrings[ep_quality]), logger.DEBUG)
+        if ep_quality != Quality.UNKNOWN:
             self.log(u"Looks like '{0}' has quality {1}, using that".format
-                     (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                     (self.file_name, Quality.qualityStrings[ep_quality]), logger.DEBUG)
             return ep_quality
 
         return ep_quality
@@ -791,44 +796,46 @@ class PostProcessor(object):
     def _priority_from_history(self, series_obj, season, episodes, quality):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
+        snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
         for episode in episodes:
             # First: check if the episode status is snatched
             tv_episodes_result = main_db_con.select(
-                'SELECT status '
+                'SELECT quality, manually_searched '
                 'FROM tv_episodes '
                 'WHERE indexer = ? '
                 'AND showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                "AND (status LIKE '%02' "
-                "OR status LIKE '%09' "
-                "OR status LIKE '%12')",
-                [series_obj.indexer, series_obj.series_id, season, episode]
+                'AND status IN (?, ?, ?) ',
+                [series_obj.indexer, series_obj.series_id,
+                 season, episode] + snatched_statuses
             )
 
-            if tv_episodes_result:
+            if tv_episodes_result and tv_episodes_result[0][b'quality'] == quality:
+                # Check if the snatch is a manual snatch
+                if tv_episodes_result[0][b'manually_searched'] == 1:
+                    self.manually_searched = True
+
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality, manually_searched, info_hash '
+                    'SELECT quality, info_hash '
                     'FROM history '
                     'WHERE indexer_id = ? '
                     'AND showid = ? '
                     'AND season = ? '
                     'AND episode = ? '
-                    "AND (action LIKE '%02' "
-                    "OR action LIKE '%09' "
-                    "OR action LIKE '%12') "
+                    'AND action IN (?, ?, ?) '
                     'ORDER BY date DESC',
-                    [series_obj.indexer, series_obj.series_id, season, episode])
+                    [series_obj.indexer, series_obj.series_id,
+                     season, episode] + snatched_statuses
+                )
 
                 if history_result and history_result[0][b'quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
-                    # Check if the last snatch was a manual snatch
-                    if history_result[0][b'manually_searched']:
-                        self.manually_searched = True
                     # Get info hash so we can move torrent if setting is enabled
                     self.info_hash = history_result[0][b'info_hash'] or None
 
@@ -840,9 +847,11 @@ class PostProcessor(object):
                         'AND season = ? '
                         'AND episode = ? '
                         'AND quality = ? '
-                        "AND action LIKE '%04' "
+                        'AND action = ? '
                         'ORDER BY date DESC',
-                        [series_obj.indexer, series_obj.series_id, season, episode, quality])
+                        [series_obj.indexer, series_obj.series_id,
+                         season, episode, quality, DOWNLOADED]
+                    )
 
                     if download_result:
                         download_name = os.path.basename(download_result[0][b'resource'])
@@ -873,12 +882,12 @@ class PostProcessor(object):
         self.log(u'Manually snatched: {0}'.format(self.manually_searched), level)
         self.log(u'Info hash: {0}'.format(self.info_hash), level)
         self.log(u'NZB: {0}'.format(bool(self.nzb_name)), level)
-        self.log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
-        self.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
+        self.log(u'Current quality: {0}'.format(Quality.qualityStrings[old_ep_quality]), level)
+        self.log(u'New quality: {0}'.format(Quality.qualityStrings[new_ep_quality]), level)
         self.log(u'Proper: {0}'.format(self.is_proper), level)
 
         # If in_history is True it must be a priority download
-        return bool(self.in_history or self.is_priority)
+        return any([self.in_history, self.is_priority, self.manually_searched])
 
     @staticmethod
     def _should_process(current_quality, new_quality, allowed, preferred):
@@ -896,8 +905,6 @@ class PostProcessor(object):
         :param preferred: Qualities that are preferred
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-        if current_quality is common.Quality.NONE:
-            return False, 'There is no current quality. Skipping as we can only replace existing qualities'
         if new_quality in preferred:
             if current_quality in preferred:
                 if new_quality > current_quality:
@@ -1018,28 +1025,29 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(series_obj, season, episodes)
-        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
+        old_ep_quality = ep_obj.quality
 
         # get the quality of the episode we're processing
-        if quality and common.Quality.qualityStrings[quality] != 'Unknown':
+        if quality and quality != Quality.UNKNOWN:
             self.log(u'The episode file has a quality in it, using that: {0}'.format
-                     (common.Quality.qualityStrings[quality]), logger.DEBUG)
+                     (Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
-            new_ep_quality = self._quality_from_status(ep_obj.status)
+            # Fall back to the episode object's quality
+            new_ep_quality = ep_obj.quality
 
         # check snatched history to see if we should set the download as priority
         self._priority_from_history(series_obj, season, episodes, new_ep_quality)
         if self.in_history:
             self.log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
-        if new_ep_quality == common.Quality.UNKNOWN:
+        if new_ep_quality == Quality.UNKNOWN:
             new_ep_quality = self._get_quality(ep_obj)
 
         logger.log(u'Quality of the episode we are processing: {0}'.format
-                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
+                   (Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
-        # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
+        # see if this is a priority download
         priority_download = self._is_priority(old_ep_quality, new_ep_quality)
         self.log(u'This episode is a priority download: {0}'.format(priority_download), logger.DEBUG)
 
@@ -1063,8 +1071,8 @@ class PostProcessor(object):
                 else:
                     allowed_qualities, preferred_qualities = series_obj.current_qualities
                     self.log(u'Checking if new quality {0} should replace current quality: {1}'.format
-                             (common.Quality.qualityStrings[new_ep_quality],
-                              common.Quality.qualityStrings[old_ep_quality]))
+                             (Quality.qualityStrings[new_ep_quality],
+                              Quality.qualityStrings[old_ep_quality]))
                     should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
                                                                                  allowed_qualities, preferred_qualities)
                     if not should_process:
@@ -1155,7 +1163,8 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep.status = common.Quality.composite_status(common.DOWNLOADED, new_ep_quality)
+                cur_ep.status = DOWNLOADED
+                cur_ep.quality = new_ep_quality
 
                 cur_ep.subtitles = u''
 

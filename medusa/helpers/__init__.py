@@ -43,7 +43,7 @@ import guessit
 from imdbpie import imdbpie
 
 from medusa import app, db
-from medusa.common import USER_AGENT
+from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
@@ -918,67 +918,6 @@ def backup_versioned_file(old_file, version):
     return True
 
 
-def restore_versioned_file(backup_file, version):
-    """Restore a file version to original state.
-
-    For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
-    sickbeard.db.v41. passed with version tuple(41,2), will translate back to sickbeard.db.
-
-    :param backup_file: File to restore
-    :param version: Version of file to restore
-    :return: True on success, False on failure
-    """
-    num_tries = 0
-
-    with suppress(TypeError):
-        version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
-
-    new_file, _ = backup_file[0:backup_file.find(u'v{version}'.format(version=version))]
-    restore_file = backup_file
-
-    if not os.path.isfile(new_file):
-        log.debug(u"Not restoring, {file} doesn't exist", {'file': new_file})
-        return False
-
-    try:
-        log.debug(u'Trying to backup {file} to {file}.r{version} before '
-                  u'restoring backup', {'file': new_file, 'version': version})
-
-        shutil.move(new_file, new_file + '.' + 'r' + str(version))
-    except OSError as error:
-        log.warning(u'Error while trying to backup DB file {name} before'
-                    u' proceeding with restore: {error!r}',
-                    {'name': restore_file, 'error': error})
-        return False
-
-    while not os.path.isfile(new_file):
-        if not os.path.isfile(restore_file):
-            log.debug(u'Not restoring, {file} does not exist',
-                      {'file': restore_file})
-            break
-
-        try:
-            log.debug(u'Trying to restore file {old} to {new}',
-                      {'old': restore_file, 'new': new_file})
-            shutil.copy(restore_file, new_file)
-            log.debug(u"Restore done")
-            break
-        except OSError as error:
-            log.warning(u'Error while trying to restore file {name}.'
-                        u' Error: {msg!r}',
-                        {'name': restore_file, 'msg': error})
-            num_tries += 1
-            time.sleep(1)
-            log.debug(u'Trying again. Attempt #: {0}', num_tries)
-
-        if num_tries >= 10:
-            log.warning(u'Unable to restore file {old} to {new}',
-                        {'old': restore_file, 'new': new_file})
-            return False
-
-    return True
-
-
 def get_lan_ip():
     """Return IP of system."""
     try:
@@ -1771,9 +1710,9 @@ def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
-                                        "WHERE action LIKE '%04' "
+                                        'WHERE action = ? '
                                         'AND resource LIKE ?',
-                                        ['%' + full_filename])
+                                        [DOWNLOADED, '%' + full_filename])
     return bool(history_result)
 
 
@@ -1796,8 +1735,8 @@ def is_info_hash_processed(info_hash):
                                         'd.season = s.season AND '
                                         'd.episode = s.episode AND '
                                         'd.quality = s.quality '
-                                        'WHERE d.action LIKE "%04"',
-                                        [info_hash])
+                                        'WHERE d.action = ?',
+                                        [info_hash, DOWNLOADED])
     return bool(history_result)
 
 

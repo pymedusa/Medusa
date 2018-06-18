@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -40,31 +43,31 @@ class Episode(object):
             'id': 'int',
             'aired_season': 'int',
             'aired_episode_number': 'int',
-            'episode_name': 'str',
-            'first_aired': 'str',
-            'guest_stars': 'str',
-            'director': 'str',
-            'writers': 'list[str]',
-            'overview': 'str',
-            'production_code': 'str',
-            'show_url': 'str',
+            'episode_name': 'text_type',
+            'first_aired': 'text_type',
+            'guest_stars': 'text_type',
+            'director': 'text_type',
+            'writers': 'list[text_type]',
+            'overview': 'text_type',
+            'production_code': 'text_type',
+            'show_url': 'text_type',
             'last_updated': 'int',
-            'dvd_discid': 'str',
+            'dvd_discid': 'text_type',
             'dvd_season': 'int',
             'dvd_episode_number': 'float',
             'dvd_chapter': 'float',
             'absolute_number': 'int',
-            'filename': 'str',
-            'series_id': 'str',
-            'last_updated_by': 'str',
+            'filename': 'text_type',
+            'series_id': 'text_type',
+            'last_updated_by': 'text_type',
             'airs_after_season': 'int',
             'airs_before_season': 'int',
             'airs_before_episode': 'int',
-            'thumb_author': 'str',
-            'thumb_added': 'str',
-            'thumb_width': 'str',
-            'thumb_height': 'str',
-            'imdb_id': 'str',
+            'thumb_author': 'text_type',
+            'thumb_added': 'text_type',
+            'thumb_width': 'text_type',
+            'thumb_height': 'text_type',
+            'imdb_id': 'text_type',
             'site_rating': 'float'
         }
 
@@ -203,7 +206,7 @@ class Episode(object):
 
 
         :return: The episode_name of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._episode_name
 
@@ -214,7 +217,7 @@ class Episode(object):
 
 
         :param episode_name: The episode_name of this Episode.
-        :type: str
+        :type: text_type
         """
         self._episode_name = episode_name
 
@@ -225,7 +228,7 @@ class Episode(object):
 
 
         :return: The first_aired of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._first_aired
 
@@ -236,7 +239,7 @@ class Episode(object):
 
 
         :param first_aired: The first_aired of this Episode.
-        :type: str
+        :type: text_type
         """
         self._first_aired = first_aired
 
@@ -247,7 +250,7 @@ class Episode(object):
 
 
         :return: The guest_stars of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._guest_stars
 
@@ -258,7 +261,7 @@ class Episode(object):
 
 
         :param guest_stars: The guest_stars of this Episode.
-        :type: str
+        :type: text_type
         """
         self._guest_stars = guest_stars
 
@@ -269,7 +272,7 @@ class Episode(object):
 
 
         :return: The director of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._director
 
@@ -280,7 +283,7 @@ class Episode(object):
 
 
         :param director: The director of this Episode.
-        :type: str
+        :type: text_type
         """
         self._director = director
 
@@ -291,7 +294,7 @@ class Episode(object):
 
 
         :return: The writers of this Episode.
-        :rtype: list[str]
+        :rtype: list[text_type]
         """
         return self._writers
 
@@ -302,7 +305,7 @@ class Episode(object):
 
 
         :param writers: The writers of this Episode.
-        :type: list[str]
+        :type: list[text_type]
         """
         self._writers = writers
 
@@ -313,7 +316,7 @@ class Episode(object):
 
 
         :return: The overview of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._overview
 
@@ -324,7 +327,7 @@ class Episode(object):
 
 
         :param overview: The overview of this Episode.
-        :type: str
+        :type: text_type
         """
         self._overview = overview
 
@@ -335,7 +338,7 @@ class Episode(object):
 
 
         :return: The production_code of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._production_code
 
@@ -346,7 +349,7 @@ class Episode(object):
 
 
         :param production_code: The production_code of this Episode.
-        :type: str
+        :type: text_type
         """
         self._production_code = production_code
 
@@ -357,7 +360,7 @@ class Episode(object):
 
 
         :return: The show_url of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._show_url
 
@@ -368,7 +371,7 @@ class Episode(object):
 
 
         :param show_url: The show_url of this Episode.
-        :type: str
+        :type: text_type
         """
         self._show_url = show_url
 
@@ -401,7 +404,7 @@ class Episode(object):
 
 
         :return: The dvd_discid of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._dvd_discid
 
@@ -412,7 +415,7 @@ class Episode(object):
 
 
         :param dvd_discid: The dvd_discid of this Episode.
-        :type: str
+        :type: text_type
         """
         self._dvd_discid = dvd_discid
 
@@ -511,7 +514,7 @@ class Episode(object):
 
 
         :return: The filename of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._filename
 
@@ -522,7 +525,7 @@ class Episode(object):
 
 
         :param filename: The filename of this Episode.
-        :type: str
+        :type: text_type
         """
         self._filename = filename
 
@@ -533,7 +536,7 @@ class Episode(object):
 
 
         :return: The series_id of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._series_id
 
@@ -544,7 +547,7 @@ class Episode(object):
 
 
         :param series_id: The series_id of this Episode.
-        :type: str
+        :type: text_type
         """
         self._series_id = series_id
 
@@ -555,7 +558,7 @@ class Episode(object):
 
 
         :return: The last_updated_by of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._last_updated_by
 
@@ -566,7 +569,7 @@ class Episode(object):
 
 
         :param last_updated_by: The last_updated_by of this Episode.
-        :type: str
+        :type: text_type
         """
         self._last_updated_by = last_updated_by
 
@@ -643,7 +646,7 @@ class Episode(object):
 
 
         :return: The thumb_author of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._thumb_author
 
@@ -654,7 +657,7 @@ class Episode(object):
 
 
         :param thumb_author: The thumb_author of this Episode.
-        :type: str
+        :type: text_type
         """
         self._thumb_author = thumb_author
 
@@ -665,7 +668,7 @@ class Episode(object):
 
 
         :return: The thumb_added of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._thumb_added
 
@@ -676,7 +679,7 @@ class Episode(object):
 
 
         :param thumb_added: The thumb_added of this Episode.
-        :type: str
+        :type: text_type
         """
         self._thumb_added = thumb_added
 
@@ -687,7 +690,7 @@ class Episode(object):
 
 
         :return: The thumb_width of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._thumb_width
 
@@ -698,7 +701,7 @@ class Episode(object):
 
 
         :param thumb_width: The thumb_width of this Episode.
-        :type: str
+        :type: text_type
         """
         self._thumb_width = thumb_width
 
@@ -709,7 +712,7 @@ class Episode(object):
 
 
         :return: The thumb_height of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._thumb_height
 
@@ -720,7 +723,7 @@ class Episode(object):
 
 
         :param thumb_height: The thumb_height of this Episode.
-        :type: str
+        :type: text_type
         """
         self._thumb_height = thumb_height
 
@@ -731,7 +734,7 @@ class Episode(object):
 
 
         :return: The imdb_id of this Episode.
-        :rtype: str
+        :rtype: text_type
         """
         return self._imdb_id
 
@@ -742,7 +745,7 @@ class Episode(object):
 
 
         :param imdb_id: The imdb_id of this Episode.
-        :type: str
+        :type: text_type
         """
         self._imdb_id = imdb_id
 
@@ -800,7 +803,7 @@ class Episode(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -811,4 +814,3 @@ class Episode(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

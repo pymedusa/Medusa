@@ -130,6 +130,7 @@ class AppWebServer(threading.Thread):
         assert 'data_root' in self.options
 
         self.server = None
+        self.io_loop = None
 
         # video root
         if app.ROOT_DIRS:
@@ -286,6 +287,7 @@ class AppWebServer(threading.Thread):
             os._exit(1)  # pylint: disable=protected-access
 
         try:
+            self.io_loop = IOLoop.current()
             IOLoop.current().start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.

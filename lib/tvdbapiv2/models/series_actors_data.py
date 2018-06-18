@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -39,13 +42,13 @@ class SeriesActorsData(object):
         self.swagger_types = {
             'id': 'int',
             'series_id': 'int',
-            'name': 'str',
-            'role': 'str',
+            'name': 'text_type',
+            'role': 'text_type',
             'sort_order': 'int',
-            'image': 'str',
+            'image': 'text_type',
             'image_author': 'int',
-            'image_added': 'str',
-            'last_updated': 'str'
+            'image_added': 'text_type',
+            'last_updated': 'text_type'
         }
 
         self.attribute_map = {
@@ -121,7 +124,7 @@ class SeriesActorsData(object):
 
 
         :return: The name of this SeriesActorsData.
-        :rtype: str
+        :rtype: text_type
         """
         return self._name
 
@@ -132,7 +135,7 @@ class SeriesActorsData(object):
 
 
         :param name: The name of this SeriesActorsData.
-        :type: str
+        :type: text_type
         """
         self._name = name
 
@@ -143,7 +146,7 @@ class SeriesActorsData(object):
 
 
         :return: The role of this SeriesActorsData.
-        :rtype: str
+        :rtype: text_type
         """
         return self._role
 
@@ -154,7 +157,7 @@ class SeriesActorsData(object):
 
 
         :param role: The role of this SeriesActorsData.
-        :type: str
+        :type: text_type
         """
         self._role = role
 
@@ -187,7 +190,7 @@ class SeriesActorsData(object):
 
 
         :return: The image of this SeriesActorsData.
-        :rtype: str
+        :rtype: text_type
         """
         return self._image
 
@@ -198,7 +201,7 @@ class SeriesActorsData(object):
 
 
         :param image: The image of this SeriesActorsData.
-        :type: str
+        :type: text_type
         """
         self._image = image
 
@@ -231,7 +234,7 @@ class SeriesActorsData(object):
 
 
         :return: The image_added of this SeriesActorsData.
-        :rtype: str
+        :rtype: text_type
         """
         return self._image_added
 
@@ -242,7 +245,7 @@ class SeriesActorsData(object):
 
 
         :param image_added: The image_added of this SeriesActorsData.
-        :type: str
+        :type: text_type
         """
         self._image_added = image_added
 
@@ -253,7 +256,7 @@ class SeriesActorsData(object):
 
 
         :return: The last_updated of this SeriesActorsData.
-        :rtype: str
+        :rtype: text_type
         """
         return self._last_updated
 
@@ -264,7 +267,7 @@ class SeriesActorsData(object):
 
 
         :param last_updated: The last_updated of this SeriesActorsData.
-        :type: str
+        :type: text_type
         """
         self._last_updated = last_updated
 
@@ -300,7 +303,7 @@ class SeriesActorsData(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
@@ -311,4 +314,3 @@ class SeriesActorsData(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

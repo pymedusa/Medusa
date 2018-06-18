@@ -144,13 +144,13 @@ const startVue = () => {
                 </tr>
                 % for cur_result in showSQLResults[(cur_show.indexer, cur_show.series_id)]:
                     <%
-                        old_status, old_quality = Quality.split_composite_status(cur_result['status'])
-                        archived_status = Quality.composite_status(ARCHIVED, old_quality)
+                        old_status = cur_result['status']
+                        old_quality = cur_result['quality']
                     %>
-                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result["episode_string"]]]}">
-                        <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
+                    <tr class="seasonstyle ${Overview.overviewStrings[showCats[(cur_show.indexer, cur_show.series_id)][cur_result['episode_string']]]}">
+                        <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
-                            % if old_quality != Quality.NONE:
+                            % if old_quality != Quality.NA:
                                 ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
                             % else:
                                 ${statusStrings[old_status]}
@@ -171,7 +171,7 @@ const startVue = () => {
                             <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
                             <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                             % if old_status == DOWNLOADED:
-                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
+                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
                             % endif
                         </td>
                     </tr>

@@ -301,7 +301,7 @@ const syncTheme = (theme, sequence) => {
  * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
  * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
  *
- * Do not run the xo build, as this takes allot of time.
+ * Do not run the xo build, as this takes a lot of time.
  */
 gulp.task('sync', async() => {
     // Whe're building the light and dark theme. For this we need to run two sequences.

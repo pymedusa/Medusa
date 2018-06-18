@@ -17,13 +17,12 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
-# python 2 and python 3 compatibility library
 from six import iteritems
 
-from ..configuration import Configuration
 from ..api_client import ApiClient
+from ..configuration import Configuration
 
 
 class UsersApi(object):
@@ -74,7 +73,7 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/user'.replace('{format}', 'json')
+        resource_path = '/user'
         method = 'GET'
 
         path_params = {}
@@ -145,7 +144,7 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/user/favorites'.replace('{format}', 'json')
+        resource_path = '/user/favorites'
         method = 'GET'
 
         path_params = {}
@@ -221,7 +220,7 @@ class UsersApi(object):
         if ('id' not in params) or (params['id'] is None):
             raise ValueError("Missing the required parameter `id` when calling `user_favorites_id_put`")
 
-        resource_path = '/user/favorites/{id}'.replace('{format}', 'json')
+        resource_path = '/user/favorites/{id}'
         method = 'PUT'
 
         path_params = {}
@@ -299,7 +298,7 @@ class UsersApi(object):
         if ('id' not in params) or (params['id'] is None):
             raise ValueError("Missing the required parameter `id` when calling `user_favorites_id_delete`")
 
-        resource_path = '/user/favorites/{id}'.replace('{format}', 'json')
+        resource_path = '/user/favorites/{id}'
         method = 'DELETE'
 
         path_params = {}
@@ -372,7 +371,7 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/user/ratings'.replace('{format}', 'json')
+        resource_path = '/user/ratings'
         method = 'GET'
 
         path_params = {}
@@ -444,7 +443,7 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/user/ratings/query'.replace('{format}', 'json')
+        resource_path = '/user/ratings/query'
         method = 'GET'
 
         path_params = {}
@@ -517,7 +516,7 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-        resource_path = '/user/ratings/query/params'.replace('{format}', 'json')
+        resource_path = '/user/ratings/query/params'
         method = 'GET'
 
         path_params = {}
@@ -592,12 +591,14 @@ class UsersApi(object):
 
         # verify the required parameter 'item_type' is set
         if ('item_type' not in params) or (params['item_type'] is None):
-            raise ValueError("Missing the required parameter `item_type` when calling `user_ratings_item_type_item_id_delete`")
+            raise ValueError("Missing the required parameter `item_type`"
+                             " when calling `user_ratings_item_type_item_id_delete`")
         # verify the required parameter 'item_id' is set
         if ('item_id' not in params) or (params['item_id'] is None):
-            raise ValueError("Missing the required parameter `item_id` when calling `user_ratings_item_type_item_id_delete`")
+            raise ValueError("Missing the required parameter `item_id`"
+                             " when calling `user_ratings_item_type_item_id_delete`")
 
-        resource_path = '/user/ratings/{itemType}/{itemId}'.replace('{format}', 'json')
+        resource_path = '/user/ratings/{itemType}/{itemId}'
         method = 'DELETE'
 
         path_params = {}
@@ -651,7 +652,8 @@ class UsersApi(object):
         >>> def callback_function(response):
         >>>     pprint(response)
         >>>
-        >>> thread = api.user_ratings_item_type_item_id_item_rating_put(item_type, item_id, item_rating, callback=callback_function)
+        >>> thread = api.user_ratings_item_type_item_id_item_rating_put(
+                item_type, item_id, item_rating, callback=callback_function)
 
         :param callback function: The callback function
             for asynchronous request. (optional)
@@ -677,15 +679,18 @@ class UsersApi(object):
 
         # verify the required parameter 'item_type' is set
         if ('item_type' not in params) or (params['item_type'] is None):
-            raise ValueError("Missing the required parameter `item_type` when calling `user_ratings_item_type_item_id_item_rating_put`")
+            raise ValueError("Missing the required parameter `item_type`"
+                             " when calling `user_ratings_item_type_item_id_item_rating_put`")
         # verify the required parameter 'item_id' is set
         if ('item_id' not in params) or (params['item_id'] is None):
-            raise ValueError("Missing the required parameter `item_id` when calling `user_ratings_item_type_item_id_item_rating_put`")
+            raise ValueError("Missing the required parameter `item_id`"
+                             " when calling `user_ratings_item_type_item_id_item_rating_put`")
         # verify the required parameter 'item_rating' is set
         if ('item_rating' not in params) or (params['item_rating'] is None):
-            raise ValueError("Missing the required parameter `item_rating` when calling `user_ratings_item_type_item_id_item_rating_put`")
+            raise ValueError("Missing the required parameter `item_rating`"
+                             " when calling `user_ratings_item_type_item_id_item_rating_put`")
 
-        resource_path = '/user/ratings/{itemType}/{itemId}/{itemRating}'.replace('{format}', 'json')
+        resource_path = '/user/ratings/{itemType}/{itemId}/{itemRating}'
         method = 'PUT'
 
         path_params = {}
