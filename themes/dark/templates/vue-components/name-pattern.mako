@@ -371,10 +371,14 @@
                 // Update single
                 this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
                 console.debug('Result of naming pattern check: ' + this.namingExample);
+
+                // Test naming
+                this.checkNaming(pattern, false, this.animeType);
                 
                 // Update multi if needed
                 if (this.isMulti) {
                     this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
+                    this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
                 }
             },
             update(newValue) {
@@ -386,6 +390,47 @@
                     enabled: this.isEnabled,
                     animeNamingType: this.animeType
                 });
+            },
+            async checkNaming(pattern, selectedMultiEpStyle, animeType) {
+                const vm = this;
+                const params = {
+                    pattern: pattern,
+                    anime_type: animeType
+                }
+
+                if (selectedMultiEpStyle) {
+                    params.multi = selectedMultiEpStyle;
+                }
+
+                try {
+                    const result = await apiRoute.get('config/postProcessing/isNamingValid', {params: params});
+                    if (result.data === 'invalid') {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is invalid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFDDDD');
+                    } else if (result.data === 'seasonfolders') {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFDD');
+                    } else {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is valid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-green'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', false);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFFF');
+                    }
+
+                } catch (e) {
+                    console.warning(e);
+                }
+
             }
         },
         computed: {
