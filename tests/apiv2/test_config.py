@@ -92,8 +92,8 @@ def config(monkeypatch, app_config):
     config_data['emby']['enabled'] = bool(app.USE_EMBY)
 
     config_data['torrents'] = NonEmptyDict()
-    config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE,
-    config_data['torrents']['dir'] = app.TORRENT_DIR,
+    config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
+    config_data['torrents']['dir'] = app.TORRENT_DIR
     config_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
     config_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
     config_data['torrents']['host'] = app.TORRENT_HOST
@@ -104,7 +104,7 @@ def config(monkeypatch, app_config):
     config_data['torrents']['path'] = app.TORRENT_PATH
     config_data['torrents']['paused'] = app.TORRENT_PAUSED
     config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-    config_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION,
+    config_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
     config_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
     config_data['torrents']['username'] = app.TORRENT_USERNAME
     config_data['torrents']['verifySSL'] = app.TORRENT_VERIFY_CERT
