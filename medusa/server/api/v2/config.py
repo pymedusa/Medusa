@@ -254,8 +254,8 @@ class DataGenerator(object):
         section_data['emby']['enabled'] = bool(app.USE_EMBY)
 
         section_data['torrents'] = NonEmptyDict()
-        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE,
-        section_data['torrents']['dir'] = app.TORRENT_DIR,
+        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
+        section_data['torrents']['dir'] = app.TORRENT_DIR
         section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
         section_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
         section_data['torrents']['host'] = app.TORRENT_HOST
@@ -266,7 +266,7 @@ class DataGenerator(object):
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-        section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION,
+        section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
         section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
         section_data['torrents']['username'] = app.TORRENT_USERNAME
         section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)

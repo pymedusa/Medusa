@@ -1278,8 +1278,8 @@ definitions:
                 type: string
               host:
                 type: string
-              password:
-                type: string
+              # password:
+              #   type: string
               enabled:
                 type: boolean
               priority:
@@ -1309,8 +1309,8 @@ definitions:
                 type: string
               path:
                 type: string
-              password:
-                type: string
+              # password:
+              #   type: string
               verifySSL:
                 type: boolean
               highBandwidth:
