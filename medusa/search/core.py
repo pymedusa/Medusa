@@ -340,20 +340,21 @@ def filter_results(results):
 
 
 def sort_results(results):
+    """Sort results based on show specific preferences."""
     wanted_results = []
     if not results:
         log.debug(u'No results to sort.')
         return wanted_results
 
     sorted_results = sorted(results, key=operator.attrgetter('quality'), reverse=True)
-    log.debug(u'Picking the best result out of {0}', [x.name for x in sorted_results])
+    log.debug(u'Sorting the following results: {0}', [x.name for x in sorted_results])
 
     preferred_words = []
     if app.PREFERRED_WORDS:
-        preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
+        preferred_words = [word.lower() for word in app.PREFERRED_WORDS]
     undesired_words = []
     if app.UNDESIRED_WORDS:
-        undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
+        undesired_words = [word.lower() for word in app.UNDESIRED_WORDS]
 
     for result in sorted_results:
         score = 0
@@ -391,7 +392,7 @@ def sort_results(results):
 
 
 def pick_result(sorted_results):
-    """Pick a result out of a list of wanted candidates."""
+    """Pick the first result out of a list of sorted candidates."""
     candidates = sort_results(sorted_results)
     if not candidates:
         log.debug(u'No results to pick from.')
@@ -720,7 +721,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # Collect candidates for multi episode or season results
+        # Collect candidates for multi-episode or season results
         candidates = (candidate for result, candidate in iteritems(found_results[cur_provider.name])
                       if result in (SEASON_RESULT, MULTI_EP_RESULT))
         candidates = list(itertools.chain(*candidates))
@@ -736,7 +737,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 else:
                     found_results[cur_provider.name][number] = [candidate]
 
-        # Collect candidates for single episode results
+        # Collect candidates for single-episode results
         single_candidates = collect_single_candidates(found_results[cur_provider.name],
                                                       single_results)
         single_results.extend(single_candidates)
@@ -752,10 +753,10 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
 
 def collect_single_candidates(candidates, results):
-    """Collect single episode result candidates."""
+    """Collect single-episode result candidates."""
     single_candidates = []
 
-    # of all the single ep results narrow it down to the best one for each episode
+    # of all the single-ep results narrow it down to the best one for each episode
     for episode in candidates:
         if episode in (MULTI_EP_RESULT, SEASON_RESULT):
             continue
@@ -866,8 +867,8 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
 
 
 def combine_results(multi_results, single_results):
-    """Combine multi- and single episode results, filtering out overlapping results."""
-    log.debug(u'Combining single and multi episode results')
+    """Combine single and multi-episode results, filtering out overlapping results."""
+    log.debug(u'Combining single and multi-episode results')
     result_candidates = []
 
     multi_results = sort_results(multi_results)
@@ -911,7 +912,7 @@ def combine_results(multi_results, single_results):
                   needed_eps, not_needed_eps)
 
         if not needed_eps:
-            log.debug(u'All of these episodes were covered by single episode results,'
+            log.debug(u'All of these episodes were covered by single-episode results,'
                       u' ignoring this multi-episode result')
             continue
 
