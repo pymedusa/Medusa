@@ -183,27 +183,31 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         4: 'Missing time zone for network: USA Network',
         5: "AttributeError: 'NoneType' object has no attribute 'findall'",
     }
-    for line_number in lines:
-        logger.warning(lines[line_number])
+    for line in lines.values():
+        logger.warning(line)
     loglines = list(read_loglines)
 
-    issues = {
-        1: '[APP SUBMITTED]: Really strange that one',
-        2: 'Some Issue like This',
-        3: '[APP SUBMITTED]: Missing time zone for network: Hub Network',
-        4: '[APP SUBMITTED]: Missing time zone for network: USA Network',
-        5: "AttributeError: 'NoneType' object has no attribute 'findall'",
-        6: "AttributeError: 'NoneType' object has no attribute 'lower'",
-    }
-    for issue_number in issues:
-        issues[issue_number] = create_github_issue(issues[issue_number], number=issue_number)
+    raw_issues = [
+        (1, '[APP SUBMITTED]: Really strange that one', False),
+        (2, 'Some Issue like This', False),
+        (3, 'Fix Some Issue like This', True),  # Pull request
+        (4, '[APP SUBMITTED]: Missing time zone for network: Hub Network', False),
+        (5, '[APP SUBMITTED]: Missing time zone for network: USA Network', False),
+        (6, "AttributeError: 'NoneType' object has no attribute 'findall'", False),
+        (7, "AttributeError: 'NoneType' object has no attribute 'lower'", False),
+    ]
+    issues = dict()
+    for (number, title, pull_request) in raw_issues:
+        kwargs = {} if not pull_request else {'pull_request': 'mock'}
+        issues[number] = create_github_issue(title=title, number=number, **kwargs)
+
     monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: issues.values())
 
     expected = {
         lines[1]: issues[2],
         lines[3]: issues[1],
-        lines[4]: issues[4],
-        lines[5]: issues[5],
+        lines[4]: issues[5],
+        lines[5]: issues[6],
     }
 
     # When
