@@ -752,6 +752,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
 
 def collect_single_candidates(candidates, results):
+    """Collect single episode result candidates."""
     single_candidates = []
 
     # of all the single ep results narrow it down to the best one for each episode
@@ -772,7 +773,7 @@ def collect_single_candidates(candidates, results):
 
         best_result = pick_result(result_candidates + wanted_results)
 
-        # Skip the result if search delay is enabled for the provider.
+        # Skip the result if search delay is enabled for the provider
         if not delay_search(best_result):
             single_candidates.append(best_result)
 
@@ -780,6 +781,7 @@ def collect_single_candidates(candidates, results):
 
 
 def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality):
+    """Collect mutli-episode and season result candidates."""
     multi_candidates = []
     single_candidates = []
 
@@ -798,7 +800,7 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
         [series_obj.indexer, series_obj.series_id]
     )
     all_eps = [int(x[b'episode']) for x in selection]
-    log.debug(u'Episode list: {0}', all_eps)
+    log.debug(u'Episodes list: {0}', all_eps)
 
     for candidate in wanted_candidates:
         season_quality = candidate.quality
@@ -813,8 +815,6 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
                 else:
                     any_wanted = True
 
-        # if we need every ep in the season just download this
-        # and be done with it (unless single episodes are preferred)
         if all_wanted:
             log.info(u'All episodes in this season are needed, adding {0} {1}',
                      candidate.provider.provider_type,
@@ -825,6 +825,7 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
                     ep_objs.append(series_obj.get_episode(season, cur_ep_num))
             candidate.episodes = ep_objs
 
+            # Skip the result if search delay is enabled for the provider
             if not delay_search(candidate):
                 multi_candidates.append(candidate)
 
@@ -836,12 +837,11 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
 
         else:
             # Some NZB providers (e.g. Jackett) can also download torrents,
-            # but torrents cannot be split like NZB
+            # but torrents cannot be split like NZBs
             if (candidate.provider.provider_type == GenericProvider.NZB and
                     not candidate.url.endswith(GenericProvider.TORRENT)):
                 log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
 
-                # if not, break it apart and add them as the lowest priority results
                 individual_results = nzb_splitter.split_result(candidate)
                 for cur_result in individual_results:
                     if len(cur_result.episodes) == 1:
@@ -850,13 +850,11 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
                     elif len(cur_result.episodes) > 1:
                         multi_candidates.append(cur_result)
 
-            # If this is a torrent all we can do is leech the entire torrent,
+            # If this is a torrent all we can do is get the entire torrent,
             # user will have to select which eps not do download in his torrent client
             else:
-                # Season result from Torrent Provider must be a full-season torrent,
-                # creating multi-ep result for it.
-                log.info(u'Adding multi-ep result for full-season torrent.'
-                         u' Undesired episodes can be skipped in torrent client if desired!')
+                log.info(u'Adding multi-episode result for full-season torrent.'
+                         u' Undesired episodes can be skipped in the torrent client if desired!')
                 ep_objs = []
                 for cur_ep_num in all_eps:
                     for season in {x.season for x in episodes}:
@@ -868,6 +866,7 @@ def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality)
 
 
 def combine_results(multi_results, single_results):
+    """Combine multi- and single episode results, filtering out overlapping results."""
     log.debug(u'Combining single and multi episode results')
     result_candidates = []
 
@@ -891,7 +890,7 @@ def combine_results(multi_results, single_results):
             if not multi_needed_eps:
                 log.debug(
                     u'All of these episodes were covered by another multi-episode result,'
-                    u' ignoring this multi-ep result'
+                    u' ignoring this multi-episode result'
                 )
                 continue
 
@@ -916,7 +915,7 @@ def combine_results(multi_results, single_results):
                       u' ignoring this multi-episode result')
             continue
 
-        # don't bother with the single result if we're going to get it with a multi result
+        # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
             for i, result in enumerate(single_results):
                 if ep_obj in result.episodes:
