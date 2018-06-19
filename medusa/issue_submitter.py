@@ -11,7 +11,7 @@ from builtins import object
 from builtins import str
 from datetime import datetime, timedelta
 
-from github import InputFileContent
+from github import GithubObject, InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException, UnknownObjectException
 
 from medusa import app, db
@@ -112,13 +112,12 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
-        issue_count = 0  # issues is a PaginatedList, can't do len() on it
         log.debug('Searching for issues similar to:\n{titles}', {
             'titles': '\n'.join([line.issue_title for line in loglines])
         })
         for issue in issues:
-            issue_count += 1
-            if hasattr(issue, 'pull_request') and issue.pull_request:
+            # Skip pull requests without calling GitHub for more information
+            if issue._pull_request is not GithubObject.NotSet:
                 continue
             issue_title = issue.title
             if issue_title.startswith(cls.TITLE_PREFIX):
@@ -143,8 +142,8 @@ class IssueSubmitter(object):
             if len(results) >= len(loglines):
                 break
 
-        log.debug('Found {similar} similar issues out of {logs} log lines and {issues}.',
-                  {'similar': len(results), 'logs': len(loglines), 'issues': issue_count})
+        log.debug('Found {similar} similar issues for {logs} log lines.',
+                  {'similar': len(results), 'logs': len(loglines)})
 
         return results
 
