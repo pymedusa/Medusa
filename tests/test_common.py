@@ -98,7 +98,7 @@ import pytest
         'expected': Quality.UNKNOWN
     },
 ])
-def test_from_guessit(self, p):
+def test_from_guessit(p):
     # Given
     guess = {
         'screen_size': p.get('screen_size'),
@@ -195,21 +195,21 @@ def test_from_guessit(self, p):
             'source': 'Blu-ray',
         }
     },
-    {  # p11
+    {  # p13
         'quality': Quality.UHD_8K_TV,
         'expected': {
             'screen_size': '4320p',
             'source': 'HDTV',
         }
     },
-    {  # p12
+    {  # p14
         'quality': Quality.UHD_8K_WEBDL,
         'expected': {
             'screen_size': '4320p',
             'source': 'Web',
         }
     },
-    {  # p13
+    {  # p15
         'quality': Quality.UHD_8K_BLURAY,
         'expected': {
             'screen_size': '4320p',
@@ -217,7 +217,7 @@ def test_from_guessit(self, p):
         }
     }
 ])
-def test_to_guessit(self, p):
+def test_to_guessit(p):
     # Given
     quality = p['quality']
     expected = p['expected']
