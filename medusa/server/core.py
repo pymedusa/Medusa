@@ -201,8 +201,8 @@ class AppWebServer(threading.Thread):
         # Static File Handlers
         self.app.add_handlers('.*$', [
             # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img/ico/favicon.ico')}),
+            (r'{base}/favicon\.ico()'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img', 'ico', 'favicon.ico')}),
 
             # images
             (r'{base}/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
