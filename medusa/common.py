@@ -322,34 +322,34 @@ class Quality(object):
 
         # Is it UHD?
         if ep.vres in [2160, 4320]:
-            is_4320p = ep.vres == 4320
+            is_4320 = ep.vres == 4320
             if ep.scan == 'p':
                 # BluRay
                 if ep.bluray:
-                    result = Quality.UHD_8K_BLURAY if is_4320p else Quality.UHD_4K_BLURAY
+                    result = Quality.UHD_8K_BLURAY if is_4320 else Quality.UHD_4K_BLURAY
                 # WEB-DL
                 elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
-                    result = Quality.UHD_8K_WEBDL if is_4320p else Quality.UHD_4K_WEBDL
+                    result = Quality.UHD_8K_WEBDL if is_4320 else Quality.UHD_4K_WEBDL
                 # HDTV
                 else:
-                    result = Quality.UHD_8K_TV if is_4320p else Quality.UHD_4K_TV
+                    result = Quality.UHD_8K_TV if is_4320 else Quality.UHD_4K_TV
 
         # Is it HD?
         elif ep.vres in [1080, 720]:
-            is_1080p = ep.vres == 1080
+            is_1080 = ep.vres == 1080
             if ep.scan == 'p':
                 # BluRay
                 if ep.bluray or ep.hddvd:
-                    result = Quality.FULLHDBLURAY if is_1080p else Quality.HDBLURAY
+                    result = Quality.FULLHDBLURAY if is_1080 else Quality.HDBLURAY
                 # WEB-DL
                 elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
-                    result = Quality.FULLHDWEBDL if is_1080p else Quality.HDWEBDL
+                    result = Quality.FULLHDWEBDL if is_1080 else Quality.HDWEBDL
                 # HDTV and MPEG2 encoded
                 elif ep.tv == 'hd' and ep.mpeg:
                     result = Quality.RAWHDTV
                 # HDTV
                 else:
-                    result = Quality.FULLHDTV if is_1080p else Quality.HDTV
+                    result = Quality.FULLHDTV if is_1080 else Quality.HDTV
             elif ep.scan == 'i' and ep.tv == 'hd' and (ep.mpeg or (ep.raw and ep.avc_non_free)):
                 result = Quality.RAWHDTV
         elif ep.hrws:
