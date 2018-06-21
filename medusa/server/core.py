@@ -2,18 +2,17 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import threading
 from posixpath import join
 
-from medusa import (
-    app,
-    logger,
-)
+from medusa import app
 from medusa.helpers import (
     create_https_certificates,
     generate_api_key,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v1.core import ApiHandler
 from medusa.server.api.v2.alias import AliasHandler
 from medusa.server.api.v2.alias_source import (
@@ -21,7 +20,7 @@ from medusa.server.api.v2.alias_source import (
     AliasSourceOperationHandler,
 )
 from medusa.server.api.v2.auth import AuthHandler
-from medusa.server.api.v2.base import NotFoundHandler
+from medusa.server.api.v2.base import BaseRequestHandler, NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
 from medusa.server.api.v2.internal import InternalHandler
@@ -51,6 +50,9 @@ from tornado.web import (
 )
 
 from tornroutes import route
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def clean_url_path(*args, **kwargs):
@@ -130,6 +132,7 @@ class AppWebServer(threading.Thread):
         assert 'data_root' in self.options
 
         self.server = None
+        self.io_loop = None
 
         # video root
         if app.ROOT_DIRS:
@@ -167,12 +170,12 @@ class AppWebServer(threading.Thread):
             if not (self.https_cert and os.path.exists(self.https_cert)) or not (
                     self.https_key and os.path.exists(self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
-                    logger.log('Unable to create CERT/KEY files, disabling HTTPS')
+                    log.info('Unable to create CERT/KEY files, disabling HTTPS')
                     app.ENABLE_HTTPS = False
                     self.enable_https = False
 
             if not (os.path.exists(self.https_cert) and os.path.exists(self.https_key)):
-                logger.log('Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
+                log.warning('Disabled HTTPS because of missing CERT and KEY files')
                 app.ENABLE_HTTPS = False
                 self.enable_https = False
 
@@ -185,6 +188,7 @@ class AppWebServer(threading.Thread):
             xheaders=app.HANDLE_REVERSE_PROXY,
             cookie_secret=app.WEB_COOKIE_SECRET,
             login_url=r'{root}/login/'.format(root=self.options['theme_path']),
+            log_function=self.log_request,
         )
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
@@ -270,22 +274,24 @@ class AppWebServer(threading.Thread):
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
-                   (scheme=protocol,
-                    host=self.options['host'],
-                    port=self.options['port'],
-                    web_root=self.options['theme_path']))
+        log.info('Starting Medusa on {scheme}://{host}:{port}{web_root}/', {
+            'scheme': protocol, 'host': self.options['host'],
+            'port': self.options['port'], 'web_root': self.options['theme_path']
+        })
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
             if app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
-                logger.log('Launching browser and exiting')
-            logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
+                log.info('Launching browser and exiting')
+            log.info('Could not start the web server on port {port}, already in use!', {
+                'port': self.options['port']
+            })
             os._exit(1)  # pylint: disable=protected-access
 
         try:
+            self.io_loop = IOLoop.current()
             IOLoop.current().start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
@@ -294,3 +300,33 @@ class AppWebServer(threading.Thread):
     def shutDown(self):
         self.alive = False
         IOLoop.current().stop()
+
+    def log_request(self, handler):
+        """
+        Write a completed HTTP request to the logs.
+
+        This method handles logging Tornado requests.
+        """
+        if not app.WEB_LOG:
+            return
+
+        if handler.get_status() < 400:
+            level = logging.INFO
+        elif handler.get_status() < 500:
+            # Don't log normal RESTful responses as warnings
+            if isinstance(handler, BaseRequestHandler):
+                level = logging.INFO
+            else:
+                level = logging.WARNING
+        else:
+            level = logging.ERROR
+
+        log.log(
+            level,
+            '{status} {summary} {time:.2f}ms',
+            {
+                'status': handler.get_status(),
+                'summary': handler._request_summary(),
+                'time': 1000.0 * handler.request.request_time()
+            }
+        )

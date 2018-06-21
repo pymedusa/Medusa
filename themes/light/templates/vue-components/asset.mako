@@ -43,12 +43,12 @@ Vue.component('asset', {
         }
     },
     watch: {
- 		'inViewport.now': function(visible) {
+        'inViewport.now': function(visible) {
             if (!this.isVisible && visible) {
                 this.isVisible = visible;
             }
- 		}
- 	},
+        }
+    },
     template: `#asset-template`
 });
 </script>

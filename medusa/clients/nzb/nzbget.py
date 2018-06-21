@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+import socket
 from base64 import standard_b64encode
 from xmlrpc.client import Error, ProtocolError, ServerProxy
 
@@ -41,9 +42,15 @@ def NZBConnection(url):
         return False
 
     except Error as error:
-        log.warning('Please check your NZBget host and port (if it is'
-                    ' running). NZBget is not responding to this combination'
+        log.warning('Please check your NZBget host and port (if it is running).'
+                    ' NZBget is not responding to this combination.'
                     ' Error: {msg}', {'msg': error.errmsg})
+        return False
+
+    except socket.error as error:
+        log.warning('Please check your NZBget host and port (if it is running).'
+                    ' NZBget is not responding to this combination.'
+                    ' Socket Error: {msg}', {'msg': error})
         return False
 
 

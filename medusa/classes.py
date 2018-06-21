@@ -247,7 +247,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     def select_series(self, all_series):
-        from medusa.helper.common import dateTimeFormat
+        from medusa.helper.common import dateFormat
 
         search_results = []
         series_names = []
@@ -270,7 +270,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
-                                cur_show['firstaired'] = default_date.strftime(dateTimeFormat)
+                                cur_show['firstaired'] = default_date.strftime(dateFormat)
 
                             if cur_show not in search_results:
                                 search_results += [cur_show]

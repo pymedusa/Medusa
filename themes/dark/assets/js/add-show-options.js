@@ -34,10 +34,4 @@ $(document).ready(() => {
     $(document.body).on('change', '#statusSelect, select[name="quality_preset"], #season_folders, select[name="allowed_qualities"], select[name="preferred_qualities"], #subtitles, #scene, #anime, #statusSelectAfter', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
-
-    $(document.body).on('change', 'select[name="quality_preset"]', () => {
-        // Fix issue #181 - force re-render to correct the height of the outer div
-        $('span.prev').click();
-        $('span.next').click();
-    });
 });

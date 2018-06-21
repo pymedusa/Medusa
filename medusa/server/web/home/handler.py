@@ -294,7 +294,12 @@ class Home(WebRoot):
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
         host = config.clean_url(host)
 
-        connection, acces_msg = sab.get_sab_access_method(host)
+        try:
+            connection, acces_msg = sab.get_sab_access_method(host)
+        except Exception as error:
+            logger.log('Error while testing SABnzbd connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
+
         if connection:
             authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
             if authed:
@@ -307,7 +312,11 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
-        connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        try:
+            connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+        except Exception as error:
+            logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
         if connected_status:
             return 'Success. Connected and authenticated'
         else:
@@ -318,9 +327,14 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = torrent.get_client_class(torrent_method)
+        try:
+            client = torrent.get_client_class(torrent_method)
 
-        _, acces_msg = client(host, username, password).test_authentication()
+            _, acces_msg = client(host, username, password).test_authentication()
+        except Exception as error:
+            logger.log('Error while testing {torrent} connection: {error}'.format(
+                torrent=torrent_method or 'torrent', error=error), logger.WARNING)
+            return 'Error while testing connection. Check warning logs.'
 
         return acces_msg
 
@@ -723,13 +737,16 @@ class Home(WebRoot):
             if branch:
                 checkversion.updater.branch = branch
 
+            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
+            t = PageTemplate(rh=self, filename='restart.mako')
+            restart_rendered = t.render(title='Home', header='Restarting Medusa', topmenu='home',
+                                        controller='home', action='restart')
+
             if checkversion.updater.need_update() and checkversion.updater.update():
                 # do a hard restart
                 app.events.put(app.events.SystemEvent.RESTART)
 
-                t = PageTemplate(rh=self, filename='restart.mako')
-                return t.render(title='Home', header='Restarting Medusa', topmenu='home',
-                                controller='home', action='restart')
+                return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
                                             'Update wasn\'t successful, not restarting. Check your log for more information.')
@@ -1649,6 +1666,7 @@ class Home(WebRoot):
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
+                        changed_location = False
                         logger.log("New location '{location}' does not exist. "
                                    "Enable setting 'Create missing show dirs'".format
                                    (location=location), logger.WARNING)
@@ -1973,7 +1991,7 @@ class Home(WebRoot):
 
                     if status == DOWNLOADED and not (
                             ep_obj.status in snatched_qualities + [DOWNLOADED]
-                            and os.path.isfile(ep_obj.location)):
+                            or os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)

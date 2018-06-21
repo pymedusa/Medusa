@@ -75,20 +75,14 @@
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
@@ -123,12 +117,18 @@
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
+        <script src="js/lib/vue-js-toggle-button.js"></script>
+        <script src="js/lib/puex.js"></script>
+        <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
+        <script src="js/notifications.js"></script>
+        <script src="js/store.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
+        <%include file="/vue-components/root-dirs.mako"/>
         <script>
             window.routes = [];
             if ('${bool(app.DEVELOPER)}' === 'True') {
@@ -138,13 +138,16 @@
         </script>
         <%block name="scripts" />
         <script>
-            if (!window.app) {
-                console.info('Loading Vue with router since window.app is missing.');
-                const router = new vueRouter({
+            if (!window.router) {
+                window.router = new vueRouter({
                     base: document.body.getAttribute('api-root').replace('api/v2/', ''),
                     mode: 'history',
                     routes
                 });
+            }
+            Vue.use(window['vue-js-toggle-button'].default);
+            if (!window.app) {
+                console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
                     el: '#vue-wrap',
                     router

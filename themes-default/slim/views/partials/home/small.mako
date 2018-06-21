@@ -145,14 +145,16 @@
                     <td class="tvShow">
                         <div class="imgsmallposter small">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name | h}">
-                                <img src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb" class="small" alt="${cur_show.slug}"/>
+                                <asset default="images/poster.png" series-slug="${cur_show.slug}" type="posterThumb" cls="small" :link="false"></asset>
                             </app-link>
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
                         </div>
                     </td>
                     <td align="center">
                     % if cur_show.network:
-                        <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                        <span title="${cur_show.network}" class="hidden-print">
+                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="small" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                        </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:
                         <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
