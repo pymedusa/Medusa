@@ -8,6 +8,11 @@ import github
 
 logger = logging.getLogger(__name__)
 
+OPTIONS = {
+    'user_agent': 'Medusa',
+    'per_page': 100,
+}
+
 
 def authenticate(username, password):
     """Github authentication.
@@ -21,7 +26,7 @@ def authenticate(username, password):
     """
     try:
         if username or password:
-            gh = github.MainClass.Github(login_or_token=username, password=password, user_agent='Medusa')
+            gh = github.MainClass.Github(login_or_token=username, password=password, **OPTIONS)
 
             # Make a simple request to validate username and password
             gh.get_rate_limit()
@@ -44,7 +49,7 @@ def token_authenticate(token):
     """
     try:
         if token:
-            gh = github.MainClass.Github(login_or_token=token, user_agent='Medusa')
+            gh = github.MainClass.Github(login_or_token=token, **OPTIONS)
 
             # Make a simple request to validate username and password
             gh.get_rate_limit()
@@ -72,7 +77,7 @@ def get_user(gh=None):
     :rtype github.Repository.Repository
     """
     try:
-        gh = gh or github.MainClass.Github(user_agent='Medusa')
+        gh = gh or github.MainClass.Github(**OPTIONS)
         return gh.get_user().login
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
@@ -92,7 +97,7 @@ def get_github_repo(organization, repo, gh=None):
     :rtype github.Repository.Repository
     """
     try:
-        gh = gh or github.MainClass.Github(user_agent='Medusa', per_page=100)
+        gh = gh or github.MainClass.Github(**OPTIONS)
         return gh.get_organization(organization).get_repo(repo)
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)

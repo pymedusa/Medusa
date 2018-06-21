@@ -542,7 +542,11 @@ class TVDBv2(BaseIndexer):
         """
         log.debug('Getting actors for {0}', sid)
 
-        actors = self.config['session'].series_api.series_id_actors_get(sid)
+        try:
+            actors = self.config['session'].series_api.series_id_actors_get(sid)
+        except ApiException as error:
+            log.info('Could not get actors for show id: {0} with reason: {1!r}', sid, error)
+            return
 
         if not actors or not actors.data:
             log.debug('Actors result returned zero')
