@@ -237,6 +237,10 @@ class AppWebServer(threading.Thread):
              {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
+        # Used for hot-swapping themes
+        # This is the 2nd rule from the end, because the last one is always `self.app.wildcard_router`
+        self.app.static_file_handlers = self.app.default_router.rules[-2]
+
         # API v1 handlers
         self.app.add_handlers('.*$', [
             # Main handler

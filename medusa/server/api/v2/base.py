@@ -389,8 +389,8 @@ def set_nested_value(data, key, value):
 class PatchField(object):
     """Represent a field to be patched."""
 
-    def __init__(self, target_type, attr, attr_type,
-                 validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, attr_type, validator=None, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
         if not hasattr(target_type, attr):
             raise ValueError('{0!r} has no attribute {1}'.format(target_type, attr))
@@ -401,6 +401,7 @@ class PatchField(object):
         self.validator = validator or (lambda v: isinstance(v, self.attr_type))
         self.converter = converter or (lambda v: v)
         self.default_value = default_value
+        self.setter = setter
         self.post_processor = post_processor
 
     def patch(self, target, value):
@@ -413,7 +414,10 @@ class PatchField(object):
 
         if valid:
             try:
-                setattr(target, self.attr, self.converter(value))
+                if self.setter:
+                    self.setter(target, self.attr, self.converter(value))
+                else:
+                    setattr(target, self.attr, self.converter(value))
             except AttributeError:
                 log.warning(
                     'Error trying to change attribute %s on target %s, you sure'
@@ -431,44 +435,49 @@ class PatchField(object):
 class StringField(PatchField):
     """Patch string fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
         super(StringField, self).__init__(target_type, attr, string_types, validator=validator, converter=converter,
-                                          default_value=default_value, post_processor=post_processor)
+                                          default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class IntegerField(PatchField):
     """Patch integer fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
         super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class ListField(PatchField):
     """Patch list fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
         super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
-                                        default_value=default_value, post_processor=post_processor)
+                                        default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class BooleanField(PatchField):
     """Patch boolean fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=int, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, validator=None, converter=int, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
         super(BooleanField, self).__init__(target_type, attr, bool, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class EnumField(PatchField):
     """Patch enumeration fields."""
 
-    def __init__(self, target_type, attr, enums, attr_type=text_type,
-                 converter=None, default_value=None, post_processor=None):
+    def __init__(self, target_type, attr, enums, attr_type=text_type, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
         super(EnumField, self).__init__(target_type, attr, attr_type, validator=lambda v: v in enums,
-                                        converter=converter, default_value=default_value, post_processor=post_processor)
+                                        converter=converter, default_value=default_value,
+                                        setter=setter, post_processor=post_processor)
