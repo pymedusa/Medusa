@@ -633,7 +633,7 @@ class TVDBv2(BaseIndexer):
         try:
             while updates and count < weeks:
                 updates = self.config['session'].updates_api.updated_query_get(from_time).data
-                if updates is not None:
+                if updates:
                     last_update_ts = max(x.last_updated for x in updates)
                     from_time = last_update_ts
                     total_updates += [int(_.id) for _ in updates]
