@@ -74,6 +74,8 @@
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
