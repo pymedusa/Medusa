@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
 
@@ -96,9 +97,9 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
+                    jdata = json.loads(response.content.decode('unicode-escape'))
+                except ValueError as error:
+                    log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
 
                 results += self.parse(jdata, mode)
