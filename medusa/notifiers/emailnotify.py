@@ -20,6 +20,21 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
+
+    # Possible patterns:
+    #   Downloaded/Snatched:
+    #     %SN - %Sx%0E - %EN - %QN
+    #     %SN - %Sx%0E - %AB - %EN - %QN
+    #   Subtitle Downloaded:
+    #     %SN - %AB - %EN
+    #     %SN - %AD - %EN
+    #     %SN - S%0SE%0E - %EN
+    name_pattern = re.compile(
+        r'(?P<show>.+?) - '
+        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4}-\d{2}-\d{2}) - '
+        r'(?P<episode>.*)'
+    )
+
     def __init__(self):
         self.last_err = None
 
@@ -44,8 +59,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parseName(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -54,11 +69,15 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Snatched</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode']
+                        ),
                         'html'))
 
                 except Exception:
@@ -91,8 +110,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parseName(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -101,11 +120,15 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Downloaded</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode']
+                        ),
                         'html'))
 
                 except Exception:
@@ -138,8 +161,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parseName(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -148,12 +171,17 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br>'
-                        '<p>Language: <b>{2}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br>'
+                        '<p>Language: <b>{lang}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1), lang),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode'],
+                            lang=lang
+                        ),
                         'html'))
                 except Exception:
                     try:
@@ -256,28 +284,32 @@ class Notifier(object):
 
         # Grab the global recipients
         if app.EMAIL_LIST:
-            for addr in app.EMAIL_LIST:
-                if addr.strip():
-                    addrs.append(addr)
+            addrs.extend(
+                addr for addr in app.EMAIL_LIST
+                if addr.strip()
+            )
 
         # Grab the per-show-notification recipients
-        if show is not None:
-            for s in show:
-                for subs in main_db_con.select(
-                        'SELECT notify_list '
-                        'FROM tv_shows '
-                        'WHERE show_name = ?',
-                        (s,)):
-                    if subs[b'notify_list']:
-                        if subs[b'notify_list'][0] == '{':
-                            entries = dict(ast.literal_eval(subs[b'notify_list']))
-                            for addr in entries[b'emails'].split(','):
-                                if addr.strip():
-                                    addrs.append(addr)
-                        else:                                           # Legacy
-                            for addr in subs[b'notify_list'].split(','):
-                                if addr.strip():
-                                    addrs.append(addr)
+        if show:
+            sql_results = main_db_con.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE show_name = ?',
+                [show]
+            )
+            for row in sql_results:
+                notify_list = row[b'notify_list']
+                if not notify_list:
+                    continue
+
+                if notify_list[0] == '{':
+                    entries = dict(ast.literal_eval(notify_list))
+                    notify_list = entries['emails']
+
+                addrs.extend(
+                    addr for addr in notify_list.split(',')
+                    if addr.strip()
+                )
 
         addrs = set(addrs)
         log.debug('Notification recipients: {0}', addrs)
@@ -325,12 +357,25 @@ class Notifier(object):
             self.last_err = '{0}'.format(error)
             return False
 
-    @staticmethod
-    def _parseEp(ep_name):
+    @classmethod
+    def _parseName(cls, ep_name):
         ep_name = ss(ep_name)
 
-        sep = ' - '
-        titles = ep_name.split(sep)
-        titles.sort(key=len, reverse=True)
-        log.debug('TITLES: {0}', titles)
-        return titles
+        # @TODO: Prone to issues, best solution is to have a dictionary passed to notifiers
+        match = cls.name_pattern.match(ep_name)
+
+        # Fallback
+        if not match:
+            # @TODO: This won't be needed when notifiers receive a dictionary
+            log.warning('Unable to parse {0} for email notification', ep_name)
+            titles = ep_name.split(' - ')
+            return {
+                'show': titles[0],
+                'episode': titles[1:]
+            }
+
+        result = match.groupdict()
+
+        log.debug('Email notifier parsed {0} into {1!r}',
+                  ep_name, result)
+        return result
