@@ -272,6 +272,7 @@ class Series(TV):
             app.showList.append(series)
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
+            series.populate_cache()
             return series
         except IndexerException as error:
             log.warning('Unable to load series from indexer: {0!r}'.format(error))
