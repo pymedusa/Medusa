@@ -760,7 +760,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
 def collect_single_candidates(candidates, results):
     """Collect single-episode result candidates."""
-    single_candidates = results
+    single_candidates = list(results)
 
     # of all the single-ep results narrow it down to the best one for each episode
     for episode in candidates:
