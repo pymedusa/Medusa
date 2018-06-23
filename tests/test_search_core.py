@@ -254,6 +254,31 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
                 'quality': Quality.FULLHDBLURAY
             },
         ]
+    },
+    {  # p5 - higher quality, lower quality and proper lower quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': HD1080p,
+        },
+        'expected': 1,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['PROPER']
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV
+            },
+        ]
     }
 ])
 def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
