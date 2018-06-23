@@ -398,12 +398,12 @@ def sort_results(results):
     return [result[0] for result in wanted_results]
 
 
-def pick_result(sorted_results):
-    """Pick the first result out of a list of sorted candidates."""
-    candidates = sort_results(sorted_results)
+def pick_result(wanted_results):
+    """Pick the first result out of a list of wanted candidates."""
+    candidates = sort_results(wanted_results)
     if not candidates:
         log.debug(u'No results to pick from.')
-        return
+        return None
 
     best_result = candidates[0]
     log.info(u'Picked {0} as the best result.', best_result.name)
@@ -733,7 +733,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                       if result in (SEASON_RESULT, MULTI_EP_RESULT))
         candidates = list(itertools.chain(*candidates))
         if candidates:
-            multi_candidates, single_candidates = collect_multi_condidates(
+            multi_candidates, single_candidates = collect_multi_candidates(
                 candidates, series_obj, episodes, down_cur_quality)
 
             multi_results.extend(multi_candidates)
@@ -745,9 +745,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     found_results[cur_provider.name][number] = [candidate]
 
         # Collect candidates for single-episode results
-        single_candidates = collect_single_candidates(found_results[cur_provider.name],
-                                                      single_results)
-        single_results.extend(single_candidates)
+        single_results = collect_single_candidates(found_results[cur_provider.name],
+                                                   single_results)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -761,7 +760,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
 def collect_single_candidates(candidates, results):
     """Collect single-episode result candidates."""
-    single_candidates = []
+    single_candidates = results
 
     # of all the single-ep results narrow it down to the best one for each episode
     for episode in candidates:
@@ -774,10 +773,10 @@ def collect_single_candidates(candidates, results):
             continue
 
         result_candidates = []
-        for i, candidate in enumerate(results):
+        for i, candidate in enumerate(single_candidates):
             if episode in candidate.actual_episodes:
                 result_candidates.append(candidate)
-                del results[i]
+                del single_candidates[i]
 
         best_result = pick_result(result_candidates + wanted_results)
 
@@ -788,7 +787,7 @@ def collect_single_candidates(candidates, results):
     return single_candidates
 
 
-def collect_multi_condidates(candidates, series_obj, episodes, down_cur_quality):
+def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality):
     """Collect mutli-episode and season result candidates."""
     multi_candidates = []
     single_candidates = []
@@ -929,7 +928,7 @@ def combine_results(multi_results, single_results):
                 if ep_obj in result.episodes:
                     log.debug(
                         u'A needed multi-episode result overlaps with a single-episode result'
-                        u' for episode {0}, replacing the single-episode results from the list',
+                        u' for episode {0}, removing the single-episode results from the list',
                         ep_obj.episode,
                     )
                     del single_results[i]
