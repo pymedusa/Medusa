@@ -330,7 +330,7 @@ const store = new Puex({
                 }
             // }).then(setTimeout(() => dispatch('getConfig'), 500));
             // For now we reload the page since the layouts use python still
-            }).then(location.reload());
+            }).then(setTimeout(() => location.reload(), 500));
         }
     },
     // @TODO Add logging here
