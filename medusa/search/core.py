@@ -381,11 +381,18 @@ def sort_results(results):
         wanted_results.append((result, score))
         wanted_results.sort(key=operator.itemgetter(1), reverse=True)
 
+    header = '{0:<6} {1}'.format('Score', 'Release')
     log.debug(
         u'Computed result scores:'
-        u'\nScore\tRelease'
-        u'\n{0}', '\n'.join('{score}\t{name}'.format(score=item[1], name=item[0].name)
-                            for item in wanted_results)
+        u'\n{header}'
+        u'\n{results}',
+        {
+            'header': header,
+            'results': '\n'.join(
+                '{score:<6} {name}'.format(score=item[1], name=item[0].name)
+                for item in wanted_results
+            )
+        }
     )
 
     return [result[0] for result in wanted_results]
