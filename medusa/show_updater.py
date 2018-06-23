@@ -72,8 +72,8 @@ class ShowUpdater(object):
                 indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                            u'connectivity issues. While trying to look for show updates.',
-                            indexer_name=indexerApi(show.indexer).name)
+                               u'connectivity issues. While trying to look for show updates.',
+                               indexer_name=indexerApi(show.indexer).name)
                 logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                             u'connectivity issues. While trying to look for show updates on show: {show}',
                             indexer_name=indexerApi(show.indexer).name, show=show.name)
@@ -94,6 +94,9 @@ class ShowUpdater(object):
                             last_update, update_max_weeks
                         )
                     except IndexerUnavailable:
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'connectivity issues while trying to look for show updates.',
+                                       indexer_name=indexerApi(show.indexer).name)
                         logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                     u'connectivity issues while trying to look for show updates on show: {show}',
                                     indexer_name=indexerApi(show.indexer).name, show=show.name)
@@ -152,8 +155,11 @@ class ShowUpdater(object):
                     updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update,
                                                                            update_max_weeks)
                 except IndexerUnavailable:
+                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                   u'connectivity issues while trying to look for show updates.',
+                                   indexer_name=indexerApi(show.indexer).name)
                     logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                u'connectivity issues while trying to look for showupdates on show: {show}',
+                                u'connectivity issues while trying to look for show updates on show: {show}',
                                 indexer_name=indexerApi(show.indexer).name, show=show.name)
                     continue
                 except IndexerException as e:
