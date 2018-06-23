@@ -736,7 +736,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             multi_candidates, single_candidates = collect_multi_candidates(
                 candidates, series_obj, episodes, down_cur_quality)
 
-            multi_results.extend(multi_candidates)
+            multi_results += multi_candidates
 
             for number, candidate in single_candidates:
                 if number in found_results[cur_provider.name]:
@@ -761,6 +761,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 def collect_single_candidates(candidates, results):
     """Collect single-episode result candidates."""
     single_candidates = list(results)
+    new_candidates = []
 
     # of all the single-ep results narrow it down to the best one for each episode
     for episode in candidates:
@@ -782,9 +783,9 @@ def collect_single_candidates(candidates, results):
 
         # Skip the result if search delay is enabled for the provider
         if not delay_search(best_result):
-            single_candidates.append(best_result)
+            new_candidates.append(best_result)
 
-    return single_candidates
+    return single_candidates + new_candidates
 
 
 def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality):
