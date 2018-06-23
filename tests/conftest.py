@@ -276,12 +276,16 @@ def github_repo():
 @pytest.fixture
 def create_github_issue(monkeypatch):
     def create(title, body=None, locked=False, number=1, **kwargs):
-        target = Issue(Mock(), Mock(), dict(), True)
         raw_data = {
+            'title': title,
+            'body': body,
+            'number': number,
             'locked': locked
         }
-        _patch_object(monkeypatch, target, number=number, title=title, body=body, raw_data=raw_data)
-        return target
+        raw_data.update(kwargs)
+        # Set url to a unique value, because that's how issues are compared
+        raw_data['url'] = str(hash(tuple(raw_data.values())))
+        return Issue(Mock(), Mock(), raw_data, True)
 
     return create
 

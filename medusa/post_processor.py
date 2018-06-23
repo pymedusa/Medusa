@@ -319,7 +319,7 @@ class PostProcessor(object):
     def _rar_basename(file_path, files):
         """Return the lowercase basename of the source rar archive if found."""
         videofile = os.path.basename(file_path)
-        rars = (x for x in files if rarfile.is_rarfile(x))
+        rars = (x for x in files if os.path.isfile(x) and rarfile.is_rarfile(x))
 
         for rar in rars:
             try:

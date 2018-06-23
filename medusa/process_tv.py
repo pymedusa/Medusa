@@ -17,20 +17,16 @@ from medusa.helper.exceptions import EpisodePostProcessingFailedException, Faile
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-import shutil_custom
-
 from six import iteritems
 
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('@eaDir', '#recycle',)
+    IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
     def __init__(self, path, process_method=None):
 
