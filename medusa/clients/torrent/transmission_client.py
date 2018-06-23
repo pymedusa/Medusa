@@ -23,6 +23,7 @@ from medusa.helpers import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
+import requests.exceptions
 from requests.compat import urljoin
 
 
@@ -61,8 +62,18 @@ class TransmissionAPI(GenericClient):
             'method': 'session-get',
         })
 
-        self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
-                                          verify=app.TORRENT_VERIFY_CERT)
+        try:
+            self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
+                                              verify=app.TORRENT_VERIFY_CERT)
+        except requests.exceptions.ConnectionError as error:
+            log.warning('{name}: Unable to connect. {error}',
+                        {'name': self.name, 'error': error})
+            return False
+        except requests.exceptions.Timeout as error:
+            log.warning('{name}: Connection timed out. {error}',
+                        {'name': self.name, 'error': error})
+            return False
+
         self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
