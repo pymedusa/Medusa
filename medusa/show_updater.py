@@ -113,8 +113,8 @@ class ShowUpdater(object):
 
                         if isinstance(error, HTTPError):
                             if error.response.status_code == 503:
-                                logger.info(u'API Service offline: '
-                                            u'This service is temporarily offline, try again later.')
+                                logger.warning(u'API Service offline: '
+                                               u'This service is temporarily offline, try again later.')
                             elif error.response.status_code == 429:
                                 logger.warning(u'Your request count (#) is over the allowed limit of (40).')
 
