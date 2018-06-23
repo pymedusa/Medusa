@@ -356,27 +356,38 @@ def sort_results(results):
     if app.UNDESIRED_WORDS:
         undesired_words = [word.lower() for word in app.UNDESIRED_WORDS]
 
+    def percentage(percent, whole):
+        return int((percent * whole) / 100.0)
+
     for result in sorted_results:
-        score = 0
+        score = 100
 
         if any(word in result.name.lower() for word in undesired_words):
             log.debug(u'Penalizing release {0} (contains undesired word(s))', result.name)
-            score -= 2
+            score -= percentage(20, score)
 
         if any(word in result.name.lower() for word in preferred_words):
             log.debug(u'Rewarding release {0} (contains preferred word(s))', result.name)
-            score += 2
+            score += percentage(20, score)
 
         if wanted_results:
             allowed_qualities, preferred_qualities = result.series.current_qualities
             if Quality.is_higher_quality(wanted_results[0][0].quality, result.quality,
                                          allowed_qualities, preferred_qualities):
                 log.debug(u'Rewarding release {0} (higher quality)', result.name)
-                score += 1
+                score += percentage(10, score)
 
             elif result.proper_tags and wanted_results[0][0].quality == result.quality:
                 log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
-                score += 1
+                score += percentage(10, score)
+        else:
+            # First quality
+            log.debug(u'Rewarding release {0} (first quality)', result.name)
+            score += percentage(5, score)
+
+            if result.proper_tags:
+                log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
+                score += percentage(5, score)
 
         wanted_results.append((result, score))
         wanted_results.sort(key=operator.itemgetter(1), reverse=True)
