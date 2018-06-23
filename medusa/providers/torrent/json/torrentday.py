@@ -4,9 +4,10 @@
 
 from __future__ import unicode_literals
 
-import json
 import logging
 import re
+
+import dirtyjson as djson
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -97,7 +98,7 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = json.loads(response.content.decode('unicode-escape'))
+                    jdata = djson.loads(response.content)
                 except ValueError as error:
                     log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
