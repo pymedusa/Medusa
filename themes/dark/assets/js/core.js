@@ -38,11 +38,13 @@ const UTIL = {
             const series = $(this).attr('series');
             const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
+                const defaultPath = $(this).attr('src');
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
                 } else {
                     $(this).attr('src', path);
                 }
+                $(this).attr('onerror', 'this.src = "' + defaultPath + '"; return false;');
             }
             if (this.tagName.toLowerCase() === 'a') {
                 $(this).attr('href', path);
