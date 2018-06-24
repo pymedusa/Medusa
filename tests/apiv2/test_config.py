@@ -25,20 +25,20 @@ def config(monkeypatch, app_config):
 
     config_data = NonEmptyDict()
     config_data['anonRedirect'] = app.ANON_REDIRECT
-    config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
-    config_data['animeSplitHomeInTabs'] = app.ANIME_SPLIT_HOME_IN_TABS
+    config_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
+    config_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
-    config_data['comingEpsDisplayPaused'] = app.COMING_EPS_DISPLAY_PAUSED
+    config_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
     config_data['datePreset'] = app.DATE_PRESET
-    config_data['fuzzyDating'] = app.FUZZY_DATING
+    config_data['fuzzyDating'] = bool(app.FUZZY_DATING)
     config_data['themeName'] = app.THEME_NAME
     config_data['posterSortby'] = app.POSTER_SORTBY
     config_data['posterSortdir'] = app.POSTER_SORTDIR
     config_data['rootDirs'] = app.ROOT_DIRS
-    config_data['sortArticle'] = app.SORT_ARTICLE
+    config_data['sortArticle'] = bool(app.SORT_ARTICLE)
     config_data['timePreset'] = app.TIME_PRESET
-    config_data['trimZero'] = app.TRIM_ZERO
-    config_data['fanartBackground'] = app.FANART_BACKGROUND
+    config_data['trimZero'] = bool(app.TRIM_ZERO)
+    config_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
     config_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
     config_data['branch'] = app.BRANCH
     config_data['commitHash'] = app.CUR_COMMIT_HASH
@@ -49,8 +49,8 @@ def config(monkeypatch, app_config):
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
     config_data['os'] = platform.platform()
-    config_data['locale'] = app_locale
-    config_data['localUser'] = os_user
+    config_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
+    config_data['localUser'] = app.OS_USER or 'Unknown'
     config_data['programDir'] = app.PROG_DIR
     config_data['configFile'] = app.CONFIG_FILE
     config_data['dbPath'] = db.DBConnection().path
@@ -62,13 +62,31 @@ def config(monkeypatch, app_config):
     config_data['wikiUrl'] = app.WIKI_URL
     config_data['sourceUrl'] = app.APPLICATION_URL
     config_data['downloadUrl'] = app.DOWNLOAD_URL
-    config_data['subtitlesMulti'] = app.SUBTITLES_MULTI
-    config_data['namingForceFolders'] = app.NAMING_FORCE_FOLDERS
+    config_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
+    config_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
     config_data['subtitles'] = NonEmptyDict()
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
 
+    config_data['news'] = NonEmptyDict()
+    config_data['news']['lastRead'] = app.NEWS_LAST_READ
+    config_data['news']['latest'] = app.NEWS_LATEST
+    config_data['news']['unread'] = app.NEWS_UNREAD
+
     config_data['kodi'] = NonEmptyDict()
-    config_data['kodi']['enabled'] = bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
+    config_data['kodi']['enabled'] = bool(app.USE_KODI)
+    config_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
+    config_data['kodi']['notify'] = NonEmptyDict()
+    config_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
+    config_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
+    config_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+    config_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
+    config_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
+    config_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
+    config_data['kodi']['host'] = app.KODI_HOST
+    config_data['kodi']['username'] = app.KODI_USERNAME
+    # config_data['kodi']['password'] = app.KODI_PASSWORD
+    config_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
+    config_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
 
     config_data['plex'] = NonEmptyDict()
     config_data['plex']['server'] = NonEmptyDict()
@@ -102,17 +120,15 @@ def config(monkeypatch, app_config):
     config_data['torrents']['method'] = app.TORRENT_METHOD
     # config_data['torrents']['password'] = app.TORRENT_PASSWORD
     config_data['torrents']['path'] = app.TORRENT_PATH
-    config_data['torrents']['paused'] = app.TORRENT_PAUSED
+    config_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
     config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
     config_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
     config_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
     config_data['torrents']['username'] = app.TORRENT_USERNAME
-    config_data['torrents']['verifySSL'] = app.TORRENT_VERIFY_CERT
+    config_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
 
     config_data['nzb'] = NonEmptyDict()
     config_data['nzb']['enabled'] = bool(app.USE_NZBS)
-    config_data['nzb']['username'] = app.NZBGET_USERNAME
-    # config_data['nzb']['password'] = app.NZBGET_PASSWORD
     config_data['nzb']['dir'] = app.NZB_DIR
     config_data['nzb']['method'] = app.NZB_METHOD
     config_data['nzb']['nzbget'] = NonEmptyDict()
@@ -123,7 +139,7 @@ def config(monkeypatch, app_config):
     config_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
     # config_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
     config_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
-    config_data['nzb']['nzbget']['useHttps'] = app.NZBGET_USE_HTTPS
+    config_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
     config_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
 
     config_data['nzb']['sabnzbd'] = NonEmptyDict()
@@ -132,7 +148,7 @@ def config(monkeypatch, app_config):
     config_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
     config_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
     config_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
-    config_data['nzb']['sabnzbd']['forced'] = app.SAB_FORCED
+    config_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
     config_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
     # config_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
     config_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
