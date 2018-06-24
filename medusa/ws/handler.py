@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 
-from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
@@ -16,18 +15,6 @@ log.logger.addHandler(logging.NullHandler())
 
 clients = []
 backlogged_msgs = []
-
-
-def push_to_websocket(msg):
-    """Push a message to all connected WebSocket clients."""
-    if not clients:
-        # No clients so let's backlog this
-        # @TODO: This has a chance to spam the user with notifications
-        # backlogged_msgs.append(msg)
-        return
-    main_io_loop = app.instance.web_server.io_loop
-    for client in clients:
-        main_io_loop.add_callback(client.write_message, msg)
 
 
 class WebSocketUIHandler(WebSocketHandler):
