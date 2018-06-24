@@ -49,8 +49,8 @@ def config(monkeypatch, app_config):
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
     config_data['os'] = platform.platform()
-    config_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
-    config_data['localUser'] = app.OS_USER or 'Unknown'
+    config_data['locale'] = app_locale
+    config_data['localUser'] = os_user
     config_data['programDir'] = app.PROG_DIR
     config_data['configFile'] = app.CONFIG_FILE
     config_data['dbPath'] = db.DBConnection().path
