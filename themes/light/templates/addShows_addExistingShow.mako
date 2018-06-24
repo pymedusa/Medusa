@@ -47,13 +47,20 @@ const startVue = () => {
             },
             displayPaths() {
                 // Mark the root dir as bold in the path
+                const appendSepChar = path => {
+                    const sepChar = (() => {
+                        if (path.includes('\\')) return '\\';
+                        if (path.includes('/')) return '/';
+                        return '';
+                    })();
+                    return path.slice(-1) !== sepChar ? path + sepChar : path;
+                };
                 return this.filteredDirList
                     .map(dir => {
                         const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
                         if (!rootDirObj) return dir.path;
-                        const rootDir = rootDirObj.path;
-                        const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
-                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
+                        const rootDir = appendSepChar(rootDirObj.path);
+                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
                     });
             },
