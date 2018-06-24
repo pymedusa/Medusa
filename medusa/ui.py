@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import datetime
-import json
 from builtins import object
 
 from medusa import app, ws
@@ -45,14 +44,7 @@ class Notifications(object):
         # self._messages.append(Notification(title, message, MESSAGE))
         new_notification = Notification(title, message, MESSAGE)
 
-        ws.push_message(
-            ws.Message('notification', {
-                'title': new_notification.title,
-                'body': new_notification.message,
-                'type': new_notification.notification_type,
-                'hash': hash(new_notification)
-            })
-        )
+        ws.push_message(ws.Message('notification', new_notification.data))
 
     def error(self, title, message=''):
         """
@@ -63,14 +55,7 @@ class Notifications(object):
         """
         new_notification = Notification(title, message, ERROR)
 
-        ws.push_message(
-            ws.Message('notification', {
-                'title': new_notification.title,
-                'body': new_notification.message,
-                'type': new_notification.notification_type,
-                'hash': hash(new_notification)
-            })
-        )
+        ws.push_message(ws.Message('notification', new_notification.data))
 
     def get_notifications(self, remote_ip='127.0.0.1'):
         """
@@ -112,6 +97,15 @@ class Notification(object):
             self._timeout = timeout
         else:
             self._timeout = datetime.timedelta(minutes=1)
+
+    @property
+    def data(self):
+        return {
+            'title': self.title,
+            'body': self.message,
+            'type': self.notification_type,
+            'hash': hash(self)
+        }
 
     def is_new(self, remote_ip='127.0.0.1'):
         """
