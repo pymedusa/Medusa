@@ -70,8 +70,6 @@ class ConfigHandler(BaseRequestHandler):
         'torrents.username': StringField(app, 'TORRENT_USERNAME'),
         'torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
         'nzb.enabled': BooleanField(app, 'USE_NZBS'),
-        'nzb.username': StringField(app, 'NZBGET_USERNAME'),
-        'nzb.password': StringField(app, 'NZBGET_PASSWORD'),
         'nzb.dir': StringField(app, 'NZB_DIR'),
         'nzb.method': StringField(app, 'NZB_METHOD'),
         'nzb.nzbget.category': StringField(app, 'NZBGET_CATEGORY'),
@@ -229,8 +227,26 @@ class DataGenerator(object):
         section_data['subtitles'] = NonEmptyDict()
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
 
+        section_data['news'] = NonEmptyDict()
+        section_data['news']['lastRead'] = NEWS_LAST_READ
+        section_data['news']['latest'] = NEWS_LATEST
+        section_data['news']['unread'] = NEWS_UNREAD
+
         section_data['kodi'] = NonEmptyDict()
-        section_data['kodi']['enabled'] = bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
+        section_data['kodi']['enabled'] = bool(app.USE_KODI)
+        section_data['kodi']['alwaysOn'] = bool(KODI_ALWAYS_ON)
+        section_data['kodi']['notify'] = NonEmptyDict()
+        section_data['kodi']['notify']['snatch'] = bool(KODI_NOTIFY_ONSNATCH)
+        section_data['kodi']['notify']['download'] = bool(KODI_NOTIFY_ONDOWNLOAD)
+        section_data['kodi']['notify']['subtitleDownload'] = bool(KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['kodi']['update']['library'] = bool(KODI_UPDATE_LIBRARY)
+        section_data['kodi']['update']['full'] = bool(KODI_UPDATE_FULL)
+        section_data['kodi']['update']['onlyFirst'] = bool(KODI_UPDATE_ONLYFIRST)
+        section_data['kodi']['host'] = KODI_HOST
+        section_data['kodi']['username'] = KODI_USERNAME
+        # section_data['kodi']['password'] = KODI_PASSWORD
+        section_data['kodi']['libraryCleanPending'] = bool(KODI_LIBRARY_CLEAN_PENDING)
+        section_data['kodi']['cleanLibrary'] = bool(KODI_CLEAN_LIBRARY)
 
         section_data['plex'] = NonEmptyDict()
         section_data['plex']['server'] = NonEmptyDict()
@@ -273,8 +289,6 @@ class DataGenerator(object):
 
         section_data['nzb'] = NonEmptyDict()
         section_data['nzb']['enabled'] = bool(app.USE_NZBS)
-        section_data['nzb']['username'] = app.NZBGET_USERNAME
-        # section_data['nzb']['password'] = app.NZBGET_PASSWORD
         section_data['nzb']['dir'] = app.NZB_DIR
         section_data['nzb']['method'] = app.NZB_METHOD
         section_data['nzb']['nzbget'] = NonEmptyDict()

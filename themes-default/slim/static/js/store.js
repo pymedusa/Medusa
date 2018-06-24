@@ -86,11 +86,16 @@ const store = new Puex({
                 dir: null,
                 enabled: null,
                 highBandwidth: null,
+                host: null,
                 label: null,
+                labelAnime: null,
                 method: null,
+                path: null,
                 paused: null,
                 rpcurl: null,
+                seedLocation: null,
                 seedTime: null,
+                username: null,
                 verifySSL: null
             },
             layout: {
@@ -112,19 +117,20 @@ const store = new Puex({
                     categoryAnime: null,
                     categoryAnimeBacklog: null,
                     categoryBacklog: null,
+                    host: null,
                     priority: null,
                     useHttps: null,
                     username: null
                 },
-                password: null,
                 sabnzbd: {
                     category: null,
                     forced: null,
                     categoryAnime: null,
                     categoryBacklog: null,
-                    categoryAnimeBacklog: null
-                },
-                username: null
+                    categoryAnimeBacklog: null,
+                    host: null,
+                    username: null
+                }
             },
             configFile: null,
             fanartBackground: null,
@@ -148,6 +154,7 @@ const store = new Puex({
             plex: {
                 client: {
                     host: [],
+                    username: null,
                     enabled: null
                 },
                 server: {
@@ -171,7 +178,21 @@ const store = new Puex({
             },
             posterSortby: null,
             kodi: {
-                enabled: null
+                enabled: null,
+                alwaysOn: null,
+                notify: {
+                    snatch: null,
+                    download: null,
+                    subtitleDownload: null,
+                    library: null,
+                    full: null,
+                    onlyFirst: null
+                }
+            },
+            news: {
+                lastRead: null,
+                latest: null,
+                unread: null
             },
             sslVersion: null,
             pythonVersion: null,
