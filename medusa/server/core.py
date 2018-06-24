@@ -38,7 +38,7 @@ from medusa.server.web import (
     TokenHandler,
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
-from medusa.ws import MedusaWebSocketHandler
+from medusa.ws.handler import WebSocketUIHandler
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -195,7 +195,7 @@ class AppWebServer(threading.Thread):
 
         # Websocket handler
         self.app.add_handlers(".*$", [
-            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), WebSocketUIHandler)
         ])
 
         # Static File Handlers

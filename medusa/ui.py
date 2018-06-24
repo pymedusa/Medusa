@@ -23,7 +23,7 @@ import json
 from builtins import object
 
 from medusa import app
-from medusa.ws.MedusaWebSocketHandler import push_to_websocket
+from medusa.ws.handler import push_to_websocket
 
 MESSAGE = 'notice'
 ERROR = 'error'
