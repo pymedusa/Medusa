@@ -79,6 +79,7 @@ def config(monkeypatch, app_config):
     config_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
     config_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
     config_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+    config_data['kodi']['update'] = NonEmptyDict()
     config_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
     config_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
     config_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)

@@ -239,6 +239,7 @@ class DataGenerator(object):
         section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
         section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
         section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['kodi']['update'] = NonEmptyDict()
         section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
         section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
         section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
