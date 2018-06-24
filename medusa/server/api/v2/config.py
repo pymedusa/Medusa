@@ -228,25 +228,25 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
 
         section_data['news'] = NonEmptyDict()
-        section_data['news']['lastRead'] = NEWS_LAST_READ
-        section_data['news']['latest'] = NEWS_LATEST
-        section_data['news']['unread'] = NEWS_UNREAD
+        section_data['news']['lastRead'] = app.NEWS_LAST_READ
+        section_data['news']['latest'] = app.NEWS_LATEST
+        section_data['news']['unread'] = app.NEWS_UNREAD
 
         section_data['kodi'] = NonEmptyDict()
         section_data['kodi']['enabled'] = bool(app.USE_KODI)
-        section_data['kodi']['alwaysOn'] = bool(KODI_ALWAYS_ON)
+        section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
         section_data['kodi']['notify'] = NonEmptyDict()
-        section_data['kodi']['notify']['snatch'] = bool(KODI_NOTIFY_ONSNATCH)
-        section_data['kodi']['notify']['download'] = bool(KODI_NOTIFY_ONDOWNLOAD)
-        section_data['kodi']['notify']['subtitleDownload'] = bool(KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-        section_data['kodi']['update']['library'] = bool(KODI_UPDATE_LIBRARY)
-        section_data['kodi']['update']['full'] = bool(KODI_UPDATE_FULL)
-        section_data['kodi']['update']['onlyFirst'] = bool(KODI_UPDATE_ONLYFIRST)
-        section_data['kodi']['host'] = KODI_HOST
-        section_data['kodi']['username'] = KODI_USERNAME
-        # section_data['kodi']['password'] = KODI_PASSWORD
-        section_data['kodi']['libraryCleanPending'] = bool(KODI_LIBRARY_CLEAN_PENDING)
-        section_data['kodi']['cleanLibrary'] = bool(KODI_CLEAN_LIBRARY)
+        section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
+        section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
+        section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
+        section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
+        section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
+        section_data['kodi']['host'] = app.KODI_HOST
+        section_data['kodi']['username'] = app.KODI_USERNAME
+        # section_data['kodi']['password'] = app.KODI_PASSWORD
+        section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
+        section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
 
         section_data['plex'] = NonEmptyDict()
         section_data['plex']['server'] = NonEmptyDict()
