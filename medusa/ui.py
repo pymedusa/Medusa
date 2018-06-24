@@ -44,7 +44,8 @@ class Notifications(object):
         # self._messages.append(Notification(title, message, MESSAGE))
         new_notification = Notification(title, message, MESSAGE)
 
-        ws.push_message(ws.Message('notification', new_notification.data))
+        msg = ws.Message('notification', new_notification.data)
+        msg.push()
 
     def error(self, title, message=''):
         """
@@ -55,7 +56,8 @@ class Notifications(object):
         """
         new_notification = Notification(title, message, ERROR)
 
-        ws.push_message(ws.Message('notification', new_notification.data))
+        msg = ws.Message('notification', new_notification.data)
+        msg.push()
 
     def get_notifications(self, remote_ip='127.0.0.1'):
         """

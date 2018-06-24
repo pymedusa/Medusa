@@ -162,11 +162,11 @@ class ConfigHandler(BaseRequestHandler):
         app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = {
+        msg = ws.Message('configUpdated', {
             'section': identifier,
             'config': DataGenerator.get_data(identifier)
-        }
-        ws.push_message(ws.Message('configUpdated', msg))
+        })
+        msg.push()
 
         self._ok(data=accepted)
 
