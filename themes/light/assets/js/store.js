@@ -348,24 +348,27 @@ const store = new Puex({
         // Default handler called for all websocket methods
         [SOCKET_ONMESSAGE](state, message) {
             const { data, event } = message;
-            const { body, hash, type, title } = data;
 
             // Set the current message
             state.socket.message = message;
 
             // Show the notification to the user
             if (event === 'notification') {
+                const { body, hash, type, title } = data;
                 displayNotification(type, title, body, hash);
-            } else {
-                displayNotification('info', '', message);
-            }
 
-            // Save it so we can look it up later
-            const existingMessage = state.socket.messages.filter(message => message.hash === hash);
-            if (existingMessage.length === 1) {
-                state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
+                // Save it so we can look it up later
+                const existingMessage = state.socket.messages.filter(message => message.hash === hash);
+                if (existingMessage.length === 1) {
+                    state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
+                } else {
+                    state.socket.messages.push(message);
+                }
+            } else if (event === 'configUpdated') {
+                const { section, config } = data;
+                updateConfig(state, { section, config });
             } else {
-                state.socket.messages.push(message);
+                displayNotification('info', event, data);
             }
         },
         // Mutations for websocket reconnect methods
@@ -389,12 +392,7 @@ const store = new Puex({
             state.notifications.enabled = false;
         },
         [ADD_CONFIG](state, { section, config }) {
-            if (section === 'main') {
-                state.config = config;
-            }
-            if (['qualities', 'statuses'].includes(section)) {
-                state[section] = config;
-            }
+            updateConfig(state, { section, config });
         },
         [ADD_SHOW](state, show) {
             const { shows } = state;
@@ -447,7 +445,7 @@ const store = new Puex({
             if (section !== 'main') {
                 return;
             }
-            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+            return api.patch('config/' + section, config);
         },
         getShow(context, { indexer, id }) {
             const { commit } = context;
@@ -478,7 +476,6 @@ const store = new Puex({
                 layout: {
                     [page]: layout
                 }
-            // }).then(setTimeout(() => dispatch('getConfig'), 500));
             // For now we reload the page since the layouts use python still
             }).then(setTimeout(() => location.reload(), 500));
         }
@@ -486,6 +483,15 @@ const store = new Puex({
     // @TODO Add logging here
     plugins: []
 });
+
+const updateConfig = (state, { section, config }) => {
+    if (section === 'main') {
+        state.config = config;
+    }
+    if (['qualities', 'statuses'].includes(section)) {
+        state[section] = config;
+    }
+};
 
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
