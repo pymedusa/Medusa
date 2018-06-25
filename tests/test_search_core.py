@@ -261,7 +261,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
             'UNDESIRED_WORDS': [],
         },
         'series': {
-            'quality': HD1080p,
+            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV])
         },
         'expected': 1,  # Index of the expected result
         'results': [
