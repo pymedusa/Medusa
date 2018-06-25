@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<%include file="/vue-components/select-list-ui.mako"/>
 <%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
 window.app = {};
