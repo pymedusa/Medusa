@@ -338,6 +338,14 @@ const store = new Puex({
                 });
             });
         },
+        setConfig(context, { section, config }) {
+            const { dispatch } = context;
+
+            if (section !== 'main') {
+                return;
+            }
+            return api.patch('config' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+        },
         getShow(context, { indexer, id }) {
             return api.get('/series/' + indexer + id).then(res => {
                 store.commit(ADD_SHOW, res.data);
@@ -359,7 +367,7 @@ const store = new Puex({
             return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
-            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
+            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
         },
         setLayout(context, { page, layout }) {
             return api.patch('config/main', {
