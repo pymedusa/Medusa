@@ -12,6 +12,7 @@ const startVue = () => {
     window.app = new Vue({
         store,
         el: '#vue-wrap',
+        store,
         metaInfo: {
             title: 'Backlog Overview'
         },
@@ -20,7 +21,36 @@ const startVue = () => {
                 header: 'Backlog Overview'
             };
         },
+        computed: Object.assign(store.mapState(['config']), {
+            period: {
+                get() {
+                    return this.config.backlogOverview.period;
+                },
+                set(value) {
+                    const { dispatch, commit } = store;
+                    return this.setConfig({dispatch, commit}, { config: { backlogOverview: { period: value } } });
+                }
+            },
+            status: {
+                get() {
+                    return this.config.backlogOverview.status;
+                },
+                set(value) {
+                    const { dispatch, commit } = store;
+                    return this.setConfig({dispatch, commit}, { config: { backlogOverview: { status: value } } });
+                }
+            }
+        }),
+        methods: {
+            setConfig(context, { section, config }) {
+                return api.patch('config/' + (section || 'main'), config).then(setTimeout(() => location.reload(), 500));
+            }
+        },
         mounted() {
+            const { $store } = this;
+
+            $store.dispatch('getConfig');
+
             checkForcedSearch();
 
             function checkForcedSearch() {
@@ -80,32 +110,6 @@ const startVue = () => {
                 if (id) {
                     $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
                 }
-            });
-
-            $('#backlog_period').on('change', function() {
-                api.patch('config/main', {
-                    backlogOverview: {
-                        period: $(this).val()
-                    }
-                }).then(response => {
-                    log.info(response);
-                    window.location.reload();
-                }).catch(err => {
-                    log.error(err);
-                });
-            });
-
-            $('#backlog_status').on('change', function() {
-                api.patch('config/main', {
-                    backlogOverview: {
-                        status: $(this).val()
-                    }
-                }).then(response => {
-                    log.info(response);
-                    window.location.reload();
-                }).catch(err => {
-                    log.error(err);
-                });
             });
 
             $('.forceBacklog').on('click', function() {
@@ -188,19 +192,19 @@ const startVue = () => {
             </select>
         </div>
         <div class="show-option pull-left">Period:
-            <select id="backlog_period" class="form-control-inline input-sm-custom">
-                <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
-                <option value="one_day" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_day' else ''}>Last 24h</option>
-                <option value="three_days" ${'selected="selected"' if app.BACKLOG_PERIOD == 'three_days' else ''}>Last 3 days</option>
-                <option value="one_week" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_week' else ''}>Last 7 days</option>
-                <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
+            <select v-model="period" id="backlog_period" class="form-control-inline input-sm-custom">
+                <option value="all" :selected="period === 'all'">All</option>
+                <option value="one_day" :selected="period === 'one_day'">Last 24h</option>
+                <option value="three_days" :selected="period === 'three_days'">Last 3 days</option>
+                <option value="one_week" :selected="period === 'one_week'">Last 7 days</option>
+                <option value="one_month" :selected="period === 'one_month'">Last 30 days</option>
             </select>
         </div>
         <div class="show-option pull-left">Status:
-            <select id="backlog_status" class="form-control-inline input-sm-custom">
-                <option value="all" ${'selected="selected"' if app.BACKLOG_STATUS == 'all' else ''}>All</option>
-                <option value="quality" ${'selected="selected"' if app.BACKLOG_STATUS == 'quality' else ''}>Quality</option>
-                <option value="wanted" ${'selected="selected"' if app.BACKLOG_STATUS == 'wanted' else ''}>Wanted</option>
+            <select v-model="status" id="backlog_status" class="form-control-inline input-sm-custom">
+                <option value="all" :selected="status === 'all'">All</option>
+                <option value="quality" :selected="status === 'quality'">Quality</option>
+                <option value="wanted" :selected="status === 'wanted'">Wanted</option>
             </select>
         </div>
 
