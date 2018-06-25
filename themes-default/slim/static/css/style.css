@@ -3054,6 +3054,11 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.form-control-inline-max {
+    display: inline;
+    width: 100%;
+}
+
 .input-sm-smallfont {
     font-size: 11px;
 }
@@ -3484,6 +3489,42 @@ input sizing (for config pages)
 
 .input350 {
     width: 350px;
+    margin-top: -4px;
+}
+
+/* Added max-width, as setting width is really not optimal on smaller viewports */
+.max-input75 {
+    max-width: 75px;
+    margin-top: -4px;
+}
+
+.max-input100 {
+    max-width: 100px;
+    margin-top: -4px;
+}
+
+.max-input150 {
+    max-width: 150px;
+    margin-top: -4px;
+}
+
+.max-input200 {
+    max-width: 200px;
+    margin-top: -4px;
+}
+
+.max-input250 {
+    max-width: 250px;
+    margin-top: -4px;
+}
+
+.max-input300 {
+    max-width: 300px;
+    margin-top: -4px;
+}
+
+.max-input350 {
+    max-width: 350px;
     margin-top: -4px;
 }
 

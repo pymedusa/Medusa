@@ -26,29 +26,18 @@
             </div>
                     
             <div id="naming_custom">
-                <div class="form-group" style="padding-top: 0;">
+                <div v-if="isCustom" class="form-group" style="padding-top: 0;">
                     <label class="col-sm-2 control-label">
                         <span>&nbsp;</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <input v-if="isCustom" type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control input-sm input350"/>
-                        <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend" />
+                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control-inline-max input-sm max-input350"/>
+                        <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend"/>
                     </div>
                 </div>
 
-                <div v-if="selectedMultiEpStyle" class="form-group">
-                    <label class="col-sm-2 control-label" for="naming_multi_ep">
-                        <span>Multi-Episode Style:</span>
-                    </label>
-                    <div class="col-sm-10 content">
-                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
-                            <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
-                        </select>
-                    </div>
-                </div>
-        
                 <div id="naming_key" class="nocheck" v-if="showLegend">
-                        <table class="Key">
+                    <table class="Key">
                         <thead>
                             <tr>
                                 <th class="align-right">Meaning</th>
@@ -208,59 +197,69 @@
                                 <td>PROPER</td>
                             </tr>
                         </tbody>
-                        </table>
-                        <br>
-                    </div>
+                    </table>
                 </div>
-                        
-                <div id="naming_example_div">
-                    <h3>Single-EP Sample:</h3>
-                    <div class="example">
-                        <span class="jumbo" id="naming_example">{{ namingExample }}</span>
+            </div>
+
+                <div v-if="selectedMultiEpStyle" class="form-group">
+                    <label class="col-sm-2 control-label" for="naming_multi_ep">
+                        <span>Multi-Episode Style:</span>
+                    </label>
+                    <div class="col-sm-10 content">
+                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
+                            <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
+                        </select>
                     </div>
-                    <br>
-                </div>
-                <div v-if="isMulti" id="naming_example_multi_div">
-                    <h3>Multi-EP sample:</h3>
-                    <div class="example">
-                        <span class="jumbo" id="naming_example_multi">{{ namingExampleMulti }}</span>
-                    </div>
-                    <br>
                 </div>
         
-                <!-- Anime only -->
-                <div v-if="animeType > 0" class="form-group">
-                    <label for="naming_anime" class="col-sm-2 control-label">
-                        <span>Add Absolute Number</span>
-                        <p>Add the absolute number to the season/episode format?</p>
-                    </label>
-                    <div class="col-sm-10 content">
-                        <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
-                        <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
-                    </div>                    
+                
+                        
+            <div id="naming_example_div">
+                <h3>Single-EP Sample:</h3>
+                <div class="example">
+                    <span class="jumbo" id="naming_example">{{ namingExample }}</span>
                 </div>
+            </div>
+            <div v-if="isMulti" id="naming_example_multi_div">
+                <h3>Multi-EP sample:</h3>
+                <div class="example">
+                    <span class="jumbo" id="naming_example_multi">{{ namingExampleMulti }}</span>
+                </div>
+            </div>
+        
+            <!-- Anime only -->
+            <div v-if="animeType > 0" class="form-group">
+                <label for="naming_anime" class="col-sm-2 control-label">
+                    <span>Add Absolute Number</span>
+                    <p>Add the absolute number to the season/episode format?</p>
+                </label>
+                <div class="col-sm-10 content">
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
+                    <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
+                </div>                    
+            </div>
 
-                <div v-if="animeType > 0" class="form-group">
-                    <label for="naming_anime_only" class="col-sm-2 control-label">
-                        <span>Only Absolute Number</span>
-                    </label>
-                    <div class="col-sm-10 content">
-                        <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
-                        <span>Replace season/episode format with absolute number</span>
-                        <p>Only applies to animes.</p>
-                    </div>
+            <div v-if="animeType > 0" class="form-group">
+                <label for="naming_anime_only" class="col-sm-2 control-label">
+                    <span>Only Absolute Number</span>
+                </label>
+                <div class="col-sm-10 content">
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
+                    <span>Replace season/episode format with absolute number</span>
+                    <p>Only applies to animes.</p>
                 </div>
+            </div>
 
-                <div v-if="animeType > 0"  class="form-group">
-                    <label for="naming_anime_none" class="col-sm-2 control-label">
-                        <span>No Absolute Number</span>
-                    </label>
-                    <div class="col-sm-10 content">
-                        <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
-                        <span>Only applies to animes.</span>
-                        <p>Dont include the absolute number</p>
-                    </div>
+            <div v-if="animeType > 0"  class="form-group">
+                <label for="naming_anime_none" class="col-sm-2 control-label">
+                    <span>No Absolute Number</span>
+                </label>
+                <div class="col-sm-10 content">
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
+                    <span>Only applies to animes.</span>
+                    <p>Dont include the absolute number</p>
                 </div>
+            </div>
         </div>
 
     </div>
