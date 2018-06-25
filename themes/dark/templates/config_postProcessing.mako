@@ -90,6 +90,7 @@ const startVue = () => {
                 timezoneOptions: timezoneOptions,
                 extraScripts: config.postProcessing.extraScripts || [],
                 extraScriptsUrl: config.postProcessing.extraScriptsUrl,
+                appNamingStripYear: config.postProcessing.appNamingStripYear
             };
         },
         methods: {
@@ -357,34 +358,35 @@ const startVue = () => {
                                 <h3>Episode Naming</h3>
                                 <p>How Medusa will name and sort your episodes.</p>
                             </div>
-                        </div>
-                        <div class="col-xs-12 col-md-10">
-                            <fieldset class="component-group-list">
 
-                                <!-- default name-pattern component -->
-                                <name-pattern :naming-pattern="pattern" :naming-presets="presets" :multi-ep-style="multiEpSelected" :multi-ep-styles="multiEpStrings" @change="onChangePattern" ></name-pattern>
-    
-                                <!-- default sports name-pattern component -->
-                                <name-pattern :enabled="enabledSports" :naming-pattern="sportsPattern" :naming-presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
-    
-                                <!-- default airs by date name-pattern component -->
-                                <name-pattern :enabled="enabledAirByDate" :naming-pattern="abdPattern" :naming-presets="presets" type="airs by date" :enabled-naming-custom="enabledAirByDate" @change="onChangePattern"></name-pattern>
-    
-                                <!-- default anime name-pattern component -->
-                                <name-pattern :enabled="enabledAnime" :naming-pattern="animePattern" :naming-presets="presets" type="anime" :multi-ep-style="animeMultiEpSelected" :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="animeNamingType" :enabled-naming-custom="enabledAnime" @change="onChangePattern"></name-pattern>
-    
-                                <div class="form-group">
-                                    <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if app.NAMING_STRIP_YEAR else ''}/>
-                                    <label for="naming_strip_year">
-                                        <span>Strip Show Year</span>
-                                        <span >Remove the TV show's year when renaming the file?</span>
-                                    </label>
-                                    <label class="nocheck">
-                                        <span>&nbsp;</span>
-                                        <span >Only applies to shows that have year inside parentheses</span>
-                                    </label>
-                                </div>
-                            </fieldset>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <!-- default name-pattern component -->
+                                    <name-pattern :naming-pattern="pattern" :naming-presets="presets" :multi-ep-style="multiEpSelected" :multi-ep-styles="multiEpStrings" @change="onChangePattern"></name-pattern>
+        
+                                    <!-- default sports name-pattern component -->
+                                    <name-pattern :enabled="enabledSports" :naming-pattern="sportsPattern" :naming-presets="presets" type="sports" :enabled-naming-custom="enabledSports" @change="onChangePattern"></name-pattern>
+        
+                                    <!-- default airs by date name-pattern component -->
+                                    <name-pattern :enabled="enabledAirByDate" :naming-pattern="abdPattern" :naming-presets="presets" type="airs by date" :enabled-naming-custom="enabledAirByDate" @change="onChangePattern"></name-pattern>
+        
+                                    <!-- default anime name-pattern component -->
+                                    <name-pattern :enabled="enabledAnime" :naming-pattern="animePattern" :naming-presets="presets" type="anime" :multi-ep-style="animeMultiEpSelected" :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="animeNamingType" :enabled-naming-custom="enabledAnime" @change="onChangePattern"></name-pattern>
+        
+                                    <div class="form-group">
+                                        <label for="naming_strip_year" class="col-sm-2 control-label">
+                                            <span>Strip Show Year</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="naming_strip_year" name="naming_strip_year" v-model="appNamingStripYear" sync></toggle-button>
+                                            <span>Remove the TV show's year when renaming the file?</span>
+                                            <p>Only applies to shows that have year inside parentheses</p>
+                                        </div>
+                                    </div>
+
+                                </fieldset>
+                            </div>
                         </div>
                     </div>
                     <div id="metadata" class="component-group">
