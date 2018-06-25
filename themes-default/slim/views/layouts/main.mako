@@ -131,6 +131,7 @@
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
         <%include file="/vue-components/root-dirs.mako"/>
+        <%include file="/vue-components/backstretch.mako"/>
         <%include file="/vue-components/select-list-ui.mako"/>
         <script>
             window.routes = [];

@@ -296,7 +296,7 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="scene" name="scene" v-model="series.config.scene" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="dvdorder" name="dvdorder" v-model="series.config.dvdOrder" sync></toggle-button>
                                 <span>use the DVD order instead of the air order</span>
                                 <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
