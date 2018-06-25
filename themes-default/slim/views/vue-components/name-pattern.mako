@@ -1,51 +1,50 @@
 <script type="text/x-template" id="name-pattern-tempate">
     <div id="name_pattern_wrapper">
-
         <!-- If a 'type' is passed, it means that where checking a custom naming pattern. As for example sports, air-by-date etc.
         In that case, we're showing this checkbox, to display the rest of the form.
         If type evaulates to an empty string, we're asuming this is the default name pattern. And it's enabled by default. -->
-        <div v-if="type" class="field-pair">
-            <input type="checkbox" class="enabler" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled"/>
-            <label for="enable_naming_custom">
-                <span class="component-title">Custom {{ type }}</span>
-                <span class="component-desc">Name {{ type }} shows differently than regular shows?</span>
+        <div v-if="type" class="form-group">
+            <label for="enable_naming_custom" class="col-sm-2 control-label">
+                <span>Custom {{ type }}</span>
             </label>
+            <div class="col-sm-10 content">
+                <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" sync></toggle-button>
+                <span>Name {{ type }} shows differently than regular shows?</span>
+            </div>
         </div>
 
         <div v-if="!type || isEnabled" class="episode-naming">
-            <div class="field-pair">
-                <label class="nocheck" for="name_presets">
-                    <span class="component-title">Name Pattern:</span>
-                    <span class="component-desc">
-                        <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples">
-                            <option id="preset" v-for="preset in presets">{{ preset }}</option>
-                        </select>
-                    </span>
+            <div class="form-group">
+                <label for="name_presets" class="col-sm-2 control-label">
+                    <span>Name Pattern:</span>
                 </label>
+                <div class="col-sm-10 content">
+                    <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples">
+                        <option id="preset" v-for="preset in presets">{{ preset }}</option>
+                    </select>
+                </div>
             </div>
                     
             <div id="naming_custom">
-                <div class="field-pair" style="padding-top: 0;">
-                    <label class="nocheck">
-                        <span class="component-title">
-                            &nbsp;
-                        </span>
-                        <span class="component-desc">
-                            <input v-if="isCustom" type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control input-sm input350"/>
-                            <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend" />
-                        </span>
+                <div class="form-group" style="padding-top: 0;">
+                    <label class="col-sm-2 control-label">
+                        <span>&nbsp;</span>
                     </label>
+                    <div class="col-sm-10 content">
+                        <input v-if="isCustom" type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control input-sm input350"/>
+                        <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend" />
+                    </div>
                 </div>
 
-                <div v-if="selectedMultiEpStyle" class="field-pair">
-                    <label class="nocheck" for="naming_multi_ep">
-                        <span class="component-title">Multi-Episode Style:</span>
-                        <span class="component-desc">
-                            <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
-                                <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
-                            </select>
-                        </span>
+                <div v-if="selectedMultiEpStyle" class="form-group">
+                    <label class="col-sm-2 control-label" for="naming_multi_ep">
+                        <span>Multi-Episode Style:</span>
                     </label>
+                    <div class="col-sm-10 content">
+                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
+                            <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
+                        </select>
+                    </div>
                 </div>
         
                 <div id="naming_key" class="nocheck" v-if="showLegend">
@@ -230,38 +229,37 @@
                 </div>
         
                 <!-- Anime only -->
-                <div v-if="animeType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
-                    <label for="naming_anime">
-                        <span class="component-title">Add Absolute Number</span>
-                        <span class="component-desc">Add the absolute number to the season/episode format?</span>
+                <div v-if="animeType > 0" class="form-group">
+                    <label for="naming_anime" class="col-sm-2 control-label">
+                        <span>Add Absolute Number</span>
+                        <p>Add the absolute number to the season/episode format?</p>
                     </label>
-                    <label class="nocheck">
-                        <span class="component-title">&nbsp;</span>
-                        <span class="component-desc">Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
-                    </label>
+                    <div class="col-sm-10 content">
+                        <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
+                        <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
+                    </div>                    
                 </div>
-                <div v-if="animeType > 0" class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
-                    <label for="naming_anime_only">
-                        <span class="component-title">Only Absolute Number</span>
-                        <span class="component-desc">Replace season/episode format with absolute number</span>
+
+                <div v-if="animeType > 0" class="form-group">
+                    <label for="naming_anime_only" class="col-sm-2 control-label">
+                        <span>Only Absolute Number</span>
                     </label>
-                    <label class="nocheck">
-                        <span class="component-title">&nbsp;</span>
-                        <span class="component-desc">Only applies to animes.</span>
-                    </label>
+                    <div class="col-sm-10 content">
+                        <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
+                        <span>Replace season/episode format with absolute number</span>
+                        <p>Only applies to animes.</p>
+                    </div>
                 </div>
-                <div v-if="animeType > 0"  class="field-pair">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
-                    <label for="naming_anime_none">
-                        <span class="component-title">No Absolute Number</span>
-                        <span class="component-desc">Dont include the absolute number</span>
+
+                <div v-if="animeType > 0"  class="form-group">
+                    <label for="naming_anime_none" class="col-sm-2 control-label">
+                        <span>No Absolute Number</span>
                     </label>
-                    <label class="nocheck">
-                        <span class="component-title">&nbsp;</span>
-                        <span class="component-desc">Only applies to animes.</span>
-                    </label>
+                    <div class="col-sm-10 content">
+                        <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
+                        <span>Only applies to animes.</span>
+                        <p>Dont include the absolute number</p>
+                    </div>
                 </div>
         </div>
 
@@ -274,10 +272,16 @@
     Vue.component('name-pattern', {
         template: '#name-pattern-tempate',
         props: {
+            /**
+             * Current naming pattern.
+            */
             namingPattern: {
                 type: String,
                 default: ''
             },
+            /**
+             * An array of available preset naming patterns.
+            */
             namingPresets: {
                 type: Array,
                 default: () => []
@@ -313,9 +317,13 @@
                 type: String,
                 default: ''
             },
+            /**
+             * Used icw with the type property.
+             * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings. 
+            */
             enabled: {
                 type: Boolean,
-                default: false
+                default: true
             }
         },
         data() {
@@ -362,10 +370,14 @@
                 // Update single
                 this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
                 console.debug('Result of naming pattern check: ' + this.namingExample);
+
+                // Test naming
+                this.checkNaming(pattern, false, this.animeType);
                 
                 // Update multi if needed
                 if (this.isMulti) {
                     this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
+                    this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
                 }
             },
             update(newValue) {
@@ -377,6 +389,47 @@
                     enabled: this.isEnabled,
                     animeNamingType: this.animeType
                 });
+            },
+            async checkNaming(pattern, selectedMultiEpStyle, animeType) {
+                const vm = this;
+                const params = {
+                    pattern: pattern,
+                    anime_type: animeType
+                }
+
+                if (selectedMultiEpStyle) {
+                    params.multi = selectedMultiEpStyle;
+                }
+
+                try {
+                    const result = await apiRoute.get('config/postProcessing/isNamingValid', {params: params});
+                    if (result.data === 'invalid') {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is invalid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFDDDD');
+                    } else if (result.data === 'seasonfolders') {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFDD');
+                    } else {
+                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is valid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-green'
+                        });
+                        $(vm.$el).find('#naming_pattern').qtip('toggle', false);
+                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFFF');
+                    }
+
+                } catch (e) {
+                    console.warning(e);
+                }
+
             }
         },
         computed: {
