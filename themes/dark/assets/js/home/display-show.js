@@ -114,7 +114,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
                 this.checked = lastCheck.checked;
             }
 
-            if (found === 1) {
+            if (found === 2) {
                 return false;
             }
 

@@ -290,8 +290,7 @@
              * The selected multi ep style
              */
             multiEpStyle: {
-                type: Number,
-                default: null
+                type: Number
             },
             /**
              * Availale multi ep style
@@ -345,10 +344,10 @@
             getDateFormat(format) {
                 return dateFns.format(new Date(), format);
             },
-            async testNaming(pattern, selectedMultiEpStyle, animeType) {
+            testNaming(pattern, selectedMultiEpStyle, animeType) {
                 console.debug('Test pattern ' + pattern + ' for ' + (selectedMultiEpStyle) ? 'multi' : 'single' + ' ep');
                 const params = {
-                    pattern: pattern,
+                    pattern,
                     anime_type: animeType
                 }
 
@@ -357,15 +356,15 @@
                 }
 
                 try {
-                    const result = await apiRoute.get('config/postProcessing/testNaming', {params: params});
-                    return result.data;
+                    return apiRoute.get('config/postProcessing/testNaming', {params: params}).then(res => res.data);
                 } catch (e) {
-                    console.warning(e);
+                    console.warn(e);
+                    return '';
                 }
             },
             async updatePatternSamples() {
                 // If it's a custom pattern, we need to get the custom pattern from this.customName
-                const pattern = (this.isCustom) ? this.customName : this.pattern; 
+                const pattern = this.isCustom ? this.customName : this.pattern; 
                 
                 // Update single
                 this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
@@ -382,7 +381,7 @@
             },
             update(newValue) {
                 this.$emit('change', {
-                    pattern: (this.isCustom) ? this.customName : this.pattern,
+                    pattern: this.isCustom ? this.customName : this.pattern,
                     type: this.type,
                     multiEpStyle: this.selectedMultiEpStyle,
                     custom: this.isCustom,
@@ -390,10 +389,9 @@
                     animeNamingType: this.animeType
                 });
             },
-            async checkNaming(pattern, selectedMultiEpStyle, animeType) {
-                const vm = this;
+            checkNaming(pattern, selectedMultiEpStyle, animeType) {
                 const params = {
-                    pattern: pattern,
+                    pattern,
                     anime_type: animeType
                 }
 
@@ -401,35 +399,37 @@
                     params.multi = selectedMultiEpStyle;
                 }
 
-                try {
-                    const result = await apiRoute.get('config/postProcessing/isNamingValid', {params: params});
+                const { $el } = this;
+                const el = $($el);
+
+                const result = apiRoute.get('config/postProcessing/isNamingValid', {params: params})
+                .then(res => {
                     if (result.data === 'invalid') {
-                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                        el.find('#naming_pattern').qtip('option', {
                             'content.text': 'This pattern is invalid.',
                             'style.classes': 'qtip-rounded qtip-shadow qtip-red'
                         });
-                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
-                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFDDDD');
+                        el.find('#naming_pattern').qtip('toggle', true);
+                        el.find('#naming_pattern').css('background-color', '#FFDDDD');
                     } else if (result.data === 'seasonfolders') {
-                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                        el.find('#naming_pattern').qtip('option', {
                             'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
                             'style.classes': 'qtip-rounded qtip-shadow qtip-red'
                         });
-                        $(vm.$el).find('#naming_pattern').qtip('toggle', true);
-                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFDD');
+                        el.find('#naming_pattern').qtip('toggle', true);
+                        el.find('#naming_pattern').css('background-color', '#FFFFDD');
                     } else {
-                        $(vm.$el).find('#naming_pattern').qtip('option', {
+                        el.find('#naming_pattern').qtip('option', {
                             'content.text': 'This pattern is valid.',
                             'style.classes': 'qtip-rounded qtip-shadow qtip-green'
                         });
-                        $(vm.$el).find('#naming_pattern').qtip('toggle', false);
-                        $(vm.$el).find('#naming_pattern').css('background-color', '#FFFFFF');
+                        el.find('#naming_pattern').qtip('toggle', false);
+                        el.find('#naming_pattern').css('background-color', '#FFFFFF');
                     }
-
-                } catch (e) {
-                    console.warning(e);
-                }
-
+                })
+                .catch(error => {
+                    console.warn(error);
+                })
             }
         },
         computed: {
@@ -438,7 +438,7 @@
             },
             selectedNamingPattern: {
                 get: function() {
-                    return (this.isCustom) ? 'Custom...' : this.pattern;
+                    return this.isCustom ? 'Custom...' : this.pattern;
                 },
                 set: function(value) {
                     this.pattern = value;
@@ -463,7 +463,7 @@
             this.isMulti = Boolean(this.multiEpStyle)
 
             // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
-            this.isEnabled = (this.type) ? false : this.enabled;
+            this.isEnabled = this.type ? false : this.enabled;
 
             // Update the pattern samples
             this.updatePatternSamples();

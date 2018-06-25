@@ -491,9 +491,9 @@ class GenericProvider(object):
         return GenericProvider.make_id(self.name)
 
     def get_quality(self, item, anime=False):
-        """Get scene quality of the result."""
+        """Get quality of the result from its name."""
         (title, _) = self._get_title_and_url(item)
-        quality = Quality.scene_quality(title, anime)
+        quality = Quality.quality_from_name(title, anime)
 
         return quality
 
