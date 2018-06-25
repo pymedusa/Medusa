@@ -245,7 +245,6 @@ class DataGenerator(object):
         section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
         section_data['kodi']['host'] = app.KODI_HOST
         section_data['kodi']['username'] = app.KODI_USERNAME
-        # section_data['kodi']['password'] = app.KODI_PASSWORD
         section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
         section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
 
@@ -258,13 +257,10 @@ class DataGenerator(object):
         section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
-        # section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
         section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
-        # section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
         section_data['plex']['client'] = NonEmptyDict()
         section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
         section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
-        # section_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
         section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
 
         section_data['emby'] = NonEmptyDict()
@@ -279,7 +275,6 @@ class DataGenerator(object):
         section_data['torrents']['label'] = app.TORRENT_LABEL
         section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
         section_data['torrents']['method'] = app.TORRENT_METHOD
-        # section_data['torrents']['password'] = app.TORRENT_PASSWORD
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
@@ -298,20 +293,17 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
         section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
         section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-        # section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
         section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
         section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
 
         section_data['nzb']['sabnzbd'] = NonEmptyDict()
-        # section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
         section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
         section_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
         section_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
         section_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
         section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
         section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
-        # section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
 
         section_data['layout'] = NonEmptyDict()
