@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import inspect
 import logging
 import platform
+import pkgutil
 import sys
 
 from medusa import (
@@ -92,19 +93,6 @@ class ConfigHandler(BaseRequestHandler):
 
             for section in config_sections:
                 config_data[section] = DataGenerator.get_data(section)
-        config_data['postProcessing'] = NonEmptyDict()
-        config_data['postProcessing']['naming'] = NonEmptyDict()
-        config_data['postProcessing']['naming']['stripYear'] = app.NAMING_STRIP_YEAR
-        config_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
-        config_data['postProcessing']['naming']['multiEp'] = app.NAMING_MULTI_EP
-        config_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
-        config_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
-        config_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
-        config_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = app.NAMING_CUSTOM_ABD
-        config_data['postProcessing']['naming']['enableCustomNamingSports'] = app.NAMING_CUSTOM_SPORTS
-        config_data['postProcessing']['naming']['enableCustomNamingAnime'] = app.NAMING_CUSTOM_ANIME
-        config_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
-        config_data['postProcessing']['naming']['animeNamingType'] = app.NAMING_ANIME
 
             return self._ok(data=config_data)
 
@@ -270,6 +258,41 @@ class DataGenerator(object):
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
+        section_data['postProcessing'] = NonEmptyDict()
+        section_data['postProcessing']['naming'] = NonEmptyDict()
+        section_data['postProcessing']['naming']['stripYear'] = app.NAMING_STRIP_YEAR
+        section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
+        section_data['postProcessing']['naming']['multiEp'] = app.NAMING_MULTI_EP
+        section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+        section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+        section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = app.NAMING_CUSTOM_ABD
+        section_data['postProcessing']['naming']['enableCustomNamingSports'] = app.NAMING_CUSTOM_SPORTS
+        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = app.NAMING_CUSTOM_ANIME
+        section_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
+        section_data['postProcessing']['naming']['animeNamingType'] = app.NAMING_ANIME
+        section_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['postProcessing']['processAutomatically'] = app.PROCESS_AUTOMATICALLY
+        section_data['postProcessing']['postponeIfSyncFiles'] = app.POSTPONE_IF_SYNC_FILES
+        section_data['postProcessing']['postponeIfNoSubs'] = app.POSTPONE_IF_NO_SUBS
+        section_data['postProcessing']['renameEpisodes'] = app.RENAME_EPISODES
+        section_data['postProcessing']['createMissingShowDirs'] = app.CREATE_MISSING_SHOW_DIRS
+        section_data['postProcessing']['addShowsWithoutDir'] = app.ADD_SHOWS_WO_DIR
+        section_data['postProcessing']['moveAssociatedFiles'] = app.MOVE_ASSOCIATED_FILES
+        section_data['postProcessing']['nfoRename'] = app.NFO_RENAME
+        section_data['postProcessing']['airdateEpisodes'] = app.AIRDATE_EPISODES
+        section_data['postProcessing']['unpack'] = app.UNPACK
+        section_data['postProcessing']['deleteRarContent'] = app.DELRARCONTENTS
+        section_data['postProcessing']['noDelete'] = app.NO_DELETE
+        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+        section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+        section_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+        section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
+        section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
+        section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
+        section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
+        section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
+        section_data['postProcessing']['appNamingStripYear'] = app.NAMING_STRIP_YEAR
 
         return section_data
 
