@@ -357,10 +357,10 @@ def sort_results(results):
         undesired_words = [word.lower() for word in app.UNDESIRED_WORDS]
 
     def percentage(percent, whole):
-        return int((percent * whole) / 100.0)
+        return (percent * whole) / 100.0
 
     for result in sorted_results:
-        score = 100
+        score = 100.0
 
         if any(word in result.name.lower() for word in undesired_words):
             log.debug(u'Penalizing release {0} (contains undesired word(s))', result.name)
@@ -379,15 +379,7 @@ def sort_results(results):
 
             elif result.proper_tags and wanted_results[0][0].quality == result.quality:
                 log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
-                score += percentage(10, score)
-        else:
-            # First quality
-            log.debug(u'Rewarding release {0} (first quality)', result.name)
-            score += percentage(5, score)
-
-            if result.proper_tags:
-                log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
-                score += percentage(5, score)
+                score += percentage(15, score)
 
         wanted_results.append((result, score))
         wanted_results.sort(key=operator.itemgetter(1), reverse=True)
@@ -400,7 +392,7 @@ def sort_results(results):
         {
             'header': header,
             'results': '\n'.join(
-                '{score:<6} {name}'.format(score=item[1], name=item[0].name)
+                '{score:<6.2f} {name}'.format(score=item[1], name=item[0].name)
                 for item in wanted_results
             )
         }
