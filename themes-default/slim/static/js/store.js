@@ -344,7 +344,7 @@ const store = new Puex({
             if (section !== 'main') {
                 return;
             }
-            return api.patch('config' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
         },
         getShow(context, { indexer, id }) {
             return api.get('/series/' + indexer + id).then(res => {
