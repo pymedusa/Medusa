@@ -14,9 +14,12 @@ window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        store,
         metaInfo: {
             title: 'Config - Episode Search'
         },
+        computed: Object.assign(store.mapState(['config']), {
+        }),
         data() {
             return {
                 header: 'Search Settings',
@@ -202,6 +205,9 @@ const startVue = () => {
             };
         },
         mounted() {
+            const { $store } = this;
+            $store.dispatch('getConfig');
+
             $('#config-components').tabs();
         },
         methods: {
