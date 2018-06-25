@@ -14,28 +14,28 @@ class Message(object):
 
     def __init__(self, event, data):
         """
-        @TODO: Docstring.
+        Construct a new WebSocket message.
 
-        :param event: @TODO:
-        :param data: @TODO:
+        :param event: A string representing the type of message (e.g. notification)
+        :param data: A JSON-serializable object containing the message data.
         """
         self.event = event
         self.data = data
 
     @property
     def content(self):
-        """@TODO: Docstring."""
+        """Get the message content."""
         return {
             'event': self.event,
             'data': self.data
         }
 
     def json(self):
-        """@TODO: Docstring."""
+        """Return the message content as a JSON-serialized string."""
         return json.dumps(self.content)
 
     def push(self):
-        """Push a message to all connected WebSocket clients."""
+        """Push the message to all connected WebSocket clients."""
         msg = self.json()
 
         if not clients:
