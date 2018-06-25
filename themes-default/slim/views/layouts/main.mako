@@ -1,23 +1,6 @@
 <%!
     from medusa import app
 %>
-
-<%def name="convert(obj)">
-    <%
-    import json
-    from medusa.numdict import NumDict
-    ## This converts the keys to strings as keys can't be ints
-    print('test')
-    if isinstance(obj, (NumDict, dict)):
-        new_obj = {}
-        for key in obj:
-            new_obj[str(key)] = obj[key]
-        obj = new_obj
-
-    return json.dumps(obj)
-    %>
-</%def>
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -63,6 +46,7 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
@@ -90,6 +74,8 @@
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
@@ -145,6 +131,7 @@
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
         <%include file="/vue-components/root-dirs.mako"/>
+        <%include file="/vue-components/select-list-ui.mako"/>
         <script>
             window.routes = [];
             if ('${bool(app.DEVELOPER)}' === 'True') {
