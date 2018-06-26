@@ -266,17 +266,17 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
         'expected': 1,  # Index of the expected result
         'results': [
             {  # 0
-                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
-                'quality': Quality.HDTV,
-                'proper_tags': ['PROPER']
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV
             },
             {  # 1
                 'name': 'Show.Name.S03E04.1080p.HDTV.x264-RlsGrp',
                 'quality': Quality.FULLHDTV
             },
             {  # 2
-                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
-                'quality': Quality.HDTV
+                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['PROPER']
             },
         ]
     },

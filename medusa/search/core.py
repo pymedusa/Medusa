@@ -357,9 +357,9 @@ def sort_results(results):
         undesired_words = [word.lower() for word in app.UNDESIRED_WORDS]
 
     def percentage(percent, whole):
-        return int((percent * whole) / 100.0)
+        return (percent * whole) / 100.0
 
-    initial_score = 100
+    initial_score = 100.0
     for result in sorted_results:
         score = initial_score
 
@@ -399,7 +399,7 @@ def sort_results(results):
         {
             'header': header,
             'results': '\n'.join(
-                '{score:<6} {name}'.format(score=item[1], name=item[0].name)
+                '{score:<6.2f} {name}'.format(score=item[1], name=item[0].name)
                 for item in wanted_results
             )
         }
