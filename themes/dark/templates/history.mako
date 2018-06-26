@@ -108,17 +108,17 @@ const startVue = () => {
         <div class="layout-controls pull-right">
             <div class="show-option">
                 <span>Limit:</span>
-                    <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-                        <option value="10" :selected="limit === 10">10</option>
-                        <option value="25" :selected="limit === 25">25</option>
-                        <option value="50" :selected="limit === 50">50</option>
-                        <option value="100" :selected="limit === 100">100</option>
-                        <option value="250" :selected="limit === 250">250</option>
-                        <option value="500" :selected="limit === 500">500</option>
-                        <option value="750" :selected="limit === 750">750</option>
-                        <option value="1000" :selected="limit === 1000">1000</option>
-                        <option value="0" :selected="limit === 0">All</option>
-                    </select>
+                <select v-model="limit" name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="250">250</option>
+                    <option value="500">500</option>
+                    <option value="750">750</option>
+                    <option value="1000">1000</option>
+                    <option value="0">All</option>
+                </select>
             </div>
             <div class="show-option">
                 <span> Layout:
