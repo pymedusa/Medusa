@@ -104,7 +104,7 @@
         <tr>
             <th rowspan="2" valign="top">
                 <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                    <img alt="" class="posterThumb" series="${cur_result['series_slug']}" asset="posterThumb"/>
+                    <img alt="" class="posterThumb" src="images/poster.png" series="${cur_result['series_slug']}" asset="posterThumb"/>
                 </app-link>
             </th>
             <td class="next_episode">
