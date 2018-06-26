@@ -133,6 +133,9 @@
         <%include file="/vue-components/root-dirs.mako"/>
         <%include file="/vue-components/backstretch.mako"/>
         <script>
+            // @TODO: Move all Vue.use to new file
+            Vue.use(window['vue-js-toggle-button'].default);
+
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 mounted() {
@@ -164,7 +167,6 @@
                     routes
                 });
             }
-            Vue.use(window['vue-js-toggle-button'].default);
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
