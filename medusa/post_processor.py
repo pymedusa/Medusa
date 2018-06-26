@@ -506,7 +506,7 @@ class PostProcessor(object):
                 self.log(u'Unable to link file {0} to {1}: {2!r}'.format
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
-        
+
         def reflink(cur_file_path, new_file_path):
             self.log(u'Reflink file from {0} to {1}'.format(cur_file_path, new_basename), logger.DEBUG)
             try:
