@@ -190,10 +190,15 @@ const store = new Puex({
             kodi: {
                 enabled: null,
                 alwaysOn: null,
+                libraryCleanPending: null,
+                cleanLibrary: null,
+                host: [],
                 notify: {
                     snatch: null,
                     download: null,
-                    subtitleDownload: null,
+                    subtitleDownload: null
+                },
+                update: {
                     library: null,
                     full: null,
                     onlyFirst: null
