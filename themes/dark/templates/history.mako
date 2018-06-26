@@ -123,8 +123,8 @@ const startVue = () => {
             <div class="show-option">
                 <span> Layout:
                     <select v-model="layout" name="layout" class="form-control form-control-inline input-sm">
-                        <option value="compact" :selected="layout === 'compact'">Compact</option>
-                        <option value="detailed" :selected="layout === 'detailed'">Detailed</option>
+                        <option value="compact">Compact</option>
+                        <option value="detailed">Detailed</option>
                     </select>
                 </span>
             </div>
