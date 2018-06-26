@@ -149,7 +149,65 @@ const store = new Puex({
             branch: null,
             commitHash: null,
             indexers: {
-                config: {}
+                config: {
+                    main: {
+                        externalMappings: {},
+                        statusMap: {},
+                        traktIndexers: {},
+                        validLanguages: [],
+                        langabbvToId: {}
+                    },
+                    indexers: {
+                        tvdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tmdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tvmaze: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        }
+                    }
+                }
             },
             sourceUrl: null,
             rootDirs: [],
