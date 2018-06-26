@@ -22,7 +22,7 @@ const startVue = () => {
             };
         },
         computed: Object.assign(
-            puex.mapState(['config', 'shows']),
+            store.mapState(['shows']),
             {
                 layout: {
                     get() {
@@ -39,8 +39,7 @@ const startVue = () => {
         ),
         mounted() {
             const { $store, $route } = this;
-            $store.dispatch('getConfig');
-            $store.dispatch('getShows');
+            // $store.dispatch('getShows');
 
             const unwatch = this.$watch('layout', () => {
                 unwatch();
