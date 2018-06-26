@@ -456,7 +456,7 @@ const store = new Puex({
             });
         },
         getShows(context, shows) {
-            const { commit, dispatch } = store;
+            const { commit, dispatch } = context;
 
             // If no shows are provided get all of them
             if (!shows) {
