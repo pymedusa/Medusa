@@ -22,8 +22,16 @@ If applicable, add screenshots to help explain your problem.
 
 **Medusa (please complete the following information):**
  - OS: [e.g. ubuntu 14.04 x64]
- - Branch [e.g. master, develop]
- - Commit [e.g. c65ca2]
+ - Branch: [e.g. master, develop]
+ - Commit: [e.g. c65ca2]
+
+**Logs:**
+<details>
+
+```
+<-- Please replace this whole line with your logs -->
+```
+</details>
 
 **Additional context**
 Add any other context about the problem here.
