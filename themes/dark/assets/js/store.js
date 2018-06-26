@@ -408,7 +408,8 @@ const store = new Puex({
     },
     // Add all blocking code here
     // No actions should write to the store
-    // Please use store.commit to fire off a mutation that'll update the store
+    // Please use context.commit to fire off a mutation that'll update the store
+    // Do not use store.commit in any actions!
     actions: {
         login(context, credentials) {
             const { commit } = context;
@@ -428,14 +429,15 @@ const store = new Puex({
             commit(LOGOUT);
         },
         getConfig(context, section) {
+            const { commit } = context;
             return api.get('/config/' + (section || '')).then(res => {
                 if (section) {
                     const config = res.data;
-                    return store.commit(ADD_CONFIG, { section, config });
+                    return commit(ADD_CONFIG, { section, config });
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    store.commit(ADD_CONFIG, { section, config });
+                    commit(ADD_CONFIG, { section, config });
                 });
             });
         },
@@ -448,19 +450,20 @@ const store = new Puex({
             return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
         },
         getShow(context, { indexer, id }) {
+            const { commit } = context;
             return api.get('/series/' + indexer + id).then(res => {
-                store.commit(ADD_SHOW, res.data);
+                commit(ADD_SHOW, res.data);
             });
         },
         getShows(context, shows) {
-            const { dispatch } = store;
+            const { commit, dispatch } = store;
 
             // If no shows are provided get all of them
             if (!shows) {
                 return api.get('/series?limit=1000').then(res => {
                     const shows = res.data;
                     return shows.forEach(show => {
-                        store.commit(ADD_SHOW, show);
+                        commit(ADD_SHOW, show);
                     });
                 });
             }
