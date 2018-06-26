@@ -374,11 +374,9 @@ def sort_results(results):
         if result.proper_tags and (not wanted_results or
                                    wanted_results[0][0].quality == result.quality):
             log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
-            for i, tag in enumerate(result.proper_tags):
+            # Stop at max. 4 proper tags
+            for tag in result.proper_tags[:4]:
                 score += percentage(2, score)
-                # Stop at max. 4 proper tags
-                if i == 3:
-                    break
 
         if any(word in result.name.lower() for word in undesired_words):
             log.debug(u'Penalizing release {0} (contains undesired word(s))', result.name)
