@@ -51,7 +51,6 @@ const {
 const store = new Puex({
     state: {
         auth: {
-            // @TODO: Set this as false when we add in vue(jwt) login
             isAuthenticated: false,
             user: {},
             tokens: {
