@@ -324,7 +324,7 @@ const store = new Puex({
             state.auth.isAuthenticated = true;
             state.auth.err = null;
         },
-        [LOGIN_FAILED](state, err) {
+        [LOGIN_FAILED](state, { err }) {
             state.auth.user = {};
             state.auth.isAuthenticated = false;
             state.auth.err = err;
