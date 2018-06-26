@@ -9,7 +9,7 @@ Vue.use(Puex);
 // There are no naming conventions so try and match
 // similarly to what we already use when adding new ones.
 const mutationTypes = {
-    LOGIN_PENDING: '🔒 Login Pending',
+    LOGIN_PENDING: '🔒 Logging in..',
     LOGIN_SUCCESS: '🔒 ✅ Login Successful',
     LOGIN_FAILED: '🔒 ❌ Login Failed',
     LOGOUT: '🔒 Logout',
@@ -50,6 +50,16 @@ const {
 
 const store = new Puex({
     state: {
+        auth: {
+            // @TODO: Set this as false when we add in vue(jwt) login
+            isAuthenticated: false,
+            user: {},
+            tokens: {
+                access: null,
+                refresh: null
+            },
+            err: null
+        },
         // Websocket
         socket: {
             isConnected: false,
@@ -247,9 +257,21 @@ const store = new Puex({
     // Please add new mutations in the same order as the mutatinType list
     mutations: {
         [LOGIN_PENDING]() {},
-        [LOGIN_SUCCESS]() {},
-        [LOGIN_FAILED]() {},
-        [LOGOUT]() {},
+        [LOGIN_SUCCESS](state, user) {
+            state.auth.user = user;
+            state.auth.isAuthenticated = true;
+            state.auth.err = null;
+        },
+        [LOGIN_FAILED](state, err) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.err = err;
+        },
+        [LOGOUT](state) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.err = null;
+        },
         [REFRESH_TOKEN]() {},
         [REMOVE_AUTH_ERROR]() {},
         [SOCKET_ONOPEN](state) {
@@ -326,6 +348,23 @@ const store = new Puex({
     // No actions should write to the store
     // Please use store.commit to fire off a mutation that'll update the store
     actions: {
+        login(context, credentials) {
+            const { commit } = context;
+            commit(LOGIN_PENDING);
+
+            // @TODO: Add real JWT login
+            const apiLogin = () => Promise.resolve({ username: 'admin' });
+
+            apiLogin(credentials).then(user => {
+                return commit(LOGIN_SUCCESS, user);
+            }).catch(err => {
+                commit(LOGIN_FAILED, { err, credentials });
+            });
+        },
+        logout(context) {
+            const { commit } = context;
+            commit(LOGOUT);
+        },
         getConfig(context, section) {
             return api.get('/config/' + (section || '')).then(res => {
                 if (section) {
