@@ -203,9 +203,6 @@ const startVue = () => {
             };
         },
         mounted() {
-            const { $store } = this;
-            $store.dispatch('getConfig');
-
             $('#config-components').tabs();
         },
         methods: {
