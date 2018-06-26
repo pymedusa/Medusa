@@ -53,9 +53,9 @@ const UTIL = {
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
-        UTIL.exec('common');
-        UTIL.exec(controller);
-        UTIL.exec(controller, action);
+        UTIL.exec('common'); // Load common
+        UTIL.exec(controller); // Load MEDUSA[controller]
+        UTIL.exec(controller, action); // Load MEDUSA[controller][action]
     }
 };
 
