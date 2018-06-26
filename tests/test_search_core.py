@@ -389,6 +389,31 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
                 'proper_tags': ['REAL', 'PROPER']
             },
         ]
+    },
+    {  # p10 - higher quality, proper higher quality, preferred quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV]),
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['PROPER']
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV
+            },
+        ]
     }
 ])
 def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
