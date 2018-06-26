@@ -261,7 +261,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
             'UNDESIRED_WORDS': [],
         },
         'series': {
-            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV])
+            'quality': HD1080p,
         },
         'expected': 1,  # Index of the expected result
         'results': [
@@ -277,6 +277,116 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
             {  # 2
                 'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
                 'quality': Quality.HDTV
+            },
+        ]
+    },
+    {  # p6 - higher quality, preferred lower quality and proper lower quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV]),
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['PROPER']
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+            },
+
+            {  # 2
+                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['PROPER']
+            },
+        ]
+    },
+    {  # p7 - higher quality, preferred lower quality, real proper lower quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV]),
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['PROPER']
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.REAL.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['REAL', 'PROPER']
+            },
+            {  # 3
+                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['PROPER']
+            },
+        ]
+    },
+    {  # p8 - real proper higher quality, preferred lower proper quality
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': Quality.combine_qualities([Quality.FULLHDTV], [Quality.HDTV]),
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.REAL.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['REAL', 'PROPER']
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.PROPER.720p.HDTV.x264-RlsGrp',
+                'quality': Quality.HDTV,
+                'proper_tags': ['PROPER']
+            },
+        ]
+    },
+    {  # p9 - real proper over proper
+        'config': {
+            'PREFERRED_WORDS': [],
+            'UNDESIRED_WORDS': [],
+        },
+        'series': {
+            'quality': HD1080p,
+        },
+        'expected': 2,  # Index of the expected result
+        'results': [
+            {  # 0
+                'name': 'Show.Name.S03E04.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['PROPER']
+            },
+            {  # 1
+                'name': 'Show.Name.S03E04.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+            },
+            {  # 2
+                'name': 'Show.Name.S03E04.REAL.PROPER.1080p.HDTV.x264-RlsGrp',
+                'quality': Quality.FULLHDTV,
+                'proper_tags': ['REAL', 'PROPER']
             },
         ]
     }
