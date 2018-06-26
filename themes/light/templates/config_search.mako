@@ -18,7 +18,7 @@ const startVue = () => {
         metaInfo: {
             title: 'Config - Episode Search'
         },
-        computed: Object.assign(store.mapState(['config']), {
+        computed: Object.assign(store.mapState([]), {
         }),
         data() {
             return {
