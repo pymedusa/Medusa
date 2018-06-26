@@ -14,6 +14,7 @@ window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        store,
         metaInfo: {
             title: 'Home'
         },
@@ -21,6 +22,21 @@ const startVue = () => {
             return {
                 header: 'Show List'
             };
+        },
+        computed: Object.assign({
+            layout: {
+                get() {
+                    const { config } = this;
+                    return config.layout.home;
+                },
+                set(layout) {
+                    const { $store } = this;
+                    const page = 'home';
+                    $store.dispatch('setLayout', { page, layout });
+                }
+            }
+        }),
+        mounted() {
         }
     });
 };
