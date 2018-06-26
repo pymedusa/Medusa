@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
  - Branch: [e.g. master, develop]
  - Commit: [e.g. c65ca2]
 
-**Logs**
+**Logs:**
 <details>
 
 ```
