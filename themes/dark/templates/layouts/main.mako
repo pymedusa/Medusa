@@ -149,7 +149,7 @@
                         }, 1000);
                     }
                 },
-                // Make auth and config accessable to all components
+                // Make auth and config accessible to all components
                 computed: store.mapState(['auth', 'config'])
             })
             window.routes = [];
