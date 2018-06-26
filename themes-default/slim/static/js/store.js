@@ -57,7 +57,7 @@ const store = new Puex({
                 access: null,
                 refresh: null
             },
-            err: null
+            error: null
         },
         // Websocket
         socket: {
@@ -322,17 +322,17 @@ const store = new Puex({
         [LOGIN_SUCCESS](state, user) {
             state.auth.user = user;
             state.auth.isAuthenticated = true;
-            state.auth.err = null;
+            state.auth.error = null;
         },
-        [LOGIN_FAILED](state, { err }) {
+        [LOGIN_FAILED](state, { error }) {
             state.auth.user = {};
             state.auth.isAuthenticated = false;
-            state.auth.err = err;
+            state.auth.error = error;
         },
         [LOGOUT](state) {
             state.auth.user = {};
             state.auth.isAuthenticated = false;
-            state.auth.err = null;
+            state.auth.error = null;
         },
         [REFRESH_TOKEN]() {},
         [REMOVE_AUTH_ERROR]() {},
@@ -420,8 +420,8 @@ const store = new Puex({
 
             apiLogin(credentials).then(user => {
                 return commit(LOGIN_SUCCESS, user);
-            }).catch(err => {
-                commit(LOGIN_FAILED, { err, credentials });
+            }).catch(error => {
+                commit(LOGIN_FAILED, { error, credentials });
             });
         },
         logout(context) {

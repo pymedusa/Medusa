@@ -57,7 +57,7 @@ const store = new Puex({
                 access: null,
                 refresh: null
             },
-            err: null
+            error: null
         },
         // Websocket
         socket: {
