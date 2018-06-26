@@ -26,7 +26,7 @@ const startVue = () => {
         data() {
             return {
                 header: 'History',
-                limit: parseInt('${limit}', 10)
+                limit: '${limit}'
             };
         },
         computed: Object.assign({
