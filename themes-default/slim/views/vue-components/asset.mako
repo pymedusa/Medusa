@@ -50,6 +50,6 @@ Vue.component('asset', {
             }
         }
     },
-    template: `#asset-template`
+    template: '#asset-template'
 });
 </script>
