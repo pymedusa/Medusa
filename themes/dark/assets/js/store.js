@@ -9,7 +9,7 @@ Vue.use(Puex);
 // There are no naming conventions so try and match
 // similarly to what we already use when adding new ones.
 const mutationTypes = {
-    LOGIN_PENDING: '🔒 Logging in..',
+    LOGIN_PENDING: '🔒 Logging in',
     LOGIN_SUCCESS: '🔒 ✅ Login Successful',
     LOGIN_FAILED: '🔒 ❌ Login Failed',
     LOGOUT: '🔒 Logout',
