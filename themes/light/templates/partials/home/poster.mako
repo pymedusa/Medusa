@@ -155,7 +155,7 @@
                                     <td class="show-table">
                                     % if cur_show.network:
                                         <span title="${cur_show.network}">
-                                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" lazy="false" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                                         </span>
                                     % else:
                                         <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>

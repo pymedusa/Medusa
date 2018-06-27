@@ -18,7 +18,11 @@ Vue.component('asset', {
             type: Boolean,
             default: false
         },
-        cls: String
+        cls: String,
+        lazy: {
+            type: Boolean,
+            default: true
+        }
     },
     data() {
         return {
@@ -28,11 +32,11 @@ Vue.component('asset', {
     },
     computed: {
         src() {
-            const { error, seriesSlug, type, isVisible } = this;
+            const { error, seriesSlug, type, isVisible, lazy } = this;
             const apiRoot = document.getElementsByTagName('body')[0].getAttribute('api-root');
             const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
 
-            if (error || !isVisible || !seriesSlug || !type) {
+            if (error || lazy && !isVisible || !seriesSlug || !type) {
                 return this.default;
             }
 
