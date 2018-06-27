@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "version": "0.1.0",
-  "name": "light",
+  "name": "dark",
   "author": "p0psicles",
   "scripts": {
     "gulp": "gulp",
@@ -74,6 +74,12 @@
       "space-before-function-paren": [
         "error",
         "never"
+      ],
+      "unicorn/catch-error-name": [
+        "error",
+        {
+          "name": "error"
+        }
       ]
     },
     "envs": [

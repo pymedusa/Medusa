@@ -328,8 +328,8 @@ MEDUSA.home.index = function() {
         }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(err => {
-            log.info(err);
+        }).catch(error => {
+            log.info(error);
         });
     });
 
@@ -395,8 +395,8 @@ MEDUSA.home.index = function() {
                 }
             }).then(response => {
                 log.info(response);
-            }).catch(err => {
-                log.error(err);
+            }).catch(error => {
+                log.error(error);
             });
         }
     });

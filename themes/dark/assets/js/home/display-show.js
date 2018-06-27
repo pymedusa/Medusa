@@ -431,8 +431,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }).then(response => {
             log.info(response.data);
             window.location.reload();
-        }).catch(err => {
-            log.error(err.data);
+        }).catch(error => {
+            log.error(error.data);
         });
     });
 };

@@ -74,6 +74,12 @@
       "space-before-function-paren": [
         "error",
         "never"
+      ],
+      "unicorn/catch-error-name": [
+        "error",
+        {
+          "name": "error"
+        }
       ]
     },
     "envs": [
