@@ -322,19 +322,6 @@ MEDUSA.home.index = function() {
         }
     });
 
-    $('.show-option .show-layout').on('change', function() {
-        api.patch('config/main', {
-            layout: {
-                home: $(this).val()
-            }
-        }).then(response => {
-            log.info(response);
-            window.location.reload();
-        }).catch(err => {
-            log.info(err);
-        });
-    });
-
     $('#showRootDir').on('change', function() {
         api.patch('config/main', {
             selectedRootIndex: parseInt($(this).val(), 10)

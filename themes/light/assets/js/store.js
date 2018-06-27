@@ -9,7 +9,7 @@ Vue.use(Puex);
 // There are no naming conventions so try and match
 // similarly to what we already use when adding new ones.
 const mutationTypes = {
-    LOGIN_PENDING: '🔒 Login Pending',
+    LOGIN_PENDING: '🔒 Logging in',
     LOGIN_SUCCESS: '🔒 ✅ Login Successful',
     LOGIN_FAILED: '🔒 ❌ Login Failed',
     LOGOUT: '🔒 Logout',
@@ -50,6 +50,15 @@ const {
 
 const store = new Puex({
     state: {
+        auth: {
+            isAuthenticated: false,
+            user: {},
+            tokens: {
+                access: null,
+                refresh: null
+            },
+            error: null
+        },
         // Websocket
         socket: {
             isConnected: false,
@@ -139,7 +148,65 @@ const store = new Puex({
             branch: null,
             commitHash: null,
             indexers: {
-                config: {}
+                config: {
+                    main: {
+                        externalMappings: {},
+                        statusMap: {},
+                        traktIndexers: {},
+                        validLanguages: [],
+                        langabbvToId: {}
+                    },
+                    indexers: {
+                        tvdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tmdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tvmaze: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        }
+                    }
+                }
             },
             sourceUrl: null,
             rootDirs: [],
@@ -180,10 +247,15 @@ const store = new Puex({
             kodi: {
                 enabled: null,
                 alwaysOn: null,
+                libraryCleanPending: null,
+                cleanLibrary: null,
+                host: [],
                 notify: {
                     snatch: null,
                     download: null,
-                    subtitleDownload: null,
+                    subtitleDownload: null
+                },
+                update: {
                     library: null,
                     full: null,
                     onlyFirst: null
@@ -247,9 +319,21 @@ const store = new Puex({
     // Please add new mutations in the same order as the mutatinType list
     mutations: {
         [LOGIN_PENDING]() {},
-        [LOGIN_SUCCESS]() {},
-        [LOGIN_FAILED]() {},
-        [LOGOUT]() {},
+        [LOGIN_SUCCESS](state, user) {
+            state.auth.user = user;
+            state.auth.isAuthenticated = true;
+            state.auth.error = null;
+        },
+        [LOGIN_FAILED](state, { error }) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.error = error;
+        },
+        [LOGOUT](state) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.error = null;
+        },
         [REFRESH_TOKEN]() {},
         [REMOVE_AUTH_ERROR]() {},
         [SOCKET_ONOPEN](state) {
@@ -324,34 +408,62 @@ const store = new Puex({
     },
     // Add all blocking code here
     // No actions should write to the store
-    // Please use store.commit to fire off a mutation that'll update the store
+    // Please use context.commit to fire off a mutation that'll update the store
+    // Do not use store.commit in any actions!
     actions: {
+        login(context, credentials) {
+            const { commit } = context;
+            commit(LOGIN_PENDING);
+
+            // @TODO: Add real JWT login
+            const apiLogin = () => Promise.resolve({ username: 'admin' });
+
+            apiLogin(credentials).then(user => {
+                return commit(LOGIN_SUCCESS, user);
+            }).catch(error => {
+                commit(LOGIN_FAILED, { error, credentials });
+            });
+        },
+        logout(context) {
+            const { commit } = context;
+            commit(LOGOUT);
+        },
         getConfig(context, section) {
+            const { commit } = context;
             return api.get('/config/' + (section || '')).then(res => {
                 if (section) {
                     const config = res.data;
-                    return store.commit(ADD_CONFIG, { section, config });
+                    return commit(ADD_CONFIG, { section, config });
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    store.commit(ADD_CONFIG, { section, config });
+                    commit(ADD_CONFIG, { section, config });
                 });
             });
         },
+        setConfig(context, { section, config }) {
+            const { dispatch } = context;
+
+            if (section !== 'main') {
+                return;
+            }
+            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+        },
         getShow(context, { indexer, id }) {
+            const { commit } = context;
             return api.get('/series/' + indexer + id).then(res => {
-                store.commit(ADD_SHOW, res.data);
+                commit(ADD_SHOW, res.data);
             });
         },
         getShows(context, shows) {
-            const { dispatch } = store;
+            const { commit, dispatch } = context;
 
             // If no shows are provided get all of them
             if (!shows) {
                 return api.get('/series?limit=1000').then(res => {
                     const shows = res.data;
                     return shows.forEach(show => {
-                        store.commit(ADD_SHOW, show);
+                        commit(ADD_SHOW, show);
                     });
                 });
             }
@@ -359,7 +471,7 @@ const store = new Puex({
             return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
-            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
+            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
         },
         setLayout(context, { page, layout }) {
             return api.patch('config/main', {

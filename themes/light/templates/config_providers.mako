@@ -21,8 +21,6 @@ const startVue = () => {
         },
         mounted() {
             $(document).ready(function() {
-                console.log('This function need to be moved to config/providers.js but can\'t be as we\'ve got scope issues currently.');
-
                 // @TODO: This needs to be moved to an API function
                 function loadProviders() {
                     % if app.USE_NZBS:

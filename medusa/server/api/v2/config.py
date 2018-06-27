@@ -323,6 +323,7 @@ class DataGenerator(object):
 
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
+        section_data['processMethod'] = app.PROCESS_METHOD
 
         return section_data
 

@@ -48,7 +48,7 @@ const startVue = () => {
                                 <label class="clearfix" for="use_kodi">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_kodi" id="use_kodi" ${'checked="checked"' if app.USE_KODI else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_kodi" id="use_kodi" :checked="config.kodi.enabled"/>
                                         <p>Send KODI commands?<p>
                                     </span>
                                 </label>
@@ -58,7 +58,7 @@ const startVue = () => {
                                     <label for="kodi_always_on">
                                         <span class="component-title">Always on</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_always_on" id="kodi_always_on" ${'checked="checked"' if app.KODI_ALWAYS_ON else ''}/>
+                                            <input type="checkbox" name="kodi_always_on" id="kodi_always_on" :checked="config.kodi.alwaysOn"/>
                                             <p>log errors when unreachable?</p>
                                         </span>
                                     </label>
@@ -67,7 +67,7 @@ const startVue = () => {
                                     <label for="kodi_notify_onsnatch">
                                         <span class="component-title">Notify on snatch</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_onsnatch" id="kodi_notify_onsnatch" ${'checked="checked"' if app.KODI_NOTIFY_ONSNATCH else ''}/>
+                                            <input type="checkbox" name="kodi_notify_onsnatch" id="kodi_notify_onsnatch" :checked="config.kodi.notify.snatch"/>
                                             <p>send a notification when a download starts?</p>
                                         </span>
                                     </label>
@@ -76,7 +76,7 @@ const startVue = () => {
                                     <label for="kodi_notify_ondownload">
                                         <span class="component-title">Notify on download</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_ondownload" id="kodi_notify_ondownload" ${'checked="checked"' if app.KODI_NOTIFY_ONDOWNLOAD else ''}/>
+                                            <input type="checkbox" name="kodi_notify_ondownload" id="kodi_notify_ondownload" :checked="config.kodi.notify.download"/>
                                             <p>send a notification when a download finishes?</p>
                                         </span>
                                     </label>
@@ -85,7 +85,7 @@ const startVue = () => {
                                     <label for="kodi_notify_onsubtitledownload">
                                         <span class="component-title">Notify on subtitle download</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_onsubtitledownload" id="kodi_notify_onsubtitledownload" ${'checked="checked"' if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
+                                            <input type="checkbox" name="kodi_notify_onsubtitledownload" id="kodi_notify_onsubtitledownload" :checked="config.kodi.notify.subtitleDownload"/>
                                             <p>send a notification when subtitles are downloaded?</p>
                                         </span>
                                     </label>
@@ -94,7 +94,7 @@ const startVue = () => {
                                     <label for="kodi_update_library">
                                         <span class="component-title">Update library</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_library" id="kodi_update_library" ${'checked="checked"' if app.KODI_UPDATE_LIBRARY else ''}/>
+                                            <input type="checkbox" name="kodi_update_library" id="kodi_update_library" :checked="config.kodi.update.library"/>
                                             <p>update KODI library when a download finishes?</p>
                                         </span>
                                     </label>
@@ -103,7 +103,7 @@ const startVue = () => {
                                     <label for="kodi_update_full">
                                         <span class="component-title">Full library update</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_full" id="kodi_update_full" ${'checked="checked"' if app.KODI_UPDATE_FULL else ''}/>
+                                            <input type="checkbox" name="kodi_update_full" id="kodi_update_full" :checked="config.kodi.update.full"/>
                                             <p>perform a full library update if update per-show fails?</p>
                                         </span>
                                     </label>
@@ -112,7 +112,7 @@ const startVue = () => {
                                     <label for="kodi_clean_library">
                                         <span class="component-title">Clean library</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" ${'checked="checked"' if app.KODI_CLEAN_LIBRARY else ''}/>
+                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" :checked="config.kodi.cleanLibrary"/>
                                             <p>clean KODI library when replaces a already downloaded episode?</p>
                                         </span>
                                     </label>
@@ -121,7 +121,7 @@ const startVue = () => {
                                     <label for="kodi_update_onlyfirst">
                                         <span class="component-title">Only update first host</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" ${'checked="checked"' if app.KODI_UPDATE_ONLYFIRST else ''}/>
+                                            <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" :checked="config.kodi.update.onlyFirst"/>
                                             <p>only send library updates/clean to the first active host?</p>
                                         </span>
                                     </label>
@@ -143,8 +143,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label for="kodi_username">
                                         <span class="component-title">Username</span>
-                                        <input type="text" name="kodi_username" id="kodi_username" value="${app.KODI_USERNAME}" class="form-control input-sm input250"
-                                               autocomplete="no" />
+                                        <input type="text" name="kodi_username" id="kodi_username" value="${app.KODI_USERNAME}" class="form-control input-sm input250" autocomplete="no" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -179,7 +178,7 @@ const startVue = () => {
                                 <label for="use_plex_server">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_plex_server" id="use_plex_server" ${'checked="checked"' if app.USE_PLEX_SERVER else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_plex_server" id="use_plex_server" :checked="config.plex.server.enabled"/>
                                         <p>Send Plex Media Server library updates?</p>
                                     </span>
                                 </label>
@@ -272,7 +271,7 @@ const startVue = () => {
                                 <label for="use_plex_client">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_plex_client" id="use_plex_client" ${'checked="checked"' if app.USE_PLEX_CLIENT else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_plex_client" id="use_plex_client" :checked="config.plex.client.enabled"/>
                                         <p>Send Plex Home Theater notifications?</p>
                                     </span>
                                 </label>
@@ -357,7 +356,7 @@ const startVue = () => {
                                 <label for="use_emby">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" ${'checked="checked"' if app.USE_EMBY else ''} />
+                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" :checked="config.emby.enabled"/>
                                         <p>Send update commands to Emby?<p>
                                     </span>
                                 </label>

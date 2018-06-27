@@ -16,7 +16,6 @@ const startVue = () => {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
                 indexerName: $('#indexer-name').attr('value'),
-                config: MEDUSA.config,
                 series: {
                     config: {
                         aliases: [],

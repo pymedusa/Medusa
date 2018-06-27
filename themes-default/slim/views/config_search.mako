@@ -14,6 +14,7 @@ window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        store,
         metaInfo: {
             title: 'Config - Episode Search'
         },
