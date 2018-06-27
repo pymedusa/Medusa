@@ -22,9 +22,7 @@
                       % endif
                 % endif
             % endfor
-            % if (action == "displayShow"):
-                <%include file="/partials/showSelector.mako"/>
-            % endif
+            <show-selector v-if="'${action}' === 'displayShow'" current-show-slug="${show.identifier.slug}"></show-selector>
         </div>
     </div> <!-- end of container -->
 <!-- END sub-menu -->
