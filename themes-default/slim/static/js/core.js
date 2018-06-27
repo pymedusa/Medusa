@@ -59,22 +59,6 @@ const UTIL = {
     }
 };
 
-$.extend({
-    isMeta(pyVar, result) { // eslint-disable-line no-unused-vars
-        const reg = new RegExp(result.length > 1 ? result.join('|') : result);
-
-        if (typeof (pyVar) === 'object' && Object.keys(pyVar).length === 1) {
-            return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
-        }
-        if (pyVar.match('medusa')) {
-            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, m => {
-                return m[1].toUpperCase();
-            });
-        }
-        return (reg).test(MEDUSA.config[pyVar]);
-    }
-});
-
 $.fn.extend({
     addRemoveWarningClass(_) {
         if (_) {
