@@ -185,8 +185,8 @@
         // If the text field is empty and we're given a key then populate it with the last browsed value from localStorage
         try {
             ls = Boolean(localStorage.getItem);
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
         }
         if (ls && options.key) {
             path = localStorage['fileBrowser-' + options.key];

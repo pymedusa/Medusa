@@ -96,8 +96,8 @@ if (!document.location.pathname.endsWith('/login/')) {
             }
             return MEDUSA.config.indexers.config.indexers[name];
         };
-    }).catch(err => {
-        log.error(err);
+    }).catch(error => {
+        log.error(error);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
