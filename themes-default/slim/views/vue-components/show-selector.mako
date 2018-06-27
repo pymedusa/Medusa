@@ -1,11 +1,11 @@
 <style>
-select#select-show {
+select.select-show {
     display: inline-block;
     height: 25px;
     padding: 1px;
 }
 
-#showSelector {
+.show-selector {
     height: 31px;
     display: table-cell;
     left: 20px;
@@ -13,15 +13,8 @@ select#select-show {
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
-    .select-show-group {
-        width: 100%;
-    }
-
-    .show-selector {
-        width: 100%;
-    }
-
-    .showSelector {
+    .select-show-group,
+    .select-show {
         width: 100%;
     }
 }
@@ -30,14 +23,10 @@ select#select-show {
     .select-show-group {
         width: 100%;
     }
-
-    .container-navShow {
-        margin-left: 265px;
-    }
 }
 
 @media (max-width: 767px) {
-    #showSelector {
+    .show-selector {
         float: left;
         width: 100%;
     }
@@ -48,27 +37,19 @@ select#select-show {
 }
 </style>
 <script type="text/x-template" id="show-selector-template">
-    <div id="showSelector" class="hidden-print">
-        <div class="form-inline">
-            <div>
-                <div class="select-show-group pull-left top-5 bottom-5">
-                    <select v-model="selectedShowSlug" @change="jumpToShow" id="select-show" class="form-control input-sm-custom show-selector">
-                        <template v-if="whichList === -1">
-                            <optgroup v-for="curShowList in showLists" :label="curShowList.type">
-                                <option v-for="curShow in curShowList.shows" :value="curShow.id.slug">
-                                    {{curShow.title}}
-                                </option>
-                            </optgroup>
-                        </template>
-                        <template v-else>
-                            <option v-for="curShow in showLists[whichList].shows" :value="curShow.id.slug">
-                                {{curShow.title}}
-                            </option>
-                        </template>
-                    </select>
-                </div> <!-- end of select-show-group -->
-            </div>
-        </div>
+    <div class="show-selector form-inline hidden-print">
+        <div class="select-show-group pull-left top-5 bottom-5">
+            <select v-model="selectedShowSlug" class="show-selector form-control input-sm-custom">
+                <template v-if="whichList === -1">
+                    <optgroup v-for="curShowList in showLists" :label="curShowList.type">
+                        <option v-for="show in curShowList.shows" :value="show.id.slug">{{show.title}}</option>
+                    </optgroup>
+                </template>
+                <template v-else>
+                    <option v-for="show in showLists[whichList].shows" :value="show.id.slug">{{show.title}}</option>
+                </template>
+            </select>
+        </div> <!-- end of select-show-group -->
     </div> <!-- end of container -->
 </script>
 <script>
@@ -117,10 +98,10 @@ Vue.component('show-selector', {
             return 0;
         }
     }),
-    methods: {
-        jumpToShow() {
-            const { selectedShowSlug, shows } = this;
-            const selectedShow = shows.find(show => show.id.slug === selectedShowSlug);
+    watch: {
+        selectedShowSlug(newSlug) {
+            const { shows } = this;
+            const selectedShow = shows.find(show => show.id.slug === newSlug);
             if (!selectedShow) return;
             const indexerName = selectedShow.indexer;
             const showId = selectedShow.id[indexerName];
