@@ -2052,7 +2052,7 @@ class Home(WebRoot):
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Sending backlog for {show} season {season} '
-                           u'because some eps were set to wanted'.format
+                           u'because some episodes were set to wanted'.format
                            (show=series_obj.name, season=season))
 
             msg += '</ul>'
@@ -2074,7 +2074,7 @@ class Home(WebRoot):
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Retrying Search for {show} season {season} '
-                           u'because some eps were set to failed'.format
+                           u'because some episodes were set to failed'.format
                            (show=series_obj.name, season=season))
 
             msg += '</ul>'

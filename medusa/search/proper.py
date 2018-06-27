@@ -20,7 +20,7 @@ from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from medusa.search.core import pick_best_result, snatch_episode
+from medusa.search.core import filter_results, pick_result, snatch_episode
 from medusa.show.history import History
 
 from six import itervalues
@@ -209,7 +209,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.proper_tags = cur_proper.parse_result.proper_tags
 
             # filter release, in this case, it's just a quality gate. As we only send one result.
-            best_result = pick_best_result(cur_proper)
+            wanted_results = filter_results(cur_proper)
+            best_result = pick_result(wanted_results)
 
             if not best_result:
                 log.info('Rejected proper: {name}', {'name': cur_proper.name})
