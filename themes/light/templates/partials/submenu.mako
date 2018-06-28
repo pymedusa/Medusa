@@ -23,7 +23,7 @@
                 % endif
             % endfor
             <% curShowSlug = show.identifier.slug if show is not UNDEFINED else '' %>
-            <show-selector v-if="'${action}' === 'displayShow'" current-show-slug="${curShowSlug}"></show-selector>
+            <show-selector v-if="'${action}' === 'displayShow'" show-slug="${curShowSlug}"></show-selector>
         </div>
     </div> <!-- end of container -->
 <!-- END sub-menu -->
