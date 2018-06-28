@@ -130,4 +130,7 @@ class EpisodeHandler(BaseRequestHandler):
                 log.warning('Episode patch for {episode} ignored {items!r}',
                             {'episode': slug, 'items': ignored[slug]})
 
+            if episode_slug:
+                return self._ok(data=accepted[slug])
+
         self._multi_status(data=statuses)
