@@ -120,7 +120,7 @@ class YggtorrentProvider(TorrentProvider):
         :return: A list of items found
         """
         # Units
-        units = ['o', 'ko', 'Mo', 'Go', 'To', 'Po']
+        units = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
 
         items = []
 
