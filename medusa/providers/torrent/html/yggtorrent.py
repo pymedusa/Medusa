@@ -25,7 +25,7 @@ log.logger.addHandler(logging.NullHandler())
 class YggtorrentProvider(TorrentProvider):
     """Yggtorrent Torrent provider."""
 
-    torrent_id = re.compile(r'\/(\d+)-')
+    torrent_id_pattern = re.compile(r'\/(\d+)-')
 
     def __init__(self):
         """Initialize the class."""
@@ -146,7 +146,7 @@ class YggtorrentProvider(TorrentProvider):
                     if not (title and download_url):
                         continue
 
-                    torrent_id = YggtorrentProvider.torrent_id.search(download_url)
+                    torrent_id = self.torrent_id_pattern.search(download_url)
                     download_url = self.urls['download'].format(torrent_id.group(1))
 
                     seeders = try_int(cells[7].get_text(strip=True), 0)
