@@ -7,7 +7,6 @@ const workDir = process.cwd();
 const pathToFolder = path.join(workDir, 'themes-default');
 const execa = require('execa');
 const getStream = require('get-stream');
-const xo = require('gulp-xo');
 
 const build = done => {
     // Place code for your default task here
@@ -23,7 +22,6 @@ const getFolders = dir => {
 
 const lintTheme = theme => {
     console.log(`Starting lint of ${theme}`);
-    console.log(`Working dir: ${process.cwd()}`);
     const stream = execa('yarn', [], {cwd: theme}).stdout;
     stream.pipe(process.stdout);
     return getStream(stream)
@@ -33,26 +31,7 @@ const lintTheme = theme => {
         });
 };
 
-/**
- * Run all js files through the xo (eslint) linter.
- * FIXME: This apparently doesn't work properly. It is verry slow.
- * Running the linter on the subdirectories using execa is much faster.
- */
-const lint = () => {
-    return gulp
-        .src([
-            'themes-default/*/static/js/**/*.js',
-            '!themes-default/*/static/js/lib/**',
-            '!themes-default/*/static/js/*.min.js',
-            '!themes-default/*/static/js/vender.js',
-            '!node_modules/**'
-        ])
-        .pipe(xo())
-        .pipe(xo.format())
-        .pipe(xo.failAfterError());
-};
-
-gulp.task('default', ['lint']);
+gulp.task('default', ['lintthemes']);
 gulp.task('build', build);
 gulp.task('lintthemes', () => {
     const folders = getFolders(pathToFolder);
@@ -61,4 +40,3 @@ gulp.task('lintthemes', () => {
         return lintTheme(fullPath);
     }));
 });
-gulp.task('lint', lint);
