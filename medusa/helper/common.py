@@ -229,8 +229,8 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
             scalar, units = size_tuple[0], size_tuple[1:]
             units = units[0].upper() if units else default_units
         else:
-            regex_units = re.search(r'([0-9.]+)(\s?({scale}))'.format(scale='|'.join(scale)), size, re.IGNORECASE)
-            units = regex_units.group(2).strip() if regex_units else default_units
+            regex_units = re.search(r'([0-9.]+)\s*({scale})'.format(scale='|'.join(scale)), size, re.IGNORECASE)
+            units = regex_units.group(2).upper() if regex_units else default_units
             scalar = regex_units.group(1)
 
         scalar = float(scalar)
