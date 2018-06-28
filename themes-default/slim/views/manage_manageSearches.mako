@@ -1,7 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    import datetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
 %>
@@ -17,7 +16,6 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Manage Searches'
             };
         },
         mounted() {
@@ -124,7 +122,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content800">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">Manage Searches</h1>
 <div id="summary2" class="align-left">
 
 <h3>Backlog Search:</h3>

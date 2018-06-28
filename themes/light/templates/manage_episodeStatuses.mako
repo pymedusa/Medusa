@@ -15,7 +15,6 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Episode Overview'
             };
         },
         mounted() {
@@ -84,7 +83,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content960">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">Episode Overview</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
     % if whichStatus:
         <h2>None of your episodes have status ${statusStrings[int(whichStatus)]}</h2>

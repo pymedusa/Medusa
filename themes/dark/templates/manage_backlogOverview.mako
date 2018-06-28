@@ -18,17 +18,20 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Backlog Overview'
             };
         },
-        computed: Object.assign(store.mapState(['config']), {
+        computed: Object.assign(store.mapState([]), {
             period: {
                 get() {
                     return this.config.backlogOverview.period;
                 },
                 set(value) {
-                    const { dispatch, commit } = store;
-                    return this.setConfig({dispatch, commit}, { config: { backlogOverview: { period: value } } });
+                    const { $store } = this;
+                    return $store.dispatch('setConfig', {
+                        section: 'main',
+                        config: { backlogOverview: { period: value } }
+                    })
+                    .then(setTimeout(() => location.reload(), 500));
                 }
             },
             status: {
@@ -36,21 +39,18 @@ const startVue = () => {
                     return this.config.backlogOverview.status;
                 },
                 set(value) {
-                    const { dispatch, commit } = store;
-                    return this.setConfig({dispatch, commit}, { config: { backlogOverview: { status: value } } });
+                    const { $store } = this;
+                    return $store.dispatch('setConfig', {
+                        section: 'main',
+                        config: { backlogOverview: { status: value } }
+                    })
+                    .then(setTimeout(() => location.reload(), 500));
                 }
             }
         }),
         methods: {
-            setConfig(context, { section, config }) {
-                return api.patch('config/' + (section || 'main'), config).then(setTimeout(() => location.reload(), 500));
-            }
         },
         mounted() {
-            const { $store } = this;
-
-            $store.dispatch('getConfig');
-
             checkForcedSearch();
 
             function checkForcedSearch() {
@@ -165,7 +165,7 @@ const startVue = () => {
 <div class="row">
 <div id="content-col" class="col-md-12">
     <div class="col-md-12">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">Backlog Overview</h1>
     </div>
 </div>
 
