@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "yarn run test-css && yarn test-api",
+    "test": "yarn run build && yarn run test-css && yarn run test-api",
     "gulp": "gulp",
     "build": "gulp lintthemes",
     "coverage": "nyc ava && yarn report-coverage",
