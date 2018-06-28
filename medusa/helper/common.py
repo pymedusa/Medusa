@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import re
+import traceback
 from fnmatch import fnmatch
 
 from medusa import app
@@ -328,7 +329,9 @@ def try_int(candidate, default_value=0):
         return int(candidate)
     except (ValueError, TypeError):
         if candidate and (',' in candidate or '.' in candidate):
-            log.exception(u'Failed parsing provider.')
+            # Get the current stack trace (excluding the following line)
+            stack_trace = traceback.format_stack(limit=10)[:-2]
+            log.exception(u'Failed parsing provider.\nStack trace:\n{0}', ''.join(stack_trace))
         return default_value
 
 
