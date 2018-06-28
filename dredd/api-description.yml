@@ -209,7 +209,7 @@ paths:
           x-request:
             path-params:
               id: tvdb999999999
-  /series/{seriesid}/episode:
+  /series/{seriesid}/episodes:
     get:
       summary: Return episodes from a given series
       description: |
@@ -247,7 +247,7 @@ paths:
           x-request:
             path-params:
               seriesid: tvdb999999999
-  /series/{seriesid}/episode/{id}:
+  /series/{seriesid}/episodes/{id}:
     get:
       summary: Return a specific episode from a given series
       description: Retrieve a specific episode from a given series
@@ -274,7 +274,7 @@ paths:
           x-request:
             path-params:
               id: e999
-  /series/{seriesid}/episode/{id}/{field}:
+  /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
       description: Retrieve a specific field from a given episode
@@ -305,7 +305,7 @@ paths:
           x-request:
             path-params:
               id: "2050-12-31"
-  /series/{seriesid}/episode/{id}/metadata:
+  /series/{seriesid}/episodes/{id}/metadata:
     get:
       summary: Return the video metadata from a specific episode
       description: Retrieve the video metadata from a specific episode
