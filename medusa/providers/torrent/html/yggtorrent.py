@@ -119,6 +119,9 @@ class YggtorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['o', 'ko', 'Mo', 'Go', 'To', 'Po']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -158,7 +161,7 @@ class YggtorrentProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[5].get_text()
-                    size = convert_size(torrent_size, sep='', default=-1)
+                    size = convert_size(torrent_size, sep='', units=units, default=-1)
 
                     pubdate = None
                     pubdate_match = re.search(r'-(\d+)\s(\w+)', cells[4].get_text('-', strip=True))
