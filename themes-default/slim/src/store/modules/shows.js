@@ -2,6 +2,8 @@ import Vue from 'vue';
 import { ADD_SHOW } from '../mutation-types';
 
 const state = {
+    // Currently loaded show
+    show: {},
     shows: []
 };
 
@@ -71,6 +73,20 @@ const actions = {
         }
 
         return shows.forEach(show => dispatch('getShow', show));
+    },
+    setShow(context, { indexer, id, data, save }) {
+        const { commit, dispatch } = context;
+
+        // Just update local store
+        if (!save) {
+            return api.get('/series/' + indexer + id).then(response => {
+                const show = Object.assign({}, response.data, data);
+                commit(ADD_SHOW, show);
+            });
+        }
+
+        // Send to API
+        return api.patch('series/' + indexer + id, data).then(setTimeout(() => dispatch('getShow', { indexer, id }), 500));
     }
 };
 
