@@ -14,6 +14,7 @@ from medusa import (
 )
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -29,7 +30,8 @@ from six import text_type
 
 from tornado.escape import json_decode
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def layout_schedule_post_processor(v):
@@ -155,7 +157,7 @@ class ConfigHandler(BaseRequestHandler):
                 set_nested_value(ignored, key, value)
 
         if ignored:
-            log.warning('Config patch ignored %r', ignored)
+            log.warning('Config patch ignored {items!r}', {'items': ignored})
 
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
