@@ -25,7 +25,7 @@ log.logger.addHandler(logging.NullHandler())
 class YggtorrentProvider(TorrentProvider):
     """Yggtorrent Torrent provider."""
 
-    torrent_id = re.compile(r'\/(\d+)-')
+    torrent_id_pattern = re.compile(r'\/(\d+)-')
 
     def __init__(self):
         """Initialize the class."""
@@ -119,6 +119,9 @@ class YggtorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -143,7 +146,7 @@ class YggtorrentProvider(TorrentProvider):
                     if not (title and download_url):
                         continue
 
-                    torrent_id = YggtorrentProvider.torrent_id.search(download_url)
+                    torrent_id = self.torrent_id_pattern.search(download_url)
                     download_url = self.urls['download'].format(torrent_id.group(1))
 
                     seeders = try_int(cells[7].get_text(strip=True), 0)
@@ -158,7 +161,7 @@ class YggtorrentProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[5].get_text()
-                    size = convert_size(torrent_size, sep='', default=-1)
+                    size = convert_size(torrent_size, sep='', units=units, default=-1)
 
                     pubdate = None
                     pubdate_match = re.search(r'-(\d+)\s(\w+)', cells[4].get_text('-', strip=True))
