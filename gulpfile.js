@@ -26,9 +26,7 @@ const lintTheme = theme => {
     console.log(`Working dir: ${process.cwd()}`);
     const stream = execa('yarn', [], {cwd: theme}).stdout;
     stream.pipe(process.stdout);
-    return getStream(stream).then(value => {
-        console.log('child output:', value);
-    })
+    return getStream(stream)
         .catch(err => {
             console.log(`Lint errored for theme ${theme} with error:\n${err.toString()}`);
             process.exit(err.code);
