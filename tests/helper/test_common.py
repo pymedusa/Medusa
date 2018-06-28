@@ -429,10 +429,10 @@ def test_convert_size():
 
     # no separator, custom units need to be uppercase or they won't match
     oops = ['b', 'kb', 'Mb', 'Gb', 'tB', 'Pb']
-    assert sut.convert_size('1 b', sep='', units=oops) is None
-    assert sut.convert_size('1 B', sep='', units=oops) is None
-    assert sut.convert_size('1 Mb', sep='', units=oops) is None
-    assert sut.convert_size('1 MB', sep='', units=oops) is None
+    assert sut.convert_size('1b', sep='', units=oops) is None
+    assert sut.convert_size('1B', sep='', units=oops) is None
+    assert sut.convert_size('1Mb', sep='', units=oops) is None
+    assert sut.convert_size('1MB', sep='', units=oops) is None
 
 
 def test_episode_num():
