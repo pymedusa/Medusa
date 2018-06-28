@@ -106,7 +106,6 @@
     ],
     "esnext": true
   },
-  "dependencies": {},
   "ava": {
     "files": [
       "vue/test/**/*.js"
