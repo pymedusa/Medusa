@@ -1,7 +1,7 @@
 <script type="text/x-template" id="show-selector-template">
     <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
-            <select v-model="selectedShowSlug" class="show-selector form-control input-sm-custom">
+            <select v-model="selectedShowSlug" class="select-show form-control input-sm-custom">
                 <template v-if="whichList === -1">
                     <optgroup v-for="curShowList in showLists" :label="curShowList.type">
                         <option v-for="show in curShowList.shows" :value="show.id.slug">{{show.title}}</option>
