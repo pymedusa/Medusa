@@ -6,7 +6,6 @@ const gulp = require('gulp');
 const workDir = process.cwd();
 const pathToFolder = path.join(workDir, 'themes-default');
 const execa = require('execa');
-const getStream = require('get-stream');
 
 const build = done => {
     // Place code for your default task here
@@ -22,12 +21,12 @@ const getFolders = dir => {
 
 const lintTheme = theme => {
     console.log(`Starting lint of ${theme}`);
-    const stream = execa('yarn', [], {cwd: theme}).stdout;
-    stream.pipe(process.stdout);
-    return getStream(stream)
-        .catch(err => {
-            console.log(`Lint errored for theme ${theme} with error:\n${err.toString()}`);
-            process.exit(err.code);
+    const stream = execa('yarn', [], {cwd: theme});
+    stream.stdout.pipe(process.stdout);
+    return stream
+        .catch(error => {
+            console.log(`Lint errored for theme ${theme}`);
+            process.exit(error.code);
         });
 };
 

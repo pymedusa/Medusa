@@ -436,8 +436,6 @@ const store = new Puex({
             });
         },
         setConfig(context, { section, config }) {
-            const { dispatch } = context;
-
             if (section !== 'main') {
                 return;
             }
