@@ -434,7 +434,7 @@ def reflink_file(src_file, dest_file):
             raise NotImplementedError()
         reflink.reflink(src_file, dest_file)
     except (reflink.ReflinkImpossibleError, IOError) as msg:
-        if isinstance(msg.args, tuple) and msg.args[0] == 'EOPNOTSUPP':
+        if msg.args and msg.args[0] == 'EOPNOTSUPP':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
@@ -443,7 +443,7 @@ def reflink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
-        elif isinstance(msg.args, tuple) and msg.args[0] == 'EXDEV':
+        elif msg.args and msg.args[0] == 'EXDEV':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Can not reflink between two devices. Copying instead', {
