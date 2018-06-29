@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "version": "0.1.0",
-  "name": "dark",
+  "name": "light",
   "author": "p0psicles",
   "scripts": {
     "gulp": "gulp",
@@ -38,16 +38,13 @@
     "glob": "^7.1.2",
     "gulp": "^3.9.1",
     "gulp-changed": "^3.2.0",
-    "gulp-changed-in-place": "^2.3.0",
     "gulp-if": "^2.0.2",
     "gulp-imagemin": "^3.4.0",
     "gulp-livereload": "^3.8.1",
     "gulp-postcss": "^7.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-rev": "^8.1.0",
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.6.1",
-    "gulp-swagger-js-codegen": "^1.0.0",
     "gulp-uglify-es": "^0.1.4",
     "gulp-util": "^3.0.8",
     "gulp-xo": "^0.16.1",
@@ -108,29 +105,6 @@
       "build/**"
     ],
     "esnext": true
-  },
-  "stylelint": {
-    "extends": "stylelint-config-standard",
-    "rules": {
-      "indentation": [
-        4,
-        {
-          "ignore": [
-            "inside-parens"
-          ],
-          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
-          "severity": "error"
-        }
-      ]
-    },
-    "ignoreFiles": [
-      "static/css/lib/**",
-      "static/css/*.min.css",
-      "gulpfile.js"
-    ]
-  },
-  "dependencies": {
-    "stylelint": "^7.9.0"
   },
   "ava": {
     "files": [
