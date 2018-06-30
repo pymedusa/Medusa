@@ -22,7 +22,7 @@ from medusa.name_parser.parser import InvalidNameException, InvalidShowException
 from medusa.search.core import filter_results, pick_result, snatch_episode
 from medusa.show.history import History
 
-from six import itervalues
+from six import itervalues, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -329,7 +329,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         :param proper_list:
         """
-        for cur_proper in proper_list:
+        for candidate in proper_list:
 
             history_limit = datetime.datetime.today() - datetime.timedelta(days=30)
 
@@ -343,16 +343,18 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND date >= ? '
                 b'AND action IN (?, ?, ?, ?) '
                 b'LIMIT {amount}'.format(
-                    episodes=','.join(cur_proper.actual_episodes),
-                    amount=len(cur_proper.actual_episodes) * 2
+                    episodes=','.join(
+                        text_type(ep) for ep in candidate.actual_episodes
+                    ),
+                    amount=len(candidate.actual_episodes) * 2,
                 ),
-                [cur_proper.indexerid, cur_proper.actual_season, cur_proper.quality,
+                [candidate.indexerid, candidate.actual_season, candidate.quality,
                  history_limit.strftime(History.date_format),
                  DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST])
 
-            proper_tags_len = len(cur_proper.proper_tags)
-            proper_name = self._canonical_name(cur_proper.name, clear_extension=True)
-            proper_name_ext = self._canonical_name(cur_proper.name)
+            proper_tags_len = len(candidate.proper_tags)
+            proper_name = self._canonical_name(candidate.name, clear_extension=True)
+            proper_name_ext = self._canonical_name(candidate.name)
 
             for result in history_results:
 
@@ -361,7 +363,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     log.debug(
                         'Current release has the same or more proper tags,'
                         ' skipping new proper {result!r}',
-                        {'result': cur_proper.name},
+                        {'result': candidate.name},
                     )
                     break
 
@@ -372,15 +374,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 ) or proper_name_ext == self._canonical_name(result[b'resource']):
                     log.debug(
                         'This proper {result!r} is already in history, skipping it',
-                        {'result': cur_proper.name},
+                        {'result': candidate.name},
                     )
                     break
 
             else:
-                cur_proper.create_episode_object()
-
+                candidate.create_episode_object()
                 # snatch it
-                snatch_episode(cur_proper)
+                snatch_episode(candidate)
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):
