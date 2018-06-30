@@ -367,15 +367,15 @@ class Notifier(object):
         # Fallback
         if not match:
             # @TODO: This won't be needed when notifiers receive a dictionary
-            log.warning('Unable to parse {0} for email notification', ep_name)
+            log.warning('Unable to parse "{0}" for email notification', ep_name)
             titles = ep_name.split(' - ')
             return {
                 'show': titles[0],
-                'episode': titles[1:]
+                'episode': ' - '.join(titles[1:])
             }
 
         result = match.groupdict()
 
-        log.debug('Email notifier parsed {0} into {1!r}',
+        log.debug('Email notifier parsed "{0}" into {1!r}',
                   ep_name, result)
         return result
