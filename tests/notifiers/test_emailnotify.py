@@ -151,8 +151,7 @@ def test__parse_name(p):
     expected = p['expected']
 
     # When
-    instance = Notifier()
-    actual = instance._parse_name(ep_name)
+    actual = Notifier._parse_name(ep_name)
 
     # Then
     assert actual == expected
