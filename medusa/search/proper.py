@@ -228,7 +228,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT status, quality, release_name "
+            sql_results = main_db_con.select(b"SELECT quality, release_name "
                                              b"FROM tv_episodes WHERE indexer = ? "
                                              b"AND showid = ? AND season = ? "
                                              b"AND episode = ? AND status = ?",
@@ -256,6 +256,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if release_name:
                 release_name_guess = NameParser()._parse_string(release_name)
                 current_codec = release_name_guess.video_codec
+
                 # Ignore proper if codec differs from downloaded release codec
                 if all([current_codec, best_result.parse_result.video_codec,
                         best_result.parse_result.video_codec != current_codec]):
@@ -263,6 +264,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     if best_result.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
+
                 streaming_service = release_name_guess.guess.get(u'streaming_service')
                 # Ignore proper if streaming service differs from downloaded release streaming service
                 if best_result.parse_result.guess.get(u'streaming_service') != streaming_service:
@@ -312,8 +314,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # if the show is in our list and there hasn't been a proper already added for that particular episode
             # then add it to our list of propers
             if best_result.indexerid != -1 and (
-                best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
-            ) not in list(map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers)):
+                best_result.indexerid, best_result.actual_season, best_result.actual_episodes
+            ) not in list(map(operator.attrgetter('indexerid', 'actual_season', 'actual_episodes'), final_propers)):
                 log.info('Found a desired proper: {name}', {'name': best_result.name})
                 final_propers.append(best_result)
 
@@ -334,37 +336,52 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             main_db_con = db.DBConnection()
             history_results = main_db_con.select(
-                b'SELECT resource FROM history '
+                b'SELECT resource, proper_tags FROM history '
                 b'WHERE showid = ? '
                 b'AND season = ? '
-                b'AND episode = ? '
+                b'AND episode IN ({episodes}) '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b'AND action in (?, ?, ?, ?)',
-                [cur_proper.indexerid, cur_proper.actual_season, cur_proper.actual_episode, cur_proper.quality,
+                b'AND action IN (?, ?, ?, ?) '
+                b'LIMIT {amount}'.format(
+                    episodes=','.join(cur_proper.actual_episodes),
+                    amount=len(cur_proper.actual_episodes) * 2
+                ),
+                [cur_proper.indexerid, cur_proper.actual_season, cur_proper.quality,
                  history_limit.strftime(History.date_format),
                  DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST])
 
-            # make sure that none of the existing history downloads are the same proper we're trying to download
-            # if the result exists in history already we need to skip it
-            clean_proper_name = self._canonical_name(cur_proper.name, clear_extension=True)
-            if any(clean_proper_name == self._canonical_name(cur_result[b'resource'], clear_extension=True)
-                   for cur_result in history_results):
-                log.debug('This proper {result!r} is already in history, skipping it', {'result': cur_proper.name})
-                continue
-            else:
-                # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._canonical_name(cur_proper.name)
-                if any(clean_proper_name == self._canonical_name(cur_result[b'resource'])
-                       for cur_result in history_results):
-                    log.debug('This proper {result!r} is already in history, skipping it', {'result': cur_proper.name})
-                    continue
+            proper_tags_len = len(cur_proper.proper_tags)
+            proper_name = self._canonical_name(cur_proper.name, clear_extension=True)
+            proper_name_ext = self._canonical_name(cur_proper.name)
 
+            for result in history_results:
+
+                proper_tags = result[b'proper_tags']
+                if proper_tags and len(proper_tags.split('|')) >= proper_tags_len:
+                    log.debug(
+                        'Current release has the same or more proper tags,'
+                        ' skipping new proper {result!r}',
+                        {'result': cur_proper.name},
+                    )
+                    break
+
+                # make sure that none of the existing history downloads are the same proper we're
+                # trying to downloadif the result exists in history already we need to skip it
+                if proper_name == self._canonical_name(
+                    result[b'resource'], clear_extension=True
+                ) or proper_name_ext == self._canonical_name(result[b'resource']):
+                    log.debug(
+                        'This proper {result!r} is already in history, skipping it',
+                        {'result': cur_proper.name},
+                    )
+                    break
+
+            else:
                 cur_proper.create_episode_object()
 
                 # snatch it
                 snatch_episode(cur_proper)
-                time.sleep(cpu_presets[app.CPU_PRESET])
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):
