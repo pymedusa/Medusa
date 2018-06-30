@@ -113,6 +113,7 @@
             ## Add Vue component x-templates here
             ## @NOTE: These will be usable on all pages
         %>
+        <script src="js/init-service-worker.js"></script>
         <script src="js/lib/vue.js"></script>
         <script src="js/lib/vue-async-computed@3.3.0.js"></script>
         <script src="js/lib/vue-in-viewport-mixin.min.js"></script>

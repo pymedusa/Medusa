@@ -235,6 +235,10 @@ class AppWebServer(threading.Thread):
             # vue index.html
             (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
              {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
+
+            # service worker
+            (r'{base}/(sw\.js)'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets')}),
         ])
 
         # API v1 handlers
