@@ -59,7 +59,7 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
-            parsed = self._parseName(ep_name)
+            parsed = self._parse_name(ep_name)
             to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -110,7 +110,7 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
-            parsed = self._parseName(ep_name)
+            parsed = self._parse_name(ep_name)
             to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -161,7 +161,7 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            parsed = self._parseName(ep_name)
+            parsed = self._parse_name(ep_name)
             to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -358,7 +358,7 @@ class Notifier(object):
             return False
 
     @classmethod
-    def _parseName(cls, ep_name):
+    def _parse_name(cls, ep_name):
         ep_name = ss(ep_name)
 
         # @TODO: Prone to issues, best solution is to have a dictionary passed to notifiers
