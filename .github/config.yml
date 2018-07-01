@@ -1,2 +1,2 @@
 todo:
-  exclude: '^themes/'
+  exclude: '^(themes|lib|ext)/'
