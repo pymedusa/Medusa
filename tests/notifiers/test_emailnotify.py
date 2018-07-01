@@ -167,7 +167,7 @@ def test__parse_name(p):
             'sameuser@pymedusa.com',
             'sameuser@pymedusa.com',
         ],
-        'show_notify_list': '',
+        'mocks': [],
         'expected': {
             'admin@pymedusa.com',
             'sameuser@pymedusa.com',
