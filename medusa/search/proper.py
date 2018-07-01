@@ -341,12 +341,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode IN ({episodes}) '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b'AND action IN (?, ?, ?, ?) '
-                b'LIMIT {amount}'.format(
+                b'AND action IN (?, ?, ?, ?)'.format(
                     episodes=','.join(
                         text_type(ep) for ep in candidate.actual_episodes
                     ),
-                    amount=len(candidate.actual_episodes) * 2,
                 ),
                 [candidate.indexerid, candidate.actual_season, candidate.quality,
                  history_limit.strftime(History.date_format),
