@@ -7,6 +7,8 @@ from medusa.notifiers.emailnotify import Notifier
 
 import pytest
 
+from six import text_type
+
 
 @pytest.mark.parametrize('p', [
     {  # p0 - Fail and fallback to legacy parsing
@@ -152,6 +154,87 @@ def test__parse_name(p):
 
     # When
     actual = Notifier._parse_name(ep_name)
+
+    # Then
+    assert actual == expected
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0 - not show-specific
+        'show': None,
+        'EMAIL_LIST': [
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+            'sameuser@pymedusa.com',
+        ],
+        'show_notify_list': '',
+        'expected': {
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+        }
+    },
+    {  # p1 - show-specific, legacy
+        'show': 'Show Name',
+        'EMAIL_LIST': [
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+        ],
+        'mocks': [
+            ('medusa.db.DBConnection.select', [{
+                'notify_list': 'sameuser@pymedusa.com,user1@pymedusa.com'
+            }])
+        ],
+        'expected': {
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+            'user1@pymedusa.com'
+        }
+    },
+    {  # p2 - show-specific, no emails
+        'show': 'Show Name',
+        'EMAIL_LIST': [
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+        ],
+        'mocks': [
+            ('medusa.db.DBConnection.select', [{
+                'notify_list': ''
+            }])
+        ],
+        'expected': {
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+        }
+    },
+    {  # p3 - show-specific, new style
+        'show': 'Show Name',
+        'EMAIL_LIST': [
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+        ],
+        'mocks': [
+            ('medusa.db.DBConnection.select', [{
+                'notify_list': text_type({'emails': 'sameuser@pymedusa.com,user1@pymedusa.com'})
+            }])
+        ],
+        'expected': {
+            'admin@pymedusa.com',
+            'sameuser@pymedusa.com',
+            'user1@pymedusa.com'
+        }
+    }
+])
+def test__generate_recipients(p, app_config, monkeypatch_function_return):
+    # Given
+    show = p['show']
+    expected = p['expected']
+
+    app_config('EMAIL_LIST', p['EMAIL_LIST'])
+    if show:
+        monkeypatch_function_return(p['mocks'])
+
+    # When
+    actual = Notifier._generate_recipients(show)
 
     # Then
     assert actual == expected
