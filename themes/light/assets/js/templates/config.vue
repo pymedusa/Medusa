@@ -37,9 +37,6 @@
 <script>
 module.exports = {
     name: 'config',
-    metaInfo: {
-        title: 'Help & Info'
-    },
     computed: Object.assign(store.mapState(['config']), {
     }),
     mounted() {

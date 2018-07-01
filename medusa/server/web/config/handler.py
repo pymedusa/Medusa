@@ -46,7 +46,7 @@ class Config(WebRoot):
         """
         Render the Help & Info page
         """
-        t = PageTemplate(rh=self, filename='config.mako')
+        t = PageTemplate(rh=self, filename='index.mako')
 
         try:
             import pwd

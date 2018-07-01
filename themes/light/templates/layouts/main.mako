@@ -182,19 +182,13 @@
             }
         </script>
         <%block name="scripts" />
+        <script src="js/router.js"></script>
         <script>
-            if (!window.router) {
-                window.router = new vueRouter({
-                    base: document.body.getAttribute('api-root').replace('api/v2/', ''),
-                    mode: 'history',
-                    routes
-                });
-            }
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
                     el: '#vue-wrap',
-                    router
+                    router: window.router
                 });
             } else {
                 console.info('Loading local Vue since we found a window.app');
