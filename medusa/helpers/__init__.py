@@ -346,7 +346,7 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == errno.EXIST:
+        if msg.errno == errno.EXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create hardlink of {source} at {destination}.'
@@ -399,7 +399,7 @@ def move_and_symlink_file(src_file, dest_file):
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == errno.EXIST:
+        if msg.errno == errno.EXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create symlink of {source} at {destination}.'
