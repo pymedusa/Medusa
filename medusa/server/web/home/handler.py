@@ -132,7 +132,7 @@ class Home(WebRoot):
 
     def _genericMessage(self, subject, message):
         t = PageTemplate(rh=self, filename='genericMessage.mako')
-        return t.render(message=message, subject=subject, topmenu='home', title='')
+        return t.render(message=message, subject=subject, title='')
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
@@ -168,7 +168,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
@@ -695,7 +695,7 @@ class Home(WebRoot):
                 root_dir[subject] = helpers.get_disk_space_usage(subject)
 
         t = PageTemplate(rh=self, filename='status.mako')
-        return t.render(title='Status', header='Status', topmenu='system',
+        return t.render(title='Status', header='Status',
                         tvdirFree=tv_dir_free, rootDir=root_dir,
                         controller='home', action='status')
 
@@ -714,7 +714,7 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename='restart.mako')
 
-        return t.render(title='Home', header='Restarting Medusa', topmenu='system',
+        return t.render(title='Home', header='Restarting Medusa',
                         controller='home', action='restart')
 
     def updateCheck(self, pid=None):
@@ -739,7 +739,7 @@ class Home(WebRoot):
 
             # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
             t = PageTemplate(rh=self, filename='restart.mako')
-            restart_rendered = t.render(title='Home', header='Restarting Medusa', topmenu='home',
+            restart_rendered = t.render(title='Home', header='Restarting Medusa',
                                         controller='home', action='restart')
 
             if checkversion.updater.need_update() and checkversion.updater.update():
