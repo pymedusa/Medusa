@@ -4,6 +4,7 @@
     <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_nav">
+                <span v-if="toolsBadgeCount > 0" :class="'floating-badge' + toolsBadgeClass">{{ toolsBadgeCount }}</span>
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -78,13 +79,11 @@
                 </li>
                 <li id="NAVsystem" class="navbar-split dropdown" :class="{ active: topMenu === 'system' }">
                     <app-link href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />
-                    <span v-if="numErrors > 0" class="badge btn-danger">{{ toolsBadgeCount }}</span>
-                    <span v-else-if="numWarnings > 0" class="badge btn-warning">{{ toolsBadgeCount }}</span>
-                    <span v-else-if="config.news.unread > 0" class="badge">{{ toolsBadgeCount }}</span>
+                    <span v-if="toolsBadgeCount > 0" :class="'badge' + toolsBadgeClass">{{ toolsBadgeCount }}</span>
                     <b class="caret"></b>
                     </app-link>
                     <ul class="dropdown-menu">
-                        <li><app-link href="news/"><i class="menu-icon-news"></i>&nbsp;News<span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
+                        <li><app-link href="news/"><i class="menu-icon-news"></i>&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
                         <li><app-link href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</app-link></li>
                         <li><app-link href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</app-link></li>
                         <li><app-link :href="donationsUrl"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
@@ -166,6 +165,16 @@ Vue.component('app-header', {
             const { news } = config;
             return numErrors + numWarnings + news.unread;
         },
+        toolsBadgeClass() {
+            const { numErrors, numWarnings } = this;
+            if (numErrors > 0) {
+                return ' btn-danger';
+            }
+            if (numWarnings > 0) {
+                return ' btn-warning';
+            }
+            return '';
+        },
         linkVisible() {
             const { config } = this;
             const { plex, kodi, emby, torrents, hasEmbyApiKey } = config;
@@ -180,3 +189,18 @@ Vue.component('app-header', {
     }
 });
 </script>
+<style>
+.floating-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    padding: 0 4px;
+    background-color: #777;
+    border: 2px solid #959595;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+}
+</style>
