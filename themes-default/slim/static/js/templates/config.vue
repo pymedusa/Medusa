@@ -51,10 +51,6 @@ const { store } = window;
 module.exports = {
     name: 'config',
     computed: store.mapState(['config']),
-    mounted() {
-        const { $store } = this;
-        $store.dispatch('getConfig');
-    },
     methods: {
         prettyPrintJSON: str => JSON.stringify(str, undefined, 4)
     }
