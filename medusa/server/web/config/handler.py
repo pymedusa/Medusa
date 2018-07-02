@@ -2,6 +2,8 @@
 
 """Base handler for Config pages."""
 
+from __future__ import unicode_literals
+
 from medusa.server.web.core import PageTemplate, WebRoot
 
 from tornroutes import route
