@@ -1,13 +1,24 @@
 <template>
     <div id="config-content">
         <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
-            <tr v-if="config.release">
+            <tr>
                 <td><i class="icon16-config-application"></i> Medusa Info:</td>
                 <td>
-                    Branch: <app-link :href="config.sourceUrl + '/tree/' + config.branch">{{config.branch}}</app-link><br>
-                    Commit: <app-link :href="config.sourceUrl + '/commit/' + config.commitHash">{{config.commitHash}}</app-link><br>
-                    Version: <app-link :href="config.sourceUrl + '/releases/tag/' + config.release">{{config.release}}</app-link><br>
-                    Database: {{config.databaseVersion.major}}.{{config.databaseVersion.minor}}
+                    Branch:
+                    <span v-if="config.branch"><app-link :href="config.sourceUrl + '/tree/' + config.branch">{{config.branch}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Commit:
+                    <span v-if="config.commitHash"><app-link :href="config.sourceUrl + '/commit/' + config.commitHash">{{config.commitHash}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Version:
+                    <span v-if="config.release"><app-link :href="config.sourceUrl + '/releases/tag/' + config.release">{{config.release}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Database:
+                    <span v-if="config.databaseVersion">{{config.databaseVersion.major}}.{{config.databaseVersion.minor}}</span>
+                    <span v-else>Unknown</span>
                 </td>
             </tr>
             <tr><td><i class="icon16-config-python"></i> Python Version:</td><td>{{config.pythonVersion}}</td></tr>
@@ -29,18 +40,20 @@
             <tr><td><i class="icon16-config-web"></i> Website:</td><td><app-link :href="config.githubUrl">{{config.githubUrl}}</app-link></td></tr>
             <tr><td><i class="icon16-config-wiki"></i> Wiki:</td><td><app-link :href="config.wikiUrl">{{config.wikiUrl}}</app-link></td></tr>
             <tr><td><i class="icon16-config-github"></i> Source:</td><td><app-link :href="config.sourceUrl">{{config.sourceUrl}}</app-link></td></tr>
-            <tr><td><i class="icon16-config-mirc"></i> IRC Chat:</td><td><app-link href="irc://irc.freenode.net/#pymedusa" rel="noreferrer"><i>#pymedusa</i> on <i>irc.freenode.net</i></app-link></td></tr>
+            <tr><td><i class="icon16-config-mirc"></i> IRC Chat:</td><td><app-link href="irc://irc.freenode.net/#pymedusa"><i>#pymedusa</i> on <i>irc.freenode.net</i></app-link></td></tr>
         </table>
     </div>
 </template>
 
 <script>
+const { store } = window;
+
 module.exports = {
     name: 'config',
-    computed: Object.assign(store.mapState(['config']), {
-    }),
+    computed: store.mapState(['config']),
     mounted() {
-        store.dispatch('getConfig');
+        const { $store } = this;
+        $store.dispatch('getConfig');
     },
     methods: {
         prettyPrintJSON: str => JSON.stringify(str, undefined, 4)
