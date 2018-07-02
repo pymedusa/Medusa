@@ -370,9 +370,8 @@ const startVue = () => {
                         alreadyAdded = (() => {
                             if (!alreadyAdded) return false;
                             // Extract existing show info
-                            const [ mIndexerId, mShowId ] = alreadyAdded;
-                            const indexerIdentifier = indexers[mIndexerId] ? indexers[mIndexerId].identifier : mIndexerId;
-                            return 'home/displayShow?indexername=' + indexerIdentifier + '&seriesid=' + mShowId;
+                            const [ matchIndexerName, matchShowId ] = alreadyAdded;
+                            return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
                         })();
 
                         return {
