@@ -104,7 +104,7 @@
                         <li><app-link href="news/"><i class="menu-icon-news"></i>&nbsp;News${newsBadge}</app-link></li>
                         <li><app-link href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</app-link></li>
                         <li><app-link href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</app-link></li>
-                        <li><app-link href="${app.DONATIONS_URL}" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
+                        <li><app-link href="${app.DONATIONS_URL}"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
                         <li role="separator" class="divider"></li>
                         %if numErrors:
                             <li><app-link href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></app-link></li>
