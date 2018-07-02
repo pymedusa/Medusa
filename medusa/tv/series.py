@@ -1523,7 +1523,13 @@ class Series(TV):
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
             # Country codes and countries obtained from TMDB's API. Not IMDb info.
-            country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            try:
+                country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            except IndexerException as error:
+                log.info(u'Unable to get country codes from TMDB. Error: {error}',
+                         {'error': error})
+                country_codes = None
+
             if country_codes:
                 countries = (from_country_code_to_name(country) for country in country_codes)
                 self.imdb_info['countries'] = '|'.join([_f for _f in countries if _f])
