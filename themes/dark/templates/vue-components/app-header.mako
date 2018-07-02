@@ -12,7 +12,7 @@
             </button>
             <app-link class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></app-link>
         </div>
-        <div v-if="loggedIn" class="collapse navbar-collapse" id="main_nav">
+        <div v-if="auth.isAuthenticated" class="collapse navbar-collapse" id="main_nav">
             <ul class="nav navbar-nav navbar-right">
                 <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
                     <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
@@ -52,11 +52,11 @@
                         <li v-if="linkVisible.plex"><app-link href="home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</app-link></li>
                         <li v-if="linkVisible.kodi"><app-link href="home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</app-link></li>
                         <li v-if="linkVisible.emby"><app-link href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</app-link></li>
-                        ## Avoid mixed content blocking by open manage torrent in new tab
+                        <!-- Avoid mixed content blocking by open manage torrent in new tab -->
                         <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</app-link></li>
-                        <li v-if="failedDownloadsEnabled"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</app-link></li>
-                        <li v-if="config.subtitles.enabled"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</app-link></li>
-                        <li v-if="postponeIfNoSubs"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
+                        <li v-if="linkVisible.failedDownloads"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</app-link></li>
+                        <li v-if="linkVisible.subtitleMissed"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</app-link></li>
+                        <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
                     </ul>
                     <div style="clear:both;"></div>
                 </li>
@@ -86,16 +86,16 @@
                         <li><app-link href="news/"><i class="menu-icon-news"></i>&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
                         <li><app-link href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</app-link></li>
                         <li><app-link href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</app-link></li>
-                        <li><app-link :href="donationsUrl"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
+                        <li><app-link :href="config.donationsUrl"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
                         <li role="separator" class="divider"></li>
-                        <li v-if="numErrors > 0"><app-link href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">{{numErrors}}</span></app-link></li>
-                        <li v-if="numWarnings > 0"><app-link :href="'errorlogs/?level=' + loggerWarning"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">{{numWarnings}}</span></app-link></li>
+                        <li v-if="config.logs.numErrors > 0"><app-link href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">{{config.logs.numErrors}}</span></app-link></li>
+                        <li v-if="config.logs.numWarnings > 0"><app-link :href="'errorlogs/?level=' + warningLevel"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
                         <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</app-link></li>
                         <li role="separator" class="divider"></li>
-                        <li><app-link :href="'home/updateCheck?pid=' + medusaPID"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
-                        <li><app-link :href="'home/restart/?pid=' + medusaPID" class="confirm restart"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
-                        <li><app-link :href="'home/shutdown/?pid=' + medusaPID" class="confirm shutdown"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
-                        <li v-if="loggedIn !== true"><app-link href="logout" class="confirm logout"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
+                        <li><app-link :href="'home/updateCheck?pid=' + config.pid"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
+                        <li><app-link :href="'home/restart/?pid=' + config.pid" class="confirm restart"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
+                        <li><app-link :href="'home/shutdown/?pid=' + config.pid" class="confirm shutdown"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
+                        <li v-if="auth.user.username"><app-link href="logout" class="confirm logout"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
                         <li role="separator" class="divider"></li>
                         <li><app-link href="home/status/"><i class="menu-icon-info"></i>&nbsp;Server Status</app-link></li>
                     </ul>
@@ -109,7 +109,7 @@
 </script>
 <%!
     import json
-    from medusa import app, logger
+    from medusa import app
 %>
 <script>
 Vue.component('app-header', {
@@ -117,19 +117,10 @@ Vue.component('app-header', {
     data() {
         return {
             // Python conversions
-            medusaPID: ${json.dumps(sbPID)},
-            loggedIn: ${json.dumps(loggedIn)},
             recentShows: ${json.dumps(app.SHOWS_RECENT)},
-            numErrors: ${numErrors}, // numeric
-            numWarnings: ${numWarnings}, // numeric
-            donationsUrl: ${json.dumps(app.DONATIONS_URL)},
-            loggerWarning: ${logger.WARNING}, // numeric
 
             <% has_emby_api_key = json.dumps(app.EMBY_APIKEY != '') %>
             hasEmbyApiKey: ${has_emby_api_key},
-
-            failedDownloadsEnabled: ${json.dumps(bool(app.USE_FAILED_DOWNLOADS))},
-            postponeIfNoSubs: ${json.dumps(bool(app.POSTPONE_IF_NO_SUBS))},
 
             // JS Only
             topMenuMapping: {
@@ -144,6 +135,15 @@ Vue.component('app-header', {
         };
     },
     computed: {
+        config() {
+            return this.$store.state.config;
+        },
+        auth() {
+            return this.$store.state.auth;
+        },
+        warningLevel() {
+            return this.config.logs.loggingLevels.warning;
+        },
         topMenu() {
             // This is a workaround, until we're able to use VueRouter to determine that.
             // The possible `topmenu` values are: config, history, schedule, system, home, manage, login [unused]
@@ -161,29 +161,33 @@ Vue.component('app-header', {
             return null;
         },
         toolsBadgeCount() {
-            const { config, numErrors, numWarnings } = this;
-            const { news } = config;
-            return numErrors + numWarnings + news.unread;
+            const { config } = this;
+            const { news, logs } = config;
+            return logs.numErrors + logs.numWarnings + news.unread;
         },
         toolsBadgeClass() {
-            const { numErrors, numWarnings } = this;
-            if (numErrors > 0) {
+            const { config } = this;
+            const { logs } = config;
+            if (logs.numErrors > 0) {
                 return ' btn-danger';
             }
-            if (numWarnings > 0) {
+            if (logs.numWarnings > 0) {
                 return ' btn-warning';
             }
             return '';
         },
         linkVisible() {
             const { config } = this;
-            const { plex, kodi, emby, torrents, hasEmbyApiKey } = config;
+            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing, hasEmbyApiKey } = config;
 
             return {
                 plex: plex.server.enabled && plex.server.host.length !== 0,
                 kodi: kodi.enabled && kodi.host.length !== 0,
                 emby: emby.enabled && emby.host && hasEmbyApiKey,
-                manageTorrents: torrents.enabled && torrents.method !== 'blackhole'
+                manageTorrents: torrents.enabled && torrents.method !== 'blackhole',
+                failedDownloads: failedDownloads.enabled,
+                subtitleMissed: subtitles.enabled,
+                subtitleMissedPP: postProcessing.postponeIfNoSubs
             };
         }
     }

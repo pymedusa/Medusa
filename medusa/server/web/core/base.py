@@ -16,7 +16,6 @@ from mako.template import Template as MakoTemplate
 
 from medusa import (
     app,
-    classes,
     db,
     exception_handler,
     helpers,
@@ -88,8 +87,6 @@ class PageTemplate(MakoTemplate):
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,
-            'numErrors': len(classes.ErrorViewer.errors),
-            'numWarnings': len(classes.WarningViewer.errors),
             'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
