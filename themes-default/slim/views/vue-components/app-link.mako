@@ -13,6 +13,7 @@
 <script>
 Vue.component('app-link', {
     name: 'app-link',
+    template: '#app-link-template',
     store,
     props: {
         to: [String, Object],
@@ -114,8 +115,7 @@ Vue.component('app-link', {
                 rel: isAbsolute && isExternal ? 'noreferrer' : undefined
             };
         }
-    },
-    template: '#app-link-template'
+    }
 });
 </script>
 <style>
