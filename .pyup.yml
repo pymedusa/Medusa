@@ -1,7 +1,12 @@
 # configure updates globally
 # default: all
 # allowed: all, insecure, False
-update: insecure
+update: False
+
+# update schedule
+# default: empty
+# allowed: "every day", "every week", ..
+schedule: "every month"
 
 # set the default branch
 # default: empty, the default branch on GitHub
