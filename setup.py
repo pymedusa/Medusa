@@ -48,7 +48,7 @@ setup(
         'pytest-cov',
         'pytest-flake8==0.9.1',
         'pytest-tornado5',
-        'PyYAML',
+        'PyYAML<4',
         'mock',
     ],
     extras_require={

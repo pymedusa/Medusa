@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 import logging
 import re
 
+import dirtyjson as djson
+
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
@@ -96,9 +98,9 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
+                    jdata = djson.loads(response.content)
+                except ValueError as error:
+                    log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
 
                 results += self.parse(jdata, mode)

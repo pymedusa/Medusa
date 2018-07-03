@@ -1,52 +1,37 @@
 import os
-import platform
 import stat
+from io import open
+from shutil import SpecialFileError, _samefile
 try:
-    from shutil import SpecialFileError, Error
-except:
-    from shutil import Error
-from shutil import _samefile
+    from shutil import SameFileError
+except ImportError:
+    from shutil import Error as SameFileError
+
+
+BUFFER_SIZE = 1024 * 1024 if os.name == 'nt' else 16 * 1024
 
 
 def copyfile_custom(src, dst):
-    """Copy data from src to dst"""
-    if _samefile(src, dst):
-        raise Error("`%s` and `%s` are the same file" % (src, dst))
-
-    for fn in [src, dst]:
+    """Copy data from src to dst."""
+    def special_file(fn):
         try:
             st = os.stat(fn)
         except OSError:
             # File most likely does not exist
             pass
         else:
-            # XXX What about other special files? (sockets, devices...)
             if stat.S_ISFIFO(st.st_mode):
-                try:
-                    raise SpecialFileError("`%s` is a named pipe" % fn)
-                except NameError:
-                    raise Error("`%s` is a named pipe" % fn)
+                raise SpecialFileError("{!r} is a named pipe".format(fn))
 
-    try:
-        # Windows
-        O_BINARY = os.O_BINARY
-    except:
-        O_BINARY = 0
+    if _samefile(src, dst):
+        raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
 
-    READ_FLAGS = os.O_RDONLY | O_BINARY
-    WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | O_BINARY
-    BUFFER_SIZE = 128*1024
+    special_file(src)
+    special_file(dst)
 
-    try:
-        fin = os.open(src, READ_FLAGS)
-        fout = os.open(dst, WRITE_FLAGS)
-        for x in iter(lambda: os.read(fin, BUFFER_SIZE), ""):
-            os.write(fout, x)
-    except Exception as e:
-        raise
-    finally:
-        try:
-            os.close(fin)
-            os.close(fout)
-        except:
-            pass
+    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
+        while True:
+            buf = fsrc.read(BUFFER_SIZE)
+            if not buf:
+                break
+            fdst.write(buf)

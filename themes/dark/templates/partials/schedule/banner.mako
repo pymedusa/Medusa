@@ -104,7 +104,7 @@
         <tr>
             <th class="nobg" valign="top">
                 <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                    <img alt="" class="bannerThumb" series="${cur_result['series_slug']}" asset="banner"/>
+                    <asset default="images/banner.png" series-slug="${cur_result['series_slug']}" type="banner" cls="bannerThumb" :link="false"></asset>
                 </app-link>
             </th>
         </tr>
@@ -113,7 +113,7 @@
                 <div class="clearfix">
                     <span class="tvshowTitle">
                         <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}}">
-                            ${('', '<span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
+                            ${cur_result['show_name']}${('', ' <span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
                         </app-link>
                     </span>
                     <span class="tvshowTitleIcons">

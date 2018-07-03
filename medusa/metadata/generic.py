@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import errno
 import io
 import logging
 import os
@@ -287,11 +288,17 @@ class GenericMetadata(object):
                     u'Received an invalid XML for {series}, try again later. Error: {error}',
                     {u'series': show_obj.name, u'error': error}
                 )
-            except IOError as e:
-                log.error(
-                    u'Unable to write file to {location} - are you sure the folder is writeable? {error}',
-                    {u'location': nfo_file_path, u'error': ex(e)}
-                )
+            except IOError as error:
+                if error.errno == errno.EACCES:
+                    log.warning(
+                        u'Unable to write metadata file to {location} - verify that the path is writeable',
+                        {u'location': nfo_file_path}
+                    )
+                else:
+                    log.error(
+                        u'Unable to write metadata file to {location}. Error: {error!r}',
+                        {u'location': nfo_file_path, u'error': error}
+                    )
 
     def create_fanart(self, show_obj):
         if self.fanart and show_obj and not self._has_fanart(show_obj):

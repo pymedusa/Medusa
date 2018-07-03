@@ -26,8 +26,7 @@ const startVue = () => {
                 defaultIndexer: ${app.INDEXER_DEFAULT},
 
                 isLoading: false,
-                lastRootDirText: '',
-                selectedRootDirs: [],
+                rootDirs: [],
                 dirList: [],
                 promptForSettings: false
             };
@@ -38,49 +37,38 @@ const startVue = () => {
                 // Hide the black/whitelist, because it can only be used for a single anime show
                 $.updateBlackWhiteList(undefined);
             });
-
-            $(document.body).on('change', '#rootDirText', () => {
-                if (this.lastRootDirText === $('#rootDirText').val()) {
-                    return false;
-                }
-                this.lastRootDirText = $('#rootDirText').val();
-                this.selectedRootDirs = this.rootDirs;
-                this.update();
-            });
-
-            // Trigger Root Dirs to update.
-            // @FIXME: This is a workaround until root-dirs is a Vue component.
-            if ($('#rootDirText').val() === '') {
-                $('#rootDirs').click();
-            }
-
-            // this.lastRootDirText = $('#rootDirText').val();
-            // this.selectedRootDirs = this.rootDirs;
-            // this.update();
         },
         computed: {
-            rootDirs() {
-                if (this.lastRootDirText.length === 0) return [];
-                return this.lastRootDirText.split('|').slice(1);
+            selectedRootDirs() {
+                return this.rootDirs.filter(rd => rd.selected);
             },
             filteredDirList() {
                 return this.dirList.filter(dir => !dir.alreadyAdded);
             },
             displayPaths() {
                 // Mark the root dir as bold in the path
+                const appendSepChar = path => {
+                    const sepChar = (() => {
+                        if (path.includes('\\')) return '\\';
+                        if (path.includes('/')) return '/';
+                        return '';
+                    })();
+                    return path.slice(-1) !== sepChar ? path + sepChar : path;
+                };
                 return this.filteredDirList
                     .map(dir => {
-                        const rootDir = this.rootDirs.find(rd => dir.path.startsWith(rd));
-                        const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
-                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
+                        const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
+                        if (!rootDirObj) return dir.path;
+                        const rootDir = appendSepChar(rootDirObj.path);
+                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
                     });
             },
             checkAll: {
                 get() {
-                    const selectedSeriesDirs = this.filteredDirList.filter(dir => dir.selected);
-                    if (selectedSeriesDirs.length === 0) return false;
-                    return selectedSeriesDirs.length === this.filteredDirList.length;
+                    const selectedDirList = this.filteredDirList.filter(dir => dir.selected);
+                    if (selectedDirList.length === 0) return false;
+                    return selectedDirList.length === this.filteredDirList.length;
                 },
                 set(newValue) {
                     this.dirList = this.dirList.map(dir => {
@@ -91,22 +79,37 @@ const startVue = () => {
             }
         },
         methods: {
+            rootDirsUpdated(value, data) {
+                this.rootDirs = data.map(rd => {
+                    return {
+                        selected: true,
+                        path: rd.path
+                    };
+                });
+            },
             async update() {
                 if (this.isLoading) return;
 
                 this.isLoading = true;
-                if (this.selectedRootDirs.length === 0) {
+
+                const indices = this.rootDirs
+                    .reduce((indices, rd, index) => {
+                        if (rd.selected) indices.push(index);
+                        return indices;
+                    }, []);
+                if (indices.length === 0) {
                     this.dirList = [];
                     this.isLoading = false;
                     return;
                 }
-                const params = { 'root-dir': JSON.stringify(this.selectedRootDirs) };
+
+                const params = { 'rootDirs': indices.join(',') };
                 const { data } = await api.get('internal/existingSeries', { params });
                 this.dirList = data
                     .map(dir => {
                         // Pre-select all dirs not already added
                         dir.selected = !dir.alreadyAdded;
-                        dir.selectedIndexer = dir.existingInfo.indexer || this.defaultIndexer;
+                        dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
                         return dir;
                     });
                 this.isLoading = false;
@@ -124,42 +127,63 @@ const startVue = () => {
                             }
                         })
                         // Fixes tablesorter not working after root dirs are refreshed
-                        .trigger("updateAll");
+                        .trigger('updateAll');
                 });
             },
-            toggleRootDir(toggledRootDir) {
-                const selected = this.selectedRootDirs.includes(toggledRootDir);
-                this.selectedRootDirs = this.rootDirs
-                    .filter(rd => {
-                        if (selected) return rd !== toggledRootDir && this.selectedRootDirs.includes(rd);
-                        return rd === toggledRootDir || this.selectedRootDirs.includes(rd);
-                    });
-            },
             seriesIndexerUrl(curDir) {
-                return this.indexers[curDir.existingInfo.indexer].showUrl + curDir.existingInfo.seriesId.toString();
+                return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
             },
-            submitSeriesDirs() {
-                const dirArr = this.filteredDirList
-                    .reduce((accumlator, dir) => {
-                        if (!dir.selected) return accumlator;
+            async submitSeriesDirs() {
+                const dirList = this.filteredDirList.filter(dir => dir.selected);
+                if (dirList.length === 0) return false;
 
-                        const originalIndexer = dir.existingInfo.indexer;
-                        let seriesId = dir.existingInfo.seriesId;
-                        if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-                            seriesId = '';
-                        }
+                const formData = new FormData();
+                formData.append('promptForSettings', this.promptForSettings);
+                dirList.forEach(dir => {
+                    const originalIndexer = dir.metadata.indexer;
+                    let seriesId = dir.metadata.seriesId;
+                    if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
+                        seriesId = '';
+                    }
 
-                        const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.existingInfo.seriesName]
-                            .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
-                        accumlator.push(encodeURIComponent(seriesToAdd));
-                        return accumlator;
-                    }, []);
+                    const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
+                        .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                if (dirArr.length === 0) return false;
+                    formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                });
 
-                const promptForSettings = 'promptForSettings=' + (this.promptForSettings ? 'on' : 'off');
-                const seriesToAdd = 'shows_to_add=' + dirArr.join('&shows_to_add=');
-                window.location.href = $('base').attr('href') + 'addShows/addExistingShows?' + promptForSettings + '&' + seriesToAdd;
+                const response = await apiRoute.post('addShows/addExistingShows', formData);
+                const { data } = response;
+                const { result, message, redirect, params } = data;
+
+                if (message) {
+                    if (result === false) {
+                        console.log('Error: ' + message);
+                    } else {
+                        console.log('Response: ' + message);
+                    }
+                }
+                if (redirect) {
+                    const baseUrl = apiRoute.defaults.baseURL;
+                    if (params.length === 0) {
+                        window.location.href = baseUrl + redirect;
+                        return;
+                    }
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = baseUrl + redirect;
+                    form.acceptCharset = 'utf-8';
+
+                    params.forEach(param => {
+                        const element = document.createElement('input');
+                        [ element.name, element.value ] = param; // Unpack
+                        form.appendChild(element);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             }
         },
         watch: {
@@ -180,11 +204,11 @@ const startVue = () => {
             <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
-                        <li><app-link href="addShows/existingShows/#tabs-1">Manage Directories</app-link></li>
-                        <li><app-link href="addShows/existingShows/#tabs-2">Customize Options</app-link></li>
+                        <li><app-link href="#tabs-1">Manage Directories</app-link></li>
+                        <li><app-link href="#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
-                        <%include file="/inc_rootDirs.mako"/>
+                        <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
                     </div>
                     <div id="tabs-2" class="existingtabs">
                         <%include file="/inc_addShowOptions.mako"/>
@@ -197,15 +221,15 @@ const startVue = () => {
                 <hr>
                 <p><b>Displaying folders within these directories which aren't already added to Medusa:</b></p>
                 <ul id="rootDirStaticList">
-                    <li v-for="rootDir in rootDirs" class="ui-state-default ui-corner-all" @click="toggleRootDir(rootDir)">
-                        <input type="checkbox" class="rootDirCheck" v-model.sync="selectedRootDirs" :value="rootDir" style="cursor: pointer;">
-                        <label><b style="cursor: pointer;">{{rootDir}}</b></label>
+                    <li v-for="(rootDir, index) in rootDirs" class="ui-state-default ui-corner-all" @click="rootDirs[index].selected = !rootDirs[index].selected">
+                        <input type="checkbox" class="rootDirCheck" v-model="rootDir.selected" :value="rootDir.path" style="cursor: pointer;">
+                        <label><b style="cursor: pointer;">{{rootDir.path}}</b></label>
                     </li>
                 </ul>
                 <br>
                 <span v-if="isLoading"><img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...</span>
-                <span v-if="!isLoading && Object.keys(dirList).length === 0">No folders selected.</span>
-                <table v-show="!isLoading && Object.keys(dirList).length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
+                <span v-if="!isLoading && selectedRootDirs.length === 0">No folders selected.</span>
+                <table v-show="!isLoading && selectedRootDirs.length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
                     <thead>
                         <tr>
                             <th class="col-checkbox"><input type="checkbox" v-model="checkAll" /></th>
@@ -223,8 +247,8 @@ const startVue = () => {
                                 <label @click="curDir.selected = !curDir.selected" v-html="displayPaths[curDirIndex]"></label>
                             </td>
                             <td>
-                                <app-link v-if="curDir.existingInfo.seriesName && curDir.existingInfo.indexer > 0"
-                                          :href="seriesIndexerUrl(curDir)">{{curDir.existingInfo.seriesName}}</app-link>
+                                <app-link v-if="curDir.metadata.seriesName && curDir.metadata.indexer > 0"
+                                          :href="seriesIndexerUrl(curDir)">{{curDir.metadata.seriesName}}</app-link>
                                 <span v-else>?</span>
                             </td>
                             <td align="center">

@@ -1,7 +1,7 @@
 <script type="text/x-template" id="asset-template">
-    <img v-if="!link" :src="src" :class="cls">
+    <img v-if="!link" :src="src" :class="cls" @error="error = true">
     <app-link v-else :href="href">
-        <img :src="src" :class="cls">
+        <img :src="src" :class="cls" @error="error = true">
     </app-link>
 </script>
 <script>
@@ -18,20 +18,25 @@ Vue.component('asset', {
             type: Boolean,
             default: false
         },
-        cls: String
+        cls: String,
+        lazy: {
+            type: Boolean,
+            default: true
+        }
     },
     data() {
         return {
-            isVisible: false
+            isVisible: false,
+            error: false
         };
     },
     computed: {
         src() {
-            const {seriesSlug, type, isVisible} = this;
+            const { error, seriesSlug, type, isVisible, lazy } = this;
             const apiRoot = document.getElementsByTagName('body')[0].getAttribute('api-root');
             const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
 
-            if (!isVisible || !seriesSlug || !type) {
+            if (error || lazy && !isVisible || !seriesSlug || !type) {
                 return this.default;
             }
 
@@ -43,12 +48,12 @@ Vue.component('asset', {
         }
     },
     watch: {
- 		'inViewport.now': function(visible) {
+        'inViewport.now': function(visible) {
             if (!this.isVisible && visible) {
                 this.isVisible = visible;
             }
- 		}
- 	},
-    template: `#asset-template`
+        }
+    },
+    template: '#asset-template'
 });
 </script>

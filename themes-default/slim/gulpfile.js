@@ -96,7 +96,7 @@ const lintFile = file => {
 const lint = () => {
     return gulp
         .src([
-            'static/js/**/*.js',
+            'static/js/**/*.{js,vue}',
             '!static/js/lib/**',
             '!static/js/*.min.js',
             '!static/js/vender.js'
@@ -130,7 +130,7 @@ const watch = () => {
 
     // Js Changes
     gulp.watch([
-        'static/js/**/*.js',
+        'static/js/**/*.{js,vue}',
         '!static/js/lib/**',
         '!static/js/*.min.js',
         '!static/js/vender.js'
@@ -288,7 +288,7 @@ gulp.task('build', done => {
 });
 
 const syncTheme = (theme, sequence) => {
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
         console.log(`Starting syncing for theme: ${theme[0]}`);
         setCsstheme(theme[0]);
         runSequence(sequence, resolve);
@@ -301,7 +301,7 @@ const syncTheme = (theme, sequence) => {
  * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
  * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
  *
- * Do not run the xo build, as this takes allot of time.
+ * Do not run the xo build, as this takes a lot of time.
  */
 gulp.task('sync', async() => {
     // Whe're building the light and dark theme. For this we need to run two sequences.

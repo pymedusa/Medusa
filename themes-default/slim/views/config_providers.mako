@@ -21,8 +21,6 @@ const startVue = () => {
         },
         mounted() {
             $(document).ready(function() {
-                console.log('This function need to be moved to config/providers.js but can\'t be as we\'ve got scope issues currently.');
-
                 // @TODO: This needs to be moved to an API function
                 function loadProviders() {
                     % if app.USE_NZBS:
@@ -1010,9 +1008,9 @@ const startVue = () => {
                         % if hasattr(cur_newznab_provider, 'search_mode'):
                         <div class="field-pair">
                             <label>
-                                <span class="component-title">Season search mode</span>
+                                <span class="component-title">Backlog search mode</span>
                                 <span class="component-desc">
-                                    <p>when searching for complete seasons you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
+                                    <p>when searching with backlog you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
                                 </span>
                             </label>
                             <label>
@@ -1057,7 +1055,7 @@ const startVue = () => {
                             <label for="${cur_newznab_provider.get_id()}_ratio">
                                 <span class="component-title" id="${cur_newznab_provider.get_id()}_search_delay">Search delay (hours):</span>
                                 <span class="component-desc">
-                                    <input type="number" min="0.5" step="0.5" name="${cur_newznab_provider.get_id()}_search_delay" id="${cur_newznab_provider.get_id()}_search_delay" value="${8 if cur_newznab_provider.search_delay is None else round(cur_newznab_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                    <input type="number" min="0.5" step="0.5" name="${cur_newznab_provider.get_id()}_search_delay" id="${cur_newznab_provider.get_id()}_search_delay" value="${8 if cur_newznab_provider.search_delay is None else round(cur_newznab_provider.search_delay / 60.0, 1)}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>
@@ -1176,7 +1174,7 @@ const startVue = () => {
                             <label for="${cur_nzb_provider.get_id()}_ratio">
                                 <span class="component-title" id="${cur_nzb_provider.get_id()}_search_delay">Search delay (hours):</span>
                                 <span class="component-desc">
-                                    <input type="number" min="0.5" step="0.5" name="${cur_nzb_provider.get_id()}_search_delay" id="${cur_nzb_provider.get_id()}_search_delay" value="${8 if cur_nzb_provider.search_delay is None else round(cur_nzb_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                    <input type="number" min="0.5" step="0.5" name="${cur_nzb_provider.get_id()}_search_delay" id="${cur_nzb_provider.get_id()}_search_delay" value="${8 if cur_nzb_provider.search_delay is None else round(cur_nzb_provider.search_delay / 60.0, 1)}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>
@@ -1511,7 +1509,7 @@ const startVue = () => {
                             <label for="${cur_torrent_provider.get_id()}_ratio">
                                 <span class="component-title" id="${cur_torrent_provider.get_id()}_search_delay">Search delay (hours):</span>
                                 <span class="component-desc">
-                                    <input type="number" min="0.5" step="0.5" name="${cur_torrent_provider.get_id()}_search_delay" id="${cur_torrent_provider.get_id()}_search_delay" value="${8 if cur_torrent_provider.search_delay is None else round(cur_torrent_provider.search_delay / 60, 1)}" class="form-control input-sm input75" />
+                                    <input type="number" min="0.5" step="0.5" name="${cur_torrent_provider.get_id()}_search_delay" id="${cur_torrent_provider.get_id()}_search_delay" value="${8 if cur_torrent_provider.search_delay is None else round(cur_torrent_provider.search_delay / 60.0, 1)}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>

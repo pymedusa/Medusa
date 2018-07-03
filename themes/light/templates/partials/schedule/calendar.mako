@@ -38,7 +38,9 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <app-link title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></app-link>
+                            <app-link title="${cur_result['show_name']}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
+                                <asset default="images/poster.png" series-slug="${cur_result['series_slug']}" type="posterThumb" :link="false"></asset>
+                            </app-link>
                         </div>
                         <div class="text">
                             <span class="airtime">

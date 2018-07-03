@@ -272,6 +272,7 @@ class Series(TV):
             app.showList.append(series)
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
+            series.populate_cache()
             return series
         except IndexerException as error:
             log.warning('Unable to load series from indexer: {0!r}'.format(error))
@@ -1522,7 +1523,13 @@ class Series(TV):
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
             # Country codes and countries obtained from TMDB's API. Not IMDb info.
-            country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            try:
+                country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            except IndexerException as error:
+                log.info(u'Unable to get country codes from TMDB. Error: {error}',
+                         {'error': error})
+                country_codes = None
+
             if country_codes:
                 countries = (from_country_code_to_name(country) for country in country_codes)
                 self.imdb_info['countries'] = '|'.join([_f for _f in countries if _f])
@@ -1968,7 +1975,7 @@ class Series(TV):
         data['akas'] = self.imdb_akas
         data['year'] = NonEmptyDict()
         data['year']['start'] = self.imdb_year or self.start_year
-        data['nextAirDate'] = self.next_airdate
+        data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = NonEmptyDict()
@@ -1983,7 +1990,7 @@ class Series(TV):
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
         data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
-        data['plot'] = self.imdb_plot or self.plot
+        data['plot'] = self.plot or self.imdb_plot
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
         data['config']['qualities'] = NonEmptyDict()
@@ -1999,7 +2006,7 @@ class Series(TV):
         data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = self.aliases
+        data['config']['aliases'] = list(self.aliases)
         data['config']['release'] = NonEmptyDict()
         # These are for now considered anime-only options, as they query anidb for available release groups.
         if self.is_anime:
@@ -2315,16 +2322,16 @@ class Series(TV):
         """Remove images from cache."""
         image_cache.remove_images(self)
 
-    def get_asset(self, asset_type):
+    def get_asset(self, asset_type, fallback=True):
         """Get the specified asset for this series."""
         asset_type = asset_type.lower()
         media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
 
         if asset_type.startswith('banner'):
-            return ShowBanner(self, media_format)
+            return ShowBanner(self, media_format, fallback)
         elif asset_type.startswith('fanart'):
-            return ShowFanArt(self, media_format)
+            return ShowFanArt(self, media_format, fallback)
         elif asset_type.startswith('poster'):
-            return ShowPoster(self, media_format)
+            return ShowPoster(self, media_format, fallback)
         elif asset_type.startswith('network'):
-            return ShowNetworkLogo(self, media_format)
+            return ShowNetworkLogo(self, media_format, fallback)
