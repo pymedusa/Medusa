@@ -60,11 +60,6 @@ Vue.component('app-link', {
         isHashPath() {
             return this.computedHref.startsWith('#');
         },
-        isAnonymised() {
-            const { anonRedirect } = this.config;
-            const href = this.computedHref;
-            return anonRedirect && href.startsWith(anonRedirect);
-        },
         anonymisedHref() {
             const { anonRedirect } = this.config;
             const href = this.computedHref;
@@ -90,11 +85,6 @@ Vue.component('app-link', {
                     is: 'a',
                     falseLink: true
                 };
-            }
-
-            // @TODO: Remove this once we move to vue only
-            if (isAnonymised) {
-                throw new Error('Still using anon_url in Python!');
             }
 
             return {
