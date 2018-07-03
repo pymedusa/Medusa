@@ -3,7 +3,7 @@ import Puex from 'puex';
 import { mount } from 'vue-test-utils';
 
 // Needs to be required otherwise nyc won't see it
-const AppLink = require('../../views/vue-components/app-link.vue');
+const AppLink = require('../../static/js/templates/app-link.vue');
 
 test.beforeEach(t => {
     t.context.base = 'http://localhost:8081/';
