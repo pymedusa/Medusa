@@ -46,11 +46,14 @@
 </template>
 
 <script>
-const { store } = window;
-
 module.exports = {
     name: 'config',
-    computed: store.mapState(['config']),
+    store,
+    computed: {
+        config() {
+            return this.store.state.config;
+        }
+    },
     methods: {
         prettyPrintJSON: str => JSON.stringify(str, undefined, 4)
     }
