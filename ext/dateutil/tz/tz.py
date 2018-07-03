@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 This module offers timezone implementations subclassing the abstract
-:py:`datetime.tzinfo` type. There are classes to handle tzfile format files
-(usually are in :file:`/etc/localtime`, :file:`/usr/share/zoneinfo`, etc), TZ
-environment string (in all known formats), given ranges (with help from
-relative deltas), local machine timezone, fixed offset timezone, and UTC
+:py:class:`datetime.tzinfo` type. There are classes to handle tzfile format
+files (usually are in :file:`/etc/localtime`, :file:`/usr/share/zoneinfo`,
+etc), TZ environment string (in all known formats), given ranges (with help
+from relative deltas), local machine timezone, fixed offset timezone, and UTC
 timezone.
 """
 import datetime
@@ -387,10 +387,60 @@ class tzfile(_tzinfo):
         ``fileobj``'s ``name`` attribute or to ``repr(fileobj)``.
 
     See `Sources for Time Zone and Daylight Saving Time Data
-    <https://data.iana.org/time-zones/tz-link.html>`_ for more information. Time
-    zone files can be compiled from the `IANA Time Zone database files
+    <https://data.iana.org/time-zones/tz-link.html>`_ for more information.
+    Time zone files can be compiled from the `IANA Time Zone database files
     <https://www.iana.org/time-zones>`_ with the `zic time zone compiler
     <https://www.freebsd.org/cgi/man.cgi?query=zic&sektion=8>`_
+
+    .. note::
+
+        Only construct a ``tzfile`` directly if you have a specific timezone
+        file on disk that you want to read into a Python ``tzinfo`` object.
+        If you want to get a ``tzfile`` representing a specific IANA zone,
+        (e.g. ``'America/New_York'``), you should call
+        :func:`dateutil.tz.gettz` with the zone identifier.
+
+
+    **Examples:**
+
+    Using the US Eastern time zone as an example, we can see that a ``tzfile``
+    provides time zone information for the standard Daylight Saving offsets:
+
+    .. testsetup:: tzfile
+
+        from dateutil.tz import gettz
+        from datetime import datetime
+
+    .. doctest:: tzfile
+
+        >>> NYC = gettz('America/New_York')
+        >>> NYC
+        tzfile('/usr/share/zoneinfo/America/New_York')
+
+        >>> print(datetime(2016, 1, 3, tzinfo=NYC))     # EST
+        2016-01-03 00:00:00-05:00
+
+        >>> print(datetime(2016, 7, 7, tzinfo=NYC))     # EDT
+        2016-07-07 00:00:00-04:00
+
+
+    The ``tzfile`` structure contains a fully history of the time zone,
+    so historical dates will also have the right offsets. For example, before
+    the adoption of the UTC standards, New York used local solar  mean time:
+
+    .. doctest:: tzfile
+
+       >>> print(datetime(1901, 4, 12, tzinfo=NYC))    # LMT
+       1901-04-12 00:00:00-04:56
+
+    And during World War II, New York was on "Eastern War Time", which was a
+    state of permanent daylight saving time:
+
+    .. doctest:: tzfile
+
+        >>> print(datetime(1944, 2, 7, tzinfo=NYC))    # EWT
+        1944-02-07 00:00:00-04:00
+
     """
 
     def __init__(self, fileobj, filename=None):
@@ -487,7 +537,7 @@ class tzfile(_tzinfo):
 
         if timecnt:
             out.trans_idx = struct.unpack(">%dB" % timecnt,
-                                            fileobj.read(timecnt))
+                                          fileobj.read(timecnt))
         else:
             out.trans_idx = []
 
@@ -840,8 +890,9 @@ class tzrange(tzrangebase):
 
     :param start:
         A :class:`relativedelta.relativedelta` object or equivalent specifying
-        the time and time of year that daylight savings time starts. To specify,
-        for example, that DST starts at 2AM on the 2nd Sunday in March, pass:
+        the time and time of year that daylight savings time starts. To
+        specify, for example, that DST starts at 2AM on the 2nd Sunday in
+        March, pass:
 
             ``relativedelta(hours=2, month=3, day=1, weekday=SU(+2))``
 
@@ -849,12 +900,12 @@ class tzrange(tzrangebase):
         value is 2 AM on the first Sunday in April.
 
     :param end:
-        A :class:`relativedelta.relativedelta` object or equivalent representing
-        the time and time of year that daylight savings time ends, with the
-        same specification method as in ``start``. One note is that this should
-        point to the first time in the *standard* zone, so if a transition
-        occurs at 2AM in the DST zone and the clocks are set back 1 hour to 1AM,
-        set the `hours` parameter to +1.
+        A :class:`relativedelta.relativedelta` object or equivalent
+        representing the time and time of year that daylight savings time
+        ends, with the same specification method as in ``start``. One note is
+        that this should point to the first time in the *standard* zone, so if
+        a transition occurs at 2AM in the DST zone and the clocks are set back
+        1 hour to 1AM, set the ``hours`` parameter to +1.
 
 
     **Examples:**
@@ -985,8 +1036,9 @@ class tzstr(tzrange):
 
     :param s:
         A time zone string in ``TZ`` variable format. This can be a
-        :class:`bytes` (2.x: :class:`str`), :class:`str` (2.x: :class:`unicode`)
-        or a stream emitting unicode characters (e.g. :class:`StringIO`).
+        :class:`bytes` (2.x: :class:`str`), :class:`str` (2.x:
+        :class:`unicode`) or a stream emitting unicode characters
+        (e.g. :class:`StringIO`).
 
     :param posix_offset:
         Optional. If set to ``True``, interpret strings such as ``GMT+3`` or
@@ -1398,12 +1450,82 @@ else:
     TZFILES = []
     TZPATHS = []
 
+
 def __get_gettz():
     tzlocal_classes = (tzlocal,)
     if tzwinlocal is not None:
         tzlocal_classes += (tzwinlocal,)
 
     class GettzFunc(object):
+        """
+        Retrieve a time zone object from a string representation
+
+        This function is intended to retrieve the :py:class:`tzinfo` subclass
+        that best represents the time zone that would be used if a POSIX
+        `TZ variable`_ were set to the same value.
+
+        If no argument or an empty string is passed to ``gettz``, local time
+        is returned:
+
+        .. code-block:: python3
+
+            >>> gettz()
+            tzfile('/etc/localtime')
+
+        This function is also the preferred way to map IANA tz database keys
+        to :class:`tzfile` objects:
+
+        .. code-block:: python3
+
+            >>> gettz('Pacific/Kiritimati')
+            tzfile('/usr/share/zoneinfo/Pacific/Kiritimati')
+
+        On Windows, the standard is extended to include the Windows-specific
+        zone names provided by the operating system:
+
+        .. code-block:: python3
+
+            >>> gettz('Egypt Standard Time')
+            tzwin('Egypt Standard Time')
+
+        Passing a GNU ``TZ`` style string time zone specification returns a
+        :class:`tzstr` object:
+
+        .. code-block:: python3
+
+            >>> gettz('AEST-10AEDT-11,M10.1.0/2,M4.1.0/3')
+            tzstr('AEST-10AEDT-11,M10.1.0/2,M4.1.0/3')
+
+        :param name:
+            A time zone name (IANA, or, on Windows, Windows keys), location of
+            a ``tzfile(5)`` zoneinfo file or ``TZ`` variable style time zone
+            specifier. An empty string, no argument or ``None`` is interpreted
+            as local time.
+
+        :return:
+            Returns an instance of one of ``dateutil``'s :py:class:`tzinfo`
+            subclasses.
+
+        .. versionchanged:: 2.7.0
+
+            After version 2.7.0, any two calls to ``gettz`` using the same
+            input strings will return the same object:
+
+            .. code-block:: python3
+
+                >>> tz.gettz('America/Chicago') is tz.gettz('America/Chicago')
+                True
+
+            In addition to improving performance, this ensures that
+            `"same zone" semantics`_ are used for datetimes in the same zone.
+
+
+        .. _`TZ variable`:
+            https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+
+        .. _`"same zone" semantics`:
+            https://blog.ganssle.io/articles/2018/02/aware-datetime-arithmetic.html
+        """
         def __init__(self):
 
             self.__instances = {}
@@ -1488,7 +1610,10 @@ def __get_gettz():
 
                         if not tz:
                             for c in name:
-                                # name must have at least one offset to be a tzstr
+                                # name is not a tzstr unless it has at least
+                                # one offset. For short values of "name", an
+                                # explicit for loop seems to be the fastest way
+                                # To determine if a string contains a digit
                                 if c in "0123456789":
                                     try:
                                         tz = tzstr(name)
@@ -1504,8 +1629,10 @@ def __get_gettz():
 
     return GettzFunc()
 
+
 gettz = __get_gettz()
 del __get_gettz
+
 
 def datetime_exists(dt, tz=None):
     """
@@ -1521,9 +1648,10 @@ def datetime_exists(dt, tz=None):
         ``None`` or not provided, the datetime's own time zone will be used.
 
     :return:
-        Returns a boolean value whether or not the "wall time" exists in ``tz``.
+        Returns a boolean value whether or not the "wall time" exists in
+        ``tz``.
 
-    ..versionadded:: 2.7.0
+    .. versionadded:: 2.7.0
     """
     if tz is None:
         if dt.tzinfo is None:
@@ -1571,7 +1699,7 @@ def datetime_ambiguous(dt, tz=None):
     if is_ambiguous_fn is not None:
         try:
             return tz.is_ambiguous(dt)
-        except:
+        except Exception:
             pass
 
     # If it doesn't come out and tell us it's ambiguous, we'll just check if
@@ -1594,7 +1722,8 @@ def resolve_imaginary(dt):
     wall time would be in a zone had the offset transition not occurred, so
     it will always fall forward by the transition's change in offset.
 
-    ..doctest::
+    .. doctest::
+
         >>> from dateutil import tz
         >>> from datetime import datetime
         >>> NYC = tz.gettz('America/New_York')
@@ -1619,7 +1748,7 @@ def resolve_imaginary(dt):
         imaginary, the datetime returned is guaranteed to be the same object
         passed to the function.
 
-    ..versionadded:: 2.7.0
+    .. versionadded:: 2.7.0
     """
     if dt.tzinfo is not None and not datetime_exists(dt):
 
@@ -1633,8 +1762,8 @@ def resolve_imaginary(dt):
 
 def _datetime_to_timestamp(dt):
     """
-    Convert a :class:`datetime.datetime` object to an epoch timestamp in seconds
-    since January 1, 1970, ignoring the time zone.
+    Convert a :class:`datetime.datetime` object to an epoch timestamp in
+    seconds since January 1, 1970, ignoring the time zone.
     """
     return (dt.replace(tzinfo=None) - EPOCH).total_seconds()
 
