@@ -7,8 +7,6 @@ import locale
 import logging
 import platform
 import sys
-from builtins import object
-from builtins import str
 from datetime import datetime, timedelta
 
 from github import GithubObject, InputFileContent
@@ -18,6 +16,8 @@ from medusa import app, db
 from medusa.classes import ErrorViewer
 from medusa.github_client import authenticate, get_github_repo, token_authenticate
 from medusa.logger.adapters.style import BraceAdapter
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -73,9 +73,10 @@ class IssueSubmitter(object):
         """Create a private gist with log data for the specified log line."""
         log.debug('Creating gist for error: {0}', logline)
         context_loglines = logline.get_context_loglines()
-        if context_loglines:
-            content = '\n'.join([str(ll) for ll in context_loglines])
-            return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
+        content = '\n'.join([text_type(ll) for ll in context_loglines])
+        if not content:
+            return None
+        return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
 
     @staticmethod
     def create_issue_data(logline, log_url):

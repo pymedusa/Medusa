@@ -133,6 +133,47 @@
         <%include file="/vue-components/root-dirs.mako"/>
         <%include file="/vue-components/backstretch.mako"/>
         <script>
+            // @TODO: Move all Vue.use to new file
+            Vue.use(window['vue-js-toggle-button'].default);
+
+            Vue.mixin({
+                created() {
+                    if (this.$root === this) {
+                        this.$options.sockets.onmessage = messageEvent => {
+                            const { store } = window;
+                            const message = JSON.parse(messageEvent.data);
+                            const { data, event } = message;
+
+                            // Show the notification to the user
+                            if (event === 'notification') {
+                                const { body, hash, type, title } = data;
+                                displayNotification(type, title, body, hash);
+                            } else if (event === 'configUpdated') {
+                                store.dispatch('updateConfig', data);
+                            } else {
+                                displayNotification('info', event, data);
+                            }
+                        };
+                    }
+                }
+            });
+
+            // @TODO: Remove this before v1.0.0
+            Vue.mixin({
+                mounted() {
+                    if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
+                        // We wait 1000ms to allow the mutations to show in vue dev-tools
+                        // Please see https://github.com/egoist/puex/issues/8
+                        setTimeout(() => {
+                            const { store } = window;
+                            store.dispatch('login');
+                            store.dispatch('getConfig');
+                        }, 1000);
+                    }
+                },
+                // Make auth and config accessible to all components
+                computed: store.mapState(['auth', 'config'])
+            })
             window.routes = [];
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
@@ -148,7 +189,6 @@
                     routes
                 });
             }
-            Vue.use(window['vue-js-toggle-button'].default);
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({

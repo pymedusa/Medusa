@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import re
+import traceback
 from fnmatch import fnmatch
 
 from medusa import app
@@ -228,8 +229,8 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
             scalar, units = size_tuple[0], size_tuple[1:]
             units = units[0].upper() if units else default_units
         else:
-            regex_units = re.search(r'([0-9.]+)(\s?({scale}))'.format(scale='|'.join(scale)), size, re.IGNORECASE)
-            units = regex_units.group(2).strip() if regex_units else default_units
+            regex_units = re.search(r'([0-9.]+)\s*({scale})'.format(scale='|'.join(scale)), size, re.IGNORECASE)
+            units = regex_units.group(2).upper() if regex_units else default_units
             scalar = regex_units.group(1)
 
         scalar = float(scalar)
@@ -328,7 +329,9 @@ def try_int(candidate, default_value=0):
         return int(candidate)
     except (ValueError, TypeError):
         if candidate and (',' in candidate or '.' in candidate):
-            log.exception(u'Failed parsing provider.')
+            # Get the current stack trace (excluding the following line)
+            stack_trace = traceback.format_stack(limit=10)[:-2]
+            log.exception(u'Failed parsing provider.\nStack trace:\n{0}', ''.join(stack_trace))
         return default_value
 
 

@@ -75,7 +75,6 @@ lib/unrar2/UnRAR.exe
 **/bower_components
 **/node_modules
 .build/dist
-.build/package.json
 **/package-lock.json
 
 # Unit test/Coverage #

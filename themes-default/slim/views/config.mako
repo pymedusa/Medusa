@@ -3,13 +3,24 @@
 <script type="text/x-template" id="config-route-template">
     <div id="config-content">
         <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
-            <tr v-if="release">
+            <tr>
                 <td><i class="icon16-config-application"></i> Medusa Info:</td>
                 <td>
-                    Branch: <app-link :href="sourceUrl + '/tree/' + branch">{{branch}}</app-link><br>
-                    Commit: <app-link :href="sourceUrl + '/commit/' + commitHash">{{commitHash}}</app-link><br>
-                    Version: <app-link :href="sourceUrl + '/releases/tag/' + release">{{release}}</app-link><br>
-                    Database: {{databaseVersion.major}}.{{databaseVersion.minor}}
+                    Branch:
+                    <span v-if="branch"><app-link :href="sourceUrl + '/tree/' + branch">{{branch}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Commit:
+                    <span v-if="commitHash"><app-link :href="sourceUrl + '/commit/' + commitHash">{{commitHash}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Version:
+                    <span v-if="release"><app-link :href="sourceUrl + '/releases/tag/' + release">{{release}}</app-link></span>
+                    <span v-else>Unknown</span>
+                    <br>
+                    Database:
+                    <span v-if="databaseVersion">{{databaseVersion.major}}.{{databaseVersion.minor}}</span>
+                    <span v-else>Unknown</span>
                 </td>
             </tr>
             <tr><td><i class="icon16-config-python"></i> Python Version:</td><td>{{pythonVersion}}</td></tr>

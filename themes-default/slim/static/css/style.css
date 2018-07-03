@@ -1163,13 +1163,6 @@ div#col-show-summary {
     margin-bottom: 15px;
 }
 
-#showSelector {
-    height: 31px;
-    display: table-cell;
-    left: 20px;
-    margin-bottom: 5px;
-}
-
 .show-info-container {
     overflow: hidden;
     display: table-cell;
@@ -1205,20 +1198,8 @@ div#col-show-summary {
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
-    .select-show-group {
-        width: 100%;
-    }
-
-    .show-selector {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .showSelector {
-        width: 100%;
     }
 
     .container-navShow {
@@ -1231,25 +1212,12 @@ div#col-show-summary {
 }
 
 @media (max-width: 340px) {
-    .select-show-group {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 265px;
     }
 }
 
 @media (max-width: 767px) {
-    #showSelector {
-        float: left;
-        width: 100%;
-    }
-
-    .select-show {
-        width: 100%;
-    }
-
     .pull-xs-left {
         float: left;
     }
@@ -1845,12 +1813,6 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
-}
-
-select#select-show {
-    display: inline-block;
-    height: 25px;
-    padding: 1px;
 }
 
 button.selectColumns {

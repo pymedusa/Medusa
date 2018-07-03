@@ -420,6 +420,20 @@ def test_convert_size():
     assert sut.convert_size('1.01GB', sep='') == 1084479242
     assert sut.convert_size('1B', sep='') == 1
 
+    # no separator and custom units
+    french = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
+    assert sut.convert_size('1Go', sep='', units=french) == 1073741824
+    assert sut.convert_size('1.00Go', sep='', units=french) == 1073741824
+    assert sut.convert_size('1.01Go', sep='', units=french) == 1084479242
+    assert sut.convert_size('1o', sep='', units=french) == 1
+
+    # no separator, custom units need to be uppercase or they won't match
+    oops = ['b', 'kb', 'Mb', 'Gb', 'tB', 'Pb']
+    assert sut.convert_size('1b', sep='', units=oops) is None
+    assert sut.convert_size('1B', sep='', units=oops) is None
+    assert sut.convert_size('1Mb', sep='', units=oops) is None
+    assert sut.convert_size('1MB', sep='', units=oops) is None
+
 
 def test_episode_num():
     # Standard numbering

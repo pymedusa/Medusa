@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Email notifier module."""
 
 from __future__ import unicode_literals
 
@@ -20,10 +21,34 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
+    """
+    Email notifier class.
+
+    Possible patterns for the `ep_name` input:
+        Downloaded/Snatched:
+            %SN - %Sx%0E - %EN - %QN
+            %SN - %Sx%0E - %AB - %EN - %QN
+        Subtitle Downloaded:
+            %SN - %AB - %EN
+            %SN - %AD - %EN
+            %SN - S%0SE%0E - %EN
+    """
+
+    name_pattern = re.compile(
+        r'(?P<show>.+?) - '
+        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4}-\d{2}-\d{2}) - '
+        r'(?P<episode>.*)'
+    )
+
     def __init__(self):
         self.last_err = None
 
-    def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):  # pylint: disable=too-many-arguments
+    def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):
+        """
+        Send a test notification.
+
+        :return: True for no issue or False if there was an error
+        """
         msg = MIMEText('This is a test message from Medusa. If you\'re reading this, the test succeeded.')
         if app.EMAIL_SUBJECT:
             msg[b'Subject'] = '[TEST] ' + app.EMAIL_SUBJECT
@@ -34,9 +59,9 @@ class Notifier(object):
         msg[b'Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, ep_name, is_proper, title='Snatched:'):  # pylint: disable=unused-argument
+    def notify_snatch(self, ep_name, is_proper, title='Snatched:'):
         """
-        Send a notification that an episode was snatched
+        Send a notification that an episode was snatched.
 
         ep_name: The name of the episode that was snatched
         title: The title of the notification (optional)
@@ -44,8 +69,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parse_name(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -54,11 +79,15 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Snatched</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode']
+                        ),
                         'html'))
 
                 except Exception:
@@ -81,9 +110,9 @@ class Notifier(object):
                 else:
                     log.warning('Snatch notification error: {0}', self.last_err)
 
-    def notify_download(self, ep_name, title='Completed:'):  # pylint: disable=unused-argument
+    def notify_download(self, ep_name, title='Completed:'):
         """
-        Send a notification that an episode was downloaded
+        Send a notification that an episode was downloaded.
 
         ep_name: The name of the episode that was downloaded
         title: The title of the notification (optional)
@@ -91,8 +120,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parse_name(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -101,11 +130,15 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Downloaded</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode']
+                        ),
                         'html'))
 
                 except Exception:
@@ -128,9 +161,9 @@ class Notifier(object):
                 else:
                     log.warning('Download notification error: {0}', self.last_err)
 
-    def notify_subtitle_download(self, ep_name, lang, title='Downloaded subtitle:'):  # pylint: disable=unused-argument
+    def notify_subtitle_download(self, ep_name, lang, title='Downloaded subtitle:'):
         """
-        Send a notification that an subtitle was downloaded
+        Send a notification that a subtitle was downloaded.
 
         ep_name: The name of the episode that was downloaded
         lang: Subtitle language wanted
@@ -138,8 +171,8 @@ class Notifier(object):
         ep_name = ss(ep_name)
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            show = self._parseEp(ep_name)
-            to = self._generate_recipients(show)
+            parsed = self._parse_name(ep_name)
+            to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -148,12 +181,17 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
-                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br>'
-                        '<p>Language: <b>{2}</b></p><br><br>'
+                        '<p>Show: <b>{show}</b></p><br>'
+                        '<p>Episode: <b>{ep_id}{episode}</b></p><br>'
+                        '<p>Language: <b>{lang}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1), lang),
+                        'Powered by Medusa.</footer></body>'.format(
+                            show=parsed['show'],
+                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            episode=parsed['episode'],
+                            lang=lang
+                        ),
                         'html'))
                 except Exception:
                     try:
@@ -176,7 +214,8 @@ class Notifier(object):
 
     def notify_git_update(self, new_version='??'):
         """
-        Send a notification that Medusa was updated
+        Send a notification that Medusa was updated.
+
         new_version: The commit Medusa was updated to
         """
         if app.USE_EMAIL:
@@ -214,7 +253,8 @@ class Notifier(object):
 
     def notify_login(self, ipaddress=''):
         """
-        Send a notification that Medusa was logged into remotely
+        Send a notification that Medusa was logged into remotely.
+
         ipaddress: The ip Medusa was logged into from
         """
         if app.USE_EMAIL:
@@ -250,40 +290,44 @@ class Notifier(object):
                     log.warning('Login notification error: {0}', self.last_err)
 
     @staticmethod
-    def _generate_recipients(show):  # pylint: disable=too-many-branches
+    def _generate_recipients(show):
         addrs = []
         main_db_con = db.DBConnection()
 
         # Grab the global recipients
         if app.EMAIL_LIST:
-            for addr in app.EMAIL_LIST:
-                if addr.strip():
-                    addrs.append(addr)
+            addrs.extend(
+                addr for addr in app.EMAIL_LIST
+                if addr.strip()
+            )
 
         # Grab the per-show-notification recipients
-        if show is not None:
-            for s in show:
-                for subs in main_db_con.select(
-                        'SELECT notify_list '
-                        'FROM tv_shows '
-                        'WHERE show_name = ?',
-                        (s,)):
-                    if subs[b'notify_list']:
-                        if subs[b'notify_list'][0] == '{':
-                            entries = dict(ast.literal_eval(subs[b'notify_list']))
-                            for addr in entries[b'emails'].split(','):
-                                if addr.strip():
-                                    addrs.append(addr)
-                        else:                                           # Legacy
-                            for addr in subs[b'notify_list'].split(','):
-                                if addr.strip():
-                                    addrs.append(addr)
+        if show:
+            sql_results = main_db_con.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE show_name = ?',
+                [show]
+            )
+            for row in sql_results:
+                notify_list = row[b'notify_list']
+                if not notify_list:
+                    continue
+
+                if notify_list[0] == '{':
+                    entries = dict(ast.literal_eval(notify_list))
+                    notify_list = entries['emails']
+
+                addrs.extend(
+                    addr for addr in notify_list.split(',')
+                    if addr.strip()
+                )
 
         addrs = set(addrs)
         log.debug('Notification recipients: {0}', addrs)
         return addrs
 
-    def _sendmail(self, host, port, smtp_from, use_tls, user, pwd, to, msg, smtpDebug=False):  # pylint: disable=too-many-arguments
+    def _sendmail(self, host, port, smtp_from, use_tls, user, pwd, to, msg, smtp_debug=False):
         log.debug(
             'HOST: {host}; PORT: {port}; FROM: {sender}, TLS: {tls},'
             ' USER: {user}, PWD: {password}, TO: {recipient}', {
@@ -304,7 +348,7 @@ class Notifier(object):
             self.last_err = '{0}'.format(error)
             return False
 
-        if smtpDebug:
+        if smtp_debug:
             srv.set_debuglevel(1)
         try:
             if use_tls in ('1', True) or (user and pwd):
@@ -325,12 +369,25 @@ class Notifier(object):
             self.last_err = '{0}'.format(error)
             return False
 
-    @staticmethod
-    def _parseEp(ep_name):
+    @classmethod
+    def _parse_name(cls, ep_name):
         ep_name = ss(ep_name)
 
-        sep = ' - '
-        titles = ep_name.split(sep)
-        titles.sort(key=len, reverse=True)
-        log.debug('TITLES: {0}', titles)
-        return titles
+        # @TODO: Prone to issues, best solution is to have a dictionary passed to notifiers
+        match = cls.name_pattern.match(ep_name)
+
+        # Fallback
+        if not match:
+            # @TODO: This won't be needed when notifiers receive a dictionary
+            log.warning('Unable to parse "{0}" for email notification', ep_name)
+            titles = ep_name.split(' - ')
+            return {
+                'show': titles[0],
+                'episode': ' - '.join(titles[1:])
+            }
+
+        result = match.groupdict()
+
+        log.debug('Email notifier parsed "{0}" into {1!r}',
+                  ep_name, result)
+        return result

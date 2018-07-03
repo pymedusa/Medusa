@@ -11,6 +11,7 @@ from medusa import (
     app,
     common,
     db,
+    ws,
 )
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
@@ -159,6 +160,14 @@ class ConfigHandler(BaseRequestHandler):
 
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
+
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('configUpdated', {
+            'section': identifier,
+            'config': DataGenerator.get_data(identifier)
+        })
+        msg.push()
+
         self._ok(data=accepted)
 
 
@@ -323,6 +332,7 @@ class DataGenerator(object):
 
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
+        section_data['processMethod'] = app.PROCESS_METHOD
 
         return section_data
 

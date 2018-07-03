@@ -15,10 +15,10 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 def get_providers():
     from medusa.providers.torrent import (anidex, horriblesubs, limetorrents, newpct, nyaa, rarbg, shanaproject,
-                                          thepiratebay, tokyotoshokan, torrent9, torrentz2, zooqle)
+                                          thepiratebay, tokyotoshokan, torrent9, torrentz2, yggtorrent, zooqle)
 
     return (anidex, horriblesubs, limetorrents, newpct, nyaa, rarbg, shanaproject,
-            thepiratebay, tokyotoshokan, torrent9, torrentz2, zooqle)
+            thepiratebay, tokyotoshokan, torrent9, torrentz2, yggtorrent, zooqle)
 
 
 @pytest.fixture(scope='session')

@@ -14,14 +14,20 @@
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
+<%include file="/vue-components/show-selector.mako"/>
 <script>
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        store,
         data() {
             return {};
-        }
+        },
+        created() {
+            const { $store } = this;
+            $store.dispatch('getShows'); // Used by show-selector component
+        },
     });
 };
 </script>

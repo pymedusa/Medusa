@@ -81,10 +81,11 @@ class TraktPopular(object):
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
 
+        image_url = ''
         if image:
-            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
-        else:
-            rec_show.cache_image('', default=use_default)
+            image_url = self.tvdb_api_v2.config['artwork_prefix'].format(image=image)
+
+        rec_show.cache_image(image_url, default=use_default)
 
         # As the method below requires a lot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,

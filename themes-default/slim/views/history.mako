@@ -22,69 +22,76 @@ const startVue = () => {
         metaInfo: {
             title: 'History'
         },
+        store,
         data() {
             return {
-                header: 'History'
+                header: 'History',
+                limit: '${limit}'
             };
         },
+        computed: Object.assign({
+            layout: {
+                get() {
+                    const { config } = this;
+                    return config.layout.history;
+                },
+                set(layout) {
+                    const { $store } = this;
+                    const page = 'history';
+                    $store.dispatch('setLayout', { page, layout });
+                }
+            }
+        }),
         mounted() {
-            $('#historyTable:has(tbody tr)').tablesorter({
-                widgets: ['saveSort', 'zebra', 'filter'],
-                sortList: [[0, 1]],
-                textExtraction: (function() {
-                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
-                        return {
-                            // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
+            const unwatch = this.$watch('layout', () => {
+                unwatch();
+                const { layout, config } = this;
+
+                $('#historyTable:has(tbody tr)').tablesorter({
+                    widgets: ['saveSort', 'zebra', 'filter'],
+                    sortList: [[0, 1]],
+                    textExtraction: (function() {
+                        if (layout === 'detailed') {
+                            return {
+                                // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
+                                0: node => $(node).find('time').attr('datetime'),
+                                1: node => $(node).find('a').text(),
+                                4: node => $(node).attr('quality')
+                            };
+                        }
+                        // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
+                        const compactExtract = {
                             0: node => $(node).find('time').attr('datetime'),
                             1: node => $(node).find('a').text(),
-                            4: node => $(node).attr('quality')
+                            2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                            3: node => $(node).text()
                         };
-                    }
-                    // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
-                    const compactExtract = {
-                        0: node => $(node).find('time').attr('datetime'),
-                        1: node => $(node).find('a').text(),
-                        2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        3: node => $(node).text()
-                    };
-                    if ($.isMeta({ subtitles: 'enabled' }, [true])) {
-                        // 4: Subtitled, 5: Quality
-                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        compactExtract[5] = node => $(node).attr('quality')
-                    } else {
-                        // 4: Quality
-                        compactExtract[4] = node => $(node).attr('quality')
-                    }
-                    return compactExtract;
-                })(),
-                headers: (function() {
-                    if ($.isMeta({ layout: 'history' }, ['detailed'])) {
+                        if (config.subtitles.enabled) {
+                            // 4: Subtitled, 5: Quality
+                            compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                            compactExtract[5] = node => $(node).attr('quality')
+                        } else {
+                            // 4: Quality
+                            compactExtract[4] = node => $(node).attr('quality')
+                        }
+                        return compactExtract;
+                    })(),
+                    headers: (function() {
+                        if (layout === 'detailed') {
+                            return {
+                                0: { sorter: 'realISODate' }
+                            };
+                        }
                         return {
-                            0: { sorter: 'realISODate' }
+                            0: { sorter: 'realISODate' },
+                            2: { sorter: 'text' }
                         };
-                    }
-                    return {
-                        0: { sorter: 'realISODate' },
-                        2: { sorter: 'text' }
-                    };
-                })()
+                    })()
+                });
             });
 
             $('#history_limit').on('change', function() {
                 window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
-            });
-
-            $('.show-option select[name="layout"]').on('change', function() {
-                api.patch('config/main', {
-                    layout: {
-                        history: $(this).val()
-                    }
-                }).then(response => {
-                    log.info(response);
-                    window.location.reload();
-                }).catch(err => {
-                    log.info(err);
-                });
             });
         }
     });
@@ -104,23 +111,23 @@ const startVue = () => {
         <div class="layout-controls pull-right">
             <div class="show-option">
                 <span>Limit:</span>
-                    <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-                        <option value="10" ${'selected="selected"' if limit == 10 else ''}>10</option>
-                        <option value="25" ${'selected="selected"' if limit == 25 else ''}>25</option>
-                        <option value="50" ${'selected="selected"' if limit == 50 else ''}>50</option>
-                        <option value="100" ${'selected="selected"' if limit == 100 else ''}>100</option>
-                        <option value="250" ${'selected="selected"' if limit == 250 else ''}>250</option>
-                        <option value="500" ${'selected="selected"' if limit == 500 else ''}>500</option>
-                        <option value="750" ${'selected="selected"' if limit == 750 else ''}>750</option>
-                        <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
-                        <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
-                    </select>
+                <select v-model="limit" name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="250">250</option>
+                    <option value="500">500</option>
+                    <option value="750">750</option>
+                    <option value="1000">1000</option>
+                    <option value="0">All</option>
+                </select>
             </div>
             <div class="show-option">
                 <span> Layout:
-                    <select name="layout" class="form-control form-control-inline input-sm">
-                        <option value="compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-                        <option value="detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+                    <select v-model="layout" name="layout" class="form-control form-control-inline input-sm">
+                        <option value="compact">Compact</option>
+                        <option value="detailed">Detailed</option>
                     </select>
                 </span>
             </div>
@@ -132,8 +139,7 @@ const startVue = () => {
 <div class="row">
     <div class="col-md-12">
         <div class="horizontal-scroll">
-        % if app.HISTORY_LAYOUT == "detailed":
-            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table v-if="layout === 'detailed'" id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="15%">Time</th>
@@ -199,17 +205,14 @@ const startVue = () => {
                 % endfor
                 </tbody>
             </table>
-        % else:
-            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table v-else id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="18%">Time</th>
                         <th width="25%">Episode</th>
                         <th>Snatched</th>
                         <th>Downloaded</th>
-                        % if app.USE_SUBTITLES:
-                        <th>Subtitled</th>
-                        % endif
+                        <th v-if="config.subtitles.enabled">Subtitled</th>
                         <th width="14%">Quality</th>
                     </tr>
                 </thead>
@@ -262,8 +265,7 @@ const startVue = () => {
                                 % endif
                             % endfor
                         </td>
-                        % if app.USE_SUBTITLES:
-                        <td align="center" class="triggerhighlight">
+                        <td v-if="config.subtitles.enabled" align="center" class="triggerhighlight">
                             % for cur_action in sorted(hItem.actions):
                                 % if cur_action.action == SUBTITLED:
                                     <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${os.path.basename(cur_action.resource)}"/>
@@ -273,7 +275,6 @@ const startVue = () => {
                                 % endif
                             % endfor
                         </td>
-                        % endif
                         <td align="center" class="triggerhighlight" quality="${hItem.index.quality}">
                             <span>${renderQualityPill(hItem.index.quality)}</span>
                         </td>
@@ -281,8 +282,7 @@ const startVue = () => {
                 % endfor
                 </tbody>
             </table>
-            % endif
-            </div>
         </div>
     </div>
+</div>
 </%block>

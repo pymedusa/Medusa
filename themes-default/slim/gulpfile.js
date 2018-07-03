@@ -96,7 +96,7 @@ const lintFile = file => {
 const lint = () => {
     return gulp
         .src([
-            'static/js/**/*.js',
+            'static/js/**/*.{js,vue}',
             '!static/js/lib/**',
             '!static/js/*.min.js',
             '!static/js/vender.js'
@@ -130,7 +130,7 @@ const watch = () => {
 
     // Js Changes
     gulp.watch([
-        'static/js/**/*.js',
+        'static/js/**/*.{js,vue}',
         '!static/js/lib/**',
         '!static/js/*.min.js',
         '!static/js/vender.js'
@@ -288,7 +288,7 @@ gulp.task('build', done => {
 });
 
 const syncTheme = (theme, sequence) => {
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
         console.log(`Starting syncing for theme: ${theme[0]}`);
         setCsstheme(theme[0]);
         runSequence(sequence, resolve);

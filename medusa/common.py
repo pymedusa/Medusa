@@ -591,7 +591,10 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
+            if new_quality > old_quality:
+                return True, 'New quality is higher quality (and allowed). Accepting new quality'
+            else:
+                return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
             # Allowed quality should never be replaced
@@ -601,11 +604,15 @@ class Quality(object):
     def is_higher_quality(current_quality, new_quality, allowed_qualities, preferred_qualities):
         """Check is new quality is better than current quality based on allowed and preferred qualities."""
         if new_quality in preferred_qualities:
-            return new_quality > current_quality
+            if current_quality in preferred_qualities:
+                return new_quality > current_quality
+            return True
         elif new_quality in allowed_qualities:
             if current_quality in preferred_qualities:
                 return False
-            return new_quality > current_quality
+            elif current_quality in allowed_qualities:
+                return new_quality > current_quality
+            return True
 
     @staticmethod
     def wanted_quality(new_quality, allowed_qualities, preferred_qualities):

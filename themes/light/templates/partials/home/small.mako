@@ -153,7 +153,7 @@
                     <td align="center">
                     % if cur_show.network:
                         <span title="${cur_show.network}" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="small" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                         </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:

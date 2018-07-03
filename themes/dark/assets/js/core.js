@@ -38,11 +38,13 @@ const UTIL = {
             const series = $(this).attr('series');
             const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
+                const defaultPath = $(this).attr('src');
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
                 } else {
                     $(this).attr('src', path);
                 }
+                $(this).attr('onerror', 'this.src = "' + defaultPath + '"; return false;');
             }
             if (this.tagName.toLowerCase() === 'a') {
                 $(this).attr('href', path);
@@ -51,27 +53,11 @@ const UTIL = {
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
-        UTIL.exec('common');
-        UTIL.exec(controller);
-        UTIL.exec(controller, action);
+        UTIL.exec('common'); // Load common
+        UTIL.exec(controller); // Load MEDUSA[controller]
+        UTIL.exec(controller, action); // Load MEDUSA[controller][action]
     }
 };
-
-$.extend({
-    isMeta(pyVar, result) { // eslint-disable-line no-unused-vars
-        const reg = new RegExp(result.length > 1 ? result.join('|') : result);
-
-        if (typeof (pyVar) === 'object' && Object.keys(pyVar).length === 1) {
-            return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
-        }
-        if (pyVar.match('medusa')) {
-            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, m => {
-                return m[1].toUpperCase();
-            });
-        }
-        return (reg).test(MEDUSA.config[pyVar]);
-    }
-});
 
 $.fn.extend({
     addRemoveWarningClass(_) {
@@ -110,8 +96,8 @@ if (!document.location.pathname.endsWith('/login/')) {
             }
             return MEDUSA.config.indexers.config.indexers[name];
         };
-    }).catch(err => {
-        log.error(err);
+    }).catch(error => {
+        log.error(error);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }

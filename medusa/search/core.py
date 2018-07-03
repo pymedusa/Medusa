@@ -5,7 +5,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import datetime
+import itertools
 import logging
+import operator
 import os
 import threading
 import time
@@ -51,7 +53,7 @@ from medusa.network_timezones import app_timezone
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
-from six import itervalues
+from six import iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -249,18 +251,15 @@ def snatch_episode(result):
     return True
 
 
-def pick_best_result(results):  # pylint: disable=too-many-branches
+def filter_results(results):
     """
-    Find the best result out of a list of search results for a show.
+    Filter wanted results out of a list of search results for a show.
 
     :param results: list of result objects
-    :return: best result object
+    :return: list of wanted result objects
     """
     results = results if isinstance(results, list) else [results]
-
-    log.debug(u'Picking the best result out of {0}', [x.name for x in results])
-
-    best_result = None
+    wanted_results = []
 
     # find the best result for the current episode
     for cur_result in results:
@@ -277,13 +276,11 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
         log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
 
         allowed_qualities, preferred_qualities = series_obj.current_qualities
-
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
             continue
 
         wanted_ep = True
-
         if cur_result.actual_episodes:
             wanted_ep = False
             for episode in cur_result.actual_episodes:
@@ -332,32 +329,92 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
 
-        preferred_words = []
-        if app.PREFERRED_WORDS:
-            preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
-        undesired_words = []
-        if app.UNDESIRED_WORDS:
-            undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
+        wanted_results.append(cur_result)
 
-        if not best_result:
-            best_result = cur_result
-        if Quality.is_higher_quality(best_result.quality, cur_result.quality, allowed_qualities, preferred_qualities):
-            best_result = cur_result
-        elif best_result.quality == cur_result.quality:
-            if any(ext in cur_result.name.lower() for ext in preferred_words):
-                log.info(u'Preferring {0} (preferred words)', cur_result.name)
-                best_result = cur_result
-            if cur_result.proper_tags:
-                log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
-                best_result = cur_result
-            if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
-                log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
-                best_result = cur_result
-
-    if best_result:
-        log.debug(u'Picked {0} as the best', best_result.name)
+    if wanted_results:
+        log.debug(u'Found wanted results.')
     else:
-        log.debug(u'No result picked.')
+        log.debug(u'No wanted results found.')
+
+    return wanted_results
+
+
+def sort_results(results):
+    """Sort results based on show specific preferences."""
+    wanted_results = []
+    if not results:
+        log.debug(u'No results to sort.')
+        return wanted_results
+
+    sorted_results = sorted(results, key=operator.attrgetter('quality'), reverse=True)
+    log.debug(u'Sorting the following results: {0}', [x.name for x in sorted_results])
+
+    preferred_words = []
+    if app.PREFERRED_WORDS:
+        preferred_words = [word.lower() for word in app.PREFERRED_WORDS]
+    undesired_words = []
+    if app.UNDESIRED_WORDS:
+        undesired_words = [word.lower() for word in app.UNDESIRED_WORDS]
+
+    def percentage(percent, whole):
+        return (percent * whole) / 100.0
+
+    initial_score = 100.0
+    for result in sorted_results:
+        score = initial_score
+
+        if wanted_results:
+            allowed_qualities, preferred_qualities = result.series.current_qualities
+            if Quality.is_higher_quality(wanted_results[0][0].quality, result.quality,
+                                         allowed_qualities, preferred_qualities):
+                log.debug(u'Rewarding release {0} (higher quality)', result.name)
+                score += percentage(10, score)
+                initial_score = score
+
+        if result.proper_tags and (not wanted_results or
+                                   wanted_results[0][0].quality == result.quality):
+            log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
+            # Stop at max. 4 proper tags
+            for tag in result.proper_tags[:4]:
+                score += percentage(2, score)
+
+        if any(word in result.name.lower() for word in undesired_words):
+            log.debug(u'Penalizing release {0} (contains undesired word(s))', result.name)
+            score -= percentage(20, score)
+
+        if any(word in result.name.lower() for word in preferred_words):
+            log.debug(u'Rewarding release {0} (contains preferred word(s))', result.name)
+            score += percentage(20, score)
+
+        wanted_results.append((result, score))
+        wanted_results.sort(key=operator.itemgetter(1), reverse=True)
+
+    header = '{0:<6} {1}'.format('Score', 'Release')
+    log.debug(
+        u'Computed result scores:'
+        u'\n{header}'
+        u'\n{results}',
+        {
+            'header': header,
+            'results': '\n'.join(
+                '{score:<6.2f} {name}'.format(score=item[1], name=item[0].name)
+                for item in wanted_results
+            )
+        }
+    )
+
+    return [result[0] for result in wanted_results]
+
+
+def pick_result(wanted_results):
+    """Pick the first result out of a list of wanted candidates."""
+    candidates = sort_results(wanted_results)
+    if not candidates:
+        log.debug(u'No results to pick from.')
+        return None
+
+    best_result = candidates[0]
+    log.info(u'Picked {0} as the best result.', best_result.name)
 
     return best_result
 
@@ -480,13 +537,13 @@ def search_for_needed_episodes(force=False):
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep])
-
             # if all results were rejected move on to the next episode
-            if not best_result:
+            wanted_results = filter_results(cur_found_results[cur_ep])
+            if not wanted_results:
                 log.debug(u'All found results for {0} were rejected.', cur_ep.pretty_name())
                 continue
 
+            best_result = pick_result(wanted_results)
             # if it's already in the list (from another provider) and the newly found quality is no better then skip it
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
@@ -576,8 +633,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     :return: results for search
     """
     found_results = {}
-    final_results = []
     manual_search_results = []
+    multi_results = []
+    single_results = []
 
     # build name cache for show
     name_cache.build_name_cache(series_obj)
@@ -678,194 +736,25 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # pick the best season NZB
-        best_season_result = None
-        if SEASON_RESULT in found_results[cur_provider.name]:
-            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT])
+        # Collect candidates for multi-episode or season results
+        candidates = (candidate for result, candidate in iteritems(found_results[cur_provider.name])
+                      if result in (SEASON_RESULT, MULTI_EP_RESULT))
+        candidates = list(itertools.chain(*candidates))
+        if candidates:
+            multi_candidates, single_candidates = collect_multi_candidates(
+                candidates, series_obj, episodes, down_cur_quality)
 
-        highest_quality_overall = 0
-        for cur_episode in found_results[cur_provider.name]:
-            for cur_result in found_results[cur_provider.name][cur_episode]:
-                if cur_result.quality > highest_quality_overall:
-                    highest_quality_overall = cur_result.quality
-        log.debug(u'The highest quality of any match is {0}', Quality.qualityStrings[highest_quality_overall])
+            multi_results += multi_candidates
 
-        # see if every episode is wanted
-        if best_season_result:
-            searched_seasons = {str(x.season) for x in episodes}
-
-            # get the quality of the season nzb
-            season_quality = best_season_result.quality
-            log.debug(u'The quality of the season {0} is {1}',
-                      best_season_result.provider.provider_type,
-                      Quality.qualityStrings[season_quality])
-            main_db_con = db.DBConnection()
-            selection = main_db_con.select(
-                'SELECT episode '
-                'FROM tv_episodes '
-                'WHERE indexer = ?'
-                ' AND showid = ?'
-                ' AND ( season IN ( {0} ) )'.format(','.join(searched_seasons)),
-                [series_obj.indexer, series_obj.series_id]
-            )
-            all_eps = [int(x[b'episode']) for x in selection]
-            log.debug(u'Episode list: {0}', all_eps)
-
-            all_wanted = True
-            any_wanted = False
-            for cur_ep_num in all_eps:
-                for season in {x.season for x in episodes}:
-                    if not series_obj.want_episode(season, cur_ep_num, season_quality, down_cur_quality):
-                        all_wanted = False
-                    else:
-                        any_wanted = True
-
-            # if we need every ep in the season and there's nothing better then
-            # just download this and be done with it (unless single episodes are preferred)
-            if all_wanted and best_season_result.quality == highest_quality_overall:
-                log.info(u'All episodes in this season are needed, downloading {0} {1}',
-                         best_season_result.provider.provider_type,
-                         best_season_result.name)
-                ep_objs = []
-                for cur_ep_num in all_eps:
-                    for season in {x.season for x in episodes}:
-                        ep_objs.append(series_obj.get_episode(season, cur_ep_num))
-                best_season_result.episodes = ep_objs
-
-                # Remove provider from thread name before return results
-                threading.currentThread().name = original_thread_name
-
-                return [best_season_result]
-
-            elif not any_wanted:
-                log.debug(u'No episodes in this season are needed at this quality, ignoring {0} {1}',
-                          best_season_result.provider.provider_type,
-                          best_season_result.name)
-            else:
-                # Some NZB providers (e.g. Jackett) can also download torrents, but torrents cannot be split like NZB
-                if (best_season_result.provider.provider_type == GenericProvider.NZB and
-                        not best_season_result.url.endswith(GenericProvider.TORRENT)):
-                    log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
-
-                    # if not, break it apart and add them as the lowest priority results
-                    individual_results = nzb_splitter.split_result(best_season_result)
-                    for cur_result in individual_results:
-                        if len(cur_result.episodes) == 1:
-                            ep_number = cur_result.episodes[0].episode
-                        elif len(cur_result.episodes) > 1:
-                            ep_number = MULTI_EP_RESULT
-
-                        if ep_number in found_results[cur_provider.name]:
-                            found_results[cur_provider.name][ep_number].append(cur_result)
-                        else:
-                            found_results[cur_provider.name][ep_number] = [cur_result]
-
-                # If this is a torrent all we can do is leech the entire torrent,
-                # user will have to select which eps not do download in his torrent client
+            for number, candidate in single_candidates:
+                if number in found_results[cur_provider.name]:
+                    found_results[cur_provider.name][number].append(candidate)
                 else:
-                    # Season result from Torrent Provider must be a full-season torrent,
-                    # creating multi-ep result for it.
-                    log.info(u'Adding multi-ep result for full-season torrent.'
-                             u' Undesired episodes can be skipped in torrent client if desired!')
-                    ep_objs = []
-                    for cur_ep_num in all_eps:
-                        for season in {x.season for x in episodes}:
-                            ep_objs.append(series_obj.get_episode(season, cur_ep_num))
-                    best_season_result.episodes = ep_objs
+                    found_results[cur_provider.name][number] = [candidate]
 
-                    if MULTI_EP_RESULT in found_results[cur_provider.name]:
-                        found_results[cur_provider.name][MULTI_EP_RESULT].append(best_season_result)
-                    else:
-                        found_results[cur_provider.name][MULTI_EP_RESULT] = [best_season_result]
-
-        # go through multi-ep results and see if we really want them or not, get rid of the rest
-        multi_results = {}
-        if MULTI_EP_RESULT in found_results[cur_provider.name]:
-            for _multi_result in found_results[cur_provider.name][MULTI_EP_RESULT]:
-                log.debug(u'Seeing if we want to bother with multi-episode result {0}', _multi_result.name)
-
-                # Filter result by ignore/required/whitelist/blacklist/quality, etc
-                multi_result = pick_best_result(_multi_result)
-                if not multi_result:
-                    continue
-
-                # see how many of the eps that this result covers aren't covered by single results
-                needed_eps = []
-                not_needed_eps = []
-                for ep_obj in multi_result.episodes:
-                    # if we have results for the episode
-                    if ep_obj.episode in found_results[cur_provider.name] and \
-                            len(found_results[cur_provider.name][ep_obj.episode]) > 0:
-                        not_needed_eps.append(ep_obj.episode)
-                    else:
-                        needed_eps.append(ep_obj.episode)
-
-                log.debug(u'Single-ep check result is needed_eps: {0}, not_needed_eps: {1}',
-                          needed_eps, not_needed_eps)
-
-                if not needed_eps:
-                    log.debug(u'All of these episodes were covered by single episode results,'
-                              u' ignoring this multi-episode result')
-                    continue
-
-                # check if these eps are already covered by another multi-result
-                multi_needed_eps = []
-                multi_not_needed_eps = []
-                for ep_obj in multi_result.episodes:
-                    if ep_obj.episode in multi_results:
-                        multi_not_needed_eps.append(ep_obj.episode)
-                    else:
-                        multi_needed_eps.append(ep_obj.episode)
-
-                log.debug(u'Multi-ep check result is multi_needed_eps: {0}, multi_not_needed_eps: {1}',
-                          multi_needed_eps,
-                          multi_not_needed_eps)
-
-                if not multi_needed_eps:
-                    log.debug(
-                        u'All of these episodes were covered by another multi-episode nzb, '
-                        u'ignoring this multi-ep result'
-                    )
-                    continue
-
-                # don't bother with the single result if we're going to get it with a multi result
-                for ep_obj in multi_result.episodes:
-                    multi_results[ep_obj.episode] = multi_result
-                    if ep_obj.episode in found_results[cur_provider.name]:
-                        log.debug(
-                            u'A needed multi-episode result overlaps with a single-episode result for episode {0},'
-                            u' removing the single-episode results from the list',
-                            ep_obj.episode,
-                        )
-                        del found_results[cur_provider.name][ep_obj.episode]
-
-        # of all the single ep results narrow it down to the best one for each episode
-        final_results += set(multi_results.values())
-        for cur_ep in found_results[cur_provider.name]:
-            if cur_ep in (MULTI_EP_RESULT, SEASON_RESULT):
-                continue
-
-            if not found_results[cur_provider.name][cur_ep]:
-                continue
-
-            # if all results were rejected move on to the next episode
-            best_result = pick_best_result(found_results[cur_provider.name][cur_ep])
-            if not best_result:
-                continue
-
-            # add result if its not a duplicate and
-            found = False
-            for i, result in enumerate(final_results):
-                for best_resultEp in best_result.episodes:
-                    if best_resultEp in result.episodes:
-                        if result.quality < best_result.quality:
-                            final_results.pop(i)
-                        else:
-                            found = True
-            if not found:
-                # Skip the result if search delay is enabled for the provider.
-                if not delay_search(best_result):
-                    final_results += [best_result]
+        # Collect candidates for single-episode results
+        single_results = collect_single_candidates(found_results[cur_provider.name],
+                                                   single_results)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -874,4 +763,183 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         # If results in manual search return True, else False
         return any(manual_search_results)
     else:
-        return final_results
+        return combine_results(multi_results, single_results)
+
+
+def collect_single_candidates(candidates, results):
+    """Collect single-episode result candidates."""
+    single_candidates = list(results)
+    new_candidates = []
+
+    # of all the single-ep results narrow it down to the best one for each episode
+    for episode in candidates:
+        if episode in (MULTI_EP_RESULT, SEASON_RESULT):
+            continue
+
+        # if all results were rejected move on to the next episode
+        wanted_results = filter_results(candidates[episode])
+        if not wanted_results:
+            continue
+
+        result_candidates = []
+        for i, candidate in enumerate(single_candidates):
+            if episode in candidate.actual_episodes:
+                result_candidates.append(candidate)
+                del single_candidates[i]
+
+        best_result = pick_result(result_candidates + wanted_results)
+
+        # Skip the result if search delay is enabled for the provider
+        if not delay_search(best_result):
+            new_candidates.append(best_result)
+
+    return single_candidates + new_candidates
+
+
+def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality):
+    """Collect mutli-episode and season result candidates."""
+    multi_candidates = []
+    single_candidates = []
+
+    wanted_candidates = filter_results(candidates)
+    if not wanted_candidates:
+        return multi_candidates, single_candidates
+
+    searched_seasons = {str(x.season) for x in episodes}
+    main_db_con = db.DBConnection()
+    selection = main_db_con.select(
+        'SELECT episode '
+        'FROM tv_episodes '
+        'WHERE indexer = ?'
+        ' AND showid = ?'
+        ' AND ( season IN ( {0} ) )'.format(','.join(searched_seasons)),
+        [series_obj.indexer, series_obj.series_id]
+    )
+    all_eps = [int(x[b'episode']) for x in selection]
+    log.debug(u'Episodes list: {0}', all_eps)
+
+    for candidate in wanted_candidates:
+        season_quality = candidate.quality
+
+        all_wanted = True
+        any_wanted = False
+        for cur_ep_num in all_eps:
+            for season in {x.season for x in episodes}:
+                if not series_obj.want_episode(season, cur_ep_num, season_quality,
+                                               down_cur_quality):
+                    all_wanted = False
+                else:
+                    any_wanted = True
+
+        if all_wanted:
+            log.info(u'All episodes in this season are needed, adding {0} {1}',
+                     candidate.provider.provider_type,
+                     candidate.name)
+            ep_objs = []
+            for cur_ep_num in all_eps:
+                for season in {x.season for x in episodes}:
+                    ep_objs.append(series_obj.get_episode(season, cur_ep_num))
+            candidate.episodes = ep_objs
+
+            # Skip the result if search delay is enabled for the provider
+            if not delay_search(candidate):
+                multi_candidates.append(candidate)
+
+        elif not any_wanted:
+            log.debug(u'No episodes in this season are needed at this quality, ignoring {0} {1}',
+                      candidate.provider.provider_type,
+                      candidate.name)
+            continue
+
+        else:
+            # Some NZB providers (e.g. Jackett) can also download torrents,
+            # but torrents cannot be split like NZBs
+            if (candidate.provider.provider_type == GenericProvider.NZB and
+                    not candidate.url.endswith(GenericProvider.TORRENT)):
+                log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
+
+                individual_results = nzb_splitter.split_result(candidate)
+                for cur_result in individual_results:
+                    if len(cur_result.episodes) == 1:
+                        ep_number = cur_result.episodes[0].episode
+                        single_candidates.append((ep_number, cur_result))
+                    elif len(cur_result.episodes) > 1:
+                        multi_candidates.append(cur_result)
+
+            # If this is a torrent all we can do is get the entire torrent,
+            # user will have to select which eps not do download in his torrent client
+            else:
+                log.info(u'Adding multi-episode result for full-season torrent.'
+                         u' Undesired episodes can be skipped in the torrent client if desired!')
+                ep_objs = []
+                for cur_ep_num in all_eps:
+                    for season in {x.season for x in episodes}:
+                        ep_objs.append(series_obj.get_episode(season, cur_ep_num))
+                candidate.episodes = ep_objs
+                multi_candidates.append(candidate)
+
+    return multi_candidates, single_candidates
+
+
+def combine_results(multi_results, single_results):
+    """Combine single and multi-episode results, filtering out overlapping results."""
+    log.debug(u'Combining single and multi-episode results')
+    result_candidates = []
+
+    multi_results = sort_results(multi_results)
+    for candidate in multi_results:
+        if result_candidates:
+            # check if these eps are already covered by another multi-result
+            multi_needed_eps = []
+            multi_not_needed_eps = []
+            for ep_obj in candidate.episodes:
+                for result in result_candidates:
+                    if ep_obj in result.episodes:
+                        multi_not_needed_eps.append(ep_obj.episode)
+                    else:
+                        multi_needed_eps.append(ep_obj.episode)
+
+            log.debug(u'Multi-ep check result is multi_needed_eps: {0}, multi_not_needed_eps: {1}',
+                      multi_needed_eps,
+                      multi_not_needed_eps)
+
+            if not multi_needed_eps:
+                log.debug(
+                    u'All of these episodes were covered by another multi-episode result,'
+                    u' ignoring this multi-episode result'
+                )
+                continue
+
+        log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
+        result_candidates.append(candidate)
+
+    for multi_result in result_candidates:
+        # see how many of the eps that this result covers aren't covered by single results
+        needed_eps = []
+        not_needed_eps = []
+        for result in single_results:
+            if result in multi_result.episodes:
+                not_needed_eps.append(result.actual_episode)
+            else:
+                needed_eps.append(result.actual_episode)
+
+        log.debug(u'Single-ep check result is needed_eps: {0}, not_needed_eps: {1}',
+                  needed_eps, not_needed_eps)
+
+        if not needed_eps:
+            log.debug(u'All of these episodes were covered by single-episode results,'
+                      u' ignoring this multi-episode result')
+            continue
+
+        # remove the single result if we're going to get it with a multi-result
+        for ep_obj in multi_result.episodes:
+            for i, result in enumerate(single_results):
+                if ep_obj in result.episodes:
+                    log.debug(
+                        u'A needed multi-episode result overlaps with a single-episode result'
+                        u' for episode {0}, removing the single-episode results from the list',
+                        ep_obj.episode,
+                    )
+                    del single_results[i]
+
+    return single_results + result_candidates
