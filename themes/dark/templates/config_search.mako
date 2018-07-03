@@ -14,6 +14,7 @@ window.app = {};
 const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
+        store,
         metaInfo: {
             title: 'Config - Episode Search'
         },
@@ -108,18 +109,18 @@ const startVue = () => {
                 torrent: {
                     enabled: ${js_bool(app.USE_TORRENTS)},
                     dir: ${json.dumps(app.TORRENT_DIR)},
-                    method: '${app.TORRENT_METHOD}',
-                    host: '${app.TORRENT_HOST}',
-                    rpcUrl: '${app.TORRENT_RPCURL}',
-                    username: '${app.TORRENT_USERNAME}',
-                    password: '${app.TORRENT_PASSWORD}',
-                    label: '${app.TORRENT_LABEL}',
-                    labelAnime: '${app.TORRENT_LABEL_ANIME}',
-                    path: '${app.TORRENT_PATH}',
-                    seedLocation: '${app.TORRENT_SEED_LOCATION}',
-                    seedTime: '${app.TORRENT_SEED_TIME}',
+                    method: ${json.dumps(app.TORRENT_METHOD)},
+                    host: ${json.dumps(app.TORRENT_HOST)},
+                    rpcUrl: ${json.dumps(app.TORRENT_RPCURL)},
+                    username: ${json.dumps(app.TORRENT_USERNAME)},
+                    password: ${json.dumps(app.TORRENT_PASSWORD)},
+                    label: ${json.dumps(app.TORRENT_LABEL)},
+                    labelAnime: ${json.dumps(app.TORRENT_LABEL_ANIME)},
+                    path: ${json.dumps(app.TORRENT_PATH)},
+                    seedLocation: ${json.dumps(app.TORRENT_SEED_LOCATION)},
+                    seedTime: ${json.dumps(app.TORRENT_SEED_TIME)},
                     testStatus: 'Click below to test',
-                    authType: '${app.TORRENT_AUTH_TYPE}',
+                    authType: ${json.dumps(app.TORRENT_AUTH_TYPE)},
                     verifyCert: ${js_bool(app.TORRENT_VERIFY_CERT)},
                     paused: ${js_bool(app.TORRENT_PAUSED)},
                     highBandwidth: ${js_bool(app.TORRENT_HIGH_BANDWIDTH)},
@@ -127,17 +128,17 @@ const startVue = () => {
                 nzb: {
                     enabled: ${js_bool(app.USE_NZBS)},
                     dir: ${json.dumps(app.NZB_DIR)},
-                    method: '${app.NZB_METHOD}',
+                    method: ${json.dumps(app.NZB_METHOD)},
                     nzbget: {
                         useHttps: ${js_bool(app.NZBGET_USE_HTTPS)},
-                        host: '${app.NZBGET_HOST}',
-                        username: '${app.NZBGET_USERNAME}',
-                        password: '${app.NZBGET_PASSWORD}',
+                        host: ${json.dumps(app.NZBGET_HOST)},
+                        username: ${json.dumps(app.NZBGET_USERNAME)},
+                        password: ${json.dumps(app.NZBGET_PASSWORD)},
                         testStatus: 'Click below to test',
-                        category: '${app.NZBGET_CATEGORY}',
-                        categoryBacklog: '${app.NZBGET_CATEGORY_BACKLOG}',
-                        categoryAnime: '${app.NZBGET_CATEGORY_ANIME}',
-                        categoryAnimeBacklog: '${app.NZBGET_CATEGORY_ANIME_BACKLOG}',
+                        category: ${json.dumps(app.NZBGET_CATEGORY)},
+                        categoryBacklog: ${json.dumps(app.NZBGET_CATEGORY_BACKLOG)},
+                        categoryAnime: ${json.dumps(app.NZBGET_CATEGORY_ANIME)},
+                        categoryAnimeBacklog: ${json.dumps(app.NZBGET_CATEGORY_ANIME_BACKLOG)},
                         priority: ${app.NZBGET_PRIORITY},
                         priorityOptions: {
                             'Very low': -100,
@@ -149,15 +150,15 @@ const startVue = () => {
                         }
                     },
                     sabnzbd: {
-                        host: '${app.SAB_HOST}',
-                        username: '${app.SAB_USERNAME}',
-                        password: '${app.SAB_PASSWORD}',
-                        apiKey: '${app.SAB_APIKEY}',
+                        host: ${json.dumps(app.SAB_HOST)},
+                        username: ${json.dumps(app.SAB_USERNAME)},
+                        password: ${json.dumps(app.SAB_PASSWORD)},
+                        apiKey: ${json.dumps(app.SAB_APIKEY)},
                         testStatus: 'Click below to test',
-                        category: '${app.SAB_CATEGORY}',
-                        categoryBacklog: '${app.SAB_CATEGORY_BACKLOG}',
-                        categoryAnime: '${app.SAB_CATEGORY_ANIME}',
-                        categoryAnimeBacklog: '${app.SAB_CATEGORY_ANIME_BACKLOG}',
+                        category: ${json.dumps(app.SAB_CATEGORY)},
+                        categoryBacklog: ${json.dumps(app.SAB_CATEGORY_BACKLOG)},
+                        categoryAnime: ${json.dumps(app.SAB_CATEGORY_ANIME)},
+                        categoryAnimeBacklog: ${json.dumps(app.SAB_CATEGORY_ANIME_BACKLOG)},
                         forced: ${js_bool(app.SAB_FORCED)}
                     }
                 },
@@ -170,8 +171,8 @@ const startVue = () => {
                 // Episode Search: General Config
                 randomizeProviders: ${js_bool(app.RANDOMIZE_PROVIDERS)},
                 downloadPropers: ${js_bool(app.DOWNLOAD_PROPERS)},
-                checkPropersInterval: '${app.CHECK_PROPERS_INTERVAL}',
-                propersIntervalLabels: JSON.parse('${json.dumps(app.PROPERS_INTERVAL_LABELS)}'),
+                checkPropersInterval: ${json.dumps(app.CHECK_PROPERS_INTERVAL)},
+                propersIntervalLabels: ${json.dumps(app.PROPERS_INTERVAL_LABELS)},
                 propersSearchDays: ${app.PROPERS_SEARCH_DAYS},
                 backlogDays: ${app.BACKLOG_DAYS},
                 backlogFrequency: ${app.BACKLOG_FREQUENCY},
@@ -182,7 +183,7 @@ const startVue = () => {
                 torrentCheckerFrequency: ${app.TORRENT_CHECKER_FREQUENCY},
                 minTorrentCheckerFrequency: ${app.MIN_TORRENT_CHECKER_FREQUENCY},
                 usenetRetention: ${app.USENET_RETENTION},
-                trackersList: JSON.parse('${json.dumps(app.TRACKERS_LIST)}').join(', '),
+                trackersList: ${json.dumps(app.TRACKERS_LIST)}.join(', '),
                 allowHighPriority: ${js_bool(app.ALLOW_HIGH_PRIORITY)},
                 useFailedDownloads: ${js_bool(app.USE_FAILED_DOWNLOADS)},
                 deleteFailed: ${js_bool(app.DELETE_FAILED)},
@@ -190,11 +191,11 @@ const startVue = () => {
                 maxCacheAge: ${app.MAX_CACHE_AGE},
 
                 // Episode Search: Search Filters
-                ignoreWords: JSON.parse('${json.dumps(app.IGNORE_WORDS)}').join(', '),
-                undesiredWords: JSON.parse('${json.dumps(app.UNDESIRED_WORDS)}').join(', '),
-                preferredWords: JSON.parse('${json.dumps(app.PREFERRED_WORDS)}').join(', '),
-                requireWords: JSON.parse('${json.dumps(app.REQUIRE_WORDS)}').join(', '),
-                ignoredSubsList: JSON.parse('${json.dumps(app.IGNORED_SUBS_LIST)}').join(', '),
+                ignoreWords: ${json.dumps(app.IGNORE_WORDS)}.join(', '),
+                undesiredWords: ${json.dumps(app.UNDESIRED_WORDS)}.join(', '),
+                preferredWords: ${json.dumps(app.PREFERRED_WORDS)}.join(', '),
+                requireWords: ${json.dumps(app.REQUIRE_WORDS)}.join(', '),
+                ignoredSubsList: ${json.dumps(app.IGNORED_SUBS_LIST)}.join(', '),
                 ignoreUndSubs: ${js_bool(app.IGNORE_UND_SUBS)},
 
                 // Global
@@ -203,10 +204,6 @@ const startVue = () => {
         },
         mounted() {
             $('#config-components').tabs();
-            $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
-            $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
-            $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
-            $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
         },
         methods: {
             async testTorrentClient() {
@@ -228,7 +225,7 @@ const startVue = () => {
             async testNzbget() {
                 const { nzb } = this;
                 const { nzbget } = nzb;
-                const { host, username, password } = nzbget;
+                const { host, username, password, useHttps } = nzbget;
 
                 this.nzb.nzbget.testStatus = MEDUSA.config.loading;
 
@@ -236,7 +233,7 @@ const startVue = () => {
                     host,
                     username,
                     password,
-                    user_https: useHttps
+                    use_https: useHttps
                 };
                 const resp = await apiRoute.get('home/testNZBget', { params });
 
@@ -245,7 +242,7 @@ const startVue = () => {
             async testSabnzbd() {
                 const { nzb } = this;
                 const { sabnzbd } = nzb;
-                const { host, username, password, apiKey } = nzbget;
+                const { host, username, password, apiKey } = sabnzbd;
 
                 this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
@@ -582,7 +579,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="nzb_dir" id="nzb_dir" v-model="nzb.dir" class="form-control input-sm input350"/>
+                                            <file-browser name="nzb_dir" title="Select .nzb black hole location" :initial-dir="nzb.dir" @update="nzb.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -674,7 +671,7 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
-                                <input type="button" value="Test SABnzbd" id="testSABnzbd" class="btn-medusa test-button"/>
+                                <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
                             <div v-show="nzb.method === 'nzbget'" id="nzbget_settings">
@@ -757,14 +754,14 @@ const startVue = () => {
                                         <span class="component-title">NZBget priority</span>
                                         <span class="component-desc">
                                             <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
-                                                <option v-for="(title, value) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
+                                                <option v-for="(value, title) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
                                             </select>
                                             <span>priority for daily snatches (no backlog)</span>
                                         </span>
                                     </label>
                                 </div>
                                 <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
-                                <input @click="testNzbget" type="button" value="Test NZBget" id="testNZBget" class="btn-medusa test-button"/>
+                                <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div><!-- /nzb.enabled //-->
                         </div>
@@ -802,7 +799,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_dir" id="torrent_dir" v-model="torrent.dir" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="torrent.dir" @update="torrent.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -913,7 +910,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_path" id="torrent_path" v-model="torrent.path" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="torrent.path" @update="torrent.path = $event"></file-browser>
                                             <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
                                                 <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
@@ -924,7 +921,7 @@ const startVue = () => {
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" v-model="torrent.seedLocation" class="form-control input-sm input350"/>
+                                            <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="torrent.seedLocation" @update="torrent.seedLocation = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p>
                                                     where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>

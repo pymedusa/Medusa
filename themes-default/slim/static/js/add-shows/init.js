@@ -44,7 +44,7 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#rootDirs').on('change', () => {
+        $(document.body).on('change', '#rootDirs', () => {
             $.rootDirCheck();
         });
 

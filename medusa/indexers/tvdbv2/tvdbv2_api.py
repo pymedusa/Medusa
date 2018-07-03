@@ -47,8 +47,7 @@ class TVDBv2(BaseIndexer):
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url='http://thetvdb.com')
-        # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
+        self.config['artwork_prefix'] = '{base_url}/banners/{{image}}'.format(base_url='https://www.thetvdb.com')
 
         # client_id = ''  # (optional! Only required for the /user routes)
         # client_secret = ''  # (optional! Only required for the /user routes)
@@ -505,7 +504,7 @@ class TVDBv2(BaseIndexer):
                         if k.endswith('path'):
                             k = '_{0}'.format(k)
                             log.debug('Adding base url for image: {0}', v)
-                            v = self.config['artwork_prefix'] % v
+                            v = self.config['artwork_prefix'].format(image=v)
 
                         base_path[k] = v
             except (ApiException, RequestException) as error:
@@ -542,7 +541,11 @@ class TVDBv2(BaseIndexer):
         """
         log.debug('Getting actors for {0}', sid)
 
-        actors = self.config['session'].series_api.series_id_actors_get(sid)
+        try:
+            actors = self.config['session'].series_api.series_id_actors_get(sid)
+        except ApiException as error:
+            log.info('Could not get actors for show id: {0} with reason: {1!r}', sid, error)
+            return
 
         if not actors or not actors.data:
             log.debug('Actors result returned zero')
@@ -552,7 +555,7 @@ class TVDBv2(BaseIndexer):
         for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
             new_actor = Actor()
             new_actor['id'] = cur_actor.id
-            new_actor['image'] = self.config['artwork_prefix'] % cur_actor.image
+            new_actor['image'] = self.config['artwork_prefix'].format(image=cur_actor.image)
             new_actor['name'] = cur_actor.name
             new_actor['role'] = cur_actor.role
             new_actor['sortorder'] = 0
@@ -592,7 +595,7 @@ class TVDBv2(BaseIndexer):
         for k, v in viewitems(series_info['series']):
             if v is not None:
                 if v and k in ['banner', 'fanart', 'poster']:
-                    v = self.config['artwork_prefix'] % v
+                    v = self.config['artwork_prefix'].format(image=v)
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
@@ -629,7 +632,7 @@ class TVDBv2(BaseIndexer):
         try:
             while updates and count < weeks:
                 updates = self.config['session'].updates_api.updated_query_get(from_time).data
-                if updates is not None:
+                if updates:
                     last_update_ts = max(x.last_updated for x in updates)
                     from_time = last_update_ts
                     total_updates += [int(_.id) for _ in updates]

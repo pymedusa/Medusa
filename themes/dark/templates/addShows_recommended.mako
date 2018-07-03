@@ -1,7 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    from medusa import app
-%>
 <%block name="scripts">
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
@@ -12,7 +9,9 @@ const startVue = () => {
     window.app = new Vue({
         el: '#vue-wrap',
         data() {
-            return {};
+            return {
+                rootDirs: []
+            };
         }
     });
 };
@@ -50,7 +49,7 @@ const startVue = () => {
                                 <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
-                                <%include file="/inc_rootDirs.mako"/>
+                                <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
                                 <br/>
                             </div>
                             <div id="tabs-2" class="existingtabs">

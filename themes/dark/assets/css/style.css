@@ -407,24 +407,6 @@ inc_bottom.mako
 }
 
 /* =======================================================================
-inc_rootDirs.mako
-========================================================================== */
-.rootdir-selectbox,
-.rootdir-selectbox #rootDirs,
-.rootdir-controls {
-    width: 100%;
-    max-width: 430px;
-}
-
-.rootdir-selectbox {
-    padding: 0 0 5px;
-}
-
-.rootdir-controls {
-    text-align: center;
-}
-
-/* =======================================================================
 history.mako
 ========================================================================== */
 .layout-controls {
@@ -930,8 +912,70 @@ home_newShow.mako
     border: 1px solid rgb(223, 222, 222);
 }
 
-#searchResults input[type="radio"] {
-    vertical-align: -2px;
+div.search-results {
+    height: 100%;
+}
+
+div.search-results > div.no-results {
+    margin-top: 15px;
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(223, 222, 222);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(223, 222, 222);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(205, 233, 255);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results td.search-result {
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.search-results th.premiere,
+table.search-results td.premiere {
+    text-align: center;
+    max-width: 90px;
+}
+
+table.search-results th.network,
+table.search-results td.network {
+    max-width: 200px;
+}
+
+table.search-results th.indexer,
+table.search-results td.indexer {
+    text-align: center;
+    max-width: 100px;
+}
+
+table.search-results td.indexer img {
+    vertical-align: -3px;
+}
+
+table.search-results input[type="radio"] {
+    margin: 4px 0 0;
 }
 
 /* =======================================================================
@@ -1119,13 +1163,6 @@ div#col-show-summary {
     margin-bottom: 15px;
 }
 
-#showSelector {
-    height: 31px;
-    display: table-cell;
-    left: 20px;
-    margin-bottom: 5px;
-}
-
 .show-info-container {
     overflow: hidden;
     display: table-cell;
@@ -1161,20 +1198,8 @@ div#col-show-summary {
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
-    .select-show-group {
-        width: 100%;
-    }
-
-    .show-selector {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .showSelector {
-        width: 100%;
     }
 
     .container-navShow {
@@ -1187,25 +1212,12 @@ div#col-show-summary {
 }
 
 @media (max-width: 340px) {
-    .select-show-group {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 265px;
     }
 }
 
 @media (max-width: 767px) {
-    #showSelector {
-        float: left;
-        width: 100%;
-    }
-
-    .select-show {
-        width: 100%;
-    }
-
     .pull-xs-left {
         float: left;
     }
@@ -1801,12 +1813,6 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
-}
-
-select#select-show {
-    display: inline-block;
-    height: 25px;
-    padding: 1px;
 }
 
 button.selectColumns {
@@ -3398,7 +3404,8 @@ pre {
 input sizing (for config pages)
 ========================================================================== */
 
-#config select {
+/* Don't style root-dirs select */
+#config select:not([size]) {
     width: auto;
     display: inline;
 }

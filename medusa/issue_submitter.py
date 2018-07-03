@@ -7,17 +7,17 @@ import locale
 import logging
 import platform
 import sys
-from builtins import object
-from builtins import str
 from datetime import datetime, timedelta
 
-from github import InputFileContent
+from github import GithubObject, InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException, UnknownObjectException
 
 from medusa import app, db
 from medusa.classes import ErrorViewer
 from medusa.github_client import authenticate, get_github_repo, token_authenticate
 from medusa.logger.adapters.style import BraceAdapter
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -60,6 +60,8 @@ class IssueSubmitter(object):
     TITLE_DIFF_RATIO_OVERRIDES = [
         # "Missing time zone for network" errors should match
         ('missing time zone for network', 1.0),
+        # "AttributeError: 'NoneType' object has no attribute" etc.
+        ("attributeerror: 'nonetype' object has no attribute", 1.0),
     ]
 
     def __init__(self):
@@ -71,9 +73,10 @@ class IssueSubmitter(object):
         """Create a private gist with log data for the specified log line."""
         log.debug('Creating gist for error: {0}', logline)
         context_loglines = logline.get_context_loglines()
-        if context_loglines:
-            content = '\n'.join([str(ll) for ll in context_loglines])
-            return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
+        content = '\n'.join([text_type(ll) for ll in context_loglines])
+        if not content:
+            return None
+        return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
 
     @staticmethod
     def create_issue_data(logline, log_url):
@@ -110,8 +113,12 @@ class IssueSubmitter(object):
         """Find similar issues in the GitHub repository."""
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
+        log.debug('Searching for issues similar to:\n{titles}', {
+            'titles': '\n'.join([line.issue_title for line in loglines])
+        })
         for issue in issues:
-            if hasattr(issue, 'pull_request') and issue.pull_request:
+            # Skip pull requests without calling GitHub for more information
+            if issue._pull_request is not GithubObject.NotSet:
                 continue
             issue_title = issue.title
             if issue_title.startswith(cls.TITLE_PREFIX):
@@ -119,19 +126,25 @@ class IssueSubmitter(object):
 
             for logline in loglines:
                 log_title = logline.issue_title
-                log.debug('Searching for issues similar to: {0}', log_title)
 
                 # Apply diff ratio overrides on first-matched basis, default = 0.9
                 diff_ratio = next((override[1] for override in cls.TITLE_DIFF_RATIO_OVERRIDES
                                    if override[0] in log_title.lower()), 0.9)
 
                 if cls.similar(log_title, issue_title, diff_ratio):
+                    log.debug(
+                        'Found issue #{number} ({issue})'
+                        ' to be similar ({ratio:.0%}) to {log}',
+                        {'number': issue.number, 'issue': issue_title, 'ratio': diff_ratio,
+                         'log': log_title}
+                    )
                     results[logline.key] = issue
 
             if len(results) >= len(loglines):
                 break
 
-        log.debug('Found {0} similar issues.', len(results))
+        log.debug('Found {similar} similar issues for {logs} log lines.',
+                  {'similar': len(results), 'logs': len(loglines)})
 
         return results
 
@@ -181,6 +194,7 @@ class IssueSubmitter(object):
         except RateLimitExceededException:
             return result(self.RATE_LIMIT)
         except (GithubException, IOError) as error:
+            log.debug('Issue submitter failed with error: {0!r}', error)
             # If the api return http status 404, authentication or permission issue(token right to create gists)
             if isinstance(error, UnknownObjectException):
                 return result(self.GITHUB_UNKNOWNOBJECTEXCEPTION)

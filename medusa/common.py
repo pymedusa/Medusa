@@ -48,7 +48,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.2.5'
+VERSION = '0.2.6'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -265,15 +265,13 @@ class Quality(object):
         """
         Return the quality from an episode filename.
 
-        If no quality is achieved it will try scene_quality regex.
-
         :param name: to parse
-        :param anime: Boolean to indicate if the show we're resolving is Anime
+        :param anime: Boolean to indicate if the show we're resolving is anime
         :param extend: boolean to extend methods to try
         :return: Quality
         """
-        # Try Scene names first
-        quality = Quality.scene_quality(name, anime)
+        # Try getting the quality from the filename
+        quality = Quality.quality_from_name(name, anime)
         if quality != Quality.UNKNOWN:
             return quality
 
@@ -284,12 +282,12 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def scene_quality(name, anime=False):
+    def quality_from_name(name, anime=False):
         """
         Return the quality from the episode filename with the regex.
 
         :param name: Episode filename to analyse
-        :param anime: Boolean to indicate if the show we're resolving is Anime
+        :param anime: Boolean to indicate if the show we're resolving is anime
         :return: Quality
         """
         from medusa.tagger.episode import EpisodeTags
@@ -310,67 +308,62 @@ class Quality(object):
             # BluRay
             if ep.bluray and (full_hd or hd_options):
                 result = Quality.FULLHDBLURAY if full_hd else Quality.HDBLURAY
-            # HD TV
-            elif not ep.bluray and (full_hd or hd_options):
+            # HDTV
+            elif full_hd or hd_options:
                 result = Quality.FULLHDTV if full_hd else Quality.HDTV
-            # SD DVD
+            # SDDVD
             elif ep.dvd:
                 result = Quality.SDDVD
-            # SD TV
+            # SDTV
             elif sd_options:
                 result = Quality.SDTV
 
             return Quality.UNKNOWN if result is None else result
 
         # Is it UHD?
-        if ep.vres in [2160, 4320] and ep.scan == 'p':
-            # BluRay
-            full_res = (ep.vres == 4320)
-            if ep.avc and ep.bluray:
-                result = Quality.UHD_4K_BLURAY if not full_res else Quality.UHD_8K_BLURAY
-            # WEB-DL
-            elif (ep.avc and ep.itunes) or ep.web:
-                result = Quality.UHD_4K_WEBDL if not full_res else Quality.UHD_8K_WEBDL
-            # HDTV
-            elif ep.avc and ep.tv == 'hd':
-                result = Quality.UHD_4K_TV if not full_res else Quality.UHD_8K_TV
+        if ep.vres in [2160, 4320]:
+            is_4320 = ep.vres == 4320
+            if ep.scan == 'p':
+                # BluRay
+                if ep.bluray:
+                    result = Quality.UHD_8K_BLURAY if is_4320 else Quality.UHD_4K_BLURAY
+                # WEB-DL
+                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                    result = Quality.UHD_8K_WEBDL if is_4320 else Quality.UHD_4K_WEBDL
+                # HDTV
+                else:
+                    result = Quality.UHD_8K_TV if is_4320 else Quality.UHD_4K_TV
 
         # Is it HD?
         elif ep.vres in [1080, 720]:
+            is_1080 = ep.vres == 1080
             if ep.scan == 'p':
                 # BluRay
-                full_res = (ep.vres == 1080)
-                if ep.avc and (ep.bluray or ep.hddvd):
-                    result = Quality.FULLHDBLURAY if full_res else Quality.HDBLURAY
+                if ep.bluray or ep.hddvd:
+                    result = Quality.FULLHDBLURAY if is_1080 else Quality.HDBLURAY
                 # WEB-DL
-                elif (ep.avc and ep.itunes) or ep.web:
-                    result = Quality.FULLHDWEBDL if full_res else Quality.HDWEBDL
+                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                    result = Quality.FULLHDWEBDL if is_1080 else Quality.HDWEBDL
+                # HDTV and MPEG2 encoded
+                elif ep.tv == 'hd' and ep.mpeg:
+                    result = Quality.RAWHDTV
                 # HDTV
-                elif ep.avc and ep.tv == 'hd':
-                    result = Quality.FULLHDTV if full_res else Quality.HDTV  # 1080 HDTV h264
-                # MPEG2 encoded
-                elif all([ep.vres == 1080, ep.tv == 'hd', ep.mpeg]):
-                    result = Quality.RAWHDTV
-                elif all([ep.vres == 720, ep.tv == 'hd', ep.mpeg]):
-                    result = Quality.RAWHDTV
-            elif (ep.res == '1080i') and ep.tv == 'hd' and (ep.mpeg or (ep.raw and ep.avc_non_free)):
+                else:
+                    result = Quality.FULLHDTV if is_1080 else Quality.HDTV
+            elif ep.scan == 'i' and ep.tv == 'hd' and (ep.mpeg or (ep.raw and ep.avc_non_free)):
                 result = Quality.RAWHDTV
         elif ep.hrws:
             result = Quality.HDTV
 
         # Is it SD?
-        elif ep.xvid or ep.avc:
-            # SD DVD
-            if ep.dvd or ep.bluray:
-                result = Quality.SDDVD
-            # SDTV
-            elif ep.res == '480p' or any([ep.tv, ep.sat, ep.web]):
-                result = Quality.SDTV
-        elif ep.dvd:
+        elif ep.dvd or ep.bluray:
             # SD DVD
             result = Quality.SDDVD
-        elif ep.tv:
-            # SD TV/HD TV
+        elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+            # This should be Quality.WEB in the future
+            result = Quality.SDTV
+        elif ep.tv or any([ep.res == '480p', ep.sat]):
+            # SDTV/HDTV
             result = Quality.SDTV
 
         return Quality.UNKNOWN if result is None else result
@@ -598,7 +591,10 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
+            if new_quality > old_quality:
+                return True, 'New quality is higher quality (and allowed). Accepting new quality'
+            else:
+                return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
             # Allowed quality should never be replaced
@@ -608,11 +604,15 @@ class Quality(object):
     def is_higher_quality(current_quality, new_quality, allowed_qualities, preferred_qualities):
         """Check is new quality is better than current quality based on allowed and preferred qualities."""
         if new_quality in preferred_qualities:
-            return new_quality > current_quality
+            if current_quality in preferred_qualities:
+                return new_quality > current_quality
+            return True
         elif new_quality in allowed_qualities:
             if current_quality in preferred_qualities:
                 return False
-            return new_quality > current_quality
+            elif current_quality in allowed_qualities:
+                return new_quality > current_quality
+            return True
 
     @staticmethod
     def wanted_quality(new_quality, allowed_qualities, preferred_qualities):

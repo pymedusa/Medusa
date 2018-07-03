@@ -30,6 +30,7 @@ class EpisodeTags(object):
             'wide': tags.widescreen,
             'aussie': tags.aussie,
             'netflix': tags.netflix,
+            'amazon': tags.amazon,
         }
 
     def _get_match_obj(self, attr, regex=None, flags=0):
@@ -297,5 +298,16 @@ class EpisodeTags(object):
         :return: an empty string if not found
         """
         attr = 'netflix'
+        match = self._get_match_obj(attr)
+        return '' if not match else match.group()
+
+    @property
+    def amazon(self):
+        """
+        Amazon tag found in name.
+
+        :return: an empty string if not found
+        """
+        attr = 'amazon'
         match = self._get_match_obj(attr)
         return '' if not match else match.group()

@@ -22,24 +22,9 @@ MEDUSA.manage.manageSearches = function() {
         const anidbExceptionDate = new Date(anidbException[0].lastRefresh * 1000).toLocaleDateString();
 
         const table = $('<ul class="simpleList"></ul>')
-            .append(
-                '<li>' +
-                '<a href="' + MEDUSA.config.anonRedirect +
-                'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
-                'Last updated medusa\'s exceptions</a> ' +
-                    cusExceptionDate
-            )
-            .append(
-                '<li>' +
-                '<a href="' + MEDUSA.config.anonRedirect +
-                'http://thexem.de">' +
-                'Last updated xem exceptions</a> ' +
-                    xemExceptionDate
-            )
-            .append(
-                '<li>Last updated anidb exceptions ' +
-                    anidbExceptionDate
-            );
+            .append('<li><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">Last updated medusa\'s exceptions</a> ' + cusExceptionDate)
+            .append('<li><a href="' + MEDUSA.config.anonRedirect + 'http://thexem.de">Last updated xem exceptions</a> ' + xemExceptionDate)
+            .append('<li>Last updated anidb exceptions ' + anidbExceptionDate);
 
         status.append(table);
         $('.forceSceneExceptionRefresh').removeClass('disabled');
@@ -71,9 +56,7 @@ MEDUSA.manage.manageSearches = function() {
             timeout: 60000
         }).then(response => {
             status[0].innerHTML = '';
-            status.append(
-                $('<span></span>').text(response.data.result)
-            );
+            status.append($('<span></span>').text(response.data.result));
 
             api.get('alias-source').then(response => {
                 updateExceptionTable(response);
@@ -92,7 +75,7 @@ MEDUSA.manage.manageSearches = function() {
     // Initially load the exception types last updates on page load.
     api.get('alias-source').then(response => {
         updateExceptionTable(response);
-    }).catch(err => {
-        log.error('Trying to get scene exceptions failed with error: ' + err);
+    }).catch(error => {
+        log.error('Trying to get scene exceptions failed with error: ' + error);
     });
 };

@@ -55,7 +55,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type, viewitems
+from six import string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -346,7 +346,7 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create hardlink of {source} at {destination}.'
@@ -399,7 +399,7 @@ def move_and_symlink_file(src_file, dest_file):
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create symlink of {source} at {destination}.'
@@ -943,12 +943,6 @@ def check_url(url):
     except Exception:
         return None
 
-
-def anon_url(*url):
-    """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    # normalize to byte
-    url = [u.encode('utf-8') if isinstance(u, text_type) else binary_type(u) for u in url]
-    return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
 
 # Encryption
 # ==========

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.logger.py."""
+import os.path
 from datetime import datetime
 
 import medusa.logger as sut
@@ -97,6 +98,7 @@ class TestStandardLoggingApi(object):
 def describe_logline(logline):
     return {
         'message': logline.message,
+        'issue_title': logline.issue_title,
         'timestamp': logline.timestamp,
         'level_name': logline.level_name,
         'thread_name': logline.thread_name,
@@ -188,6 +190,7 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
         'line': '2016-08-24 07:42:39 DEBUG    CHECKVERSION :: [7d1534c] git ls-remote --heads origin : returned successful',
         'expected': {
             'message': 'git ls-remote --heads origin : returned successful',
+            'issue_title': 'git ls-remote --heads origin : returned successful',
             'timestamp': datetime(year=2016, month=8, day=24, hour=7, minute=42, second=39),
             'level_name': 'DEBUG',
             'thread_name': 'CHECKVERSION',
@@ -201,6 +204,7 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
         'line': '2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [d4ea5af] Performing episode search for Show Name',
         'expected': {
             'message': 'Performing episode search for Show Name',
+            'issue_title': 'Performing episode search for Show Name',
             'timestamp': datetime(year=2016, month=8, day=25, hour=20, minute=12, second=3),
             'level_name': 'INFO',
             'thread_name': 'SEARCHQUEUE-MANUAL',
@@ -210,10 +214,11 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
             'traceback_lines': []
         }
     },
-    {  # p1: without hash
+    {  # p2: without hash
         'line': '2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [] Performing episode search for Show Name',
         'expected': {
             'message': 'Performing episode search for Show Name',
+            'issue_title': 'Performing episode search for Show Name',
             'timestamp': datetime(year=2016, month=8, day=25, hour=20, minute=12, second=3),
             'level_name': 'INFO',
             'thread_name': 'SEARCHQUEUE-MANUAL',
@@ -222,7 +227,38 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
             'curhash': None,
             'traceback_lines': []
         }
-    }
+    },
+    {  # p3: traceback lines (last line is empty)
+        'line': (
+            "2018-03-18 12:11:29 ERROR    Thread_17 :: [e11c71e] Exception generated: invalid literal for int() with base 10: 'false'"
+            '\nTraceback (most recent call last):'
+            '\n  File "/usr/Medusa/medusa/server/web/core/base.py", line 281, in async_call'
+            '\n    result = function(**kwargs)'
+            '\n  File "/usr/Medusa/medusa/server/web/core/file_browser.py", line 23, in index'
+            '\n    return json.dumps(list_folders(path, True, bool(int(includeFiles))))'
+            "\nValueError: invalid literal for int() with base 10: 'false'"
+            '\n'
+        ),
+        'expected': {
+            'message': "Exception generated: invalid literal for int() with base 10: 'false'",
+            'issue_title': "ValueError: invalid literal for int() with base 10: 'false'",
+            'timestamp': datetime(year=2018, month=3, day=18, hour=12, minute=11, second=29),
+            'level_name': 'ERROR',
+            'thread_name': 'Thread',
+            'thread_id': 17,
+            'extra': None,
+            'curhash': 'e11c71e',
+            'traceback_lines': [
+                'Traceback (most recent call last):',
+                '  File "/usr/Medusa/medusa/server/web/core/base.py", line 281, in async_call',
+                '    result = function(**kwargs)',
+                '  File "/usr/Medusa/medusa/server/web/core/file_browser.py", line 23, in index',
+                '    return json.dumps(list_folders(path, True, bool(int(includeFiles))))',
+                "ValueError: invalid literal for int() with base 10: 'false'",
+                ''
+            ]
+        }
+    },
 ])
 def test_from_line(p):
     # Given
@@ -340,8 +376,9 @@ def test_read_loglines__max_traceback_depth(logger):
     assert len(actual[3].traceback_lines) == 0
 
 
-def test_format_to_html(logger, read_loglines):
+def test_format_to_html(logger, read_loglines, app_config):
     # When
+    prog_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     base_url = '../base'
     try:
         1 / 0
@@ -351,7 +388,9 @@ def test_format_to_html(logger, read_loglines):
     logline = loglines[0]
 
     # When
+    app_config('PROG_DIR', prog_dir)
     actual = logline.format_to_html(base_url)
 
     # Then
     assert '<a href="../base/' in actual
+    assert '">tests' + os.path.sep + 'test_logger.py</a>' in actual

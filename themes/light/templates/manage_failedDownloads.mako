@@ -21,7 +21,8 @@ const startVue = () => {
         },
         data() {
             return {
-                header: 'Failed Downloads'
+                header: 'Failed Downloads',
+                limit: '${limit}'
             };
         }
     });
@@ -31,11 +32,11 @@ const startVue = () => {
 <%block name="content">
 <h1 class="header">{{header}}</h1>
 <div class="h2footer pull-right"><b>Limit:</b>
-    <select name="limit" id="limit" class="form-control form-control-inline input-sm">
-        <option value="100" ${'selected="selected"' if limit == '100' else ''}>100</option>
-        <option value="250" ${'selected="selected"' if limit == '250' else ''}>250</option>
-        <option value="500" ${'selected="selected"' if limit == '500' else ''}>500</option>
-        <option value="0" ${'selected="selected"' if limit == '0' else ''}>All</option>
+    <select v-model="limit" name="limit" id="limit" class="form-control form-control-inline input-sm">
+        <option value="100">100</option>
+        <option value="250">250</option>
+        <option value="500">500</option>
+        <option value="0">All</option>
     </select>
 </div>
 <table id="failedTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">

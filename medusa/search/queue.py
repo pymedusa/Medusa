@@ -495,7 +495,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
         except Exception:
             self.success = False
-            log.exception('Manual snatch failed!. For result: {name}', {'name': result.name})
+            log.exception('Manual snatch failed! For result: {name}', {'name': result.name})
             ui.notifications.message('Error while snatching selected result',
                                      'Unable to snatch the result for <i>{name}</i>'.format(name=result.name))
 

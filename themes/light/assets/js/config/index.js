@@ -12,8 +12,8 @@ MEDUSA.config.index = function() {
         }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(err => {
-            log.error(err);
+        }).catch(error => {
+            log.error(error);
         });
     });
 

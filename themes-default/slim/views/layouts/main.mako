@@ -74,20 +74,17 @@
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
@@ -122,13 +119,61 @@
         <script src="js/lib/vue-router.min.js"></script>
         <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
+        <script src="js/lib/vue-js-toggle-button.js"></script>
+        <script src="js/lib/puex.js"></script>
+        <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
+        <script src="js/notifications.js"></script>
+        <script src="js/store.js"></script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <%include file="/vue-components/language-select.mako"/>
+        <%include file="/vue-components/root-dirs.mako"/>
+        <%include file="/vue-components/backstretch.mako"/>
         <script>
+            // @TODO: Move all Vue.use to new file
+            Vue.use(window['vue-js-toggle-button'].default);
+
+            Vue.mixin({
+                created() {
+                    if (this.$root === this) {
+                        this.$options.sockets.onmessage = messageEvent => {
+                            const { store } = window;
+                            const message = JSON.parse(messageEvent.data);
+                            const { data, event } = message;
+
+                            // Show the notification to the user
+                            if (event === 'notification') {
+                                const { body, hash, type, title } = data;
+                                displayNotification(type, title, body, hash);
+                            } else if (event === 'configUpdated') {
+                                store.dispatch('updateConfig', data);
+                            } else {
+                                displayNotification('info', event, data);
+                            }
+                        };
+                    }
+                }
+            });
+
+            // @TODO: Remove this before v1.0.0
+            Vue.mixin({
+                mounted() {
+                    if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
+                        // We wait 1000ms to allow the mutations to show in vue dev-tools
+                        // Please see https://github.com/egoist/puex/issues/8
+                        setTimeout(() => {
+                            const { store } = window;
+                            store.dispatch('login');
+                            store.dispatch('getConfig');
+                        }, 1000);
+                    }
+                },
+                // Make auth and config accessible to all components
+                computed: store.mapState(['auth', 'config'])
+            })
             window.routes = [];
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
@@ -137,13 +182,15 @@
         </script>
         <%block name="scripts" />
         <script>
-            if (!window.app) {
-                console.info('Loading Vue with router since window.app is missing.');
-                const router = new vueRouter({
+            if (!window.router) {
+                window.router = new vueRouter({
                     base: document.body.getAttribute('api-root').replace('api/v2/', ''),
                     mode: 'history',
                     routes
                 });
+            }
+            if (!window.app) {
+                console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
                     el: '#vue-wrap',
                     router

@@ -45,9 +45,8 @@ import knowit
 from medusa import app
 from medusa.init.logconfig import standard_logger
 
-from requests.compat import quote
-
 from six import itervalues, string_types, text_type, viewitems
+from six.moves.urllib.parse import quote
 
 import subliminal
 
@@ -86,8 +85,14 @@ def rebuild_censored_list():
         elif value and value != '0':
             results.add(value)
 
+    def quote_unicode(value):
+        """Quote a unicode value by encoding it to bytes first."""
+        if isinstance(value, text_type):
+            return quote(value.encode(default_encoding, 'replace'))
+        return quote(value)
+
     # set of censored items and urlencoded counterparts
-    results |= {quote(item) for item in results}
+    results |= {quote_unicode(item) for item in results}
     # convert set items to unicode and typecast to list
     results = list({item.decode(default_encoding, 'replace')
                     if not isinstance(item, text_type) else item for item in results})
@@ -346,7 +351,10 @@ class LogLine(object):
     @property
     def issue_title(self):
         """Return the expected issue title for this logline."""
-        result = self.traceback_lines[-1] if self.traceback_lines else self.message
+        if self.traceback_lines:
+            result = next((line for line in reversed(self.traceback_lines) if line.strip()), self.message)
+        else:
+            result = self.message
         return result[:1000]
 
     def to_json(self):
@@ -386,7 +394,7 @@ class LogLine(object):
         :param timedelta:
         :type timedelta: datetime.timedelta
         :return:
-        :rtype: list of LogLine
+        :rtype: iterator of `LogLine`s
         """
         if not self.timestamp:
             raise ValueError('Log line does not have timestamp: {logline}'.format(logline=text_type(self)))
@@ -434,7 +442,7 @@ class LogLine(object):
         """Format logline to html."""
         results = ['<pre>', self.line]
 
-        cwd = os.getcwd() + os.path.sep
+        cwd = app.PROG_DIR + os.path.sep
         fmt = '{before}{cwd}<a href="{base_url}/{webpath}#L{line}">{relativepath}</a>{middle}{line}{after}'
         for traceback_line in self.traceback_lines or []:
             if not base_url:
