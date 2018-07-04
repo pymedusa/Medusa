@@ -53,23 +53,28 @@ Vue.component('app-link', {
             return href;
         },
         isIRC() {
+            if (!this.computedHref) return;
             return this.computedHref.startsWith('irc://');
         },
         isAbsolute() {
             const href = this.computedHref;
+            if (!href) return;
             return /^[a-z][a-z0-9+.-]*:/.test(href);
         },
         isExternal() {
             const base = this.computedBase;
             const href = this.computedHref;
+            if (!href) return;
             return !href.startsWith(base) && !href.startsWith('webcal://');
         },
         isHashPath() {
+            if (!this.computedHref) return;
             return this.computedHref.startsWith('#');
         },
         anonymisedHref() {
             const { anonRedirect } = this.config;
             const href = this.computedHref;
+            if (!href) return;
             return anonRedirect ? anonRedirect + href : href;
         },
         linkProperties() {
