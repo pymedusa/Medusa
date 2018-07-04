@@ -51,7 +51,7 @@ module.exports = {
     store, // eslint-disable-line no-undef
     computed: {
         config() {
-            return this.store.state.config;
+            return this.$store.state.config;
         }
     },
     methods: {
