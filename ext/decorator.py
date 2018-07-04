@@ -40,7 +40,7 @@ import operator
 import itertools
 import collections
 
-__version__ = '4.2.1'
+__version__ = '4.3.0'
 
 if sys.version >= '3':
     from inspect import getfullargspec
@@ -50,11 +50,11 @@ if sys.version >= '3':
 else:
     FullArgSpec = collections.namedtuple(
         'FullArgSpec', 'args varargs varkw defaults '
-        'kwonlyargs kwonlydefaults')
+        'kwonlyargs kwonlydefaults annotations')
 
     def getfullargspec(f):
         "A quick and dirty replacement for getfullargspec for Python 2.X"
-        return FullArgSpec._make(inspect.getargspec(f) + ([], None))
+        return FullArgSpec._make(inspect.getargspec(f) + ([], None, {}))
 
     def get_init(cls):
         return cls.__init__.__func__
@@ -65,16 +65,6 @@ except AttributeError:
     # let's assume there are no coroutine functions in old Python
     def iscoroutinefunction(f):
         return False
-
-# getargspec has been deprecated in Python 3.5
-ArgSpec = collections.namedtuple(
-    'ArgSpec', 'args varargs varkw defaults')
-
-
-def getargspec(f):
-    """A replacement for inspect.getargspec"""
-    spec = getfullargspec(f)
-    return ArgSpec(spec.args, spec.varargs, spec.varkw, spec.defaults)
 
 
 DEF = re.compile(r'\s*def\s*([_\w][_\w\d]*)\s*\(')
@@ -187,7 +177,7 @@ class FunctionMaker(object):
         try:
             code = compile(src, filename, 'single')
             exec(code, evaldict)
-        except:
+        except Exception:
             print('Error in generated code:', file=sys.stderr)
             print(src, file=sys.stderr)
             raise
@@ -271,13 +261,14 @@ def decorator(caller, _func=None):
         doc = caller.__call__.__doc__
     evaldict = dict(_call=caller, _decorate_=decorate)
     dec = FunctionMaker.create(
-        '%s(func, %s)' % (name, defaultargs),
+        '%s(%s func)' % (name, defaultargs),
         'if func is None: return lambda func:  _decorate_(func, _call, (%s))\n'
         'return _decorate_(func, _call, (%s))' % (defaultargs, defaultargs),
         evaldict, doc=doc, module=caller.__module__, __wrapped__=caller)
     if defaults:
-        dec.__defaults__ = (None,) + defaults
+        dec.__defaults__ = defaults + (None,)
     return dec
+
 
 # ####################### contextmanager ####################### #
 
