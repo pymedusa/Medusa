@@ -11,8 +11,7 @@
     </component>
 </script>
 <script>
-Vue.component({
-    name: 'app-link',
+Vue.component('app-link', {
     template: '#app-link-template',
     store,
     props: {
