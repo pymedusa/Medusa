@@ -2,6 +2,7 @@
  Status  |  Package  |  Version / Commit  | Usage | Notes
 :------: | :-------: | :----------------: | :---- | :----
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | -
+:: | `attr` | [18.1.0](https://pypi.org/project/attr/18.1.0/) | `imdbpie` | -
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
 :: | `beautifulsoup4` | [4.6.0](https://pypi.org/project/beautifulsoup4/4.6.0/) | **`medusa`**, `subliminal` | Module: `bs4`
@@ -27,7 +28,7 @@
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 :: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2` | -
 :: | `idna` | [2.6](https://pypi.org/project/idna/2.6/) | `requests` | -
-:: | `imdbpie` | [5.4.5](https://pypi.org/project/imdbpie/5.4.5/) | **`medusa`** | -
+:: | `imdbpie` | [5.6.1](https://pypi.org/project/imdbpie/5.6.1/) | **`medusa`** | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.1](https://pypi.org/project/jsonrpclib-pelix/0.3.1/) | **`medusa`** | Module: `jsonrpclib`
 :: | `PyJWT` | [1.6.1](https://pypi.org/project/pyjwt/1.6.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | Module: `jwt`
