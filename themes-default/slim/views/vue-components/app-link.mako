@@ -31,7 +31,9 @@ Vue.component('app-link', {
             return this.$store.state.config;
         },
         indexerName() {
+            const { config, indexerId } = this;
             const { indexers } = config.indexers.config;
+            if (!indexerId) return undefined;
             // Returns `undefined` if not found
             return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
