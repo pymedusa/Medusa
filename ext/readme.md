@@ -13,7 +13,7 @@
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2`, `vcrpy`(?) | Markers: `python_version < '3.5'`
-:: | <code><b>decorator</b>.py</code> | [4.2.1](https://pypi.org/project/decorator/4.2.1/) | `validators` | -
+:: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `validators` | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | -
 :: | `dogpile.cache` | [0.6.6](https://pypi.org/project/dogpile.cache/0.6.6/) | **`medusa`**, `subliminal` | -
@@ -58,7 +58,7 @@
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 :: | `urllib3` | [1.22](https://pypi.org/project/urllib3/1.22/) | `requests`, `CacheControl` | -
-:: | `validators` | [0.12.1](https://pypi.org/project/validators/0.12.1/) | **`medusa`** | -
+:: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
 :: | `webencodings` | [1.0.1](https://pypi.org/project/webencodings/1.0.1/) | `html5lib` | -
 :warning: | `wheel` | [0.30.0](https://pypi.org/project/wheel/0.30.0/) | `pbr`(?) | -
 :: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit` | Module: `yaml`
