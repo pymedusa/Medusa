@@ -78,7 +78,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         return self._ok(data=data)
 
-    def patch(self, series_slug, episode_slug, path_param):
+    def patch(self, series_slug, episode_slug=None, path_param=None):
         """Patch episode."""
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
@@ -88,14 +88,48 @@ class EpisodeHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        request_data = json_decode(self.request.body)
+        data = json_decode(self.request.body)
 
-        if episode_slug:
-            request_data = {episode_slug: request_data}
+        # Multi-patch request
+        if not episode_slug:
+            return self._patch_multi(series, data)
 
+        episode_number = EpisodeNumber.from_slug(episode_slug)
+        if not episode_number:
+            return self._bad_request('Invalid episode number')
+
+        episode = Episode.find_by_series_and_episode(series, episode_number)
+        if not episode:
+            return self._not_found('Episode not found')
+
+        accepted = {}
+        ignored = {}
+        patches = {
+            'status': IntegerField(episode, 'status'),
+            'quality': IntegerField(episode, 'quality'),
+        }
+
+        for key, value in iter_nested_items(data):
+            patch_field = patches.get(key)
+            if patch_field and patch_field.patch(series, value):
+                set_nested_value(accepted, key, value)
+            else:
+                set_nested_value(ignored, key, value)
+
+        # Save patched attributes in db.
+        series.save_to_db()
+
+        if ignored:
+            log.warning('Episode patch ignored {items!r}', {'items': ignored})
+
+        self._ok(data=accepted)
+
+    def _patch_multi(self, series, request_data):
+        """Patch multiple episodes."""
         statuses = {}
         accepted = {}
         ignored = {}
+
         for slug, data in iteritems(request_data):
             episode_number = EpisodeNumber.from_slug(slug)
             if not episode_number:
@@ -124,13 +158,10 @@ class EpisodeHandler(BaseRequestHandler):
             # Save patched attributes in db.
             episode.save_to_db()
 
-            statuses[slug] = {'status': 200}
-
             if ignored[slug]:
                 log.warning('Episode patch for {episode} ignored {items!r}',
                             {'episode': slug, 'items': ignored[slug]})
 
-            if episode_slug:
-                return self._ok(data=accepted[slug])
+            statuses[slug] = {'status': 200}
 
         self._multi_status(data=statuses)
