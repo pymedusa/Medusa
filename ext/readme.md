@@ -52,7 +52,6 @@
 :: | `requests` | [2.18.4](https://pypi.org/project/requests/2.18.4/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal` | -
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators`, `vcrpy`(?) | -
-:warning: | `SQLAlchemy` | [1.2.5](https://pypi.org/project/SQLAlchemy/1.2.5/) | Unused | Module: `sqlalchemy`
 :: | `stevedore` | [1.28.0](https://pypi.org/project/stevedore/1.28.0/) | `subliminal` | -
 :: | `subliminal` | [879c0c8](https://github.com/Diaoul/subliminal/tree/879c0c8d18618e32ad466bb63bd939edb268bc60) | **`medusa`** | -
 :: | `tornado` | [5.0.2](https://pypi.org/project/tornado/5.0.2/) | **`medusa`**, `tornroutes` | -
