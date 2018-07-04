@@ -84,6 +84,14 @@ class Team(github.GithubObject.CompletableGithubObject):
         return self._name.value
 
     @property
+    def description(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._description)
+        return self._description.value
+
+    @property
     def permission(self):
         """
         :type: string
@@ -131,8 +139,19 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._organization)
         return self._organization.value
 
+    @property
+    def privacy(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._privacy)
+        return self._privacy.value
+
     def add_to_members(self, member):
         """
+        This API call is deprecated. Use `add_membership` instead.
+        https://developer.github.com/v3/teams/members/#deprecation-notice-1
+
         :calls: `PUT /teams/:id/members/:user <http://developer.github.com/v3/orgs/teams>`_
         :param member: :class:`github.NamedUser.NamedUser`
         :rtype: None
@@ -207,20 +226,24 @@ class Team(github.GithubObject.CompletableGithubObject):
             self.url
         )
 
-    def edit(self, name, permission=github.GithubObject.NotSet):
+    def edit(self, name, permission=github.GithubObject.NotSet, privacy=github.GithubObject.NotSet):
         """
         :calls: `PATCH /teams/:id <http://developer.github.com/v3/orgs/teams>`_
         :param name: string
         :param permission: string
+        :param privacy: string
         :rtype: None
         """
         assert isinstance(name, (str, unicode)), name
         assert permission is github.GithubObject.NotSet or isinstance(permission, (str, unicode)), permission
+        assert privacy is github.GithubObject.NotSet or isinstance(privacy, (str, unicode)), privacy
         post_parameters = {
             "name": name,
         }
         if permission is not github.GithubObject.NotSet:
             post_parameters["permission"] = permission
+        if privacy is not github.GithubObject.NotSet:
+            post_parameters["privacy"] = privacy
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
             self.url,
@@ -284,8 +307,23 @@ class Team(github.GithubObject.CompletableGithubObject):
         )
         return status == 204
 
+    def remove_membership(self, member):
+        """
+        :calls: `DELETE /teams/:team_id/memberships/:username <https://developer.github.com/v3/teams/members/#remove-team-membership>`
+        :param member:
+        :return:
+        """
+        assert isinstance(member, github.NamedUser.NamedUser), member
+        headers, data = self._requester.requestJsonAndCheck(
+            "DELETE",
+            self.url + "/memberships/" + member._identity
+        )
+
     def remove_from_members(self, member):
         """
+        This API call is deprecated. Use `remove_membership` instead:
+        https://developer.github.com/v3/teams/members/#deprecation-notice-2
+
         :calls: `DELETE /teams/:id/members/:user <http://developer.github.com/v3/orgs/teams>`_
         :param member: :class:`github.NamedUser.NamedUser`
         :rtype: None
@@ -317,12 +355,14 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._members_count = github.GithubObject.NotSet
         self._members_url = github.GithubObject.NotSet
         self._name = github.GithubObject.NotSet
+        self._description = github.GithubObject.NotSet
         self._permission = github.GithubObject.NotSet
         self._repos_count = github.GithubObject.NotSet
         self._repositories_url = github.GithubObject.NotSet
         self._slug = github.GithubObject.NotSet
         self._url = github.GithubObject.NotSet
         self._organization = github.GithubObject.NotSet
+        self._privacy = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
         if "id" in attributes:  # pragma no branch
@@ -333,6 +373,8 @@ class Team(github.GithubObject.CompletableGithubObject):
             self._members_url = self._makeStringAttribute(attributes["members_url"])
         if "name" in attributes:  # pragma no branch
             self._name = self._makeStringAttribute(attributes["name"])
+        if "description" in attributes:  # pragma no branch
+            self._description = self._makeStringAttribute(attributes["description"])
         if "permission" in attributes:  # pragma no branch
             self._permission = self._makeStringAttribute(attributes["permission"])
         if "repos_count" in attributes:  # pragma no branch
@@ -345,3 +387,5 @@ class Team(github.GithubObject.CompletableGithubObject):
             self._url = self._makeStringAttribute(attributes["url"])
         if "organization" in attributes:  # pragma no branch
             self._organization = self._makeClassAttribute(github.Organization.Organization, attributes["organization"])
+        if "privacy" in attributes:  # pragma no branch
+            self._privacy = self._makeStringAttribute(attributes["privacy"])

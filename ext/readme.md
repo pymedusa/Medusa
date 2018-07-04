@@ -21,7 +21,7 @@
 :warning: | `funcsigs` | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `mock`(?) | -
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, ????? | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.38](https://pypi.org/project/PyGithub/1.38/) | **`medusa`** | Module: `github`
+:: | `PyGithub` | [1.40](https://pypi.org/project/PyGithub/1.40/) | **`medusa`** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 :: | `guessit` | [2.1.4](https://pypi.org/project/guessit/2.1.4/) | **`medusa`**, `subliminal` | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
@@ -48,7 +48,7 @@
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 :: | `rebulk` | [0.9.0](https://pypi.org/project/rebulk/0.9.0/) | **`medusa`**, `guessit` | -
-:: | `requests` | [2.18.4](https://pypi.org/project/requests/2.18.4/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal` | -
+:: | `requests` | [2.18.4](https://pypi.org/project/requests/2.18.4/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub` | -
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 :: | `stevedore` | [1.28.0](https://pypi.org/project/stevedore/1.28.0/) | `subliminal` | -

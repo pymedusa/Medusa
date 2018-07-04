@@ -242,6 +242,17 @@ class Issue(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._user)
         return self._user.value
 
+    def as_pull_request(self):
+        """
+        :calls: `GET /repos/:owner/:repo/pulls/:number <http://developer.github.com/v3/pulls>`_
+        :rtype: :class:`github.PullRequest.PullRequest`
+        """
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            "/pulls/".join(self.url.rsplit("/issues/", 1))
+        )
+        return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
+
     def add_to_assignees(self, *assignees):
         """
         :calls: `POST /repos/:owner/:repo/issues/:number/assignees <https://developer.github.com/v3/issues/assignees>`_
@@ -430,7 +441,7 @@ class Issue(github.GithubObject.CompletableGithubObject):
     def set_labels(self, *labels):
         """
         :calls: `PUT /repos/:owner/:repo/issues/:number/labels <http://developer.github.com/v3/issues/labels>`_
-        :param label: :class:`github.Label.Label`
+        :param labels: list of :class:`github.Label.Label` or strings
         :rtype: None
         """
         assert all(isinstance(element, (github.Label.Label, str, unicode)) for element in labels), labels
@@ -443,7 +454,7 @@ class Issue(github.GithubObject.CompletableGithubObject):
 
     def get_reactions(self):
         """
-        :calls: `GET /repos/:owner/:repo/issues/:number/reactions <https://developer.github.com/v3/reactions/#list-reactions-for-an-issue>`
+        :calls: `GET /repos/:owner/:repo/issues/:number/reactions <https://developer.github.com/v3/reactions/#list-reactions-for-an-issue>`_
         :return: :class: :class:`github.PaginatedList.PaginatedList` of :class:`github.Reaction.Reaction`
         """
         return github.PaginatedList.PaginatedList(
