@@ -174,6 +174,19 @@ def test_create_gist(logger, read_loglines, github):
     assert line in actual.files[filename]
 
 
+def test_create_gist__logline_not_found(github):
+    """If the log line is very old and can't be found in the logs, a gist can not be created."""
+    # Given
+    logline = LogLine.from_line('2016-08-24 07:42:39 ERROR    CHECKVERSION :: [7d1534c] Very Old Log Message')
+    assert logline is not None
+
+    # When
+    actual = sut.create_gist(github, logline)
+
+    # Then
+    assert actual is None
+
+
 def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, create_github_issue, caplog):
     # Given
     lines = {

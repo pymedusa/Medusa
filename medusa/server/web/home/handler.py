@@ -1006,13 +1006,12 @@ class Home(WebRoot):
             title=series_obj.name, controller='home', action='displayShow',
         )
 
-    def pickManualSearch(self, provider=None, rowid=None, manual_search_type='episode'):
+    def pickManualSearch(self, provider=None, rowid=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
         @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
-        @param manual_search_type: Episode or Season search
 
         @return: A json with a {'success': true} or false.
         """
@@ -1057,10 +1056,11 @@ class Home(WebRoot):
         # Single-episode: |1|
         # Season pack: || so we need to get all episodes from season and create all ep objects
         ep_objs = []
-        if manual_search_type == 'episode':
-            for episode in cached_result[b'episodes'].strip('|').split('|'):
+        result_episodes = cached_result[b'episodes'].strip('|')
+        if result_episodes:
+            for episode in result_episodes.split('|'):
                 ep_objs.append(series_obj.get_episode(int(cached_result[b'season']), int(episode)))
-        elif manual_search_type == 'season':
+        else:
             ep_objs.extend(series_obj.get_all_episodes([int(cached_result[b'season'])]))
 
         # Create the queue item

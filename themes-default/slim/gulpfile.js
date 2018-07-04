@@ -96,7 +96,7 @@ const lintFile = file => {
 const lint = () => {
     return gulp
         .src([
-            'static/js/**/*.js',
+            'static/js/**/*.{js,vue}',
             '!static/js/lib/**',
             '!static/js/*.min.js',
             '!static/js/vender.js'
@@ -130,7 +130,7 @@ const watch = () => {
 
     // Js Changes
     gulp.watch([
-        'static/js/**/*.js',
+        'static/js/**/*.{js,vue}',
         '!static/js/lib/**',
         '!static/js/*.min.js',
         '!static/js/vender.js'

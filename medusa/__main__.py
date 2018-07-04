@@ -328,6 +328,7 @@ class Application(object):
 
         # Initialize all available themes
         app.AVAILABLE_THEMES = read_themes()
+        app.DATA_ROOT = os.path.join(app.PROG_DIR, 'themes')
 
         # Load the config and publish it to the application package
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
@@ -374,7 +375,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'themes'),
+            'data_root': app.DATA_ROOT,
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,

@@ -48,7 +48,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.2.5'
+VERSION = '0.2.6'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -591,7 +591,10 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
+            if new_quality > old_quality:
+                return True, 'New quality is higher quality (and allowed). Accepting new quality'
+            else:
+                return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
             # Allowed quality should never be replaced

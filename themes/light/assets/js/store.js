@@ -63,7 +63,7 @@ const store = new Puex({
         socket: {
             isConnected: false,
             // Current message
-            message: '',
+            message: {},
             // Delivered messages for this session
             messages: [],
             reconnectError: false
@@ -348,24 +348,18 @@ const store = new Puex({
         // Default handler called for all websocket methods
         [SOCKET_ONMESSAGE](state, message) {
             const { data, event } = message;
-            const { body, hash, type, title } = data;
 
             // Set the current message
             state.socket.message = message;
 
-            // Show the notification to the user
             if (event === 'notification') {
-                displayNotification(type, title, body, hash);
-            } else {
-                displayNotification('info', '', message);
-            }
-
-            // Save it so we can look it up later
-            const existingMessage = state.socket.messages.filter(message => message.hash === hash);
-            if (existingMessage.length === 1) {
-                state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
-            } else {
-                state.socket.messages.push(message);
+                // Save it so we can look it up later
+                const existingMessage = state.socket.messages.filter(message => message.hash === data.hash);
+                if (existingMessage.length === 1) {
+                    state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
+                } else {
+                    state.socket.messages.push(message);
+                }
             }
         },
         // Mutations for websocket reconnect methods
@@ -442,12 +436,13 @@ const store = new Puex({
             });
         },
         setConfig(context, { section, config }) {
-            const { dispatch } = context;
-
             if (section !== 'main') {
                 return;
             }
-            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+            return api.patch('config/' + section, config);
+        },
+        updateConfig(context, { section, config }) {
+            return store.commit(ADD_CONFIG, { section, config });
         },
         getShow(context, { indexer, id }) {
             const { commit } = context;
@@ -478,7 +473,6 @@ const store = new Puex({
                 layout: {
                     [page]: layout
                 }
-            // }).then(setTimeout(() => dispatch('getConfig'), 500));
             // For now we reload the page since the layouts use python still
             }).then(setTimeout(() => location.reload(), 500));
         }

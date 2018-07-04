@@ -394,7 +394,7 @@ class LogLine(object):
         :param timedelta:
         :type timedelta: datetime.timedelta
         :return:
-        :rtype: list of LogLine
+        :rtype: iterator of `LogLine`s
         """
         if not self.timestamp:
             raise ValueError('Log line does not have timestamp: {logline}'.format(logline=text_type(self)))
