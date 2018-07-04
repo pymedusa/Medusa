@@ -9,7 +9,7 @@ from medusa.server.api.v2.base import (
     BaseRequestHandler,
     IntegerField,
     iter_nested_items,
-    set_nested_value
+    set_nested_value,
 )
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -159,8 +159,10 @@ class EpisodeHandler(BaseRequestHandler):
             episode.save_to_db()
 
             if ignored[slug]:
-                log.warning('Episode patch for {episode} ignored {items!r}',
-                            {'episode': slug, 'items': ignored[slug]})
+                log.warning(
+                    'Episode patch for {episode} ignored {items!r}',
+                    {'episode': slug, 'items': ignored[slug]},
+                )
 
             statuses[slug] = {'status': 200}
 
