@@ -247,6 +247,23 @@ paths:
           x-request:
             path-params:
               seriesid: tvdb999999999
+    patch:
+      summary: Partial update episodes
+      description: Partial update episodes
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - name: season
+          in: query
+          required: false
+          description: The episode season
+          type: integer
+          format: int32
+      responses:
+        207:
+          description: Response with the status of the single patches
+          x-request:
+            body: {"s01e02": {"status": 2, "quality": 4}, "s01e03": {"status": 4, "quality": 64}}
   /series/{seriesid}/episodes/{id}:
     get:
       summary: Return a specific episode from a given series
@@ -272,6 +289,35 @@ paths:
           $ref: '#/responses/error'
           description: Series or episode not found
           x-request:
+            path-params:
+              id: e999
+    patch:
+      summary: Update a specific episode from a given series
+      description: Update a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+      responses:
+        200:
+          description: Response with only the updated fields
+          x-request:
+            body: {"status": 2, "quality": 4}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid episode id
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: abc
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
             path-params:
               id: e999
   /series/{seriesid}/episodes/{id}/{field}:
