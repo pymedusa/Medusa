@@ -26,7 +26,7 @@
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 :: | `guessit` | [2.1.4](https://pypi.org/project/guessit/2.1.4/) | **`medusa`**, `subliminal` | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
-:: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2`, `vcrpy`(?) | -
+:: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2` | -
 :: | `idna` | [2.6](https://pypi.org/project/idna/2.6/) | `requests` | -
 :: | `imdbpie` | [5.4.5](https://pypi.org/project/imdbpie/5.4.5/) | **`medusa`** | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
@@ -51,16 +51,14 @@
 :: | `rebulk` | [0.9.0](https://pypi.org/project/rebulk/0.9.0/) | **`medusa`**, `guessit` | -
 :: | `requests` | [2.18.4](https://pypi.org/project/requests/2.18.4/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal` | -
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
-:: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators`, `vcrpy`(?) | -
+:: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 :: | `stevedore` | [1.28.0](https://pypi.org/project/stevedore/1.28.0/) | `subliminal` | -
 :: | `subliminal` | [879c0c8](https://github.com/Diaoul/subliminal/tree/879c0c8d18618e32ad466bb63bd939edb268bc60) | **`medusa`** | -
 :: | `tornado` | [5.0.2](https://pypi.org/project/tornado/5.0.2/) | **`medusa`**, `tornroutes` | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
-:: | `urllib3` | [1.22](https://pypi.org/project/urllib3/1.22/) | `requests`, `CacheControl`, `vcrpy`(?) | -
+:: | `urllib3` | [1.22](https://pypi.org/project/urllib3/1.22/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.1](https://pypi.org/project/validators/0.12.1/) | **`medusa`** | -
-:warning: | `vcrpy` | [1.11.1](https://pypi.org/project/vcrpy/1.11.1/) | Tests only | Module: `vcr`
 :: | `webencodings` | [1.0.1](https://pypi.org/project/webencodings/1.0.1/) | `html5lib` | -
 :warning: | `wheel` | [0.30.0](https://pypi.org/project/wheel/0.30.0/) | `pbr`(?) | -
-:warning: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `vcrpy`(?) | -
-:: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit`, `vcrpy`(?) | Module: `yaml`
+:: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit` | Module: `yaml`
