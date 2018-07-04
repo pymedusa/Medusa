@@ -32,15 +32,9 @@ Vue.component({
             return this.$store.state.config;
         },
         indexerName() {
-            const { indexerId, config } = this;
-            if (!indexerId) {
-                return '';
-            }
-            return Object.keys(config.indexers).filter(indexer => {
-                if (config.indexers[indexer].id === parseInt(indexerId, 10)) {
-                    return config.indexers[indexer].name;
-                }
-            })[0];
+            const { indexers } = config.indexers.config;
+            // Returns `undefined` if not found
+            return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
         computedBase() {
             // Return prop before HTML element to allow tests to mock
