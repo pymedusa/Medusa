@@ -111,13 +111,13 @@ class EpisodeHandler(BaseRequestHandler):
 
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
-            if patch_field and patch_field.patch(series, value):
+            if patch_field and patch_field.patch(episode, value):
                 set_nested_value(accepted, key, value)
             else:
                 set_nested_value(ignored, key, value)
 
         # Save patched attributes in db.
-        series.save_to_db()
+        episode.save_to_db()
 
         if ignored:
             log.warning('Episode patch ignored {items!r}', {'items': ignored})
