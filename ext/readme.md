@@ -7,7 +7,7 @@
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
 :: | `beautifulsoup4` | [4.6.0](https://pypi.org/project/beautifulsoup4/4.6.0/) | **`medusa`**, `subliminal` | Module: `bs4`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie`, `vcrpy`(?) | -
-:: | `CacheControl` | [0.12.4](https://pypi.org/project/CacheControl/0.12.4/) | **`medusa`** | Module: `cachecontrol`
+:: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 :: | `certifi` | [2018.04.16](https://pypi.org/project/certifi/2018.04.16/) | **`medusa`**, `traktor`, `requests` | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
