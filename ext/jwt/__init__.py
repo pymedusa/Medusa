@@ -10,10 +10,10 @@ http://self-issued.info/docs/draft-jones-json-web-token-01.html
 
 
 __title__ = 'pyjwt'
-__version__ = '1.6.1'
+__version__ = '1.6.4'
 __author__ = 'José Padilla'
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2015 José Padilla'
+__copyright__ = 'Copyright 2015-2018 José Padilla'
 
 
 from .api_jwt import (
@@ -27,4 +27,5 @@ from .exceptions import (
     InvalidIssuedAtError, InvalidIssuerError, ExpiredSignature,
     InvalidAudience, InvalidIssuer, MissingRequiredClaimError,
     InvalidSignatureError,
+    PyJWTError,
 )
