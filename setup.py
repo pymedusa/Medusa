@@ -49,6 +49,7 @@ setup(
         'pytest-flake8==0.9.1',
         'pytest-tornado5',
         'PyYAML<4',
+        'vcrpy',
         'mock',
     ],
     extras_require={
