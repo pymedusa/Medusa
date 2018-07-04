@@ -10,6 +10,7 @@ import sys
 from medusa import (
     app,
     common,
+    config,
     db,
     ws,
 )
@@ -37,6 +38,11 @@ def layout_schedule_post_processor(v):
     """Calendar layout should sort by date."""
     if v == 'calendar':
         app.COMING_EPS_SORT = 'date'
+
+
+def theme_name_setter(object, name, value):
+    """Hot-swap theme."""
+    config.change_theme(value)
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -100,7 +106,7 @@ class ConfigHandler(BaseRequestHandler):
         'layout.show.allSeasons': BooleanField(app, 'DISPLAY_ALL_SEASONS'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
-        'theme.name': StringField(app, 'THEME_NAME'),
+        'theme.name': StringField(app, 'THEME_NAME', setter=theme_name_setter),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),

@@ -201,8 +201,8 @@ class AppWebServer(threading.Thread):
         # Static File Handlers
         self.app.add_handlers('.*$', [
             # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['theme_path']), StaticFileHandler,
-             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img/ico/favicon.ico')}),
+            (r'{base}/favicon\.ico()'.format(base=self.options['theme_path']), StaticFileHandler,
+             {'path': os.path.join(self.options['theme_data_root'], 'assets', 'img', 'ico', 'favicon.ico')}),
 
             # images
             (r'{base}/images/(.*)'.format(base=self.options['theme_path']), StaticFileHandler,
@@ -236,6 +236,10 @@ class AppWebServer(threading.Thread):
             (r'{base}/vue/?.*()'.format(base=self.options['theme_path']), AuthenticatedStaticFileHandler,
              {'path': os.path.join(self.options['theme_data_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
+
+        # Used for hot-swapping themes
+        # This is the 2nd rule from the end, because the last one is always `self.app.wildcard_router`
+        self.app.static_file_handlers = self.app.default_router.rules[-2]
 
         # API v1 handlers
         self.app.add_handlers('.*$', [
