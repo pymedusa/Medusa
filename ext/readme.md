@@ -8,7 +8,7 @@
 :: | `beautifulsoup4` | [4.6.0](https://pypi.org/project/beautifulsoup4/4.6.0/) | **`medusa`**, `subliminal` | Module: `bs4`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie`, `vcrpy`(?) | -
 :: | `CacheControl` | [0.12.4](https://pypi.org/project/CacheControl/0.12.4/) | **`medusa`** | Module: `cachecontrol`
-:: | `certifi` | [2018.01.18](https://pypi.org/project/certifi/2018.01.18/) | **`medusa`**, `traktor`, `requests` | -
+:: | `certifi` | [2018.04.16](https://pypi.org/project/certifi/2018.04.16/) | **`medusa`**, `traktor`, `requests` | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
@@ -27,7 +27,7 @@
 :: | `guessit` | [2.1.4](https://pypi.org/project/guessit/2.1.4/) | **`medusa`**, `subliminal` | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 :: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2` | -
-:: | `idna` | [2.6](https://pypi.org/project/idna/2.6/) | `requests` | -
+:: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | -
 :: | `imdbpie` | [5.6.1](https://pypi.org/project/imdbpie/5.6.1/) | **`medusa`** | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.1](https://pypi.org/project/jsonrpclib-pelix/0.3.1/) | **`medusa`** | Module: `jsonrpclib`
@@ -49,7 +49,7 @@
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 :: | `rebulk` | [0.9.0](https://pypi.org/project/rebulk/0.9.0/) | **`medusa`**, `guessit` | -
-:: | `requests` | [2.18.4](https://pypi.org/project/requests/2.18.4/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub` | -
+:: | `requests` | [2.19.1](https://pypi.org/project/requests/2.19.1/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub` | -
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 :: | `stevedore` | [1.28.0](https://pypi.org/project/stevedore/1.28.0/) | `subliminal` | -
@@ -57,7 +57,7 @@
 :: | `tornado` | [5.0.2](https://pypi.org/project/tornado/5.0.2/) | **`medusa`**, `tornroutes` | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
-:: | `urllib3` | [1.22](https://pypi.org/project/urllib3/1.22/) | `requests`, `CacheControl` | -
+:: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
 :: | `webencodings` | [1.0.1](https://pypi.org/project/webencodings/1.0.1/) | `html5lib` | -
 :warning: | `wheel` | [0.30.0](https://pypi.org/project/wheel/0.30.0/) | `pbr`(?) | -
