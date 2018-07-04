@@ -9,7 +9,6 @@
 :: | `CacheControl` | [0.12.4](https://pypi.org/project/CacheControl/0.12.4/) | **`medusa`** | Module: `cachecontrol`
 :: | `certifi` | [2018.01.18](https://pypi.org/project/certifi/2018.01.18/) | **`medusa`**, `traktor`, `requests` | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
-:warning: | `click` | [6.7](https://pypi.org/project/click/6.7/) | `subliminal` (cli only) | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2`, `vcrpy`(?) | Markers: `python_version < '3.5'`
