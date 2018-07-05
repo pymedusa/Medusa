@@ -1,4 +1,4 @@
-<script type="text/x-template" id="app-link-template">
+<template>
     <component
         :is="linkProperties.is"
         :to="linkProperties.to"
@@ -9,11 +9,10 @@
     >
         <slot></slot>
     </component>
-</script>
+</template>
 <script>
-Vue.component('app-link', {
-    template: '#app-link-template',
-    store,
+module.exports = {
+    store, // eslint-disable-line no-undef
     props: {
         to: [String, Object],
         href: String,
@@ -33,7 +32,9 @@ Vue.component('app-link', {
         indexerName() {
             const { config, indexerId } = this;
             const { indexers } = config.indexers.config;
-            if (!indexerId) return undefined;
+            if (!indexerId) {
+                return undefined;
+            }
             // Returns `undefined` if not found
             return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
@@ -53,32 +54,42 @@ Vue.component('app-link', {
             return href;
         },
         isIRC() {
-            if (!this.computedHref) return;
+            if (!this.computedHref) {
+                return;
+            }
             return this.computedHref.startsWith('irc://');
         },
         isAbsolute() {
             const href = this.computedHref;
-            if (!href) return;
+            if (!href) {
+                return;
+            }
             return /^[a-z][a-z0-9+.-]*:/.test(href);
         },
         isExternal() {
             const base = this.computedBase;
             const href = this.computedHref;
-            if (!href) return;
+            if (!href) {
+                return;
+            }
             return !href.startsWith(base) && !href.startsWith('webcal://');
         },
         isHashPath() {
-            if (!this.computedHref) return;
+            if (!this.computedHref) {
+                return;
+            }
             return this.computedHref.startsWith('#');
         },
         anonymisedHref() {
             const { anonRedirect } = this.config;
             const href = this.computedHref;
-            if (!href) return;
+            if (!href) {
+                return;
+            }
             return anonRedirect ? anonRedirect + href : href;
         },
         linkProperties() {
-            const { to, isIRC, isAbsolute, isExternal, isHashPath, isAnonymised, anonymisedHref } = this;
+            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref } = this;
             const base = this.computedBase;
             const href = this.computedHref;
 
@@ -127,7 +138,7 @@ Vue.component('app-link', {
             };
         }
     }
-});
+};
 </script>
 <style>
 /* @NOTE: This fixes the header blocking elements when using a hash link */
