@@ -1,38 +1,36 @@
 import test from 'ava';
 import Puex from 'puex';
-import { mount } from '@vue/test-utils';
+import { createLocalVue, mount } from '@vue/test-utils';
+import fixtures from '../__fixtures__/app-link';
 
 // Needs to be required otherwise nyc won't see it
 const AppLink = require('../../static/js/templates/app-link.vue');
 
 test.beforeEach(t => {
+    t.context.localVue = createLocalVue();
+    t.context.localVue.use(Puex);
+
+    const { state } = fixtures;
+    t.context.state = state;
+    t.context.store = new Puex({ state });
     t.context.base = 'http://localhost:8081/';
-    t.context.store = new Puex({
-        state: {
-            config: {
-                anonRedirect: null
-            }
-        }
-    });
 });
 
 test('renders external link', t => {
-    const { base, store } = t.context;
-    const computed = {
-        config() {
-            return {
-                anonRedirect: ''
-            };
-        }
-    };
+    const { base, localVue, store, state } = t.context;
     const wrapper = mount(AppLink, {
+        localVue,
+        store,
         propsData: {
             base,
             href: 'https://google.com'
         },
-        mocks: {
-            store,
-            computed
+        computed: {
+            config() {
+                return Object.assign(state.config, {
+                    anonRedirect: ''
+                });
+            }
         }
     });
 
@@ -43,23 +41,21 @@ test('renders external link', t => {
 });
 
 test('renders anonymised external link', t => {
-    const { base, store } = t.context;
-    const computed = {
-        config() {
-            return {
-                anonRedirect: 'https://anon-redirect.tld/?url='
-            };
-        }
-    };
+    const { base, localVue, store, state } = t.context;
     const wrapper = mount(AppLink, {
+        localVue,
+        store,
         propsData: {
             base,
             href: 'https://google.com'
         },
-        mocks: {
-            store
-        },
-        computed
+        computed: {
+            config() {
+                return Object.assign(state.config, {
+                    anonRedirect: 'https://anon-redirect.tld/?url='
+                });
+            }
+        }
     });
 
     t.snapshot(wrapper.html());
@@ -69,14 +65,13 @@ test('renders anonymised external link', t => {
 });
 
 test('renders internal link', t => {
-    const { base, store } = t.context;
+    const { base, localVue, store } = t.context;
     const wrapper = mount(AppLink, {
+        localVue,
+        store,
         propsData: {
             base,
             href: './config'
-        },
-        mocks: {
-            store
         }
     });
 

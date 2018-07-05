@@ -71,6 +71,7 @@
     "vinyl-source-stream": "^1.1.0",
     "vue": "^2.5.16",
     "vue-template-compiler": "^2.5.16",
+    "vuex": "^3.0.1",
     "xo": "^0.20.0",
     "yargs": "^11.0.0"
   },
