@@ -90,7 +90,7 @@ bower-json@^0.8.1:
     graceful-fs "^4.1.3"
     intersect "^1.0.1"
 
-bower@^1.7.9, bower@^1.8.4:
+bower@1.8.4, bower@^1.7.9:
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/bower/-/bower-1.8.4.tgz#e7876a076deb8137f7d06525dc5e8c66db82f28a"
 
@@ -361,7 +361,7 @@ graceful-fs@~1.2.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
-grunt-bower-concat@^1.0.0:
+grunt-bower-concat@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/grunt-bower-concat/-/grunt-bower-concat-1.0.0.tgz#f430c7b718704c6815215c6ca94d2fd5dd4a7b5b"
   dependencies:
@@ -372,7 +372,7 @@ grunt-bower-concat@^1.0.0:
     lodash "~4.3.0"
     underscore.string "~3.2.3"
 
-grunt-bower-task@^0.5.0:
+grunt-bower-task@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/grunt-bower-task/-/grunt-bower-task-0.5.0.tgz#c3c16983fabf18e412e26dfdd2114db465174584"
   dependencies:
@@ -384,7 +384,7 @@ grunt-bower-task@^0.5.0:
     lodash "~0.10.0"
     rimraf "^2.6.1"
 
-grunt-cli@^0.1.13:
+grunt-cli@0.1.13:
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/grunt-cli/-/grunt-cli-0.1.13.tgz#e9ebc4047631f5012d922770c39378133cad10f4"
   dependencies:
@@ -392,21 +392,21 @@ grunt-cli@^0.1.13:
     nopt "~1.0.10"
     resolve "~0.3.1"
 
-grunt-contrib-clean@^1.0.0:
+grunt-contrib-clean@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/grunt-contrib-clean/-/grunt-contrib-clean-1.1.0.tgz#564abf2d0378a983a15b9e3f30ee75b738c40638"
   dependencies:
     async "^1.5.2"
     rimraf "^2.5.1"
 
-grunt-contrib-copy@^0.8.2:
+grunt-contrib-copy@0.8.2:
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/grunt-contrib-copy/-/grunt-contrib-copy-0.8.2.tgz#df31c90ffcc409bc9fafe44ec0dd1e4259916fea"
   dependencies:
     chalk "^1.1.1"
     file-sync-cmp "^0.1.0"
 
-grunt-contrib-cssmin@^0.14.0:
+grunt-contrib-cssmin@0.14.0:
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/grunt-contrib-cssmin/-/grunt-contrib-cssmin-0.14.0.tgz#88b0a92536969bb566281c5c61ec5062d833f3b7"
   dependencies:
@@ -414,7 +414,7 @@ grunt-contrib-cssmin@^0.14.0:
     clean-css "~3.4.2"
     maxmin "^1.1.0"
 
-grunt-contrib-uglify@^0.11.1:
+grunt-contrib-uglify@0.11.1:
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/grunt-contrib-uglify/-/grunt-contrib-uglify-0.11.1.tgz#5e22a2f676cd11d871fc2a0f08aa9b2973045325"
   dependencies:
@@ -454,7 +454,7 @@ grunt-legacy-util@~0.2.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-grunt@^0.4.5:
+grunt@0.4.5:
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/grunt/-/grunt-0.4.5.tgz#56937cd5194324adff6d207631832a9d6ba4e7f0"
   dependencies:
@@ -590,7 +590,7 @@ lazy-cache@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/lazy-cache/-/lazy-cache-1.0.4.tgz#a1d78fc3a50474cb80845d3b3b6e1da49a446e8e"
 
-load-grunt-tasks@^3.3.0:
+load-grunt-tasks@3.5.2:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/load-grunt-tasks/-/load-grunt-tasks-3.5.2.tgz#0728561180fd20ff8a6927505852fc58aaea0c88"
   dependencies:
