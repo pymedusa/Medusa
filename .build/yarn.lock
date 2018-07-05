@@ -399,9 +399,9 @@ grunt-contrib-clean@1.1.0:
     async "^1.5.2"
     rimraf "^2.5.1"
 
-grunt-contrib-copy@0.8.2:
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/grunt-contrib-copy/-/grunt-contrib-copy-0.8.2.tgz#df31c90ffcc409bc9fafe44ec0dd1e4259916fea"
+grunt-contrib-copy@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-copy/-/grunt-contrib-copy-1.0.0.tgz#7060c6581e904b8ab0d00f076e0a8f6e3e7c3573"
   dependencies:
     chalk "^1.1.1"
     file-sync-cmp "^0.1.0"
