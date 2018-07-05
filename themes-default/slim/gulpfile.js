@@ -6,7 +6,6 @@ const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpif = require('gulp-if');
-const xo = require('gulp-xo');
 const gulp = require('gulp');
 const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify-es').default;
@@ -80,40 +79,6 @@ const setCsstheme = theme => {
     }
 };
 
-/**
- * Run a single js file through the xo linter. The lintFile function is triggered by a gulp.onChange event.
- * @param {*} file object that has been changed.
- */
-const lintFile = file => {
-    return gulp
-        .src(file.path)
-        .pipe(xo())
-        .pipe(xo.format());
-};
-
-/**
- * Run all js files through the xo (eslint) linter.
- */
-const lint = () => {
-    return gulp
-        .src([
-            'static/js/**/*.{js,vue}',
-            '!static/js/lib/**',
-            '!static/js/*.min.js',
-            '!static/js/vender.js'
-        ])
-        .pipe(xo())
-        .pipe(xo.result(result => {
-            // Called for each xo result.
-            console.log(`xo linting: ${result.filePath}`);
-        }))
-        .pipe(xo.format(err => {
-            // This somehow prints the full path, instead of the relative.
-            console.log(err);
-        }))
-        .pipe(xo.failAfterError());
-};
-
 const watch = () => {
     livereload.listen({ port: 35729 });
     // Image changes
@@ -128,15 +93,6 @@ const watch = () => {
         'static/css/**/*.scss',
         'static/css/**/*.css'
     ], ['css']);
-
-    // Js Changes
-    gulp.watch([
-        'static/js/**/*.{js,vue}',
-        '!static/js/lib/**',
-        '!static/js/*.min.js',
-        '!static/js/vender.js'
-    ], ['js'])
-        .on('change', lintFile);
 
     // Template changes
     gulp.watch('views/**/*.mako', ['templates']);
@@ -281,7 +237,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
+    runSequence('css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -333,12 +289,6 @@ gulp.task('css', moveCss);
  * For example cssThemes.light.css for the `light.css` theme.
  */
 gulp.task('cssTheme', moveAndRenameCss);
-
-/**
- * Task for linting the js files using xo.
- * https://github.com/sindresorhus/xo
- */
-gulp.task('lint', lint);
 
 /**
  * Task for bundling and copying the js files.
