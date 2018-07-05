@@ -96,7 +96,14 @@ module.exports = {
             if (to) {
                 return {
                     is: 'router-link',
-                    to: { name: href }
+                    to: (() => {
+                        if (typeof to === 'object') {
+                            return to;
+                        }
+                        return {
+                            name: to
+                        };
+                    })()
                 };
             }
 
