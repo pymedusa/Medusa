@@ -280,7 +280,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', async() => {
+    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -303,11 +303,11 @@ const syncTheme = (theme, sequence) => {
  *
  * Do not run the xo build, as this takes a lot of time.
  */
-gulp.task('sync', async() => {
+gulp.task('sync', () => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
-    for (let theme of Object.entries(config.cssThemes)) {
-        await syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
+    for (const theme of Object.entries(config.cssThemes)) {
+        syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
     }
 });
 

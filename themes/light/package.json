@@ -123,7 +123,6 @@
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "/**/*.spec.js",
       "build/**"
     ],
     "esnext": true
