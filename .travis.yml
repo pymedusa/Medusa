@@ -9,9 +9,7 @@ before_install:
   - python .github/check_version.py
 install: false
 script: false
-jobs:  # also an alias for matrix
-  fast_finish: true  # if one job fails, fail the build early
-
+jobs:
   include:
     # test stage + frontend tests start here
     - stage: test
@@ -23,8 +21,14 @@ jobs:  # also an alias for matrix
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
       script:
-        - yarn build && yarn test-css
-        - cd themes-default/slim && yarn test && yarn coverage && cd ../../
+        - yarn test-css
+        - >-
+          cd themes-default/slim &&
+          yarn install --ignore-scripts &&
+          yarn xo &&
+          yarn test &&
+          yarn coverage &&
+          cd ../../
     # backend tests start here
     - env:
         - test_type=backend
