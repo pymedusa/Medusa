@@ -1,31 +1,50 @@
 language: python
-python:
-  - 2.7.10
 sudo: false
-before_install:
-  - python .github/check_version.py
-install:
-  - pip install --upgrade pip
-  - pip install --upgrade tox
-  - pip install dredd_hooks
-  - pip install 'PyYAML<4'
-  - pip install six
-  - nvm install v10.1.0
-  - nvm use v10.1.0
-  - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-  - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
-script:
-  - yarn build && yarn test-css
-  - cd themes-default/slim && yarn test && yarn coverage && cd ../../
-  - yarn test-api
-  - tox -v --recreate
 cache:
   yarn: true
   directories:
     - $HOME/.cache/pip
     - node_modules
-after_failure:
-  - cat ./dredd/data/Logs/application.log
+before_install:
+  - python .github/check_version.py
+install: false
+script: false
+jobs:  # also an alias for matrix
+  fast_finish: true  # if one job fails, fail the build early
+
+  include:
+    # test stage + frontend tests start here
+    - stage: test
+      env:
+        - test_type=frontend
+      language: node_js
+      node_js: 10.1.0
+      install:
+        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
+        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
+      script:
+        - yarn build && yarn test-css
+        - cd themes-default/slim && yarn test && yarn coverage && cd ../../
+    # backend tests start here
+    - env:
+        - test_type=backend
+      python:
+        - 2.7.10
+      install:
+        - pip install --upgrade pip
+        - pip install --upgrade tox
+        # install everything needed for `yarn test-api`
+        - pip install dredd_hooks
+        - pip install 'PyYAML<4'
+        - pip install six
+        - nvm install v10.1.0
+        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
+        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
+      script:
+        - yarn test-api
+        - tox -v --recreate
+      after_failure:
+        - cat ./dredd/data/Logs/application.log
 notifications:
   slack:
     secure: >-
