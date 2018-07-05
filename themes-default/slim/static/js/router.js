@@ -3,8 +3,9 @@ const { routes, httpVueLoader } = window;
 
 if (!window.router) {
     const configComponent = httpVueLoader('js/templates/config.vue');
-    const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
     const addShowsComponent = httpVueLoader('js/templates/add-shows.vue');
+    const addRecommendedComponent = httpVueLoader('js/templates/add-recommended.vue');
+    const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
 
     const router = new VueRouter({
         base: document.body.getAttribute('api-root').replace('api/v2/', ''),
@@ -25,6 +26,14 @@ if (!window.router) {
                 header: 'Add Shows'
             },
             component: addShowsComponent
+        }, {
+            path: '/addRecommended',
+            name: 'addRecommended',
+            meta: {
+                title: 'Add Recommended Shows',
+                header: 'Add Recommended Shows'
+            },
+            component: addRecommendedComponent
         }, {
             path: '/not-found',
             name: 'not-found',

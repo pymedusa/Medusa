@@ -1,6 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
-<%block name="scripts">
-<script type="text/x-template" id="add-recommended-template">
+<template>
     <div>
         <h1 class="header">{{header}}</h1>
         <div id="addShowPortal">
@@ -29,28 +27,14 @@
             </app-link>
         </div>
     </div>
-</script>
+</template>
 <script>
-const component = {
+module.exports = {
     name: 'addRecommended',
-    template: '#add-recommended-template',
-    metaInfo: {
-        title: 'Add Recommended Shows'
-    },
-    data() {
-        return {
-            header: 'Add Recommended Shows'
-        };
+    computed: {
+        header() {
+            return this.$route.meta.header;
+        }
     }
 };
-
-window.routes.push({
-    path: '/addRecommended',
-    name: 'addRecommended',
-    component
-});
 </script>
-</%block>
-<%block name="content">
-<router-view/>
-</%block>
