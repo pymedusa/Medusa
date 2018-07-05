@@ -1,6 +1,5 @@
 <template>
     <div>
-        <h1 class="header">{{header}}</h1>
         <div id="addShowPortal">
             <app-link href="addShows/newShow/" id="btnNewShow" class="btn-medusa btn-large">
                 <div class="button"><div class="add-list-icon-addnewshow"></div></div>
