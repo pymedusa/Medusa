@@ -12,7 +12,6 @@ const startVue = () => {
     window.app = new Vue({
         store,
         el: '#vue-wrap',
-        store,
         router,
         metaInfo: {
             title: 'Schedule'
