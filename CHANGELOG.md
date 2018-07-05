@@ -11,6 +11,7 @@
   - `/config` - Help & Info ([#4374](https://github.com/pymedusa/Medusa/pull/4374))
   - `/addShows` - Add Shows ([#4564](https://github.com/pymedusa/Medusa/pull/4564))
   - `/addRecommended` - Add Recommended Shows ([#4564](https://github.com/pymedusa/Medusa/pull/4564))
+- Removed the old `/ui` route ([#4565](https://github.com/pymedusa/Medusa/pull/4565))
 - _Simple message describing the improvement, and a link to the pull request._
 
 **Fixes**

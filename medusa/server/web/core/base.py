@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import json
 import os
 import re
 import time
@@ -22,7 +21,6 @@ from medusa import (
     exception_handler,
     helpers,
     logger,
-    ui,
 )
 from medusa.server.api.v1.core import function_mapper
 
@@ -245,7 +243,7 @@ class WebHandler(BaseHandler):
     def get(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -261,7 +259,7 @@ class WebHandler(BaseHandler):
     def post(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -295,6 +293,24 @@ class WebRoot(WebHandler):
 
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+
+    def not_found(self):
+        """
+        Fallback 404 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
+    def server_error(self):
+        """
+        Fallback 500 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def robots_txt(self):
         """Keep web crawlers out."""
@@ -347,35 +363,6 @@ class WebRoot(WebHandler):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
-
-
-@route('/ui(/?.*)')
-class UI(WebRoot):
-    def __init__(self, *args, **kwargs):
-        super(UI, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def add_message():
-        ui.notifications.message('Test 1', 'This is test number 1')
-        ui.notifications.error('Test 2', 'This is test number 2')
-
-        return 'ok'
-
-    def get_messages(self):
-        self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header('Content-Type', 'application/json')
-        messages = {}
-        cur_notification_num = 1
-        for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
-            messages['notification-{number}'.format(number=cur_notification_num)] = {
-                'title': '{0}'.format(cur_notification.title),
-                'message': '{0}'.format(cur_notification.message),
-                'type': '{0}'.format(cur_notification.notification_type),
-                'hash': '{0}'.format(hash(cur_notification)),
-            }
-            cur_notification_num += 1
-
-        return json.dumps(messages)
 
 
 class AuthenticatedStaticFileHandler(StaticFileHandler):
