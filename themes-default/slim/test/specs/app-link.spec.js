@@ -1,6 +1,6 @@
 import test from 'ava';
 import Puex from 'puex';
-import { mount } from 'vue-test-utils';
+import { mount } from '@vue/test-utils';
 
 // Needs to be required otherwise nyc won't see it
 const AppLink = require('../../static/js/templates/app-link.vue');
