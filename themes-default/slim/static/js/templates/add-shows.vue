@@ -1,6 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
-<%block name="scripts">
-<script type="text/x-template" id="add-shows-template">
+<template>
     <div>
         <h1 class="header">{{header}}</h1>
         <div id="addShowPortal">
@@ -21,28 +19,14 @@
             </app-link>
         </div>
     </div>
-</script>
+</template>
 <script>
-const component = {
+module.exports = {
     name: 'addShows',
-    template: '#add-shows-template',
-    metaInfo: {
-        title: 'Add Shows'
-    },
-    data() {
-        return {
-            header: 'Add Shows'
-        };
+    computed: {
+        header() {
+            return this.$route.meta.header;
+        }
     }
 };
-
-window.routes.push({
-    path: '/addShows',
-    name: 'addShows',
-    component
-});
 </script>
-</%block>
-<%block name="content">
-<router-view/>
-</%block>
