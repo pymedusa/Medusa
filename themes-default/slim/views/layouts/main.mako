@@ -125,7 +125,9 @@
         <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
         <script src="js/notifications.js"></script>
         <script src="js/store.js"></script>
-        <%include file="/vue-components/app-link.mako"/>
+        <script>
+            Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+        </script>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
         <%include file="/vue-components/plot-info.mako"/>
@@ -187,6 +189,7 @@
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
+                    store,
                     el: '#vue-wrap',
                     router: window.router
                 });
