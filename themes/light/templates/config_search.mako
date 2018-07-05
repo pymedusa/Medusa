@@ -13,8 +13,8 @@ def js_bool(value):
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
-        el: '#vue-wrap',
         store,
+        el: '#vue-wrap',
         metaInfo: {
             title: 'Config - Episode Search'
         },

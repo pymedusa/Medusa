@@ -10,8 +10,8 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
-        el: '#vue-wrap',
         store,
+        el: '#vue-wrap',
         router,
         metaInfo: {
             title: 'Schedule'
