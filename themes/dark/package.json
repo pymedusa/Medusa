@@ -72,7 +72,7 @@
     "vinyl-buffer": "1.0.1",
     "vinyl-source-stream": "1.1.2",
     "vue": "2.5.16",
-    "vue-router": "^3.0.1",
+    "vue-router": "3.0.1",
     "vue-template-compiler": "2.5.16",
     "vuex": "3.0.1",
     "xo": "0.20.3",
