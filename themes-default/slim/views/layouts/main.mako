@@ -189,6 +189,7 @@
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');
                 window.app = new Vue({
+                    store,
                     el: '#vue-wrap',
                     router: window.router
                 });
