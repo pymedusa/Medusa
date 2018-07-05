@@ -16,7 +16,7 @@ test.beforeEach(t => {
     t.context.state = state;
     t.context.store = new Puex({ state });
     t.context.base = 'http://localhost:8081/';
-    t.context.routerBase = '/';  // This might be '/webroot'
+    t.context.routerBase = '/'; // This might be '/webroot'
 });
 
 test('renders external link', t => {
