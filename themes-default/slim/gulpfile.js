@@ -303,11 +303,11 @@ const syncTheme = (theme, sequence) => {
  *
  * Do not run the xo build, as this takes a lot of time.
  */
-gulp.task('sync', () => {
+gulp.task('sync', async () => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (const theme of Object.entries(config.cssThemes)) {
-        syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
+        await syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
     }
 });
 
