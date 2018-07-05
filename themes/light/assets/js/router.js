@@ -39,7 +39,7 @@ if (!window.router) {
             document.title = `${to.meta.title} | Medusa`;
         }
 
-        // @Note: Always call next otherwise the <router-view> will be empty
+        // Always call next otherwise the <router-view> will be empty
         next();
     });
 

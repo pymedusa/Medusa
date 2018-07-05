@@ -12,7 +12,6 @@
 </template>
 <script>
 module.exports = {
-    store, // eslint-disable-line no-undef
     props: {
         to: [String, Object],
         href: String,

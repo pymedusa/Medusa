@@ -1,14 +1,15 @@
 {
   "manifest_version": 1,
   "version": "0.1.0",
-  "name": "light",
+  "name": "dark",
   "author": "p0psicles",
   "scripts": {
     "gulp": "gulp",
     "lint": "gulp lint",
     "build": "cross-env NODE_ENV=production gulp build",
     "install": "yarn run lint",
-    "test": "cross-env NODE_ENV=test ava"
+    "test": "cross-env NODE_ENV=test nyc ava",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "config": {
     "cssThemes": {
@@ -26,14 +27,16 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@vue/test-utils": "^1.0.0-beta.20",
     "autoprefixer": "^7.1.6",
-    "ava": "0.24.0",
+    "ava": "^1.0.0-beta.6",
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
     "babel-plugin-istanbul": "^4.1.6",
     "babelify": "^8.0.0",
     "browser-env": "^3.2.5",
     "browserify": "^14.5.0",
+    "codecov": "^3.0.2",
     "concurrently": "^3.5.0",
     "cross-env": "^5.2.0",
     "cssnano": "^3.10.0",
@@ -70,7 +73,7 @@
     "vinyl-source-stream": "^1.1.0",
     "vue": "^2.5.16",
     "vue-template-compiler": "^2.5.16",
-    "vue-test-utils": "^1.0.0-beta.11",
+    "vuex": "^3.0.1",
     "xo": "^0.20.0",
     "yargs": "^11.0.0"
   },
@@ -132,8 +135,7 @@
       "test/specs/**/*.spec.js"
     ],
     "sources": [
-      "views/**/*.vue",
-      "static/js/**/*.js"
+      "static/js/templates/**/*.js"
     ],
     "concurrency": 5,
     "failWithoutAssertions": true,
