@@ -243,7 +243,7 @@ class WebHandler(BaseHandler):
     def get(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -259,7 +259,7 @@ class WebHandler(BaseHandler):
     def post(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -293,6 +293,24 @@ class WebRoot(WebHandler):
 
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+
+    def not_found(self):
+        """
+        Fallback 404 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
+    def server_error(self):
+        """
+        Fallback 500 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def robots_txt(self):
         """Keep web crawlers out."""
