@@ -27,7 +27,7 @@
     "autoprefixer": "^7.1.6",
     "ava": "^0.23.0",
     "axios": "^0.17.1",
-    "babel-core": "^6.26.0",
+    "babel-core": "6.26.3",
     "babelify": "^8.0.0",
     "browserify": "^14.5.0",
     "concurrently": "^3.5.0",
