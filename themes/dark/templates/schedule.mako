@@ -13,17 +13,12 @@ const startVue = () => {
         store,
         el: '#vue-wrap',
         router,
-        metaInfo: {
-            title: 'Schedule'
-        },
-        data() {
-            return {
-                header: 'Schedule'
-            };
-        },
         computed: Object.assign(
             store.mapState(['shows']),
             {
+                header() {
+                    return this.$route.meta.header;
+                },
                 layout: {
                     get() {
                         const { config } = this;
