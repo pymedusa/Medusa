@@ -157,10 +157,30 @@ def test_similar(p):
     assert expected == actual
 
 
-def test_create_gist(logger, read_loglines, github):
+@pytest.mark.parametrize('p', [
+    {  # p0: gist not needed since context lines
+       #     are exactly the same as the error in the issue report
+        'lines': [
+            'Some Log Line'
+        ],
+        'expected': False
+    },
+    {  # p1: Gist created
+        'lines': [
+            'Some Log Line',
+            'Other Log Line',
+            'Different Log Line'
+        ],
+        'expected': True
+    }
+])
+def test_create_gist(p, logger, read_loglines, github):
     # Given
-    line = 'Some Log Line'
-    logger.error(line)
+    lines = p['lines']
+    expected = p['expected']
+
+    for line in lines:
+        logger.error(line)
     logline = list(read_loglines)[0]
     filename = 'application.log'
 
@@ -168,10 +188,14 @@ def test_create_gist(logger, read_loglines, github):
     actual = sut.create_gist(github, logline)
 
     # Then
-    assert actual
-    assert not actual.public
-    assert filename in actual.files
-    assert line in actual.files[filename]
+    if expected:
+        assert actual
+        assert not actual.public
+        assert filename in actual.files
+        for line in lines:
+            assert line in actual.files[filename]
+    else:
+        assert actual is None
 
 
 def test_create_gist__logline_not_found(github):
