@@ -66,7 +66,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
-from medusa.indexers.utils import indexer_name_to_id
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
@@ -960,8 +960,9 @@ class Home(WebRoot):
         series_id = int(series_obj.series_id)
 
         # Delete any previous occurrances
+        indexer_name = indexer_id_to_name(indexer_id)
         for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexer'] == indexer_id and recentShow['indexerid'] == series_id:
+            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
                 del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
@@ -969,8 +970,8 @@ class Home(WebRoot):
 
         # Insert most recent show
         app.SHOWS_RECENT.insert(0, {
-            'indexer': indexer_id,
-            'indexerid': series_id,
+            'indexerName': indexer_name,
+            'showId': series_id,
             'name': series_obj.name,
         })
 
@@ -1236,8 +1237,9 @@ class Home(WebRoot):
         series_id = int(series_obj.series_id)
 
         # Delete any previous occurrances
+        indexer_name = indexer_id_to_name(indexer_id)
         for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexer'] == indexer_id and recentShow['indexerid'] == series_id:
+            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
                 del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
@@ -1245,8 +1247,8 @@ class Home(WebRoot):
 
         # Insert most recent show
         app.SHOWS_RECENT.insert(0, {
-            'indexer': indexer_id,
-            'indexerid': series_id,
+            'indexerName': indexer_name,
+            'showId': series_id,
             'name': series_obj.name,
         })
 
