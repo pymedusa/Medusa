@@ -16,6 +16,7 @@
 
 **Fixes**
 
+- Fixed Emby test notification ([#4622](https://github.com/pymedusa/Medusa/pull/4622))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
