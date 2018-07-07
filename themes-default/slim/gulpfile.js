@@ -15,7 +15,7 @@ const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
-const argv = require('yargs').argv;
+const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
 
@@ -26,7 +26,7 @@ const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
 
 const PROD = process.env.NODE_ENV === 'production';
-const config = require('./package.json').config;
+const { config } = require('./package.json');
 
 let cssTheme = argv.csstheme;
 let buildDest = '';
