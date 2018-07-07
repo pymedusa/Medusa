@@ -7,7 +7,9 @@
   ],
   "ignorePaths": [
     ".build/**",
-    "themes/**"
+    "themes/**",
+    "ext/**",
+    "lib/**"
   ],
   "ignoreDeps": [
     "guessit"
