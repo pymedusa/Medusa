@@ -181,8 +181,8 @@
                         setTimeout(() => {
                             const { store } = window;
                             store.dispatch('login');
-                            store.dispatch('getConfig');
-                            this.$emit('loaded');
+                            store.dispatch('getConfig')
+                                .then(() => this.$emit('loaded'));
                         }, 1000);
                     }
 
