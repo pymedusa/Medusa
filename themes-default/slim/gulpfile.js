@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-const gutil = require('gulp-util');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
 const babelify = require('babelify');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
@@ -164,7 +165,7 @@ const bundleJs = done => {
                 .transform(babelify)
                 .bundle()
                 .on('error', function(err) {
-                    gutil.log(err.message);
+                    log(err.message);
                     this.emit('end');
                 })
                 .pipe(source(entry))
@@ -174,7 +175,7 @@ const bundleJs = done => {
                     loadMaps: true
                 }))
                 .pipe(gulpif(PROD, uglify()))
-                .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
+                .on('error', err => log(colors.red('[Error]'), err.toString()))
                 .pipe(sourcemaps.write('./'))
                 .pipe(gulp.dest(dest))
                 .pipe(gulpif(!PROD, livereload({ port: 35729 })));
