@@ -17,6 +17,7 @@ from babelfish.language import Language
 import jwt
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 
 from six import string_types, text_type, viewitems
 
@@ -24,7 +25,8 @@ from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
 from tornado.web import RequestHandler
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class BaseRequestHandler(RequestHandler):
@@ -179,6 +181,9 @@ class BaseRequestHandler(RequestHandler):
 
     def _no_content(self):
         self.api_finish(204)
+
+    def _multi_status(self, data=None, headers=None):
+        self.api_finish(207, data=data, headers=headers)
 
     def _bad_request(self, error):
         self.api_finish(400, error=error)
@@ -420,10 +425,9 @@ class PatchField(object):
                     setattr(target, self.attr, self.converter(value))
             except AttributeError:
                 log.warning(
-                    'Error trying to change attribute %s on target %s, you sure'
-                    ' you are allowed to change this attribute?',
-                    self.attr,
-                    target
+                    'Error trying to change attribute {attr} on target {target!r}'
+                    ' are you allowed to change this attribute?',
+                    {'attr': self.attr, 'target': target}
                 )
                 return False
 
