@@ -102,13 +102,7 @@ class EpisodeHandler(BaseRequestHandler):
         if not episode:
             return self._not_found('Episode not found')
 
-        accepted, ignored = self._patch_episode(episode, data)
-
-        # Save patched attributes in db.
-        episode.save_to_db()
-
-        if ignored:
-            log.warning('Episode patch ignored {items!r}', {'items': ignored})
+        accepted = self._patch_episode(episode, data)
 
         self._ok(data=accepted)
 
@@ -127,16 +121,7 @@ class EpisodeHandler(BaseRequestHandler):
                 statuses[slug] = {'status': 404}
                 continue
 
-            accepted, ignored = self._patch_episode(episode, data)
-
-            # Save patched attributes in db.
-            episode.save_to_db()
-
-            if ignored:
-                log.warning(
-                    'Episode patch for {episode} ignored {items!r}',
-                    {'episode': slug, 'items': ignored},
-                )
+            self._patch_episode(episode, data)
 
             statuses[slug] = {'status': 200}
 
@@ -144,13 +129,13 @@ class EpisodeHandler(BaseRequestHandler):
 
     @staticmethod
     def _patch_episode(episode, data):
-        """Helper function to patch single episodes."""
+        """Patch episode and save the changes to DB."""
         accepted = {}
         ignored = {}
         patches = {
-                'status': IntegerField(episode, 'status'),
-                'quality': IntegerField(episode, 'quality'),
-            }
+            'status': IntegerField(episode, 'status'),
+            'quality': IntegerField(episode, 'quality'),
+        }
 
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
@@ -159,4 +144,13 @@ class EpisodeHandler(BaseRequestHandler):
             else:
                 set_nested_value(ignored, key, value)
 
-        return accepted, ignored
+        # Save patched attributes in db.
+        episode.save_to_db()
+
+        if ignored:
+            log.warning(
+                'Episode patch for {episode} ignored {items!r}',
+                {'episode': episode.identifier, 'items': ignored},
+            )
+
+        return accepted
