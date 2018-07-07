@@ -3,6 +3,7 @@
 """Emby notifier module."""
 from __future__ import unicode_literals
 
+import json
 import logging
 
 from medusa import app
@@ -14,7 +15,7 @@ from medusa.session.core import MedusaSession
 
 from requests.exceptions import HTTPError, RequestException
 
-from six import text_type as str
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -39,14 +40,15 @@ class Notifier(object):
             emby_apikey = app.EMBY_APIKEY
 
         url = 'http://{host}/emby/Notifications/Admin'.format(host=host)
+        data = json.dumps({
+            'Name': 'Medusa',
+            'Description': message,
+            'ImageUrl': app.LOGO_URL
+        })
         try:
             resp = self.session.post(
                 url=url,
-                data={
-                    'Name': 'Medusa',
-                    'Description': message,
-                    'ImageUrl': app.LOGO_URL
-                },
+                data=data,
                 headers={
                     'X-MediaBrowser-Token': emby_apikey,
                     'Content-Type': 'application/json'
@@ -110,7 +112,7 @@ class Notifier(object):
                     return False
 
                 params = {
-                    provider: str(tvdb_id)
+                    provider: text_type(tvdb_id)
                 }
             else:
                 params = {}
