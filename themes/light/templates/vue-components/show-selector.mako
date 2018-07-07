@@ -28,14 +28,14 @@ Vue.component('show-selector', {
     computed: Object.assign(store.mapState(['config', 'shows']), {
         showLists() {
             const { config, shows } = this;
-            const { sortArticle } = config;
+            const { animeSplitHome, sortArticle } = config;
             const lists = [
                 { type: 'Shows', shows: [] },
                 { type: 'Anime', shows: [] }
             ];
 
             shows.forEach(show => {
-                const type = show.config.anime === true ? 1 : 0;
+                const type = animeSplitHome && show.config.anime ? 1 : 0;
                 lists[type].shows.push(show);
             });
 
@@ -55,8 +55,12 @@ Vue.component('show-selector', {
             const { showLists } = this;
             const shows = showLists[0].shows.length !== 0;
             const anime = showLists[1].shows.length !== 0;
-            if (shows && anime) return -1;
-            if (anime) return 1;
+            if (shows && anime) {
+                return -1;
+            }
+            if (anime) {
+                return 1;
+            }
             return 0;
         }
     }),
