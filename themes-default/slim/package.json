@@ -123,7 +123,8 @@
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "build/**"
+      "build/**",
+      "gulpfile.js"
     ],
     "esnext": true
   },
