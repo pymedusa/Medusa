@@ -102,19 +102,7 @@ class EpisodeHandler(BaseRequestHandler):
         if not episode:
             return self._not_found('Episode not found')
 
-        accepted = {}
-        ignored = {}
-        patches = {
-            'status': IntegerField(episode, 'status'),
-            'quality': IntegerField(episode, 'quality'),
-        }
-
-        for key, value in iter_nested_items(data):
-            patch_field = patches.get(key)
-            if patch_field and patch_field.patch(episode, value):
-                set_nested_value(accepted, key, value)
-            else:
-                set_nested_value(ignored, key, value)
+        accepted, ignored = self._patch_episode(episode, data)
 
         # Save patched attributes in db.
         episode.save_to_db()
@@ -127,8 +115,6 @@ class EpisodeHandler(BaseRequestHandler):
     def _patch_multi(self, series, request_data):
         """Patch multiple episodes."""
         statuses = {}
-        accepted = {}
-        ignored = {}
 
         for slug, data in iteritems(request_data):
             episode_number = EpisodeNumber.from_slug(slug)
@@ -141,29 +127,36 @@ class EpisodeHandler(BaseRequestHandler):
                 statuses[slug] = {'status': 404}
                 continue
 
-            accepted[slug] = {}
-            ignored[slug] = {}
-            patches = {
-                'status': IntegerField(episode, 'status'),
-                'quality': IntegerField(episode, 'quality'),
-            }
-
-            for key, value in iter_nested_items(data):
-                patch_field = patches.get(key)
-                if patch_field and patch_field.patch(episode, value):
-                    set_nested_value(accepted[slug], key, value)
-                else:
-                    set_nested_value(ignored[slug], key, value)
+            accepted, ignored = self._patch_episode(episode, data)
 
             # Save patched attributes in db.
             episode.save_to_db()
 
-            if ignored[slug]:
+            if ignored:
                 log.warning(
                     'Episode patch for {episode} ignored {items!r}',
-                    {'episode': slug, 'items': ignored[slug]},
+                    {'episode': slug, 'items': ignored},
                 )
 
             statuses[slug] = {'status': 200}
 
         self._multi_status(data=statuses)
+
+    @staticmethod
+    def _patch_episode(episode, data):
+        """Helper function to patch single episodes."""
+        accepted = {}
+        ignored = {}
+        patches = {
+                'status': IntegerField(episode, 'status'),
+                'quality': IntegerField(episode, 'quality'),
+            }
+
+        for key, value in iter_nested_items(data):
+            patch_field = patches.get(key)
+            if patch_field and patch_field.patch(episode, value):
+                set_nested_value(accepted, key, value)
+            else:
+                set_nested_value(ignored, key, value)
+
+        return accepted, ignored

@@ -425,7 +425,7 @@ class PatchField(object):
                     setattr(target, self.attr, self.converter(value))
             except AttributeError:
                 log.warning(
-                    'Error trying to change attribute {attr} on target {target}'
+                    'Error trying to change attribute {attr} on target {target!r}'
                     ' are you allowed to change this attribute?',
                     {'attr': self.attr, 'target': target}
                 )
