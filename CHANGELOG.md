@@ -19,6 +19,7 @@
 
 - Fixed Emby test notification ([#4622](https://github.com/pymedusa/Medusa/pull/4622))
 - Fixed NorBits provider formatting download URL incorrectly ([#4642](https://github.com/pymedusa/Medusa/pull/4642))
+- Fixed the Show Selector not honoring user option to split shows & anime ([#4625](https://github.com/pymedusa/Medusa/pull/4625))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
