@@ -24,7 +24,6 @@ from medusa.server.web.core import (
     PageTemplate,
     Schedule,
     TokenHandler,
-    UI,
     WebFileBrowser,
     WebHandler,
     WebRoot,

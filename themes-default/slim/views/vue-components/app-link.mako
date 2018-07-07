@@ -12,7 +12,7 @@
 </script>
 <script>
 Vue.component('app-link', {
-    name: 'app-link',
+    template: '#app-link-template',
     props: {
         to: [String, Object],
         href: String,
@@ -22,80 +22,129 @@ Vue.component('app-link', {
         placeholder: {
             type: String,
             default: 'indexer-to-name'
-        }
+        },
+        base: String
     },
     computed: {
-        linkProperties() {
-            const {to, indexerId, placeholder} = this;
-            const href = indexerId && placeholder ? this.href.replace(placeholder, MEDUSA.config.indexers.indexerIdToName(indexerId)) : this.href;
-            const base = document.getElementsByTagName('base')[0].getAttribute('href');
-            const isIRC = url => {
-                return url.startsWith('irc://');
-            };
-            const isAbsolute = url => {
-                return /^[a-z][a-z0-9+.-]*:/.test(url);
+        config() {
+            return this.$store.state.config;
+        },
+        indexerName() {
+            const { config, indexerId } = this;
+            const { indexers } = config.indexers.config;
+            if (!indexerId) {
+                return undefined;
             }
-            const isExternal = url => {
-                return !url.startsWith(base) && !url.startsWith('webcal://');
-            };
-            const isHashPath = url => {
-                return url.startsWith('#')
-            };
-            const isAnonymised = url => {
-                return MEDUSA.config.anonRedirect && url.startsWith(MEDUSA.config.anonRedirect);
-            };
-            const anonymise = url => MEDUSA.config.anonRedirect ? MEDUSA.config.anonRedirect + url : url;
-            if (!to) {
-                if (href) {
-                    // @TODO: Remove this once we move to vue only
-                    if (isAnonymised(href)) {
-                        throw new Error('Still using anon_url in Python!');
-                    }
-                    const resolvedHref = () => {
-                        if (isHashPath(href)) {
-                            const {location} = window;
-                            if (location.hash.length === 0) {
-                                // current location might be `url#`
-                                const newHash = location.href.endsWith('#') ? href.substr(1) : href;
-                                return location.href + newHash;
-                            }
-                            return location.href.replace(location.hash, '') + href;
-                        }
-                        if (isIRC(href)) {
-                            return href;
-                        }
-                        if (isAbsolute(href)) {
-                            if (isExternal(href)) {
-                                return anonymise(href)
-                            } else {
-                                return href;
-                            }
-                        } else {
-                            return new URL(href, base).href
-                        }
-                    };
-                    return {
-                        is: 'a',
-                        target: isAbsolute(href) && isExternal(href) ? '_blank' : '_self',
-                        href: resolvedHref(),
-                        rel: isAbsolute(href) && isExternal(href) ? 'noreferrer' : undefined
-                    };
-                }
+            // Returns `undefined` if not found
+            return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
+        },
+        computedBase() {
+            // Return prop before HTML element to allow tests to mock
+            if (this.base) {
+                return this.base;
+            }
 
-                // Just return a boring link with other attrs
-                // @NOTE: This is for scroll achors as it uses the id
+            return document.getElementsByTagName('base')[0].getAttribute('href');
+        },
+        computedHref() {
+            const { href, indexerId, placeholder, indexerName } = this;
+            if (indexerId && placeholder) {
+                return href.replace(placeholder, indexerName);
+            }
+            return href;
+        },
+        isIRC() {
+            if (!this.computedHref) {
+                return;
+            }
+            return this.computedHref.startsWith('irc://');
+        },
+        isAbsolute() {
+            const href = this.computedHref;
+            if (!href) {
+                return;
+            }
+            return /^[a-z][a-z0-9+.-]*:/.test(href);
+        },
+        isExternal() {
+            const base = this.computedBase;
+            const href = this.computedHref;
+            if (!href) {
+                return;
+            }
+            return !href.startsWith(base) && !href.startsWith('webcal://');
+        },
+        isHashPath() {
+            if (!this.computedHref) {
+                return;
+            }
+            return this.computedHref.startsWith('#');
+        },
+        anonymisedHref() {
+            const { anonRedirect } = this.config;
+            const href = this.computedHref;
+            if (!href) {
+                return;
+            }
+            return anonRedirect ? anonRedirect + href : href;
+        },
+        linkProperties() {
+            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref } = this;
+            const base = this.computedBase;
+            const href = this.computedHref;
+
+            // Return normal router-link
+            if (to) {
+                return {
+                    is: 'router-link',
+                    to: (() => {
+                        if (typeof to === 'object') {
+                            return to;
+                        }
+                        return {
+                            name: to
+                        };
+                    })()
+                };
+            }
+
+            // Just return a boring link with other attrs
+            // @NOTE: This is for scroll achors as it uses the id
+            if (!href) {
                 return {
                     is: 'a',
                     falseLink: true
                 };
             }
+
             return {
-                is: 'router-link',
-                to: { name: href }
+                is: 'a',
+                target: isAbsolute && isExternal ? '_blank' : '_self',
+                href: (() => {
+                    if (isHashPath) {
+                        const { location } = window;
+                        if (location.hash.length === 0) {
+                            // Current location might be `url#`
+                            const newHash = location.href.endsWith('#') ? href.substr(1) : href;
+                            return location.href + newHash;
+                        }
+                        return location.href.replace(location.hash, '') + href;
+                    }
+                    if (isIRC) {
+                        return href;
+                    }
+                    if (isAbsolute) {
+                        if (isExternal) {
+                            return anonymisedHref;
+                        }
+                        return href;
+                    }
+                    return new URL(href, base).href;
+                })(),
+                rel: isAbsolute && isExternal ? 'noreferrer' : undefined
             };
         }
-    },
-    template: `#app-link-template`
+    }
 });
 </script>
 <style>
