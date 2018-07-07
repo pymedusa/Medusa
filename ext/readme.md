@@ -2,7 +2,7 @@
  Status  |  Package  |  Version / Commit  | Usage | Notes
 :------: | :-------: | :----------------: | :---- | :----
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | -
-:: | `attr` | [18.1.0](https://pypi.org/project/attr/18.1.0/) | `imdbpie` | -
+:: | `attrs` | [18.1.0](https://pypi.org/project/attrs/18.1.0/) | `imdbpie` | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
 :: | `beautifulsoup4` | [4.6.0](https://pypi.org/project/beautifulsoup4/4.6.0/) | **`medusa`**, `subliminal` | Module: `bs4`
@@ -59,6 +59,6 @@
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
-:: | `webencodings` | [1.0.1](https://pypi.org/project/webencodings/1.0.1/) | `html5lib` | -
+:: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 :warning: | `wheel` | [0.30.0](https://pypi.org/project/wheel/0.30.0/) | `pbr`(?) | -
 :: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit` | Module: `yaml`
