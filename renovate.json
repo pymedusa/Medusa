@@ -4,5 +4,8 @@
   ],
   "baseBranches": [
     "develop"
+  ],
+  "ignorePaths": [
+    ".build/**"
   ]
 }
