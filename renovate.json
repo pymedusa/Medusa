@@ -6,7 +6,8 @@
     "develop"
   ],
   "ignorePaths": [
-    ".build/**"
+    ".build/**",
+    "themes/**"
   ],
   "ignoreDeps": [
     "guessit"
