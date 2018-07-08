@@ -8,20 +8,14 @@ MEDUSA.manage.manageSearches = function() {
     const updateExceptionTable = function(exceptions) {
         const status = $('#sceneExceptionStatus');
 
-        const medusaException = exceptions.filter(obj => {
-            return obj.id === 'local';
-        });
-        const cusExceptionDate = new Date(medusaException[0].lastRefresh * 1000).toLocaleDateString();
+        const medusaException = exceptions.find(obj => obj.id === 'local');
+        const cusExceptionDate = new Date(medusaException.lastRefresh * 1000).toLocaleDateString();
 
-        const xemException = exceptions.filter(obj => {
-            return obj.id === 'xem';
-        });
-        const xemExceptionDate = new Date(xemException[0].lastRefresh * 1000).toLocaleDateString();
+        const xemException = exceptions.find(obj => obj.id === 'xem');
+        const xemExceptionDate = new Date(xemException.lastRefresh * 1000).toLocaleDateString();
 
-        const anidbException = exceptions.filter(obj => {
-            return obj.id === 'anidb';
-        });
-        const anidbExceptionDate = new Date(anidbException[0].lastRefresh * 1000).toLocaleDateString();
+        const anidbException = exceptions.find(obj => obj.id === 'anidb');
+        const anidbExceptionDate = new Date(anidbException.lastRefresh * 1000).toLocaleDateString();
 
         const table = $('<ul class="simpleList"></ul>')
             .append('<li><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">Last updated medusa\'s exceptions</a> ' + cusExceptionDate)
