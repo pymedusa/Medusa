@@ -93,9 +93,9 @@
                         <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</app-link></li>
                         <li role="separator" class="divider"></li>
                         <li><app-link :href="'home/updateCheck?pid=' + config.pid"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
-                        <li><app-link :href="'home/restart/?pid=' + config.pid" class="confirm restart"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
-                        <li><app-link :href="'home/shutdown/?pid=' + config.pid" class="confirm shutdown"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
-                        <li v-if="auth.user.username"><app-link href="logout" class="confirm logout"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
+                        <li><app-link :href="'home/restart/?pid=' + config.pid" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
+                        <li><app-link :href="'home/shutdown/?pid=' + config.pid" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
+                        <li v-if="auth.user.username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
                         <li role="separator" class="divider"></li>
                         <li><app-link href="home/status/"><i class="menu-icon-info"></i>&nbsp;Server Status</app-link></li>
                     </ul>
@@ -198,6 +198,63 @@ Vue.component('app-header', {
                 subtitleMissed: subtitles.enabled,
                 subtitleMissedPP: postProcessing.postponeIfNoSubs
             };
+        }
+    },
+    mounted() {
+        const { $el } = this;
+
+        // Hover Dropdown for Nav
+        $($el).on({
+            mouseenter(event) {
+                const $target = $(event.currentTarget);
+                $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
+                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+            },
+            mouseleave(event) {
+                const $target = $(event.currentTarget);
+                $target.find('.dropdown-toggle').attr('aria-expanded', 'false');
+                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
+            }
+        }, 'ul.nav li.dropdown');
+
+        // @TODO Replace this with a real touchscreen check
+        // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
+        if ((navigator.maxTouchPoints || 0) < 2) {
+            $($el).on('click', '.dropdown-toggle', event => {
+                const $target = $(event.currentTarget);
+                if ($target.attr('aria-expanded') === 'true') {
+                    window.location.href = $target.attr('href');
+                }
+            });
+        }
+    },
+    methods: {
+        confirmDialog(event, action) {
+            const options = {
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
+                post: false,
+                button: $(event.currentTarget),
+                confirm($element) {
+                    window.location.href = $element[0].href;
+                }
+            };
+
+            if (action === 'restart') {
+                options.title = 'Restart';
+                options.text = 'Are you sure you want to restart Medusa?';
+            } else if (action === 'shutdown') {
+                options.title = 'Shutdown';
+                options.text = 'Are you sure you want to shutdown Medusa?';
+            } else if (action === 'logout') {
+                options.title = 'Logout';
+                options.text = 'Are you sure you want to logout from Medusa?';
+            } else {
+                return;
+            }
+
+            $.confirm(options, event);
         }
     }
 });
