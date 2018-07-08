@@ -1,22 +1,24 @@
 MEDUSA.manage.manageSearches = function() {
     /**
      * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
-     * @param exceptions - A list of exception types with their last_updates.
+     * @param {Object[]} exceptions - A list of exception types with their last updates.
+     * @param {string} exceptions[].id - The name of the scene exception source.
+     * @param {number} exceptions[].lastRefresh - The last update of the scene exception source as a timestamp.
      */
     const updateExceptionTable = function(exceptions) {
         const status = $('#sceneExceptionStatus');
 
-        const medusaException = exceptions.data.filter(obj => {
+        const medusaException = exceptions.filter(obj => {
             return obj.id === 'local';
         });
         const cusExceptionDate = new Date(medusaException[0].lastRefresh * 1000).toLocaleDateString();
 
-        const xemException = exceptions.data.filter(obj => {
+        const xemException = exceptions.filter(obj => {
             return obj.id === 'xem';
         });
         const xemExceptionDate = new Date(xemException[0].lastRefresh * 1000).toLocaleDateString();
 
-        const anidbException = exceptions.data.filter(obj => {
+        const anidbException = exceptions.filter(obj => {
             return obj.id === 'anidb';
         });
         const anidbExceptionDate = new Date(anidbException[0].lastRefresh * 1000).toLocaleDateString();
@@ -32,9 +34,9 @@ MEDUSA.manage.manageSearches = function() {
 
     /**
      * Update an element with a spinner gif and a descriptive message.
-     * @param spinnerContainer - An element we can use to add the spinner and message to.
-     * @param message - A string with the message to display behind the spinner.
-     * @param showSpinner - A boolean to show or not show the spinner (gif).
+     * @param {HTMLElement} spinnerContainer - An element we can use to add the spinner and message to.
+     * @param {string} message - The message to display behind the spinner.
+     * @param {boolean} showSpinner - A boolean to show or not show the spinner (gif).
      */
     const updateSpinner = function(spinnerContainer, message, showSpinner) {
         if (showSpinner) {
@@ -59,7 +61,7 @@ MEDUSA.manage.manageSearches = function() {
             status.append($('<span></span>').text(response.data.result));
 
             api.get('alias-source').then(response => {
-                updateExceptionTable(response);
+                updateExceptionTable(response.data);
                 $('.forceSceneExceptionRefresh').addClass('disabled');
             }).catch(err => {
                 log.error('Trying to get scene exceptions failed with error: ' + err);
@@ -74,7 +76,7 @@ MEDUSA.manage.manageSearches = function() {
 
     // Initially load the exception types last updates on page load.
     api.get('alias-source').then(response => {
-        updateExceptionTable(response);
+        updateExceptionTable(response.data);
     }).catch(error => {
         log.error('Trying to get scene exceptions failed with error: ' + error);
     });
