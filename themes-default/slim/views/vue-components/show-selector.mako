@@ -35,7 +35,7 @@ Vue.component('show-selector', {
             ];
 
             shows.forEach(show => {
-                const type = animeSplitHome && show.config.anime ? 1 : 0;
+                const type = Number(animeSplitHome && show.config.anime);
                 lists[type].shows.push(show);
             });
 
