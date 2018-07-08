@@ -19,6 +19,10 @@ const argv = require('yargs').argv;
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
 
+const xo = require('xo');
+
+const xoReporter = xo.getFormatter('eslint-formatter-pretty');
+
 // Const postcss = require('gulp-postcss');
 // const sass = require('gulp-sass');
 const cssnano = require('cssnano');
@@ -26,7 +30,7 @@ const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
 
 const PROD = process.env.NODE_ENV === 'production';
-const config = require('./package.json').config;
+const { config, xo: xoConfig } = require('./package.json');
 
 let cssTheme = argv.csstheme;
 let buildDest = '';
@@ -79,6 +83,39 @@ const setCsstheme = theme => {
     }
 };
 
+/**
+ * Run a single js file through the xo linter. The lintFile function is triggered by a gulp.onChange event.
+ * @param {*} file object that has been changed.
+ */
+const lintFile = file => {
+    const files = [file.path];
+    return xo.lintFiles(files, {}).then(report => {
+        const formatted = xoReporter(report.results);
+        if (formatted) {
+            log(formatted);
+        }
+    });
+};
+
+/**
+ * Run all js files through the xo (eslint) linter.
+ */
+const lint = done => {
+    return xo.lintFiles([], {}).then(report => {
+        const formatted = xoReporter(report.results);
+        if (formatted) {
+            log(formatted);
+        }
+        let error = null;
+        if (report.errorCount > 0) {
+            error = new Error('Lint failed, see errors above.');
+            error.showStack = false;
+            throw error;
+        }
+        done(error);
+    });
+};
+
 const watch = () => {
     livereload.listen({ port: 35729 });
     // Image changes
@@ -93,6 +130,13 @@ const watch = () => {
         'static/css/**/*.scss',
         'static/css/**/*.css'
     ], ['css']);
+
+    // Js Changes
+    gulp.watch([
+        'static/js/**/*.{js,vue}',
+        ...xoConfig.ignores.map(ignore => '!' + ignore)
+    ], ['js'])
+        .on('change', lintFile);
 
     // Template changes
     gulp.watch('views/**/*.mako', ['templates']);
@@ -237,7 +281,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
+    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -289,6 +333,12 @@ gulp.task('css', moveCss);
  * For example cssThemes.light.css for the `light.css` theme.
  */
 gulp.task('cssTheme', moveAndRenameCss);
+
+/**
+ * Task for linting the js files using xo.
+ * https://github.com/sindresorhus/xo
+ */
+gulp.task('lint', lint);
 
 /**
  * Task for bundling and copying the js files.
