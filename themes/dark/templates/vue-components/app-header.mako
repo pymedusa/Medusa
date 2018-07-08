@@ -109,20 +109,11 @@
 <!-- END HEADER -->
 </%text>
 </script>
-<%!
-    import json
-    from medusa import app
-%>
 <script>
 Vue.component('app-header', {
     template: '#app-header-template',
     data() {
         return {
-            // Python conversions
-            <% has_emby_api_key = json.dumps(app.EMBY_APIKEY != '') %>
-            hasEmbyApiKey: ${has_emby_api_key},
-
-            // JS Only
             topMenuMapping: {
                 system: ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC'],
                 home: ['/home', '/addShows', '/addRecommended'],
@@ -189,12 +180,14 @@ Vue.component('app-header', {
         },
         linkVisible() {
             const { config } = this;
-            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing, hasEmbyApiKey } = config;
+            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing } = config;
 
             return {
                 plex: plex.server.enabled && plex.server.host.length !== 0,
                 kodi: kodi.enabled && kodi.host.length !== 0,
-                emby: emby.enabled && emby.host && hasEmbyApiKey,
+                /* @TODO: Originally there was a check to make sure the API key
+                   was configured for Emby: ` app.EMBY_APIKEY != '' ` */
+                emby: emby.enabled && emby.host,
                 manageTorrents: torrents.enabled && torrents.method !== 'blackhole',
                 failedDownloads: failedDownloads.enabled,
                 subtitleMissed: subtitles.enabled,
