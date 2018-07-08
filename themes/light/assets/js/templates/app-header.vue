@@ -1,6 +1,4 @@
-<script type="text/x-template" id="app-header-template">
-<%text>
-<!-- BEGIN HEADER -->
+<template>
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -106,12 +104,11 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
-<!-- END HEADER -->
-</%text>
-</script>
+</template>
+
 <script>
-Vue.component('app-header', {
-    template: '#app-header-template',
+module.exports = {
+    name: 'app-header',
     data() {
         return {
             topMenuMapping: {
@@ -140,9 +137,7 @@ Vue.component('app-header', {
             const { recentShows } = config;
             return recentShows.map(show => {
                 const { name, indexerName, showId } = show;
-                <%text>
                 const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                </%text>
                 return { name, link };
             });
         },
@@ -252,8 +247,9 @@ Vue.component('app-header', {
             $.confirm(options, event);
         }
     }
-});
+};
 </script>
+
 <style>
 .floating-badge {
     position: absolute;

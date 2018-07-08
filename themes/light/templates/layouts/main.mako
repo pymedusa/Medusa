@@ -132,9 +132,9 @@
         <script src="js/notifications.js"></script>
         <script src="js/store.js"></script>
         <script>
+            Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
         </script>
-        <%include file="/vue-components/app-header.mako"/>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
         <%include file="/vue-components/file-browser.mako"/>
