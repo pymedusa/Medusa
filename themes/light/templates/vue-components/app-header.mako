@@ -1,10 +1,11 @@
 <script type="text/x-template" id="app-header-template">
+<%text>
 <!-- BEGIN HEADER -->
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_nav">
-                <span v-if="toolsBadgeCount > 0" :class="'floating-badge' + toolsBadgeClass">{{ toolsBadgeCount }}</span>
+                <span v-if="toolsBadgeCount > 0" :class="`floating-badge${toolsBadgeClass}`">{{ toolsBadgeCount }}</span>
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -79,7 +80,7 @@
                 </li>
                 <li id="NAVsystem" class="navbar-split dropdown" :class="{ active: topMenu === 'system' }">
                     <app-link href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />
-                    <span v-if="toolsBadgeCount > 0" :class="'badge' + toolsBadgeClass">{{ toolsBadgeCount }}</span>
+                    <span v-if="toolsBadgeCount > 0" :class="`badge${toolsBadgeClass}`">{{ toolsBadgeCount }}</span>
                     <b class="caret"></b>
                     </app-link>
                     <ul class="dropdown-menu">
@@ -89,12 +90,12 @@
                         <li><app-link :href="config.donationsUrl"><i class="menu-icon-support"></i>&nbsp;Support Medusa</app-link></li>
                         <li role="separator" class="divider"></li>
                         <li v-if="config.logs.numErrors > 0"><app-link href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">{{config.logs.numErrors}}</span></app-link></li>
-                        <li v-if="config.logs.numWarnings > 0"><app-link :href="'errorlogs/?level=' + warningLevel"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
+                        <li v-if="config.logs.numWarnings > 0"><app-link :href="`errorlogs/?level=${warningLevel}`"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
                         <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</app-link></li>
                         <li role="separator" class="divider"></li>
-                        <li><app-link :href="'home/updateCheck?pid=' + config.pid"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
-                        <li><app-link :href="'home/restart/?pid=' + config.pid" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
-                        <li><app-link :href="'home/shutdown/?pid=' + config.pid" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
+                        <li><app-link :href="`home/updateCheck?pid=${config.pid}`"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
+                        <li><app-link :href="`home/restart/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
+                        <li><app-link :href="`home/shutdown/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
                         <li v-if="auth.user.username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
                         <li role="separator" class="divider"></li>
                         <li><app-link href="home/status/"><i class="menu-icon-info"></i>&nbsp;Server Status</app-link></li>
@@ -106,6 +107,7 @@
     </div><!-- /.container-fluid -->
 </nav>
 <!-- END HEADER -->
+</%text>
 </script>
 <%!
     import json
