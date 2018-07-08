@@ -2,6 +2,7 @@ const VueRouter = window.vueRouter;
 const { routes, httpVueLoader } = window;
 
 if (!window.router) {
+    const loginComponent = httpVueLoader('js/templates/login.vue');
     const configComponent = httpVueLoader('js/templates/config.vue');
     const addShowsComponent = httpVueLoader('js/templates/add-shows.vue');
     const addRecommendedComponent = httpVueLoader('js/templates/add-recommended.vue');
@@ -11,6 +12,14 @@ if (!window.router) {
         base: document.body.getAttribute('api-root').replace('api/v2/', ''),
         mode: 'history',
         routes: Object.assign(routes || [], [{
+            path: '/login',
+            name: 'login',
+            meta: {
+                title: 'Login',
+                header: 'Medusa'
+            },
+            component: loginComponent
+        }, {
             path: '/config',
             name: 'config',
             meta: {
