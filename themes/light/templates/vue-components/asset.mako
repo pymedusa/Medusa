@@ -33,7 +33,7 @@ Vue.component('asset', {
     computed: {
         src() {
             const { error, seriesSlug, type, isVisible, lazy } = this;
-            const apiRoot = document.getElementsByTagName('body')[0].getAttribute('api-root');
+            const apiRoot = document.getElementsByTagName('body')[0].getAttribute('web-root') + 'api/v2/';
             const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
 
             if (error || lazy && !isVisible || !seriesSlug || !type) {
