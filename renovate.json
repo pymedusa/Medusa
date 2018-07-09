@@ -4,5 +4,14 @@
   ],
   "baseBranches": [
     "develop"
+  ],
+  "ignorePaths": [
+    ".build/**",
+    "themes/**",
+    "ext/**",
+    "lib/**"
+  ],
+  "ignoreDeps": [
+    "guessit"
   ]
 }
