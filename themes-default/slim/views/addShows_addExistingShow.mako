@@ -27,6 +27,8 @@ const startVue = () => {
                 defaultIndexer: ${app.INDEXER_DEFAULT},
 
                 isLoading: false,
+                requestTimeout: 3 * 60 * 1000,
+                errorMessage: '',
                 rootDirs: [],
                 dirList: [],
                 promptForSettings: false
@@ -65,6 +67,10 @@ const startVue = () => {
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
                     });
             },
+            showTable() {
+                const { isLoading, selectedRootDirs, errorMessage } = this;
+                return !isLoading && selectedRootDirs.length !== 0 && errorMessage === '';
+            },
             checkAll: {
                 get() {
                     const selectedDirList = this.filteredDirList.filter(dir => dir.selected);
@@ -89,9 +95,12 @@ const startVue = () => {
                 });
             },
             async update() {
-                if (this.isLoading) return;
+                if (this.isLoading) {
+                    return;
+                }
 
                 this.isLoading = true;
+                this.errorMessage = '';
 
                 const indices = this.rootDirs
                     .reduce((indices, rd, index) => {
@@ -104,8 +113,23 @@ const startVue = () => {
                     return;
                 }
 
-                const params = { 'rootDirs': indices.join(',') };
-                const { data } = await api.get('internal/existingSeries', { params });
+                let data = null;
+                const config = {
+                    params: {
+                        'rootDirs': indices.join(',')
+                    },
+                    timeout: this.requestTimeout
+                };
+                try {
+                    const response = await api.get('internal/existingSeries', config)
+                    data = response.data;
+                } catch (error) {
+                    this.errorMessage = error.message;
+                    this.isLoading = false;
+                    this.dirList = [];
+                    return;
+                }
+
                 this.dirList = data
                     .map(dir => {
                         // Pre-select all dirs not already added
@@ -228,9 +252,18 @@ const startVue = () => {
                     </li>
                 </ul>
                 <br>
-                <span v-if="isLoading"><img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...</span>
-                <span v-if="!isLoading && selectedRootDirs.length === 0">No folders selected.</span>
-                <table v-show="!isLoading && selectedRootDirs.length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
+
+                <span v-if="isLoading">
+                    <img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...
+                </span>
+                <template v-else>
+                    <span v-if="errorMessage !== ''">
+                        <b>Encountered an error while loading folders:</b> {{ errorMessage }}
+                    </span>
+                    <span v-else-if="selectedRootDirs.length === 0">No folders selected.</span>
+                </template>
+
+                <table v-show="showTable" id="addRootDirTable" class="defaultTable tablesorter">
                     <thead>
                         <tr>
                             <th class="col-checkbox"><input type="checkbox" v-model="checkAll" /></th>
