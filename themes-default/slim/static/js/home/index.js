@@ -317,7 +317,7 @@ MEDUSA.home.index = function() {
     }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableSeries'), '#popover-target');
-        if (MEDUSA.config.animeSplitHome) {
+        if (MEDUSA.config.anime.splitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });

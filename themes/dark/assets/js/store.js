@@ -89,7 +89,11 @@ const store = new Puex({
                 minor: null
             },
             programDir: null,
-            animeSplitHomeInTabs: null,
+            anime: {
+                enabled: null,
+                splitHomeInTabs: null,
+                splitHome: null
+            },
             torrents: {
                 authType: null,
                 dir: null,
@@ -144,7 +148,6 @@ const store = new Puex({
             configFile: null,
             fanartBackground: null,
             trimZero: null,
-            animeSplitHome: null,
             branch: null,
             commitHash: null,
             indexers: {
@@ -274,7 +277,85 @@ const store = new Puex({
             subtitlesMulti: null,
             os: null,
             anonRedirect: null,
-            logDir: null
+            logDir: null,
+            freeMobile: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                },
+                id: null
+            },
+            telegram: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                },
+                id: null
+            },
+            prowl: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                },
+                api: null,
+                priority: null,
+                messageTitle: null
+            },
+            twitter: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                },
+                username: null,
+                prefix: null,
+                dmto: null,
+                useDm: null
+            },
+            boxcar2: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                }
+            },
+            pushover: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                },
+                device: null,
+                sound: null
+            },
+            libnotify: {
+                enabled: null,
+                notify: {
+                    onSnatch: null,
+                    onDownload: null,
+                    onSubtitleDownload: null
+                }
+            },
+            libnotify: {
+                enabled: null,
+                host: null,
+                database: null,
+                mount: null
+            },
+            anidb: {
+                enabled: null,
+                username: null,
+                useMyList: null
+            }
         },
         // Loaded show list
         // New shows can be added via

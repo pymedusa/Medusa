@@ -202,8 +202,6 @@ class DataGenerator(object):
         section_data = NonEmptyDict()
 
         section_data['anonRedirect'] = app.ANON_REDIRECT
-        section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
-        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['comingEpsSort'] = app.COMING_EPS_SORT
         section_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['datePreset'] = app.DATE_PRESET
@@ -341,6 +339,82 @@ class DataGenerator(object):
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
         section_data['processMethod'] = app.PROCESS_METHOD
+
+        section_data['freeMobile'] = NonEmptyDict()
+        section_data['freeMobile']['enabled'] = bool(app.USE_FREEMOBILE)
+        section_data['freeMobile']['notify'] = NonEmptyDict()
+        section_data['freeMobile']['notify']['onSnatch'] = bool(app.FREEMOBILE_NOTIFY_ONSNATCH)
+        section_data['freeMobile']['notify']['onDownload'] = bool(app.FREEMOBILE_NOTIFY_ONDOWNLOAD)
+        section_data['freeMobile']['notify']['onSubtitleDownload'] = bool(app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['freeMobile']['id'] = app.FREEMOBILE_ID
+
+        section_data['telegram'] = NonEmptyDict()
+        section_data['telegram']['enabled'] = bool(app.USE_TELEGRAM)
+        section_data['telegram']['notify'] = NonEmptyDict()
+        section_data['telegram']['notify']['onSnatch'] = bool(app.TELEGRAM_NOTIFY_ONSNATCH)
+        section_data['telegram']['notify']['onDownload'] = bool(app.TELEGRAM_NOTIFY_ONDOWNLOAD)
+        section_data['telegram']['notify']['onSubtitleDownload'] = bool(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['telegram']['id'] = app.TELEGRAM_ID
+
+        section_data['prowl'] = NonEmptyDict()
+        section_data['prowl']['enabled'] = bool(app.USE_PROWL)
+        section_data['prowl']['notify'] = NonEmptyDict()
+        section_data['prowl']['notify']['onSnatch'] = bool(app.PROWL_NOTIFY_ONSNATCH)
+        section_data['prowl']['notify']['onDownload'] = bool(app.PROWL_NOTIFY_ONDOWNLOAD)
+        section_data['prowl']['notify']['onSubtitleDownload'] = bool(app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['prowl']['api'] = app.PROWL_API
+        section_data['prowl']['priority'] = app.PROWL_PRIORITY
+        section_data['prowl']['messageTitle'] = app.PROWL_MESSAGE_TITLE
+
+        section_data['twitter'] = NonEmptyDict()
+        section_data['twitter']['enabled'] = bool(app.USE_TWITTER)
+        section_data['twitter']['notify'] = NonEmptyDict()
+        section_data['twitter']['notify']['onSnatch'] = bool(app.TWITTER_NOTIFY_ONSNATCH)
+        section_data['twitter']['notify']['onDownload'] = bool(app.TWITTER_NOTIFY_ONDOWNLOAD)
+        section_data['twitter']['notify']['onSubtitleDownload'] = bool(app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['twitter']['username'] = app.TWITTER_USERNAME
+        section_data['twitter']['prefix'] = app.TWITTER_PREFIX
+        section_data['twitter']['dmto'] = app.TWITTER_DMTO
+        section_data['twitter']['useDm'] = bool(app.TWITTER_USEDM)
+
+        section_data['boxcar2'] = NonEmptyDict()
+        section_data['boxcar2']['enabled'] = bool(app.USE_BOXCAR2)
+        section_data['boxcar2']['notify'] = NonEmptyDict()
+        section_data['boxcar2']['notify']['onSnatch'] = bool(app.BOXCAR2_NOTIFY_ONSNATCH)
+        section_data['boxcar2']['notify']['onDownload'] = bool(app.BOXCAR2_NOTIFY_ONDOWNLOAD)
+        section_data['boxcar2']['notify']['onSubtitleDownload'] = bool(app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['pushover'] = NonEmptyDict()
+        section_data['pushover']['enabled'] = bool(app.USE_PUSHOVER)
+        section_data['pushover']['notify'] = NonEmptyDict()
+        section_data['pushover']['notify']['onSnatch'] = bool(app.PUSHOVER_NOTIFY_ONSNATCH)
+        section_data['pushover']['notify']['onDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
+        section_data['pushover']['notify']['onSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['pushover']['device'] = app.PUSHOVER_DEVICE
+        section_data['pushover']['sound'] = app.PUSHOVER_SOUND
+
+        section_data['libnotify'] = NonEmptyDict()
+        section_data['libnotify']['enabled'] = bool(app.USE_LIBNOTIFY)
+        section_data['libnotify']['notify'] = NonEmptyDict()
+        section_data['libnotify']['notify']['onSnatch'] = bool(app.LIBNOTIFY_NOTIFY_ONSNATCH)
+        section_data['libnotify']['notify']['onDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONDOWNLOAD)
+        section_data['libnotify']['notify']['onSubtitleDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['nmj'] = NonEmptyDict()
+        section_data['nmj']['enabled'] = bool(app.USE_LIBNOTIFY)
+        section_data['nmj']['host'] = app.NMJ_HOST
+        section_data['nmj']['database'] = app.NMJ_DATABASE
+        section_data['nmj']['mount'] = app.NMJ_MOUNT
+
+        section_data['anime'] = NonEmptyDict()
+        section_data['anime']['enabled'] = bool(app.ANIMESUPPORT)
+        section_data['anime']['splitHome'] = bool(app.ANIME_SPLIT_HOME)
+        section_data['anime']['splitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+
+        section_data['anidb'] = NonEmptyDict()
+        section_data['anidb']['enabled'] = bool(app.USE_ANIDB)
+        section_data['anidb']['username'] = app.ANIDB_USERNAME
+        section_data['anidb']['useMyList'] = app.ANIDB_USE_MYLIST
 
         return section_data
 
