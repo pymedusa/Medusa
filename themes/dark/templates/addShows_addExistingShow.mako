@@ -94,7 +94,7 @@ const startVue = () => {
                     };
                 });
             },
-            async update() {
+            update() {
                 if (this.isLoading) {
                     return;
                 }
@@ -113,46 +113,42 @@ const startVue = () => {
                     return;
                 }
 
-                let data = null;
                 const config = {
                     params: {
                         'rootDirs': indices.join(',')
                     },
                     timeout: this.requestTimeout
                 };
-                try {
-                    const response = await api.get('internal/existingSeries', config)
-                    data = response.data;
-                } catch (error) {
-                    this.errorMessage = error.message;
+                api.get('internal/existingSeries', config).then(response => {
+                    const { data } = response;
+                    this.dirList = data
+                        .map(dir => {
+                            // Pre-select all dirs not already added
+                            dir.selected = !dir.alreadyAdded;
+                            dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
+                            return dir;
+                        });
                     this.isLoading = false;
-                    this.dirList = [];
-                    return;
-                }
 
-                this.dirList = data
-                    .map(dir => {
-                        // Pre-select all dirs not already added
-                        dir.selected = !dir.alreadyAdded;
-                        dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
-                        return dir;
+                    this.$nextTick(() => {
+                        $('#addRootDirTable')
+                            .tablesorter({
+                                widgets: ['zebra'],
+                                // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
+                                // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
+                                headerTemplate: '',
+                                headers: {
+                                    0: { sorter: false },
+                                    3: { sorter: false }
+                                }
+                            })
+                            // Fixes tablesorter not working after root dirs are refreshed
+                            .trigger('updateAll');
                     });
-                this.isLoading = false;
-
-                this.$nextTick(() => {
-                    $('#addRootDirTable')
-                        .tablesorter({
-                            widgets: ['zebra'],
-                            // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
-                            // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
-                            headerTemplate: '',
-                            headers: {
-                                0: { sorter: false },
-                                3: { sorter: false }
-                            }
-                        })
-                        // Fixes tablesorter not working after root dirs are refreshed
-                        .trigger('updateAll');
+                }).catch(error => {
+                    this.errorMessage = error.message;
+                    this.dirList = [];
+                    this.isLoading = false;
                 });
             },
             seriesIndexerUrl(curDir) {
