@@ -39,7 +39,6 @@ class NorbitsProvider(TorrentProvider):
             'download': urljoin(self.url, 'download.php'),
         }
 
-
         # Proper Strings
 
         # Miscellaneous Options
