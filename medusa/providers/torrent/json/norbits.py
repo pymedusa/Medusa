@@ -15,7 +15,7 @@ from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import urlencode
+from requests.compat import urlencode, urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -33,11 +33,12 @@ class NorbitsProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://norbits.net/'
+        self.url = 'https://norbits.net'
         self.urls = {
-            'search': self.url + 'api2.php?action=torrents',
-            'download': self.url + 'download.php?'
+            'search': urljoin(self.url, 'api2.php?action=torrents'),
+            'download': urljoin(self.url, 'download.php'),
         }
+
 
         # Proper Strings
 
@@ -111,7 +112,7 @@ class NorbitsProvider(TorrentProvider):
         for row in torrent_rows:
             try:
                 title = row.pop('name', '')
-                download_url = '{0}{1}'.format(
+                download_url = '{0}?{1}'.format(
                     self.urls['download'],
                     urlencode({'id': row.pop('id', ''), 'passkey': self.passkey}))
 
