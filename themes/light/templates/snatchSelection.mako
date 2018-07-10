@@ -14,6 +14,14 @@ const startVue = () => {
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            // Adjust the summary background position and size on page load and resize
+            this.$once('loaded', () => {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
         }
     });
 };

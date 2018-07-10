@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
 const log = require('fancy-log');
 const colors = require('ansi-colors');
 const babelify = require('babelify');
@@ -30,8 +32,9 @@ const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
 
 const PROD = process.env.NODE_ENV === 'production';
-const { config, xo: xoConfig } = require('./package.json');
+const pkg = require('./package.json');
 
+const { config, xo: xoConfig } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
@@ -79,7 +82,7 @@ const getCssTheme = theme => {
 const setCsstheme = theme => {
     cssTheme = getCssTheme(theme || cssTheme);
     if (cssTheme) {
-        buildDest = cssTheme.dest;
+        buildDest = path.normalize(cssTheme.dest);
     }
 };
 
@@ -211,11 +214,19 @@ const moveTemplates = () => {
  * Files from the source root to copy to destination.
  */
 const rootFiles = [
-    'index.html',
-    'package.json'
+    'index.html'
 ];
 
 const moveRoot = () => {
+    const pkgFilePath = path.join(buildDest, 'package.json');
+    console.log(`Writing ${pkgFilePath}`);
+    const theme = JSON.stringify({
+        name: cssTheme.name,
+        version: pkg.version,
+        author: pkg.author
+    }, undefined, 2);
+    fs.writeFileSync(pkgFilePath, theme);
+
     console.log(`Moving root files to: ${buildDest}`);
     return gulp
         .src(rootFiles)
