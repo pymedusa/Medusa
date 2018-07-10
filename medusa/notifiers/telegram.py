@@ -59,7 +59,7 @@ class Notifier(object):
 
         log.debug('Telegram in use with API KEY: {0}', api_key)
 
-        message = '%s : %s' % (title.encode(), msg.encode())
+        message = '{0} : {1}'.format(title, msg).encode('utf-8')
         payload = urlencode({'chat_id': user_id, 'text': message})
         telegram_api = 'https://api.telegram.org/bot%s/%s'
 
