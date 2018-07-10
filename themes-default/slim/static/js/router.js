@@ -9,7 +9,7 @@ if (!window.router) {
     const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
 
     const router = new VueRouter({
-        base: document.body.getAttribute('web-root'),
+        base: document.body.getAttribute('web-root') + '/',
         mode: 'history',
         routes: Object.assign(routes || [], [{
             path: '/login',

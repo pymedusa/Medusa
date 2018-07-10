@@ -1,11 +1,11 @@
-const baseUrl = $('body').attr('web-root');
-const idToken = $('body').attr('api-key');
+const baseUrl = document.body.getAttribute('web-root');
+const idToken = document.body.getAttribute('api-key');
 
 /**
  * Api client based on the axios client, to communicate with medusa's web routes, which return json data.
  */
 const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
-    baseURL: baseUrl,
+    baseURL: baseUrl + '/',
     timeout: 10000,
     headers: {
         Accept: 'application/json',
@@ -17,7 +17,7 @@ const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
  * Api client based on the axios client, to communicate with medusa's api v1.
  */
 const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
-    baseURL: baseUrl + 'api/v1/' + idToken + '/',
+    baseURL: baseUrl + '/api/v1/' + idToken + '/',
     timeout: 10000,
     headers: {
         Accept: 'application/json',
@@ -29,7 +29,7 @@ const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
  * Api client based on the axios client, to communicate with medusa's api v2.
  */
 const api = axios.create({ // eslint-disable-line no-unused-vars
-    baseURL: baseUrl + 'api/v2/',
+    baseURL: baseUrl + '/api/v2/',
     timeout: 10000,
     headers: {
         Accept: 'application/json',

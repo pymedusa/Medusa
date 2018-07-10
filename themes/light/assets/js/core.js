@@ -3,7 +3,7 @@
 //       currently we can't do that as browser.js and a few others need it before this is loaded
 const topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
 const webRoot = $('body').attr('web-root');
-const apiRoot = webRoot + 'api/v2/';
+const apiRoot = webRoot + '/api/v2/';
 const apiKey = $('body').attr('api-key');
 
 const MEDUSA = {
