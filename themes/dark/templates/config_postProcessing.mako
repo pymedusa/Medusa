@@ -132,6 +132,9 @@ const startVue = () => {
         }),
         mounted() {
             const { $store } = this;
+
+            if (this.configLoaded) return;
+
             $store.dispatch('getConfig', 'main').then(() => {
                 this.configLoaded = true;
             }).catch(error => {
@@ -226,7 +229,7 @@ const startVue = () => {
                                                 <span>Sync File Extensions</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="sync_files" id="sync_files" :list-items="config.postProcessing.syncFiles" @change="config.postProcessing.syncFiles = $event"></select-list>
+                                                <select-list name="sync_files" id="sync_files" csv-enabled :list-items="config.postProcessing.syncFiles" @change="config.postProcessing.syncFiles = $event"></select-list>
                                                 <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
                                             </div>
                                         </div>

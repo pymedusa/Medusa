@@ -196,11 +196,9 @@ const store = new Puex({
                 nfoRename: null,
                 syncFiles: [],
                 fileTimestampTimezone: 'local',
-                // timezoneOptions: null,
                 extraScripts: [],
                 extraScriptsUrl: null,
                 appNamingStripYear: null
-                
             }
         },
         // Loaded show list
