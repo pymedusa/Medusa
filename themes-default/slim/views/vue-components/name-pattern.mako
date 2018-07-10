@@ -429,6 +429,12 @@
                 .catch(error => {
                     console.warn(error);
                 })
+            },
+            updateCustomName() {
+                // Store the custom naming pattern.
+                if (!this.presets.includes(this.pattern)) {
+                    this.customName = this.pattern;
+                }
             }
         },
         computed: {
@@ -447,13 +453,11 @@
         mounted() {
             this.pattern = this.namingPattern;
 
-            // Store the custom naming pattern.
-            if (!this.presets.includes(this.pattern)) {
-                this.customName = this.pattern;
-            }
-
             // Add Custom... as an option to the presets.
             this.presets = this.namingPresets.concat('Custom...');
+
+            // Update the custom name
+            this.updateCustomName();
 
             // Pass properties into local variables
             this.availableMultiEpStyles = this.multiEpStyles;
@@ -483,6 +487,27 @@
             },
             animeType() {
                 this.update();
+            },
+            // Update local variables when properties are updated
+            namingPattern() {
+                this.pattern = this.namingPattern;
+                this.updateCustomName();
+            },
+            namingPresets() {
+                this.presets = namingPresets;
+            },
+            multiEpStyle() {
+                this.selectedMultiEpStyle = this.multiEpStyle;
+                this.isMulti = Boolean(this.multiEpStyle);
+            },
+            multiEpStyles() {
+                this.availableMultiEpStyles = this.multiEpStyles;
+            },
+            animeNamingType() {
+                this.animeType = this.animeNamingType;
+            },
+            type() {
+                this.isEnabled = this.type ? false : this.enabled;
             }
         }
     

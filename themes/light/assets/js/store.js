@@ -164,7 +164,44 @@ const store = new Puex({
             subtitlesMulti: null,
             os: null,
             anonRedirect: null,
-            logDir: null
+            logDir: null,
+            postProcessing: {
+                naming: {
+                    pattern: null,
+                    enableCustomNamingSports: null,
+                    enableCustomNamingAirByDate: null,
+                    patternSports: null,
+                    patternAirByDate: null,
+                    enableCustomNamingAnime: null,
+                    patternAnime: null,
+                    animeMultiEp: null,
+                    animeNamingType: null
+                },
+                seriesDownloadDir: null,
+                processAutomatically: null,
+                processMethod: null,
+                deleteRarContent: null,
+                unpack: null,
+                noDelete: null,
+                reflinkAvailable: null,
+                postponeIfSyncFiles: null,
+                autoPostprocessorFrequency: 10,
+                airdateEpisodes: null,
+                moveAssociatedFiles: null,
+                allowedExtensions: [],
+                addShowsWithoutDir: null,
+                createMissingShowDirs: null,
+                renameEpisodes: null,
+                postponeIfNoSubs: null,
+                nfoRename: null,
+                syncFiles: [],
+                fileTimestampTimezone: 'local',
+                // timezoneOptions: null,
+                extraScripts: [],
+                extraScriptsUrl: null,
+                appNamingStripYear: null
+                
+            }
         },
         // Loaded show list
         // New shows can be added via
@@ -296,9 +333,19 @@ const store = new Puex({
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    store.commit(ADD_CONFIG, { section, config });
+                    return store.commit(ADD_CONFIG, { section, config });
                 });
             });
+        },
+        setConfig(context, { section, config }) {
+            const { dispatch } = context;
+
+            if (section !== 'main') {
+                return;
+            }
+            config = Object.keys(config).length ? config : store.state.config;
+
+            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
         },
         getShow(context, { indexer, id }) {
             return api.get('/series/' + indexer + id).then(res => {
