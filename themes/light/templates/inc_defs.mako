@@ -86,10 +86,9 @@
 <%def name="convert(obj)">
     <%
     import json
-    from medusa.numdict import NumDict
     ## This converts the keys to strings as keys can't be ints
     print('test')
-    if isinstance(obj, (NumDict, dict)):
+    if isinstance(obj, dict):
         new_obj = {}
         for key in obj:
             new_obj[str(key)] = obj[key]
