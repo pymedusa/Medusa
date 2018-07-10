@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "ava": "0.25.0",
-    "codecov": "3.0.2",
+    "codecov": "3.0.4",
     "dredd": "4.9.3",
     "execa": "0.10.0",
     "gulp": "3.9.1",
