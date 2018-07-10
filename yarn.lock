@@ -2164,7 +2164,7 @@ fragment-cache@^0.2.1:
   dependencies:
     map-cache "^0.2.2"
 
-fs-extra@5.0.0:
+fs-extra@5.0.0, fs-extra@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-5.0.0.tgz#414d0110cdd06705734d055652c5411260c31abd"
   dependencies:
@@ -4611,6 +4611,10 @@ pkg-dir@^2.0.0:
   dependencies:
     find-up "^2.1.0"
 
+pkginfo@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/pkginfo/-/pkginfo-0.4.1.tgz#b5418ef0439de5425fc4995042dced14fb2a84ff"
+
 plur@^2.0.0, plur@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/plur/-/plur-2.1.2.tgz#7482452c1a0f508e3e344eaec312c91c29dc655a"
@@ -5093,7 +5097,7 @@ replace-ext@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/replace-ext/-/replace-ext-1.0.0.tgz#de63128373fcbf7c3ccfa4de5a480c45a67958eb"
 
-request@^2.81.0:
+request@^2.81.0, request@^2.87.0:
   version "2.87.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.87.0.tgz#32f00235cd08d482b4d0d68db93a829c0ed5756e"
   dependencies:
@@ -5365,11 +5369,22 @@ snyk-config@2.1.0:
     debug "^3.1.0"
     nconf "^0.10.0"
 
-snyk-go-plugin@1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/snyk-go-plugin/-/snyk-go-plugin-1.5.0.tgz#0c51fe8c4cfc412f09a297ec33b79ab718f85633"
+snyk-docker-plugin@1.10.3:
+  version "1.10.3"
+  resolved "https://registry.yarnpkg.com/snyk-docker-plugin/-/snyk-docker-plugin-1.10.3.tgz#2ac2f05ab821e122a5e1851240d3c021bbb8223f"
+  dependencies:
+    debug "^3.1.0"
+    fs-extra "^5.0.0"
+    pkginfo "^0.4.1"
+    request "^2.87.0"
+    temp-dir "^1.0.0"
+
+snyk-go-plugin@1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/snyk-go-plugin/-/snyk-go-plugin-1.5.1.tgz#220016f2dc51e1f5fe8efe496049039ad3f03010"
   dependencies:
     graphlib "^2.1.1"
+    tmp "0.0.33"
     toml "^2.3.2"
 
 snyk-gradle-plugin@1.3.0:
@@ -5421,9 +5436,11 @@ snyk-policy@1.12.0:
     snyk-try-require "^1.1.1"
     then-fs "^2.0.0"
 
-snyk-python-plugin@1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/snyk-python-plugin/-/snyk-python-plugin-1.6.0.tgz#fca13e959e96fd7ac3a905cf5db8b210af250d76"
+snyk-python-plugin@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/snyk-python-plugin/-/snyk-python-plugin-1.6.1.tgz#eb3194b37b4710edebee3406a2adea4a0159e89f"
+  dependencies:
+    tmp "0.0.33"
 
 snyk-resolve-deps@3.1.0:
   version "3.1.0"
@@ -5463,7 +5480,16 @@ snyk-tree@^1.0.0:
   dependencies:
     archy "^1.0.0"
 
-snyk-try-require@1.3.0, snyk-try-require@^1.1.1:
+snyk-try-require@1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/snyk-try-require/-/snyk-try-require-1.3.1.tgz#6e026f92e64af7fcccea1ee53d524841e418a212"
+  dependencies:
+    debug "^3.1.0"
+    lodash.clonedeep "^4.3.0"
+    lru-cache "^4.0.0"
+    then-fs "^2.0.0"
+
+snyk-try-require@^1.1.1:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/snyk-try-require/-/snyk-try-require-1.3.0.tgz#f35706acf91c8af788d58e1f1ad6bf0fcf6c5493"
   dependencies:
@@ -5472,9 +5498,9 @@ snyk-try-require@1.3.0, snyk-try-require@^1.1.1:
     lru-cache "^4.0.0"
     then-fs "^2.0.0"
 
-snyk@1.80.1:
-  version "1.80.1"
-  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.80.1.tgz#f92d1fea82833a39a607598f847e2699f033be5c"
+snyk@1.88.2:
+  version "1.88.2"
+  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.88.2.tgz#fff27ebbaa4f624398bd6d31b76c008912efd6b7"
   dependencies:
     abbrev "^1.1.1"
     ansi-escapes "^3.1.0"
@@ -5492,19 +5518,20 @@ snyk@1.80.1:
     recursive-readdir "^2.2.2"
     semver "^5.5.0"
     snyk-config "2.1.0"
-    snyk-go-plugin "1.5.0"
+    snyk-docker-plugin "1.10.3"
+    snyk-go-plugin "1.5.1"
     snyk-gradle-plugin "1.3.0"
     snyk-module "1.8.2"
     snyk-mvn-plugin "1.2.0"
     snyk-nuget-plugin "1.6.2"
     snyk-php-plugin "1.5.1"
     snyk-policy "1.12.0"
-    snyk-python-plugin "1.6.0"
+    snyk-python-plugin "1.6.1"
     snyk-resolve "1.0.1"
     snyk-resolve-deps "3.1.0"
     snyk-sbt-plugin "1.3.0"
     snyk-tree "^1.0.0"
-    snyk-try-require "1.3.0"
+    snyk-try-require "1.3.1"
     tempfile "^2.0.0"
     then-fs "^2.0.0"
     undefsafe "^2.0.0"
@@ -5983,7 +6010,7 @@ timed-out@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
 
-tmp@^0.0.33:
+tmp@0.0.33, tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
   dependencies:
