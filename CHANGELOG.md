@@ -18,6 +18,7 @@
 **Fixes**
 
 - Fixed Emby test notification ([#4622](https://github.com/pymedusa/Medusa/pull/4622))
+- Fixed NorBits provider formatting download URL incorrectly ([#4642](https://github.com/pymedusa/Medusa/pull/4642))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
