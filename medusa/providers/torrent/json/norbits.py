@@ -33,10 +33,10 @@ class NorbitsProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://norbits.net'
+        self.url = 'https://norbits.net/'
         self.urls = {
-            'search': urljoin(self.url, 'api2.php?action=torrents'),
-            'download': urljoin(self.url, 'download.php?'),
+            'search': self.url + 'api2.php?action=torrents',
+            'download': self.url + 'download.php?'
         }
 
         # Proper Strings
