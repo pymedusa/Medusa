@@ -7,6 +7,7 @@ import traceback
 from tornado.concurrent import Future
 from tornado import gen
 from tornado.httpclient import HTTPError, HTTPRequest
+from tornado.locks import Event
 from tornado.log import gen_log, app_log
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
 from tornado.template import DictLoader
@@ -25,7 +26,9 @@ except ImportError:
     traceback.print_exc()
     raise
 
-from tornado.websocket import WebSocketHandler, websocket_connect, WebSocketError, WebSocketClosedError
+from tornado.websocket import (
+    WebSocketHandler, websocket_connect, WebSocketError, WebSocketClosedError,
+)
 
 try:
     from tornado import speedups
@@ -141,6 +144,43 @@ class RenderMessageHandler(TestWebSocketHandler):
         self.write_message(self.render_string('message.html', message=message))
 
 
+class SubprotocolHandler(TestWebSocketHandler):
+    def initialize(self, **kwargs):
+        super(SubprotocolHandler, self).initialize(**kwargs)
+        self.select_subprotocol_called = False
+
+    def select_subprotocol(self, subprotocols):
+        if self.select_subprotocol_called:
+            raise Exception("select_subprotocol called twice")
+        self.select_subprotocol_called = True
+        if 'goodproto' in subprotocols:
+            return 'goodproto'
+        return None
+
+    def open(self):
+        if not self.select_subprotocol_called:
+            raise Exception("select_subprotocol not called")
+        self.write_message("subprotocol=%s" % self.selected_subprotocol)
+
+
+class OpenCoroutineHandler(TestWebSocketHandler):
+    def initialize(self, test, **kwargs):
+        super(OpenCoroutineHandler, self).initialize(**kwargs)
+        self.test = test
+        self.open_finished = False
+
+    @gen.coroutine
+    def open(self):
+        yield self.test.message_sent.wait()
+        yield gen.sleep(0.010)
+        self.open_finished = True
+
+    def on_message(self, message):
+        if not self.open_finished:
+            raise Exception('on_message called before open finished')
+        self.write_message('ok')
+
+
 class WebSocketBaseTestCase(AsyncHTTPTestCase):
     @gen.coroutine
     def ws_connect(self, path, **kwargs):
@@ -181,6 +221,10 @@ class WebSocketTest(WebSocketBaseTestCase):
              dict(close_future=self.close_future)),
             ('/render', RenderMessageHandler,
              dict(close_future=self.close_future)),
+            ('/subprotocol', SubprotocolHandler,
+             dict(close_future=self.close_future)),
+            ('/open_coroutine', OpenCoroutineHandler,
+             dict(close_future=self.close_future, test=self)),
         ], template_loader=DictLoader({
             'message.html': '<b>{{ message }}</b>',
         }))
@@ -441,6 +485,32 @@ class WebSocketTest(WebSocketBaseTestCase):
 
         self.assertEqual(cm.exception.code, 403)
 
+    @gen_test
+    def test_subprotocols(self):
+        ws = yield self.ws_connect('/subprotocol', subprotocols=['badproto', 'goodproto'])
+        self.assertEqual(ws.selected_subprotocol, 'goodproto')
+        res = yield ws.read_message()
+        self.assertEqual(res, 'subprotocol=goodproto')
+        yield self.close(ws)
+
+    @gen_test
+    def test_subprotocols_not_offered(self):
+        ws = yield self.ws_connect('/subprotocol')
+        self.assertIs(ws.selected_subprotocol, None)
+        res = yield ws.read_message()
+        self.assertEqual(res, 'subprotocol=None')
+        yield self.close(ws)
+
+    @gen_test
+    def test_open_coroutine(self):
+        self.message_sent = Event()
+        ws = yield self.ws_connect('/open_coroutine')
+        yield ws.write_message('hello')
+        self.message_sent.set()
+        res = yield ws.read_message()
+        self.assertEqual(res, 'ok')
+        yield self.close(ws)
+
 
 if sys.version_info >= (3, 5):
     NativeCoroutineOnMessageHandler = exec_test(globals(), locals(), """
@@ -483,8 +553,20 @@ class CompressionTestMixin(object):
 
     def get_app(self):
         self.close_future = Future()
+
+        class LimitedHandler(TestWebSocketHandler):
+            @property
+            def max_message_size(self):
+                return 1024
+
+            def on_message(self, message):
+                self.write_message(str(len(message)))
+
         return Application([
             ('/echo', EchoHandler, dict(
+                close_future=self.close_future,
+                compression_options=self.get_server_compression_options())),
+            ('/limited', LimitedHandler, dict(
                 close_future=self.close_future,
                 compression_options=self.get_server_compression_options())),
         ])
@@ -510,6 +592,22 @@ class CompressionTestMixin(object):
         self.assertEqual(ws.protocol._message_bytes_in, len(self.MESSAGE) * 3)
         self.verify_wire_bytes(ws.protocol._wire_bytes_in,
                                ws.protocol._wire_bytes_out)
+        yield self.close(ws)
+
+    @gen_test
+    def test_size_limit(self):
+        ws = yield self.ws_connect(
+            '/limited',
+            compression_options=self.get_client_compression_options())
+        # Small messages pass through.
+        ws.write_message('a' * 128)
+        response = yield ws.read_message()
+        self.assertEqual(response, '128')
+        # This message is too big after decompression, but it compresses
+        # down to a size that will pass the initial checks.
+        ws.write_message('a' * 2048)
+        response = yield ws.read_message()
+        self.assertIsNone(response)
         yield self.close(ws)
 
 
@@ -619,6 +717,34 @@ class ClientPeriodicPingTest(WebSocketBaseTestCase):
             self.assertEqual(response, "got ping")
         yield self.close(ws)
         # TODO: test that the connection gets closed if ping responses stop.
+
+
+class ManualPingTest(WebSocketBaseTestCase):
+    def get_app(self):
+        class PingHandler(TestWebSocketHandler):
+            def on_ping(self, data):
+                self.write_message(data, binary=isinstance(data, bytes))
+
+        self.close_future = Future()
+        return Application([
+            ('/', PingHandler, dict(close_future=self.close_future)),
+        ])
+
+    @gen_test
+    def test_manual_ping(self):
+        ws = yield self.ws_connect('/')
+
+        self.assertRaises(ValueError, ws.ping, 'a' * 126)
+
+        ws.ping('hello')
+        resp = yield ws.read_message()
+        # on_ping always sees bytes.
+        self.assertEqual(resp, b'hello')
+
+        ws.ping(b'binary hello')
+        resp = yield ws.read_message()
+        self.assertEqual(resp, b'binary hello')
+        yield self.close(ws)
 
 
 class MaxMessageSizeTest(WebSocketBaseTestCase):
