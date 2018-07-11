@@ -3,7 +3,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
     let selectedEpisode;
     const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     const subtitlesResultModal = $('#manualSubtitleSearchModal');
-    const subtitlesMulti = MEDUSA.config.subtitlesMulti;
+    const { subtitlesMulti } = MEDUSA.config;
     const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
 
     function disableAllSearches() {

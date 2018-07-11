@@ -6,6 +6,8 @@ if (!window.router) {
     const configComponent = httpVueLoader('js/templates/config.vue');
     const addShowsComponent = httpVueLoader('js/templates/add-shows.vue');
     const addRecommendedComponent = httpVueLoader('js/templates/add-recommended.vue');
+    // eslint-disable-next-line capitalized-comments
+    // const scheduleComponent = httpVueLoader('js/templates/schedule.vue');
     const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
 
     const router = new VueRouter({
@@ -42,6 +44,14 @@ if (!window.router) {
                 header: 'Add Recommended Shows'
             },
             component: addRecommendedComponent
+        }, {
+            path: '/schedule',
+            name: 'schedule',
+            meta: {
+                title: 'Schedule',
+                header: 'Schedule'
+            }, // eslint-disable-line comma-dangle
+            // component: scheduleComponent
         }, {
             path: '/not-found',
             name: 'not-found',

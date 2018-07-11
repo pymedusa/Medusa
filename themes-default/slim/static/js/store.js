@@ -1,7 +1,7 @@
 /* globals Vue */
 const Puex = window.puex.default;
 const VueNativeSock = window.VueNativeSock.default;
-const displayNotification = window.displayNotification;
+const { displayNotification } = window;
 
 Vue.use(Puex);
 

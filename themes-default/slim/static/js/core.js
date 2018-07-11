@@ -33,7 +33,7 @@ const UTIL = {
             $('[v-cloak]').removeAttr('v-cloak');
         }
 
-        const body = document.body;
+        const { body } = document;
         $('[asset]').each(function() {
             const asset = $(this).attr('asset');
             const series = $(this).attr('series');

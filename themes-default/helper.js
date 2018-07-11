@@ -2,15 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const gulp = require('gulp');
-const workDir = process.cwd();
-const pathToFolder = path.join(workDir, 'themes-default');
 const execa = require('execa');
-
-const build = done => {
-    // Place code for your default task here
-    done();
-};
 
 const getFolders = dir => {
     return fs.readdirSync(dir)
@@ -21,7 +13,7 @@ const getFolders = dir => {
 
 const lintTheme = theme => {
     console.log(`Starting lint of ${theme}`);
-    const stream = execa('yarn', [], {cwd: theme});
+    const stream = execa('yarn', ['xo'], {cwd: theme});
     stream.stdout.pipe(process.stdout);
     return stream
         .catch(error => {
@@ -30,12 +22,18 @@ const lintTheme = theme => {
         });
 };
 
-gulp.task('default', ['lintthemes']);
-gulp.task('build', build);
-gulp.task('lintthemes', () => {
-    const folders = getFolders(pathToFolder);
+const lintThemes = () => {
+    const folders = getFolders(__dirname);
     return Promise.all(folders.map(folder => {
-        const fullPath = path.join(pathToFolder, folder);
+        const fullPath = path.join(__dirname, folder);
         return lintTheme(fullPath);
     }));
-});
+};
+
+require('yargs') // eslint-disable-line
+    .command('lint', 'lint themes', () => {}, (argv) => {
+        lintThemes();
+    })
+    .demandCommand(1, 'You need at least one command before moving on')
+    .help()
+    .argv

@@ -1285,7 +1285,7 @@ class CMD_PostProcess(ApiCall):
         self.force_replace, args = self.check_params(args, kwargs, 'force_replace', False, False, 'bool', [])
         self.return_data, args = self.check_params(args, kwargs, 'return_data', False, False, 'bool', [])
         self.process_method, args = self.check_params(args, kwargs, 'process_method', False, False, 'string',
-                                                      ['copy', 'symlink', 'hardlink', 'move'])
+                                                      ['copy', 'symlink', 'hardlink', 'move', 'reflink'])
         self.is_priority, args = self.check_params(args, kwargs, 'is_priority', False, False, 'bool', [])
         self.delete_files, args = self.check_params(args, kwargs, 'delete_files', False, False, 'bool', [])
         self.failed, args = self.check_params(args, kwargs, 'failed', False, False, 'bool', [])
