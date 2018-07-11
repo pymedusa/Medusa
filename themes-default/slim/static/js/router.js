@@ -15,8 +15,7 @@ if (!window.router) {
             path: '/login',
             name: 'login',
             meta: {
-                title: 'Login',
-                header: 'Medusa'
+                title: 'Login'
             },
             component: loginComponent
         }, {
