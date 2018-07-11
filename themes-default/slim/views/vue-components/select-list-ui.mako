@@ -92,18 +92,20 @@ Vue.component('select-list', {
             type: Boolean,
             default: true,
             required: false
+        },
+        csvEnabled: {
+            type: Boolean,
+            default: false,
+            required: false
         }
     },
     data() {
         return {
             lock: false,
-            unwatchProp: null,
-
             editItems: [],
             newItem: '',
             indexCounter: 0,
-            csv: '',
-            csvEnabled: false
+            csv: ''
         }
     },
     created() {

@@ -108,21 +108,21 @@ Vue.component('select-list', {
             csv: ''
         }
     },
-    // created() {
-    //     /**
-    //      * listItems property might receive values originating from the API,
-    //      * that are sometimes not avaiable when rendering.
-    //      * @TODO: Maybe we can remove this in the future.
-    //      */
-    //     this.unwatchProp = this.$watch('listItems', () => {
-    //         this.unwatchProp();
+    created() {
+        /**
+         * listItems property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        this.unwatchProp = this.$watch('listItems', () => {
+            this.unwatchProp();
 
-    //         this.lock = true;
-    //         this.editItems = this.sanitize(this.listItems);
-    //         this.$nextTick(() => this.lock = false);
-    //         this.csv = this.editItems.map(x => x.value).join(', ');
-    //     });
-    // },
+            this.lock = true;
+            this.editItems = this.sanitize(this.listItems);
+            this.$nextTick(() => this.lock = false);
+            this.csv = this.editItems.map(x => x.value).join(', ');
+        });
+    },
     methods: {
         addItem: function(item) {
             if (this.unique && this.editItems.find(i => i.value === item)) return;
@@ -197,13 +197,6 @@ Vue.component('select-list', {
                 if (!this.lock) {
                     this.$emit('change', this.editItems);
                 }
-            },
-            deep: true
-        },
-        listItems: {
-            handler: function(newValue, oldValue) {
-                console.log('Watch triggered!!!');
-                this.editItems = this.sanitize(newValue);
             },
             deep: true
         },
