@@ -950,26 +950,6 @@ class Home(WebRoot):
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
-        def titler(x):
-            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
-
-        if app.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in app.showList:
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    shows.append(show)
-            sorted_show_lists = [
-                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
-                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
-            ]
-        else:
-            sorted_show_lists = [
-                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
-            ]
-
         bwl = None
         if series_obj.is_anime:
             bwl = series_obj.release_groups
@@ -997,7 +977,7 @@ class Home(WebRoot):
         return t.render(
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=series_obj, sql_results=sql_results, season_results=season_results,
-            sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
+            bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(series_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
@@ -1246,26 +1226,6 @@ class Home(WebRoot):
                         'icon': 'ui-icon ui-icon-comment',
                     })
 
-        def titler(x):
-            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
-
-        if app.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in app.showList:
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    shows.append(show)
-            sorted_show_lists = [
-                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
-                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
-            ]
-        else:
-            sorted_show_lists = [
-                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
-            ]
-
         bwl = None
         if series_obj.is_anime:
             bwl = series_obj.release_groups
@@ -1396,7 +1356,7 @@ class Home(WebRoot):
         return t.render(
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=series_obj, provider_results=provider_results, episode=episode,
-            sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
+            bwl=bwl, season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=' | '.join(series_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
