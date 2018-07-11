@@ -196,11 +196,9 @@ const store = new Puex({
                 nfoRename: null,
                 syncFiles: [],
                 fileTimestampTimezone: 'local',
-                // timezoneOptions: null,
                 extraScripts: [],
                 extraScriptsUrl: null,
                 appNamingStripYear: null
-                
             }
         },
         // Loaded show list
@@ -333,7 +331,7 @@ const store = new Puex({
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    return store.commit(ADD_CONFIG, { section, config });
+                    store.commit(ADD_CONFIG, { section, config });
                 });
             });
         },

@@ -1,13 +1,12 @@
 <%inherit file="/layouts/main.mako"/>
 <%namespace name="inc_defs" file="/inc_defs.mako"/>
 <%!
-    import os.path
-    import datetime
-    import pkgutil
     from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
     from medusa import config
+
+    ## metadata
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
     from medusa import naming
@@ -55,41 +54,44 @@ const startVue = () => {
                 processMethods: processMethods,
                 multiEpStrings: multiEpStrings,
                 animeMultiEpStrings: multiEpStrings,
-                timezoneOptions: timezoneOptions
-                // multiEpSelected: config.postProcessing.naming.multiEp,
-
-                // enabledSports: config.postProcessing.naming.enableCustomNamingSports,
-                // sportsPattern: config.postProcessing.naming.patternSports,
-
-                // enabledAirByDate: config.postProcessing.naming.enableCustomNamingAirByDate,
-                // abdPattern: config.postProcessing.naming.patternAirByDate,
-                
-                // enabledAnime: config.postProcessing.naming.enableCustomNamingAnime,
-                // animePattern: config.postProcessing.naming.patternAnime,
-                // animeMultiEpSelected: config.postProcessing.naming.animeMultiEp,      
-                // animeNamingType: config.postProcessing.naming.animeNamingType,
-                // seriesDownloadDir: config.postProcessing.seriesDownloadDir,
-                // processAutomatically: config.postProcessing.processAutomatically,
-                // processMethod: config.postProcessing.processMethod,
-                // deleteRarContent: config.postProcessing.deleteRarContent,
-                // unpack: config.postProcessing.unpack,
-                // noDelete: config.postProcessing.noDelete,
-                // reflinkAvailable: config.postProcessing.reflinkAvailable,
-                // postponeIfSyncFiles: config.postProcessing.postponeIfSyncFiles,
-                // autoPostprocessorFrequency: config.postProcessing.autoPostprocessorFrequency || 10,
-                // airdateEpisodes: config.postProcessing.airdateEpisodes,
-                // moveAssociatedFiles: config.postProcessing.moveAssociatedFiles,
-                // allowedExtensions: config.postProcessing.allowedExtensions || [],
-                // addShowsWithoutDir: config.postProcessing.addShowsWithoutDir,
-                // createMissingShowDirs: config.postProcessing.createMissingShowDirs,
-                // renameEpisodes: config.postProcessing.renameEpisodes,
-                // postponeIfNoSubs: config.postProcessing.postponeIfNoSubs,
-                // nfoRename: config.postProcessing.nfoRename,
-                // syncFiles: config.postProcessing.syncFiles || [],
-                // fileTimestampTimezone: config.postProcessing.fileTimestampTimezone || 'local',
-                // extraScripts: config.postProcessing.extraScripts || [],
-                // extraScriptsUrl: config.postProcessing.extraScriptsUrl,
-                // appNamingStripYear: config.postProcessing.appNamingStripYear
+                timezoneOptions: timezoneOptions,
+                data: {
+                    postProcessing: {
+                        naming: {
+                            pattern: null,
+                            enableCustomNamingSports: null,
+                            enableCustomNamingAirByDate: null,
+                            patternSports: null,
+                            patternAirByDate: null,
+                            enableCustomNamingAnime: null,
+                            patternAnime: null,
+                            animeMultiEp: null,
+                            animeNamingType: null
+                        },
+                        seriesDownloadDir: null,
+                        processAutomatically: null,
+                        processMethod: null,
+                        deleteRarContent: null,
+                        unpack: null,
+                        noDelete: null,
+                        reflinkAvailable: null,
+                        postponeIfSyncFiles: null,
+                        autoPostprocessorFrequency: 10,
+                        airdateEpisodes: null,
+                        moveAssociatedFiles: null,
+                        allowedExtensions: [],
+                        addShowsWithoutDir: null,
+                        createMissingShowDirs: null,
+                        renameEpisodes: null,
+                        postponeIfNoSubs: null,
+                        nfoRename: null,
+                        syncFiles: [],
+                        fileTimestampTimezone: 'local',
+                        extraScripts: [],
+                        extraScriptsUrl: null,
+                        appNamingStripYear: null
+                    }
+                }
             };
         },
         methods: {
@@ -130,9 +132,12 @@ const startVue = () => {
                 return this.processMethods.get(processMethod)
             }
         }),
-        mounted() {
+        async mounted() {
             const { $store } = this;
-            $store.dispatch('getConfig', 'main').then(() => {
+
+            if (this.configLoaded) return;
+
+            await $store.dispatch('getConfig', 'main').then(() => {
                 this.configLoaded = true;
             }).catch(error => {
                 console.debug(error);
@@ -147,7 +152,7 @@ const startVue = () => {
     <h1 class="header">{{header}}</h1>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" class="form-horizontal" @submit.prevent="savePostprocessing()"/>
+            <form id="configForm" class="form-horizontal" @submit.prevent="savePostprocessing()">
                 <div id="config-components">
                     <ul>
                         <li><app-link href="#post-processing">Post Processing</app-link></li>
@@ -174,7 +179,7 @@ const startVue = () => {
                                         </div>
                                     </div>
                                 
-                                    <div v-if="config.postProcessing.processAutomatically" id="post-process-toggle-wrapper">   
+                                    <div v-show="config.postProcessing.processAutomatically" id="post-process-toggle-wrapper">   
                                         
                                         <div class="form-group">
                                             <label for="tv_download_dir" class="col-sm-2 control-label">
@@ -226,7 +231,7 @@ const startVue = () => {
                                                 <span>Sync File Extensions</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="sync_files" id="sync_files" :list-items="config.postProcessing.syncFiles" @change="config.postProcessing.syncFiles = $event"></select-list>
+                                                <select-list name="sync_files" id="sync_files" csv-enabled :list-items="config.postProcessing.syncFiles" @change="config.postProcessing.syncFiles = $event"></select-list>
                                                 <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
                                             </div>
                                         </div>
@@ -290,7 +295,7 @@ const startVue = () => {
                                                 <span>Keep associated file extensions</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="allowed_extensions" id="allowed_extensions" :list-items="config.postProcessing.allowedExtensions" @change="config.postProcessing.allowedExtensions = $event"></select-list>
+                                                <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="config.postProcessing.allowedExtensions" @change="config.postProcessing.allowedExtensions = $event"></select-list>
                                                 <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
                                             </div>
                                         </div>
@@ -364,7 +369,7 @@ const startVue = () => {
                                                 <span>Extra Scripts</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="extra_scripts" id="extra_scripts" :list-items="config.postProcessing.extraScripts" @change="config.postProcessing.extraScripts = $event"></select-list>
+                                                <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="config.postProcessing.extraScripts" @change="config.postProcessing.extraScripts = $event"></select-list>
                                                 <span>See <app-link :href="config.postProcessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                             </div>
                                         </div>

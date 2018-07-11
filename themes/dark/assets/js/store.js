@@ -331,7 +331,7 @@ const store = new Puex({
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    return store.commit(ADD_CONFIG, { section, config });
+                    store.commit(ADD_CONFIG, { section, config });
                 });
             });
         },
