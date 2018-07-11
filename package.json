@@ -42,7 +42,8 @@
           "message": "Please use 4 spaces for indentation.",
           "severity": "error"
         }
-      ]
+      ],
+      "no-descending-specificity": null
     },
     "ignoreFiles": [
       "themes-default/**/static/css/lib/**",
