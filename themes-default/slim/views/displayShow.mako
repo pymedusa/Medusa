@@ -28,6 +28,14 @@ const startVue = () => {
             const { $store } = this;
             $store.dispatch('getShows'); // Used by show-selector component
         },
+        mounted() {
+            // Adjust the summary background position and size on page load and resize
+            this.$once('loaded', () => {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
+        }
     });
 };
 </script>

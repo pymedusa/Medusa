@@ -62,7 +62,12 @@
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
-                    <div id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <div v-if="globalLoading" class="text-center ${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                        <h3>Loading....</h3>
+                        If this is taking too long,<br>
+                        <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
+                    </div>
+                    <div :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
                     </div>
                </div><!-- /content -->
@@ -164,6 +169,11 @@
 
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
+                data() {
+                    return {
+                        globalLoading: true
+                    };
+                },
                 mounted() {
                     if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
                         // We wait 1000ms to allow the mutations to show in vue dev-tools
@@ -171,13 +181,19 @@
                         setTimeout(() => {
                             const { store } = window;
                             store.dispatch('login');
-                            store.dispatch('getConfig');
+                            store.dispatch('getConfig')
+                                .then(() => this.$emit('loaded'));
                         }, 1000);
                     }
+
+                    this.$once('loaded', () => {
+                        this.globalLoading = false;
+                    });
                 },
                 // Make auth and config accessible to all components
                 computed: store.mapState(['auth', 'config'])
-            })
+            });
+
             window.routes = [];
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;

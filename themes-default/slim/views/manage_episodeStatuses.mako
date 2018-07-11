@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa.common import Overview, statusStrings, SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import Overview, statusStrings, SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa import app
 %>
 <%block name="scripts">
@@ -32,10 +32,8 @@ const startVue = () => {
     % endif
     <form action="manage/episodeStatuses" method="get">
     Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
-    % for cur_status in (SKIPPED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, WANTED, IGNORED, DOWNLOADED, ARCHIVED):
-        %if cur_status not in (ARCHIVED, DOWNLOADED):
-            <option value="${cur_status}">${statusStrings[cur_status]}</option>
-        %endif
+    % for cur_status in (WANTED, SKIPPED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
+        <option value="${cur_status}">${statusStrings[cur_status]}</option>
     % endfor
     </select>
     <input class="btn-medusa btn-inline" type="submit" value="Manage" />
@@ -54,14 +52,13 @@ const startVue = () => {
     <input type="hidden" id="row_class" value="${row_class}" />
     Set checked shows/episodes to <select name="newStatus" class="form-control form-control-inline input-sm">
     <%
-        statusList = [SKIPPED, WANTED, IGNORED, DOWNLOADED, ARCHIVED]
-        # Do not allow setting to bare downloaded or archived!
-        statusList.remove(DOWNLOADED)
-        statusList.remove(ARCHIVED)
+        statusList = [WANTED, SKIPPED, IGNORED, DOWNLOADED]
+        if int(whichStatus) == DOWNLOADED:
+            statusList.append(ARCHIVED)
+        if app.USE_FAILED_DOWNLOADS and int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
+            statusList.append(FAILED)
         if int(whichStatus) in statusList:
             statusList.remove(int(whichStatus))
-        if app.USE_FAILED_DOWNLOADS and int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED, DOWNLOADED):
-            statusList.append(FAILED)
     %>
     % for cur_status in statusList:
         <option value="${cur_status}">${statusStrings[cur_status]}</option>
