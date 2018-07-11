@@ -12,6 +12,7 @@ from builtins import str
 from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
+from medusa.helper.mappings import NonEmptyDict
 from medusa.helper.metadata import get_image
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
@@ -997,3 +998,26 @@ class GenericMetadata(object):
             u'Could not find any {type} images on TMDB for {series}',
             {u'type': img_type, u'series': show.name}
         )
+
+    def to_json(self):
+        """Return JSON representation."""
+        data = NonEmptyDict()
+        data['id'] = self.get_id()
+        data['name'] = self.name
+        data['fanartName'] = self.fanart_name
+        data['posterName'] = self.poster_name
+        data['bannerName'] = self.banner_name
+        data['seasonAllPosterName'] = self.season_all_poster_name
+        data['seasonAllBannerName'] = self.season_all_banner_name
+        data['showMetadata'] = self.show_metadata
+        data['episodeMetadata'] = self.episode_metadata
+        data['fanart'] = self.fanart
+        data['poster'] = self.poster
+        data['banner'] = self.banner
+        data['episodeThumbnails'] = self.episode_thumbnails
+        data['seasonPosters'] = self.season_posters
+        data['seasonBanners'] = self.season_banners
+        data['seasonAllPoster'] = self.season_all_poster
+        data['seasonAllBanner'] = self.season_all_banner
+
+        return data

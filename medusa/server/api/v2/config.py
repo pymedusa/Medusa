@@ -26,7 +26,7 @@ from medusa.server.api.v2.base import (
     set_nested_value,
 )
 
-from six import text_type
+from six import iteritems, text_type
 
 from tornado.escape import json_decode
 
@@ -77,13 +77,12 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.seriesDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
-        'postProcessing.deleteRarContent': StringField(app, 'DELRARCONTENTS'),
-        'postProcessing.unpack': StringField(app, 'UNPACK'),
-        'postProcessing.noDelete': StringField(app, 'NO_DELETE'),
-        # 'postProcessing.reflinkAvailable': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
+        'postProcessing.unpack': BooleanField(app, 'UNPACK'),
+        'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
         'postProcessing.postponeIfSyncFiles': BooleanField(app, 'POSTPONE_IF_SYNC_FILES'),
         'postProcessing.autoPostprocessorFrequency': IntegerField(app, 'AUTOPOSTPROCESSOR_FREQUENCY'),
-        'postProcessing.airdateEpisodes': StringField(app, 'AIRDATE_EPISODES'),
+        'postProcessing.airdateEpisodes': BooleanField(app, 'AIRDATE_EPISODES'),
 
         'postProcessing.moveAssociatedFiles': BooleanField(app, 'MOVE_ASSOCIATED_FILES'),
         'postProcessing.allowedExtensions': ListField(app, 'ALLOWED_EXTENSIONS'),
@@ -94,7 +93,6 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.nfoRename': BooleanField(app, 'NFO_RENAME'),
         'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
         'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
-        # 'postProcessing.timezoneOptions': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.extraScripts': ListField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS'),
         'postProcessing.appNamingStripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
@@ -304,18 +302,18 @@ class DataGenerator(object):
         section_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
         section_data['postProcessing']['naming']['animeNamingType'] = app.NAMING_ANIME
         section_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
-        section_data['postProcessing']['processAutomatically'] = app.PROCESS_AUTOMATICALLY
-        section_data['postProcessing']['postponeIfSyncFiles'] = app.POSTPONE_IF_SYNC_FILES
-        section_data['postProcessing']['postponeIfNoSubs'] = app.POSTPONE_IF_NO_SUBS
-        section_data['postProcessing']['renameEpisodes'] = app.RENAME_EPISODES
-        section_data['postProcessing']['createMissingShowDirs'] = app.CREATE_MISSING_SHOW_DIRS
-        section_data['postProcessing']['addShowsWithoutDir'] = app.ADD_SHOWS_WO_DIR
-        section_data['postProcessing']['moveAssociatedFiles'] = app.MOVE_ASSOCIATED_FILES
-        section_data['postProcessing']['nfoRename'] = app.NFO_RENAME
-        section_data['postProcessing']['airdateEpisodes'] = app.AIRDATE_EPISODES
-        section_data['postProcessing']['unpack'] = app.UNPACK
-        section_data['postProcessing']['deleteRarContent'] = app.DELRARCONTENTS
-        section_data['postProcessing']['noDelete'] = app.NO_DELETE
+        section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+        section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
+        section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
+        section_data['postProcessing']['renameEpisodes'] = bool(app.RENAME_EPISODES)
+        section_data['postProcessing']['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
+        section_data['postProcessing']['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
+        section_data['postProcessing']['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
+        section_data['postProcessing']['nfoRename'] = bool(app.NFO_RENAME)
+        section_data['postProcessing']['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
+        section_data['postProcessing']['unpack'] = bool(app.UNPACK)
+        section_data['postProcessing']['deleteRarContent'] = bool(app.DELRARCONTENTS)
+        section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
         section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
         section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
         section_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
@@ -324,7 +322,7 @@ class DataGenerator(object):
         section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
         section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
-        section_data['postProcessing']['appNamingStripYear'] = app.NAMING_STRIP_YEAR
+        section_data['postProcessing']['appNamingStripYear'] = bool(app.NAMING_STRIP_YEAR)
 
         return section_data
 
@@ -394,5 +392,16 @@ class DataGenerator(object):
         section_data['values']['failed'] = common.FAILED
         section_data['values']['snatchedBest'] = common.SNATCHED_BEST
         section_data['strings'] = common.statusStrings
+
+        return section_data
+
+    @staticmethod
+    def data_metadata():
+        """Metadata."""
+        section_data = NonEmptyDict()
+
+        section_data['metadataProviders'] = {
+            provider.to_json().get('id'): provider.to_json() for provider in app.metadata_provider_dict.values()
+        }
 
         return section_data
