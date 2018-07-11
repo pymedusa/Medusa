@@ -76,6 +76,9 @@ class IssueSubmitter(object):
         content = '\n'.join([text_type(ll) for ll in context_loglines])
         if not content:
             return None
+        # Don't create a gist if the content equals the error message
+        if content == text_type(logline):
+            return None
         return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
 
     @staticmethod
