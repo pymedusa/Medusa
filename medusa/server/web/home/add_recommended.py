@@ -32,6 +32,10 @@ class HomeAddRecommended(Home):
         super(HomeAddRecommended, self).__init__(*args, **kwargs)
 
     def index(self):
-        """Render template for route /home/addRecommeded."""
+        """
+        Render template for route /home/addRecommended.
+
+        [Converted to VueRouter]
+        """
         t = PageTemplate(rh=self, filename="index.mako")
         return t.render(topmenu='home', controller="addShows", action="index")

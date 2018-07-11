@@ -110,7 +110,7 @@ const startVue = () => {
                                 </div>
                                 <div class="field-pair">
                                     <label for="qualityPreset">
-                                        <span class="component-title">Preferred Quality</span>
+                                        <span class="component-title">Quality</span>
                                         <span class="component-desc">
                                             <%
                                                 ## quality_value is None when the qualities of the edited shows differ
