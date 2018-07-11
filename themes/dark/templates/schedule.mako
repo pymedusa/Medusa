@@ -13,30 +13,22 @@ const startVue = () => {
         store,
         el: '#vue-wrap',
         router,
-        metaInfo: {
-            title: 'Schedule'
-        },
-        data() {
-            return {
-                header: 'Schedule'
-            };
-        },
-        computed: Object.assign(
-            store.mapState(['shows']),
-            {
-                layout: {
-                    get() {
-                        const { config } = this;
-                        return config.layout.schedule;
-                    },
-                    set(layout) {
-                        const { $store } = this;
-                        const page = 'schedule';
-                        $store.dispatch('setLayout', { page, layout });
-                    }
+        computed: Object.assign(store.mapState(['shows']), {
+            header() {
+                return this.$route.meta.header;
+            },
+            layout: {
+                get() {
+                    const { config } = this;
+                    return config.layout.schedule;
+                },
+                set(layout) {
+                    const { $store } = this;
+                    const page = 'schedule';
+                    $store.dispatch('setLayout', { page, layout });
                 }
             }
-        ),
+        }),
         mounted() {
             const { $store, $route } = this;
             // $store.dispatch('getShows');
