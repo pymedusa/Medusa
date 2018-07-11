@@ -21,7 +21,7 @@ const getFolders = dir => {
 
 const lintTheme = theme => {
     console.log(`Starting lint of ${theme}`);
-    const stream = execa('yarn', [], {cwd: theme});
+    const stream = execa('yarn', ['xo'], {cwd: theme});
     stream.stdout.pipe(process.stdout);
     return stream
         .catch(error => {
