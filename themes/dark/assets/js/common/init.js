@@ -142,27 +142,6 @@ MEDUSA.common.init = function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
     });
 
-    $.rootDirCheck = function() {
-        if ($('#rootDirs option:selected').length === 0) {
-            $('button[data-add-show]').prop('disabled', true);
-            if (!$('#configure_show_options').is(':checked')) {
-                $('#configure_show_options').prop('checked', true);
-                $('#content_configure_show_options').fadeIn('fast', 'linear');
-            }
-            if ($('#rootDirAlert').length === 0) {
-                $('#content-row').before('<div id="rootDirAlert"><div class="text-center">' +
-                  '<div class="alert alert-danger upgrade-notification hidden-print role="alert">' +
-                  '<strong>ERROR!</strong> Unable to add recommended shows.  Please set a default directory first.' +
-                  '</div></div></div>');
-            } else {
-                $('#rootDirAlert').show();
-            }
-        } else {
-            $('#rootDirAlert').hide();
-            $('button[data-add-show]').prop('disabled', false);
-        }
-    };
-
     $.confirm.options = {
         confirmButton: 'Yes',
         cancelButton: 'Cancel',

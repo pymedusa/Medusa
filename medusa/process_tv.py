@@ -166,7 +166,7 @@ class ProcessResult(object):
             for missedfile in self.missedfiles:
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink') and app.TORRENT_SEED_LOCATION:
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -311,7 +311,7 @@ class ProcessResult(object):
         if self.video_in_rar:
             video_files = set(self.video_files + self.video_in_rar)
 
-            if self.process_method in ('hardlink', 'symlink'):
+            if self.process_method in ('hardlink', 'symlink', 'reflink'):
                 process_method = self.process_method
                 # Move extracted video files instead of hard/softlinking them
                 self.process_method = 'move'
