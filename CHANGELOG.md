@@ -23,6 +23,7 @@
 - Fixed reference linking ([#4463](https://github.com/pymedusa/Medusa/pull/4463))
 - Fixed the Show Selector not honoring user option to split shows & anime ([#4625](https://github.com/pymedusa/Medusa/pull/4625))
 - Fixed unhandled request error on Add Existing Show ([#4639](https://github.com/pymedusa/Medusa/pull/4639))
+- Fixed Telegram & Growl message encoding ([#4657](https://github.com/pymedusa/Medusa/pull/4657))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
