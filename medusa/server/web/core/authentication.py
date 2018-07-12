@@ -57,12 +57,14 @@ class LoginHandler(BaseHandler):
     def get(self, *args, **kwargs):
         """
         Render the Login page
+
+        [Converted to VueRouter]
         """
         if self.get_current_user():
             self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
         else:
-            t = PageTemplate(rh=self, filename='login.mako')
-            self.finish(t.render(title='Login', header='Login', topmenu='login'))
+            t = PageTemplate(rh=self, filename='index.mako')
+            self.finish(t.render(topmenu='login'))
 
     def post(self, *args, **kwargs):
         """

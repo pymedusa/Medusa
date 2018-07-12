@@ -483,7 +483,6 @@ const store = new Puex({
 
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const webRoot = apiRoot.replace('/api/v2/', '');
     const WSMessageUrl = '/ui';
     return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
 })();

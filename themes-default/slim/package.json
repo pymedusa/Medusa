@@ -115,6 +115,7 @@
       "api",
       "jQuery",
       "axios",
+      "webRoot",
       "apiRoot",
       "apiKey"
     ],
