@@ -279,7 +279,7 @@
                         <option selected value="">Change quality to:</option>
                         <% qualities = sorted(Quality.qualityStrings.items(), key=operator.itemgetter(0)) %>
                         % for quality, name in qualities:
-                            % if quality > 1:  # Skip N/A (0) and Unknown (1)
+                            % if quality not in (Quality.NA, Quality.UNKNOWN):
                                 <option value="${quality}">${name}</option>
                             % endif
                         % endfor
