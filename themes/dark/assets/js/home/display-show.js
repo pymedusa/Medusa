@@ -58,6 +58,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     $('#changeStatus').on('click', () => {
         const epArr = [];
+        const status = $('#statusSelect').val();
+        const quality = $('#qualitySelect').val();
+        const seriesSlug = $('#series-slug').val();
 
         $('.epCheck').each(function() {
             if (this.checked === true) {
@@ -69,11 +72,17 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?' +
-            'indexername=' + $('#indexer-name').attr('value') +
-            '&seriesid=' + $('#series-id').attr('value') +
-            '&eps=' + epArr.join('|') +
-            '&status=' + $('#statusSelect').val();
+        if (quality !== '') {
+            setQuality(quality, seriesSlug, epArr);
+        }
+
+        if (status !== '') {
+            window.location.href = $('base').attr('href') + 'home/setStatus?' +
+                'indexername=' + $('#indexer-name').attr('value') +
+                '&seriesid=' + $('#series-id').attr('value') +
+                '&eps=' + epArr.join('|') +
+                '&status=' + status;
+        }
     });
 
     $('.seasonCheck').on('click', function() {
@@ -81,9 +90,10 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         const seasNo = $(seasCheck).attr('id');
 
         $('#collapseSeason-' + seasNo).collapse('show');
+        const seasonIdentifier = 's' + seasNo;
         $('.epCheck:visible').each(function() {
-            const epParts = $(this).attr('id').split('x');
-            if (epParts[0] === seasNo) {
+            const epParts = $(this).attr('id').split('e');
+            if (epParts[0] === seasonIdentifier) {
                 this.checked = seasCheck.checked;
             }
         });
@@ -414,4 +424,19 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             log.error(error.data);
         });
     });
+
+    function setQuality(quality, seriesSlug, episodes) {
+        let patchData = {};
+        episodes.forEach((episode) => {
+            patchData[episode] = {'quality': parseInt(quality, 10)};
+        });
+
+        api.patch('series/' + seriesSlug + '/episodes', patchData)
+        .then(response => {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(error => {
+            log.error(error.data);
+        });
+    }
 };
