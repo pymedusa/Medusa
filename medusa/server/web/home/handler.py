@@ -1923,13 +1923,13 @@ class Home(WebRoot):
                 logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
                     series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
 
-                ep_info = cur_ep.split('x')
-                if not all(ep_info):
+                season_no, episode_no = cur_ep.lstrip('s').split('e')
+                if not all([season_no, episode_no]):
                     logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
-                               (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
+                               (season=season_no, episode=episode_no), logger.DEBUG)
                     continue
 
-                ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+                ep_obj = series_obj.get_episode(season_no, episode_no)
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
@@ -2110,8 +2110,7 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
-
-            ep_info = cur_ep.split('x')
+            season_no, episode_no = cur_ep.lstrip('s').split('e')
 
             # this is probably the worst possible way to deal with double eps
             # but I've kinda painted myself into a corner here with this stupid database
@@ -2119,7 +2118,7 @@ class Home(WebRoot):
                 b'SELECT location '
                 b'FROM tv_episodes '
                 b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [indexer_name_to_id(indexername), seriesid, ep_info[0], ep_info[1]])
+                [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
@@ -2128,10 +2127,10 @@ class Home(WebRoot):
                 b'SELECT season, episode '
                 b'FROM tv_episodes '
                 b'WHERE location = ? AND episode != ?',
-                [ep_result[0][b'location'], ep_info[1]]
+                [ep_result[0][b'location'], episode_no]
             )
 
-            root_ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+            root_ep_obj = series_obj.get_episode(season_no, episode_no)
             root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:

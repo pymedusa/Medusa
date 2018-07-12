@@ -297,7 +297,7 @@ class Manage(Home, WebRoot):
                 to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
             for epResult in to_download[(cur_indexer_id, cur_series_id)]:
-                season, episode = epResult.split('x')
+                season, episode = epResult.lstrip('s').split('e')
 
                 series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
                 series_obj.get_episode(season, episode).download_subtitles()
