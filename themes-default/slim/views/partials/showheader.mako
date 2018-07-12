@@ -2,6 +2,7 @@
     import datetime
     import urllib
     import ntpath
+    import operator
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
@@ -265,14 +266,23 @@
                 </div>
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                    <option selected value="">Change selected to:</option>
-                    <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-                    % if not app.USE_FAILED_DOWNLOADS:
-                        <% availableStatus.remove(FAILED) %>
-                    % endif
-                    % for cur_status in availableStatus + [DOWNLOADED, ARCHIVED]:
-                        <option value="${cur_status}">${statusStrings[cur_status]}</option>
-                    % endfor
+                        <option selected value="">Change status to:</option>
+                        <% statuses = [WANTED, SKIPPED, IGNORED, DOWNLOADED, ARCHIVED] %>
+                        % if app.USE_FAILED_DOWNLOADS:
+                            <% statuses.append(FAILED) %>
+                        % endif
+                        % for cur_status in statuses:
+                            <option value="${cur_status}">${statusStrings[cur_status]}</option>
+                        % endfor
+                    </select>
+                    <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                        <option selected value="">Change quality to:</option>
+                        <% qualities = sorted(Quality.qualityStrings.items(), key=operator.itemgetter(0)) %>
+                        % for quality, name in qualities:
+                            % if quality > 1:  # Skip N/A (0) and Unknown (1)
+                                <option value="${quality}">${name}</option>
+                            % endif
+                        % endfor
                     </select>
                     <input type="hidden" id="series-slug" value="${show.slug}" />
                     <input type="hidden" id="series-id" value="${show.indexerid}" />
