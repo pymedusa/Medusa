@@ -3,6 +3,7 @@
 **New Features**
 
 - Hot-swap themes: No need to restart the Medusa after changing the theme ([#4271](https://github.com/pymedusa/Medusa/pull/4271))
+- Added ability to manually change episode quality ([#4658](https://github.com/pymedusa/Medusa/pull/4658))
 - _Simple message describing the new feature, and a link to the pull request._
 
 **Improvements**
