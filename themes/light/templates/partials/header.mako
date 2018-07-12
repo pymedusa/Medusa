@@ -126,8 +126,8 @@
                     <div style="clear:both;"></div>
                 </li>
             </ul>
-    % endif
         </div><!-- /.navbar-collapse -->
+    % endif
     </div><!-- /.container-fluid -->
 </nav>
 <!-- END HEADER -->
