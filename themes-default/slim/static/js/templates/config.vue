@@ -61,6 +61,6 @@ module.exports = {
 
 <style>
 .infoTable tr td:first-child {
-  vertical-align: top;
+    vertical-align: top;
 }
 </style>

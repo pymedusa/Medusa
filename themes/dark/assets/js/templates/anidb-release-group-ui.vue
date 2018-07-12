@@ -166,6 +166,7 @@ module.exports = {
 <style scoped>
 div.anidb-release-group-ui-wrapper {
     clear: both;
+    margin-bottom: 20px;
 }
 
 div.anidb-release-group-ui-wrapper ul {
@@ -185,11 +186,8 @@ div.anidb-release-group-ui-wrapper div.arrow img {
     width: 32px;
 }
 
-div.anidb-release-group-ui-wrapper {
-    margin-bottom: 20px;
-}
-
-div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
+div.anidb-release-group-ui-wrapper img.deleteFromWhitelist,
+div.anidb-release-group-ui-wrapper img.deleteFromBlacklist {
     float: right;
 }
 

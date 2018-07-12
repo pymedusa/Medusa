@@ -306,6 +306,7 @@ module.exports = {
 div.file-browser.max-width {
     max-width: 450px;
 }
+
 div.file-browser .input-group-no-btn {
     display: flex;
 }
