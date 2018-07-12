@@ -137,3 +137,39 @@ test('renders router-link from to (object)', t => {
     t.is(wrapper.attributes().target, undefined);
     t.is(wrapper.attributes().rel, undefined);
 });
+
+test('renders "false-link" anchor', t => {
+    const { base, localVue, store } = t.context;
+    const wrapper = mount(AppLink, {
+        localVue,
+        store,
+        propsData: {
+            base
+        },
+        attrs: {
+            name: 'season-3'
+        }
+    });
+
+    t.snapshot(wrapper.html());
+    t.is(wrapper.attributes().name, 'season-3');
+    t.is(wrapper.attributes()['false-link'], 'true');
+});
+
+test('renders simple anchor', t => {
+    const { base, localVue, store } = t.context;
+    const wrapper = mount(AppLink, {
+        localVue,
+        store,
+        propsData: {
+            base
+        },
+        attrs: {
+            class: 'my-class'
+        }
+    });
+
+    t.snapshot(wrapper.html());
+    t.is(wrapper.attributes().class, 'my-class');
+    t.is(wrapper.attributes()['false-link'], undefined);
+});
