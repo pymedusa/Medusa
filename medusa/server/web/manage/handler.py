@@ -294,7 +294,8 @@ class Manage(Home, WebRoot):
                     b"AND location != ''",
                     [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = ['s' + str(x[b'season']) + 'e' + str(x[b'episode'])
+                                                                for x in all_eps_results]
 
             for epResult in to_download[(cur_indexer_id, cur_series_id)]:
                 season, episode = epResult.lstrip('s').split('e')
