@@ -93,17 +93,19 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.nfoRename': BooleanField(app, 'NFO_RENAME'),
         'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
         'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
-        'postProcessing.extraScripts': ListField(app, 'TV_DOWNLOAD_DIR'),
-        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS'),
-        'postProcessing.appNamingStripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+        'postProcessing.extraScripts': ListField(app, 'EXTRA_SCRIPTS'),
+        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS_URL'),
         'postProcessing.naming.pattern': StringField(app, 'NAMING_PATTERN'),
+        'postProcessing.naming.enableCustomNamingAnime': BooleanField(app, 'NAMING_CUSTOM_ANIME'),
         'postProcessing.naming.enableCustomNamingSports': BooleanField(app, 'NAMING_CUSTOM_SPORTS'),
         'postProcessing.naming.enableCustomNamingAirByDate': BooleanField(app, 'NAMING_CUSTOM_ABD'),
         'postProcessing.naming.patternSports': StringField(app, 'NAMING_SPORTS_PATTERN'),
         'postProcessing.naming.patternAirByDate': StringField(app, 'NAMING_ABD_PATTERN'),
         'postProcessing.naming.patternAnime': StringField(app, 'NAMING_ANIME_PATTERN'),
-        'postProcessing.naming.animeMultiEp': BooleanField(app, 'NAMING_ANIME_MULTI_EP'),
+        'postProcessing.naming.animeMultiEp': IntegerField(app, 'NAMING_ANIME_MULTI_EP'),
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
+        'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
     }
 
     def get(self, identifier, path_param=None):
@@ -296,11 +298,12 @@ class DataGenerator(object):
         section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
         section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
         section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
-        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = app.NAMING_CUSTOM_ABD
-        section_data['postProcessing']['naming']['enableCustomNamingSports'] = app.NAMING_CUSTOM_SPORTS
-        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = app.NAMING_CUSTOM_ANIME
-        section_data['postProcessing']['naming']['animeMultiEp'] = app.NAMING_ANIME_MULTI_EP
-        section_data['postProcessing']['naming']['animeNamingType'] = app.NAMING_ANIME
+        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
+        section_data['postProcessing']['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
+        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
+        section_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
+        section_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
+        section_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
         section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
         section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
@@ -322,7 +325,6 @@ class DataGenerator(object):
         section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
         section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
-        section_data['postProcessing']['appNamingStripYear'] = bool(app.NAMING_STRIP_YEAR)
 
         return section_data
 
