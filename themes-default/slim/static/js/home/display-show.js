@@ -426,17 +426,17 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     function setQuality(quality, seriesSlug, episodes) {
-        let patchData = {};
-        episodes.forEach((episode) => {
-            patchData[episode] = {'quality': parseInt(quality, 10)};
+        const patchData = {};
+        episodes.forEach(episode => {
+            patchData[episode] = { quality: parseInt(quality, 10) };
         });
 
         api.patch('series/' + seriesSlug + '/episodes', patchData)
-        .then(response => {
-            log.info(response.data);
-            window.location.reload();
-        }).catch(error => {
-            log.error(error.data);
-        });
+            .then(response => {
+                log.info(response.data);
+                window.location.reload();
+            }).catch(error => {
+                log.error(error.data);
+            });
     }
 };
