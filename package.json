@@ -22,7 +22,7 @@
   "devDependencies": {
     "ava": "0.25.0",
     "codecov": "3.0.4",
-    "dredd": "4.9.3",
+    "dredd": "5.1.11",
     "execa": "0.10.0",
     "nyc": "12.0.2",
     "snyk": "1.88.2",
