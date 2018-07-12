@@ -11,6 +11,7 @@
   - `/config` - Help & Info ([#4374](https://github.com/pymedusa/Medusa/pull/4374))
   - `/addShows` - Add Shows ([#4564](https://github.com/pymedusa/Medusa/pull/4564))
   - `/addRecommended` - Add Recommended Shows ([#4564](https://github.com/pymedusa/Medusa/pull/4564))
+  - `/login` - Login ([#4634](https://github.com/pymedusa/Medusa/pull/4634))
 - Removed the old `/ui` route ([#4565](https://github.com/pymedusa/Medusa/pull/4565))
 - Added a simple "Loading..." message while the page is loading ([#4629](https://github.com/pymedusa/Medusa/pull/4629))
 - Expanded episode status management capabilities, added support for Downloaded, Archived ([#4647](https://github.com/pymedusa/Medusa/pull/4647))
