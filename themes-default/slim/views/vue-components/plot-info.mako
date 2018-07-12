@@ -31,7 +31,7 @@ Vue.component('plot-info', {
         $(this.$el).qtip({
             content: {
                 text(event, qt) {
-                    api.get('series/' + seriesSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
+                    api.get('series/' + seriesSlug + '/episode/s' + season + 'e' + episode + '/description').then(response => {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
                     }, xhr => {
