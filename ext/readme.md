@@ -28,7 +28,7 @@
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 :: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2` | -
 :: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | -
-:: | `imdbpie` | [5.6.1](https://pypi.org/project/imdbpie/5.6.1/) | **`medusa`** | -
+:: | `imdbpie` | [5.6.2](https://pypi.org/project/imdbpie/5.6.2/) | **`medusa`** | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.1](https://pypi.org/project/jsonrpclib-pelix/0.3.1/) | **`medusa`** | Module: `jsonrpclib`
 :: | `PyJWT` | [1.6.4](https://pypi.org/project/pyjwt/1.6.4/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | Module: `jwt`
