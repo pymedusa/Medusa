@@ -8,7 +8,7 @@
                 <span>Custom {{ type }}</span>
             </label>
             <div class="col-sm-10 content">
-                <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" sync></toggle-button>
+                <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" @input="update()" sync></toggle-button>
                 <span>Name {{ type }} shows differently than regular shows?</span>
             </div>
         </div>
@@ -19,7 +19,7 @@
                     <span>Name Pattern:</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples">
+                    <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples" @input="update()">
                         <option id="preset" v-for="preset in presets">{{ preset }}</option>
                     </select>
                 </div>
@@ -31,7 +31,7 @@
                         <span>&nbsp;</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control-inline-max input-sm max-input350"/>
+                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" @input="update()" class="form-control-inline-max input-sm max-input350"/>
                         <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend"/>
                     </div>
                 </div>
@@ -201,28 +201,26 @@
                 </div>
             </div>
 
-                <div v-if="selectedMultiEpStyle" class="form-group">
-                    <label class="col-sm-2 control-label" for="naming_multi_ep">
-                        <span>Multi-Episode Style:</span>
-                    </label>
-                    <div class="col-sm-10 content">
-                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples">
-                            <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
-                        </select>
-                    </div>
+            <div v-if="selectedMultiEpStyle" class="form-group">
+                <label class="col-sm-2 control-label" for="naming_multi_ep">
+                    <span>Multi-Episode Style:</span>
+                </label>
+                <div class="col-sm-10 content">
+                    <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples" @input="update($event)">
+                        <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
+                    </select>
                 </div>
-        
-                
-                        
-            <div id="naming_example_div">
-                <h3>Single-EP Sample:</h3>
-                <div class="example">
+            </div>
+                                
+            <div class="form-group row">
+                <h3 class="col-sm-12">Single-EP Sample:</h3>
+                <div class="example col-sm-12">
                     <span class="jumbo" id="naming_example">{{ namingExample }}</span>
                 </div>
             </div>
-            <div v-if="isMulti" id="naming_example_multi_div">
-                <h3>Multi-EP sample:</h3>
-                <div class="example">
+            <div v-if="isMulti" class="form-group row">
+                <h3 class="col-sm-12">Multi-EP sample:</h3>
+                <div class="example col-sm-12">
                     <span class="jumbo" id="naming_example_multi">{{ namingExampleMulti }}</span>
                 </div>
             </div>
@@ -231,11 +229,11 @@
             <div v-if="animeType > 0" class="form-group">
                 <label for="naming_anime" class="col-sm-2 control-label">
                     <span>Add Absolute Number</span>
-                    <p>Add the absolute number to the season/episode format?</p>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples"/>
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()" />
                     <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
+                    <p>Add the absolute number to the season/episode format?</p>
                 </div>                    
             </div>
 
@@ -244,7 +242,7 @@
                     <span>Only Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples" @input="update()"/>
                     <span>Replace season/episode format with absolute number</span>
                     <p>Only applies to animes.</p>
                 </div>
@@ -255,7 +253,7 @@
                     <span>No Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples" @input="update()"/>
                     <span>Only applies to animes.</span>
                     <p>Dont include the absolute number</p>
                 </div>
@@ -322,6 +320,10 @@
             enabled: {
                 type: Boolean,
                 default: true
+            },
+            flagLoaded: {
+                type: Boolean,
+                default: false
             }
         },
         data() {
@@ -378,15 +380,22 @@
                     this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
                 }
             },
-            update(newValue) {
-                this.$emit('change', {
-                    pattern: this.isCustom ? this.customName : this.pattern,
-                    type: this.type,
-                    multiEpStyle: this.selectedMultiEpStyle,
-                    custom: this.isCustom,
-                    enabled: this.isEnabled,
-                    animeNamingType: this.animeType
-                });
+            update() {
+                if (!this.flagLoaded) {
+                    return;
+                }
+
+                this.$nextTick(() => {
+                    this.$emit('change', {
+                        pattern: this.isCustom ? this.customName : this.pattern,
+                        type: this.type,
+                        multiEpStyle: this.selectedMultiEpStyle,
+                        custom: this.isCustom,
+                        enabled: this.isEnabled,
+                        animeNamingType: Number(this.animeType),
+                    });
+                })
+
             },
             checkNaming(pattern, selectedMultiEpStyle, animeType) {
                 const params = {
@@ -470,25 +479,12 @@
 
             // Update the pattern samples
             this.updatePatternSamples();
-
         },
         watch: {
-            customName(newValue, oldValue) {
-                this.update(newValue);
-            },
-            pattern(newValue, oldValue) {
-                this.update();
-            },
-            selectedMultiEpStyle(newValue) {
-                this.update();
-            },
-            isEnabled() {
-                this.update();
-            },
-            animeType() {
-                this.update();
-            },
             // Update local variables when properties are updated
+            enabled() {
+                this.isEnabled = this.enabled;
+            },
             namingPattern() {
                 this.pattern = this.namingPattern;
                 this.updateCustomName();
