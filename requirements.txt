@@ -32,6 +32,6 @@ requests==2.19.1
 six==1.11.0
 stevedore==1.28.0
 git+https://github.com/Diaoul/subliminal.git@879c0c8d18618e32ad466bb63bd939edb268bc60#egg=subliminal
-tornado==5.0.2
+tornado==5.1
 tornroutes==0.5.1
 validators==0.12.2

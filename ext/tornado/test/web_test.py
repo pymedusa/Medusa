@@ -3,15 +3,17 @@ from __future__ import absolute_import, division, print_function
 from tornado.concurrent import Future
 from tornado import gen
 from tornado.escape import json_decode, utf8, to_unicode, recursive_unicode, native_str, to_basestring  # noqa: E501
+from tornado.httpclient import HTTPClientError
 from tornado.httputil import format_timestamp
 from tornado.ioloop import IOLoop
 from tornado.iostream import IOStream
 from tornado import locale
+from tornado.locks import Event
 from tornado.log import app_log, gen_log
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
 from tornado.template import DictLoader
 from tornado.testing import AsyncHTTPTestCase, AsyncTestCase, ExpectLog, gen_test
-from tornado.test.util import unittest, skipBefore35, exec_test
+from tornado.test.util import unittest, skipBefore35, exec_test, ignore_deprecation
 from tornado.util import ObjectDict, unicode_type, timedelta_to_seconds, PY3
 from tornado.web import (
     Application, RequestHandler, StaticFileHandler, RedirectHandler as WebRedirectHandler,
@@ -189,6 +191,40 @@ class SecureCookieV2Test(unittest.TestCase):
         self.assertEqual(new_handler.get_secure_cookie('foo'), None)
 
 
+class FinalReturnTest(WebTestCase):
+    def get_handlers(self):
+        test = self
+
+        class FinishHandler(RequestHandler):
+            @gen.coroutine
+            def get(self):
+                test.final_return = self.finish()
+
+        class RenderHandler(RequestHandler):
+            def create_template_loader(self, path):
+                return DictLoader({'foo.html': 'hi'})
+
+            @gen.coroutine
+            def get(self):
+                test.final_return = self.render('foo.html')
+
+        return [("/finish", FinishHandler),
+                ("/render", RenderHandler)]
+
+    def get_app_kwargs(self):
+        return dict(template_path='FinalReturnTest')
+
+    def test_finish_method_return_future(self):
+        response = self.fetch(self.get_url('/finish'))
+        self.assertEqual(response.code, 200)
+        self.assertIsInstance(self.final_return, Future)
+
+    def test_render_method_return_future(self):
+        response = self.fetch(self.get_url('/render'))
+        self.assertEqual(response.code, 200)
+        self.assertIsInstance(self.final_return, Future)
+
+
 class CookieTest(WebTestCase):
     def get_handlers(self):
         class SetCookieHandler(RequestHandler):
@@ -350,16 +386,14 @@ class AuthRedirectTest(WebTestCase):
                  dict(login_url='http://example.com/login'))]
 
     def test_relative_auth_redirect(self):
-        self.http_client.fetch(self.get_url('/relative'), self.stop,
-                               follow_redirects=False)
-        response = self.wait()
+        response = self.fetch(self.get_url('/relative'),
+                              follow_redirects=False)
         self.assertEqual(response.code, 302)
         self.assertEqual(response.headers['Location'], '/login?next=%2Frelative')
 
     def test_absolute_auth_redirect(self):
-        self.http_client.fetch(self.get_url('/absolute'), self.stop,
-                               follow_redirects=False)
-        response = self.wait()
+        response = self.fetch(self.get_url('/absolute'),
+                              follow_redirects=False)
         self.assertEqual(response.code, 302)
         self.assertTrue(re.match(
             'http://example.com/login\?next=http%3A%2F%2F127.0.0.1%3A[0-9]+%2Fabsolute',
@@ -370,9 +404,11 @@ class ConnectionCloseHandler(RequestHandler):
     def initialize(self, test):
         self.test = test
 
-    @asynchronous
+    @gen.coroutine
     def get(self):
         self.test.on_handler_waiting()
+        never_finish = Event()
+        yield never_finish.wait()
 
     def on_connection_close(self):
         self.test.on_connection_close()
@@ -549,14 +585,17 @@ class OptionalPathHandler(RequestHandler):
 class FlowControlHandler(RequestHandler):
     # These writes are too small to demonstrate real flow control,
     # but at least it shows that the callbacks get run.
-    @asynchronous
-    def get(self):
-        self.write("1")
-        self.flush(callback=self.step2)
+    with ignore_deprecation():
+        @asynchronous
+        def get(self):
+            self.write("1")
+            with ignore_deprecation():
+                self.flush(callback=self.step2)
 
     def step2(self):
         self.write("2")
-        self.flush(callback=self.step3)
+        with ignore_deprecation():
+            self.flush(callback=self.step3)
 
     def step3(self):
         self.write("3")
@@ -582,14 +621,13 @@ class RedirectHandler(RequestHandler):
 
 
 class EmptyFlushCallbackHandler(RequestHandler):
-    @asynchronous
-    @gen.engine
+    @gen.coroutine
     def get(self):
         # Ensure that the flush callback is run whether or not there
         # was any output.  The gen.Task and direct yield forms are
         # equivalent.
-        yield gen.Task(self.flush)  # "empty" flush, but writes headers
-        yield gen.Task(self.flush)  # empty flush
+        yield self.flush()  # "empty" flush, but writes headers
+        yield self.flush()  # empty flush
         self.write("o")
         yield self.flush()  # flushes the "o"
         yield self.flush()  # empty flush
@@ -1806,28 +1844,29 @@ class MultipleExceptionTest(SimpleHandlerTestCase):
     class Handler(RequestHandler):
         exc_count = 0
 
-        @asynchronous
-        def get(self):
-            from tornado.ioloop import IOLoop
-            IOLoop.current().add_callback(lambda: 1 / 0)
-            IOLoop.current().add_callback(lambda: 1 / 0)
+        with ignore_deprecation():
+            @asynchronous
+            def get(self):
+                IOLoop.current().add_callback(lambda: 1 / 0)
+                IOLoop.current().add_callback(lambda: 1 / 0)
 
         def log_exception(self, typ, value, tb):
             MultipleExceptionTest.Handler.exc_count += 1
 
     def test_multi_exception(self):
-        # This test verifies that multiple exceptions raised into the same
-        # ExceptionStackContext do not generate extraneous log entries
-        # due to "Cannot send error response after headers written".
-        # log_exception is called, but it does not proceed to send_error.
-        response = self.fetch('/')
-        self.assertEqual(response.code, 500)
-        response = self.fetch('/')
-        self.assertEqual(response.code, 500)
-        # Each of our two requests generated two exceptions, we should have
-        # seen at least three of them by now (the fourth may still be
-        # in the queue).
-        self.assertGreater(MultipleExceptionTest.Handler.exc_count, 2)
+        with ignore_deprecation():
+            # This test verifies that multiple exceptions raised into the same
+            # ExceptionStackContext do not generate extraneous log entries
+            # due to "Cannot send error response after headers written".
+            # log_exception is called, but it does not proceed to send_error.
+            response = self.fetch('/')
+            self.assertEqual(response.code, 500)
+            response = self.fetch('/')
+            self.assertEqual(response.code, 500)
+            # Each of our two requests generated two exceptions, we should have
+            # seen at least three of them by now (the fourth may still be
+            # in the queue).
+            self.assertGreater(MultipleExceptionTest.Handler.exc_count, 2)
 
 
 @wsgi_safe
@@ -2160,7 +2199,7 @@ class StreamingRequestBodyTest(WebTestCase):
         self.assertEquals(data, b"qwer")
         stream.write(b"0\r\n\r\n")
         yield self.finished
-        data = yield gen.Task(stream.read_until_close)
+        data = yield stream.read_until_close()
         # This would ideally use an HTTP1Connection to read the response.
         self.assertTrue(data.endswith(b"{}"))
         stream.close()
@@ -2168,14 +2207,14 @@ class StreamingRequestBodyTest(WebTestCase):
     @gen_test
     def test_early_return(self):
         stream = self.connect(b"/early_return", connection_close=False)
-        data = yield gen.Task(stream.read_until_close)
+        data = yield stream.read_until_close()
         self.assertTrue(data.startswith(b"HTTP/1.1 401"))
 
     @gen_test
     def test_early_return_with_data(self):
         stream = self.connect(b"/early_return", connection_close=False)
         stream.write(b"4\r\nasdf\r\n")
-        data = yield gen.Task(stream.read_until_close)
+        data = yield stream.read_until_close()
         self.assertTrue(data.startswith(b"HTTP/1.1 401"))
 
     @gen_test
@@ -2214,12 +2253,12 @@ class BaseFlowControlHandler(RequestHandler):
         # Note that asynchronous prepare() does not block data_received,
         # so we don't use in_method here.
         self.methods.append('prepare')
-        yield gen.Task(IOLoop.current().add_callback)
+        yield gen.moment
 
     @gen.coroutine
     def post(self):
         with self.in_method('post'):
-            yield gen.Task(IOLoop.current().add_callback)
+            yield gen.moment
         self.write(dict(methods=self.methods))
 
 
@@ -2280,7 +2319,7 @@ class DecoratedStreamingRequestFlowControlTest(
             @gen.coroutine
             def data_received(self, data):
                 with self.in_method('data_received'):
-                    yield gen.Task(IOLoop.current().add_callback)
+                    yield gen.moment
         return [('/', DecoratedFlowControlHandler, dict(test=self))]
 
 
@@ -2293,7 +2332,8 @@ class NativeStreamingRequestFlowControlTest(
             data_received = exec_test(globals(), locals(), """
             async def data_received(self, data):
                 with self.in_method('data_received'):
-                    await gen.Task(IOLoop.current().add_callback)
+                    import asyncio
+                    await asyncio.sleep(0)
             """)["data_received"]
         return [('/', NativeFlowControlHandler, dict(test=self))]
 
@@ -2334,8 +2374,8 @@ class IncorrectContentLengthTest(SimpleHandlerTestCase):
             with ExpectLog(gen_log,
                            "(Cannot send error response after headers written"
                            "|Failed to flush partial response)"):
-                response = self.fetch("/high")
-        self.assertEqual(response.code, 599)
+                with self.assertRaises(HTTPClientError):
+                    self.fetch("/high", raise_error=True)
         self.assertEqual(str(self.server_error),
                          "Tried to write 40 bytes less than Content-Length")
 
@@ -2347,8 +2387,8 @@ class IncorrectContentLengthTest(SimpleHandlerTestCase):
             with ExpectLog(gen_log,
                            "(Cannot send error response after headers written"
                            "|Failed to flush partial response)"):
-                response = self.fetch("/low")
-        self.assertEqual(response.code, 599)
+                with self.assertRaises(HTTPClientError):
+                    self.fetch("/low", raise_error=True)
         self.assertEqual(str(self.server_error),
                          "Tried to write more data than Content-Length")
 
@@ -2369,10 +2409,11 @@ class ClientCloseTest(SimpleHandlerTestCase):
                 self.write('requires HTTP/1.x')
 
     def test_client_close(self):
-        response = self.fetch('/')
-        if response.body == b'requires HTTP/1.x':
-            self.skipTest('requires HTTP/1.x')
-        self.assertEqual(response.code, 599)
+        with self.assertRaises((HTTPClientError, unittest.SkipTest)):
+            response = self.fetch('/', raise_error=True)
+            if response.body == b'requires HTTP/1.x':
+                self.skipTest('requires HTTP/1.x')
+            self.assertEqual(response.code, 599)
 
 
 class SignedValueTest(unittest.TestCase):

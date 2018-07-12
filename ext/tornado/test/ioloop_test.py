@@ -10,6 +10,13 @@ import sys
 import threading
 import time
 import types
+try:
+    from unittest import mock  # type: ignore
+except ImportError:
+    try:
+        import mock  # type: ignore
+    except ImportError:
+        mock = None
 
 from tornado.escape import native_str
 from tornado import gen
@@ -18,7 +25,8 @@ from tornado.log import app_log
 from tornado.platform.select import _Select
 from tornado.stack_context import ExceptionStackContext, StackContext, wrap, NullContext
 from tornado.testing import AsyncTestCase, bind_unused_port, ExpectLog, gen_test
-from tornado.test.util import unittest, skipIfNonUnix, skipOnTravis, skipBefore35, exec_test
+from tornado.test.util import (unittest, skipIfNonUnix, skipOnTravis,
+                               skipBefore35, exec_test, ignore_deprecation)
 
 try:
     from concurrent import futures
@@ -409,17 +417,18 @@ class TestIOLoop(AsyncTestCase):
                 self.wait()
 
     def test_spawn_callback(self):
-        # An added callback runs in the test's stack_context, so will be
-        # re-raised in wait().
-        self.io_loop.add_callback(lambda: 1 / 0)
-        with self.assertRaises(ZeroDivisionError):
-            self.wait()
-        # A spawned callback is run directly on the IOLoop, so it will be
-        # logged without stopping the test.
-        self.io_loop.spawn_callback(lambda: 1 / 0)
-        self.io_loop.add_callback(self.stop)
-        with ExpectLog(app_log, "Exception in callback"):
-            self.wait()
+        with ignore_deprecation():
+            # An added callback runs in the test's stack_context, so will be
+            # re-raised in wait().
+            self.io_loop.add_callback(lambda: 1 / 0)
+            with self.assertRaises(ZeroDivisionError):
+                self.wait()
+            # A spawned callback is run directly on the IOLoop, so it will be
+            # logged without stopping the test.
+            self.io_loop.spawn_callback(lambda: 1 / 0)
+            self.io_loop.add_callback(self.stop)
+            with ExpectLog(app_log, "Exception in callback"):
+                self.wait()
 
     @skipIfNonUnix
     def test_remove_handler_from_handler(self):
@@ -448,6 +457,16 @@ class TestIOLoop(AsyncTestCase):
         finally:
             client.close()
             server.close()
+
+    @gen_test
+    def test_init_close_race(self):
+        # Regression test for #2367
+        def f():
+            for i in range(10):
+                loop = IOLoop()
+                loop.close()
+
+        yield gen.multi([self.io_loop.run_in_executor(None, f) for i in range(2)])
 
 
 # Deliberately not a subclass of AsyncTestCase so the IOLoop isn't
@@ -528,11 +547,12 @@ class TestIOLoopAddCallback(AsyncTestCase):
             self.assertNotIn('c2', self.active_contexts)
             self.stop()
 
-        with StackContext(functools.partial(self.context, 'c1')):
-            wrapped = wrap(f1)
+        with ignore_deprecation():
+            with StackContext(functools.partial(self.context, 'c1')):
+                wrapped = wrap(f1)
 
-        with StackContext(functools.partial(self.context, 'c2')):
-            self.add_callback(wrapped)
+            with StackContext(functools.partial(self.context, 'c2')):
+                self.add_callback(wrapped)
 
         self.wait()
 
@@ -546,11 +566,12 @@ class TestIOLoopAddCallback(AsyncTestCase):
             self.assertNotIn('c2', self.active_contexts)
             self.stop((foo, bar))
 
-        with StackContext(functools.partial(self.context, 'c1')):
-            wrapped = wrap(f1)
+        with ignore_deprecation():
+            with StackContext(functools.partial(self.context, 'c1')):
+                wrapped = wrap(f1)
 
-        with StackContext(functools.partial(self.context, 'c2')):
-            self.add_callback(wrapped, 1, bar=2)
+            with StackContext(functools.partial(self.context, 'c2')):
+                self.add_callback(wrapped, 1, bar=2)
 
         result = self.wait()
         self.assertEqual(result, (1, 2))
@@ -595,11 +616,12 @@ class TestIOLoopFutures(AsyncTestCase):
 
         # stack_context propagates to the ioloop callback, but the worker
         # task just has its exceptions caught and saved in the Future.
-        with futures.ThreadPoolExecutor(1) as pool:
-            with ExceptionStackContext(handle_exception):
-                self.io_loop.add_future(pool.submit(task), callback)
-            ready.set()
-        self.wait()
+        with ignore_deprecation():
+            with futures.ThreadPoolExecutor(1) as pool:
+                with ExceptionStackContext(handle_exception):
+                    self.io_loop.add_future(pool.submit(task), callback)
+                ready.set()
+            self.wait()
 
         self.assertEqual(self.exception.args[0], "callback")
         self.assertEqual(self.future.exception().args[0], "worker")
@@ -693,14 +715,14 @@ class TestIOLoopRunSync(unittest.TestCase):
     def test_async_result(self):
         @gen.coroutine
         def f():
-            yield gen.Task(self.io_loop.add_callback)
+            yield gen.moment
             raise gen.Return(42)
         self.assertEqual(self.io_loop.run_sync(f), 42)
 
     def test_async_exception(self):
         @gen.coroutine
         def f():
-            yield gen.Task(self.io_loop.add_callback)
+            yield gen.moment
             1 / 0
         with self.assertRaises(ZeroDivisionError):
             self.io_loop.run_sync(f)
@@ -713,16 +735,20 @@ class TestIOLoopRunSync(unittest.TestCase):
     def test_timeout(self):
         @gen.coroutine
         def f():
-            yield gen.Task(self.io_loop.add_timeout, self.io_loop.time() + 1)
+            yield gen.sleep(1)
         self.assertRaises(TimeoutError, self.io_loop.run_sync, f, timeout=0.01)
 
     @skipBefore35
     def test_native_coroutine(self):
+        @gen.coroutine
+        def f1():
+            yield gen.moment
+
         namespace = exec_test(globals(), locals(), """
-        async def f():
-            await gen.Task(self.io_loop.add_callback)
+        async def f2():
+            await f1()
         """)
-        self.io_loop.run_sync(namespace['f'])
+        self.io_loop.run_sync(namespace['f2'])
 
 
 @unittest.skipIf(asyncio is not None,
@@ -840,6 +866,20 @@ class TestPeriodicCallbackMath(unittest.TestCase):
         # ignored.
         self.assertEqual(self.simulate_calls(pc, [-100, 0, 0]),
                          [1010, 1020, 1030])
+
+    @unittest.skipIf(mock is None, 'mock package not present')
+    def test_jitter(self):
+        random_times = [0.5, 1, 0, 0.75]
+        expected = [1010, 1022.5, 1030, 1041.25]
+        call_durations = [0] * len(random_times)
+        pc = PeriodicCallback(None, 10000, jitter=0.5)
+
+        def mock_random():
+            return random_times.pop(0)
+        with mock.patch('random.random', mock_random):
+            self.assertEqual(self.simulate_calls(pc, call_durations),
+                             expected)
+
 
 class TestIOLoopConfiguration(unittest.TestCase):
     def run_python(self, *statements):

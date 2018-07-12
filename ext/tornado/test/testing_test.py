@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from tornado import gen, ioloop
 from tornado.log import app_log
-from tornado.test.util import unittest, skipBefore35, exec_test
+from tornado.simple_httpclient import SimpleAsyncHTTPClient, HTTPTimeoutError
+from tornado.test.util import unittest, skipBefore35, exec_test, ignore_deprecation
 from tornado.testing import AsyncHTTPTestCase, AsyncTestCase, bind_unused_port, gen_test, ExpectLog
 from tornado.web import Application
 import contextlib
@@ -33,12 +34,13 @@ def set_environ(name, value):
 
 class AsyncTestCaseTest(AsyncTestCase):
     def test_exception_in_callback(self):
-        self.io_loop.add_callback(lambda: 1 / 0)
-        try:
-            self.wait()
-            self.fail("did not get expected exception")
-        except ZeroDivisionError:
-            pass
+        with ignore_deprecation():
+            self.io_loop.add_callback(lambda: 1 / 0)
+            try:
+                self.wait()
+                self.fail("did not get expected exception")
+            except ZeroDivisionError:
+                pass
 
     def test_wait_timeout(self):
         time = self.io_loop.time
@@ -69,15 +71,16 @@ class AsyncTestCaseTest(AsyncTestCase):
         self.wait(timeout=0.15)
 
     def test_multiple_errors(self):
-        def fail(message):
-            raise Exception(message)
-        self.io_loop.add_callback(lambda: fail("error one"))
-        self.io_loop.add_callback(lambda: fail("error two"))
-        # The first error gets raised; the second gets logged.
-        with ExpectLog(app_log, "multiple unhandled exceptions"):
-            with self.assertRaises(Exception) as cm:
-                self.wait()
-        self.assertEqual(str(cm.exception), "error one")
+        with ignore_deprecation():
+            def fail(message):
+                raise Exception(message)
+            self.io_loop.add_callback(lambda: fail("error one"))
+            self.io_loop.add_callback(lambda: fail("error two"))
+            # The first error gets raised; the second gets logged.
+            with ExpectLog(app_log, "multiple unhandled exceptions"):
+                with self.assertRaises(Exception) as cm:
+                    self.wait()
+            self.assertEqual(str(cm.exception), "error one")
 
 
 class AsyncHTTPTestCaseTest(AsyncHTTPTestCase):
@@ -96,17 +99,23 @@ class AsyncHTTPTestCaseTest(AsyncHTTPTestCase):
         response = self.fetch(path)
         self.assertEqual(response.request.url, self.get_url(path))
 
+    @gen_test
     def test_fetch_full_http_url(self):
         path = 'http://localhost:%d/path' % self.external_port
 
-        response = self.fetch(path, request_timeout=0.1)
-        self.assertEqual(response.request.url, path)
+        with contextlib.closing(SimpleAsyncHTTPClient(force_instance=True)) as client:
+            with self.assertRaises(HTTPTimeoutError) as cm:
+                yield client.fetch(path, request_timeout=0.1, raise_error=True)
+        self.assertEqual(cm.exception.response.request.url, path)
 
+    @gen_test
     def test_fetch_full_https_url(self):
         path = 'https://localhost:%d/path' % self.external_port
 
-        response = self.fetch(path, request_timeout=0.1)
-        self.assertEqual(response.request.url, path)
+        with contextlib.closing(SimpleAsyncHTTPClient(force_instance=True)) as client:
+            with self.assertRaises(HTTPTimeoutError) as cm:
+                yield client.fetch(path, request_timeout=0.1, raise_error=True)
+        self.assertEqual(cm.exception.response.request.url, path)
 
     @classmethod
     def tearDownClass(cls):
@@ -213,14 +222,14 @@ class GenTest(AsyncTestCase):
 
     @gen_test
     def test_async(self):
-        yield gen.Task(self.io_loop.add_callback)
+        yield gen.moment
         self.finished = True
 
     def test_timeout(self):
         # Set a short timeout and exceed it.
         @gen_test(timeout=0.1)
         def test(self):
-            yield gen.Task(self.io_loop.add_timeout, self.io_loop.time() + 1)
+            yield gen.sleep(1)
 
         # This can't use assertRaises because we need to inspect the
         # exc_info triple (and not just the exception object)
@@ -231,7 +240,7 @@ class GenTest(AsyncTestCase):
             # The stack trace should blame the add_timeout line, not just
             # unrelated IOLoop/testing internals.
             self.assertIn(
-                "gen.Task(self.io_loop.add_timeout, self.io_loop.time() + 1)",
+                "gen.sleep(1)",
                 traceback.format_exc())
 
         self.finished = True
@@ -240,8 +249,7 @@ class GenTest(AsyncTestCase):
         # A test that does not exceed its timeout should succeed.
         @gen_test(timeout=1)
         def test(self):
-            time = self.io_loop.time
-            yield gen.Task(self.io_loop.add_timeout, time() + 0.1)
+            yield gen.sleep(0.1)
 
         test(self)
         self.finished = True
@@ -249,8 +257,7 @@ class GenTest(AsyncTestCase):
     def test_timeout_environment_variable(self):
         @gen_test(timeout=0.5)
         def test_long_timeout(self):
-            time = self.io_loop.time
-            yield gen.Task(self.io_loop.add_timeout, time() + 0.25)
+            yield gen.sleep(0.25)
 
         # Uses provided timeout of 0.5 seconds, doesn't time out.
         with set_environ('ASYNC_TEST_TIMEOUT', '0.1'):
@@ -261,8 +268,7 @@ class GenTest(AsyncTestCase):
     def test_no_timeout_environment_variable(self):
         @gen_test(timeout=0.01)
         def test_short_timeout(self):
-            time = self.io_loop.time
-            yield gen.Task(self.io_loop.add_timeout, time() + 1)
+            yield gen.sleep(1)
 
         # Uses environment-variable timeout of 0.1, times out.
         with set_environ('ASYNC_TEST_TIMEOUT', '0.1'):
@@ -275,7 +281,7 @@ class GenTest(AsyncTestCase):
         @gen_test
         def test_with_args(self, *args):
             self.assertEqual(args, ('test',))
-            yield gen.Task(self.io_loop.add_callback)
+            yield gen.moment
 
         test_with_args(self, 'test')
         self.finished = True
@@ -284,7 +290,7 @@ class GenTest(AsyncTestCase):
         @gen_test
         def test_with_kwargs(self, **kwargs):
             self.assertDictEqual(kwargs, {'test': 'test'})
-            yield gen.Task(self.io_loop.add_callback)
+            yield gen.moment
 
         test_with_kwargs(self, test='test')
         self.finished = True
