@@ -175,7 +175,8 @@ const store = new Puex({
                     enableCustomNamingAnime: null,
                     patternAnime: null,
                     animeMultiEp: null,
-                    animeNamingType: null
+                    animeNamingType: null,
+                    stripYear: null
                 },
                 seriesDownloadDir: null,
                 processAutomatically: null,
@@ -197,9 +198,9 @@ const store = new Puex({
                 syncFiles: [],
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
-                extraScriptsUrl: null,
-                appNamingStripYear: null
-            }
+                extraScriptsUrl: null
+            },
+            metadata: {}
         },
         // Loaded show list
         // New shows can be added via
@@ -305,7 +306,7 @@ const store = new Puex({
             if (section === 'main') {
                 state.config = config;
             }
-            if (['qualities', 'statuses'].includes(section)) {
+            if (['qualities', 'statuses', 'metadata'].includes(section)) {
                 state[section] = config;
             }
         },
