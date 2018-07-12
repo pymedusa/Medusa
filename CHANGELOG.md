@@ -3,7 +3,6 @@
 **New Features**
 
 - Hot-swap themes: No need to restart the Medusa after changing the theme ([#4271](https://github.com/pymedusa/Medusa/pull/4271))
-- Added ability to manually change episode quality ([#4658](https://github.com/pymedusa/Medusa/pull/4658))
 - _Simple message describing the new feature, and a link to the pull request._
 
 **Improvements**
@@ -15,6 +14,7 @@
 - Removed the old `/ui` route ([#4565](https://github.com/pymedusa/Medusa/pull/4565))
 - Added a simple "Loading..." message while the page is loading ([#4629](https://github.com/pymedusa/Medusa/pull/4629))
 - Expanded episode status management capabilities, added support for Downloaded, Archived ([#4647](https://github.com/pymedusa/Medusa/pull/4647))
+- Added ability to manually change episode quality ([#4658](https://github.com/pymedusa/Medusa/pull/4658))
 - _Simple message describing the improvement, and a link to the pull request._
 
 **Fixes**
