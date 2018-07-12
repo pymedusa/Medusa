@@ -22,6 +22,7 @@
 - Fixed NorBits provider formatting download URL incorrectly ([#4642](https://github.com/pymedusa/Medusa/pull/4642))
 - Fixed reference linking ([#4463](https://github.com/pymedusa/Medusa/pull/4463))
 - Fixed the Show Selector not honoring user option to split shows & anime ([#4625](https://github.com/pymedusa/Medusa/pull/4625))
+- Fixed unhandled request error on Add Existing Show ([#4639](https://github.com/pymedusa/Medusa/pull/4639))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
