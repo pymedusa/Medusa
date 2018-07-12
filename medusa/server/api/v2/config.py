@@ -26,7 +26,7 @@ from medusa.server.api.v2.base import (
     set_nested_value,
 )
 
-from six import iteritems, text_type
+from six import text_type
 
 from tornado.escape import json_decode
 
