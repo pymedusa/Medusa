@@ -14,7 +14,10 @@
 
 <script>
 module.exports = {
-    name: 'login'
+    name: 'login',
+    mounted() {
+        this.$root.$emit('loaded');
+    }
 };
 </script>
 

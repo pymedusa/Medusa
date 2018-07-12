@@ -49,7 +49,8 @@
         <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"', '')[title == 'Login']} web-root="${app.WEB_ROOT}">
+    <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
+    <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
         <div v-cloak id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
