@@ -17,7 +17,7 @@ const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
-const argv = require('yargs').argv;
+const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
 
