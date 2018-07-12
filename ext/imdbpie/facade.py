@@ -192,7 +192,10 @@ class ImdbFacade(object):
         writers = self._get_writers(top_crew_data)
         directors = self._get_directors(top_crew_data)
         creators = self._get_creators(top_crew_data)
-        genres = tuple(g.lower() for g in title_aux_data['genres'])
+        try:
+            genres = tuple(g.lower() for g in title_aux_data.get('genres'))
+        except TypeError:
+            genres = ()
         credits = self._get_credits(credits_data)
 
         try:
