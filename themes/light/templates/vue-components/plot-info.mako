@@ -1,8 +1,10 @@
 <script type="text/x-template" id="plot-info-template">
     <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
 </script>
+
 <script>
 Vue.component('plot-info', {
+    template: '#plot-info-template',
     props: {
         hasPlot: Boolean,
         seriesSlug: {
@@ -24,19 +26,21 @@ Vue.component('plot-info', {
         }
     },
     mounted() {
-        const {hasPlot, seriesSlug, season, episode} = this;
+        const { $el, hasPlot, seriesSlug, season, episode } = this;
         if (!hasPlot) {
             return false;
         }
-        $(this.$el).qtip({
+        $($el).qtip({
             content: {
                 text(event, qt) {
-                    api.get('series/' + seriesSlug + '/episode/s' + season + 'e' + episode + '/description').then(response => {
+                    api.get('series/' + seriesSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
-                    }, xhr => {
+                    }).catch(error => {
                         // Upon failure... set the tooltip content to the status and error value
-                        qt.set('content.text', 'Error while loading plot: ' + xhr.status + ': ' + xhr.statusText);
+                        const { response } = error;
+                        const { status, statusText } = response;
+                        qt.set('content.text', 'Error while loading plot: ' + status + ': ' + statusText);
                     });
                     return 'Loading...';
                 }
@@ -59,7 +63,23 @@ Vue.component('plot-info', {
                 classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
             }
         });
-    },
-    template: `#plot-info-template`
+    }
 });
 </script>
+
+<style>
+.plotInfo {
+    cursor: help;
+    float: right;
+    position: relative;
+    top: 2px;
+}
+
+.plotInfoNone {
+    cursor: help;
+    float: right;
+    position: relative;
+    top: 2px;
+    opacity: 0.4;
+}
+</style>

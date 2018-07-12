@@ -1543,21 +1543,6 @@ span.snatched b {
     font-weight: 800;
 }
 
-.plotInfo {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-}
-
-.plotInfoNone {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-    opacity: 0.4;
-}
-
 .displayShowTable {
     table-layout: auto;
     width: 100%;
