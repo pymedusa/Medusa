@@ -32,6 +32,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'New Show'
@@ -154,30 +155,25 @@ const startVue = () => {
             showPath() {
                 const { selectedRootDir, providedInfo, selectedShow } = this;
 
-                const pathSep = path => {
-                    if (path.indexOf('\\') > -1) return '\\';
-                    if (path.indexOf('/') > -1) return '/';
-                    return '';
+                const appendSepChar = path => {
+                    const sepChar = (() => {
+                        if (path.includes('\\')) return '\\';
+                        if (path.includes('/')) return '/';
+                        return '';
+                    })();
+                    return path.slice(-1) !== sepChar ? path + sepChar : path;
                 };
 
                 let showPath = 'unknown dir';
                 // If we provided a show path, use that
                 if (providedInfo.showDir) {
-                    showPath = providedInfo.showDir;
-                    const sepChar = pathSep(showPath);
-                    if (showPath.slice(-1) !== sepChar) {
-                        showPath += sepChar;
-                    }
+                    showPath = appendSepChar(providedInfo.showDir);
                 // If we have a root dir selected, figure out the path
                 } else if (selectedRootDir) {
-                    showPath = selectedRootDir;
-                    const sepChar = pathSep(showPath);
-                    if (showPath.slice(-1) !== sepChar) {
-                        showPath += sepChar;
-                    }
+                    showPath = appendSepChar(selectedRootDir);
                     // If we have a show selected, use the sanitized name
                     const dirName = selectedShow ? selectedShow.sanitizedName : '??';
-                    showPath += '<i>' + dirName + '</i>' + sepChar;
+                    showPath = appendSepChar(showPath + '<i>' + dirName + '</i>');
                 }
                 return showPath;
             },
@@ -375,9 +371,8 @@ const startVue = () => {
                         alreadyAdded = (() => {
                             if (!alreadyAdded) return false;
                             // Extract existing show info
-                            const [ mIndexerId, mShowId ] = alreadyAdded;
-                            const indexerIdentifier = indexers[mIndexerId] ? indexers[mIndexerId].identifier : mIndexerId;
-                            return 'home/displayShow?indexername=' + indexerIdentifier + '&seriesid=' + mShowId;
+                            const [ matchIndexerName, matchShowId ] = alreadyAdded;
+                            return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
                         })();
 
                         return {

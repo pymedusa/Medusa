@@ -28,7 +28,7 @@ class ConfigNotifications(Config):
         """
         t = PageTemplate(rh=self, filename='config_notifications.mako')
 
-        return t.render(submenu=self.ConfigMenu(), topmenu='config',
+        return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='notifications')
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,

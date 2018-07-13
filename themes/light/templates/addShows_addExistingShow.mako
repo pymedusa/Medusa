@@ -14,6 +14,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Existing Show'
@@ -26,6 +27,8 @@ const startVue = () => {
                 defaultIndexer: ${app.INDEXER_DEFAULT},
 
                 isLoading: false,
+                requestTimeout: 3 * 60 * 1000,
+                errorMessage: '',
                 rootDirs: [],
                 dirList: [],
                 promptForSettings: false
@@ -47,15 +50,26 @@ const startVue = () => {
             },
             displayPaths() {
                 // Mark the root dir as bold in the path
+                const appendSepChar = path => {
+                    const sepChar = (() => {
+                        if (path.includes('\\')) return '\\';
+                        if (path.includes('/')) return '/';
+                        return '';
+                    })();
+                    return path.slice(-1) !== sepChar ? path + sepChar : path;
+                };
                 return this.filteredDirList
                     .map(dir => {
                         const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
                         if (!rootDirObj) return dir.path;
-                        const rootDir = rootDirObj.path;
-                        const pathSep = rootDir.indexOf('\\\\') > -1 ? 2 : 1;
-                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length + pathSep;
+                        const rootDir = appendSepChar(rootDirObj.path);
+                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
                         return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
                     });
+            },
+            showTable() {
+                const { isLoading, selectedRootDirs, errorMessage } = this;
+                return !isLoading && selectedRootDirs.length !== 0 && errorMessage === '';
             },
             checkAll: {
                 get() {
@@ -80,10 +94,13 @@ const startVue = () => {
                     };
                 });
             },
-            async update() {
-                if (this.isLoading) return;
+            update() {
+                if (this.isLoading) {
+                    return;
+                }
 
                 this.isLoading = true;
+                this.errorMessage = '';
 
                 const indices = this.rootDirs
                     .reduce((indices, rd, index) => {
@@ -96,31 +113,42 @@ const startVue = () => {
                     return;
                 }
 
-                const params = { 'rootDirs': indices.join(',') };
-                const { data } = await api.get('internal/existingSeries', { params });
-                this.dirList = data
-                    .map(dir => {
-                        // Pre-select all dirs not already added
-                        dir.selected = !dir.alreadyAdded;
-                        dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
-                        return dir;
-                    });
-                this.isLoading = false;
+                const config = {
+                    params: {
+                        'rootDirs': indices.join(',')
+                    },
+                    timeout: this.requestTimeout
+                };
+                api.get('internal/existingSeries', config).then(response => {
+                    const { data } = response;
+                    this.dirList = data
+                        .map(dir => {
+                            // Pre-select all dirs not already added
+                            dir.selected = !dir.alreadyAdded;
+                            dir.selectedIndexer = dir.metadata.indexer || this.defaultIndexer;
+                            return dir;
+                        });
+                    this.isLoading = false;
 
-                this.$nextTick(() => {
-                    $('#addRootDirTable')
-                        .tablesorter({
-                            widgets: ['zebra'],
-                            // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
-                            // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
-                            headerTemplate: '',
-                            headers: {
-                                0: { sorter: false },
-                                3: { sorter: false }
-                            }
-                        })
-                        // Fixes tablesorter not working after root dirs are refreshed
-                        .trigger('updateAll');
+                    this.$nextTick(() => {
+                        $('#addRootDirTable')
+                            .tablesorter({
+                                widgets: ['zebra'],
+                                // This fixes the checkAll checkbox getting unbound because this code changes the innerHTML of the <th>
+                                // https://github.com/Mottie/tablesorter/blob/v2.28.1/js/jquery.tablesorter.js#L566
+                                headerTemplate: '',
+                                headers: {
+                                    0: { sorter: false },
+                                    3: { sorter: false }
+                                }
+                            })
+                            // Fixes tablesorter not working after root dirs are refreshed
+                            .trigger('updateAll');
+                    });
+                }).catch(error => {
+                    this.errorMessage = error.message;
+                    this.dirList = [];
+                    this.isLoading = false;
                 });
             },
             seriesIndexerUrl(curDir) {
@@ -220,9 +248,18 @@ const startVue = () => {
                     </li>
                 </ul>
                 <br>
-                <span v-if="isLoading"><img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...</span>
-                <span v-if="!isLoading && selectedRootDirs.length === 0">No folders selected.</span>
-                <table v-show="!isLoading && selectedRootDirs.length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
+
+                <span v-if="isLoading">
+                    <img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...
+                </span>
+                <template v-else>
+                    <span v-if="errorMessage !== ''">
+                        <b>Encountered an error while loading folders:</b> {{ errorMessage }}
+                    </span>
+                    <span v-else-if="selectedRootDirs.length === 0">No folders selected.</span>
+                </template>
+
+                <table v-show="showTable" id="addRootDirTable" class="defaultTable tablesorter">
                     <thead>
                         <tr>
                             <th class="col-checkbox"><input type="checkbox" v-model="checkAll" /></th>

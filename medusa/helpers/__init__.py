@@ -55,7 +55,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type, viewitems
+from six import string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -346,7 +346,7 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create hardlink of {source} at {destination}.'
@@ -399,7 +399,7 @@ def move_and_symlink_file(src_file, dest_file):
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create symlink of {source} at {destination}.'
@@ -433,8 +433,8 @@ def reflink_file(src_file, dest_file):
         if reflink is None:
             raise NotImplementedError()
         reflink.reflink(src_file, dest_file)
-    except reflink.ReflinkImpossibleError as msg:
-        if msg.args[0] == 'EOPNOTSUPP':
+    except (reflink.ReflinkImpossibleError, IOError) as msg:
+        if msg.args and msg.args[0] == 'EOPNOTSUPP':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
@@ -443,7 +443,7 @@ def reflink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
-        elif msg.args[0] == 'EXDEV':
+        elif msg.args and msg.args[0] == 'EXDEV':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Can not reflink between two devices. Copying instead', {
@@ -468,16 +468,6 @@ def reflink_file(src_file, dest_file):
             u' Error: Filesystem does not support reflink or reflink is not installed. Copying instead', {
                 'source': src_file,
                 'destination': dest_file,
-            }
-        )
-        copy_file(src_file, dest_file)
-    except IOError as msg:
-        log.warning(
-            u'Failed to create reflink of {source} at {destination}.'
-            u' Error: {error!r}. Copying instead', {
-                'source': src_file,
-                'destination': dest_file,
-                'error': msg,
             }
         )
         copy_file(src_file, dest_file)
@@ -943,12 +933,6 @@ def check_url(url):
     except Exception:
         return None
 
-
-def anon_url(*url):
-    """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    # normalize to byte
-    url = [u.encode('utf-8') if isinstance(u, text_type) else binary_type(u) for u in url]
-    return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
 
 # Encryption
 # ==========

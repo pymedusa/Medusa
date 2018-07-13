@@ -56,16 +56,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $(this).val('jump');
     });
 
-    $('#prevShow').on('click', () => {
-        $('#select-show option:selected').prev('option').prop('selected', true);
-        $('#select-show').change();
-    });
-
-    $('#nextShow').on('click', () => {
-        $('#select-show option:selected').next('option').prop('selected', true);
-        $('#select-show').change();
-    });
-
     $('#changeStatus').on('click', () => {
         const epArr = [];
 
@@ -142,17 +132,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $('.seasonCheck:visible').each(function() {
             this.checked = false;
         });
-    });
-
-    // Handle the show selection dropbox
-    $('#select-show').on('change', evt => {
-        const selectedOption = evt.currentTarget.selectedOptions[0];
-        const indexerName = $(selectedOption).attr('data-indexer-name');
-        const seriesId = $(selectedOption).attr('data-series-id');
-        if (seriesId === 0 || !indexerName) {
-            return;
-        }
-        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + indexerName + '&seriesid=' + seriesId;
     });
 
     // Show/hide different types of rows when the checkboxes are changed
@@ -431,8 +410,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }).then(response => {
             log.info(response.data);
             window.location.reload();
-        }).catch(err => {
-            log.error(err.data);
+        }).catch(error => {
+            log.error(error.data);
         });
     });
 };

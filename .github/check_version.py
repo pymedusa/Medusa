@@ -15,11 +15,13 @@ if TRAVIS:
     TRAVIS_PR_TARGET_BRANCH = os.environ['TRAVIS_BRANCH']
     TRAVIS_PR_SOURCE_BRANCH = os.environ['TRAVIS_PULL_REQUEST_BRANCH']
     TRAVIS_BUILD_DIR = os.environ['TRAVIS_BUILD_DIR']
+    TRAVIS_COMMIT_MESSAGE = os.environ['TRAVIS_COMMIT_MESSAGE']
 else:
     TRAVIS_PULL_REQUEST = '1234'
     TRAVIS_PR_TARGET_BRANCH = 'master'
     TRAVIS_PR_SOURCE_BRANCH = 'develop'  # or 'release/release-0.2.3'
     TRAVIS_BUILD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    TRAVIS_COMMIT_MESSAGE = 'whatever'  # or have [disable-version-check] to disable this check
 
 TRAVIS_PR_TARGET_BRANCH = TRAVIS_PR_TARGET_BRANCH.lower()
 TRAVIS_PR_SOURCE_BRANCH = TRAVIS_PR_SOURCE_BRANCH.lower()
@@ -59,8 +61,10 @@ def search_file_for_version():
             return Version(match[0])
 
 
+if '[disable-version-check]' in TRAVIS_COMMIT_MESSAGE:
+    print('Skipping version check due to commit message.')
 # Are we merging either develop or a release branch into master in a pull request?
-if all((
+elif all((
         TRAVIS_PULL_REQUEST != 'false',
         TRAVIS_PR_TARGET_BRANCH == 'master',
         TRAVIS_PR_SOURCE_BRANCH == 'develop' or TRAVIS_PR_SOURCE_BRANCH.startswith('release/')

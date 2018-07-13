@@ -105,7 +105,7 @@ class BJShareProvider(TorrentProvider):
 
         for mode in search_strings:
             items = []
-            log.debug(u'Search Mode: {0}'.format(mode))
+            log.debug('Search mode: {0}'.format(mode))
 
             # if looking for season, look for more pages
             if mode == 'Season' and not manual_search:
@@ -113,7 +113,7 @@ class BJShareProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    log.debug(u'Search string: {0}'.format(search_string.decode('utf-8')))
+                    log.debug('Search string: {0}'.format(search_string.decode('utf-8')))
 
                 # Remove season / episode from search (not supported by tracker)
                 search_str = re.sub(r'\d+$' if anime else r'[S|E]\d\d', '', search_string).strip()
@@ -123,15 +123,15 @@ class BJShareProvider(TorrentProvider):
 
                 while has_next_page and next_page <= self.max_back_pages:
                     search_params['page'] = next_page
-                    log.debug(u'Page Search: {0}'.format(next_page))
+                    log.debug('Searching page: {0}'.format(next_page))
                     next_page += 1
 
                     response = self.session.get(self.urls['search'], params=search_params)
-                    if not response:
+                    if not response or not response.content:
                         log.debug('No data returned from provider')
                         continue
 
-                    result = self._parse(response.content, mode)
+                    result = self.parse(response.content, mode)
                     has_next_page = result['has_next_page']
                     items += result['items']
 
@@ -139,7 +139,7 @@ class BJShareProvider(TorrentProvider):
 
         return results
 
-    def _parse(self, data, mode):
+    def parse(self, data, mode):
         """
         Parse search results for items.
 
@@ -149,7 +149,7 @@ class BJShareProvider(TorrentProvider):
         :return: A KV with a list of items found and if there's an next page to search
         """
         def process_column_header(td):
-            ret = u''
+            ret = ''
             if td.a and td.a.img:
                 ret = td.a.img.get('title', td.a.get_text(strip=True))
             if not ret:
@@ -164,7 +164,7 @@ class BJShareProvider(TorrentProvider):
 
             # ignore next page in RSS mode
             has_next_page = mode != 'RSS' and html.find('a', class_='pager_next') is not None
-            log.debug(u'More Pages? {0}'.format(has_next_page))
+            log.debug('Are there more pages? {0}'.format(has_next_page))
 
             # Continue only if at least one Release is found
             if len(torrent_rows) < 2:
@@ -173,7 +173,7 @@ class BJShareProvider(TorrentProvider):
 
             # '', '', 'Name /Year', 'Files', 'Time', 'Size', 'Snatches', 'Seeders', 'Leechers'
             labels = [process_column_header(label) for label in torrent_rows[0]('td')]
-            group_title = u''
+            group_title = ''
 
             # Skip column headers
             for result in torrent_rows[1:]:
@@ -210,7 +210,7 @@ class BJShareProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      ' minimum seeders: {0}. Seeders: {1}',
+                                      " minimum seeders: {0}. Seeders: {1}",
                                       title, seeders)
                         continue
 

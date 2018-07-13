@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import logging
-from builtins import object
 
 from dateutil import parser
 
@@ -34,7 +33,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class SearchResult(object):
-    """Represents a search result from an indexer."""
+    """Represents a search result from a provider."""
 
     def __init__(self, episodes=None, provider=None):
         # list of Episode objects that this result is associated with
@@ -186,6 +185,17 @@ class SearchResult(object):
 
         return my_string
 
+    # Python 2 compatibility
+    __unicode__ = __str__
+
+    def __repr__(self):
+        if not self.provider:
+            result = '{0}'.format(self.name)
+        else:
+            result = '{0} from {1}'.format(self.name, self.provider.name)
+
+        return '<{0}: {1}>'.format(type(self).__name__, result)
+
     def file_name(self):
         return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
@@ -208,6 +218,9 @@ class SearchResult(object):
     def finish_search_result(self, provider):
         self.size = provider._get_size(self.item)
         self.pubdate = provider._get_pubdate(self.item)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 class NZBSearchResult(SearchResult):

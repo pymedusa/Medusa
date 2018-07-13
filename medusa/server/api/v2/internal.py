@@ -18,6 +18,7 @@ from medusa.tv.series import Series, SeriesIdentifier
 from six import iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class InternalHandler(BaseRequestHandler):
@@ -208,10 +209,11 @@ class InternalHandler(BaseRequestHandler):
         # Get all possible show ids
         all_show_ids = {}
         for show in app.showList:
-            for external in show.externals:
-                indexer_id = reverse_mappings.get(external)
-                show_id = show.externals[external]
-                all_show_ids.setdefault(indexer_id, []).append(show_id)
+            for ex_indexer_name, ex_show_id in iteritems(show.externals):
+                ex_indexer_id = reverse_mappings.get(ex_indexer_name)
+                if not ex_indexer_id:
+                    continue
+                all_show_ids[(ex_indexer_id, ex_show_id)] = (show.indexer_name, show.series_id)
 
         for indexer, shows in iteritems(results):
             indexer_api = indexerApi(indexer)
@@ -228,7 +230,7 @@ class InternalHandler(BaseRequestHandler):
                         show['firstaired'] or 'N/A',
                         show.get('network', '').encode('utf-8') or 'N/A',
                         sanitize_filename(show['seriesname']).encode('utf-8'),
-                        show_id in all_show_ids.get(indexer, []) and (indexer, show_id)
+                        all_show_ids.get((indexer, show_id), False)
                     )
                 )
 

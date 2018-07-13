@@ -59,6 +59,8 @@ def ipv6(value):
     :param value: IP address string to validate
     """
     ipv6_groups = value.split(':')
+    if len(ipv6_groups) == 1:
+        return False
     ipv4_groups = ipv6_groups[-1].split('.')
 
     if len(ipv4_groups) > 1:

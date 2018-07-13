@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "baseBranches": [
+    "develop"
+  ],
+  "ignorePaths": [
+    ".build/**",
+    "themes/**",
+    "ext/**",
+    "lib/**"
+  ],
+  "ignoreDeps": [
+    "guessit"
+  ],
+  "packageRules": [{
+    "packageNames": ["tornado"],
+    "allowedVersions": "<6"
+  }]
+}

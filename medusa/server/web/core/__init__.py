@@ -10,7 +10,6 @@ from medusa.server.web.core.authentication import (
 from medusa.server.web.core.base import (
     BaseHandler,
     PageTemplate,
-    UI,
     WebHandler,
     WebRoot,
     get_lookup,

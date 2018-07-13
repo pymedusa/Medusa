@@ -11,6 +11,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Mass Update'
@@ -72,9 +73,7 @@ const startVue = () => {
                         <th width="1%">Update<br><input type="checkbox" class="bulkCheck" id="updateCheck" /></th>
                         <th width="1%">Rescan<br><input type="checkbox" class="bulkCheck" id="refreshCheck" /></th>
                         <th width="1%">Rename<br><input type="checkbox" class="bulkCheck" id="renameCheck" /></th>
-                    % if app.USE_SUBTITLES:
-                        <th width="1%">Search Subtitle<br><input type="checkbox" class="bulkCheck" id="subtitleCheck" /></th>
-                    % endif
+                        <th width="1%" v-if="config.subtitles.enabled">Search Subtitle<br><input type="checkbox" class="bulkCheck" id="subtitleCheck" /></th>
                         <!-- <th>Force Metadata Regen <input type="checkbox" class="bulkCheck" id="metadataCheck" /></th>//-->
                         <th width="1%">Delete<br><input type="checkbox" class="bulkCheck" id="deleteCheck" /></th>
                         <th width="1%">Remove<br><input type="checkbox" class="bulkCheck" id="removeCheck" /></th>
@@ -84,7 +83,7 @@ const startVue = () => {
                 <tfoot>
                     <tr>
                         <td rowspan="1" colspan="2" class="align-center alt"><input class="btn-medusa pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-                        <td rowspan="1" colspan="${(16, 17)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn-medusa pull-right submitMassUpdate" type="button" value="Submit" /></td>
+                        <td rowspan="1" :colspan="config.subtitles.enabled ? 17 : 16" class="align-right alt"><input class="btn-medusa pull-right submitMassUpdate" type="button" value="Submit" /></td>
                     </tr>
                 </tfoot>
                 <tbody>
@@ -128,9 +127,7 @@ const startVue = () => {
                     <td class="triggerhighlight" align="center" title="Update">${curUpdate}</td>
                     <td class="triggerhighlight" align="center" title="Refresh">${curRefresh}</td>
                     <td class="triggerhighlight" align="center" title="Rename">${curRename}</td>
-                    % if app.USE_SUBTITLES:
-                    <td class="triggerhighlight" align="center" title="Search Subtitle">${curSubtitle}</td>
-                    % endif
+                    <td v-if="config.subtitles.enabled" class="triggerhighlight" align="center" title="Search Subtitle">${curSubtitle}</td>
                     <td class="triggerhighlight" align="center" title="Delete">${curDelete}</td>
                     <td class="triggerhighlight" align="center" title="Remove">${curRemove}</td>
                     <td class="triggerhighlight" align="center" title="Update image">${curImage}</td>
