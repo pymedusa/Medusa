@@ -1,8 +1,10 @@
-const hooks = require('require-extension-hooks');
+import browserEnv from 'browser-env';
 import jQuery from 'jquery';
 
+const hooks = require('require-extension-hooks');
+
 // Setup browser environment
-require('browser-env')();
+browserEnv();
 
 // Setup jQuery
 global.$ = jQuery(window);
