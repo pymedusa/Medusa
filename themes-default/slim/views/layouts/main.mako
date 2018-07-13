@@ -106,14 +106,11 @@
         <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/episode-statuses.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
