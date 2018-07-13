@@ -20,15 +20,11 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-test.failing('renders', t => {
+test('renders', t => {
     const { localVue, store, state } = t.context;
     const wrapper = mount(AppHeader, {
         localVue,
         store,
-        // Remove this once we remove jQuery from app-link
-        stubs: {
-            'app-link': true
-        },
         computed: {
             config() {
                 return Object.assign(state.config, {

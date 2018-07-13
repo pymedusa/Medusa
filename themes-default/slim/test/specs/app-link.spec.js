@@ -16,17 +16,15 @@ test.beforeEach(t => {
     const { Store } = Vuex;
     t.context.state = state;
     t.context.store = new Store({ state });
-    t.context.base = 'http://localhost:8081/';
     t.context.routerBase = '/'; // This might be '/webroot'
 });
 
 test('renders external link', t => {
-    const { base, localVue, store, state } = t.context;
+    const { localVue, store, state } = t.context;
     const wrapper = mount(AppLink, {
         localVue,
         store,
         propsData: {
-            base,
             href: 'https://google.com'
         },
         computed: {
@@ -45,12 +43,11 @@ test('renders external link', t => {
 });
 
 test('renders anonymised external link', t => {
-    const { base, localVue, store, state } = t.context;
+    const { localVue, store, state } = t.context;
     const wrapper = mount(AppLink, {
         localVue,
         store,
         propsData: {
-            base,
             href: 'https://google.com'
         },
         computed: {
@@ -69,12 +66,11 @@ test('renders anonymised external link', t => {
 });
 
 test('renders internal link', t => {
-    const { base, localVue, store } = t.context;
+    const { localVue, store } = t.context;
     const wrapper = mount(AppLink, {
         localVue,
         store,
         propsData: {
-            base,
             href: './config'
         }
     });
@@ -86,7 +82,7 @@ test('renders internal link', t => {
 });
 
 test('renders router-link from to (string)', t => {
-    const { base, routerBase, localVue, store } = t.context;
+    const { routerBase, localVue, store } = t.context;
     const router = new VueRouter({
         base: routerBase,
         mode: 'history',
@@ -100,7 +96,6 @@ test('renders router-link from to (string)', t => {
         store,
         router,
         propsData: {
-            base,
             to: 'config'
         }
     });
@@ -112,7 +107,7 @@ test('renders router-link from to (string)', t => {
 });
 
 test('renders router-link from to (object)', t => {
-    const { base, routerBase, localVue, store } = t.context;
+    const { routerBase, localVue, store } = t.context;
     const router = new VueRouter({
         base: routerBase,
         mode: 'history',
@@ -126,7 +121,6 @@ test('renders router-link from to (object)', t => {
         store,
         router,
         propsData: {
-            base,
             to: {
                 path: '/config'
             }
@@ -140,13 +134,10 @@ test('renders router-link from to (object)', t => {
 });
 
 test('renders "false-link" anchor', t => {
-    const { base, localVue, store } = t.context;
+    const { localVue, store } = t.context;
     const wrapper = mount(AppLink, {
         localVue,
         store,
-        propsData: {
-            base
-        },
         attrs: {
             name: 'season-3'
         }
@@ -158,13 +149,10 @@ test('renders "false-link" anchor', t => {
 });
 
 test('renders simple anchor', t => {
-    const { base, localVue, store } = t.context;
+    const { localVue, store } = t.context;
     const wrapper = mount(AppLink, {
         localVue,
         store,
-        propsData: {
-            base
-        },
         attrs: {
             class: 'my-class'
         }

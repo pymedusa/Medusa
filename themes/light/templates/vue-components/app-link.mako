@@ -23,8 +23,7 @@ Vue.component('app-link', {
         placeholder: {
             type: String,
             default: 'indexer-to-name'
-        },
-        base: String
+        }
     },
     computed: {
         config() {
@@ -40,11 +39,6 @@ Vue.component('app-link', {
             return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
         computedBase() {
-            // Return prop before HTML element to allow tests to mock
-            if (this.base) {
-                return this.base;
-            }
-
             return document.getElementsByTagName('base')[0].getAttribute('href');
         },
         computedHref() {
