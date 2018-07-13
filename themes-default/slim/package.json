@@ -36,7 +36,7 @@
     "babel-plugin-istanbul": "4.1.6",
     "babelify": "8.0.0",
     "browser-env": "3.2.5",
-    "browserify": "14.5.0",
+    "browserify": "16.2.2",
     "codecov": "3.0.4",
     "concurrently": "3.6.0",
     "cross-env": "5.2.0",
