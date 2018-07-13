@@ -93,10 +93,17 @@ class BaseRequestHandler(RequestHandler):
         """Set default CORS headers."""
         if app.APP_VERSION:
             self.set_header('X-Medusa-Server', app.APP_VERSION)
+
         self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type,'
-                                                        'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
-        self.set_header('Access-Control-Allow-Methods', ', '.join(self.DEFAULT_ALLOWED_METHODS + self.allowed_methods))
+
+        allowed_headers = ('Origin', 'Accept', 'Authorization', 'Content-Type',
+                           'X-Requested-With', 'X-CSRF-Token', 'X-Api-Key', 'X-Medusa-Server')
+        self.set_header('Access-Control-Allow-Headers', ', '.join(allowed_headers))
+
+        allowed_methods = self.DEFAULT_ALLOWED_METHODS
+        if self.allowed_methods:
+            allowed_methods += self.allowed_methods
+        self.set_header('Access-Control-Allow-Methods', ', '.join(allowed_methods))
 
     def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
         """End the api request writing error or data to http response."""

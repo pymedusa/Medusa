@@ -9,9 +9,11 @@ import sys
 
 from medusa import (
     app,
+    classes,
     common,
     config,
     db,
+    logger,
     ws,
 )
 from medusa.helper.mappings import NonEmptyDict
@@ -28,7 +30,7 @@ from medusa.server.api.v2.base import (
     set_nested_value,
 )
 
-from six import text_type
+from six import iteritems, text_type
 
 from tornado.escape import json_decode
 
@@ -226,6 +228,7 @@ class DataGenerator(object):
         section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
         section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
         section_data['os'] = platform.platform()
+        section_data['pid'] = app.PID
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
         section_data['programDir'] = app.PROG_DIR
@@ -237,17 +240,28 @@ class DataGenerator(object):
         section_data['webRoot'] = app.WEB_ROOT
         section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
+        section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
         section_data['downloadUrl'] = app.DOWNLOAD_URL
         section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
         section_data['subtitles'] = NonEmptyDict()
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
+        section_data['recentShows'] = app.SHOWS_RECENT
 
         section_data['news'] = NonEmptyDict()
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
         section_data['news']['latest'] = app.NEWS_LATEST
         section_data['news']['unread'] = app.NEWS_UNREAD
+
+        section_data['logs'] = NonEmptyDict()
+        section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
+        section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
+        section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
+
+        section_data['failedDownloads'] = NonEmptyDict()
+        section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
         section_data['kodi'] = NonEmptyDict()
         section_data['kodi']['enabled'] = bool(app.USE_KODI)
@@ -282,6 +296,7 @@ class DataGenerator(object):
 
         section_data['emby'] = NonEmptyDict()
         section_data['emby']['enabled'] = bool(app.USE_EMBY)
+        section_data['emby']['host'] = app.EMBY_HOST
 
         section_data['torrents'] = NonEmptyDict()
         section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
@@ -340,7 +355,10 @@ class DataGenerator(object):
 
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
-        section_data['processMethod'] = app.PROCESS_METHOD
+
+        section_data['postProcessing'] = NonEmptyDict()
+        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+        section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
 
         return section_data
 

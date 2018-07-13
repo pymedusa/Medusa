@@ -1,4 +1,6 @@
 <%!
+    import json
+
     from medusa import app
 %>
 <!DOCTYPE html>
@@ -49,14 +51,15 @@
         <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="' + app.WEB_ROOT + '/api/v2/"', '')[title == 'Login']}>
+    <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
+    <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
         <div v-cloak id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
-            <%include file="/partials/header.mako"/>
+            <app-header></app-header>
             % if submenu:
             <%include file="/partials/submenu.mako"/>
             % endif
@@ -103,14 +106,11 @@
         <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/episode-statuses.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
@@ -126,11 +126,12 @@
         <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
         <script src="js/lib/vue-js-toggle-button.js"></script>
-        <script src="js/lib/puex.js"></script>
+        <script src="js/lib/vuex.js"></script>
         <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
         <script src="js/notifications.js"></script>
         <script src="js/store.js"></script>
         <script>
+            Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
         </script>
         <%include file="/vue-components/app-link.mako"/>
@@ -176,14 +177,16 @@
                 },
                 mounted() {
                     if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
-                        // We wait 1000ms to allow the mutations to show in vue dev-tools
-                        // Please see https://github.com/egoist/puex/issues/8
-                        setTimeout(() => {
-                            const { store } = window;
-                            store.dispatch('login');
-                            store.dispatch('getConfig')
-                                .then(() => this.$emit('loaded'));
-                        }, 1000);
+                        const { store } = window;
+                        /* This is used by the `app-header` component
+                           to only show the logout button if a username is set */
+                        % if app.WEB_USERNAME and app.WEB_PASSWORD:
+                        const username = ${json.dumps(app.WEB_USERNAME)};
+                        % else:
+                        const username = '';
+                        % endif
+                        store.dispatch('login', { username });
+                        store.dispatch('getConfig').then(() => this.$emit('loaded'));
                     }
 
                     this.$once('loaded', () => {
@@ -191,7 +194,7 @@
                     });
                 },
                 // Make auth and config accessible to all components
-                computed: store.mapState(['auth', 'config'])
+                computed: Vuex.mapState(['auth', 'config'])
             });
 
             window.routes = [];

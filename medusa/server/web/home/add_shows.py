@@ -66,7 +66,7 @@ class HomeAddShows(Home):
         [Converted to VueRouter]
         """
         t = PageTemplate(rh=self, filename='index.mako')
-        return t.render(topmenu='home', controller='addShows', action='index')
+        return t.render(controller='addShows', action='index')
 
     def newShow(self, show_to_add=None, other_shows=None, search_string=None):
         """
@@ -108,7 +108,7 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            topmenu='home', controller='addShows', action='newShow'
+            controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -205,7 +205,7 @@ class HomeAddShows(Home):
 
         return t.render(title="Popular Shows", header="Popular Shows",
                         recommended_shows=recommended_shows, exception=e, groups=[],
-                        topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
+                        enable_anime_options=True, blacklist=[], whitelist=[],
                         controller="addShows", action="recommendedShows", realpage="popularShows")
 
     def popularAnime(self, list_type=REQUEST_HOT):
@@ -223,7 +223,7 @@ class HomeAddShows(Home):
 
         return t.render(title="Popular Anime Shows", header="Popular Anime Shows",
                         recommended_shows=recommended_shows, exception=e, groups=[],
-                        topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
+                        enable_anime_options=True, blacklist=[], whitelist=[],
                         controller="addShows", action="recommendedShows", realpage="popularAnime")
 
     def addShowToBlacklist(self, seriesid):
@@ -254,7 +254,7 @@ class HomeAddShows(Home):
         """
         t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        topmenu='home', controller='addShows', action='addExistingShow')
+                        controller='addShows', action='addExistingShow')
 
     def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,

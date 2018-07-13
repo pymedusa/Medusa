@@ -33,7 +33,7 @@ class ConfigGeneral(Config):
     def index(self):
         t = PageTemplate(rh=self, filename='config_general.mako')
 
-        return t.render(topmenu='config', submenu=self.ConfigMenu(),
+        return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='index')
 
     @staticmethod

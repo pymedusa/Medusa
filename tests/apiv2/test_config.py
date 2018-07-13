@@ -6,11 +6,13 @@ import json
 import platform
 import sys
 
-from medusa import app, db
+from medusa import app, classes, db, logger
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
+
+from six import iteritems
 
 from tornado.httpclient import HTTPError
 
@@ -19,6 +21,7 @@ from tornado.httpclient import HTTPError
 def config(monkeypatch, app_config):
     python_version = 'Python Test v1.2.3.4'
     monkeypatch.setattr(sys, 'version', python_version)
+    app_config('PID', 4321)
     os_user = app_config('OS_USER', 'superuser')
     app_config('LOCALE', (None, 'ABC'))
     app_locale = 'Unknown.ABC'
@@ -48,6 +51,7 @@ def config(monkeypatch, app_config):
     config_data['databaseVersion'] = NonEmptyDict()
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
+    config_data['pid'] = app.PID
     config_data['os'] = platform.platform()
     config_data['locale'] = app_locale
     config_data['localUser'] = os_user
@@ -60,17 +64,28 @@ def config(monkeypatch, app_config):
     config_data['webRoot'] = app.WEB_ROOT
     config_data['githubUrl'] = app.GITHUB_IO_URL
     config_data['wikiUrl'] = app.WIKI_URL
+    config_data['donationsUrl'] = app.DONATIONS_URL
     config_data['sourceUrl'] = app.APPLICATION_URL
     config_data['downloadUrl'] = app.DOWNLOAD_URL
     config_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
     config_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
     config_data['subtitles'] = NonEmptyDict()
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
+    config_data['recentShows'] = app.SHOWS_RECENT
 
     config_data['news'] = NonEmptyDict()
     config_data['news']['lastRead'] = app.NEWS_LAST_READ
     config_data['news']['latest'] = app.NEWS_LATEST
     config_data['news']['unread'] = app.NEWS_UNREAD
+
+    config_data['logs'] = NonEmptyDict()
+    config_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
+    config_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
+    config_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
+
+    config_data['failedDownloads'] = NonEmptyDict()
+    config_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
+    config_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
     config_data['kodi'] = NonEmptyDict()
     config_data['kodi']['enabled'] = bool(app.USE_KODI)
@@ -109,6 +124,7 @@ def config(monkeypatch, app_config):
 
     config_data['emby'] = NonEmptyDict()
     config_data['emby']['enabled'] = bool(app.USE_EMBY)
+    config_data['emby']['host'] = app.EMBY_HOST
 
     config_data['torrents'] = NonEmptyDict()
     config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
@@ -171,6 +187,10 @@ def config(monkeypatch, app_config):
 
     config_data['indexers'] = NonEmptyDict()
     config_data['indexers']['config'] = get_indexer_config()
+
+    config_data['postProcessing'] = NonEmptyDict()
+    config_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+    config_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
 
     return config_data
 

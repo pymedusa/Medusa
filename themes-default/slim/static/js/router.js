@@ -2,6 +2,7 @@ const VueRouter = window.vueRouter;
 const { routes, httpVueLoader } = window;
 
 if (!window.router) {
+    const loginComponent = httpVueLoader('js/templates/login.vue');
     const configComponent = httpVueLoader('js/templates/config.vue');
     const addShowsComponent = httpVueLoader('js/templates/add-shows.vue');
     const addRecommendedComponent = httpVueLoader('js/templates/add-recommended.vue');
@@ -10,9 +11,16 @@ if (!window.router) {
     const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
 
     const router = new VueRouter({
-        base: document.body.getAttribute('api-root').replace('api/v2/', ''),
+        base: document.body.getAttribute('web-root') + '/',
         mode: 'history',
         routes: Object.assign(routes || [], [{
+            path: '/login',
+            name: 'login',
+            meta: {
+                title: 'Login'
+            },
+            component: loginComponent
+        }, {
             path: '/config',
             name: 'config',
             meta: {

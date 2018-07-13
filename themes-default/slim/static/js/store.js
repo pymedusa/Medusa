@@ -1,9 +1,9 @@
-/* globals Vue */
-const Puex = window.puex.default;
+/* globals Vue, Vuex */
 const VueNativeSock = window.VueNativeSock.default;
+const { Store } = Vuex;
 const { displayNotification } = window;
 
-Vue.use(Puex);
+Vue.use(Vuex);
 
 // These are used for mutation names
 // There are no naming conventions so try and match
@@ -48,7 +48,7 @@ const {
     ADD_SHOW
 } = mutationTypes;
 
-const store = new Puex({
+const store = new Store({
     state: {
         auth: {
             isAuthenticated: false,
@@ -76,6 +76,7 @@ const store = new Puex({
         // Main config
         config: {
             wikiUrl: null,
+            donationsUrl: null,
             localUser: null,
             posterSortdir: null,
             locale: null,
@@ -213,7 +214,8 @@ const store = new Puex({
             fanartBackgroundOpacity: null,
             appArgs: [],
             emby: {
-                enabled: null
+                enabled: null,
+                host: null
             },
             comingEpsDisplayPaused: null,
             sortArticle: null,
@@ -266,15 +268,30 @@ const store = new Puex({
                 latest: null,
                 unread: null
             },
+            logs: {
+                loggingLevels: {},
+                numErrors: null,
+                numWarnings: null
+            },
+            failedDownloads: {
+                enabled: null,
+                deleteFailed: null
+            },
+            postProcessing: {
+                processMethod: null,
+                postponeIfNoSubs: null
+            },
             sslVersion: null,
             pythonVersion: null,
             comingEpsSort: null,
             githubUrl: null,
             datePreset: null,
             subtitlesMulti: null,
+            pid: null,
             os: null,
             anonRedirect: null,
-            logDir: null
+            logDir: null,
+            recentShows: []
         },
         // Loaded show list
         // New shows can be added via
@@ -410,7 +427,7 @@ const store = new Puex({
             commit(LOGIN_PENDING);
 
             // @TODO: Add real JWT login
-            const apiLogin = () => Promise.resolve({ username: 'admin' });
+            const apiLogin = () => Promise.resolve(credentials);
 
             apiLogin(credentials).then(user => {
                 return commit(LOGIN_SUCCESS, user);
@@ -483,7 +500,6 @@ const store = new Puex({
 
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const webRoot = apiRoot.replace('/api/v2/', '');
     const WSMessageUrl = '/ui';
     return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
 })();

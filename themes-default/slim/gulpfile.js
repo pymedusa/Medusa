@@ -103,7 +103,7 @@ const lintFile = file => {
 /**
  * Run all js files through the xo (eslint) linter.
  */
-const lint = done => {
+const lint = () => {
     return xo.lintFiles([], {}).then(report => {
         const formatted = xoReporter(report.results);
         if (formatted) {
@@ -115,7 +115,6 @@ const lint = done => {
             error.showStack = false;
             throw error;
         }
-        done(error);
     });
 };
 

@@ -1,5 +1,5 @@
 import test from 'ava';
-import Puex from 'puex';
+import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import fixtures from '../__fixtures__/app-link';
@@ -9,12 +9,13 @@ const AppLink = require('../../static/js/templates/app-link.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
-    t.context.localVue.use(Puex);
+    t.context.localVue.use(Vuex);
     t.context.localVue.use(VueRouter);
 
     const { state } = fixtures;
+    const { Store } = Vuex;
     t.context.state = state;
-    t.context.store = new Puex({ state });
+    t.context.store = new Store({ state });
     t.context.base = 'http://localhost:8081/';
     t.context.routerBase = '/'; // This might be '/webroot'
 });
@@ -136,4 +137,40 @@ test('renders router-link from to (object)', t => {
     t.is(wrapper.attributes().href, '/config');
     t.is(wrapper.attributes().target, undefined);
     t.is(wrapper.attributes().rel, undefined);
+});
+
+test('renders "false-link" anchor', t => {
+    const { base, localVue, store } = t.context;
+    const wrapper = mount(AppLink, {
+        localVue,
+        store,
+        propsData: {
+            base
+        },
+        attrs: {
+            name: 'season-3'
+        }
+    });
+
+    t.snapshot(wrapper.html());
+    t.is(wrapper.attributes().name, 'season-3');
+    t.is(wrapper.attributes()['false-link'], 'true');
+});
+
+test('renders simple anchor', t => {
+    const { base, localVue, store } = t.context;
+    const wrapper = mount(AppLink, {
+        localVue,
+        store,
+        propsData: {
+            base
+        },
+        attrs: {
+            class: 'my-class'
+        }
+    });
+
+    t.snapshot(wrapper.html());
+    t.is(wrapper.attributes().class, 'my-class');
+    t.is(wrapper.attributes()['false-link'], undefined);
 });

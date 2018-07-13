@@ -100,13 +100,6 @@ MEDUSA.common.init = function() {
         scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
     });
 
-    // Hover Dropdown for Nav
-    $('ul.nav li.dropdown').hover(function() {
-        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
-    }, function() {
-        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
-    });
-
     // Function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
@@ -151,16 +144,6 @@ MEDUSA.common.init = function() {
             location.href = e[0].href;
         }
     };
-
-    $('a.shutdown').confirm({
-        title: 'Shutdown',
-        text: 'Are you sure you want to shutdown Medusa?'
-    });
-
-    $('a.restart').confirm({
-        title: 'Restart',
-        text: 'Are you sure you want to restart Medusa?'
-    });
 
     $('a.removeshow').confirm({
         title: 'Remove Show',
@@ -219,17 +202,6 @@ MEDUSA.common.init = function() {
             $(this).data('lastOpenedPanel', $(ui.newPanel));
         }
     });
-
-    // @TODO Replace this with a real touchscreen check
-    // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
-    if ((navigator.maxTouchPoints || 0) < 2) {
-        $('.dropdown-toggle').on('click', function() {
-            const $this = $(this);
-            if ($this.attr('aria-expanded') === 'true') {
-                window.location.href = $this.attr('href');
-            }
-        });
-    }
 
     if (MEDUSA.config.fuzzyDating) {
         $.timeago.settings.allowFuture = true;
