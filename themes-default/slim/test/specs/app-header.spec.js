@@ -24,6 +24,10 @@ test.failing('renders', t => {
     const wrapper = mount(AppHeader, {
         localVue,
         store,
+        // Remove this once we remove jQuery from app-link
+        stubs: {
+            'app-link': true
+        },
         computed: {
             config() {
                 return Object.assign(state.config, {
