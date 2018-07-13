@@ -76,6 +76,7 @@ const store = new Puex({
         // Main config
         config: {
             wikiUrl: null,
+            donationsUrl: null,
             localUser: null,
             posterSortdir: null,
             locale: null,
@@ -213,7 +214,8 @@ const store = new Puex({
             fanartBackgroundOpacity: null,
             appArgs: [],
             emby: {
-                enabled: null
+                enabled: null,
+                host: null
             },
             comingEpsDisplayPaused: null,
             sortArticle: null,
@@ -266,15 +268,30 @@ const store = new Puex({
                 latest: null,
                 unread: null
             },
+            logs: {
+                loggingLevels: {},
+                numErrors: null,
+                numWarnings: null
+            },
+            failedDownloads: {
+                enabled: null,
+                deleteFailed: null
+            },
+            postProcessing: {
+                processMethod: null,
+                postponeIfNoSubs: null
+            },
             sslVersion: null,
             pythonVersion: null,
             comingEpsSort: null,
             githubUrl: null,
             datePreset: null,
             subtitlesMulti: null,
+            pid: null,
             os: null,
             anonRedirect: null,
-            logDir: null
+            logDir: null,
+            recentShows: []
         },
         // Loaded show list
         // New shows can be added via
@@ -410,7 +427,7 @@ const store = new Puex({
             commit(LOGIN_PENDING);
 
             // @TODO: Add real JWT login
-            const apiLogin = () => Promise.resolve({ username: 'admin' });
+            const apiLogin = () => Promise.resolve(credentials);
 
             apiLogin(credentials).then(user => {
                 return commit(LOGIN_SUCCESS, user);
