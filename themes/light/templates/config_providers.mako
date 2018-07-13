@@ -1128,9 +1128,9 @@ const startVue = () => {
                         % if hasattr(cur_nzb_provider, 'search_mode'):
                         <div class="field-pair">
                             <label>
-                                <span class="component-title">Season search mode</span>
+                                <span class="component-title">Backlog search mode</span>
                                 <span class="component-desc">
-                                    <p>when searching for complete seasons you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
+                                    <p>when searching with backlog you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
                                 </span>
                             </label>
                             <label>
@@ -1438,9 +1438,9 @@ const startVue = () => {
                         % if hasattr(cur_torrent_provider, 'search_mode'):
                         <div class="field-pair">
                             <label>
-                                <span class="component-title">Season search mode</span>
+                                <span class="component-title">Backlog search mode</span>
                                 <span class="component-desc">
-                                    <p>when searching for complete seasons you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
+                                    <p>when searching with backlog you can choose to have it look for season packs only, or choose to have it build a complete season from just single episodes.</p>
                                 </span>
                             </label>
                             <label>
