@@ -7,33 +7,132 @@ import {
     NotFound
 } from './components';
 
-const routes = [{
+const homeRoutes = {
+    path: '/home',
+    children: [{
+        path: '',
+        name: 'home',
+        meta: {
+            title: 'Home',
+            header: 'Show List'
+        }
+    }, {
+        path: 'editShow',
+        name: 'editShow'
+    }, {
+        path: 'displayShow',
+        name: 'displayShow'
+    }]
+};
+
+const configRoutes = {
+    path: '/config',
+    component: { template: '<router-view/>' },
+    children: [{
+        path: '',
+        name: 'config',
+        meta: {
+            title: 'Help & Info',
+            header: 'Medusa Configuration'
+        },
+        component: Config
+    }, {
+        path: 'anime',
+        name: 'configAnime',
+        meta: {
+            title: 'Config - Anime',
+            header: 'Anime'
+        }
+    }, {
+        path: 'backuprestore',
+        name: 'configBackupRestore',
+        meta: {
+            title: 'Config - Backup/Restore',
+            header: 'Backup/Restore'
+        }
+    }, {
+        path: 'general',
+        name: 'configGeneral',
+        meta: {
+            title: 'Config - General',
+            header: 'General Configuration'
+        }
+    }, {
+        path: 'notifications',
+        name: 'configNotifications',
+        meta: {
+            title: 'Config - Notifications',
+            header: 'Notifications'
+        }
+    }, {
+        path: 'postProcessing',
+        name: 'configPostProcessing',
+        meta: {
+            title: 'Config - Post Processing',
+            header: 'Post Processing'
+        }
+    }, {
+        path: 'providers',
+        name: 'configSearchProviders',
+        meta: {
+            title: 'Config - Providers',
+            header: 'Search Providers'
+        }
+    }, {
+        path: 'search',
+        name: 'configSearchSettings',
+        meta: {
+            title: 'Config - Episode Search',
+            header: 'Search Settings'
+        }
+    }, {
+        path: 'subtitles',
+        name: 'configSubtitles',
+        meta: {
+            title: 'Config - Subtitles',
+            header: 'Subtitles'
+        }
+    }]
+};
+
+const addShowRoutes = {
+    path: '/addShows',
+    component: { template: '<router-view/>' },
+    children: [{
+        path: '',
+        name: 'addShows',
+        meta: {
+            title: 'Add Shows',
+            header: 'Add Shows'
+        },
+        component: AddShows
+    }, {
+        path: 'addExistingShows',
+        name: 'addExistingShows',
+        meta: {
+            title: 'Add Existing Shows',
+            header: 'Add Existing Shows'
+        }
+    }, {
+        path: 'newShow',
+        name: 'addNewShow',
+        meta: {
+            title: 'Add New Show',
+            header: 'Add New Show'
+        }
+    }]
+};
+
+const loginRoute = {
     path: '/login',
     name: 'login',
     meta: {
         title: 'Login'
     },
     component: Login
-}, {
-    path: '/home/displayShow',
-    name: 'displayShow'
-}, {
-    path: '/config',
-    name: 'config',
-    meta: {
-        title: 'Help & Info',
-        header: 'Medusa Configuration'
-    },
-    component: Config
-}, {
-    path: '/addShows',
-    name: 'addShows',
-    meta: {
-        title: 'Add Shows',
-        header: 'Add Shows'
-    },
-    component: AddShows
-}, {
+};
+
+const addRecommendedRoute = {
     path: '/addRecommended',
     name: 'addRecommended',
     meta: {
@@ -41,15 +140,88 @@ const routes = [{
         header: 'Add Recommended Shows'
     },
     component: AddRecommended
-}, {
+};
+
+const scheduleRoute = {
     path: '/schedule',
     name: 'schedule',
     meta: {
         title: 'Schedule',
         header: 'Schedule'
-    }, // eslint-disable-line comma-dangle
-    // component: scheduleComponent
-}, {
+    }
+};
+
+const historyRoute = {
+    path: '/history',
+    name: 'history',
+    meta: {
+        title: 'History',
+        header: 'History'
+    }
+};
+
+const manageRoutes = {
+    path: '/manage',
+    component: { template: '<router-view/>' },
+    children: [{
+        path: '',
+        name: 'manage',
+        meta: {
+            title: 'Mass Update',
+            header: 'Mass Update'
+        }
+    }, {
+        path: 'backlogOverview',
+        name: 'manageBacklogOverview',
+        meta: {
+            title: 'Backlog Overview',
+            header: 'Backlog Overview'
+        }
+    }, {
+        path: 'episodeStatuses',
+        name: 'manageEpisodeOverview',
+        meta: {
+            title: 'Episode Overview',
+            header: 'Episode Overview'
+        }
+    }, {
+        path: 'failedDownloads',
+        name: 'manageFailedDownloads',
+        meta: {
+            title: 'Failed Downloads',
+            header: 'Failed Downlaods'
+        }
+    }, {
+        path: 'manageSearches',
+        name: 'manageManageSearches',
+        meta: {
+            title: 'Manage Searches',
+            header: 'Manage Searches'
+        }
+    }, {
+        path: 'massEdit',
+        name: 'manageMassEdit',
+        meta: {
+            title: 'Mass Edit'
+        }
+    }, {
+        path: 'subtitleMissed',
+        name: 'manageSubtitleMissed',
+        meta: {
+            title: 'Missing Subtitles',
+            header: 'Missing Subtitles'
+        }
+    }, {
+        path: 'subtitleMissedPP',
+        name: 'manageSubtitleMissedPP',
+        meta: {
+            title: 'Missing Subtitles in Post-Process folder',
+            header: 'Missing Subtitles in Post-Process folder'
+        }
+    }]
+};
+
+const notFoundRoutes = {
     path: '/not-found',
     name: 'not-found',
     meta: {
@@ -61,7 +233,19 @@ const routes = [{
 // }, {
 //     path: '*',
 //     redirect: '/not-found'
-}];
+};
+
+const routes = [
+    homeRoutes,
+    configRoutes,
+    addShowRoutes,
+    loginRoute,
+    addRecommendedRoute,
+    scheduleRoute,
+    historyRoute,
+    manageRoutes,
+    notFoundRoutes
+];
 
 const router = new VueRouter({
     base: document.body.getAttribute('web-root') + '/',
