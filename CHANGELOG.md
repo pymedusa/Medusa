@@ -19,6 +19,7 @@
 
 **Fixes**
 
+- Fixed malformed non-ASCII characters displaying for Windows users on "View Logs" page ([#4492](https://github.com/pymedusa/Medusa/pull/4492))
 - Fixed Emby test notification ([#4622](https://github.com/pymedusa/Medusa/pull/4622))
 - Fixed NorBits provider formatting download URL incorrectly ([#4642](https://github.com/pymedusa/Medusa/pull/4642))
 - Fixed reference linking ([#4463](https://github.com/pymedusa/Medusa/pull/4463))
