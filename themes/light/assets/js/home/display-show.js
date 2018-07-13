@@ -45,6 +45,20 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $.ajaxEpSubtitlesSearch();
     $.ajaxEpRedownloadSubtitle();
 
+    const setQuality = (quality, seriesSlug, episodes) => {
+        const patchData = {};
+        episodes.forEach(episode => {
+            patchData[episode] = { quality: parseInt(quality, 10) };
+        });
+
+        api.patch('series/' + seriesSlug + '/episodes', patchData).then(response => {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(error => {
+            log.error(error.data);
+        });
+    };
+
     $('#seasonJump').on('change', function() {
         const id = $('#seasonJump option:selected').val();
         if (id && id !== 'jump') {
@@ -72,11 +86,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        if (quality !== '') {
+        if (quality) {
             setQuality(quality, seriesSlug, epArr);
         }
 
-        if (status !== '') {
+        if (status) {
             window.location.href = $('base').attr('href') + 'home/setStatus?' +
                 'indexername=' + $('#indexer-name').attr('value') +
                 '&seriesid=' + $('#series-id').attr('value') +
@@ -424,19 +438,4 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             log.error(error.data);
         });
     });
-
-    function setQuality(quality, seriesSlug, episodes) {
-        const patchData = {};
-        episodes.forEach(episode => {
-            patchData[episode] = { quality: parseInt(quality, 10) };
-        });
-
-        api.patch('series/' + seriesSlug + '/episodes', patchData)
-            .then(response => {
-                log.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                log.error(error.data);
-            });
-    }
 };
