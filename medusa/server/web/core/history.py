@@ -39,7 +39,7 @@ class History(WebRoot):
         ]
 
         return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        submenu=submenu[::-1], topmenu='history', controller='history', action='index')
+                        submenu=submenu[::-1], controller='history', action='index')
 
     def clearHistory(self):
         # @TODO: Replace this with DELETE /api/v2/history

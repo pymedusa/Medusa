@@ -16,7 +16,6 @@ from mako.template import Template as MakoTemplate
 
 from medusa import (
     app,
-    classes,
     db,
     exception_handler,
     helpers,
@@ -88,19 +87,13 @@ class PageTemplate(MakoTemplate):
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,
-            'numErrors': len(classes.ErrorViewer.errors),
-            'numWarnings': len(classes.WarningViewer.errors),
             'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'topmenu': 'FixME',
             'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
-            'newsBadge': '',
-            'toolsBadge': '',
-            'toolsBadgeClass': '',
             'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
             'full_url': base_url + rh.request.uri
@@ -116,21 +109,6 @@ class PageTemplate(MakoTemplate):
             self.arguments['sbHttpsPort'] = rh.request.headers['X-Forwarded-Port']
         if 'X-Forwarded-Proto' in rh.request.headers:
             self.arguments['sbHttpsEnabled'] = True if rh.request.headers['X-Forwarded-Proto'] == 'https' else False
-
-        error_count = len(classes.ErrorViewer.errors)
-        warning_count = len(classes.WarningViewer.errors)
-
-        if app.NEWS_UNREAD:
-            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=app.NEWS_UNREAD)
-
-        num_combined = error_count + warning_count + app.NEWS_UNREAD
-        if num_combined:
-            if error_count:
-                self.arguments['toolsBadgeClass'] = ' btn-danger'
-            elif warning_count:
-                self.arguments['toolsBadgeClass'] = ' btn-warning'
-            self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
-                type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
         """Render the Page template."""

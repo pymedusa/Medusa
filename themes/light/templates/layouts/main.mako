@@ -59,7 +59,7 @@
             <div id="summaryBackground" class="shadow" style="display: none"></div>
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
-            <%include file="/partials/header.mako"/>
+            <app-header></app-header>
             % if submenu:
             <%include file="/partials/submenu.mako"/>
             % endif
@@ -131,6 +131,7 @@
         <script src="js/notifications.js"></script>
         <script src="js/store.js"></script>
         <script>
+            Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
         </script>
         <%include file="/vue-components/app-link.mako"/>

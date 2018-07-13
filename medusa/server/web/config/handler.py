@@ -42,4 +42,4 @@ class Config(WebRoot):
         [Converted to VueRouter]
         """
         t = PageTemplate(rh=self, filename='index.mako')
-        return t.render(submenu=self.ConfigMenu(), topmenu='config')
+        return t.render(submenu=self.ConfigMenu())

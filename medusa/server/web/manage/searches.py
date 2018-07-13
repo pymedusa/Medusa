@@ -25,7 +25,7 @@ class ManageSearches(Manage):
                         searchQueueLength=app.search_queue_scheduler.action.queue_length(),
                         forcedSearchQueueLength=app.forced_search_queue_scheduler.action.queue_length(),
                         subtitlesFinderStatus=app.subtitles_finder_scheduler.action.amActive,
-                        topmenu='manage', controller='manage', action='manageSearches')
+                        controller='manage', action='manageSearches')
 
     def forceBacklog(self):
         # force it to run the next time it looks

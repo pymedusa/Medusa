@@ -33,7 +33,7 @@ class ConfigSubtitles(Config):
         """
         t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
-        return t.render(submenu=self.ConfigMenu(), topmenu='config',
+        return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='subtitlesPage')
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
