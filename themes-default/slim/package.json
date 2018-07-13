@@ -9,7 +9,7 @@
     "build": "cross-env NODE_ENV=production gulp build",
     "install": "yarn run lint",
     "test": "cross-env NODE_ENV=test nyc ava",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
     "cssThemes": {
