@@ -25,7 +25,7 @@ Vue.component('show-selector', {
             selectedShowSlug: this.showSlug
         };
     },
-    computed: Object.assign(store.mapState(['config', 'shows']), {
+    computed: Object.assign(Vuex.mapState(['config', 'shows']), {
         showLists() {
             const { config, shows } = this;
             const { animeSplitHome, sortArticle } = config;

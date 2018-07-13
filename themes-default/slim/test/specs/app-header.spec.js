@@ -1,5 +1,5 @@
 import test from 'ava';
-import Puex from 'puex';
+import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import fixtures from '../__fixtures__/app-header';
@@ -10,13 +10,14 @@ const AppHeader = require('../../static/js/templates/app-header.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
-    t.context.localVue.use(Puex);
+    t.context.localVue.use(Vuex);
     t.context.localVue.use(VueRouter);
     t.context.localVue.component('app-link', AppLink);
 
     const { state } = fixtures;
+    const { Store } = Vuex;
     t.context.state = state;
-    t.context.store = new Puex({ state });
+    t.context.store = new Store({ state });
 });
 
 test.failing('renders', t => {
