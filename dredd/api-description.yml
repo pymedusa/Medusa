@@ -1249,6 +1249,8 @@ definitions:
         properties:
           wikiUrl:
             type: string
+          donationsUrl:
+            type: string
           themeName:
             type: string
           namingForceFolders:
@@ -1366,6 +1368,39 @@ definitions:
               method:
                 type: string
                 enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+          news:
+            type: object
+            properties:
+              unread:
+                description: Number of unread news
+                type: integer
+          logs:
+            type: object
+            properties:
+              loggingLevels:
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 40
+                  warning:
+                    type: integer
+                    example: 30
+                  info:
+                    type: integer
+                    example: 20
+                  debug:
+                    type: integer
+                    example: 10
+                  db:
+                    type: integer
+                    example: 5
+              numErrors:
+                description: Number of logged errors
+                type: integer
+              numWarnings:
+                description: Number of logged warnings
+                type: integer
   Log:
     type: object
     properties:
