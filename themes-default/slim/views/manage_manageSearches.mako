@@ -8,10 +8,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Manage Searches'
-    },
     data() {
         return {
             // Python conversions
@@ -132,7 +130,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">Manage Searches</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="align-left">
     <h3>Backlog Search:</h3>
     <h5>Note: Limited by backlog days setting: last {{ backlogDays }} days</h5>

@@ -4,13 +4,10 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Backup/Restore'
-    },
     data() {
         return {
-            header: 'Backup/Restore',
             backup: {
                 disabled: false,
                 status: '',
@@ -62,7 +59,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form name="configForm" method="post" action="config/backuprestore">
