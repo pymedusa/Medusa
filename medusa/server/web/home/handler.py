@@ -1765,7 +1765,7 @@ class Home(WebRoot):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        app.SHOWS_RECENT = [x for x in app.SHOWS_RECENT if x['indexer'] != series_obj.indexer and x['indexerid'] != series_obj.series_id]
+        app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['indexerName'] != series_obj.indexer_name and show['showId'] != series_obj.series_id]
 
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
