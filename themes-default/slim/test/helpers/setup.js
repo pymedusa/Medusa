@@ -6,6 +6,11 @@ const hooks = require('require-extension-hooks');
 // Setup browser environment
 browserEnv();
 
+// Setup document variables
+const baseElement = document.createElement('base');
+baseElement.setAttribute('href', 'http://localhost:8081');
+document.head.appendChild(baseElement);
+
 // Setup jQuery
 global.$ = jQuery(window);
 
