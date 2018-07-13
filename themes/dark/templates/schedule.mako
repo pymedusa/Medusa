@@ -13,7 +13,7 @@ const startVue = () => {
         store,
         el: '#vue-wrap',
         router,
-        computed: Object.assign(store.mapState(['shows']), {
+        computed: Object.assign(Vuex.mapState(['shows']), {
             header() {
                 return this.$route.meta.header;
             },

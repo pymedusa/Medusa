@@ -1,9 +1,9 @@
-/* globals Vue */
-const Puex = window.puex.default;
+/* globals Vue, Vuex */
 const VueNativeSock = window.VueNativeSock.default;
+const { Store } = Vuex;
 const { displayNotification } = window;
 
-Vue.use(Puex);
+Vue.use(Vuex);
 
 // These are used for mutation names
 // There are no naming conventions so try and match
@@ -48,7 +48,7 @@ const {
     ADD_SHOW
 } = mutationTypes;
 
-const store = new Puex({
+const store = new Store({
     state: {
         auth: {
             isAuthenticated: false,
