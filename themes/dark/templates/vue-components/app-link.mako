@@ -10,6 +10,7 @@
         <slot></slot>
     </component>
 </script>
+
 <script>
 Vue.component('app-link', {
     template: '#app-link-template',
@@ -113,7 +114,8 @@ Vue.component('app-link', {
             if (!href) {
                 return {
                     is: 'a',
-                    falseLink: true
+                    // Only tag this as a "false-link" if we passed a name in the props
+                    falseLink: Boolean(this.$attrs.name) || undefined
                 };
             }
 
@@ -147,8 +149,18 @@ Vue.component('app-link', {
     }
 });
 </script>
+
 <style>
-/* @NOTE: This fixes the header blocking elements when using a hash link */
-/* e.g. displayShow?indexername=tvdb&seriesid=83462#season-5  */
-[false-link]:before { content: ''; display: block; position: relative; width: 0; height: 100px; margin-top: -100px }
+/*
+@NOTE: This fixes the header blocking elements when using a hash link
+e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
+*/
+[false-link]::before {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 100px;
+    margin-top: -100px;
+    z-index: -100;
+}
 </style>

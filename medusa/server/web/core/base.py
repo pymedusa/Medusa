@@ -294,7 +294,7 @@ class WebRoot(WebHandler):
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
-    def not_found(self):
+    def not_found(self, *args, **kwargs):
         """
         Fallback 404 route.
 
@@ -303,7 +303,7 @@ class WebRoot(WebHandler):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render()
 
-    def server_error(self):
+    def server_error(self, *args, **kwargs):
         """
         Fallback 500 route.
 
