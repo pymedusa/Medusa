@@ -11,9 +11,6 @@
     "ext/**",
     "lib/**"
   ],
-  "ignoreDeps": [
-    "guessit"
-  ],
   "packageRules": [{
     "packageNames": ["tornado"],
     "allowedVersions": "<6"
