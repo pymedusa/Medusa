@@ -25,11 +25,13 @@ const xo = require('xo');
 
 const xoReporter = xo.getFormatter('eslint-formatter-pretty');
 
-// Const postcss = require('gulp-postcss');
-// const sass = require('gulp-sass');
+/*
+const postcss = require('gulp-postcss');
+const sass = require('gulp-sass');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
+*/
 
 const PROD = process.env.NODE_ENV === 'production';
 const pkg = require('./package.json');
@@ -38,6 +40,7 @@ const { config, xo: xoConfig } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
+/*
 const processors = [
     reporter({
         clearMessages: true
@@ -48,6 +51,7 @@ const processors = [
 if (PROD) {
     processors.push(cssnano());
 }
+*/
 
 const staticAssets = [
     'static/browserconfig.xml',
