@@ -75,6 +75,7 @@
                     </div>
                </div><!-- /content -->
             <%include file="/partials/footer.mako" />
+            <scroll-buttons></scroll-buttons>
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
@@ -132,6 +133,7 @@
         <script src="js/store.js"></script>
         <script>
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
+            Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
         </script>
         <%include file="/vue-components/app-link.mako"/>

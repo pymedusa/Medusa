@@ -4378,70 +4378,8 @@ CSS helper classes
     cursor: default;
 }
 
-/* =======================================================================
- Scroll to top
-========================================================================== */
-.scroll-wrapper {
-    position: fixed;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    text-align: center;
-    font-size: 20px;
-    z-index: 999;
-    background-color: #777;
-    color: #eee;
-    width: 50px;
-    height: 48px;
-    line-height: 48px;
-    right: 30px;
-    bottom: 30px;
-    padding-top: 2px;
-    border-radius: 10px;
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -ms-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
-}
-
-.scroll-top-wrapper:hover {
-    background-color: #888;
-}
-
-.scroll-top-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-top-wrapper i.fa {
-    line-height: inherit;
-}
-
 /* CSS for Nav dropdown hover
 .dropdown:hover .dropdown-menu {
     display: block;
 }
 */
-
-/* =======================================================================
- overflow buttons for scrolling left and right.
- For horizontal scrolling, without breaking the ui.
-========================================================================== */
-
-.scroll-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-wrapper.left {
-    position: fixed;
-    right: 150px;
-}
-
-.scroll-wrapper.right {
-    position: fixed;
-    right: 90px;
-}

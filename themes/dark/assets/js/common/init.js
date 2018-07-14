@@ -32,66 +32,8 @@ MEDUSA.common.init = function() {
         return offset;
     }
 
-    /**
-     * Make an attempt to detect if there are currently scroll bars visible for divs with the horizontal-scroll class.
-     *
-     * If scroll bars are visible the fixed left and right buttons become visible on that page.
-     */
-    const initHorizontalScroll = function() {
-        const scrollDiv = $('div.horizontal-scroll').get();
-        if (scrollDiv.length === 0) {
-            return;
-        }
-
-        const scrollbarVisible = scrollDiv.map(el => {
-            return (el.scrollWidth > el.clientWidth);
-        }).indexOf(true);
-
-        if (scrollbarVisible >= 0) {
-            $('.scroll-wrapper.left').addClass('show');
-            $('.scroll-wrapper.right').addClass('show');
-        } else {
-            $('.scroll-wrapper.left').removeClass('show');
-            $('.scroll-wrapper.right').removeClass('show');
-        }
-    };
-
-    initHorizontalScroll();
-
     $(window).on('resize', () => {
         $('.backstretch').css('top', backstretchOffset());
-        initHorizontalScroll();
-    });
-
-    // Scroll Functions
-    function scrollTo(dest) {
-        $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
-    }
-
-    $('#scroll-left').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '-=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $('#scroll-right').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '+=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $(document).on('scroll', () => {
-        if ($(window).scrollTop() > 100) {
-            $('.scroll-wrapper.top').addClass('show');
-        } else {
-            $('.scroll-wrapper.top').removeClass('show');
-        }
-    });
-
-    $('.scroll-wrapper.top').on('click', () => {
-        scrollTo($('body'));
     });
 
     // Scroll to Anchor
