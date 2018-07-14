@@ -3197,9 +3197,9 @@ eslint-plugin-unicorn@^4.0.3:
     lodash.upperfirst "^4.2.0"
     safe-regex "^1.1.0"
 
-eslint-plugin-vue@4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-4.5.0.tgz#09d6597f4849e31a3846c2c395fccf17685b69c3"
+eslint-plugin-vue@4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-4.6.0.tgz#01d47c5d6ed2f52624e1006f4cf9aa08d1972975"
   dependencies:
     vue-eslint-parser "^2.0.3"
 
