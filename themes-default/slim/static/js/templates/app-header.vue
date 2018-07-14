@@ -197,8 +197,9 @@ module.exports = {
         $($el).on({
             mouseenter(event) {
                 const $target = $(event.currentTarget);
-                $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500, () => {
+                    $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
+                });
             },
             mouseleave(event) {
                 const $target = $(event.currentTarget);
