@@ -2128,10 +2128,6 @@ config*.mako
     margin-right: 10px;
 }
 
-#config .metadataDiv {
-    display: none;
-}
-
 .component-group-save {
     float: right;
     padding-top: 10px;

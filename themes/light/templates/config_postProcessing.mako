@@ -40,6 +40,16 @@ const startVue = () => {
                 { value: 'network', text: 'Network'}
             ]
 
+            let defaultMetadataProviders = [];
+            const getFirstEnabledMetadataProvider = () => {
+                defaultMetadataProviders.forEach(provider => {
+                    if (provider.show_metadata || provider.episode_metadata) {
+                        return provider
+                    }
+                });
+                return 'kodi'
+            }
+
             return {
                 configLoaded: false,
 
@@ -90,7 +100,8 @@ const startVue = () => {
                     extraScripts: [],
                     extraScriptsUrl: null,
                 },
-                metadataProviders: []
+                metadataProviders: defaultMetadataProviders,
+                metadataProviderSelected: getFirstEnabledMetadataProvider()
             };
         },
         methods: {
@@ -124,7 +135,7 @@ const startVue = () => {
                 this.postProcessing.naming.animeNamingType = values.animeNamingType;
                 this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
             },
-            savePostprocessing() {
+            save() {
                 const { $store } = this;
                 // We want to wait until the page has been fully loaded, before starting to save stuff.
                 if (!this.configLoaded) {
@@ -133,7 +144,12 @@ const startVue = () => {
                 // Disable the save button until we're done.
                 this.saving = true;
 
-                let config = { postProcessing: this.postProcessing };
+                let config = {
+                    postProcessing: this.postProcessing,
+                    metadata: {
+                        metadataProviders: this.metadataProviders
+                    }
+                };
 
                 $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
                     this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
@@ -143,11 +159,18 @@ const startVue = () => {
                         'Error'
                     );
                 });
+            },
+            processMethodDescription(processMethod) {
+                return this.processMethods.get(processMethod)
             }
         },
         computed: {
-            processMethodDescription(processMethod) {
-                return this.processMethods.get(processMethod)
+            availableMetadataProviders() {
+                let providers = [];
+                for (provider of this.metadataProviders) {
+                    providers.push(provider);
+                }
+                return providers; 
             }
         },
         async mounted() {
@@ -180,7 +203,7 @@ const startVue = () => {
     <h1 class="header">{{header}}</h1>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" class="form-horizontal" @submit.prevent="savePostprocessing()">
+            <form id="configForm" class="form-horizontal" @submit.prevent="save()">
                 <div id="config-components">
                     <ul>
                         <li><app-link href="#post-processing">Post Processing</app-link></li>
@@ -461,6 +484,8 @@ const startVue = () => {
                             </div>
                         </div>
                     </div>
+
+
                     <div id="metadata" class="component-group">
                         <div class="component-group-desc">
                             <h3>Metadata</h3>
@@ -470,61 +495,56 @@ const startVue = () => {
                             <div class="form-group">
                                 <label>
                                     <span>Metadata Type:</span>
-                                    <span >
-                                        <% m_dict = metadata.get_metadata_generator_dict() %>
-                                        <select id="metadataType" class="form-control input-sm">
-                                        % for (cur_name, cur_generator) in sorted(m_dict.iteritems()):
-                                            <option value="${cur_generator.get_id()}">${cur_name}</option>
-                                        % endfor
+                                    <span>
+                                        <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
+                                            <option :value="option.id" v-for="option in metadataProviders">{{ option.name }}</option>
                                         </select>
+
                                     </span>
                                 </label>
                                 <span>Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                             </div>
-                            % for (cur_name, cur_generator) in m_dict.iteritems():
-                            <% cur_metadata_inst = app.metadata_provider_dict[cur_generator.name] %>
-                            <% cur_id = cur_generator.get_id() %>
-                            <div class="metadataDiv" id="${cur_id}">
+
+                            <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" id="provider.id">
                                 <div class="metadata_options_wrapper">
                                     <h4>Create:</h4>
                                     <div class="metadata_options">
-                                        <label for="${cur_id}_show_metadata"><input type="checkbox" class="metadata_checkbox" id="${cur_id}_show_metadata" ${'checked="checked"' if cur_metadata_inst.show_metadata else ''}/>&nbsp;Show Metadata</label>
-                                        <label for="${cur_id}_episode_metadata"><input type="checkbox" class="metadata_checkbox" id="${cur_id}_episode_metadata" ${'checked="checked"' if cur_metadata_inst.episode_metadata else ''}/>&nbsp;Episode Metadata</label>
-                                        <label for="${cur_id}_fanart"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_fanart" ${'checked="checked"' if cur_metadata_inst.fanart else ''}/>&nbsp;Show Fanart</label>
-                                        <label for="${cur_id}_poster"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_poster" ${'checked="checked"' if cur_metadata_inst.poster else ''}/>&nbsp;Show Poster</label>
-                                        <label for="${cur_id}_banner"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_banner" ${'checked="checked"' if cur_metadata_inst.banner else ''}/>&nbsp;Show Banner</label>
-                                        <label for="${cur_id}_episode_thumbnails"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_episode_thumbnails" ${'checked="checked"' if cur_metadata_inst.episode_thumbnails else ''}/>&nbsp;Episode Thumbnails</label>
-                                        <label for="${cur_id}_season_posters"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_season_posters" ${'checked="checked"' if cur_metadata_inst.season_posters else ''}/>&nbsp;Season Posters</label>
-                                        <label for="${cur_id}_season_banners"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_season_banners" ${'checked="checked"' if cur_metadata_inst.season_banners else ''}/>&nbsp;Season Banners</label>
-                                        <label for="${cur_id}_season_all_poster"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_season_all_poster" ${'checked="checked"' if cur_metadata_inst.season_all_poster else ''}/>&nbsp;Season All Poster</label>
-                                        <label for="${cur_id}_season_all_banner"><input type="checkbox" class="float-left metadata_checkbox" id="${cur_id}_season_all_banner" ${'checked="checked"' if cur_metadata_inst.season_all_banner else ''}/>&nbsp;Season All Banner</label>
+                                        <label :for="provider.id + '_show_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_show_metadata'" v-model="provider.showMetadata"/>&nbsp;Show Metadata</label>
+                                        <label :for="provider.id + '_episode_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_episode_metadata'" v-model="provider.episodeMetadata" :disabled="provider.example.episodeMetadata.includes('not supported')"/>&nbsp;Episode Metadata</label>
+                                        <label :for="provider.id + '_fanart'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_fanart'" v-model="provider.fanart" :disabled="provider.example.fanart.includes('not supported')"/>&nbsp;Show Fanart</label>
+                                        <label :for="provider.id + '_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_poster'" v-model="provider.poster" :disabled="provider.example.poster.includes('not supported')"/>&nbsp;Show Poster</label>
+                                        <label :for="provider.id + '_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_banner'" v-model="provider.banner" :disabled="provider.example.banner.includes('not supported')"/>&nbsp;Show Banner</label>
+                                        <label :for="provider.id + '_episode_thumbnails'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_episode_thumbnails'" v-model="provider.episodeThumbnails" :disabled="provider.example.episodeThumbnails.includes('not supported')"/>&nbsp;Episode Thumbnails</label>
+                                        <label :for="provider.id + '_season_posters'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_posters'" v-model="provider.seasonPosters" :disabled="provider.example.seasonPosters.includes('not supported')"/>&nbsp;Season Posters</label>
+                                        <label :for="provider.id + '_season_banners'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_banners'" v-model="provider.seasonBanners" :disabled="provider.example.seasonBanners.includes('not supported')"/>&nbsp;Season Banners</label>
+                                        <label :for="provider.id + '_season_all_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_poster'" v-model="provider.seasonAllPoster" :disabled="provider.example.seasonAllPoster.includes('not supported')"/>&nbsp;Season All Poster</label>
+                                        <label :for="provider.id + '_season_all_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_banner'" v-model="provider.seasonAllBanner" :disabled="provider.example.seasonAllBanner.includes('not supported')"/>&nbsp;Season All Banner</label>
                                     </div>
                                 </div>
                                 <div class="metadata_example_wrapper">
                                     <h4>Results:</h4>
                                     <div class="metadata_example">
-                                        <label for="${cur_id}_show_metadata"><span id="${cur_id}_eg_show_metadata">${cur_metadata_inst.eg_show_metadata}</span></label>
-                                        <label for="${cur_id}_episode_metadata"><span id="${cur_id}_eg_episode_metadata">${cur_metadata_inst.eg_episode_metadata}</span></label>
-                                        <label for="${cur_id}_fanart"><span id="${cur_id}_eg_fanart">${cur_metadata_inst.eg_fanart}</span></label>
-                                        <label for="${cur_id}_poster"><span id="${cur_id}_eg_poster">${cur_metadata_inst.eg_poster}</span></label>
-                                        <label for="${cur_id}_banner"><span id="${cur_id}_eg_banner">${cur_metadata_inst.eg_banner}</span></label>
-                                        <label for="${cur_id}_episode_thumbnails"><span id="${cur_id}_eg_episode_thumbnails">${cur_metadata_inst.eg_episode_thumbnails}</span></label>
-                                        <label for="${cur_id}_season_posters"><span id="${cur_id}_eg_season_posters">${cur_metadata_inst.eg_season_posters}</span></label>
-                                        <label for="${cur_id}_season_banners"><span id="${cur_id}_eg_season_banners">${cur_metadata_inst.eg_season_banners}</span></label>
-                                        <label for="${cur_id}_season_all_poster"><span id="${cur_id}_eg_season_all_poster">${cur_metadata_inst.eg_season_all_poster}</span></label>
-                                        <label for="${cur_id}_season_all_banner"><span id="${cur_id}_eg_season_all_banner">${cur_metadata_inst.eg_season_all_banner}</span></label>
+                                        <label :for="provider.id + '_show_metadata'"><span :id="provider.id + '_eg_show_metadata'" :class="{disabled: !provider.showMetadata}"><span v-html="'<span>' + provider.example.showMetadata + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_episode_metadata'"><span :id="provider.id + '_eg_episode_metadata'" :class="{disabled: !provider.episodeMetadata}"><span v-html="'<span>' + provider.example.episodeMetadata + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_fanart'"><span :id="provider.id + '_eg_fanart'" :class="{disabled: !provider.fanart}"><span v-html="'<span>' + provider.example.fanart + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_poster'"><span :id="provider.id + '_eg_poster'" :class="{disabled: !provider.poster}"><span v-html="'<span>' + provider.example.poster + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_banner'"><span :id="provider.id + '_eg_banner'" :class="{disabled: !provider.banner}"><span v-html="'<span>' + provider.example.banner + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_episode_thumbnails'"><span :id="provider.id + '_eg_episode_thumbnails'" :class="{disabled: !provider.EpisodeThumbnails}"><span v-html="'<span>' + provider.example.EpisodeThumbnails + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_season_posters'"><span :id="provider.id + '_eg_season_posters'" :class="{disabled: !provider.seasonPosters}"><span v-html="'<span>' + provider.example.seasonPosters + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_season_banners'"><span :id="provider.id + '_eg_season_banners'" :class="{disabled: !provider.seasonBanners}"><span v-html="'<span>' + provider.example.seasonBanners + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_season_all_poster'"><span :id="provider.id + '_eg_season_all_poster'" :class="{disabled: !provider.seasonAllPoster}"><span v-html="'<span>' + provider.example.seasonAllPoster + '</span>'"></span></span></label>
+                                        <label :for="provider.id + '_season_all_banner'"><span :id="provider.id + '_eg_season_all_banner'" :class="{disabled: !provider.seasonAllBanner}"><span v-html="'<span>' + provider.example.seasonAllBanner + '</span>'"></span></span></label>
                                     </div>
                                 </div>
-                                <input type="hidden" name="${cur_id}_data" id="${cur_id}_data" value="${cur_metadata_inst.get_config()}" />
                             </div>
-                            % endfor
+                            <!-- % endfor -->
                             <div class="clearfix"></div><br>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group3 //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
+                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes"/>
                 </div><!--/config-components//-->
             </form>
         </div><!--/config-content//-->
