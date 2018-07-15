@@ -805,41 +805,20 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
     if not wanted_candidates:
         return multi_candidates, single_candidates
 
-    searched_seasons = {str(x.season) for x in episodes}
-    main_db_con = db.DBConnection()
-    selection = main_db_con.select(
-        'SELECT episode '
-        'FROM tv_episodes '
-        'WHERE indexer = ?'
-        ' AND showid = ?'
-        ' AND ( season IN ( {0} ) )'.format(','.join(searched_seasons)),
-        [series_obj.indexer, series_obj.series_id]
-    )
-    all_eps = [int(x[b'episode']) for x in selection]
-    log.debug(u'Episodes list: {0}', all_eps)
-
     for candidate in wanted_candidates:
-        season_quality = candidate.quality
-
         all_wanted = True
         any_wanted = False
-        for cur_ep_num in all_eps:
-            for season in {x.season for x in episodes}:
-                if not series_obj.want_episode(season, cur_ep_num, season_quality,
-                                               down_cur_quality):
-                    all_wanted = False
-                else:
-                    any_wanted = True
+        for ep_obj in candidate.episodes:
+            if not series_obj.want_episode(ep_obj.season, ep_obj.episode,
+                                           candidate.quality, down_cur_quality):
+                all_wanted = False
+            else:
+                any_wanted = True
 
         if all_wanted:
             log.info(u'All episodes in this season are needed, adding {0} {1}',
                      candidate.provider.provider_type,
                      candidate.name)
-            ep_objs = []
-            for cur_ep_num in all_eps:
-                for season in {x.season for x in episodes}:
-                    ep_objs.append(series_obj.get_episode(season, cur_ep_num))
-            candidate.episodes = ep_objs
 
             # Skip the result if search delay is enabled for the provider
             if not delay_search(candidate):
@@ -871,12 +850,9 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
             else:
                 log.info(u'Adding multi-episode result for full-season torrent.'
                          u' Undesired episodes can be skipped in the torrent client if desired!')
-                ep_objs = []
-                for cur_ep_num in all_eps:
-                    for season in {x.season for x in episodes}:
-                        ep_objs.append(series_obj.get_episode(season, cur_ep_num))
-                candidate.episodes = ep_objs
-                multi_candidates.append(candidate)
+                # Skip the result if search delay is enabled for the provider
+                if not delay_search(candidate):
+                    multi_candidates.append(candidate)
 
     return multi_candidates, single_candidates
 

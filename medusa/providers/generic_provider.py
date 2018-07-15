@@ -458,15 +458,15 @@ class GenericProvider(object):
 
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
-            episode_object = search_result.create_episode_object()
+            search_result.create_episode_object()
             # result = self.get_result(episode_object, search_result)
             search_result.finish_search_result(self)
 
-            if not episode_object:
+            if not search_result.actual_episodes:
                 episode_number = SEASON_RESULT
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
-            elif len(episode_object) == 1:
-                episode_number = episode_object[0].episode
+            elif len(search_result.actual_episodes) == 1:
+                episode_number = search_result.actual_episode
                 log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
