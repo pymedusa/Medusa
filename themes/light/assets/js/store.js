@@ -552,4 +552,3 @@ Vue.use(VueNativeSock, websocketUrl, {
 });
 
 window.store = store;
-
