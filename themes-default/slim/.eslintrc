@@ -6,8 +6,8 @@
   ],
   "rules": {
       "indent": ["error", 4],
-      "object-curly-spacing": ["error", "always"]
-      "space-before-function-paren": ["error", "never"]
+      "object-curly-spacing": ["error", "always"],
+      "space-before-function-paren": ["error", "never"],
       "unicorn/catch-error-name": ["error", { "name": "error" }]
     },
     "env": {
