@@ -209,7 +209,7 @@ paths:
           x-request:
             path-params:
               id: tvdb999999999
-  /series/{seriesid}/episode:
+  /series/{seriesid}/episodes:
     get:
       summary: Return episodes from a given series
       description: |
@@ -247,7 +247,24 @@ paths:
           x-request:
             path-params:
               seriesid: tvdb999999999
-  /series/{seriesid}/episode/{id}:
+    patch:
+      summary: Partial update episodes
+      description: Partial update episodes
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - name: season
+          in: query
+          required: false
+          description: The episode season
+          type: integer
+          format: int32
+      responses:
+        207:
+          description: Response with the status of the single patches
+          x-request:
+            body: {"s01e02": {"status": 2, "quality": 4}, "s01e03": {"status": 4, "quality": 64}}
+  /series/{seriesid}/episodes/{id}:
     get:
       summary: Return a specific episode from a given series
       description: Retrieve a specific episode from a given series
@@ -274,7 +291,36 @@ paths:
           x-request:
             path-params:
               id: e999
-  /series/{seriesid}/episode/{id}/{field}:
+    patch:
+      summary: Update a specific episode from a given series
+      description: Update a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+      responses:
+        200:
+          description: Response with only the updated fields
+          x-request:
+            body: {"status": 2, "quality": 4}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid episode id
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: abc
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: e999
+  /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
       description: Retrieve a specific field from a given episode
@@ -305,7 +351,7 @@ paths:
           x-request:
             path-params:
               id: "2050-12-31"
-  /series/{seriesid}/episode/{id}/metadata:
+  /series/{seriesid}/episodes/{id}/metadata:
     get:
       summary: Return the video metadata from a specific episode
       description: Retrieve the video metadata from a specific episode
@@ -1203,6 +1249,8 @@ definitions:
         properties:
           wikiUrl:
             type: string
+          donationsUrl:
+            type: string
           themeName:
             type: string
           namingForceFolders:
@@ -1278,8 +1326,6 @@ definitions:
                 type: string
               host:
                 type: string
-              password:
-                type: string
               enabled:
                 type: boolean
               priority:
@@ -1309,8 +1355,6 @@ definitions:
                 type: string
               path:
                 type: string
-              password:
-                type: string
               verifySSL:
                 type: boolean
               highBandwidth:
@@ -1324,6 +1368,39 @@ definitions:
               method:
                 type: string
                 enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+          news:
+            type: object
+            properties:
+              unread:
+                description: Number of unread news
+                type: integer
+          logs:
+            type: object
+            properties:
+              loggingLevels:
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 40
+                  warning:
+                    type: integer
+                    example: 30
+                  info:
+                    type: integer
+                    example: 20
+                  debug:
+                    type: integer
+                    example: 10
+                  db:
+                    type: integer
+                    example: 5
+              numErrors:
+                description: Number of logged errors
+                type: integer
+              numWarnings:
+                description: Number of logged warnings
+                type: integer
   Log:
     type: object
     properties:

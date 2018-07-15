@@ -1163,13 +1163,6 @@ div#col-show-summary {
     margin-bottom: 15px;
 }
 
-#showSelector {
-    height: 31px;
-    display: table-cell;
-    left: 20px;
-    margin-bottom: 5px;
-}
-
 .show-info-container {
     overflow: hidden;
     display: table-cell;
@@ -1205,20 +1198,8 @@ div#col-show-summary {
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
-    .select-show-group {
-        width: 100%;
-    }
-
-    .show-selector {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .showSelector {
-        width: 100%;
     }
 
     .container-navShow {
@@ -1231,25 +1212,12 @@ div#col-show-summary {
 }
 
 @media (max-width: 340px) {
-    .select-show-group {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 265px;
     }
 }
 
 @media (max-width: 767px) {
-    #showSelector {
-        float: left;
-        width: 100%;
-    }
-
-    .select-show {
-        width: 100%;
-    }
-
     .pull-xs-left {
         float: left;
     }
@@ -1575,21 +1543,6 @@ span.snatched b {
     font-weight: 800;
 }
 
-.plotInfo {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-}
-
-.plotInfoNone {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-    opacity: 0.4;
-}
-
 .displayShowTable {
     table-layout: auto;
     width: 100%;
@@ -1845,12 +1798,6 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
-}
-
-select#select-show {
-    display: inline-block;
-    height: 25px;
-    padding: 1px;
 }
 
 button.selectColumns {
@@ -4468,70 +4415,8 @@ CSS helper classes
     cursor: default;
 }
 
-/* =======================================================================
- Scroll to top
-========================================================================== */
-.scroll-wrapper {
-    position: fixed;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    text-align: center;
-    font-size: 20px;
-    z-index: 999;
-    background-color: #777;
-    color: #eee;
-    width: 50px;
-    height: 48px;
-    line-height: 48px;
-    right: 30px;
-    bottom: 30px;
-    padding-top: 2px;
-    border-radius: 10px;
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -ms-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
-}
-
-.scroll-top-wrapper:hover {
-    background-color: #888;
-}
-
-.scroll-top-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-top-wrapper i.fa {
-    line-height: inherit;
-}
-
 /* CSS for Nav dropdown hover
 .dropdown:hover .dropdown-menu {
     display: block;
 }
 */
-
-/* =======================================================================
- overflow buttons for scrolling left and right.
- For horizontal scrolling, without breaking the ui.
-========================================================================== */
-
-.scroll-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-wrapper.left {
-    position: fixed;
-    right: 150px;
-}
-
-.scroll-wrapper.right {
-    position: fixed;
-    right: 90px;
-}

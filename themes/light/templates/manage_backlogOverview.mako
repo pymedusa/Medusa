@@ -10,14 +10,149 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Backlog Overview'
         },
         data() {
             return {
-                header: 'Backlog Overview'
             };
+        },
+        computed: Object.assign(Vuex.mapState([]), {
+            period: {
+                get() {
+                    return this.config.backlogOverview.period;
+                },
+                set(value) {
+                    const { $store } = this;
+                    return $store.dispatch('setConfig', {
+                        section: 'main',
+                        config: { backlogOverview: { period: value } }
+                    })
+                    .then(setTimeout(() => location.reload(), 500));
+                }
+            },
+            status: {
+                get() {
+                    return this.config.backlogOverview.status;
+                },
+                set(value) {
+                    const { $store } = this;
+                    return $store.dispatch('setConfig', {
+                        section: 'main',
+                        config: { backlogOverview: { status: value } }
+                    })
+                    .then(setTimeout(() => location.reload(), 500));
+                }
+            }
+        }),
+        methods: {
+        },
+        mounted() {
+            checkForcedSearch();
+
+            function checkForcedSearch() {
+                let pollInterval = 5000;
+                const searchStatusUrl = 'home/getManualSearchStatus';
+                const indexerName = $('#indexer-name').val();
+                const seriesId = $('#series-id').val();
+                const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+                $.ajax({
+                    url,
+                    error() {
+                        pollInterval = 30000;
+                    },
+                    type: 'GET',
+                    dataType: 'JSON',
+                    complete() {
+                        setTimeout(checkForcedSearch, pollInterval);
+                    },
+                    timeout: 15000 // Timeout every 15 secs
+                }).done(data => {
+                    if (data.episodes) {
+                        pollInterval = 5000;
+                    } else {
+                        pollInterval = 15000;
+                    }
+                    updateForcedSearch(data);
+                });
+            }
+
+            function updateForcedSearch(data) {
+                $.each(data.episodes, (name, ep) => {
+                    const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+                    const img = el.children('img[data-ep-search]');
+                    const episodeStatus = ep.status.toLowerCase();
+                    const episodeSearchStatus = ep.searchstatus.toLowerCase();
+                    if (el) {
+                        if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
+                            // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                            img.prop('src', 'images/loading16.gif');
+                        } else if (episodeSearchStatus === 'finished') {
+                            // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                            if (episodeStatus.indexOf('snatched') >= 0) {
+                                img.prop('src', 'images/yes16.png');
+                                setTimeout(() => {
+                                    img.parent().parent().parent().remove();
+                                }, 3000);
+                            } else {
+                                img.prop('src', 'images/search16.png');
+                            }
+                        }
+                    }
+                });
+            }
+
+            $('#pickShow').on('change', function() {
+                const id = $(this).val();
+                if (id) {
+                    $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
+                }
+            });
+
+            $('.forceBacklog').on('click', function() {
+                $.get($(this).attr('href'));
+                $(this).text('Searching...');
+                return false;
+            });
+
+            $('.epArchive').on('click', function(event) {
+                event.preventDefault();
+                const img = $(this).children('img[data-ep-archive]');
+                img.prop('title', 'Archiving');
+                img.prop('alt', 'Archiving');
+                img.prop('src', 'images/loading16.gif');
+                const url = $(this).prop('href');
+                $.getJSON(url, data => {
+                    // If they failed then just put the red X
+                    if (data.result.toLowerCase() === 'success') {
+                        img.prop('src', 'images/yes16.png');
+                        setTimeout(() => {
+                            img.parent().parent().parent().remove();
+                        }, 3000);
+                    } else {
+                        img.prop('src', 'images/no16.png');
+                    }
+                    return false;
+                });
+            });
+
+            $('.epSearch').on('click', function(event) {
+                event.preventDefault();
+                const img = $(this).children('img[data-ep-search]');
+                img.prop('title', 'Searching');
+                img.prop('alt', 'Searching');
+                img.prop('src', 'images/loading16.gif');
+                const url = $(this).prop('href');
+                $.getJSON(url, data => {
+                    // If they failed then just put the red X
+                    if (data.result.toLowerCase() === 'failed') {
+                        img.prop('src', 'images/no16.png');
+                    }
+                    return false;
+                });
+            });
         }
     });
 };
@@ -29,7 +164,7 @@ const startVue = () => {
 <div class="row">
 <div id="content-col" class="col-md-12">
     <div class="col-md-12">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">Backlog Overview</h1>
     </div>
 </div>
 
@@ -56,19 +191,19 @@ const startVue = () => {
             </select>
         </div>
         <div class="show-option pull-left">Period:
-            <select id="backlog_period" class="form-control-inline input-sm-custom">
-                <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
-                <option value="one_day" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_day' else ''}>Last 24h</option>
-                <option value="three_days" ${'selected="selected"' if app.BACKLOG_PERIOD == 'three_days' else ''}>Last 3 days</option>
-                <option value="one_week" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_week' else ''}>Last 7 days</option>
-                <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
+            <select v-model="period" id="backlog_period" class="form-control-inline input-sm-custom">
+                <option value="all" :selected="period === 'all'">All</option>
+                <option value="one_day" :selected="period === 'one_day'">Last 24h</option>
+                <option value="three_days" :selected="period === 'three_days'">Last 3 days</option>
+                <option value="one_week" :selected="period === 'one_week'">Last 7 days</option>
+                <option value="one_month" :selected="period === 'one_month'">Last 30 days</option>
             </select>
         </div>
         <div class="show-option pull-left">Status:
-            <select id="backlog_status" class="form-control-inline input-sm-custom">
-                <option value="all" ${'selected="selected"' if app.BACKLOG_STATUS == 'all' else ''}>All</option>
-                <option value="quality" ${'selected="selected"' if app.BACKLOG_STATUS == 'quality' else ''}>Quality</option>
-                <option value="wanted" ${'selected="selected"' if app.BACKLOG_STATUS == 'wanted' else ''}>Wanted</option>
+            <select v-model="status" id="backlog_status" class="form-control-inline input-sm-custom">
+                <option value="all" :selected="status === 'all'">All</option>
+                <option value="quality" :selected="status === 'quality'">Quality</option>
+                <option value="wanted" :selected="status === 'wanted'">Wanted</option>
             </select>
         </div>
 

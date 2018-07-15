@@ -45,6 +45,20 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $.ajaxEpSubtitlesSearch();
     $.ajaxEpRedownloadSubtitle();
 
+    const setQuality = (quality, seriesSlug, episodes) => {
+        const patchData = {};
+        episodes.forEach(episode => {
+            patchData[episode] = { quality: parseInt(quality, 10) };
+        });
+
+        api.patch('series/' + seriesSlug + '/episodes', patchData).then(response => {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(error => {
+            log.error(error.data);
+        });
+    };
+
     $('#seasonJump').on('change', function() {
         const id = $('#seasonJump option:selected').val();
         if (id && id !== 'jump') {
@@ -56,18 +70,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $(this).val('jump');
     });
 
-    $('#prevShow').on('click', () => {
-        $('#select-show option:selected').prev('option').prop('selected', true);
-        $('#select-show').change();
-    });
-
-    $('#nextShow').on('click', () => {
-        $('#select-show option:selected').next('option').prop('selected', true);
-        $('#select-show').change();
-    });
-
     $('#changeStatus').on('click', () => {
         const epArr = [];
+        const status = $('#statusSelect').val();
+        const quality = $('#qualitySelect').val();
+        const seriesSlug = $('#series-slug').val();
 
         $('.epCheck').each(function() {
             if (this.checked === true) {
@@ -79,11 +86,17 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?' +
-            'indexername=' + $('#indexer-name').attr('value') +
-            '&seriesid=' + $('#series-id').attr('value') +
-            '&eps=' + epArr.join('|') +
-            '&status=' + $('#statusSelect').val();
+        if (quality) {
+            setQuality(quality, seriesSlug, epArr);
+        }
+
+        if (status) {
+            window.location.href = $('base').attr('href') + 'home/setStatus?' +
+                'indexername=' + $('#indexer-name').attr('value') +
+                '&seriesid=' + $('#series-id').attr('value') +
+                '&eps=' + epArr.join('|') +
+                '&status=' + status;
+        }
     });
 
     $('.seasonCheck').on('click', function() {
@@ -91,9 +104,10 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         const seasNo = $(seasCheck).attr('id');
 
         $('#collapseSeason-' + seasNo).collapse('show');
+        const seasonIdentifier = 's' + seasNo;
         $('.epCheck:visible').each(function() {
-            const epParts = $(this).attr('id').split('x');
-            if (epParts[0] === seasNo) {
+            const epParts = $(this).attr('id').split('e');
+            if (epParts[0] === seasonIdentifier) {
                 this.checked = seasCheck.checked;
             }
         });
@@ -142,17 +156,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $('.seasonCheck:visible').each(function() {
             this.checked = false;
         });
-    });
-
-    // Handle the show selection dropbox
-    $('#select-show').on('change', evt => {
-        const selectedOption = evt.currentTarget.selectedOptions[0];
-        const indexerName = $(selectedOption).attr('data-indexer-name');
-        const seriesId = $(selectedOption).attr('data-series-id');
-        if (seriesId === 0 || !indexerName) {
-            return;
-        }
-        window.location.href = $('base').attr('href') + 'home/displayShow?indexername=' + indexerName + '&seriesid=' + seriesId;
     });
 
     // Show/hide different types of rows when the checkboxes are changed
@@ -431,8 +434,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }).then(response => {
             log.info(response.data);
             window.location.reload();
-        }).catch(err => {
-            log.error(err.data);
+        }).catch(error => {
+            log.error(error.data);
         });
     });
 };

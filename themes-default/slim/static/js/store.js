@@ -1,15 +1,15 @@
-/* globals Vue */
-const Puex = window.puex.default;
+/* globals Vue, Vuex */
 const VueNativeSock = window.VueNativeSock.default;
-const displayNotification = window.displayNotification;
+const { Store } = Vuex;
+const { displayNotification } = window;
 
-Vue.use(Puex);
+Vue.use(Vuex);
 
 // These are used for mutation names
 // There are no naming conventions so try and match
 // similarly to what we already use when adding new ones.
 const mutationTypes = {
-    LOGIN_PENDING: '🔒 Login Pending',
+    LOGIN_PENDING: '🔒 Logging in',
     LOGIN_SUCCESS: '🔒 ✅ Login Successful',
     LOGIN_FAILED: '🔒 ❌ Login Failed',
     LOGOUT: '🔒 Logout',
@@ -48,13 +48,22 @@ const {
     ADD_SHOW
 } = mutationTypes;
 
-const store = new Puex({
+const store = new Store({
     state: {
+        auth: {
+            isAuthenticated: false,
+            user: {},
+            tokens: {
+                access: null,
+                refresh: null
+            },
+            error: null
+        },
         // Websocket
         socket: {
             isConnected: false,
             // Current message
-            message: '',
+            message: {},
             // Delivered messages for this session
             messages: [],
             reconnectError: false
@@ -67,6 +76,7 @@ const store = new Puex({
         // Main config
         config: {
             wikiUrl: null,
+            donationsUrl: null,
             localUser: null,
             posterSortdir: null,
             locale: null,
@@ -82,14 +92,20 @@ const store = new Puex({
             programDir: null,
             animeSplitHomeInTabs: null,
             torrents: {
-                highBandwidth: null,
-                seedTime: null,
-                rpcurl: null,
-                enabled: null,
                 authType: null,
+                dir: null,
+                enabled: null,
+                highBandwidth: null,
+                host: null,
                 label: null,
-                paused: null,
+                labelAnime: null,
                 method: null,
+                path: null,
+                paused: null,
+                rpcurl: null,
+                seedLocation: null,
+                seedTime: null,
+                username: null,
                 verifySSL: null
             },
             layout: {
@@ -104,10 +120,27 @@ const store = new Puex({
             },
             dbPath: null,
             nzb: {
-                username: null,
-                priority: null,
-                password: null,
-                enabled: null
+                enabled: null,
+                method: null,
+                nzbget: {
+                    category: null,
+                    categoryAnime: null,
+                    categoryAnimeBacklog: null,
+                    categoryBacklog: null,
+                    host: null,
+                    priority: null,
+                    useHttps: null,
+                    username: null
+                },
+                sabnzbd: {
+                    category: null,
+                    forced: null,
+                    categoryAnime: null,
+                    categoryBacklog: null,
+                    categoryAnimeBacklog: null,
+                    host: null,
+                    username: null
+                }
             },
             configFile: null,
             fanartBackground: null,
@@ -116,14 +149,73 @@ const store = new Puex({
             branch: null,
             commitHash: null,
             indexers: {
-                config: {}
+                config: {
+                    main: {
+                        externalMappings: {},
+                        statusMap: {},
+                        traktIndexers: {},
+                        validLanguages: [],
+                        langabbvToId: {}
+                    },
+                    indexers: {
+                        tvdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tmdb: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        },
+                        tvmaze: {
+                            apiParams: {
+                                useZip: null,
+                                language: null
+                            },
+                            baseUrl: null,
+                            enabled: null,
+                            icon: null,
+                            id: null,
+                            identifier: null,
+                            mappedTo: null,
+                            name: null,
+                            scene_loc: null, // eslint-disable-line camelcase
+                            showUrl: null,
+                            xemOrigin: null
+                        }
+                    }
+                }
             },
             sourceUrl: null,
             rootDirs: [],
             fanartBackgroundOpacity: null,
             appArgs: [],
             emby: {
-                enabled: null
+                enabled: null,
+                host: null
             },
             comingEpsDisplayPaused: null,
             sortArticle: null,
@@ -131,6 +223,7 @@ const store = new Puex({
             plex: {
                 client: {
                     host: [],
+                    username: null,
                     enabled: null
                 },
                 server: {
@@ -154,7 +247,39 @@ const store = new Puex({
             },
             posterSortby: null,
             kodi: {
-                enabled: null
+                enabled: null,
+                alwaysOn: null,
+                libraryCleanPending: null,
+                cleanLibrary: null,
+                host: [],
+                notify: {
+                    snatch: null,
+                    download: null,
+                    subtitleDownload: null
+                },
+                update: {
+                    library: null,
+                    full: null,
+                    onlyFirst: null
+                }
+            },
+            news: {
+                lastRead: null,
+                latest: null,
+                unread: null
+            },
+            logs: {
+                loggingLevels: {},
+                numErrors: null,
+                numWarnings: null
+            },
+            failedDownloads: {
+                enabled: null,
+                deleteFailed: null
+            },
+            postProcessing: {
+                processMethod: null,
+                postponeIfNoSubs: null
             },
             sslVersion: null,
             pythonVersion: null,
@@ -162,8 +287,11 @@ const store = new Puex({
             githubUrl: null,
             datePreset: null,
             subtitlesMulti: null,
+            pid: null,
             os: null,
             anonRedirect: null,
+            logDir: null,
+            recentShows: [],
             logDir: null,
             postProcessing: {
                 naming: {
@@ -245,9 +373,21 @@ const store = new Puex({
     // Please add new mutations in the same order as the mutatinType list
     mutations: {
         [LOGIN_PENDING]() {},
-        [LOGIN_SUCCESS]() {},
-        [LOGIN_FAILED]() {},
-        [LOGOUT]() {},
+        [LOGIN_SUCCESS](state, user) {
+            state.auth.user = user;
+            state.auth.isAuthenticated = true;
+            state.auth.error = null;
+        },
+        [LOGIN_FAILED](state, { error }) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.error = error;
+        },
+        [LOGOUT](state) {
+            state.auth.user = {};
+            state.auth.isAuthenticated = false;
+            state.auth.error = null;
+        },
         [REFRESH_TOKEN]() {},
         [REMOVE_AUTH_ERROR]() {},
         [SOCKET_ONOPEN](state) {
@@ -262,24 +402,18 @@ const store = new Puex({
         // Default handler called for all websocket methods
         [SOCKET_ONMESSAGE](state, message) {
             const { data, event } = message;
-            const { body, hash, type, title } = data;
 
             // Set the current message
             state.socket.message = message;
 
-            // Show the notification to the user
             if (event === 'notification') {
-                displayNotification(type, title, body, hash);
-            } else {
-                displayNotification('info', '', message);
-            }
-
-            // Save it so we can look it up later
-            const existingMessage = state.socket.messages.filter(message => message.hash === hash);
-            if (existingMessage.length === 1) {
-                state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
-            } else {
-                state.socket.messages.push(message);
+                // Save it so we can look it up later
+                const existingMessage = state.socket.messages.filter(message => message.hash === data.hash);
+                if (existingMessage.length === 1) {
+                    state.socket.messages[state.socket.messages.indexOf(existingMessage)] = message;
+                } else {
+                    state.socket.messages.push(message);
+                }
             }
         },
         // Mutations for websocket reconnect methods
@@ -322,44 +456,65 @@ const store = new Puex({
     },
     // Add all blocking code here
     // No actions should write to the store
-    // Please use store.commit to fire off a mutation that'll update the store
+    // Please use context.commit to fire off a mutation that'll update the store
+    // Do not use store.commit in any actions!
     actions: {
+        login(context, credentials) {
+            const { commit } = context;
+            commit(LOGIN_PENDING);
+
+            // @TODO: Add real JWT login
+            const apiLogin = () => Promise.resolve(credentials);
+
+            apiLogin(credentials).then(user => {
+                return commit(LOGIN_SUCCESS, user);
+            }).catch(error => {
+                commit(LOGIN_FAILED, { error, credentials });
+            });
+        },
+        logout(context) {
+            const { commit } = context;
+            commit(LOGOUT);
+        },
         getConfig(context, section) {
+            const { commit } = context;
             return api.get('/config/' + (section || '')).then(res => {
                 if (section) {
                     const config = res.data;
-                    return store.commit(ADD_CONFIG, { section, config });
+                    return commit(ADD_CONFIG, { section, config });
                 }
                 Object.keys(res.data).forEach(section => {
                     const config = res.data[section];
-                    store.commit(ADD_CONFIG, { section, config });
+                    commit(ADD_CONFIG, { section, config });
                 });
             });
         },
         setConfig(context, { section, config }) {
-            const { dispatch } = context;
-
             if (section !== 'main') {
                 return;
             }
             config = Object.keys(config).length ? config : store.state.config;
 
-            return api.patch('config/' + section, config).then(setTimeout(() => dispatch('getConfig'), 500));
+            return api.patch('config/' + section, config);
+        },
+        updateConfig(context, { section, config }) {
+            return store.commit(ADD_CONFIG, { section, config });
         },
         getShow(context, { indexer, id }) {
+            const { commit } = context;
             return api.get('/series/' + indexer + id).then(res => {
-                store.commit(ADD_SHOW, res.data);
+                commit(ADD_SHOW, res.data);
             });
         },
         getShows(context, shows) {
-            const { dispatch } = store;
+            const { commit, dispatch } = context;
 
             // If no shows are provided get all of them
             if (!shows) {
                 return api.get('/series?limit=1000').then(res => {
                     const shows = res.data;
                     return shows.forEach(show => {
-                        store.commit(ADD_SHOW, show);
+                        commit(ADD_SHOW, show);
                     });
                 });
             }
@@ -367,14 +522,13 @@ const store = new Puex({
             return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
-            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test--');
+            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
         },
         setLayout(context, { page, layout }) {
             return api.patch('config/main', {
                 layout: {
                     [page]: layout
                 }
-            // }).then(setTimeout(() => dispatch('getConfig'), 500));
             // For now we reload the page since the layouts use python still
             }).then(setTimeout(() => location.reload(), 500));
         }
@@ -385,7 +539,6 @@ const store = new Puex({
 
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const webRoot = apiRoot.replace('/api/v2/', '');
     const WSMessageUrl = '/ui';
     return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
 })();

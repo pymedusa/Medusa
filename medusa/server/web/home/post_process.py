@@ -20,7 +20,7 @@ class HomePostProcess(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home_postprocess.mako')
-        return t.render(topmenu='home', controller='home', action='postProcess')
+        return t.render(controller='home', action='postProcess')
 
     def processEpisode(self, proc_dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on='0', failed='0', proc_type='auto', ignore_subs=None, *args, **kwargs):

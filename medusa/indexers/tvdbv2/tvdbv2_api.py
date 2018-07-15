@@ -47,8 +47,7 @@ class TVDBv2(BaseIndexer):
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url='http://thetvdb.com')
-        # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
+        self.config['artwork_prefix'] = '{base_url}/banners/{{image}}'.format(base_url='https://www.thetvdb.com')
 
         # client_id = ''  # (optional! Only required for the /user routes)
         # client_secret = ''  # (optional! Only required for the /user routes)
@@ -505,7 +504,7 @@ class TVDBv2(BaseIndexer):
                         if k.endswith('path'):
                             k = '_{0}'.format(k)
                             log.debug('Adding base url for image: {0}', v)
-                            v = self.config['artwork_prefix'] % v
+                            v = self.config['artwork_prefix'].format(image=v)
 
                         base_path[k] = v
             except (ApiException, RequestException) as error:
@@ -556,7 +555,7 @@ class TVDBv2(BaseIndexer):
         for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
             new_actor = Actor()
             new_actor['id'] = cur_actor.id
-            new_actor['image'] = self.config['artwork_prefix'] % cur_actor.image
+            new_actor['image'] = self.config['artwork_prefix'].format(image=cur_actor.image)
             new_actor['name'] = cur_actor.name
             new_actor['role'] = cur_actor.role
             new_actor['sortorder'] = 0
@@ -596,7 +595,7 @@ class TVDBv2(BaseIndexer):
         for k, v in viewitems(series_info['series']):
             if v is not None:
                 if v and k in ['banner', 'fanart', 'poster']:
-                    v = self.config['artwork_prefix'] % v
+                    v = self.config['artwork_prefix'].format(image=v)
             self._set_show_data(sid, k, v)
 
         # Create the externals structure

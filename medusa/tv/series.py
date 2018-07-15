@@ -272,6 +272,7 @@ class Series(TV):
             app.showList.append(series)
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
+            series.populate_cache()
             return series
         except IndexerException as error:
             log.warning('Unable to load series from indexer: {0!r}'.format(error))
@@ -1522,7 +1523,13 @@ class Series(TV):
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
             # Country codes and countries obtained from TMDB's API. Not IMDb info.
-            country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            try:
+                country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            except IndexerException as error:
+                log.info(u'Unable to get country codes from TMDB. Error: {error}',
+                         {'error': error})
+                country_codes = None
+
             if country_codes:
                 countries = (from_country_code_to_name(country) for country in country_codes)
                 self.imdb_info['countries'] = '|'.join([_f for _f in countries if _f])
@@ -2315,16 +2322,16 @@ class Series(TV):
         """Remove images from cache."""
         image_cache.remove_images(self)
 
-    def get_asset(self, asset_type):
+    def get_asset(self, asset_type, fallback=True):
         """Get the specified asset for this series."""
         asset_type = asset_type.lower()
         media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
 
         if asset_type.startswith('banner'):
-            return ShowBanner(self, media_format)
+            return ShowBanner(self, media_format, fallback)
         elif asset_type.startswith('fanart'):
-            return ShowFanArt(self, media_format)
+            return ShowFanArt(self, media_format, fallback)
         elif asset_type.startswith('poster'):
-            return ShowPoster(self, media_format)
+            return ShowPoster(self, media_format, fallback)
         elif asset_type.startswith('network'):
-            return ShowNetworkLogo(self, media_format)
+            return ShowNetworkLogo(self, media_format, fallback)

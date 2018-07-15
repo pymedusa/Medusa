@@ -10,9 +10,18 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            // Adjust the summary background position and size on page load and resize
+            this.$once('loaded', () => {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
         }
     });
 };
@@ -157,7 +166,7 @@ const startVue = () => {
                             <td class="col-date triggerhighlight" data-datetime="${hItem['date_added'].isoformat('T') if hItem['date_added'] else datetime.min}">
                                 ${hItem['date_added'].strftime(user_preset) if hItem['date_added'] else 'N/A'}
                             </td>
-                            <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
+                            <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                         </tr>
                     % endfor
                     </tbody>

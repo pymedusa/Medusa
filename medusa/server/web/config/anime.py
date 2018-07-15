@@ -33,7 +33,7 @@ class ConfigAnime(Config):
 
         t = PageTemplate(rh=self, filename='config_anime.mako')
 
-        return t.render(submenu=self.ConfigMenu(), topmenu='config',
+        return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,

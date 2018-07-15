@@ -32,79 +32,14 @@ MEDUSA.common.init = function() {
         return offset;
     }
 
-    /**
-     * Make an attempt to detect if there are currently scroll bars visible for divs with the horizontal-scroll class.
-     *
-     * If scroll bars are visible the fixed left and right buttons become visible on that page.
-     */
-    const initHorizontalScroll = function() {
-        const scrollDiv = $('div.horizontal-scroll').get();
-        if (scrollDiv.length === 0) {
-            return;
-        }
-
-        const scrollbarVisible = scrollDiv.map(el => {
-            return (el.scrollWidth > el.clientWidth);
-        }).indexOf(true);
-
-        if (scrollbarVisible >= 0) {
-            $('.scroll-wrapper.left').addClass('show');
-            $('.scroll-wrapper.right').addClass('show');
-        } else {
-            $('.scroll-wrapper.left').removeClass('show');
-            $('.scroll-wrapper.right').removeClass('show');
-        }
-    };
-
-    initHorizontalScroll();
-
     $(window).on('resize', () => {
         $('.backstretch').css('top', backstretchOffset());
-        initHorizontalScroll();
-    });
-
-    // Scroll Functions
-    function scrollTo(dest) {
-        $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
-    }
-
-    $('#scroll-left').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '-=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $('#scroll-right').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '+=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $(document).on('scroll', () => {
-        if ($(window).scrollTop() > 100) {
-            $('.scroll-wrapper.top').addClass('show');
-        } else {
-            $('.scroll-wrapper.top').removeClass('show');
-        }
-    });
-
-    $('.scroll-wrapper.top').on('click', () => {
-        scrollTo($('body'));
     });
 
     // Scroll to Anchor
     $('a[href^="#season"]').on('click', function(e) {
         e.preventDefault();
         scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
-    });
-
-    // Hover Dropdown for Nav
-    $('ul.nav li.dropdown').hover(function() {
-        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
-    }, function() {
-        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
     // Function to change luminance of #000000 color - used in triggerhighlighting
@@ -142,27 +77,6 @@ MEDUSA.common.init = function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
     });
 
-    $.rootDirCheck = function() {
-        if ($('#rootDirs option:selected').length === 0) {
-            $('button[data-add-show]').prop('disabled', true);
-            if (!$('#configure_show_options').is(':checked')) {
-                $('#configure_show_options').prop('checked', true);
-                $('#content_configure_show_options').fadeIn('fast', 'linear');
-            }
-            if ($('#rootDirAlert').length === 0) {
-                $('#content-row').before('<div id="rootDirAlert"><div class="text-center">' +
-                  '<div class="alert alert-danger upgrade-notification hidden-print role="alert">' +
-                  '<strong>ERROR!</strong> Unable to add recommended shows.  Please set a default directory first.' +
-                  '</div></div></div>');
-            } else {
-                $('#rootDirAlert').show();
-            }
-        } else {
-            $('#rootDirAlert').hide();
-            $('button[data-add-show]').prop('disabled', false);
-        }
-    };
-
     $.confirm.options = {
         confirmButton: 'Yes',
         cancelButton: 'Cancel',
@@ -172,16 +86,6 @@ MEDUSA.common.init = function() {
             location.href = e[0].href;
         }
     };
-
-    $('a.shutdown').confirm({
-        title: 'Shutdown',
-        text: 'Are you sure you want to shutdown Medusa?'
-    });
-
-    $('a.restart').confirm({
-        title: 'Restart',
-        text: 'Are you sure you want to restart Medusa?'
-    });
 
     $('a.removeshow').confirm({
         title: 'Remove Show',
@@ -240,17 +144,6 @@ MEDUSA.common.init = function() {
             $(this).data('lastOpenedPanel', $(ui.newPanel));
         }
     });
-
-    // @TODO Replace this with a real touchscreen check
-    // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
-    if ((navigator.maxTouchPoints || 0) < 2) {
-        $('.dropdown-toggle').on('click', function() {
-            const $this = $(this);
-            if ($this.attr('aria-expanded') === 'true') {
-                window.location.href = $this.attr('href');
-            }
-        });
-    }
 
     if (MEDUSA.config.fuzzyDating) {
         $.timeago.settings.allowFuture = true;

@@ -12,13 +12,12 @@ coverage:
 
   status:
     project:                   # measuring the overall project coverage
-      default:                 # context, you can create multiple ones with custom titles
-        enabled: yes           # must be yes|true to enable this status
+      default:                 # context, you can create multiple ones with custom titles, set to `off`/`no` to disable
         target: auto           # specify the target coverage for each commit status
                                #   option: "auto" (must increase from parent commit or pull request base)
                                #   option: "X%" a static target percentage to hit
         branches: null         # -> see https://github.com/codecov/support/wiki/Filtering-Branches
-        threshold: 0.1%        # allowed to drop X% and still result in a "success" commit status
+        threshold: 5.0%        # allowed to drop X% and still result in a "success" commit status
         base: auto             # base branch to test against?
         if_no_uploads: error   # will post commit status of "error" if no coverage reports we uploaded
                                # options: success, error, failure
@@ -31,17 +30,32 @@ coverage:
     patch:                      # pull requests only: this commit status will measure the
                                 # entire pull requests Coverage Diff. Checking if the lines
                                 # adjusted are covered at least X%.
-      default:                  # context, you can create multiple ones with custom titles | default: off
-        enabled: yes            # must be yes|true to enable this status
-        target: 0%              # specify the target "X%" coverage to hit
-        branches: null          # -> see https://github.com/codecov/support/wiki/Filtering-Branches
-        threshold: 0.1%         # allowed to drop X% and still result in a "success" commit status
+      default: off              # context, you can create multiple ones with custom titles, set to `off`/`no` to disable
+        # target: 0%              # specify the target "X%" coverage to hit
+        # branches: null          # -> see https://github.com/codecov/support/wiki/Filtering-Branches
+        # threshold: 0.1%         # allowed to drop X% and still result in a "success" commit status
         # if_no_uploads: error    # will post commit status of "error" if no coverage reports we uploaded
                                 # options: success, error, failure
         # if_not_found: success
-        # if_ci_failed: error
+        # if_ci_failed: failure
+      frontend:
+        flags:
+          - frontend
+        target: 0%
+        threshold: 5.0%
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: failure
+      backend:
+        flags:
+          - backend
+        target: 0%
+        threshold: 5.0%
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: failure
 
-    # changes:                     # if there are any unexpected changes in coverage
+    changes: off                   # if there are any unexpected changes in coverage, set to `off`/`no` to disable
       # default:
         # enabled: yes             # must be yes|true to enable this status
         # branches: null           # -> see https://github.com/codecov/support/wiki/Filtering-Branches
@@ -52,13 +66,13 @@ coverage:
     # ignore:          # files and folders that will be removed during processing
       # - "glob/*"
 
-# parsers:
-  # gcov:
-    # branch_detection:
-      # conditional: yes
-      # loop: yes
-      # method: no
-      # macro: no
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
 
 comment: off             # comment: off  # to disable comments
   # layout: "header, diff, changes, tree"

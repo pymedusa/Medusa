@@ -1,8 +1,28 @@
 # configure updates globally
 # default: all
 # allowed: all, insecure, False
-update: insecure
+update: False
+
+# update schedule
+# default: empty
+# allowed: "every day", "every week", ..
+schedule: "every month"
 
 # set the default branch
 # default: empty, the default branch on GitHub
 branch: develop
+
+# search for requirement files
+# default: True
+# allowed: True, False
+search: False
+
+# Specify requirement files by hand, default is empty
+# default: empty
+# allowed: list
+requirements:
+  - requirements.txt
+
+# configure the branch prefix the bot is using
+# default: pyup-
+branch_prefix: pyup/

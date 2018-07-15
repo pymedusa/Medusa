@@ -5,7 +5,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         clean: {
             dist: './dist/',
             bower_components: './bower_components', // eslint-disable-line camelcase
-            fonts: '../static/css/*.ttf',
+            fonts: '../themes-default/slim/static/css/*.ttf',
             options: {
                 force: true
             }
@@ -43,6 +43,9 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     outlayer: [
                         'item.js',
                         'outlayer.js'
+                    ],
+                    openSans: [
+                        'openSans.css'
                     ]
                 },
                 bowerOptions: {
@@ -59,7 +62,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     src: [
                         '*.ttf'
                     ],
-                    dest: '../static/css/'
+                    dest: '../themes-default/slim/static/css/'
                 }]
             },
             glyphicon: {
@@ -74,7 +77,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                         '*.woff',
                         '*.woff2'
                     ],
-                    dest: '../static/fonts/'
+                    dest: '../themes-default/slim/static/fonts/'
                 }]
             },
             vender: {
@@ -85,7 +88,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     src: [
                         'bower.js'
                     ],
-                    dest: '../static/js/',
+                    dest: '../themes-default/slim/static/js/',
                     rename: function(dest, src) {
                         return dest + src.replace('bower.js', 'vender.js');
                     }
@@ -95,7 +98,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         uglify: {
             bower: {
                 files: {
-                    '../static/js/vender.min.js': './dist/bower.js'
+                    '../themes-default/slim/static/js/vender.min.js': './dist/bower.js'
                 }
             }
         },
@@ -106,7 +109,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
             },
             bower: {
                 files: {
-                    '../static/css/vender.min.css': './dist/bower.css'
+                    '../themes-default/slim/static/css/vender.min.css': './dist/bower.css'
                 }
             }
         }

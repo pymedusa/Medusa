@@ -19,6 +19,7 @@ from six import text_type
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class AuthHandler(BaseRequestHandler):

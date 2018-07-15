@@ -6,6 +6,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Edit Show'
@@ -15,7 +16,6 @@ const startVue = () => {
                 seriesSlug: $('#series-slug').attr('value'),
                 seriesId: $('#series-id').attr('value'),
                 indexerName: $('#indexer-name').attr('value'),
-                config: MEDUSA.config,
                 series: {
                     config: {
                         aliases: [],
