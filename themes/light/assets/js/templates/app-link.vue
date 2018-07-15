@@ -13,6 +13,7 @@
 
 <script>
 module.exports = {
+    name: 'app-link',
     props: {
         to: [String, Object],
         href: String,
@@ -22,8 +23,7 @@ module.exports = {
         placeholder: {
             type: String,
             default: 'indexer-to-name'
-        },
-        base: String
+        }
     },
     computed: {
         config() {
@@ -39,11 +39,6 @@ module.exports = {
             return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
         computedBase() {
-            // Return prop before HTML element to allow tests to mock
-            if (this.base) {
-                return this.base;
-            }
-
             return document.getElementsByTagName('base')[0].getAttribute('href');
         },
         computedHref() {
