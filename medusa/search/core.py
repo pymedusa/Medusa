@@ -11,7 +11,6 @@ import operator
 import os
 import threading
 import time
-from builtins import str
 
 from medusa import (
     app,
