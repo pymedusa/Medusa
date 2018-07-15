@@ -380,7 +380,7 @@
                     this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
                 }
             },
-            update(event) {
+            update() {
                 if (!this.flagLoaded) {
                     return;
                 }
@@ -481,30 +481,6 @@
             this.updatePatternSamples();
         },
         watch: {
-            // customName(newValue, oldValue) {
-            //     if ([null, undefined].includes(newValue)) return;
-            //     this.update(newValue);
-            // },
-            // pattern(newValue, oldValue) {
-            //     if ([null, undefined].includes(newValue)) return;
-            //     this.update();
-            // },
-            // selectedMultiEpStyle(newValue, oldValue) {
-            //     if ([null, undefined].includes(newValue)) return;
-            //     this.update();
-            // },
-            // isEnabled(newValue, oldValue) {
-            //     if ([null, undefined].includes(newValue)) return;
-            //     this.update();
-            // },
-            // animeType(newValue, oldValue) {
-            //     if ([null, undefined].includes(newValue)) return;
-            //     this.update();
-            // },
-
-            // Update when an input event is triggered
-
-
             // Update local variables when properties are updated
             enabled() {
                 this.isEnabled = this.enabled;
