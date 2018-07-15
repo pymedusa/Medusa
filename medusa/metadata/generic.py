@@ -1020,4 +1020,16 @@ class GenericMetadata(object):
         data['seasonAllPoster'] = self.season_all_poster
         data['seasonAllBanner'] = self.season_all_banner
 
+        data['example'] = NonEmptyDict()
+        data['example']['banner'] = self.eg_banner
+        data['example']['episodeMetadata'] = self.eg_episode_metadata
+        data['example']['episodeThumbnails'] = self.eg_episode_thumbnails
+        data['example']['fanart'] = self.eg_fanart
+        data['example']['poster'] = self.eg_poster
+        data['example']['seasonAllBanner'] = self.eg_season_all_banner
+        data['example']['seasonAllPoster'] = self.eg_season_all_poster
+        data['example']['seasonBanners'] = self.eg_season_banners
+        data['example']['seasonPosters'] = self.eg_season_posters
+        data['example']['showMetadata'] = self.eg_show_metadata
+
         return data

@@ -18,6 +18,7 @@ from medusa.indexers.indexer_config import get_indexer_config
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
+    MetadataStructureField,
     EnumField,
     IntegerField,
     ListField,
@@ -26,7 +27,7 @@ from medusa.server.api.v2.base import (
     set_nested_value,
 )
 
-from six import text_type
+from six import itervalues, text_type
 
 from tornado.escape import json_decode
 
@@ -138,6 +139,10 @@ class ConfigHandler(BaseRequestHandler):
 
         return self._ok(data=config_data)
 
+    # def patchMetadata(selfs):
+    #     """Patch the metadata config."""
+
+
     def patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
         if not identifier:
@@ -149,6 +154,18 @@ class ConfigHandler(BaseRequestHandler):
         data = json_decode(self.request.body)
         accepted = {}
         ignored = {}
+
+        # Remove the metadata providers from the nested items.
+        # It's ugly but I don't see a better solution for it right now.
+        if data.get('metadata'):
+            metadata_providers = data['metadata'].pop('metadataProviders')
+
+            if metadata_providers:
+                patch_metadata_providers = MetadataStructureField(app, 'metadata_provider_dict')
+                if patch_metadata_providers and patch_metadata_providers.patch(app, metadata_providers):
+                    set_nested_value(accepted, 'metadata.metadataProviders', metadata_providers)
+                else:
+                    set_nested_value(ignored, 'metadata.metadataProviders', metadata_providers)
 
         for key, value in iter_nested_items(data):
             patch_field = self.patches.get(key)
@@ -402,8 +419,10 @@ class DataGenerator(object):
         """Metadata."""
         section_data = NonEmptyDict()
 
-        section_data['metadataProviders'] = {
-            provider.to_json().get('id'): provider.to_json() for provider in app.metadata_provider_dict.values()
-        }
+        section_data['metadataProviders'] = NonEmptyDict()
+
+        for provider in itervalues(app.metadata_provider_dict):
+            json_repr = provider.to_json()
+            section_data['metadataProviders'][json_repr['id']] = json_repr
 
         return section_data
