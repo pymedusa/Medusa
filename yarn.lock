@@ -4330,9 +4330,9 @@ protagonist@^1.6.0:
   dependencies:
     nan "^2.6.2"
 
-proxy-agent@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/proxy-agent/-/proxy-agent-3.0.0.tgz#f6768e202889b2285d39906d3a94768416f8f713"
+proxy-agent@^2.0.0:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/proxy-agent/-/proxy-agent-2.3.1.tgz#3d49d863d46cf5f37ca8394848346ea02373eac6"
   dependencies:
     agent-base "^4.2.0"
     debug "^3.1.0"
@@ -5010,9 +5010,9 @@ snyk-try-require@^1.1.1:
     lru-cache "^4.0.0"
     then-fs "^2.0.0"
 
-snyk@1.88.2:
-  version "1.88.2"
-  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.88.2.tgz#fff27ebbaa4f624398bd6d31b76c008912efd6b7"
+snyk@1.88.3:
+  version "1.88.3"
+  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.88.3.tgz#875bb5f1d0651d8b6099a1855108660a0a955616"
   dependencies:
     abbrev "^1.1.1"
     ansi-escapes "^3.1.0"
@@ -5025,7 +5025,7 @@ snyk@1.88.2:
     needle "^2.0.1"
     opn "^5.2.0"
     os-name "^2.0.1"
-    proxy-agent "^3.0.0"
+    proxy-agent "^2.0.0"
     proxy-from-env "^1.0.0"
     recursive-readdir "^2.2.2"
     semver "^5.5.0"
