@@ -51,8 +51,8 @@ class BJShareProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-        # One piece is the only anime that i'm aware that is in "absolute" numbering, the problem is that they include
-        # the season (wrong season) and episode as absolute, eg: One Piece - S08E836
+        # One piece and Boruto is the only anime that i'm aware that is in "absolute" numbering, the problem is that
+        # they include the season (wrong season) and episode as absolute, eg: One Piece - S08E836
         # 836 is the latest episode in absolute numbering, that is correct, but S08 is not the current season...
         # So for this show, i don't see a other way to make it work...
         #
@@ -63,6 +63,7 @@ class BJShareProvider(TorrentProvider):
         # until they or the source from where they get that info fix it...
         self.absolute_numbering = [
             'One Piece'
+            'Boruto'
         ]
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
@@ -196,7 +197,7 @@ class BJShareProvider(TorrentProvider):
                     for serie in self.absolute_numbering:
                         if serie in title:
                             # remove season from title when its in absolute format
-                            title = re.sub('S\d{2}(E\d{2,4})', r'\1', title)
+                            title = re.sub('S\d{2}E(\d{2,4})', r'\1', title)
                             break
 
                     download_url = urljoin(self.url, result.select('a[href^="torrents.php?action=download"]')[0]['href'])
