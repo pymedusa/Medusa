@@ -62,7 +62,7 @@ class BJShareProvider(TorrentProvider):
         # In this indexer, it looks that it is added "automatically", so all current and new releases will be broken
         # until they or the source from where they get that info fix it...
         self.absolute_numbering = [
-            'One Piece'
+            'One Piece',
             'Boruto'
         ]
 
