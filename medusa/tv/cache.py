@@ -539,6 +539,7 @@ class Cache(object):
             search_result.actual_season = search_result.season
 
             sql_episodes = cur_result[b'episodes'].strip('|')
+            # TODO: Add support for season results
             # Season result
             if not sql_episodes:
                 ep_objs = self.series.get_all_episodes(search_result.season)
