@@ -28,7 +28,7 @@
   "dependencies": {},
   "devDependencies": {
     "@vue/test-utils": "1.0.0-beta.20",
-    "ansi-colors": "2.0.2",
+    "ansi-colors": "2.0.3",
     "autoprefixer": "8.6.5",
     "ava": "1.0.0-beta.6",
     "axios": "0.18.0",
@@ -64,7 +64,7 @@
     "require-extension-hooks-babel": "0.1.1",
     "require-extension-hooks-vue": "1.0.1",
     "run-sequence": "2.2.1",
-    "snyk": "1.88.2",
+    "snyk": "1.88.4",
     "source-map-support": "0.5.6",
     "url-parse": "1.4.1",
     "vinyl-buffer": "1.0.1",
@@ -135,7 +135,7 @@
       "test/specs/**/*.spec.js"
     ],
     "sources": [
-      "static/js/templates/**/*.js"
+      "static/js/templates/**/*.vue"
     ],
     "concurrency": 5,
     "failWithoutAssertions": true,

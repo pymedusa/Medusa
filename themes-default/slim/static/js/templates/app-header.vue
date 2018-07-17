@@ -111,15 +111,15 @@ module.exports = {
     name: 'app-header',
     data() {
         return {
-            topMenuMapping: {
-                system: ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC'],
-                home: ['/home', '/addShows', '/addRecommended'],
-                config: ['/config'],
-                history: ['/history'],
-                schedule: ['/schedule'],
-                manage: ['/manage'],
-                login: ['/login']
-            }
+            topMenuMapping: [
+                ['system', ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC']],
+                ['home', ['/home', '/addShows', '/addRecommended']],
+                ['config', ['/config']],
+                ['history', ['/history']],
+                ['schedule', ['/schedule']],
+                ['manage', ['/manage']],
+                ['login', ['/login']]
+            ]
         };
     },
     computed: {
@@ -147,11 +147,11 @@ module.exports = {
             const { topMenuMapping } = this;
             const { pathname } = window.location;
 
-            for (const item of Object.entries(topMenuMapping)) {
-                const [topmenu, routes] = item; // Unpacking
+            for (const item of topMenuMapping) {
+                const [topMenu, routes] = item; // Unpacking
                 for (const route of routes) {
                     if (pathname.includes(route)) {
-                        return topmenu;
+                        return topMenu;
                     }
                 }
             }
@@ -197,8 +197,9 @@ module.exports = {
         $($el).on({
             mouseenter(event) {
                 const $target = $(event.currentTarget);
-                $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500, () => {
+                    $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
+                });
             },
             mouseleave(event) {
                 const $target = $(event.currentTarget);
