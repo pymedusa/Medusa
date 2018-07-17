@@ -135,7 +135,7 @@ paths:
             $ref: '#/definitions/Series'
         400:
           $ref: '#/responses/error'
-          description: Invalid id
+          description: Conflicting series identifier
           x-request:
             body:
               id:
