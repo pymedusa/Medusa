@@ -247,21 +247,24 @@ class GenericProvider(object):
 
         results = {}
         items_list = []
+        season_search = (
+            len(episodes) > 1 or manual_search_type == 'season'
+        ) and search_mode == 'sponly'
 
         for episode in episodes:
             if not manual_search:
-                cache_result = self.cache.search_cache(episode, forced_search=forced_search,
-                                                       down_cur_quality=download_current_quality)
+                cache_result = self.cache.find_needed_episodes(
+                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
+                )
                 if cache_result:
-                    if episode.episode not in results:
-                        results[episode.episode] = cache_result
-                    else:
-                        results[episode.episode].extend(cache_result)
-
+                    for episode_no in cache_result:
+                        if episode_no not in results:
+                            results[episode_no] = cache_result[episode_no]
+                        else:
+                            results[episode_no] += cache_result[episode_no]
                     continue
 
             search_strings = []
-            season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
@@ -273,12 +276,10 @@ class GenericProvider(object):
                     search_string, ep_obj=episode, manual_search=manual_search
                 )
 
-            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            # In season search, we can't loop in episodes lists as we
+            # only need one episode to get the season string
             if search_mode == 'sponly':
                 break
-
-        if len(results) == len(episodes):
-            return results
 
         # Remove duplicate items
         unique_items = self.remove_duplicate_mappings(items_list)
@@ -302,8 +303,6 @@ class GenericProvider(object):
 
         # unpack all of the quality lists into a single sorted list
         items_list = list(sorted_items)
-
-        cl = []
 
         # Move through each item and parse it into a quality
         search_results = []
@@ -443,6 +442,7 @@ class GenericProvider(object):
                             search_result.actual_season = int(sql_results[0][b'season'])
                             search_result.actual_episodes = [int(sql_results[0][b'episode'])]
 
+        cl = []
         # Iterate again over the search results, and see if there is anything we want.
         for search_result in search_results:
 
@@ -520,10 +520,6 @@ class GenericProvider(object):
             return ''
 
         return re.sub(r'[^\w\d_]', '_', str(name).strip().lower())
-
-    def search_rss(self, episodes):
-        """Find cached needed episodes."""
-        return self.cache.find_needed_episodes(episodes)
 
     def seed_ratio(self):
         """Return ratio."""

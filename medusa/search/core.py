@@ -475,28 +475,32 @@ def wanted_episodes(series_obj, from_date):
                     u'reason': should_search_reason,
                 }
             )
+
         ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
-        ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality]
+        ep_obj.wanted_quality = [
+            quality
+            for quality in all_qualities
+            if Quality.is_higher_quality(
+                cur_quality, quality, allowed_qualities, preferred_qualities
+            )
+        ]
         wanted.append(ep_obj)
 
     return wanted
 
 
 def search_for_needed_episodes(force=False):
-    """
-    Check providers for details on wanted episodes.
-
-    :return: episodes we have a search hit for
-    """
-    found_results = {}
-
+    """Check providers for details on wanted episodes."""
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
     episodes = []
 
     for cur_show in show_list:
         if cur_show.paused:
-            log.debug(u'Not checking for needed episodes of {0} because the show is paused', cur_show.name)
+            log.debug(
+                u'Not checking for needed episodes of {0} because the show is paused',
+                cur_show.name,
+            )
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
@@ -504,58 +508,74 @@ def search_for_needed_episodes(force=False):
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
-        return list(itervalues(found_results))
-
-    original_thread_name = threading.currentThread().name
+        return []
 
     providers = enabled_providers(u'daily')
-
     if not providers:
-        log.warning(u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
-                    u' Please check your settings')
-        return list(itervalues(found_results))
+        log.warning(
+            u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
+            u' Please check your settings'
+        )
+        return []
 
+    original_thread_name = threading.currentThread().name
     log.info(u'Using daily search providers')
+
     for cur_provider in providers:
-        threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                            provider=cur_provider.name)
+        threading.currentThread().name = u'{thread} :: [{provider}]'.format(
+            thread=original_thread_name, provider=cur_provider.name
+        )
         cur_provider.cache.update_cache()
 
+    single_results = {}
+    multi_results = []
     for cur_provider in providers:
-        threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                            provider=cur_provider.name)
+        threading.currentThread().name = u'{thread} :: [{provider}]'.format(
+            thread=original_thread_name, provider=cur_provider.name
+        )
         try:
-            cur_found_results = cur_provider.search_rss(episodes)
+            found_results = cur_provider.cache.find_needed_episodes(episodes)
         except AuthException as error:
             log.error(u'Authentication error: {0}', ex(error))
             continue
 
         # pick a single result for each episode, respecting existing results
-        for cur_ep in cur_found_results:
-            if not cur_ep.series or cur_ep.series.paused:
-                log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
+        for episode_no, results in iteritems(found_results):
+            if results[0].series.paused:
+                log.debug(u'Skipping {0} because the show is paused.', results[0].series.name)
                 continue
 
             # if all results were rejected move on to the next episode
-            wanted_results = filter_results(cur_found_results[cur_ep])
+            wanted_results = filter_results(results)
             if not wanted_results:
-                log.debug(u'All found results for {0} were rejected.', cur_ep.pretty_name())
+                log.debug(u'All found results for {0} were rejected.', results[0].series.name)
                 continue
 
             best_result = pick_result(wanted_results)
-            # if it's already in the list (from another provider) and the newly found quality is no better then skip it
-            if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
-                continue
-
             # Skip the result if search delay is enabled for the provider.
             if delay_search(best_result):
                 continue
 
-            found_results[cur_ep] = best_result
+            if episode_no in (SEASON_RESULT, MULTI_EP_RESULT):
+                multi_results.append(best_result)
+            else:
+                # if it's already in the list (from another provider) and
+                # the newly found quality is no better then skip it
+                if episode_no in single_results:
+                    allowed_qualities, preferred_qualities = results[0].series.current_qualities
+                    if not Quality.is_higher_quality(
+                        single_results[episode_no].quality,
+                        best_result.quality,
+                        allowed_qualities,
+                        preferred_qualities
+                    ):
+                        continue
+
+                single_results[episode_no] = best_result
 
     threading.currentThread().name = original_thread_name
 
-    return list(itervalues(found_results))
+    return combine_results(multi_results, list(itervalues(single_results)))
 
 
 def delay_search(best_result):
