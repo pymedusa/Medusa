@@ -563,12 +563,9 @@ def search_for_needed_episodes(force=False):
                 # the newly found quality is no better then skip it
                 if episode_no in single_results:
                     allowed_qualities, preferred_qualities = results[0].series.current_qualities
-                    if not Quality.is_higher_quality(
-                        single_results[episode_no].quality,
-                        best_result.quality,
-                        allowed_qualities,
-                        preferred_qualities
-                    ):
+                    if not Quality.is_higher_quality(single_results[episode_no].quality,
+                                                     best_result.quality, allowed_qualities,
+                                                     preferred_qualities):
                         continue
 
                 single_results[episode_no] = best_result
