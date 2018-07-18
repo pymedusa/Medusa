@@ -5,7 +5,8 @@
     </app-link>
 </script>
 <script>
-Vue.component('asset', {
+const assetComponent = {
+    name: 'asset',
     mixins: [ window.vueInViewportMixin ],
     props: {
         seriesSlug: String,
@@ -55,5 +56,8 @@ Vue.component('asset', {
         }
     },
     template: '#asset-template'
-});
+};
+
+Vue.component(assetComponent);
+window.components.push(assetComponent);
 </script>

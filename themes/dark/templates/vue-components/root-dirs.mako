@@ -33,7 +33,8 @@
     </div>
 </script>
 <script>
-Vue.component('root-dirs', {
+const rootDirsComponent = {
+    name: 'root-dirs',
     template: '#root-dirs-template',
     inheritAttrs: false,
     data() {
@@ -221,5 +222,8 @@ Vue.component('root-dirs', {
             });
         }
     }
-});
+};
+
+Vue.component(rootDirsComponent);
+window.components.push(rootDirsComponent);
 </script>

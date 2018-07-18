@@ -15,7 +15,8 @@
     </div> <!-- end of container -->
 </script>
 <script>
-Vue.component('show-selector', {
+const showSelectorComponent = {
+    name: 'show-selector',
     template: '#show-selector-template',
     props: {
         showSlug: String
@@ -76,7 +77,10 @@ Vue.component('show-selector', {
             window.location.href = base + path;
         }
     }
-});
+};
+
+Vue.component(showSelectorComponent);
+window.components.push(showSelectorComponent);
 </script>
 <style>
 select.select-show {

@@ -3,7 +3,8 @@
 </script>
 
 <script>
-Vue.component('plot-info', {
+const plotInfoComponent = {
+    name: 'plot-info',
     template: '#plot-info-template',
     props: {
         hasPlot: Boolean,
@@ -64,7 +65,10 @@ Vue.component('plot-info', {
             }
         });
     }
-});
+};
+
+Vue.component(plotInfoComponent);
+window.components.push(plotInfoComponent);
 </script>
 
 <style>

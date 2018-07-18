@@ -12,7 +12,8 @@
 </script>
 
 <script>
-Vue.component('app-link', {
+const appLinkComponent = {
+    name: 'app-link',
     template: '#app-link-template',
     props: {
         to: [String, Object],
@@ -141,7 +142,10 @@ Vue.component('app-link', {
             };
         }
     }
-});
+};
+
+Vue.component(appLinkComponent);
+window.components.push(appLinkComponent);
 </script>
 
 <style>

@@ -33,7 +33,8 @@
     </div>
 </script>
 <script>
-Vue.component('file-browser', {
+const fileBrowserComponent = {
+    name: 'file-browser',
     template: '#file-browser',
     props: {
         // Used for form submission
@@ -300,5 +301,8 @@ Vue.component('file-browser', {
             }
         }
     }
-});
+};
+
+Vue.component(fileBrowserComponent);
+window.components.push(fileBrowserComponent);
 </script>

@@ -1,5 +1,6 @@
 <script>
-Vue.component('backstretch', {
+const backstretchComponent = {
+    name: 'backstretch',
     props: {
         opacity: {
             type: Number
@@ -36,5 +37,8 @@ Vue.component('backstretch', {
         }
     },
     template: '<div></div>'
-});
+};
+
+Vue.component(backstretchComponent);
+window.components.push(backstretchComponent);
 </script>

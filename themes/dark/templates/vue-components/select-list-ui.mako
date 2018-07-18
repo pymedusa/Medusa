@@ -78,8 +78,7 @@
     </div>
 </script>
 <script>
-// register the component
-Vue.component('select-list', {
+const selectListComponent = {
     name: 'select-list',
     template: '#select-list',
     props: {
@@ -202,5 +201,8 @@ Vue.component('select-list', {
             this.syncValues();
         }
     }
-});
+};
+
+Vue.component(selectListComponent);
+window.components.push(selectListComponent);
 </script>

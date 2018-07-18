@@ -86,7 +86,8 @@
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/api.js?${sbPID}"></script>
+        ## <script type="text/javascript" src="js/api.js?${sbPID}"></script>
+        <script src="js/index.js"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
@@ -115,26 +116,22 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <%
-            ## Add Vue component x-templates here
-            ## @NOTE: These will be usable on all pages
-        %>
-        <script src="js/lib/vue.js"></script>
-        <script src="js/lib/http-vue-loader.js"></script>
-        <script src="js/lib/vue-async-computed@3.3.0.js"></script>
-        <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
-        <script src="js/lib/vue-router.min.js"></script>
-        <script src="js/lib/vue-meta.min.js"></script>
         <script src="js/lib/vue-snotify.min.js"></script>
         <script src="js/lib/vue-js-toggle-button.js"></script>
-        <script src="js/lib/vuex.js"></script>
-        <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
         <script src="js/notifications.js"></script>
-        <script src="js/store.js"></script>
         <script>
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+
+            // Used to get mako vue components to the app.js
+            window.components = [];
+            // Used to get username to the app.js and header
+            % if app.WEB_USERNAME and app.WEB_PASSWORD:
+            window.username = ${json.dumps(app.WEB_USERNAME)};
+            % else:
+            window.username = '';
+            % endif
         </script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
@@ -179,14 +176,9 @@
                 },
                 mounted() {
                     if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
-                        const { store } = window;
+                        const { store, username } = window;
                         /* This is used by the `app-header` component
                            to only show the logout button if a username is set */
-                        % if app.WEB_USERNAME and app.WEB_PASSWORD:
-                        const username = ${json.dumps(app.WEB_USERNAME)};
-                        % else:
-                        const username = '';
-                        % endif
                         store.dispatch('login', { username });
                         store.dispatch('getConfig').then(() => this.$emit('loaded'));
                     }
@@ -206,17 +198,18 @@
             }
         </script>
         <%block name="scripts" />
-        <script src="js/router.js"></script>
         <script>
-            if (!window.app) {
-                console.info('Loading Vue with router since window.app is missing.');
-                window.app = new Vue({
-                    store,
-                    el: '#vue-wrap',
-                    router: window.router
-                });
-            } else {
+            if (window.app) {
                 console.info('Loading local Vue since we found a window.app');
+                Vue.use(Vuex);
+                Vue.use(VueRouter);
+
+                // Load x-template components
+                // @ts-ignore
+                window.components.forEach(component => {
+                    console.log('Registering ' + component.name);
+                    Vue.component(component.name, component);
+                });
             }
         </script>
     </body>

@@ -1,5 +1,6 @@
 <script>
-Vue.component('language-select', {
+const languageSelectComponent = {
+    name: 'language-select',
     template: '<select/>',
     props: {
         language: {
@@ -35,6 +36,8 @@ Vue.component('language-select', {
             $(this.$el).val(this.language);
         }
     }
+};
 
-});
+Vue.component(languageSelectComponent);
+window.components.push(languageSelectComponent);
 </script>

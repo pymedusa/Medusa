@@ -1,5 +1,9 @@
-/* globals Vue, Vuex */
-const VueNativeSock = window.VueNativeSock.default;
+// @ts-check
+import Vue from 'vue';
+import Vuex from 'vuex';
+import VueNativeSock from 'vue-native-websocket';
+import { api } from './api';
+
 const { Store } = Vuex;
 const { displayNotification } = window;
 
@@ -427,7 +431,7 @@ const store = new Store({
             commit(LOGIN_PENDING);
 
             // @TODO: Add real JWT login
-            const apiLogin = () => Promise.resolve(credentials);
+            const apiLogin = credentials => Promise.resolve(credentials);
 
             apiLogin(credentials).then(user => {
                 return commit(LOGIN_SUCCESS, user);
@@ -491,7 +495,11 @@ const store = new Store({
                     [page]: layout
                 }
             // For now we reload the page since the layouts use python still
-            }).then(setTimeout(() => location.reload(), 500));
+            }).then(() => {
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            });
         }
     },
     // @TODO Add logging here
@@ -501,6 +509,7 @@ const store = new Store({
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const WSMessageUrl = '/ui';
+    const webRoot = document.body.getAttribute('web-root');
     return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
 })();
 
@@ -512,4 +521,4 @@ Vue.use(VueNativeSock, websocketUrl, {
     reconnectionDelay: 1000 // (Number) how long to initially wait before attempting a new (1000)
 });
 
-window.store = store;
+export default store;
