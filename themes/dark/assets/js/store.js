@@ -288,6 +288,7 @@ const store = new Store({
             anonRedirect: null,
             logDir: null,
             recentShows: [],
+            logDir: null,
             postProcessing: {
                 naming: {
                     pattern: null,

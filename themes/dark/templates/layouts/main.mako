@@ -135,6 +135,7 @@
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
             // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+            Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
         </script>
         <%include file="/vue-components/app-link.mako"/>
         <%include file="/vue-components/asset.mako"/>
@@ -145,6 +146,7 @@
         <%include file="/vue-components/root-dirs.mako"/>
         <%include file="/vue-components/backstretch.mako"/>
         <%include file="/vue-components/select-list-ui.mako"/>
+
         <script>
             // @TODO: Move all Vue.use to new file
             Vue.use(window['vue-js-toggle-button'].default);

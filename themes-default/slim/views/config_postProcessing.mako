@@ -1,19 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <%namespace name="inc_defs" file="/inc_defs.mako"/>
 <%!
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from medusa import config
-
-    ## metadata
-    from medusa import metadata
-    from medusa.metadata.generic import GenericMetadata
-    from medusa import naming
+    from medusa.common import MULTI_EP_STRINGS
 %>
 
 <%block name="scripts">
-<%include file="/vue-components/name-pattern.mako"/>
 <script>
 
 window.app = {};
@@ -200,6 +191,7 @@ const startVue = () => {
 </script>
 </%block>
 <%block name="content">
+<vue-snotify></vue-snotify>
 <div id="content960">
     <h1 class="header">{{header}}</h1>
     <div id="config">
@@ -544,7 +536,7 @@ const startVue = () => {
                         </fieldset>
                     </div><!-- /component-group3 //-->
                     <br>
-                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
+                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path"></span></b> </h6>
                     <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes"/>
                 </div><!--/config-components//-->
             </form>

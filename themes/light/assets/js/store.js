@@ -277,10 +277,6 @@ const store = new Store({
                 enabled: null,
                 deleteFailed: null
             },
-            postProcessing: {
-                processMethod: null,
-                postponeIfNoSubs: null
-            },
             sslVersion: null,
             pythonVersion: null,
             comingEpsSort: null,
