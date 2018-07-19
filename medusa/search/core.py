@@ -861,15 +861,6 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
                     elif len(cur_result.episodes) > 1:
                         multi_candidates.append(cur_result)
 
-            # If this is a torrent all we can do is get the entire torrent,
-            # user will have to select which eps not do download in his torrent client
-            else:
-                log.info(u'Adding multi-episode result for full-season torrent.'
-                         u' Undesired episodes can be skipped in the torrent client if desired!')
-                # Skip the result if search delay is enabled for the provider
-                if not delay_search(candidate):
-                    multi_candidates.append(candidate)
-
     return multi_candidates, single_candidates
 
 
