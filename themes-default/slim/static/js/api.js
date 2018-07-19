@@ -1,4 +1,3 @@
-// @ts-check
 import axios from 'axios';
 
 const baseUrl = document.body.getAttribute('web-root');
@@ -45,4 +44,4 @@ export {
     apiRoute,
     apiv1,
     api
-}
+};

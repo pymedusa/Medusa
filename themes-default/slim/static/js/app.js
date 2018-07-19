@@ -1,4 +1,3 @@
-// @ts-check
 import Vue from 'vue';
 import Vuex, { mapState } from 'vuex';
 import VueRouter from 'vue-router';
@@ -13,7 +12,7 @@ Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
 Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
 
 // Load x-template components
-// @ts-ignore
+
 window.components.forEach(component => {
     console.log(`Registering ${component.name}`);
     Vue.component(component.name, component);
@@ -26,7 +25,7 @@ const app = new Vue({
     data() {
         return {
             globalLoading: false
-        }
+        };
     },
     computed: {
         ...mapState(['auth', 'config'])
@@ -41,3 +40,5 @@ const app = new Vue({
         console.log('App Loaded!');
     }
 }).$mount('#vue-wrap');
+
+export default app;
