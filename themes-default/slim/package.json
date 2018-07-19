@@ -123,7 +123,8 @@
       "static/js/*.min.js",
       "static/js/vender.js",
       "build/**",
-      "gulpfile.js"
+      "gulpfile.js",
+      "static/js/templates/**/*.vue"
     ],
     "esnext": true
   },

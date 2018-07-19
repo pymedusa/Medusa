@@ -1,12 +1,13 @@
-<script type="text/x-template" id="asset-template">
+<template>
     <img v-if="!link" :src="src" :class="cls" @error="error = true">
     <app-link v-else :href="href">
         <img :src="src" :class="cls" @error="error = true">
     </app-link>
-</script>
+</template>
 <script>
-Vue.component('asset', {
-    mixins: [ window.vueInViewportMixin ],
+module.exports = {
+    name: 'asset',
+    mixins: [window.vueInViewportMixin],
     props: {
         seriesSlug: String,
         type: {
@@ -44,16 +45,17 @@ Vue.component('asset', {
         },
         href() {
             // Compute a link to the full asset, if applicable
-            if (this.link) return this.src.replace('Thumb', '');
+            if (this.link) {
+                return this.src.replace('Thumb', '');
+            }
         }
     },
     watch: {
-        'inViewport.now': function(visible) {
+        'inViewport.now'(visible) {
             if (!this.isVisible && visible) {
                 this.isVisible = visible;
             }
         }
-    },
-    template: '#asset-template'
-});
+    }
+};
 </script>

@@ -1,4 +1,4 @@
-<script type="text/x-template" id="show-selector-template">
+<template>
     <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-model="selectedShowSlug" class="select-show form-control input-sm-custom">
@@ -13,10 +13,10 @@
             </select>
         </div> <!-- end of select-show-group -->
     </div> <!-- end of container -->
-</script>
+</template>
 <script>
-Vue.component('show-selector', {
-    template: '#show-selector-template',
+module.exports = {
+    name: 'show-selector',
     props: {
         showSlug: String
     },
@@ -44,8 +44,12 @@ Vue.component('show-selector', {
                 list.shows.sort((showA, showB) => {
                     const titleA = sortKey(showA.title);
                     const titleB = sortKey(showB.title);
-                    if (titleA < titleB) return -1;
-                    if (titleA > titleB) return 1;
+                    if (titleA < titleB) {
+                        return -1;
+                    }
+                    if (titleA > titleB) {
+                        return 1;
+                    }
                     return 0;
                 });
             });
@@ -68,7 +72,9 @@ Vue.component('show-selector', {
         selectedShowSlug(newSlug) {
             const { shows } = this;
             const selectedShow = shows.find(show => show.id.slug === newSlug);
-            if (!selectedShow) return;
+            if (!selectedShow) {
+                return;
+            }
             const indexerName = selectedShow.indexer;
             const showId = selectedShow.id[indexerName];
             const base = document.getElementsByTagName('base')[0].getAttribute('href');
@@ -76,7 +82,7 @@ Vue.component('show-selector', {
             window.location.href = base + path;
         }
     }
-});
+};
 </script>
 <style>
 select.select-show {
@@ -116,4 +122,3 @@ select.select-show {
     }
 }
 </style>
-

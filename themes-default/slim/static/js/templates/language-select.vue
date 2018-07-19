@@ -1,6 +1,9 @@
+<template>
+    <select/>
+</template>
 <script>
-Vue.component('language-select', {
-    template: '<select/>',
+module.exports = {
+    name: 'language-select',
     props: {
         language: {
             type: String,
@@ -26,15 +29,16 @@ Vue.component('language-select', {
             available: this.available, blank: this.blank
         });
 
-        $(this.$el).on('change', function(evt) {
+        $(this.$el).on('change', evt => {
             vm.$emit('update-language', evt.currentTarget.value);
         });
     },
     watch: {
-        language: function() {
+        language() {
             $(this.$el).val(this.language);
         }
     }
-
-});
+};
 </script>
+<style>
+</style>

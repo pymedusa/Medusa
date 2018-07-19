@@ -1,54 +1,4 @@
-<style scoped>
-    /* =========================================================================
-    Style for the anidbReleaseGroupUi.mako.
-    Should be moved from here, when moving the .vue files.
-    ========================================================================== */
-
-    div.anidb-release-group-ui-wrapper {
-        clear: both;
-    }
-
-    div.anidb-release-group-ui-wrapper ul {
-        border-style: solid;
-        border-width: thin;
-        padding: 5px 2px 2px 5px;
-        list-style: none;
-    }
-
-    div.anidb-release-group-ui-wrapper li.active {
-        background-color: cornflowerblue;
-    }
-
-    div.anidb-release-group-ui-wrapper div.arrow img {
-        cursor: pointer;
-        height: 32px;
-        width: 32px;
-    }
-
-    div.anidb-release-group-ui-wrapper {
-        margin-bottom: 20px;
-    }
-
-    div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
-        float: right;
-    }
-
-    div.anidb-release-group-ui-wrapper #add-new-release-group p > img {
-        height: 16px;
-        width: 16px;
-        background-color: rgb(204, 204, 204);
-    }
-
-    div.anidb-release-group-ui-wrapper.placeholder {
-        height: 32px;
-    }
-
-    div.anidb-release-group-ui-wrapper.max-width {
-        max-width: 960px;
-    }
-
-</style>
-<script type="text/x-template" id="anidb-release-group-ui">
+<template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
         <div class="row">
             <div class="col-sm-4 left-whitelist" >
@@ -88,11 +38,10 @@
             </div>
         </div>
     </div>
-</script>
+</template>
 <script>
-Vue.component('anidb-release-group-ui', {
+module.exports = {
     name: 'anidb-release-group-ui',
-    template: '#anidb-release-group-ui',
     props: {
         blacklist: {
             type: Array,
@@ -138,7 +87,7 @@ Vue.component('anidb-release-group-ui', {
             newList = [];
             for (release of releaseGroups) {
                 // Whitelist and blacklist pass an array of strings not objects.
-                if (typeof(release) === 'string') {
+                if (typeof (release) === 'string') {
                     release = { name: release };
                 }
 
@@ -148,7 +97,7 @@ Vue.component('anidb-release-group-ui', {
                     toggled: false, memberOf: list
                 }, release);
                 this.allReleaseGroups.push(itemAsObject);
-                this.index += 1; // increment the counter for our next item.
+                this.index += 1; // Increment the counter for our next item.
             }
         },
         moveToList(list) {
@@ -167,7 +116,7 @@ Vue.component('anidb-release-group-ui', {
                 }
             }
 
-            /* 
+            /*
             * Check if there is a value in the custom release group input box,
             * and move this to the selected group (whitelist or blacklist)
             */
@@ -177,7 +126,7 @@ Vue.component('anidb-release-group-ui', {
                     name: this.newGroup,
                     toggled: false,
                     memberOf: list
-                })
+                });
                 this.index += 1;
                 this.newGroup = '';
             }
@@ -209,11 +158,55 @@ Vue.component('anidb-release-group-ui', {
     },
     watch: {
         allReleaseGroups: {
-            handler: function() {
+            handler() {
                 this.$emit('change', this.allReleaseGroups);
             },
             deep: true
         }
     }
-});
+};
 </script>
+<style scoped>
+div.anidb-release-group-ui-wrapper {
+    clear: both;
+}
+
+div.anidb-release-group-ui-wrapper ul {
+    border-style: solid;
+    border-width: thin;
+    padding: 5px 2px 2px 5px;
+    list-style: none;
+}
+
+div.anidb-release-group-ui-wrapper li.active {
+    background-color: cornflowerblue;
+}
+
+div.anidb-release-group-ui-wrapper div.arrow img {
+    cursor: pointer;
+    height: 32px;
+    width: 32px;
+}
+
+div.anidb-release-group-ui-wrapper {
+    margin-bottom: 20px;
+}
+
+div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
+    float: right;
+}
+
+div.anidb-release-group-ui-wrapper #add-new-release-group p > img {
+    height: 16px;
+    width: 16px;
+    background-color: rgb(204, 204, 204);
+}
+
+div.anidb-release-group-ui-wrapper.placeholder {
+    height: 32px;
+}
+
+div.anidb-release-group-ui-wrapper.max-width {
+    max-width: 960px;
+}
+</style>

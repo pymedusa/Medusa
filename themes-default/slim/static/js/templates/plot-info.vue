@@ -1,10 +1,9 @@
-<script type="text/x-template" id="plot-info-template">
+<template>
     <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
-</script>
-
+</template>
 <script>
-Vue.component('plot-info', {
-    template: '#plot-info-template',
+module.exports = {
+    name: 'plot-info',
     props: {
         hasPlot: Boolean,
         seriesSlug: {
@@ -64,9 +63,8 @@ Vue.component('plot-info', {
             }
         });
     }
-});
+};
 </script>
-
 <style>
 .plotInfo {
     cursor: help;

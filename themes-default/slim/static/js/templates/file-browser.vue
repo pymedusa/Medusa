@@ -1,16 +1,4 @@
-<style scoped>
-    /* =========================================================================
-    Style for the file-browser.mako.
-    Should be moved from here, when moving the .vue files.
-    ========================================================================== */
-    div.file-browser.max-width {
-        max-width: 450px;
-    }
-    div.file-browser .input-group-no-btn {
-        display: flex;
-    }
-</style>
-<script type="text/x-template" id="file-browser">
+<template>
     <div class="file-browser max-width">
         <div :class="(showBrowseButton ? 'input-group' : 'input-group-no-btn')">
             <input ref="locationInput" v-model="currentPath" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
@@ -31,10 +19,10 @@
             </li>
         </ul>
     </div>
-</script>
+</template>
 <script>
-Vue.component('file-browser', {
-    template: '#file-browser',
+module.exports = {
+    name: 'file-browser',
     props: {
         // Used for form submission
         name: {
@@ -153,7 +141,6 @@ Vue.component('file-browser', {
                 this.browse(file.path);
             }
         },
-        // ====================================================================
         async browse(path) {
             const { url, includeFiles, fileBrowserDialog } = this;
 
@@ -302,3 +289,11 @@ Vue.component('file-browser', {
     }
 });
 </script>
+<style scoped>
+div.file-browser.max-width {
+    max-width: 450px;
+}
+div.file-browser .input-group-no-btn {
+    display: flex;
+}
+</style>

@@ -1,23 +1,7 @@
-<style>
-    .root-dirs-selectbox,
-    .root-dirs-selectbox select,
-    .root-dirs-controls {
-        width: 100%;
-        max-width: 430px;
-    }
-
-    .root-dirs-selectbox {
-        padding: 0 0 5px;
-    }
-
-    .root-dirs-controls {
-        text-align: center;
-    }
-</style>
-<script type="text/x-template" id="root-dirs-template">
+<template>
     <div id="root-dirs-wrapper">
         <div class="root-dirs-selectbox">
-            ## @TODO: Remove `id` and `name` attributes
+            <!-- @TODO: Remove `id` and `name` attributes -->
             <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" name="rootDir" id="rootDirs" size="6">
                 <option v-for="curDir in rootDirs" :value="curDir.path">{{markDefault(curDir)}}</option>
             </select>
@@ -31,10 +15,10 @@
         ## @TODO: Remove this element (use a Vue events to watch for changes)
         <input type="text" style="display: none;" id="rootDirText" :value="rootDirsValue" />
     </div>
-</script>
+</template>
 <script>
-Vue.component('root-dirs', {
-    template: '#root-dirs-template',
+module.exports = {
+    name: 'root-dirs',
     inheritAttrs: false,
     data() {
         const rawRootDirs = MEDUSA.config.rootDirs;
@@ -221,5 +205,21 @@ Vue.component('root-dirs', {
             });
         }
     }
-});
+};
 </script>
+<style>
+.root-dirs-selectbox,
+.root-dirs-selectbox select,
+.root-dirs-controls {
+    width: 100%;
+    max-width: 430px;
+}
+
+.root-dirs-selectbox {
+    padding: 0 0 5px;
+}
+
+.root-dirs-controls {
+    text-align: center;
+}
+</style>
