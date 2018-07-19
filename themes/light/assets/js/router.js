@@ -1,4 +1,3 @@
-// @ts-check
 import VueRouter from 'vue-router';
 import httpVueLoader from 'http-vue-loader';
 

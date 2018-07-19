@@ -1,4 +1,3 @@
-// @ts-check
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
