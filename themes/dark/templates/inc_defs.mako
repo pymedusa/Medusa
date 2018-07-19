@@ -86,8 +86,7 @@
 <%def name="convert(obj)">
     <%
     import json
-    ## This converts the keys to strings as keys can't be ints
-    print('test')
+    ## This converts the keys to strings
     if isinstance(obj, dict):
         new_obj = {}
         for key in obj:
