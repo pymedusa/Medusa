@@ -9,6 +9,7 @@ const livereload = require('gulp-livereload');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpif = require('gulp-if');
 const gulp = require('gulp');
+const webpack = require('webpack-stream');
 const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify-es').default;
 const browserify = require('browserify');
@@ -20,7 +21,6 @@ const pngquant = require('imagemin-pngquant');
 const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
-
 const xo = require('xo');
 
 const xoReporter = xo.getFormatter('eslint-formatter-pretty');
@@ -213,6 +213,16 @@ const moveTemplates = () => {
         .pipe(gulp.dest(dest));
 };
 
+const moveWebpackedFiles = () => {
+    const dest = `${buildDest}/assets/js`;
+    return gulp
+        .src('./dist/*.js', {
+            base: 'dist'
+        })
+        .pipe(webpack(require('./webpack.config.js')))
+        .pipe(gulp.dest(dest));
+};
+
 /**
  * Files from the source root to copy to destination.
  */
@@ -295,7 +305,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
+    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', 'webpack', () => {
         if (!PROD) {
             done();
         }
@@ -374,3 +384,8 @@ gulp.task('templates', moveTemplates);
  * root folder. These are required to let medusa read the themes metadata.
  */
 gulp.task('root', moveRoot);
+
+/**
+ * Task for running webpack and then replacing the effected source files.
+ */
+gulp.task('webpack', moveWebpackedFiles);
