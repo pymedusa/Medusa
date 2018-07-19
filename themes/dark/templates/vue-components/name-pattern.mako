@@ -485,6 +485,6 @@ const namePatternComponent = {
     }
 };
 
-Vue.component(namePatternComponent);
+Vue.component('name-pattern', namePatternComponent);
 window.components.push(namePatternComponent);
 </script>

@@ -303,6 +303,6 @@ const fileBrowserComponent = {
     }
 };
 
-Vue.component(fileBrowserComponent);
+Vue.component('file-browser', fileBrowserComponent);
 window.components.push(fileBrowserComponent);
 </script>

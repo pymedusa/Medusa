@@ -5,9 +5,10 @@
     </app-link>
 </script>
 <script>
+const { VueInViewportMixin } = window;
 const assetComponent = {
     name: 'asset',
-    mixins: [ window.vueInViewportMixin ],
+    mixins: [ VueInViewportMixin ],
     props: {
         seriesSlug: String,
         type: {
@@ -58,6 +59,6 @@ const assetComponent = {
     template: '#asset-template'
 };
 
-Vue.component(assetComponent);
+Vue.component('asset', assetComponent);
 window.components.push(assetComponent);
 </script>

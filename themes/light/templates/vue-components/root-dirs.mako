@@ -224,6 +224,6 @@ const rootDirsComponent = {
     }
 };
 
-Vue.component(rootDirsComponent);
+Vue.component('root-dirs', rootDirsComponent);
 window.components.push(rootDirsComponent);
 </script>

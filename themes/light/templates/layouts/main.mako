@@ -77,17 +77,16 @@
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
         </div>
+        <%block name="load_main_app" />
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-        ## <script type="text/javascript" src="js/api.js?${sbPID}"></script>
-        <script src="js/index.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
@@ -116,14 +115,9 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <script src="js/lib/vue-snotify.min.js"></script>
-        <script src="js/lib/vue-js-toggle-button.js"></script>
-        <script src="js/notifications.js"></script>
+        <script type="text/javascript" src="js/lib/vue-snotify.min.js"></script>
+        <script type="text/javascript" src="js/notifications.js"></script>
         <script>
-            Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-            Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-            // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-
             // Used to get mako vue components to the app.js
             window.components = [];
             // Used to get username to the app.js and header
@@ -142,9 +136,6 @@
         <%include file="/vue-components/root-dirs.mako"/>
         <%include file="/vue-components/backstretch.mako"/>
         <script>
-            // @TODO: Move all Vue.use to new file
-            Vue.use(window['vue-js-toggle-button'].default);
-
             Vue.mixin({
                 created() {
                     if (this.$root === this) {
@@ -197,20 +188,18 @@
                 Vue.config.performance = true;
             }
         </script>
-        <%block name="scripts" />
         <script>
-            if (window.app) {
-                console.info('Loading local Vue since we found a window.app');
+            if (!window.loadMainApp) {
+                console.debug('Loading local Vue');
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
 
-                // Load x-template components
-                // @ts-ignore
-                window.components.forEach(component => {
-                    console.log('Registering ' + component.name);
-                    Vue.component(component.name, component);
-                });
+                // Global components
+                Vue.component('toggle-button', VueToggleButton);
+                Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
+                Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
             }
         </script>
+        <%block name="scripts" />
     </body>
 </html>

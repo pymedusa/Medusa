@@ -90,7 +90,7 @@
     </div>
 </script>
 <script>
-Vue.component('anidb-release-group-ui', {
+const anidbReleaseGroupUiComponent = {
     name: 'anidb-release-group-ui',
     template: '#anidb-release-group-ui',
     props: {
@@ -167,7 +167,7 @@ Vue.component('anidb-release-group-ui', {
                 }
             }
 
-            /* 
+            /*
             * Check if there is a value in the custom release group input box,
             * and move this to the selected group (whitelist or blacklist)
             */
@@ -215,5 +215,8 @@ Vue.component('anidb-release-group-ui', {
             deep: true
         }
     }
-});
+};
+
+Vue.component('anidb-release-group-ui', anidbReleaseGroupUiComponent);
+window.components.push(anidbReleaseGroupUiComponent);
 </script>

@@ -144,7 +144,7 @@ const appLinkComponent = {
     }
 };
 
-Vue.component(appLinkComponent);
+Vue.component('app-link', appLinkComponent);
 window.components.push(appLinkComponent);
 </script>
 

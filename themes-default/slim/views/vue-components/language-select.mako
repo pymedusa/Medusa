@@ -38,6 +38,6 @@ const languageSelectComponent = {
     }
 };
 
-Vue.component(languageSelectComponent);
+Vue.component('language-select', languageSelectComponent);
 window.components.push(languageSelectComponent);
 </script>

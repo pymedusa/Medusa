@@ -251,6 +251,6 @@ const qualityChooserComponent = {
     }
 };
 
-Vue.component(qualityChooserComponent);
+Vue.component('quality-chooser', qualityChooserComponent);
 window.components.push(qualityChooserComponent);
 </script>

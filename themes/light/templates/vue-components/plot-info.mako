@@ -67,7 +67,7 @@ const plotInfoComponent = {
     }
 };
 
-Vue.component(plotInfoComponent);
+Vue.component('plot-info', plotInfoComponent);
 window.components.push(plotInfoComponent);
 </script>
 

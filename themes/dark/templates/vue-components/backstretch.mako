@@ -39,6 +39,6 @@ const backstretchComponent = {
     template: '<div></div>'
 };
 
-Vue.component(backstretchComponent);
+Vue.component('backstretch', backstretchComponent);
 window.components.push(backstretchComponent);
 </script>

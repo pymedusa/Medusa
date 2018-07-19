@@ -79,7 +79,7 @@ const showSelectorComponent = {
     }
 };
 
-Vue.component(showSelectorComponent);
+Vue.component('show-selector', showSelectorComponent);
 window.components.push(showSelectorComponent);
 </script>
 <style>

@@ -203,6 +203,6 @@ const selectListComponent = {
     }
 };
 
-Vue.component(selectListComponent);
+Vue.component('select-list', selectListComponent);
 window.components.push(selectListComponent);
 </script>

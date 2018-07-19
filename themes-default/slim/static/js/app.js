@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex, { mapState } from 'vuex';
 import VueRouter from 'vue-router';
+import VueToggleButton from 'vue-js-toggle-button';
 import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
@@ -8,15 +9,16 @@ import router from './router';
 Vue.use(Vuex);
 Vue.use(VueRouter);
 
-Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-
 // Load x-template components
-
 window.components.forEach(component => {
     console.log(`Registering ${component.name}`);
     Vue.component(component.name, component);
 });
+
+// Global components
+Vue.component('toggle-button', VueToggleButton);
+Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
+Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
 
 const app = new Vue({
     name: 'App',
