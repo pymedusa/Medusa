@@ -27,7 +27,7 @@
     "nyc": "12.0.2",
     "snyk": "1.89.0",
     "stylelint": "9.3.0",
-    "stylelint-config-standard": "16.0.0",
+    "stylelint-config-standard": "18.2.0",
     "yargs": "12.0.1"
   },
   "stylelint": {
@@ -42,7 +42,8 @@
           "message": "Please use 4 spaces for indentation.",
           "severity": "error"
         }
-      ]
+      ],
+      "no-descending-specificity": null
     },
     "ignoreFiles": [
       "themes-default/**/static/css/lib/**",

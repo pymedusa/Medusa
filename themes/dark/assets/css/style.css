@@ -453,6 +453,7 @@ home.mako
 
 .ui-progressbar .ui-progressbar-value {
     box-sizing: content-box !important;
+    height: 20px;
 }
 
 .progressbarText {
@@ -658,10 +659,6 @@ div.xem {
     border-bottom: 1px solid rgb(17, 17, 17);
     border-left: 0;
     border-right: 0;
-}
-
-.ui-progressbar .ui-progressbar-value {
-    height: 20px;
 }
 
 .ui-progressbar .progress-20 {
@@ -1029,11 +1026,6 @@ home_recommendedShows.mako
     top: -2px;
 }
 
-.recommended-container {
-    left: -4px;
-    position: relative;
-}
-
 div.recommended-image {
     background-color: #dfdacf;
 }
@@ -1069,6 +1061,8 @@ div.recommended-image {
 }
 
 .recommended-container {
+    left: -4px;
+    position: relative;
     margin: 12px;
     width: 188px;
     background-color: rgb(223, 218, 207);
@@ -1200,9 +1194,6 @@ div#col-show-summary {
 @media (max-width: 767px) and (min-width: 341px) {
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .container-navShow {
         display: none;
     }
 
@@ -1236,6 +1227,7 @@ div#col-show-summary {
 
     .tvshowImg {
         margin-bottom: 10px;
+        float: none;
     }
 
     .show-poster-container {
@@ -1249,10 +1241,6 @@ div#col-show-summary {
         display: block;
         margin: 0 auto;
         max-width: 280px !important;
-    }
-
-    .tvshowImg {
-        float: none;
     }
 
     .col-md-12 > .horizontal-scroll {
@@ -1364,9 +1352,6 @@ h1.title a {
 
 #showinfo {
     cursor: default;
-}
-
-#showinfo {
     display: inline-block;
     position: relative;
     top: -3px;
@@ -3073,11 +3058,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     *background-color: rgb(217, 217, 217);
 }
 
-.btn-medusa:active,
-.btn-medusa.active {
-    background-color: rgb(204, 204, 204) \9;
-}
-
 .btn-medusa:first-child {
     *margin-left: 0;
 }
@@ -3464,7 +3444,7 @@ div.stepsguide {
 div.stepsguide .step {
     float: left;
     width: 33%;
-    font: bold 24px Arial;
+    font: bold 24px Arial, sans-serif;
 }
 
 div.stepsguide .step p {
