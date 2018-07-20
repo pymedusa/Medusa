@@ -16,8 +16,7 @@ jobs:
   include:
     # build stage & frontend build start here
     - stage: build
-      env:
-        - build_type=frontend
+      name: "Frontend build"
       language: node_js
       node_js: 10.1.0
       install:
@@ -28,8 +27,7 @@ jobs:
         - ./.github/build-themes-check.sh
     # test stage + frontend tests start here
     - stage: test
-      env:
-        - test_type=frontend
+      name: "Frontend tests"
       language: node_js
       node_js: 10.1.0
       before_install:
@@ -45,8 +43,7 @@ jobs:
         - yarn test
         - yarn coverage
     # backend tests start here
-    - env:
-        - test_type=backend
+    - name: "Backend tests"
       python:
         - 2.7.10
       install:
