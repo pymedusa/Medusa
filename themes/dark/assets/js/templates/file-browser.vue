@@ -287,7 +287,7 @@ module.exports = {
             }
         }
     }
-});
+};
 </script>
 <style scoped>
 div.file-browser.max-width {

@@ -138,7 +138,9 @@
             Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
             Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
             Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
-            Vue.component('quality-chooser', httpVueLoader('js/templates/quality-chooser.vue'));
+        </script>
+        <%include file="/vue-components/quality-chooser.mako"/>
+        <script>
             Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
             Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
             Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
