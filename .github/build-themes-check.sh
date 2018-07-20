@@ -1,8 +1,13 @@
 #!/bin/bash
-set -ev
+set -e
+
+run_verbose () {
+   echo "\$ $*"
+   eval $*
+}
 
 cd themes-default/slim/
-yarn gulp sync
+run_verbose "yarn gulp sync"
 cd ../../
 status="$(git status --porcelain -- themes/)";
 if [[ -n $status ]]; then
