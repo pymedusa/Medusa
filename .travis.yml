@@ -30,14 +30,13 @@ jobs:
       name: "Frontend tests"
       language: node_js
       node_js: 10.1.0
-      before_install:
-        - cd themes-default/slim/
       install:
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH"'
         - yarn install --ignore-scripts
-        - cd ../../ && yarn install --ignore-scripts
+        - cd themes-default/slim/ && yarn install --ignore-scripts
       script:
+        - pwd
         - yarn xo
         - cd ../../ && yarn test-css
         - yarn test
