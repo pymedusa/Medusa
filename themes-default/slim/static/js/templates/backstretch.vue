@@ -1,5 +1,9 @@
+<template>
+    <div></div>
+</template>
 <script>
-Vue.component('backstretch', {
+module.exports = {
+    name: 'backstretch',
     props: {
         opacity: {
             type: Number
@@ -34,7 +38,8 @@ Vue.component('backstretch', {
             el.css('top', offset);
             el.css('opacity', opacity).fadeIn(500);
         }
-    },
-    template: '<div></div>'
-});
+    }
+};
 </script>
+<style>
+</style>
