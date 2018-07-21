@@ -37,7 +37,7 @@ module.exports = {
             const apiRoot = document.body.getAttribute('web-root') + '/api/v2/';
             const apiKey = document.body.getAttribute('api-key');
 
-            if (error || lazy && !isVisible || !seriesSlug || !type) {
+            if (error || (lazy && !isVisible) || !seriesSlug || !type) {
                 return this.default;
             }
 
