@@ -1,5 +1,5 @@
-<script type="text/x-template" id="name-pattern-tempate">
-    <div id="name_pattern_wrapper">
+<template>
+    <div id="name-pattern-wrapper">
         <!-- If a 'type' is passed, it means that where checking a custom naming pattern. As for example sports, air-by-date etc.
         In that case, we're showing this checkbox, to display the rest of the form.
         If type evaulates to an empty string, we're asuming this is the default name pattern. And it's enabled by default. -->
@@ -261,251 +261,248 @@
         </div>
 
     </div>
-
-</script>
-
+</template>
 
 <script>
-    Vue.component('name-pattern', {
-        template: '#name-pattern-tempate',
-        props: {
-            /**
-             * Current naming pattern.
+module.exports = {
+    name: 'name-pattern',
+    props: {
+        /**
+            * Current naming pattern.
+        */
+        namingPattern: {
+            type: String,
+            default: ''
+        },
+        /**
+            * An array of available preset naming patterns.
+        */
+        namingPresets: {
+            type: Array,
+            default: () => []
+        },
+        /**
+            * The selected multi ep style
             */
-            namingPattern: {
-                type: String,
-                default: ''
-            },
-            /**
-             * An array of available preset naming patterns.
+        multiEpStyle: {
+            type: Number
+        },
+        /**
+            * Availale multi ep style
             */
-            namingPresets: {
-                type: Array,
-                default: () => []
-            },
-            /**
-             * The selected multi ep style
-             */
-            multiEpStyle: {
-                type: Number
-            },
-            /**
-             * Availale multi ep style
-             */
-            multiEpStyles: {
-                type: Array,
-                default: () => []
-            },
-            /**
-             * For anime shows there are a number of variations on how the absolute episode number
-             * is added to the episode.
-             */
-            animeNamingType: {
-                type: Number,
-                default: 0
-            },
-            /**
-             * Provide the custom naming type. -Like sports, anime, air by date- description.
-             * If none provided we asume this is the default episode naming component.
-             * And that means there will be no checkbox available to enable/disable it.
-             */
-            type: {
-                type: String,
-                default: ''
-            },
-            /**
-             * Used icw with the type property.
-             * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings. 
+        multiEpStyles: {
+            type: Array,
+            default: () => []
+        },
+        /**
+            * For anime shows there are a number of variations on how the absolute episode number
+            * is added to the episode.
             */
-            enabled: {
-                type: Boolean,
-                default: true
-            },
-            flagLoaded: {
-                type: Boolean,
-                default: false
+        animeNamingType: {
+            type: Number,
+            default: 0
+        },
+        /**
+            * Provide the custom naming type. -Like sports, anime, air by date- description.
+            * If none provided we asume this is the default episode naming component.
+            * And that means there will be no checkbox available to enable/disable it.
+            */
+        type: {
+            type: String,
+            default: ''
+        },
+        /**
+            * Used icw with the type property.
+            * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings. 
+        */
+        enabled: {
+            type: Boolean,
+            default: true
+        },
+        flagLoaded: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data() {
+        return {
+            presets: [],
+            availableMultiEpStyles: [],
+            pattern: '',
+            customName: '',
+            showLegend: false,
+            namingExample: '',
+            namingExampleMulti: '',
+            isEnabled: false,
+            isMulti: false,
+            selectedMultiEpStyle: 1,
+            animeType: 0
+        }
+    },
+    methods: {
+        getDateFormat(format) {
+            return dateFns.format(new Date(), format);
+        },
+        testNaming(pattern, selectedMultiEpStyle, animeType) {
+            console.debug('Test pattern ' + pattern + ' for ' + (selectedMultiEpStyle) ? 'multi' : 'single' + ' ep');
+            const params = {
+                pattern,
+                anime_type: animeType
+            }
+
+            if (selectedMultiEpStyle) {
+                params.multi = selectedMultiEpStyle;
+            }
+
+            try {
+                return apiRoute.get('config/postProcessing/testNaming', {params: params}).then(res => res.data);
+            } catch (e) {
+                console.warn(e);
+                return '';
             }
         },
-        data() {
-            return {
-                presets: [],
-                availableMultiEpStyles: [],
-                pattern: '',
-                customName: '',
-                showLegend: false,
-                namingExample: '',
-                namingExampleMulti: '',
-                isEnabled: false,
-                isMulti: false,
-                selectedMultiEpStyle: 1,
-                animeType: 0
+        async updatePatternSamples() {
+            // If it's a custom pattern, we need to get the custom pattern from this.customName
+            const pattern = this.isCustom ? this.customName : this.pattern; 
+            
+            // Update single
+            this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
+            console.debug('Result of naming pattern check: ' + this.namingExample);
+
+            // Test naming
+            this.checkNaming(pattern, false, this.animeType);
+            
+            // Update multi if needed
+            if (this.isMulti) {
+                this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
+                this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
             }
         },
-        methods: {
-            getDateFormat(format) {
-                return dateFns.format(new Date(), format);
-            },
-            testNaming(pattern, selectedMultiEpStyle, animeType) {
-                console.debug('Test pattern ' + pattern + ' for ' + (selectedMultiEpStyle) ? 'multi' : 'single' + ' ep');
-                const params = {
-                    pattern,
-                    anime_type: animeType
-                }
+        update() {
+            if (!this.flagLoaded) {
+                return;
+            }
 
-                if (selectedMultiEpStyle) {
-                    params.multi = selectedMultiEpStyle;
-                }
+            this.$nextTick(() => {
+                this.$emit('change', {
+                    pattern: this.isCustom ? this.customName : this.pattern,
+                    type: this.type,
+                    multiEpStyle: this.selectedMultiEpStyle,
+                    custom: this.isCustom,
+                    enabled: this.isEnabled,
+                    animeNamingType: Number(this.animeType),
+                });
+            })
 
-                try {
-                    return apiRoute.get('config/postProcessing/testNaming', {params: params}).then(res => res.data);
-                } catch (e) {
-                    console.warn(e);
-                    return '';
-                }
-            },
-            async updatePatternSamples() {
-                // If it's a custom pattern, we need to get the custom pattern from this.customName
-                const pattern = this.isCustom ? this.customName : this.pattern; 
-                
-                // Update single
-                this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
-                console.debug('Result of naming pattern check: ' + this.namingExample);
+        },
+        checkNaming(pattern, selectedMultiEpStyle, animeType) {
+            const params = {
+                pattern,
+                anime_type: animeType
+            }
 
-                // Test naming
-                this.checkNaming(pattern, false, this.animeType);
-                
-                // Update multi if needed
-                if (this.isMulti) {
-                    this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
-                    this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
-                }
-            },
-            update() {
-                if (!this.flagLoaded) {
-                    return;
-                }
+            if (selectedMultiEpStyle) {
+                params.multi = selectedMultiEpStyle;
+            }
 
-                this.$nextTick(() => {
-                    this.$emit('change', {
-                        pattern: this.isCustom ? this.customName : this.pattern,
-                        type: this.type,
-                        multiEpStyle: this.selectedMultiEpStyle,
-                        custom: this.isCustom,
-                        enabled: this.isEnabled,
-                        animeNamingType: Number(this.animeType),
+            const { $el } = this;
+            const el = $($el);
+
+            const result = apiRoute.get('config/postProcessing/isNamingValid', {params: params})
+            .then(res => {
+                if (result.data === 'invalid') {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern is invalid.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
                     });
-                })
-
-            },
-            checkNaming(pattern, selectedMultiEpStyle, animeType) {
-                const params = {
-                    pattern,
-                    anime_type: animeType
+                    el.find('#naming_pattern').qtip('toggle', true);
+                    el.find('#naming_pattern').css('background-color', '#FFDDDD');
+                } else if (result.data === 'seasonfolders') {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                    });
+                    el.find('#naming_pattern').qtip('toggle', true);
+                    el.find('#naming_pattern').css('background-color', '#FFFFDD');
+                } else {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern is valid.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-green'
+                    });
+                    el.find('#naming_pattern').qtip('toggle', false);
+                    el.find('#naming_pattern').css('background-color', '#FFFFFF');
                 }
-
-                if (selectedMultiEpStyle) {
-                    params.multi = selectedMultiEpStyle;
-                }
-
-                const { $el } = this;
-                const el = $($el);
-
-                const result = apiRoute.get('config/postProcessing/isNamingValid', {params: params})
-                .then(res => {
-                    if (result.data === 'invalid') {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern is invalid.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', true);
-                        el.find('#naming_pattern').css('background-color', '#FFDDDD');
-                    } else if (result.data === 'seasonfolders') {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', true);
-                        el.find('#naming_pattern').css('background-color', '#FFFFDD');
-                    } else {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern is valid.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-green'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', false);
-                        el.find('#naming_pattern').css('background-color', '#FFFFFF');
-                    }
-                })
-                .catch(error => {
-                    console.warn(error);
-                })
-            },
-            updateCustomName() {
-                // Store the custom naming pattern.
-                if (!this.presets.includes(this.pattern)) {
-                    this.customName = this.pattern;
-                }
-            }
+            })
+            .catch(error => {
+                console.warn(error);
+            })
         },
-        computed: {
-            isCustom() {
-                return !this.presets.includes(this.pattern) || this.pattern === 'Custom...';
-            },
-            selectedNamingPattern: {
-                get: function() {
-                    return this.isCustom ? 'Custom...' : this.pattern;
-                },
-                set: function(value) {
-                    this.pattern = value;
-                }
-            }
-        },
-        mounted() {
-            this.pattern = this.namingPattern;
-
-            // Add Custom... as an option to the presets.
-            this.presets = this.namingPresets.concat('Custom...');
-
-            // Update the custom name
-            this.updateCustomName();
-
-            // Pass properties into local variables
-            this.availableMultiEpStyles = this.multiEpStyles;
-            this.selectedMultiEpStyle = this.multiEpStyle;
-            this.animeType = this.animeNamingType;
-            this.isMulti = Boolean(this.multiEpStyle)
-
-            // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
-            this.isEnabled = this.type ? false : this.enabled;
-
-            // Update the pattern samples
-            this.updatePatternSamples();
-        },
-        watch: {
-            // Update local variables when properties are updated
-            enabled() {
-                this.isEnabled = this.enabled;
-            },
-            namingPattern() {
-                this.pattern = this.namingPattern;
-                this.updateCustomName();
-            },
-            namingPresets() {
-                this.presets = namingPresets;
-            },
-            multiEpStyle() {
-                this.selectedMultiEpStyle = this.multiEpStyle;
-                this.isMulti = Boolean(this.multiEpStyle);
-            },
-            multiEpStyles() {
-                this.availableMultiEpStyles = this.multiEpStyles;
-            },
-            animeNamingType() {
-                this.animeType = this.animeNamingType;
-            },
-            type() {
-                this.isEnabled = this.type ? false : this.enabled;
+        updateCustomName() {
+            // Store the custom naming pattern.
+            if (!this.presets.includes(this.pattern)) {
+                this.customName = this.pattern;
             }
         }
-    
-    });
-    </script>
+    },
+    computed: {
+        isCustom() {
+            return !this.presets.includes(this.pattern) || this.pattern === 'Custom...';
+        },
+        selectedNamingPattern: {
+            get: function() {
+                return this.isCustom ? 'Custom...' : this.pattern;
+            },
+            set: function(value) {
+                this.pattern = value;
+            }
+        }
+    },
+    mounted() {
+        this.pattern = this.namingPattern;
+
+        // Add Custom... as an option to the presets.
+        this.presets = this.namingPresets.concat('Custom...');
+
+        // Update the custom name
+        this.updateCustomName();
+
+        // Pass properties into local variables
+        this.availableMultiEpStyles = this.multiEpStyles;
+        this.selectedMultiEpStyle = this.multiEpStyle;
+        this.animeType = this.animeNamingType;
+        this.isMulti = Boolean(this.multiEpStyle)
+
+        // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
+        this.isEnabled = this.type ? false : this.enabled;
+
+        // Update the pattern samples
+        this.updatePatternSamples();
+    },
+    watch: {
+        // Update local variables when properties are updated
+        enabled() {
+            this.isEnabled = this.enabled;
+        },
+        namingPattern() {
+            this.pattern = this.namingPattern;
+            this.updateCustomName();
+        },
+        namingPresets() {
+            this.presets = namingPresets;
+        },
+        multiEpStyle() {
+            this.selectedMultiEpStyle = this.multiEpStyle;
+            this.isMulti = Boolean(this.multiEpStyle);
+        },
+        multiEpStyles() {
+            this.availableMultiEpStyles = this.multiEpStyles;
+        },
+        animeNamingType() {
+            this.animeType = this.animeNamingType;
+        },
+        type() {
+            this.isEnabled = this.type ? false : this.enabled;
+        }
+    }    
+};
+</script>
