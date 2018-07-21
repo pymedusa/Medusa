@@ -134,21 +134,17 @@
         <script>
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-            // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-            Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
+            Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+            Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
+            Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
+            Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
         </script>
-        <%include file="/vue-components/app-link.mako"/>
-        <%include file="/vue-components/asset.mako"/>
-        <%include file="/vue-components/file-browser.mako"/>
-        <%include file="/vue-components/plot-info.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
-        <%include file="/vue-components/language-select.mako"/>
-        <%include file="/vue-components/root-dirs.mako"/>
-        <%include file="/vue-components/backstretch.mako"/>
-        <%include file="/vue-components/select-list-ui.mako"/>
-
         <script>
-            // @TODO: Move all Vue.use to new file
+            Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
+            Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
+            Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
+
             Vue.use(window['vue-js-toggle-button'].default);
 
             Vue.mixin({

@@ -1,10 +1,12 @@
 import browserEnv from 'browser-env';
 import jQuery from 'jquery';
-
-const hooks = require('require-extension-hooks');
+import hooks from 'require-extension-hooks';
 
 // Setup browser environment
-browserEnv();
+browserEnv({
+    // This needs to be set otherwise we get errors from vue-router
+    url: 'http://localhost:8081/'
+});
 
 // Setup document variables
 const baseElement = document.createElement('base');

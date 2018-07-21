@@ -8,7 +8,7 @@
 <script>
 
 window.app = {};
-const startVue = () => {
+window.app = new Vue({
     window.app = new Vue({
         store,
         el: '#vue-wrap',
@@ -187,7 +187,7 @@ const startVue = () => {
 
         }
     });
-};
+});
 </script>
 </%block>
 <%block name="content">

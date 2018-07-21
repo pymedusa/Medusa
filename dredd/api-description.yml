@@ -133,9 +133,12 @@ paths:
           description: Response with only the updated fields
           schema:
             $ref: '#/definitions/Series'
+          x-request:
+            body:
+              {"tvdb": 301824, "paused": true}
         400:
           $ref: '#/responses/error'
-          description: Invalid id
+          description: Conflicting series identifier
           x-request:
             body:
               id:

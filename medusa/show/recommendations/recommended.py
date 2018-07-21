@@ -224,9 +224,10 @@ def update_recommended_series_cache_index(indexer, new_index):
     :param indexer: Indexer in the form of a string. For example: 'imdb', 'trakt', 'anidb'.
     :new_index: Iterable with series id's.
     """
-    index = recommended_series_cache.get(binary_type(indexer)) or set()
-    index.update(set(new_index))
-    recommended_series_cache.set(binary_type(indexer), index)
+    if new_index:
+        index = recommended_series_cache.get(binary_type(indexer)) or set()
+        index.update(set(new_index))
+        recommended_series_cache.set(binary_type(indexer), index)
 
 
 def get_all_recommended_series_from_cache(indexers):

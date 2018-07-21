@@ -10,7 +10,6 @@
         <slot></slot>
     </component>
 </template>
-
 <script>
 module.exports = {
     name: 'app-link',
@@ -143,7 +142,6 @@ module.exports = {
     }
 };
 </script>
-
 <style>
 /*
 @NOTE: This fixes the header blocking elements when using a hash link
