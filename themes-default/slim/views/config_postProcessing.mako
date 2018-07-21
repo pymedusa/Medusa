@@ -9,184 +9,182 @@
 
 window.app = {};
 window.app = new Vue({
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        store,
-        metaInfo: {
-            title: 'Config - Post Processing'
-        },
-        data() {
-            // FIXME: replace with MEUDSA.config.
-            const multiEpStrings = ${inc_defs.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
-            
-            const processMethods = [
-                { value: 'copy', text: 'Copy'},
-                { value: 'move', text: 'Move'},
-                { value: 'hardlink', text: 'Hard Link'},
-                { value: 'symlink', text: 'Symbolic Link'}                
-            ];
+    store,
+    el: '#vue-wrap',
+    store,
+    metaInfo: {
+        title: 'Config - Post Processing'
+    },
+    data() {
+        // FIXME: replace with MEUDSA.config.
+        const multiEpStrings = ${inc_defs.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
+        
+        const processMethods = [
+            { value: 'copy', text: 'Copy'},
+            { value: 'move', text: 'Move'},
+            { value: 'hardlink', text: 'Hard Link'},
+            { value: 'symlink', text: 'Symbolic Link'}                
+        ];
 
-            const timezoneOptions = [
-                { value: 'local', text: 'Local'},
-                { value: 'network', text: 'Network'}
-            ]
+        const timezoneOptions = [
+            { value: 'local', text: 'Local'},
+            { value: 'network', text: 'Network'}
+        ]
 
-            let defaultMetadataProviders = [];
-            const getFirstEnabledMetadataProvider = () => {
-                defaultMetadataProviders.forEach(provider => {
-                    if (provider.show_metadata || provider.episode_metadata) {
-                        return provider
-                    }
-                });
-                return 'kodi'
-            }
-
-            return {
-                configLoaded: false,
-
-                header: 'Post Processing',
-                presets: [
-                    '%SN - %Sx%0E - %EN',
-                    '%S.N.S%0SE%0E.%E.N',
-                    '%Sx%0E - %EN',
-                    'S%0SE%0E - %EN',
-                    'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG'
-                ],
-                processMethods: processMethods,
-                multiEpStrings: multiEpStrings,
-                animeMultiEpStrings: multiEpStrings,
-                timezoneOptions: timezoneOptions,
-                postProcessing: {
-                    naming: {
-                        pattern: null,
-                        enableCustomNamingSports: null,
-                        enableCustomNamingAirByDate: null,
-                        patternSports: null,
-                        patternAirByDate: null,
-                        enableCustomNamingAnime: null,
-                        patternAnime: null,
-                        animeMultiEp: null,
-                        animeNamingType: null,
-                        stripYear: null
-                    },
-                    seriesDownloadDir: null,
-                    processAutomatically: null,
-                    processMethod: null,
-                    deleteRarContent: null,
-                    unpack: null,
-                    noDelete: null,
-                    reflinkAvailable: null,
-                    postponeIfSyncFiles: null,
-                    autoPostprocessorFrequency: 10,
-                    airdateEpisodes: null,
-                    moveAssociatedFiles: null,
-                    allowedExtensions: [],
-                    addShowsWithoutDir: null,
-                    createMissingShowDirs: null,
-                    renameEpisodes: null,
-                    postponeIfNoSubs: null,
-                    nfoRename: null,
-                    syncFiles: [],
-                    fileTimestampTimezone: 'local',
-                    extraScripts: [],
-                    extraScriptsUrl: null,
-                },
-                metadataProviders: defaultMetadataProviders,
-                metadataProviderSelected: getFirstEnabledMetadataProvider()
-            };
-        },
-        methods: {
-            saveNaming(values) {
-                if (!this.configLoaded) {
-                    return
+        let defaultMetadataProviders = [];
+        const getFirstEnabledMetadataProvider = () => {
+            defaultMetadataProviders.forEach(provider => {
+                if (provider.show_metadata || provider.episode_metadata) {
+                    return provider
                 }
-                this.postProcessing.naming.pattern = values.pattern;
-                this.postProcessing.naming.multiEpStyle = values.multiEpStyle;
-            },
-            saveNamingSports(values) {
-                if (!this.configLoaded) {
-                    return
-                }
-                this.postProcessing.naming.patternSports = values.pattern;
-                this.postProcessing.naming.enableCustomNamingSports = values.enabled;
-            },
-            saveNamingAbd(values) {
-                if (!this.configLoaded) {
-                    return
-                }
-                this.postProcessing.naming.patternAirByDate = values.pattern;
-                this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
-            },
-            saveNamingAnime(values) {
-                if (!this.configLoaded) {
-                    return
-                }
-                this.postProcessing.naming.patternAnime = values.pattern;
-                this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
-                this.postProcessing.naming.animeNamingType = values.animeNamingType;
-                this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
-            },
-            save() {
-                const { $store } = this;
-                // We want to wait until the page has been fully loaded, before starting to save stuff.
-                if (!this.configLoaded) {
-                    return
-                }
-                // Disable the save button until we're done.
-                this.saving = true;
-
-                let config = {
-                    postProcessing: this.postProcessing,
-                    metadata: {
-                        metadataProviders: this.metadataProviders
-                    }
-                };
-
-                $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
-                    this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
-                }).catch(error => {
-                    this.$snotify.error(
-                        'Error while trying to save postprocessing config',
-                        'Error'
-                    );
-                });
-            },
-            processMethodDescription(processMethod) {
-                return this.processMethods.get(processMethod)
-            }
-        },
-        computed: {
-            availableMetadataProviders() {
-                let providers = [];
-                for (provider of this.metadataProviders) {
-                    providers.push(provider);
-                }
-                return providers; 
-            }
-        },
-        async mounted() {
-            const { $store } = this;
-            const vm = this;
-
-            $store.dispatch('getConfig', 'main').then(() => {
-                vm.configLoaded = true;
-                // Map the state values to local data.
-                vm.postProcessing = $store.state.config.postProcessing;
-            }).catch(error => {
-                console.debug(error);
             });
-
-            // Get metadata config
-            $store.dispatch('getConfig', 'metadata').then(() => {
-                // Map the state values to local data
-                vm.metadataProviders = $store.state.metadata.metadataProviders;
-            }).catch(error => {
-                console.debug(error);
-            });
-
+            return 'kodi'
         }
-    });
+
+        return {
+            configLoaded: false,
+
+            header: 'Post Processing',
+            presets: [
+                '%SN - %Sx%0E - %EN',
+                '%S.N.S%0SE%0E.%E.N',
+                '%Sx%0E - %EN',
+                'S%0SE%0E - %EN',
+                'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG'
+            ],
+            processMethods: processMethods,
+            multiEpStrings: multiEpStrings,
+            animeMultiEpStrings: multiEpStrings,
+            timezoneOptions: timezoneOptions,
+            postProcessing: {
+                naming: {
+                    pattern: null,
+                    enableCustomNamingSports: null,
+                    enableCustomNamingAirByDate: null,
+                    patternSports: null,
+                    patternAirByDate: null,
+                    enableCustomNamingAnime: null,
+                    patternAnime: null,
+                    animeMultiEp: null,
+                    animeNamingType: null,
+                    stripYear: null
+                },
+                seriesDownloadDir: null,
+                processAutomatically: null,
+                processMethod: null,
+                deleteRarContent: null,
+                unpack: null,
+                noDelete: null,
+                reflinkAvailable: null,
+                postponeIfSyncFiles: null,
+                autoPostprocessorFrequency: 10,
+                airdateEpisodes: null,
+                moveAssociatedFiles: null,
+                allowedExtensions: [],
+                addShowsWithoutDir: null,
+                createMissingShowDirs: null,
+                renameEpisodes: null,
+                postponeIfNoSubs: null,
+                nfoRename: null,
+                syncFiles: [],
+                fileTimestampTimezone: 'local',
+                extraScripts: [],
+                extraScriptsUrl: null,
+            },
+            metadataProviders: defaultMetadataProviders,
+            metadataProviderSelected: getFirstEnabledMetadataProvider()
+        };
+    },
+    methods: {
+        saveNaming(values) {
+            if (!this.configLoaded) {
+                return
+            }
+            this.postProcessing.naming.pattern = values.pattern;
+            this.postProcessing.naming.multiEpStyle = values.multiEpStyle;
+        },
+        saveNamingSports(values) {
+            if (!this.configLoaded) {
+                return
+            }
+            this.postProcessing.naming.patternSports = values.pattern;
+            this.postProcessing.naming.enableCustomNamingSports = values.enabled;
+        },
+        saveNamingAbd(values) {
+            if (!this.configLoaded) {
+                return
+            }
+            this.postProcessing.naming.patternAirByDate = values.pattern;
+            this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
+        },
+        saveNamingAnime(values) {
+            if (!this.configLoaded) {
+                return
+            }
+            this.postProcessing.naming.patternAnime = values.pattern;
+            this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
+            this.postProcessing.naming.animeNamingType = values.animeNamingType;
+            this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
+        },
+        save() {
+            const { $store } = this;
+            // We want to wait until the page has been fully loaded, before starting to save stuff.
+            if (!this.configLoaded) {
+                return
+            }
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            let config = {
+                postProcessing: this.postProcessing,
+                metadata: {
+                    metadataProviders: this.metadataProviders
+                }
+            };
+
+            $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
+                this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save postprocessing config',
+                    'Error'
+                );
+            });
+        },
+        processMethodDescription(processMethod) {
+            return this.processMethods.get(processMethod)
+        }
+    },
+    computed: {
+        availableMetadataProviders() {
+            let providers = [];
+            for (provider of this.metadataProviders) {
+                providers.push(provider);
+            }
+            return providers; 
+        }
+    },
+    async mounted() {
+        const { $store } = this;
+        const vm = this;
+
+        $store.dispatch('getConfig', 'main').then(() => {
+            vm.configLoaded = true;
+            // Map the state values to local data.
+            vm.postProcessing = $store.state.config.postProcessing;
+        }).catch(error => {
+            console.debug(error);
+        });
+
+        // Get metadata config
+        $store.dispatch('getConfig', 'metadata').then(() => {
+            // Map the state values to local data
+            vm.metadataProviders = $store.state.metadata.metadataProviders;
+        }).catch(error => {
+            console.debug(error);
+        });
+
+    }
 });
 </script>
 </%block>
