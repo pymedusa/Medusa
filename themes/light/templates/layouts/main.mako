@@ -139,9 +139,10 @@
             Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
             Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
             Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
+            Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
         </script>
+        <!-- TODO: Replace with htptVueLoader or webpack build bundles -->
         <%include file="/vue-components/quality-chooser.mako"/>
-        <%include file="/vue-components/select-list-ui.mako"/>
 
         <script>
             Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
