@@ -13,25 +13,26 @@ jobs:
   include:
     # test stage + frontend tests start here
     - stage: test
-      env:
-        - test_type=frontend
+      name: 'Frontend tests'
       language: node_js
-      node_js: 10.1.0
+      node_js: 10.7.0
       install:
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
-      script:
-        - yarn test-css
+        - 'export PATH="$HOME/.yarn/bin:$PATH"'
+        - yarn install --ignore-scripts
         - >-
-          cd themes-default/slim &&
+          cd $TRAVIS_BUILD_DIR/themes-default/slim &&
           yarn install --ignore-scripts &&
-          yarn xo &&
-          yarn test &&
-          yarn coverage &&
-          cd ../../
+          cd $TRAVIS_BUILD_DIR
+      script:
+        - ./.github/build-themes-check.sh
+        - yarn test-css
+        - cd $TRAVIS_BUILD_DIR/themes-default/slim
+        - yarn xo
+        - yarn test
+        - yarn coverage
     # backend tests start here
-    - env:
-        - test_type=backend
+    - name: 'Backend tests'
       python:
         - 2.7.10
       install:
