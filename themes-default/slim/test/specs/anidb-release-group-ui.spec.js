@@ -5,7 +5,7 @@ import { createLocalVue, mount } from '@vue/test-utils';
 import fixtures from '../__fixtures__/app-header';
 
 // Needs to be required otherwise nyc won't see it
-const AnibdReleaseGroupUi = require('../../static/js/templates/anidb-release-group-ui.vue');
+const AnidbReleaseGroupUi = require('../../static/js/templates/anidb-release-group-ui.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
@@ -20,7 +20,7 @@ test.beforeEach(t => {
 
 test('renders', t => {
     const { localVue, store } = t.context;
-    const wrapper = mount(AnibdReleaseGroupUi, {
+    const wrapper = mount(AnidbReleaseGroupUi, {
         localVue,
         store
     });
