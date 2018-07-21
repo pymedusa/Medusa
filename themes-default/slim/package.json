@@ -111,11 +111,14 @@
       "$",
       "MEDUSA",
       "api",
+      "apiv1",
+      "apiRoute",
       "jQuery",
       "axios",
       "webRoot",
       "apiRoot",
-      "apiKey"
+      "apiKey",
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
