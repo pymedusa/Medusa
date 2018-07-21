@@ -476,12 +476,16 @@ const store = new Store({
             return api.get('/config/' + (section || '')).then(res => {
                 if (section) {
                     const config = res.data;
-                    return commit(ADD_CONFIG, { section, config });
+                    commit(ADD_CONFIG, { section, config });
+                    return config;
                 }
-                Object.keys(res.data).forEach(section => {
-                    const config = res.data[section];
+                const sections = res.data;
+                Object.keys(sections).forEach(section => {
+                    const config = sections[section];
                     commit(ADD_CONFIG, { section, config });
                 });
+
+                return sections;
             });
         },
         setConfig(context, { section, config }) {

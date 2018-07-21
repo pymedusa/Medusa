@@ -12,19 +12,18 @@ window.app = {};
 window.app = new Vue({
     store,
     el: '#vue-wrap',
-    store,
     metaInfo: {
         title: 'Config - Post Processing'
     },
     data() {
         // FIXME: replace with MEUDSA.config.
         const multiEpStrings = ${inc_defs.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
-        
+
         const processMethods = [
             { value: 'copy', text: 'Copy'},
             { value: 'move', text: 'Move'},
             { value: 'hardlink', text: 'Hard Link'},
-            { value: 'symlink', text: 'Symbolic Link'}                
+            { value: 'symlink', text: 'Symbolic Link'}
         ];
 
         const timezoneOptions = [
@@ -162,29 +161,27 @@ window.app = new Vue({
             for (provider of this.metadataProviders) {
                 providers.push(provider);
             }
-            return providers; 
+            return providers;
         }
     },
-    async mounted() {
+    mounted() {
         const { $store } = this;
-        const vm = this;
 
-        $store.dispatch('getConfig', 'main').then(() => {
-            vm.configLoaded = true;
+        $store.dispatch('getConfig', 'main').then(config => {
+            this.configLoaded = true;
             // Map the state values to local data.
-            vm.postProcessing = $store.state.config.postProcessing;
+            this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
         }).catch(error => {
             console.debug(error);
         });
 
         // Get metadata config
-        $store.dispatch('getConfig', 'metadata').then(() => {
+        $store.dispatch('getConfig', 'metadata').then(metadata => {
             // Map the state values to local data
-            vm.metadataProviders = $store.state.metadata.metadataProviders;
+            this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
         }).catch(error => {
             console.debug(error);
         });
-
     }
 });
 </script>
@@ -208,7 +205,7 @@ window.app = new Vue({
                                     <h3>Post-Processing</h3>
                                     <p>Settings that dictate how Medusa should process completed downloads.</p>
                             </div>
-                        
+
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
                                     <div class="form-group">
@@ -221,9 +218,9 @@ window.app = new Vue({
                                             <div class="clear-left"><p><b>NOTE:</b> Do not use if you use an external Post Processing script</p></div>
                                         </div>
                                     </div>
-                                
-                                    <div v-show="postProcessing.processAutomatically" id="post-process-toggle-wrapper">   
-                                        
+
+                                    <div v-show="postProcessing.processAutomatically" id="post-process-toggle-wrapper">
+
                                         <div class="form-group">
                                             <label for="tv_download_dir" class="col-sm-2 control-label">
                                                 <span>Post Processing Dir</span>
@@ -251,7 +248,7 @@ window.app = new Vue({
 
                                         <div class="form-group">
                                             <label for="autopostprocessor_frequency" class="col-sm-2 control-label">
-                                                <span>Auto Post-Processing Frequency</span>                                          
+                                                <span>Auto Post-Processing Frequency</span>
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model="postProcessing.autoPostprocessorFrequency || 10" class="form-control input-sm input75" />
@@ -289,7 +286,7 @@ window.app = new Vue({
                                                     <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
                                                     <span>&nbsp;</span>
                                                     <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
-                                                    <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>    
+                                                    <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                             </div>
                                         </div>
 
@@ -322,7 +319,7 @@ window.app = new Vue({
                                                 <span>Add shows without creating a directory (not recommended)</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="move_associated_files" class="col-sm-2 control-label">
                                                 <span>Delete associated files</span>
@@ -342,7 +339,7 @@ window.app = new Vue({
                                                 <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="nfo_rename" class="col-sm-2 control-label">
                                                 <span>Rename .nfo file</span>
@@ -359,7 +356,7 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync></toggle-button>
-                                                <span >Set last modified filedate to the date that the episode aired?</span>                                            
+                                                <span >Set last modified filedate to the date that the episode aired?</span>
                                             </div>
                                         </div>
 
@@ -370,7 +367,7 @@ window.app = new Vue({
                                             <div class="col-sm-10 content">
                                                 <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
                                                     <option :value="option.value" v-for="option in timezoneOptions">{{ option.text }}</option>
-                                                </select>     
+                                                </select>
                                                 <span >What timezone should be used to change File Date?</span>
                                             </div>
                                         </div>
@@ -433,38 +430,38 @@ window.app = new Vue({
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    
+
                                     <!-- default name-pattern component -->
-                                    <name-pattern class="component-group" :naming-pattern="postProcessing.naming.pattern" 
-                                        :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp" 
+                                    <name-pattern class="component-group" :naming-pattern="postProcessing.naming.pattern"
+                                        :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp"
                                         :multi-ep-styles="multiEpStrings" @change="saveNaming" :flag-loaded="configLoaded">
                                     </name-pattern>
-        
+
                                     <!-- default sports name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingSports" 
-                                        :naming-pattern="postProcessing.naming.patternSports" :naming-presets="presets" type="sports" 
+                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingSports"
+                                        :naming-pattern="postProcessing.naming.patternSports" :naming-presets="presets" type="sports"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded">
                                     </name-pattern>
-        
+
                                     <!-- default airs by date name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAirByDate" 
-                                        :naming-pattern="postProcessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date" 
+                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
+                                        :naming-pattern="postProcessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded">
                                     </name-pattern>
-        
+
                                     <!-- default anime name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAnime" 
-                                        :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp" 
-                                        :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="postProcessing.naming.animeNamingType" 
+                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAnime"
+                                        :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp"
+                                        :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="postProcessing.naming.animeNamingType"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded">
                                     </name-pattern>
-        
+
                                     <div class="form-group component-group">
                                         <label for="naming_strip_year" class="col-sm-2 control-label">
                                             <span>Strip Show Year</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="naming_strip_year" name="naming_strip_year" 
+                                            <toggle-button :width="45" :height="22" id="naming_strip_year" name="naming_strip_year"
                                                 v-model="postProcessing.naming.stripYear" sync>
                                             </toggle-button>
                                             <span>Remove the TV show's year when renaming the file?</span>
