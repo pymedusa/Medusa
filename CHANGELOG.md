@@ -1,12 +1,13 @@
-## 0.2.7 (unreleased)
+## Unreleased
 
-**New Features**
+-----
 
-- Hot-swap themes: No need to restart the Medusa after changing the theme ([#4271](https://github.com/pymedusa/Medusa/pull/4271))
-- _Simple message describing the new feature, and a link to the pull request._
+## 0.2.7 (2018-07-26)
 
-**Improvements**
+#### New Features
+- Hot-swap themes: No need to restart Medusa after changing the theme ([#4271](https://github.com/pymedusa/Medusa/pull/4271))
 
+#### Improvements
 - Moved the following routes to use `VueRouter` + `http-vue-loader`:
   - `/config` - Help & Info ([#4374](https://github.com/pymedusa/Medusa/pull/4374))
   - `/addShows` - Add Shows ([#4564](https://github.com/pymedusa/Medusa/pull/4564))
@@ -19,10 +20,10 @@
 - Converted to Vue components:
   - header ([#4519](https://github.com/pymedusa/Medusa/pull/4519))
   - sub-menu ([#4739](https://github.com/pymedusa/Medusa/pull/4739))
-- _Simple message describing the improvement, and a link to the pull request._
+- Add Viaplay network logo ([#4691](https://github.com/pymedusa/Medusa/pull/4691))
+- Convert Vue components to SFC - Single-File Components ([#4696](https://github.com/pymedusa/Medusa/pull/4696))
 
-**Fixes**
-
+#### Fixes
 - Fixed malformed non-ASCII characters displaying for Windows users on "View Logs" page ([#4492](https://github.com/pymedusa/Medusa/pull/4492))
 - Fixed Emby test notification ([#4622](https://github.com/pymedusa/Medusa/pull/4622))
 - Fixed NorBits provider formatting download URL incorrectly ([#4642](https://github.com/pymedusa/Medusa/pull/4642))
@@ -35,6 +36,7 @@
 - Fixed Abnormal provider login check ([#4727](https://github.com/pymedusa/Medusa/pull/4727))
 - Fixed IMDB cache location ([#4745](https://github.com/pymedusa/Medusa/pull/4745))
 - Fixed "Edit Show" page sometimes failing to load the show ([#4756](https://github.com/pymedusa/Medusa/pull/4756))
-- _Simple message describing the fix, and a link to the pull request._
 
-### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
+-----
+
+### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md#v026)
