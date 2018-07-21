@@ -3,12 +3,12 @@
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-model="selectedShowSlug" class="select-show form-control input-sm-custom">
                 <template v-if="whichList === -1">
-                    <optgroup v-for="curShowList in showLists" :label="curShowList.type">
-                        <option v-for="show in curShowList.shows" :value="show.id.slug">{{show.title}}</option>
+                    <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
+                        <option v-for="show in curShowList.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                     </optgroup>
                 </template>
                 <template v-else>
-                    <option v-for="show in showLists[whichList].shows" :value="show.id.slug">{{show.title}}</option>
+                    <option v-for="show in showLists[whichList].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                 </template>
             </select>
         </div> <!-- end of select-show-group -->
