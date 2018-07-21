@@ -1,9 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<%include file="/vue-components/select-list-ui.mako"/>
-<%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
+Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
+Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
+
 window.app = {};
 window.app = new Vue({
     store,

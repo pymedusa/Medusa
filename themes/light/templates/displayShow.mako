@@ -14,8 +14,9 @@
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
-<%include file="/vue-components/show-selector.mako"/>
 <script>
+Vue.component('show-selector', httpVueLoader('js/templates/show-selector.vue'));
+
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
