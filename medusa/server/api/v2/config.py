@@ -441,10 +441,6 @@ class DataGenerator(object):
         section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
 
-        section_data['postProcessing'] = NonEmptyDict()
-        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
-        section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
-
         return section_data
 
     @staticmethod
