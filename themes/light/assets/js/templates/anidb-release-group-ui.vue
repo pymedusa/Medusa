@@ -84,7 +84,6 @@ module.exports = {
             });
         },
         createIndexedObjects(releaseGroups, list) {
-            newList = [];
             for (release of releaseGroups) {
                 // Whitelist and blacklist pass an array of strings not objects.
                 if (typeof (release) === 'string') {
@@ -92,7 +91,7 @@ module.exports = {
                 }
 
                 // Merge the passed object with some additional information.
-                itemAsObject = Object.assign({
+                const itemAsObject = Object.assign({
                     id: this.index,
                     toggled: false, memberOf: list
                 }, release);
