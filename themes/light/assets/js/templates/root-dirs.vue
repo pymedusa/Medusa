@@ -12,7 +12,7 @@
             <button type="button" class="btn-medusa" @click.prevent="remove" :disabled="!selectedRootDir">Delete</button>
             <button type="button" class="btn-medusa" @click.prevent="setDefault" :disabled="!selectedRootDir">Set as Default *</button>
         </div>
-        ## @TODO: Remove this element (use a Vue events to watch for changes)
+        <!-- @TODO: Remove this element (use a Vue events to watch for changes) -->
         <input type="text" style="display: none;" id="rootDirText" :value="rootDirsValue" />
     </div>
 </template>
