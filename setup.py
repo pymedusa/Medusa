@@ -42,6 +42,7 @@ setup(
         'flake8',
         'flake8-docstrings',
         'flake8-import-order',
+        'flake8-quotes',
         'pep8-naming',
         'pycodestyle==2.3.1',
         'pytest',
