@@ -1,0 +1,118 @@
+<script type="text/x-template" id="submenu-template">
+<%text>
+<div v-if="controller !== 'schedule' && action !== 'previewRename'" id="sub-menu-container" class="row shadow">
+    <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+        <template v-for="menuItem in submenu">
+            <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
+                      v-if="!menuItem.confirm">
+                <span :class="`pull-left ${menuItem.icon || ''}`"></span> {{ menuItem.title }}
+            </app-link>
+            <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
+                      v-else @click.native.prevent="confirmDialog($event, menuItem.class)">
+                <span :class="`pull-left ${menuItem.icon || ''}`"></span> {{ menuItem.title }}
+            </app-link>
+        </template>
+
+        <show-selector v-if="action === 'displayShow'" :show-slug="curShowSlug"></show-selector>
+    </div>
+</div> <!-- end of container -->
+</%text>
+</script>
+<%!
+    import json
+%>
+<% curShowSlug = show.identifier.slug if show is not UNDEFINED else '' %>
+<script>
+const SubmenuComponent = {
+    name: 'submenu',
+    template: '#submenu-template',
+    data() {
+        return {
+            // Python conversions
+            rawSubmenu: ${json.dumps(submenu)},
+            controller: '${controller}',
+            action: '${action}',
+            curShowSlug: '${curShowSlug}',
+        };
+    },
+    computed: {
+        submenu() {
+            return this.rawSubmenu.filter(item => item.requires === undefined || item.requires);
+        }
+    },
+    methods: {
+        confirmDialog(event, action) {
+            const options = {
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
+                post: false,
+                button: $(event.currentTarget),
+                confirm($element) {
+                    window.location.href = $element[0].href;
+                }
+            };
+
+            if (action === 'removeshow') {
+                const showName = document.querySelector('#showtitle').dataset.showname;
+                options.title = 'Remove Show';
+                <%text>
+                options.text = `Are you sure you want to remove <span class="footerhighlight">${showName}</span> from the database?<br><br>
+                                <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
+                </%text>
+                options.confirm = $element => {
+                    window.location.href = $element[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
+                };
+            } else if (action === 'clearhistory') {
+                options.title = 'Clear History';
+                options.text = 'Are you sure you want to clear all download history?';
+            } else if (action === 'trimhistory') {
+                options.title = 'Trim History';
+                options.text = 'Are you sure you want to trim all download history older than 30 days?';
+            } else if (action === 'submiterrors') {
+                options.title = 'Submit Errors';
+                options.text =  `Are you sure you want to submit these errors?<br><br>
+                                 <span class="red-text">Make sure Medusa is updated and trigger<br>
+                                 this error with debug enabled before submitting</span>`;
+            } else {
+                return;
+            }
+
+            $.confirm(options, event);
+        }
+    }
+};
+Vue.component(SubmenuComponent.name, SubmenuComponent);
+</script>
+<style scoped>
+/* Theme-specific styling adds the rest */
+#sub-menu-container {
+    z-index: 550;
+    min-height: 41px;
+}
+
+#sub-menu {
+    font-size: 12px;
+    padding-top: 2px;
+}
+
+#sub-menu > a {
+    float: right;
+    margin-left: 4px;
+}
+
+@media (min-width: 1281px) {
+    #sub-menu-container {
+        position: fixed;
+        width: 100%;
+        top: 51px;
+    }
+}
+
+@media (max-width: 1281px) {
+    #sub-menu-container {
+        position: relative;
+        margin-top: -24px;
+    }
+}
+</style>
