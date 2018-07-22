@@ -253,7 +253,7 @@ module.exports = {
 };
 </script>
 
-<style>
+<style scoped>
 .floating-badge {
     position: absolute;
     top: -5px;
