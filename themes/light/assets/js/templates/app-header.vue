@@ -14,23 +14,25 @@
         <div v-if="auth.isAuthenticated" class="collapse navbar-collapse" id="main_nav">
             <ul class="nav navbar-nav navbar-right">
                 <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
-                    <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
-                    <b class="caret"></b>
+                    <app-link @hover="expandDropdown" href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
+                        <span>Shows</span> <b class="caret"></b>
                     </app-link>
-                    <ul class="dropdown-menu">
-                        <li><app-link href="home/"><i class="menu-icon-home"></i>&nbsp;Show List</app-link></li>
-                        <li><app-link href="addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</app-link></li>
-                        <li><app-link href="addRecommended/"><i class="menu-icon-addshow"></i>&nbsp;Add Recommended Shows</app-link></li>
-                        <li><app-link href="home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</app-link></li>
-                        <template v-if="recentShows.length > 0">
-                        <li role="separator" class="divider"></li>
-                        <li v-for="recentShow in recentShows" :key="recentShow.link">
-                            <app-link :href="recentShow.link">
-                                <i class="menu-icon-addshow"></i>&nbsp;{{ recentShow.name }}
-                            </app-link>
-                        </li>
-                        </template>
-                    </ul>
+                    <transition name="fade" :duration="500">
+                        <ul class="dropdown-menu">
+                            <li><app-link href="home/"><i class="menu-icon-home"></i>&nbsp;Show List</app-link></li>
+                            <li><app-link href="addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</app-link></li>
+                            <li><app-link href="addRecommended/"><i class="menu-icon-addshow"></i>&nbsp;Add Recommended Shows</app-link></li>
+                            <li><app-link href="home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</app-link></li>
+                            <template v-if="recentShows.length > 0">
+                            <li role="separator" class="divider"></li>
+                            <li v-for="recentShow in recentShows" :key="recentShow.link">
+                                <app-link :href="recentShow.link">
+                                    <i class="menu-icon-addshow"></i>&nbsp;{{ recentShow.name }}
+                                </app-link>
+                            </li>
+                            </template>
+                        </ul>
+                    </transition>
                     <div style="clear:both;"></div>
                 </li>
                 <li id="NAVschedule" :class="{ active: topMenu === 'schedule' }">
@@ -194,19 +196,19 @@ module.exports = {
         const { $el } = this;
 
         // Hover Dropdown for Nav
-        $($el).on({
-            mouseenter(event) {
-                const $target = $(event.currentTarget);
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500, () => {
-                    $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
-                });
-            },
-            mouseleave(event) {
-                const $target = $(event.currentTarget);
-                $target.find('.dropdown-toggle').attr('aria-expanded', 'false');
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
-            }
-        }, 'ul.nav li.dropdown');
+        // $($el).on({
+        //     mouseenter(event) {
+        //         const $target = $(event.currentTarget);
+        //         $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500, () => {
+        //             $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
+        //         });
+        //     },
+        //     mouseleave(event) {
+        //         const $target = $(event.currentTarget);
+        //         $target.find('.dropdown-toggle').attr('aria-expanded', 'false');
+        //         $target.find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
+        //     }
+        // }, 'ul.nav li.dropdown');
 
         // @TODO Replace this with a real touchscreen check
         // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
@@ -246,6 +248,9 @@ module.exports = {
             }
 
             $.confirm(options, event);
+        },
+        expandDropdown(event) {
+
         }
     }
 };
