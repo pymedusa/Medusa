@@ -41,7 +41,7 @@ class TraktPopular(object):
     def __init__(self):
         """Initialize the trakt recommended list object."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.recommender = "Trakt Popular"
+        self.recommender = 'Trakt Popular'
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
