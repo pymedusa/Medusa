@@ -12,9 +12,9 @@
         <div ref="fileBrowserDialog" class="fileBrowserDialog" style="display: none;"></div>
         <input ref="fileBrowserSearchBox" @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control" style="display: none;"/>
         <ul ref="fileBrowserFileList" style="display: none;">
-            <li v-for="file in files" class="ui-state-default ui-corner-all">
+            <li v-for="file in files" :key="file.name" class="ui-state-default ui-corner-all">
                 <a @mouseover="toggleFolder(file, $event)" @mouseout="toggleFolder(file, $event)" @click="fileClicked(file)">
-                    <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{file.name}}
+                    <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{ file.name }}
                 </a>
             </li>
         </ul>
@@ -61,8 +61,8 @@ module.exports = {
             try {
                 Boolean(localStorage.getItem);
                 return true;
-            } catch (err) {
-                console.log(err);
+            } catch (error) {
+                console.log(error);
                 return false;
             }
         };
@@ -82,16 +82,18 @@ module.exports = {
     },
     created() {
         /**
-         * initialDir property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
+         * `initialDir` property might receive values originating from the API,
+         * that are sometimes not available when rendering.
          * @TODO: Maybe we can remove this in the future.
          */
-        this.unwatchProp = this.$watch('initialDir', (newValue, oldValue) => {
+        this.unwatchProp = this.$watch('initialDir', newValue => {
             this.unwatchProp();
 
             this.lock = true;
             this.currentPath = newValue;
-            this.$nextTick(() => this.lock = false);
+            this.$nextTick(() => {
+                this.lock = false;
+            });
         });
     },
     mounted() {
@@ -112,13 +114,17 @@ module.exports = {
             // Interact with localStorage, if applicable
             get() {
                 const { localStorageSupport, localStorageKey } = this;
-                if (!localStorageSupport || !localStorageKey) return null;
+                if (!localStorageSupport || !localStorageKey) {
+                    return null;
+                }
 
                 return localStorage['fileBrowser-' + localStorageKey];
             },
             set(newPath) {
                 const { localStorageSupport, localStorageKey } = this;
-                if (!localStorageSupport || !localStorageKey) return;
+                if (!localStorageSupport || !localStorageKey) {
+                    return;
+                }
 
                 localStorage['fileBrowser-' + localStorageKey] = newPath;
             }
@@ -126,7 +132,9 @@ module.exports = {
     },
     methods: {
         toggleFolder(file, event) {
-            if (file.isFile) return;
+            if (file.isFile) {
+                return;
+            }
             const target = event.target.children[0] || event.target;
             target.classList.toggle('ui-icon-folder-open');
             target.classList.toggle('ui-icon-folder-collapsed');
@@ -141,7 +149,7 @@ module.exports = {
                 this.browse(file.path);
             }
         },
-        async browse(path) {
+        browse(path) {
             const { url, includeFiles, fileBrowserDialog } = this;
 
             // Close autocomplete (needed when clicking enter)
@@ -152,14 +160,19 @@ module.exports = {
             fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog busy');
             fileBrowserDialog.dialog('option', 'closeText', ''); // This removes the "Close" text
 
-            const data = await $.getJSON(url, {
+            const params = {
                 path,
                 includeFiles: Number(includeFiles)
-            });
+            };
+            apiRoute.get(url, { params }).then(response => {
+                const { data } = response;
 
-            this.currentPath = data.shift().currentPath;
-            this.files = data;
-            fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog');
+                this.currentPath = data.shift().currentPath;
+                this.files = data;
+                fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog');
+            }).catch(error => {
+                console.warning(`Unable to browse to: ${path}\nError: ${error.message}`, error);
+            });
         },
         openFileBrowser(callback) {
             const vm = this;
@@ -168,7 +181,7 @@ module.exports = {
 
             if (!vm.fileBrowserDialog) {
                 // Make a fileBrowserDialog object if one doesn't exist already
-                // set up the jquery dialog
+                // Set up the jQuery dialog
                 vm.fileBrowserDialog = $($refs.fileBrowserDialog).dialog({
                     dialogClass: 'browserDialog',
                     title,
@@ -186,7 +199,7 @@ module.exports = {
                 });
 
                 fileBrowserSearchBox.removeAttribute('style');
-                vm.fileBrowserDialog // jQuery object
+                vm.fileBrowserDialog // This is a jQuery object
                     .append(fileBrowserSearchBox);
                 fileBrowser(fileBrowserSearchBox, true)
                     .on('autocompleteselect', (event, ui) => {
@@ -218,7 +231,7 @@ module.exports = {
             vm.lastPath = vm.currentPath;
 
             fileBrowserFileList.removeAttribute('style');
-            vm.fileBrowserDialog // jQuery object
+            vm.fileBrowserDialog // This is a jQuery object
                 .append(fileBrowserFileList);
         },
         fileBrowser(target, autocomplete) {
@@ -281,7 +294,7 @@ module.exports = {
         }
     },
     watch: {
-        currentPath(newValue, oldValue) {
+        currentPath() {
             if (!this.lock) {
                 this.$emit('update', this.currentPath);
             }

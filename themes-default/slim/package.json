@@ -111,11 +111,14 @@
       "$",
       "MEDUSA",
       "api",
+      "apiv1",
+      "apiRoute",
       "jQuery",
       "axios",
       "webRoot",
       "apiRoot",
-      "apiKey"
+      "apiKey",
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
@@ -123,7 +126,7 @@
       "static/js/vender.js",
       "build/**",
       "gulpfile.js",
-      "static/js/templates/**/*.vue"
+      "static/js/templates/name-pattern.vue"
     ],
     "esnext": true
   },
