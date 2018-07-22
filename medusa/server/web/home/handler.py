@@ -1952,8 +1952,8 @@ class Home(WebRoot):
                     snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + [DOWNLOADED]
-                            or os.path.isfile(ep_obj.location)):
+                            ep_obj.status in snatched_qualities + [DOWNLOADED] or
+                            os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
