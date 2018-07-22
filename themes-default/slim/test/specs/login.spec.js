@@ -2,7 +2,7 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import fixtures from '../__fixtures__/app-header';
+import fixtures from '../__fixtures__/common';
 
 // Needs to be required otherwise nyc won't see it
 const Login = require('../../static/js/templates/login.vue');
