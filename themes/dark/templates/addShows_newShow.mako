@@ -81,10 +81,14 @@ window.app = new Vue({
                 }
             });
 
+            setTimeout(() => {
+                this.updateBlackWhiteList();
+                this.formwizard.loadsection(2);
+            }, 100);
+
             const { providedInfo } = this;
             const { use, showId, showDir } = providedInfo;
             if (use && showId !== 0 && showDir) {
-                this.updateBlackWhiteList();
                 this.$nextTick(() => {
                     goToStep(3);
                 });
