@@ -123,6 +123,9 @@ window.app = new Vue({
         });
     },
     computed: {
+        config() {
+            return this.$store.state.config;
+        },
         selectedShow() {
             const { searchResults, selectedShowSlug } = this;
             if (searchResults.length === 0 || !selectedShowSlug) return null;
@@ -175,8 +178,9 @@ window.app = new Vue({
             return this.providedInfo.showDir ? 'from' : 'into';
         },
         spinnerSrc() {
-            const themeSpinner = MEDUSA.config.themeSpinner;
-            if (themeSpinner === undefined) return '';
+            const { config } = this;
+            const { themeName } = config;
+            const themeSpinner = themeName === 'dark' ? '-dark' : '';
             return 'images/loading32' + themeSpinner + '.gif';
         },
         displayStatus() {
