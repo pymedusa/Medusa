@@ -38,7 +38,7 @@ window.app = new Vue({
         setTimeout(() => {
             // Hide the black/whitelist, because it can only be used for a single anime show
             $.updateBlackWhiteList(undefined);
-        }, 100);
+        }, 500);
     },
     computed: {
         selectedRootDirs() {

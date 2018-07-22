@@ -81,18 +81,16 @@ window.app = new Vue({
                 }
             });
 
-            setTimeout(() => {
-                this.updateBlackWhiteList();
-                this.formwizard.loadsection(2);
-            }, 100);
-
             const { providedInfo } = this;
             const { use, showId, showDir } = providedInfo;
-            if (use && showId !== 0 && showDir) {
-                this.$nextTick(() => {
-                    goToStep(3);
-                });
-            }
+
+            setTimeout(() => {
+                this.updateBlackWhiteList();
+
+                if (use && showId !== 0 && showDir) {
+                    this.formwizard.loadsection(2);
+                }
+            }, 100);
 
             setTimeout(() => {
                 if (this.$refs.nameToSearch) {
@@ -109,15 +107,6 @@ window.app = new Vue({
         *  This notice MUST stay intact for legal use
         *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
         // @TODO: we need to move to real forms instead of this
-
-        const goToStep = num => {
-            $('.step').each((idx, step) => {
-                if ($.data(step, 'section') + 1 === num) {
-                    $(step).click();
-                }
-            });
-        }
-
         this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
             formid: 'addShowForm',
             revealfx: ['slide', 300],
