@@ -94,9 +94,9 @@ module.exports = {
             const defaultDir = parseInt(rawRootDirs[0], 10);
             return rawRootDirs
                 .slice(1)
-                .map((rd, index) => {
+                .map((path, index) => {
                     return {
-                        path: rd,
+                        path,
                         default: index === defaultDir,
                         selected: index === defaultDir
                     };
