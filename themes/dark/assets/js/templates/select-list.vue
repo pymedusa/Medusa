@@ -180,7 +180,8 @@ div.select-list .new-item-help {
     padding-top: 5px;
 }
 
-div.select-list input, div.select-list img {
+div.select-list input,
+div.select-list img {
     display: inline-block;
     box-sizing: border-box;
 }
