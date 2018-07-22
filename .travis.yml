@@ -5,6 +5,7 @@ cache:
   directories:
     - $HOME/.cache/pip
     - node_modules
+    - .eggs
 before_install:
   - python .github/check_version.py
 install: false
