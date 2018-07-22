@@ -369,7 +369,7 @@ class GenericProvider(object):
                         if search_result.parsed_result.season_number is None:
                             log.debug(
                                 "The result {0} doesn't seem to have a valid season that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -378,7 +378,7 @@ class GenericProvider(object):
                         if not search_result.parsed_result.episode_numbers:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -391,7 +391,7 @@ class GenericProvider(object):
                                 search_result.parsed_result.episode_numbers]:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -408,7 +408,7 @@ class GenericProvider(object):
                     if not search_result.parsed_result.is_air_by_date:
                         log.debug(
                             "This is supposed to be a date search but the result {0} didn't parse as one, "
-                            "skipping it", search_result.name
+                            'skipping it', search_result.name
                         )
                         search_result.result_wanted = False
                         continue
@@ -433,7 +433,7 @@ class GenericProvider(object):
                         elif len(sql_results) != 1:
                             log.warning(
                                 "Tried to look up the date for the episode {0} but the database didn't return proper "
-                                "results, skipping it", search_result.name
+                                'results, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -806,7 +806,7 @@ class GenericProvider(object):
             return {
                 'result': False,
                 'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
-                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           'and make sure you have copied the following cookies: {required_cookies!r}'
                            .format(provider_url=self.name, required_cookies=self.required_cookies)
             }
 
