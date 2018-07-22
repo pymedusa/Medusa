@@ -51,7 +51,7 @@ def set_up_anidb_connection():
 
 def create_key_encode_utf_8(namespace, fn, **kw):
     def generate_key(*args, **kw):
-        return namespace + "|" + args[0].encode('utf-8')
+        return namespace + '|' + args[0].encode('utf-8')
     return generate_key
 
 
