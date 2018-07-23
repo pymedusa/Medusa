@@ -189,7 +189,7 @@ class ABNormalProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if not re.search('torrents.php', response.text):
+        if "Votre nom d'utilisateur ou mot de passe est incorrect." in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
