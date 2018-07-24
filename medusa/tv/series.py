@@ -19,8 +19,6 @@ from collections import (
 )
 from itertools import groupby
 
-from imdbpie import imdbpie
-
 from medusa import (
     app,
     db,
@@ -67,6 +65,7 @@ from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
@@ -1501,7 +1500,7 @@ class Series(TV):
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
         if not self.imdb_id:
             self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
