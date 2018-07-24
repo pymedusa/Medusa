@@ -38,7 +38,6 @@ setup(
     install_requires=['tornado==5.1', 'six', 'profilehooks', 'contextlib2', ],
     cmdclass={'test': PyTest},
     tests_require=[
-        'dredd_hooks',
         'flake8',
         'flake8-docstrings',
         'flake8-import-order',
@@ -47,7 +46,7 @@ setup(
         'pycodestyle==2.3.1',
         'pytest',
         'pytest-cov',
-        'pytest-flake8==0.9.1',
+        'pytest-flake8',
         'pytest-tornado5',
         'PyYAML<4',
         'vcrpy',
