@@ -56,10 +56,10 @@ class LazyApi(object):
         We need to do this, because we're passing the Medusa cache location to the lib. As the module is imported before
         the app.CACHE_DIR location has been read, we can't initialize it at module level.
         """
-        def func_wrapper(aid):
+        def func_wrapper(*args, **kwargs):
             if cls.anidb_api is None:
                 cls.anidb_api = Anidb(cache_dir=app.CACHE_DIR)
-            return func(aid)
+            return func(*args, **kwargs)
         return func_wrapper
 
     @classmethod
@@ -70,10 +70,10 @@ class LazyApi(object):
         We need to do this, because we're overriding the cache location of the library.
         As the module is imported before the app.CACHE_DIR location has been read, we can't initialize it at module level.
         """
-        def func_wrapper(aid):
+        def func_wrapper(*args, **kwargs):
             if cls.imdb_api is None:
                 cls.imdb_api = Imdb(session=session)
-            return func(aid)
+            return func(*args, **kwargs)
         return func_wrapper
 
 
