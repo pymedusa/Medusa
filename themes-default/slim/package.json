@@ -113,6 +113,8 @@
       "$",
       "MEDUSA",
       "api",
+      "apiv1",	
+      "apiRoute",
       "jQuery",
       "axios",
       "webRoot",
