@@ -2,13 +2,10 @@
 <%!
     import datetime
     import urllib
-    import ntpath
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
-    from medusa.common import Quality, qualityPresets, statusStrings, Overview
+    from medusa.common import Quality, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import mappings
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
