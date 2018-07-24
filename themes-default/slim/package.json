@@ -39,7 +39,7 @@
     "browser-env": "3.2.5",
     "browserify": "16.2.2",
     "codecov": "3.0.4",
-    "concurrently": "3.6.0",
+    "concurrently": "3.6.1",
     "cross-env": "5.2.0",
     "eslint": "5.2.0",
     "eslint-config-xo": "0.23.0",
