@@ -27,13 +27,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@vue/test-utils": "1.0.0-beta.20",
+    "@vue/test-utils": "1.0.0-beta.21",
     "ansi-colors": "2.0.5",
     "ava": "0.25.0",
     "axios": "0.18.0",
     "babel-plugin-istanbul": "4.1.6",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-env": "1.7.0",
+    "babel-register": "6.26.0",
     "babelify": "8.0.0",
     "browser-env": "3.2.5",
     "browserify": "16.2.2",
@@ -117,7 +118,6 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "apiKey",
       "Vuex"
     ],
     "ignores": [
@@ -126,7 +126,7 @@
       "static/js/vender.js",
       "build/**",
       "gulpfile.js",
-      "static/js/templates/**/*.vue"
+      "static/js/templates/name-pattern.vue"
     ],
     "esnext": true
   },
