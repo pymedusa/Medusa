@@ -45,6 +45,8 @@ session = MedusaSession()
 
 
 class LazyApi(object):
+    """Decorators to lazily construct API classes."""
+
     imdb_api = None
     anidb_api = None
 
