@@ -253,15 +253,15 @@ class GenericProvider(object):
 
         for episode in episodes:
             if not manual_search:
-                cache_result = self.cache.find_needed_episodes(
+                cache_results = self.cache.find_needed_episodes(
                     episode, forced_search=forced_search, down_cur_quality=download_current_quality
                 )
-                if cache_result:
-                    for episode_no in cache_result:
+                if cache_results:
+                    for episode_no in cache_results:
                         if episode_no not in results:
-                            results[episode_no] = cache_result[episode_no]
+                            results[episode_no] = cache_results[episode_no]
                         else:
-                            results[episode_no] += cache_result[episode_no]
+                            results[episode_no] += cache_results[episode_no]
                     continue
 
             search_strings = []
