@@ -145,8 +145,7 @@
     ],
     "concurrency": 5,
     "failWithoutAssertions": true,
-    "powerAssert": true,
-    "cache": true
+    "powerAssert": true
   },
   "nyc": {
     "extension": [
