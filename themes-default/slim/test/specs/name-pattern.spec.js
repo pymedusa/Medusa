@@ -16,11 +16,11 @@ test('renders', t => {
             return {
                 namingPattern: 'S%0SE%0E - %EN',
                 namingPresets: [
-                    "%SN - %Sx%0E - %EN",
-                    "%S.N.S%0SE%0E.%E.N",
-                    "%Sx%0E - %EN",
-                    "S%0SE%0E - %EN",
-                    "Season %0S/%S.N.S%0SE%0E.%Q.N-%RG"
+                    '%SN - %Sx%0E - %EN',
+                    '%S.N.S%0SE%0E.%E.N',
+                    '%Sx%0E - %EN',
+                    'S%0SE%0E - %EN',
+                    'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG'
                 ],
                 type: '',
                 multiEpStyle: 1,
