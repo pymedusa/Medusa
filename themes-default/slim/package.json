@@ -116,7 +116,9 @@
       "axios",
       "webRoot",
       "apiRoot",
-      "apiKey"
+      "apiKey",
+      "apiKey",
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
