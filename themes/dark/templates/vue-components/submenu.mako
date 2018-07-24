@@ -1,6 +1,6 @@
 <script type="text/x-template" id="submenu-template">
 <%text>
-<div v-if="submenu.length !== 0" id="sub-menu-container" class="row shadow">
+<div id="sub-menu-container" class="row shadow">
     <div id="sub-menu" class="submenu-default hidden-print col-md-12">
         <template v-for="menuItem in submenu">
             <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
