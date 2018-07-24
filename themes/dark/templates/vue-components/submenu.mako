@@ -15,7 +15,7 @@
 
         <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug"></show-selector>
     </div>
-</div> <!-- end of container -->
+</div>
 </%text>
 </script>
 <%!
@@ -28,9 +28,8 @@ const SubmenuComponent = {
     data() {
         return {
             // Python conversions
-            rawSubmenu: ${json.dumps(submenu)},
-            controller: '${controller}',
-            action: '${action}'
+            // @TODO: Add the submenu definitions to VueRouter's routes object
+            rawSubmenu: ${json.dumps(submenu)}
         };
     },
     computed: {
