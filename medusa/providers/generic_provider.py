@@ -235,8 +235,7 @@ class GenericProvider(object):
             itervalues(OrderedDict(
                 (item[pk], item)
                 for item in items
-                )
-            )
+            ))
         )
 
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,

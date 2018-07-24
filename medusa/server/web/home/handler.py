@@ -1962,7 +1962,7 @@ class Home(WebRoot):
                     if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
-                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
@@ -1974,7 +1974,7 @@ class Home(WebRoot):
                         if ep_obj.manually_searched:
                             logger.log("Resetting 'manually searched' flag of {series} {episode}"
                                        ' as episode was changed to WANTED'.format(
-                                            series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                                           series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
@@ -1995,7 +1995,7 @@ class Home(WebRoot):
                     upd = 'Remove'
 
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
-                                action=upd, show=series_obj), logger.DEBUG)
+                    action=upd, show=series_obj), logger.DEBUG)
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
