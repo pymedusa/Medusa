@@ -14,12 +14,13 @@
     "build": "node ./themes-default/helper.js lint",
     "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "test-css": "node node_modules/stylelint/bin/stylelint.js ./themes-default/**/static/css/*.css",
+    "test-css": "stylelint ./themes-default/**/static/css/*.css ./themes-default/**/static/js/templates/**/*.vue",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
     "install": "yarn run build"
   },
   "devDependencies": {
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
     "ava": "0.25.0",
     "codecov": "3.0.4",
     "dredd": "5.1.11",
@@ -32,6 +33,12 @@
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
+    "processors": [
+      [
+        "@mapbox/stylelint-processor-arbitrary-tags",
+        { "fileFilterRegex": [".vue$"] }
+      ]
+    ],
     "rules": {
       "indentation": [
         4,

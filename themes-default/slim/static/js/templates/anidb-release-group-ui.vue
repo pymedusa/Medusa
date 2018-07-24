@@ -4,7 +4,7 @@
             <div class="col-sm-4 left-whitelist" >
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
                 <ul>
-                    <li @click="item.toggled = !item.toggled" v-for="item in itemsWhitelist" :class="{active: item.toggled}">{{ item.name }}</li>
+                    <li @click="release.toggled = !release.toggled" v-for="release in itemsWhitelist" :key="release.id" :class="{active: release.toggled}">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('whitelist')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -13,7 +13,7 @@
             <div class="col-sm-4 center-available">
                 <span>Release groups</span>
                 <ul>
-                    <li v-for="release in itemsReleaseGroups" class="initial" :class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
+                    <li v-for="release in itemsReleaseGroups" :key="release.id" class="initial" :class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('releasegroups')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -22,7 +22,7 @@
             <div class="col-sm-4 right-blacklist">
                 <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')"/>
                 <ul>
-                    <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" :class="{active: release.toggled}">{{ release.name }}</li>
+                    <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" :key="release.id" :class="{active: release.toggled}">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('blacklist')">
                         <img src="images/curved-arrow-left.png"/>
                     </div>
@@ -84,15 +84,14 @@ module.exports = {
             });
         },
         createIndexedObjects(releaseGroups, list) {
-            newList = [];
-            for (release of releaseGroups) {
+            for (let release of releaseGroups) {
                 // Whitelist and blacklist pass an array of strings not objects.
                 if (typeof (release) === 'string') {
                     release = { name: release };
                 }
 
                 // Merge the passed object with some additional information.
-                itemAsObject = Object.assign({
+                const itemAsObject = Object.assign({
                     id: this.index,
                     toggled: false, memberOf: list
                 }, release);
@@ -103,12 +102,10 @@ module.exports = {
         moveToList(list) {
             // Only move items that have been toggled and that are not yet in that list.
             // It's matching them by item.name.
-            for (group of this.allReleaseGroups) {
-                const inList = this.allReleaseGroups.map(releaseGroup => {
-                    if (releaseGroup.memberOf == list) {
-                        return releaseGroup.name;
-                    }
-                }).includes(group.name);
+            for (const group of this.allReleaseGroups) {
+                const inList = this.allReleaseGroups.find(releaseGroup => {
+                    return releaseGroup.memberOf === list && releaseGroup.name === group.name;
+                }) !== undefined;
 
                 if (group.toggled && !inList) {
                     group.toggled = false;
@@ -169,6 +166,7 @@ module.exports = {
 <style scoped>
 div.anidb-release-group-ui-wrapper {
     clear: both;
+    margin-bottom: 20px;
 }
 
 div.anidb-release-group-ui-wrapper ul {
@@ -188,11 +186,8 @@ div.anidb-release-group-ui-wrapper div.arrow img {
     width: 32px;
 }
 
-div.anidb-release-group-ui-wrapper {
-    margin-bottom: 20px;
-}
-
-div.anidb-release-group-ui-wrapper img.deleteFromWhitelist, img.deleteFromBlacklist {
+div.anidb-release-group-ui-wrapper img.deleteFromWhitelist,
+div.anidb-release-group-ui-wrapper img.deleteFromBlacklist {
     float: right;
 }
 
