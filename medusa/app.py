@@ -28,7 +28,7 @@ CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
 BASE_PYMEDUSA_URL = 'https://cdn.pymedusa.com'
-CHANGES_URL = '{base_url}/news/CHANGES.md'.format(base_url=BASE_PYMEDUSA_URL)
+CHANGES_URL = '{base_url}/news/CHANGELOG.md'.format(base_url=BASE_PYMEDUSA_URL)
 APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
