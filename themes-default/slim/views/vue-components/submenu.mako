@@ -13,7 +13,7 @@
             </app-link>
         </template>
 
-        <show-selector v-if="action === 'displayShow'" :show-slug="curShowSlug"></show-selector>
+        <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug"></show-selector>
     </div>
 </div> <!-- end of container -->
 </%text>
@@ -21,7 +21,6 @@
 <%!
     import json
 %>
-<% curShowSlug = show.identifier.slug if show is not UNDEFINED else '' %>
 <script>
 const SubmenuComponent = {
     name: 'submenu',
@@ -31,13 +30,35 @@ const SubmenuComponent = {
             // Python conversions
             rawSubmenu: ${json.dumps(submenu)},
             controller: '${controller}',
-            action: '${action}',
-            curShowSlug: '${curShowSlug}',
+            action: '${action}'
         };
     },
     computed: {
         submenu() {
             return this.rawSubmenu.filter(item => item.requires === undefined || item.requires);
+        },
+        showSelectorVisible() {
+            const { pathname } = window.location;
+            return pathname.includes('/home/displayShow');
+        },
+        curShowSlug() {
+            if (!this.showSelectorVisible) {
+                return null;
+            }
+            const { params } = this;
+            const { indexername, seriesid } = params;
+            if (indexername && seriesid) {
+                return indexername + seriesid;
+            }
+            return '';
+        },
+        params() {
+            const { search } = window.location;
+            return search.slice(1).split('&').reduce((obj, pair) => {
+                const [key, value] = pair.split('=');
+                obj[key] = value;
+                return obj;
+            }, {});
         }
     },
     methods: {
