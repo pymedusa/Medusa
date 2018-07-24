@@ -81,12 +81,11 @@ window.app = new Vue({
                 }
             });
 
-            const { providedInfo } = this;
-            const { use, showId, showDir } = providedInfo;
-
             setTimeout(() => {
                 this.updateBlackWhiteList();
 
+                const { providedInfo } = this;
+                const { use, showId, showDir } = providedInfo;
                 if (use && showId !== 0 && showDir) {
                     this.formwizard.loadsection(2);
                 }
