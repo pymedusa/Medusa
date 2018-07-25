@@ -276,6 +276,7 @@ const startVue = () => {
             $('.imdbstars').each((index, element) => {
                 $(element).html($('<span/>').width($(element).text() * 12));
             });
+            attachImdbTooltip(); // eslint-disable-line no-undef
 
             // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
             // Get the season exceptions and the xem season mappings.
