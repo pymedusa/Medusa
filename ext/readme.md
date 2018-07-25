@@ -64,5 +64,4 @@
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
-:warning: | `wheel` | [0.30.0](https://pypi.org/project/wheel/0.30.0/) | `pbr`(?) | -
 :: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit` | Module: `yaml`
