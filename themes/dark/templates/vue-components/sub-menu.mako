@@ -1,15 +1,15 @@
-<script type="text/x-template" id="submenu-template">
+<script type="text/x-template" id="sub-menu-template">
 <%text>
 <div id="sub-menu-container" class="row shadow">
     <div id="sub-menu" class="submenu-default hidden-print col-md-12">
-        <template v-for="menuItem in submenu">
+        <template v-for="menuItem in subMenu">
             <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
                       v-if="!menuItem.confirm">
-                <span :class="`pull-left ${menuItem.icon || ''}`"></span> {{ menuItem.title }}
+                <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
             </app-link>
             <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
                       v-else @click.native.prevent="confirmDialog($event, menuItem.class)">
-                <span :class="`pull-left ${menuItem.icon || ''}`"></span> {{ menuItem.title }}
+                <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
             </app-link>
         </template>
 
@@ -23,18 +23,18 @@
 %>
 <script>
 const SubmenuComponent = {
-    name: 'submenu',
-    template: '#submenu-template',
+    name: 'sub-menu',
+    template: '#sub-menu-template',
     data() {
         return {
             // Python conversions
             // @TODO: Add the submenu definitions to VueRouter's routes object
-            rawSubmenu: ${json.dumps(submenu)}
+            rawSubMenu: ${json.dumps(submenu)}
         };
     },
     computed: {
-        submenu() {
-            return this.rawSubmenu.filter(item => item.requires === undefined || item.requires);
+        subMenu() {
+            return this.rawSubMenu.filter(item => item.requires === undefined || item.requires);
         },
         showSelectorVisible() {
             const { pathname } = window.location;
