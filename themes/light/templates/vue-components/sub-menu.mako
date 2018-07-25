@@ -1,20 +1,25 @@
 <script type="text/x-template" id="sub-menu-template">
 <%text>
-<div id="sub-menu-container" class="row shadow">
-    <div id="sub-menu" class="submenu-default hidden-print col-md-12">
-        <template v-for="menuItem in subMenu">
-            <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
-                      v-if="!menuItem.confirm">
-                <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
-            </app-link>
-            <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
-                      v-else @click.native.prevent="confirmDialog($event, menuItem.class)">
-                <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
-            </app-link>
-        </template>
+<div id="sub-menu-wrapper">
+    <div id="sub-menu-container" class="row shadow">
+        <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+            <template v-for="menuItem in subMenu">
+                <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
+                        v-if="!menuItem.confirm">
+                    <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
+                </app-link>
+                <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
+                        v-else @click.native.prevent="confirmDialog($event, menuItem.class)">
+                    <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
+                </app-link>
+            </template>
 
-        <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug"></show-selector>
+            <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug"></show-selector>
+        </div>
     </div>
+
+    <!-- This fixes some padding issues on screens larger than 1281px -->
+    <div class="btn-group"></div>
 </div>
 </%text>
 </script>
