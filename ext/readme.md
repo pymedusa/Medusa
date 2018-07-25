@@ -40,7 +40,6 @@
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 :: | `oauthlib` | [2.1.0](https://pypi.org/project/oauthlib/2.1.0/) | `requests-oauthlib` | -
-:warning: | `pbr` | [4.0.1](https://pypi.org/project/pbr/4.0.1/) | Unused | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | Module: `pint`
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | -
