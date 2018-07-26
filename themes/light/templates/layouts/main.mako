@@ -186,6 +186,12 @@
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
 
+                // Load x-template components
+                window.components.forEach(component => {
+                    console.log('Registering ' + component.name);
+                    Vue.component(component.name, component);
+                });
+
                 // Global components
                 Vue.component('toggle-button', VueToggleButton);
                 Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
