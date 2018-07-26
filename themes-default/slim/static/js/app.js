@@ -41,9 +41,7 @@ const app = new Vue({
             globalLoading: false
         };
     },
-    computed: {
-        ...mapState(['auth', 'config'])
-    },
+    computed: Object.assign(mapState(['auth', 'config']), {}),
     mounted() {
         console.log('App Mounted!');
 
