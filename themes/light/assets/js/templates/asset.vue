@@ -5,10 +5,10 @@
     </app-link>
 </template>
 <script>
-const { vueInViewportMixin } = window;
+const { VueInViewportMixin } = window;
 module.exports = {
     name: 'asset',
-    mixins: [vueInViewportMixin],
+    mixins: [VueInViewportMixin],
     props: {
         seriesSlug: String,
         type: {
