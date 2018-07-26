@@ -22,12 +22,9 @@ const startVue = () => {
         data() {
             return {};
         },
-        created() {
-            const { $store } = this;
-            $store.dispatch('getShows'); // Used by show-selector component
-        },
         mounted() {
             const {
+                $store,
                 moveSummaryBackground,
                 movecheckboxControlsBackground,
                 setQuality,
@@ -45,6 +42,9 @@ const startVue = () => {
 
             this.$once('loaded', () => {
                 this.$nextTick(() => {
+                    // Used by show-selector component
+                    $store.dispatch('getShows');
+
                     // Adjust the summary background position and size
                     window.dispatchEvent(new Event('resize'));
 

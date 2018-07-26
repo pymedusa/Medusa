@@ -113,10 +113,8 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <%
-            ## Add Vue component x-templates here
-            ## @NOTE: These will be usable on all pages
-        %>
+        ## Add Vue component x-templates here
+        ## @NOTE: These will be usable on all pages
         <script src="js/lib/vue.js"></script>
         <script src="js/lib/http-vue-loader.js"></script>
         <script src="js/lib/vue-async-computed@3.3.0.js"></script>
