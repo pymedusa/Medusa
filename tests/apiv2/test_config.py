@@ -3,12 +3,11 @@
 from __future__ import unicode_literals
 
 import json
-import platform
 import pkgutil
+import platform
 import sys
 
 from medusa import app, classes, common, db, logger, metadata
-from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
@@ -30,7 +29,7 @@ def config_main(monkeypatch, app_config):
     # postProcessing.naming
     app_config('NAMING_ANIME', 3)
 
-    config_data = NonEmptyDict()
+    config_data = {}
     config_data['anonRedirect'] = app.ANON_REDIRECT
     config_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
     config_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
@@ -53,7 +52,7 @@ def config_main(monkeypatch, app_config):
     config_data['release'] = app.APP_VERSION
     config_data['sslVersion'] = app.OPENSSL_VERSION
     config_data['pythonVersion'] = sys.version
-    config_data['databaseVersion'] = NonEmptyDict()
+    config_data['databaseVersion'] = {}
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
     config_data['os'] = platform.platform()
@@ -76,7 +75,7 @@ def config_main(monkeypatch, app_config):
     config_data['downloadUrl'] = app.DOWNLOAD_URL
     config_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
     config_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-    config_data['subtitles'] = NonEmptyDict()
+    config_data['subtitles'] = {}
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     config_data['recentShows'] = app.SHOWS_RECENT
 
@@ -89,40 +88,40 @@ def config_main(monkeypatch, app_config):
     config_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
     config_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
-    config_data['news'] = NonEmptyDict()
+    config_data['news'] = {}
     config_data['news']['lastRead'] = app.NEWS_LAST_READ
     config_data['news']['latest'] = app.NEWS_LATEST
     config_data['news']['unread'] = app.NEWS_UNREAD
 
-    config_data['logs'] = NonEmptyDict()
+    config_data['logs'] = {}
     config_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
     config_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
     config_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
 
-    config_data['failedDownloads'] = NonEmptyDict()
+    config_data['failedDownloads'] = {}
     config_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
     config_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
-    config_data['layout'] = NonEmptyDict()
+    config_data['layout'] = {}
     config_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
     config_data['layout']['history'] = app.HISTORY_LAYOUT
     config_data['layout']['home'] = app.HOME_LAYOUT
-    config_data['layout']['show'] = NonEmptyDict()
+    config_data['layout']['show'] = {}
     config_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
     config_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
     config_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
 
     config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
 
-    config_data['backlogOverview'] = NonEmptyDict()
+    config_data['backlogOverview'] = {}
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
     config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 
-    config_data['indexers'] = NonEmptyDict()
+    config_data['indexers'] = {}
     config_data['indexers']['config'] = get_indexer_config()
 
-    config_data['postProcessing'] = NonEmptyDict()
-    config_data['postProcessing']['naming'] = NonEmptyDict()
+    config_data['postProcessing'] = {}
+    config_data['postProcessing']['naming'] = {}
     config_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
     config_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
     config_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
@@ -244,9 +243,9 @@ def config_metadata(monkeypatch, app_config):
         tmp_provider.set_config(cur_metadata_config)
         monkeypatch.setitem(metadata_provider_dict, tmp_provider.name, tmp_provider)
 
-    section_data = NonEmptyDict()
+    section_data = {}
 
-    section_data['metadataProviders'] = NonEmptyDict()
+    section_data['metadataProviders'] = {}
 
     for provider in itervalues(app.metadata_provider_dict):
         json_repr = provider.to_json()
