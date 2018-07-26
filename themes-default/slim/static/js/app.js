@@ -7,6 +7,9 @@ import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
 
+Vue.config.devtools = true;
+Vue.config.performance = true;
+
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
