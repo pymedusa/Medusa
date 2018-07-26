@@ -5,7 +5,6 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
 window.app = {};
 const startVue = () => {
@@ -22,6 +21,8 @@ const startVue = () => {
                     window.dispatchEvent(new Event('resize'));
                 });
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         }
     });
 };

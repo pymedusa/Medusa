@@ -22,12 +22,9 @@ const startVue = () => {
         data() {
             return {};
         },
-        created() {
-            const { $store } = this;
-            $store.dispatch('getShows'); // Used by show-selector component
-        },
         mounted() {
             const {
+                $store,
                 moveSummaryBackground,
                 movecheckboxControlsBackground,
                 setQuality,
@@ -45,6 +42,9 @@ const startVue = () => {
 
             this.$once('loaded', () => {
                 this.$nextTick(() => {
+                    // Used by show-selector component
+                    $store.dispatch('getShows');
+
                     // Adjust the summary background position and size
                     window.dispatchEvent(new Event('resize'));
 
@@ -276,6 +276,7 @@ const startVue = () => {
             $('.imdbstars').each((index, element) => {
                 $(element).html($('<span/>').width($(element).text() * 12));
             });
+            attachImdbTooltip(); // eslint-disable-line no-undef
 
             // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
             // Get the season exceptions and the xem season mappings.
