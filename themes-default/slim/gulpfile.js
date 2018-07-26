@@ -58,7 +58,14 @@ const staticAssets = [
     'static/favicon.ico',
     'static/fonts/**/*',
     'static/js/**/*',
-    'static/css/**/*'
+    'static/css/**/*',
+
+    // Webpacked files
+    '!static/js/app.js',
+    '!static/js/index.js',
+    '!static/js/api.js',
+    '!static/js/router.js',
+    '!static/js/store.js'
 ];
 
 /**
@@ -155,7 +162,14 @@ const bundleJs = done => {
         ignore: [
             'js/lib/**',
             'js/*.min.js',
-            'js/vender.js'
+            'js/vender.js',
+
+            // Webpacked files
+            'js/app.js',
+            'js/index.js',
+            'js/api.js',
+            'js/router.js',
+            'js/store.js'
         ]
     }, (err, files) => {
         if (err) {
