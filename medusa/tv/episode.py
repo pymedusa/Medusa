@@ -401,6 +401,9 @@ class Episode(TV):
     @property
     def air_date(self):
         """Return air date from the episode."""
+        if self.airdate == date.min:
+            return None
+
         return sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
