@@ -4,7 +4,7 @@ import VueMeta from 'vue-meta';
 import VueRouter from 'vue-router';
 import VueNativeSock from 'vue-native-websocket';
 import VueInViewportMixin from 'vue-in-viewport-mixin';
-import VueToggleButton from 'vue-js-toggle-button';
+import ToggleButton from 'vue-js-toggle-button';
 import axios from 'axios';
 import httpVueLoader from 'http-vue-loader';
 import store from './store';
@@ -23,7 +23,7 @@ if (window) {
     window.VueRouter = VueRouter;
     window.VueNativeSock = VueNativeSock;
     window.VueInViewportMixin = VueInViewportMixin;
-    window.VueToggleButton = VueToggleButton;
+    window.ToggleButton = ToggleButton;
     window.axios = axios;
     window.httpVueLoader = httpVueLoader;
     window.store = store;

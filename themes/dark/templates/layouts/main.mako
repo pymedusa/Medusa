@@ -193,7 +193,7 @@
                 });
 
                 // Global components
-                Vue.component('toggle-button', VueToggleButton);
+                Vue.use(ToggleButton);
                 Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
                 Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
                 Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
