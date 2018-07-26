@@ -942,6 +942,7 @@ definitions:
         type: string
         format: date-time
         description: Next episode air date
+        x-nullable: true
       runtime:
         type: integer
         minimum: 1
@@ -972,7 +973,7 @@ definitions:
             votes: 558507
       classification:
         type: string
-        enum: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
+        enum: ['', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
         description: TV Parental Guidelines
       cache:
         type: object
@@ -1116,6 +1117,7 @@ definitions:
       airDate:
         type: string
         format: date-time
+        x-nullable: true
       title:
         type: string
         description: Episode title
@@ -1461,10 +1463,12 @@ definitions:
         type: string
       season:
         type: integer
-        minimum: 0
+        minimum: 1
+        x-nullable: true
       type:
         type: string
-        enum: [local]
+        enum: [null, local]
+        x-nullable: true
     example:
       series: tvdb301824
       name: TheBig
