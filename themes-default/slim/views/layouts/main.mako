@@ -61,7 +61,7 @@
 
             <app-header></app-header>
             % if submenu:
-            <%include file="/partials/submenu.mako"/>
+            <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
@@ -137,6 +137,7 @@
             Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
             Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
         </script>
+        <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
             Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
