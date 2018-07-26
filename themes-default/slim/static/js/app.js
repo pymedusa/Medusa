@@ -19,6 +19,13 @@ window.components.forEach(component => {
 Vue.component('toggle-button', VueToggleButton);
 Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
 Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
+Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
+Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
+Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
+Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
+Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
+Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
 
 const app = new Vue({
     name: 'App',

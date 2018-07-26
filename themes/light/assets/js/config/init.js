@@ -1,6 +1,4 @@
 MEDUSA.config.init = function() {
-    $('#config-components').tabs();
-
     $('.viewIf').on('click', function() {
         if ($(this).prop('checked')) {
             $('.hide_if_' + $(this).attr('id')).css('display', 'none');

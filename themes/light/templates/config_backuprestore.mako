@@ -2,65 +2,63 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Backup/Restore'
-        },
-        data() {
-            return {
-                header: 'Backup/Restore',
-                backup: {
-                    disabled: false,
-                    status: '',
-                    dir: ''
-                },
-                restore: {
-                    disabled: false,
-                    status: '',
-                    file: ''
-                }
-            };
-        },
-        mounted() {
-            $('#config-components').tabs();
-        },
-        methods: {
-            runBackup() {
-                const { backup } = this;
-
-                if (!backup.dir) return;
-
-                backup.disabled = true;
-                backup.status = MEDUSA.config.loading;
-
-                $.get('config/backuprestore/backup', {
-                    backupDir: backup.dir
-                }).done(data => {
-                    backup.status = data;
-                    backup.disabled = false;
-                });
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Backup/Restore'
+    },
+    data() {
+        return {
+            header: 'Backup/Restore',
+            backup: {
+                disabled: false,
+                status: '',
+                dir: ''
             },
-            runRestore() {
-                const { restore } = this;
-
-                if (!restore.file) return;
-
-                restore.disabled = true;
-                restore.status = MEDUSA.config.loading;
-
-                $.get('config/backuprestore/restore', {
-                    backupFile: restore.file
-                }).done(data => {
-                    restore.status = data;
-                    restore.disabled = false;
-                });
+            restore: {
+                disabled: false,
+                status: '',
+                file: ''
             }
+        };
+    },
+    beforeMount() {
+        $('#config-components').tabs();
+    },
+    methods: {
+        runBackup() {
+            const { backup } = this;
+
+            if (!backup.dir) return;
+
+            backup.disabled = true;
+            backup.status = MEDUSA.config.loading;
+
+            $.get('config/backuprestore/backup', {
+                backupDir: backup.dir
+            }).done(data => {
+                backup.status = data;
+                backup.disabled = false;
+            });
+        },
+        runRestore() {
+            const { restore } = this;
+
+            if (!restore.file) return;
+
+            restore.disabled = true;
+            restore.status = MEDUSA.config.loading;
+
+            $.get('config/backuprestore/restore', {
+                backupFile: restore.file
+            }).done(data => {
+                restore.status = data;
+                restore.disabled = false;
+            });
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">

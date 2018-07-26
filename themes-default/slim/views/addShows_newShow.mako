@@ -30,388 +30,384 @@
 %>
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'New Show'
-        },
-        data() {
-            return {
-                // @TODO: Fix Python conversions
-                formwizard: null,
-                otherShows: ${json.dumps(other_shows)},
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'New Show'
+    },
+    data() {
+        return {
+            // @TODO: Fix Python conversions
+            formwizard: null,
+            otherShows: ${json.dumps(other_shows)},
 
-                // Show Search
-                searchStatus: '',
-                firstSearch: false,
-                searchResults: [],
-                indexers: ${json.dumps(valid_indexers)},
-                indexerTimeout: ${app.INDEXER_TIMEOUT},
-                validLanguages: ${json.dumps(indexerApi().config['valid_languages'])},
-                nameToSearch: ${json.dumps(default_show_name)},
-                indexerId: ${provided_indexer or 0},
-                indexerLanguage: ${json.dumps(app.INDEXER_DEFAULT_LANGUAGE)},
-                currentSearch: {
-                    cancel: null,
-                    query: null,
-                    indexerName: null,
-                    languageName: null
-                },
+            // Show Search
+            searchStatus: '',
+            firstSearch: false,
+            searchResults: [],
+            indexers: ${json.dumps(valid_indexers)},
+            indexerTimeout: ${app.INDEXER_TIMEOUT},
+            validLanguages: ${json.dumps(indexerApi().config['valid_languages'])},
+            nameToSearch: ${json.dumps(default_show_name)},
+            indexerId: ${provided_indexer or 0},
+            indexerLanguage: ${json.dumps(app.INDEXER_DEFAULT_LANGUAGE)},
+            currentSearch: {
+                cancel: null,
+                query: null,
+                indexerName: null,
+                languageName: null
+            },
 
-                // Provided info
-                providedInfo: {
-                    use: ${json.dumps(use_provided_info)},
-                    showId: ${provided_indexer_id},
-                    showName: ${json.dumps(provided_indexer_name)},
-                    showDir: ${json.dumps(provided_show_dir)},
-                    indexerId: ${provided_indexer},
-                    indexerLanguage: 'en',
-                },
+            // Provided info
+            providedInfo: {
+                use: ${json.dumps(use_provided_info)},
+                showId: ${provided_indexer_id},
+                showName: ${json.dumps(provided_indexer_name)},
+                showDir: ${json.dumps(provided_show_dir)},
+                indexerId: ${provided_indexer},
+                indexerLanguage: 'en',
+            },
 
-                selectedRootDir: '',
-                selectedShowSlug: ''
-            };
-        },
-        mounted() {
-            const init = () => {
-                this.$watch('formwizard.currentsection', newValue => {
-                    if (newValue === 0 && this.$refs.nameToSearch) {
-                        this.$refs.nameToSearch.focus();
-                    }
-                });
+            selectedRootDir: '',
+            selectedShowSlug: ''
+        };
+    },
+    mounted() {
+        const init = () => {
+            this.$watch('formwizard.currentsection', newValue => {
+                if (newValue === 0 && this.$refs.nameToSearch) {
+                    this.$refs.nameToSearch.focus();
+                }
+            });
 
+            setTimeout(() => {
                 this.updateBlackWhiteList();
+
                 const { providedInfo } = this;
                 const { use, showId, showDir } = providedInfo;
                 if (use && showId !== 0 && showDir) {
-                    goToStep(3);
+                    this.formwizard.loadsection(2);
                 }
+            }, 100);
 
-                setTimeout(() => {
-                    if (this.$refs.nameToSearch) {
-                        this.$refs.nameToSearch.focus();
+            setTimeout(() => {
+                if (this.$refs.nameToSearch) {
+                    this.$refs.nameToSearch.focus();
 
-                        if (this.nameToSearch) {
-                            this.searchIndexers();
-                        }
+                    if (this.nameToSearch) {
+                        this.searchIndexers();
                     }
-                }, this.formwizard.setting.revealfx[1]);
+                }
+            }, this.formwizard.setting.revealfx[1]);
+        };
+
+        /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
+        *  This notice MUST stay intact for legal use
+        *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
+        // @TODO: we need to move to real forms instead of this
+        this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
+            formid: 'addShowForm',
+            revealfx: ['slide', 300],
+            oninit: init
+        });
+
+        $(document.body).on('change', 'select[name="quality_preset"]', () => {
+            this.$nextTick(() => this.formwizard.loadsection(2));
+        });
+
+        $(document.body).on('change', '#anime', () => {
+            this.updateBlackWhiteList();
+            this.$nextTick(() => this.formwizard.loadsection(2));
+        });
+    },
+    computed: {
+        config() {
+            return this.$store.state.config;
+        },
+        selectedShow() {
+            const { searchResults, selectedShowSlug } = this;
+            if (searchResults.length === 0 || !selectedShowSlug) return null;
+            return searchResults.find(s => s.slug === selectedShowSlug);
+        },
+        addButtonDisabled() {
+            const { selectedShowSlug, selectedRootDir, providedInfo } = this;
+            if (providedInfo.use) return providedInfo.showId === 0;
+            return !(providedInfo.showDir || selectedRootDir) || selectedShowSlug === '';
+        },
+        skipShowVisible() {
+            const { otherShows, providedInfo } = this;
+            return otherShows.length !== 0 || providedInfo.use || providedInfo.showDir;
+        },
+        showName() {
+            const { providedInfo, selectedShow } = this;
+            // If we provided a show, use that
+            if (providedInfo.use && providedInfo.showName) return providedInfo.showName;
+            // If they've picked a radio button then use that
+            if (selectedShow !== null) return selectedShow.showName;
+            // Not selected / not searched
+            return '';
+        },
+        showPath() {
+            const { selectedRootDir, providedInfo, selectedShow } = this;
+
+            const appendSepChar = path => {
+                const sepChar = (() => {
+                    if (path.includes('\\')) return '\\';
+                    if (path.includes('/')) return '/';
+                    return '';
+                })();
+                return path.slice(-1) !== sepChar ? path + sepChar : path;
             };
 
-            /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
-            *  This notice MUST stay intact for legal use
-            *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
-            // @TODO: we need to move to real forms instead of this
-
-            const goToStep = num => {
-                $('.step').each((idx, step) => {
-                    if ($.data(step, 'section') + 1 === num) {
-                        $(step).click();
-                    }
-                });
+            let showPath = 'unknown dir';
+            // If we provided a show path, use that
+            if (providedInfo.showDir) {
+                showPath = appendSepChar(providedInfo.showDir);
+            // If we have a root dir selected, figure out the path
+            } else if (selectedRootDir) {
+                showPath = appendSepChar(selectedRootDir);
+                // If we have a show selected, use the sanitized name
+                const dirName = selectedShow ? selectedShow.sanitizedName : '??';
+                showPath = appendSepChar(showPath + '<i>' + dirName + '</i>');
             }
-
-            this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
-                formid: 'addShowForm',
-                revealfx: ['slide', 300],
-                oninit: init
-            });
-
-            $(document.body).on('change', 'select[name="quality_preset"]', () => {
-                this.$nextTick(() => this.formwizard.loadsection(2));
-            });
-
-            $(document.body).on('change', '#anime', () => {
-                this.updateBlackWhiteList();
-                this.$nextTick(() => this.formwizard.loadsection(2));
-            });
+            return showPath;
         },
-        computed: {
-            selectedShow() {
-                const { searchResults, selectedShowSlug } = this;
-                if (searchResults.length === 0 || !selectedShowSlug) return null;
-                return searchResults.find(s => s.slug === selectedShowSlug);
-            },
-            addButtonDisabled() {
-                const { selectedShowSlug, selectedRootDir, providedInfo } = this;
-                if (providedInfo.use) return providedInfo.showId === 0;
-                return !(providedInfo.showDir || selectedRootDir) || selectedShowSlug === '';
-            },
-            skipShowVisible() {
-                const { otherShows, providedInfo } = this;
-                return otherShows.length !== 0 || providedInfo.use || providedInfo.showDir;
-            },
-            showName() {
-                const { providedInfo, selectedShow } = this;
-                // If we provided a show, use that
-                if (providedInfo.use && providedInfo.showName) return providedInfo.showName;
-                // If they've picked a radio button then use that
-                if (selectedShow !== null) return selectedShow.showName;
-                // Not selected / not searched
-                return '';
-            },
-            showPath() {
-                const { selectedRootDir, providedInfo, selectedShow } = this;
-
-                const appendSepChar = path => {
-                    const sepChar = (() => {
-                        if (path.includes('\\')) return '\\';
-                        if (path.includes('/')) return '/';
-                        return '';
-                    })();
-                    return path.slice(-1) !== sepChar ? path + sepChar : path;
-                };
-
-                let showPath = 'unknown dir';
-                // If we provided a show path, use that
-                if (providedInfo.showDir) {
-                    showPath = appendSepChar(providedInfo.showDir);
-                // If we have a root dir selected, figure out the path
-                } else if (selectedRootDir) {
-                    showPath = appendSepChar(selectedRootDir);
-                    // If we have a show selected, use the sanitized name
-                    const dirName = selectedShow ? selectedShow.sanitizedName : '??';
-                    showPath = appendSepChar(showPath + '<i>' + dirName + '</i>');
-                }
-                return showPath;
-            },
-            showPathPreposition() {
-                return this.providedInfo.showDir ? 'from' : 'into';
-            },
-            spinnerSrc() {
-                const themeSpinner = MEDUSA.config.themeSpinner;
-                if (themeSpinner === undefined) return '';
-                return 'images/loading32' + themeSpinner + '.gif';
-            },
-            displayStatus() {
-                const { currentSearch, firstSearch, searchStatus } = this;
-                if (currentSearch.cancel !== null) return 'searching';
-                if (!firstSearch || searchStatus !== '') return 'status';
-                return 'results';
-            }
+        showPathPreposition() {
+            return this.providedInfo.showDir ? 'from' : 'into';
         },
-        methods: {
-            async submitForm(skipShow) {
-                const { currentSearch, addButtonDisabled } = this;
+        spinnerSrc() {
+            const { config } = this;
+            const { themeName } = config;
+            const themeSpinner = themeName === 'dark' ? '-dark' : '';
+            return 'images/loading32' + themeSpinner + '.gif';
+        },
+        displayStatus() {
+            const { currentSearch, firstSearch, searchStatus } = this;
+            if (currentSearch.cancel !== null) return 'searching';
+            if (!firstSearch || searchStatus !== '') return 'status';
+            return 'results';
+        }
+    },
+    methods: {
+        async submitForm(skipShow) {
+            const { currentSearch, addButtonDisabled } = this;
 
-                let formData;
+            let formData;
 
-                if (skipShow && skipShow === true) {
-                    formData = new FormData();
-                    formData.append('skipShow', 'true');
-
-                    if (currentSearch.cancel) {
-                        // Abort current search
-                        currentSearch.cancel();
-                        currentSearch.cancel = null;
-                    }
-                } else {
-                    // If they haven't picked a show or a root dir don't let them submit
-                    if (addButtonDisabled) {
-                        this.$snotify.warning('You must choose a show and a parent folder to continue.');
-                        return;
-                    }
-
-                    // Converts select boxes to command separated values [js/blackwhite.js]
-                    generateBlackWhiteList(); // eslint-disable-line no-undef
-
-                    formData = new FormData(this.$refs.addShowForm);
-                }
-
-                this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
-
-                const response = await apiRoute.post('addShows/addNewShow', formData);
-                const { data } = response;
-                const { result, message, redirect, params } = data;
-
-                if (message) {
-                    if (result === false) {
-                        console.log('Error: ' + message);
-                    } else {
-                        console.log('Response: ' + message);
-                    }
-                }
-                if (redirect) {
-                    const baseUrl = apiRoute.defaults.baseURL;
-                    if (params.length === 0) {
-                        window.location.href = baseUrl + redirect;
-                        return;
-                    }
-
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = baseUrl + redirect;
-                    form.acceptCharset = 'utf-8';
-
-                    params.forEach(param => {
-                        const element = document.createElement('input');
-                        [ element.name, element.value ] = param; // Unpack
-                        form.appendChild(element);
-                    });
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            },
-            selectResult(result) {
-                const { alreadyAdded, identifier } = result;
-                if (alreadyAdded) return;
-                this.selectedShowSlug = result.slug;
-            },
-            rootDirsUpdated(rootDirs) {
-                this.selectedRootDir = rootDirs.length === 0 ? '' : rootDirs.find(rd => rd.selected).path;
-            },
-            async searchIndexers() {
-                let { currentSearch, nameToSearch, indexerLanguage, indexerId, indexerTimeout, indexers } = this;
-
-                if (!nameToSearch) return;
-
-                // Get the language name
-                const indexerLanguageSelect = this.$refs.indexerLanguage.$el;
-                const indexerLanguageName = indexerLanguageSelect[indexerLanguageSelect.selectedIndex].text;
-
-                const indexerName = indexers[indexerId].name;
+            if (skipShow && skipShow === true) {
+                formData = new FormData();
+                formData.append('skipShow', 'true');
 
                 if (currentSearch.cancel) {
-                    // If a search is currently running, and the new search is the same, don't start a new search
-                    const sameQuery = nameToSearch === currentSearch.query;
-                    const sameIndexer = indexerName == currentSearch.indexerName;
-                    const sameLanguage = indexerLanguageName === currentSearch.languageName;
-                    if (sameQuery && sameIndexer && sameLanguage) {
-                        return;
-                    }
-                    // Abort search before starting a new one
+                    // Abort current search
                     currentSearch.cancel();
                     currentSearch.cancel = null;
                 }
-
-                currentSearch.query = nameToSearch;
-                currentSearch.indexerName = indexerName;
-                currentSearch.languageName = indexerLanguageName;
-
-                this.selectedShowSlug = '';
-                this.searchResults = [];
-
-                const config = {
-                    params: {
-                        query: nameToSearch,
-                        indexerId: indexerId,
-                        language: indexerLanguage
-                    },
-                    timeout: indexerTimeout * 1000,
-                    // An executor function receives a cancel function as a parameter
-                    cancelToken: new axios.CancelToken(cancel => currentSearch.cancel = cancel)
-                };
-
-                this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
-
-                let data = null;
-                try {
-                    const response = await api.get('internal/searchIndexersForShowName', config);
-                    data = response.data;
-                }
-                catch (error) {
-                    if (axios.isCancel(error)) {
-                        // Request cancelled
-                        return;
-                    }
-                    if (error.code === 'ECONNABORTED') {
-                        // Request timed out
-                        this.searchStatus = 'Search timed out, try again or try another indexer';
-                        return;
-                    }
-                    // Request failed
-                    this.searchStatus = 'Search failed with error: ' + error;
+            } else {
+                // If they haven't picked a show or a root dir don't let them submit
+                if (addButtonDisabled) {
+                    this.$snotify.warning('You must choose a show and a parent folder to continue.');
                     return;
                 }
-                finally {
-                    currentSearch.cancel = null;
-                }
 
-                if (!data) return;
+                // Converts select boxes to command separated values [js/blackwhite.js]
+                generateBlackWhiteList(); // eslint-disable-line no-undef
 
-                const { languageId } = data;
-                this.searchResults = data.results
-                    .map(result => {
-                        // Compute whichSeries value (without the 2 last items - sanitizedName and alreadyAdded)
-                        whichSeries = result.slice(0, -2).join('|');
-
-                        // Unpack result items 0 through 8 (Array)
-                        let [
-                            indexerName,
-                            indexerId,
-                            indexerShowUrl,
-                            showId,
-                            showName,
-                            premiereDate,
-                            network,
-                            sanitizedName,
-                            alreadyAdded
-                        ] = result;
-
-                        slug = [indexers[indexerId].identifier, showId].join('')
-
-                        // Append showId to indexer show url
-                        indexerShowUrl += showId;
-                        // TheTVDB.com no longer supports that feature
-                        // For now only add the languageId id to the tvdb url, as the others might have different routes.
-                        /* if (languageId && languageId !== '' && indexerId === 1) {
-                            indexerShowUrl += '&lid=' + languageId
-                        } */
-
-                        // Discard 'N/A' and '1900-01-01'
-                        const filter = string => ['N/A', '1900-01-01'].includes(string) ? '' : string;
-                        premiereDate = filter(premiereDate);
-                        network = filter(network);
-
-                        indexerIcon = 'images/' + indexers[indexerId].icon;
-
-                        alreadyAdded = (() => {
-                            if (!alreadyAdded) return false;
-                            // Extract existing show info
-                            const [ matchIndexerName, matchShowId ] = alreadyAdded;
-                            return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
-                        })();
-
-                        return {
-                            slug,
-                            whichSeries,
-                            indexerName,
-                            indexerId,
-                            indexerShowUrl,
-                            indexerIcon,
-                            showId,
-                            showName,
-                            premiereDate,
-                            network,
-                            sanitizedName,
-                            alreadyAdded
-                        };
-                    });
-
-                // Select the first available result
-                const firstAvailableResult = this.searchResults.find(result => !result.alreadyAdded);
-                if (firstAvailableResult) {
-                    this.selectedShowSlug = firstAvailableResult.slug;
-                }
-
-                this.searchStatus = '';
-                this.firstSearch = true;
-
-                this.$nextTick(() => {
-                    this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
-                });
-            },
-            updateBlackWhiteList() {
-                // Currently requires jQuery
-                if ($ === undefined) return;
-                $.updateBlackWhiteList(this.showName);
+                formData = new FormData(this.$refs.addShowForm);
             }
+
+            this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
+
+            const response = await apiRoute.post('addShows/addNewShow', formData);
+            const { data } = response;
+            const { result, message, redirect, params } = data;
+
+            if (message) {
+                if (result === false) {
+                    console.log('Error: ' + message);
+                } else {
+                    console.log('Response: ' + message);
+                }
+            }
+            if (redirect) {
+                const baseUrl = apiRoute.defaults.baseURL;
+                if (params.length === 0) {
+                    window.location.href = baseUrl + redirect;
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = baseUrl + redirect;
+                form.acceptCharset = 'utf-8';
+
+                params.forEach(param => {
+                    const element = document.createElement('input');
+                    [ element.name, element.value ] = param; // Unpack
+                    form.appendChild(element);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        },
+        selectResult(result) {
+            const { alreadyAdded, identifier } = result;
+            if (alreadyAdded) return;
+            this.selectedShowSlug = result.slug;
+        },
+        rootDirsUpdated(rootDirs) {
+            this.selectedRootDir = rootDirs.length === 0 ? '' : rootDirs.find(rd => rd.selected).path;
+        },
+        async searchIndexers() {
+            let { currentSearch, nameToSearch, indexerLanguage, indexerId, indexerTimeout, indexers } = this;
+
+            if (!nameToSearch) return;
+
+            // Get the language name
+            const indexerLanguageSelect = this.$refs.indexerLanguage.$el;
+            const indexerLanguageName = indexerLanguageSelect[indexerLanguageSelect.selectedIndex].text;
+
+            const indexerName = indexers[indexerId].name;
+
+            if (currentSearch.cancel) {
+                // If a search is currently running, and the new search is the same, don't start a new search
+                const sameQuery = nameToSearch === currentSearch.query;
+                const sameIndexer = indexerName == currentSearch.indexerName;
+                const sameLanguage = indexerLanguageName === currentSearch.languageName;
+                if (sameQuery && sameIndexer && sameLanguage) {
+                    return;
+                }
+                // Abort search before starting a new one
+                currentSearch.cancel();
+                currentSearch.cancel = null;
+            }
+
+            currentSearch.query = nameToSearch;
+            currentSearch.indexerName = indexerName;
+            currentSearch.languageName = indexerLanguageName;
+
+            this.selectedShowSlug = '';
+            this.searchResults = [];
+
+            const config = {
+                params: {
+                    query: nameToSearch,
+                    indexerId: indexerId,
+                    language: indexerLanguage
+                },
+                timeout: indexerTimeout * 1000,
+                // An executor function receives a cancel function as a parameter
+                cancelToken: new axios.CancelToken(cancel => currentSearch.cancel = cancel)
+            };
+
+            this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
+
+            let data = null;
+            try {
+                const response = await api.get('internal/searchIndexersForShowName', config);
+                data = response.data;
+            }
+            catch (error) {
+                if (axios.isCancel(error)) {
+                    // Request cancelled
+                    return;
+                }
+                if (error.code === 'ECONNABORTED') {
+                    // Request timed out
+                    this.searchStatus = 'Search timed out, try again or try another indexer';
+                    return;
+                }
+                // Request failed
+                this.searchStatus = 'Search failed with error: ' + error;
+                return;
+            }
+            finally {
+                currentSearch.cancel = null;
+            }
+
+            if (!data) return;
+
+            const { languageId } = data;
+            this.searchResults = data.results
+                .map(result => {
+                    // Compute whichSeries value (without the 2 last items - sanitizedName and alreadyAdded)
+                    whichSeries = result.slice(0, -2).join('|');
+
+                    // Unpack result items 0 through 8 (Array)
+                    let [
+                        indexerName,
+                        indexerId,
+                        indexerShowUrl,
+                        showId,
+                        showName,
+                        premiereDate,
+                        network,
+                        sanitizedName,
+                        alreadyAdded
+                    ] = result;
+
+                    slug = [indexers[indexerId].identifier, showId].join('')
+
+                    // Append showId to indexer show url
+                    indexerShowUrl += showId;
+                    // TheTVDB.com no longer supports that feature
+                    // For now only add the languageId id to the tvdb url, as the others might have different routes.
+                    /* if (languageId && languageId !== '' && indexerId === 1) {
+                        indexerShowUrl += '&lid=' + languageId
+                    } */
+
+                    // Discard 'N/A' and '1900-01-01'
+                    const filter = string => ['N/A', '1900-01-01'].includes(string) ? '' : string;
+                    premiereDate = filter(premiereDate);
+                    network = filter(network);
+
+                    indexerIcon = 'images/' + indexers[indexerId].icon;
+
+                    alreadyAdded = (() => {
+                        if (!alreadyAdded) return false;
+                        // Extract existing show info
+                        const [ matchIndexerName, matchShowId ] = alreadyAdded;
+                        return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
+                    })();
+
+                    return {
+                        slug,
+                        whichSeries,
+                        indexerName,
+                        indexerId,
+                        indexerShowUrl,
+                        indexerIcon,
+                        showId,
+                        showName,
+                        premiereDate,
+                        network,
+                        sanitizedName,
+                        alreadyAdded
+                    };
+                });
+
+            // Select the first available result
+            const firstAvailableResult = this.searchResults.find(result => !result.alreadyAdded);
+            if (firstAvailableResult) {
+                this.selectedShowSlug = firstAvailableResult.slug;
+            }
+
+            this.searchStatus = '';
+            this.firstSearch = true;
+
+            this.$nextTick(() => {
+                this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
+            });
+        },
+        updateBlackWhiteList() {
+            // Currently requires jQuery
+            if ($ === undefined) return;
+            $.updateBlackWhiteList(this.showName);
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">

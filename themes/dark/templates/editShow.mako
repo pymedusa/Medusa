@@ -1,168 +1,171 @@
 <%inherit file="/layouts/main.mako"/>
-<link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
-<%include file="/vue-components/select-list-ui.mako"/>
-<%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
+Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
+Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
+
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Edit Show'
-        },
-        data() {
-            return {
-                seriesSlug: $('#series-slug').attr('value'),
-                seriesId: $('#series-id').attr('value'),
-                indexerName: $('#indexer-name').attr('value'),
-                series: {
-                    config: {
-                        aliases: [],
-                        dvdOrder: false,
-                        defaultEpisodeStatus: '',
-                        seasonFolders: true,
-                        anime: false,
-                        scene: false,
-                        sports: false,
-                        paused: false,
-                        location: '',
-                        airByDate: false,
-                        subtitlesEnabled: false,
-                        release: {
-                            requiredWords: [],
-                            ignoredWords: [],
-                            blacklist: [],
-                            whitelist: [],
-                            allgroups: []
-                        },
-                        qualities: {
-                            preferred: [],
-                            allowed: []
-                        }
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Edit Show'
+    },
+    data() {
+        return {
+            seriesSlug: document.querySelector('#series-slug').value,
+            seriesId: document.querySelector('#series-id').value,
+            indexerName: document.querySelector('#indexer-name').value,
+            series: {
+                config: {
+                    aliases: [],
+                    dvdOrder: false,
+                    defaultEpisodeStatus: '',
+                    seasonFolders: true,
+                    anime: false,
+                    scene: false,
+                    sports: false,
+                    paused: false,
+                    location: '',
+                    airByDate: false,
+                    subtitlesEnabled: false,
+                    release: {
+                        requiredWords: [],
+                        ignoredWords: [],
+                        blacklist: [],
+                        whitelist: [],
+                        allgroups: []
                     },
-                    language: 'en'
+                    qualities: {
+                        preferred: [],
+                        allowed: []
+                    }
                 },
-                defaultEpisodeStatusOptions: [
-                    {text: 'Wanted', value: 'Wanted'},
-                    {text: 'Skipped', value: 'Skipped'},
-                    {text: 'Ignored', value: 'Ignored'}
-                ],
-                seriesLoaded: false,
-                saving: false
-            }
-        },
-        async mounted() {
-            const seriesSlug = $('#series-slug').attr('value');
-            const url = 'series/' + seriesSlug;
-            try {
-                const response = await api.get('series/' + this.seriesSlug);
-                this.series = Object.assign({}, this.series, response.data);
-                this.series.language = response.data.language;
-            } catch (error) {
-                console.debug('Could not get series info for: '+ seriesSlug);
-            }
+                language: 'en'
+            },
+            defaultEpisodeStatusOptions: [
+                {text: 'Wanted', value: 'Wanted'},
+                {text: 'Skipped', value: 'Skipped'},
+                {text: 'Ignored', value: 'Ignored'}
+            ],
+            seriesLoaded: false,
+            saving: false
+        }
+    },
+    created() {
+        const { $store, seriesSlug } = this;
+
+        const params = { detailed: false }; // Don't get episodes
+        api.get('series/' + seriesSlug, { params }).then(response => {
+            this.series = Object.assign({}, this.series, response.data);
             this.seriesLoaded = true;
-        },
-        methods: {
-            async saveSeries(subject) {
-                // We want to wait until the page has been fully loaded, before starting to save stuff.
-                if (!this.seriesLoaded) {
-                    return;
-                }
+        }).catch(error => {
+            const msg = 'Could not get series info for: ' + seriesSlug;
+            this.$snotify.error(msg, 'Error');
+            console.debug(msg, error);
+        });
+    },
+    methods: {
+        saveSeries(subject) {
+            // We want to wait until the page has been fully loaded, before starting to save stuff.
+            if (!this.seriesLoaded) {
+                return;
+            }
 
-                // Disable the save button until we're done.
-                this.saving = true;
+            if (!['series', 'all'].includes(subject)) {
+                return;
+            }
 
-                if (['series', 'all'].includes(subject)) {
-                    const data = {
-                        config: {
-                            aliases: this.series.config.aliases,
-                            defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
-                            dvdOrder: this.series.config.dvdOrder,
-                            seasonFolders: this.series.config.seasonFolders,
-                            anime: this.series.config.anime,
-                            scene: this.series.config.scene,
-                            sports: this.series.config.sports,
-                            paused: this.series.config.paused,
-                            location: this.series.config.location,
-                            airByDate: this.series.config.airByDate,
-                            subtitlesEnabled: this.series.config.subtitlesEnabled,
-                            release: {
-                                requiredWords: this.series.config.release.requiredWords,
-                                ignoredWords: this.series.config.release.ignoredWords
-                            },
-                            qualities: {
-                                preferred: this.series.config.qualities.preferred,
-                                allowed: this.series.config.qualities.allowed
-                            }
-                        },
-                        language: this.series.language
-                    };
+            // Disable the save button until we're done.
+            this.saving = true;
 
-                    if (data.config.anime) {
-                        data.config.release.blacklist = this.series.config.release.blacklist;
-                        data.config.release.whitelist = this.series.config.release.whitelist;
+            const data = {
+                config: {
+                    aliases: this.series.config.aliases,
+                    defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
+                    dvdOrder: this.series.config.dvdOrder,
+                    seasonFolders: this.series.config.seasonFolders,
+                    anime: this.series.config.anime,
+                    scene: this.series.config.scene,
+                    sports: this.series.config.sports,
+                    paused: this.series.config.paused,
+                    location: this.series.config.location,
+                    airByDate: this.series.config.airByDate,
+                    subtitlesEnabled: this.series.config.subtitlesEnabled,
+                    release: {
+                        requiredWords: this.series.config.release.requiredWords,
+                        ignoredWords: this.series.config.release.ignoredWords
+                    },
+                    qualities: {
+                        preferred: this.series.config.qualities.preferred,
+                        allowed: this.series.config.qualities.allowed
                     }
+                },
+                language: this.series.language
+            };
 
-                    try {
-                        const response = await api.patch('series/' + this.seriesSlug, data);
-                        this.$snotify.success('You may need to "Re-scan files" or "Force Full Update".', 'Saved', { timeout: 5000 });
+            if (data.config.anime) {
+                data.config.release.blacklist = this.series.config.release.blacklist;
+                data.config.release.whitelist = this.series.config.release.whitelist;
+            }
 
-                    } catch (error) {
-                        this.$snotify.error(
-                            'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
-                            'Error'
-                        );
-                    }
-                };
-
+            api.patch('series/' + this.seriesSlug, data).then(response => {
+                this.$snotify.success(
+                    'You may need to "Re-scan files" or "Force Full Update".',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                    'Error'
+                );
+            }).finally(() => {
                 // Re-enable the save button.
                 this.saving = false;
-            },
-            onChangeIgnoredWords(items) {
-                this.series.config.release.ignoredWords = items.map(item => item.value);
-            },
-            onChangeRequiredWords(items) {
-                this.series.config.release.requiredWords = items.map(item => item.value);
-            },
-            onChangeAliases(items) {
-                this.series.config.aliases = items.map(item => item.value);
-            },
-            onChangeReleaseGroupsAnime(items) {
-                this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
-                this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-                this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
-            },
-            updateLanguage(value) {
-                this.series.language = value;
+            });
+        },
+        onChangeIgnoredWords(items) {
+            this.series.config.release.ignoredWords = items.map(item => item.value);
+        },
+        onChangeRequiredWords(items) {
+            this.series.config.release.requiredWords = items.map(item => item.value);
+        },
+        onChangeAliases(items) {
+            this.series.config.aliases = items.map(item => item.value);
+        },
+        onChangeReleaseGroupsAnime(items) {
+            this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+            this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+            this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+        },
+        updateLanguage(value) {
+            this.series.language = value;
+        }
+    },
+    computed: {
+        availableLanguages() {
+            if (this.config.indexers.config.main.validLanguages) {
+                return this.config.indexers.config.main.validLanguages.join(',');
             }
         },
-        computed: {
-            availableLanguages() {
-                if (this.config.indexers.config.main.validLanguages) {
-                    return this.config.indexers.config.main.validLanguages.join(',');
-                }
-            },
-            combinedQualities() {
-                const reducer = (accumulator, currentValue) => accumulator | currentValue;
-                const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
-                const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+        combinedQualities() {
+            const reducer = (accumulator, currentValue) => accumulator | currentValue;
+            const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+            const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
 
-                return (allowed | preferred << 16) >>> 0;  // Unsigned int
-            },
-            saveButton() {
-                return this.saving === false ? 'Save Changes' : 'Saving...';
-            },
-            displayShowUrl() {
-                // @TODO: Change the URL generation to use `this.series`. Currently not possible because
-                // the values are not available at the time of app-link component creation.
-                return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
-            }
+            return (allowed | preferred << 16) >>> 0;  // Unsigned int
+        },
+        saveButton() {
+            return this.saving === false ? 'Save Changes' : 'Saving...';
+        },
+        displayShowUrl() {
+            // @TODO: Change the URL generation to use `this.series`. Currently not possible because
+            // the values are not available at the time of app-link component creation.
+            return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -190,14 +193,12 @@ const startVue = () => {
                         <div class="form-group">
                             <label for="location" class="col-sm-2 control-label">Show Location</label>
                             <div class="col-sm-10 content">
-                                <input type="hidden" name="indexername" id="form-indexername" :value="indexerName"/>
-                                <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
                                 <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
+                            <label for="qualityPreset" class="col-sm-2 control-label">Quality</label>
                             <div class="col-sm-10 content">
                                 <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
                             </div>

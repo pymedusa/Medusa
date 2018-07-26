@@ -61,7 +61,7 @@
 
             <app-header></app-header>
             % if submenu:
-            <%include file="/partials/submenu.mako"/>
+            <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
@@ -100,7 +100,6 @@
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
@@ -111,7 +110,6 @@
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
@@ -127,14 +125,8 @@
             window.username = '';
             % endif
         </script>
-        <%include file="/vue-components/app-link.mako"/>
-        <%include file="/vue-components/asset.mako"/>
-        <%include file="/vue-components/file-browser.mako"/>
-        <%include file="/vue-components/plot-info.mako"/>
+        <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
-        <%include file="/vue-components/language-select.mako"/>
-        <%include file="/vue-components/root-dirs.mako"/>
-        <%include file="/vue-components/backstretch.mako"/>
         <script>
             Vue.mixin({
                 created() {
@@ -198,6 +190,13 @@
                 Vue.component('toggle-button', VueToggleButton);
                 Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
                 Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
+                Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
+                Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
+                Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
+                Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
+                Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
+                Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
+                Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
             }
         </script>
         <%block name="scripts" />

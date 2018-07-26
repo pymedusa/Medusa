@@ -33,8 +33,7 @@ const startVue = () => {
             const { $store, $route } = this;
             // $store.dispatch('getShows');
 
-            const unwatch = this.$watch('layout', () => {
-                unwatch();
+            this.$once('loaded', () => {
                 const { config, layout } = this;
                 if (layout === 'list') {
                     const sortCodes = {
