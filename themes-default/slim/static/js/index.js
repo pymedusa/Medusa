@@ -4,6 +4,7 @@ import VueMeta from 'vue-meta';
 import VueRouter from 'vue-router';
 import VueNativeSock from 'vue-native-websocket';
 import VueInViewportMixin from 'vue-in-viewport-mixin';
+import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import axios from 'axios';
 import httpVueLoader from 'http-vue-loader';
@@ -12,7 +13,6 @@ import router from './router';
 import { apiRoute, apiv1, api } from './api';
 
 //
-// vue-async-computed@3.3.0.js
 // vue-snotify.min.js
 
 if (window) {
@@ -23,6 +23,7 @@ if (window) {
     window.VueRouter = VueRouter;
     window.VueNativeSock = VueNativeSock;
     window.VueInViewportMixin = VueInViewportMixin;
+    window.AsyncComputed = AsyncComputed;
     window.ToggleButton = ToggleButton;
     window.axios = axios;
     window.httpVueLoader = httpVueLoader;

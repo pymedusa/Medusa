@@ -185,6 +185,7 @@
                 console.debug('Loading local Vue');
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
+                Vue.use(AsyncComputed);
 
                 // Load x-template components
                 window.components.forEach(component => {
