@@ -58,7 +58,6 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
-from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (
@@ -1047,7 +1046,7 @@ class Episode(TV):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        data = NonEmptyDict()
+        data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
         data['season'] = self.season
@@ -1064,19 +1063,19 @@ class Episode(TV):
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
         data['quality'] = self.quality
-        data['release'] = NonEmptyDict()
+        data['release'] = {}
         data['release']['name'] = self.release_name
         data['release']['group'] = self.release_group
         data['release']['proper'] = self.is_proper
         data['release']['version'] = self.version
-        data['scene'] = NonEmptyDict()
+        data['scene'] = {}
         data['scene']['season'] = self.scene_season
         data['scene']['episode'] = self.scene_episode
 
         if self.scene_absolute_number:
             data['scene']['absoluteNumber'] = self.scene_absolute_number
 
-        data['file'] = NonEmptyDict()
+        data['file'] = {}
         data['file']['location'] = self.location
         if self.file_size:
             data['file']['size'] = self.file_size
@@ -1087,8 +1086,8 @@ class Episode(TV):
             data['content'].append('thumbnail')
 
         if detailed:
-            data['statistics'] = NonEmptyDict()
-            data['statistics']['subtitleSearch'] = NonEmptyDict()
+            data['statistics'] = {}
+            data['statistics']['subtitleSearch'] = {}
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
