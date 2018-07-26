@@ -1463,10 +1463,12 @@ definitions:
         type: string
       season:
         type: integer
-        minimum: 0
+        minimum: 1
+        x-nullable: true
       type:
         type: string
-        enum: [local]
+        enum: [null, local]
+        x-nullable: true
     example:
       series: tvdb301824
       name: TheBig
