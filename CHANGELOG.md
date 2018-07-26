@@ -32,6 +32,7 @@
 - Fixed YggTorrents provider downloads by updating the provider's URL ([#4725](https://github.com/pymedusa/Medusa/pull/4725))
 - Fixed Abnormal provider login check ([#4727](https://github.com/pymedusa/Medusa/pull/4727))
 - Fixed IMDB cache location ([#4745](https://github.com/pymedusa/Medusa/pull/4745))
+- Fixed "Edit Show" page sometimes failing to load the show ([#4756](https://github.com/pymedusa/Medusa/pull/4756))
 - _Simple message describing the fix, and a link to the pull request._
 
 ### [**Previous versions**](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
