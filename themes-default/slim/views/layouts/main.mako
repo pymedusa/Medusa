@@ -86,6 +86,10 @@
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
+
+        ## This contains all the Webpack-imported modules
+        <script type="text/javascript" src="js/vendors.js"></script>
+
         <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 

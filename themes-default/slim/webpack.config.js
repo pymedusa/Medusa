@@ -18,5 +18,14 @@ module.exports = {
         alias: {
             vue$: 'vue/dist/vue.esm.js'
         }
+    },
+    performance: {
+        hints: false
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'async',
+            name: 'vendors'
+        }
     }
 };
