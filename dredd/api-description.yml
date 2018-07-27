@@ -1406,6 +1406,81 @@ definitions:
               numWarnings:
                 description: Number of logged warnings
                 type: integer
+          postProcessing:
+            type: object
+            properties:
+              naming:
+                type: object
+                properties:
+                  stripYear:
+                    type: boolean
+                  pattern:
+                    type: string
+                  multiEp:
+                    type: integer
+                  patternAirByDate:
+                    type: string
+                  patternSports:
+                    type: string
+                  patternAnime:
+                    type: string
+                  enableCustomNamingAirByDate:
+                    type: boolean
+                  enableCustomNamingSports:
+                    type: boolean
+                  enableCustomNamingAnime:
+                    type: boolean
+                  animeMultiEp:
+                    type: integer
+                  animeNamingType:
+                    type: integer
+                  stripYear:
+                    type: boolean
+              seriesDownloadDir:
+                type: string
+              processAutomatically:
+                type: boolean
+              postponeIfSyncFiles:
+                type: boolean
+              postponeIfNoSubs:
+                type: boolean
+              renameEpisodes:
+                type: boolean
+              createMissingShowDirs:
+                type: boolean
+              addShowsWithoutDir:
+                type: boolean
+              moveAssociatedFiles:
+                type: boolean
+              nfoRename:
+                type: boolean
+              airdateEpisodes:
+                type: boolean
+              unpack:
+                type: boolean
+              deleteRarContent:
+                type: boolean
+              noDelete:
+                type: boolean
+              processMethod:
+                type: string
+              reflinkAvailable:
+                type: boolean
+              autoPostprocessorFrequency:
+                type: integer
+              syncFiles:
+                type: array
+              fileTimestampTimezone:
+                type: string
+              allowedExtensions:
+                type: array
+              extraScripts:
+                type: array
+              extraScriptsUrl:
+                type: string
+              multiEpStrings:
+                type: object
+
   Log:
     type: object
     properties:
@@ -1834,6 +1909,9 @@ parameters:
     type: string
     enum:
       - main
+      - statuses
+      - qualities
+      - metadata
   log-level:
     name: level
     in: query
