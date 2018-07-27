@@ -10,6 +10,9 @@ before_install:
 install: false
 script: false
 jobs:
+  fast_finish: true
+  allow_failures:
+    - name: 'Dredd tests'
   include:
     # test stage + frontend tests start here
     - stage: test
@@ -38,16 +41,22 @@ jobs:
       install:
         - pip install --upgrade pip
         - pip install --upgrade tox
-        # install everything needed for `yarn test-api`
+      script:
+        - tox -v --recreate
+    # dredd tests start here
+    - name: 'Dredd tests'
+      python:
+        - 2.7.10
+      install:
+        - pip install --upgrade pip
         - pip install dredd_hooks
         - pip install 'PyYAML<4'
         - pip install six
-        - nvm install v10.1.0
+        - nvm install v10.7.0
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
       script:
         - yarn test-api
-        - tox -v --recreate
       after_failure:
         - cat ./dredd/data/Logs/application.log
 notifications:
