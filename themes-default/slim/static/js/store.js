@@ -4,7 +4,6 @@ import VueNativeSock from 'vue-native-websocket';
 import { api } from './api';
 
 const { Store } = Vuex;
-const { displayNotification } = window;
 
 Vue.use(Vuex);
 
@@ -394,7 +393,7 @@ const store = new Store({
             error += 'Please check your network connection. ';
             error += 'If you are using a reverse proxy, please take a look at our wiki for config examples.';
 
-            displayNotification('notice', title, error);
+            window.displayNotification('notice', title, error);
         },
         [NOTIFICATIONS_ENABLED](state) {
             state.notifications.enabled = true;
@@ -486,7 +485,7 @@ const store = new Store({
             return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
-            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+            return window.displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
         },
         setLayout(context, { page, layout }) {
             return api.patch('config/main', {
