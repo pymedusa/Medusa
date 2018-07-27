@@ -119,12 +119,12 @@ module.exports = {
     data() {
         return {
             topMenuMapping: [
-                ['home', ['/home', '/addShows', '/addRecommended']],
-                ['schedule', ['/schedule']],
-                ['history', ['/history']],
-                ['manage', ['/manage']],
-                ['config', ['/config']],
                 ['system', ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC']],
+                ['home', ['/home', '/addShows', '/addRecommended']],
+                ['config', ['/config']],
+                ['history', ['/history']],
+                ['schedule', ['/schedule']],
+                ['manage', ['/manage']],
                 ['login', ['/login']]
             ],
             menusOpen: {
