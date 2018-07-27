@@ -56,8 +56,6 @@ class SearchResult(object):
         self.result_type = ''
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
-        # Reference to the search_provider
-        self.provider = provider
         # Raw result in a dictionary
         self.item = None
         # Store if the search was started by a forced search.
