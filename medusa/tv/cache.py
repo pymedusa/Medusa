@@ -513,7 +513,7 @@ class Cache(object):
                           ' prior to medusa version 0.2.0', cur_result[b'name'])
                 continue
 
-            search_result = self.provider.get_result()
+            search_result = self.provider.search_result()
 
             # ignored/required words, and non-tv junk
             if not naming.filter_bad_releases(cur_result[b'name']):

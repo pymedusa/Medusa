@@ -447,7 +447,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        result = providers.get_provider_class(self.provider).get_result(self.segment)
+        result = providers.get_provider_class(self.provider).search_result(self.segment)
         result.series = self.show
         result.url = self.cached_result[b'url']
         result.quality = int(self.cached_result[b'quality'])

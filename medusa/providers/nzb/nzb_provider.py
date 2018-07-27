@@ -4,9 +4,9 @@
 from __future__ import unicode_literals
 
 from medusa import app
-from medusa.classes import NZBSearchResult
 from medusa.helper.common import try_int
 from medusa.providers.generic_provider import GenericProvider
+from medusa.search.result import NZBSearchResult
 
 
 class NZBProvider(GenericProvider):
@@ -22,7 +22,7 @@ class NZBProvider(GenericProvider):
         """Check if provider is active."""
         return bool(app.USE_NZBS) and self.is_enabled()
 
-    def _get_result(self, episodes):
+    def search_result(self, episodes):
         """Return provider result."""
         return NZBSearchResult(episodes, provider=self)
 
