@@ -17,7 +17,7 @@
                     <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                         <span>Shows</span> <b class="caret"></b>
                     </app-link>
-                    <transition name="fade" :duration="500">
+                    <transition name="fade">
                         <ul v-show="menusOpen.home" class="dropdown-menu">
                             <li><app-link href="home/"><i class="menu-icon-home"></i>&nbsp;Show List</app-link></li>
                             <li><app-link href="addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</app-link></li>
@@ -45,7 +45,7 @@
                     <app-link href="manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                         <span>Manage</span> <b class="caret"></b>
                     </app-link>
-                    <transition name="fade" :duration="500">
+                    <transition name="fade">
                         <ul v-show="menusOpen.manage" class="dropdown-menu">
                             <li><app-link href="manage/"><i class="menu-icon-manage"></i>&nbsp;Mass Update</app-link></li>
                             <li><app-link href="manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</app-link></li>
@@ -67,7 +67,7 @@
                     <app-link href="config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                         <span class="visible-xs-inline">Config</span><img src="images/menu/system18.png" class="navbaricon hidden-xs" /> <b class="caret"></b>
                     </app-link>
-                    <transition name="fade" :duration="500">
+                    <transition name="fade">
                         <ul v-show="menusOpen.config" class="dropdown-menu">
                             <li><app-link href="config/"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</app-link></li>
                             <li><app-link href="config/general/"><i class="menu-icon-config"></i>&nbsp;General</app-link></li>
@@ -86,7 +86,7 @@
                     <app-link href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                         <span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" /> <span v-if="toolsBadgeCount > 0" :class="`badge${toolsBadgeClass}`">{{ toolsBadgeCount }}</span> <b class="caret"></b>
                     </app-link>
-                    <transition name="fade" :duration="500">
+                    <transition name="fade">
                         <ul v-show="menusOpen.system" class="dropdown-menu">
                             <li><app-link href="news/"><i class="menu-icon-news"></i>&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
                             <li><app-link href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</app-link></li>
@@ -270,5 +270,13 @@ module.exports = {
 
 .dropdown-menu {
     display: block;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
 }
 </style>
