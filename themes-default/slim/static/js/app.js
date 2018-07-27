@@ -3,6 +3,7 @@ import Vuex, { mapState } from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
+import Snotify from 'vue-snotify';
 import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
@@ -14,6 +15,7 @@ Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(ToggleButton);
+Vue.use(Snotify);
 
 // Load x-template components
 window.components.forEach(component => {

@@ -113,7 +113,6 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/lib/vue-snotify.min.js"></script>
         <script type="text/javascript" src="js/notifications.js"></script>
         <script>
             // Used to get mako vue components to the app.js
@@ -195,6 +194,7 @@
 
                 // Global components
                 Vue.use(ToggleButton);
+                Vue.use(Snotify);
                 Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
                 Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
                 Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
