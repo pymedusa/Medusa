@@ -115,18 +115,18 @@
 
         ## Add Vue component x-templates here
         ## @NOTE: These will be usable on all pages
-        <script src="js/lib/vue.js"></script>
-        <script src="js/lib/http-vue-loader.js"></script>
-        <script src="js/lib/vue-async-computed@3.3.0.js"></script>
-        <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
-        <script src="js/lib/vue-router.min.js"></script>
-        <script src="js/lib/vue-meta.min.js"></script>
-        <script src="js/lib/vue-snotify.min.js"></script>
-        <script src="js/lib/vue-js-toggle-button.js"></script>
-        <script src="js/lib/vuex.js"></script>
-        <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
-        <script src="js/notifications.js"></script>
-        <script src="js/store.js"></script>
+        <script src="js/lib/vue.js${sbPID}"></script>
+        <script src="js/lib/http-vue-loader.js${sbPID}"></script>
+        <script src="js/lib/vue-async-computed@3.3.0.js${sbPID}"></script>
+        <script src="js/lib/vue-in-viewport-mixin.min.js${sbPID}"></script>
+        <script src="js/lib/vue-router.min.js${sbPID}"></script>
+        <script src="js/lib/vue-meta.min.js${sbPID}"></script>
+        <script src="js/lib/vue-snotify.min.js${sbPID}"></script>
+        <script src="js/lib/vue-js-toggle-button.js${sbPID}"></script>
+        <script src="js/lib/vuex.js${sbPID}"></script>
+        <script src="js/lib/vue-native-websocket-2.0.7.js${sbPID}"></script>
+        <script src="js/notifications.js${sbPID}"></script>
+        <script src="js/store.js${sbPID}"></script>
         <script>
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
