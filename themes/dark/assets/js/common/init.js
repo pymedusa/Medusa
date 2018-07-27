@@ -77,39 +77,6 @@ MEDUSA.common.init = function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
     });
 
-    $.confirm.options = {
-        confirmButton: 'Yes',
-        cancelButton: 'Cancel',
-        dialogClass: 'modal-dialog',
-        post: false,
-        confirm(e) {
-            location.href = e[0].href;
-        }
-    };
-
-    $('a.removeshow').confirm({
-        title: 'Remove Show',
-        text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
-        confirm(e) {
-            location.href = e[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
-        }
-    });
-
-    $('a.clearhistory').confirm({
-        title: 'Clear History',
-        text: 'Are you sure you want to clear all download history?'
-    });
-
-    $('a.trimhistory').confirm({
-        title: 'Trim History',
-        text: 'Are you sure you want to trim all download history older than 30 days?'
-    });
-
-    $('a.submiterrors').confirm({
-        title: 'Submit Errors',
-        text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure Medusa is updated and trigger<br> this error with debug enabled before submitting</span>'
-    });
-
     $('#config-components').tabs({
         activate(event, ui) {
             let lastOpenedPanel = $(this).data('lastOpenedPanel');

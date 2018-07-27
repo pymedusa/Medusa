@@ -61,7 +61,7 @@
 
             <app-header></app-header>
             % if submenu:
-            <%include file="/partials/submenu.mako"/>
+            <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
@@ -100,7 +100,6 @@
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
@@ -111,14 +110,11 @@
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <%
-            ## Add Vue component x-templates here
-            ## @NOTE: These will be usable on all pages
-        %>
+        ## Add Vue component x-templates here
+        ## @NOTE: These will be usable on all pages
         <script src="js/lib/vue.js"></script>
         <script src="js/lib/http-vue-loader.js"></script>
         <script src="js/lib/vue-async-computed@3.3.0.js"></script>
@@ -141,7 +137,7 @@
             Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
             Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
         </script>
-        <!-- TODO: Replace with htptVueLoader or webpack build bundles -->
+        <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
 
         <script>
