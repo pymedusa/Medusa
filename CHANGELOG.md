@@ -1,5 +1,8 @@
 ## Unreleased
 
+#### Improvements
+- Bundle the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
+
 -----
 
 ## 0.2.7 (2018-07-27)
