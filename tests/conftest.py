@@ -163,7 +163,7 @@ def create_tvepisode(monkeypatch):
 @pytest.fixture
 def create_search_result(monkeypatch):
     def create(provider, series, episodes, **kwargs):
-        target = provider.get_result(episodes=episodes)
+        target = provider.search_result(episodes=episodes)
         target.provider = provider
         target.series = series
         return _patch_object(monkeypatch, target, **kwargs)
