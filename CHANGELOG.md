@@ -2,7 +2,7 @@
 
 -----
 
-## 0.2.7 (2018-07-26)
+## 0.2.7 (2018-07-27)
 
 #### New Features
 - Hot-swap themes: No need to restart Medusa after changing the theme ([#4271](https://github.com/pymedusa/Medusa/pull/4271))
