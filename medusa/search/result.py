@@ -6,6 +6,8 @@ import logging
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
+from six import string_types
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -19,33 +21,33 @@ class SearchResult(object):
         # the search provider
         self.provider = provider
         # release series object
-        self.series = None
+        self._series = None
         # URL to the NZB/torrent file
         self.url = ''
-        # used by some providers to store extra info associated with the result
-        self.extra_info = []
         # quality of the release
-        self.quality = Quality.UNKNOWN
+        self._quality = Quality.UNKNOWN
         # release name
         self.name = ''
         # size of the release (-1 = n/a)
-        self.size = -1
+        self._size = -1
+        # release group
+        self.release_group = ''
+        # version
+        self._version = -1
+        # proper_tags
+        self._proper_tags = []
         # seeders of the release
-        self.seeders = -1
+        self._seeders = -1
         # leechers of the release
-        self.leechers = -1
+        self._leechers = -1
         # update date
         self.date = None
         # release publish date
         self.pubdate = None
-        # release group
-        self.release_group = ''
-        # version
-        self.version = -1
         # hash
         self.hash = None
-        # proper_tags
-        self.proper_tags = ''
+        # used by some providers to store extra info associated with the result
+        self.extra_info = []
         # manually_searched
         self.manually_searched = False
         # content
@@ -59,9 +61,9 @@ class SearchResult(object):
         # Raw result in a dictionary
         self.item = None
         # Store if the search was started by a forced search.
-        self.forced_search = None
+        self.forced_search = False
         # Search flag for specifying if we want to re-download the already downloaded quality.
-        self.download_current_quality = None
+        self.download_current_quality = False
         # Search flag for adding or not adding the search result to cache.
         self.add_cache_entry = True
         # Search flag for flagging if this is a same-day-special.
@@ -69,14 +71,65 @@ class SearchResult(object):
         # Keep track if we really want to result.
         self.result_wanted = False
         # The actual parsed season. Stored as an integer.
-        self.actual_season = None
+        self._actual_season = None
         # The actual parsed episode. Stored as an iterable of integers.
-        self._actual_episodes = None
+        self._actual_episodes = []
         # Some of the searches, expect a max of one episode object, per search result. Then this episode can be used
         # to store a single episode number, as an int.
         self._actual_episode = None
         # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
         self.search_type = None
+
+    @property
+    def series(self):
+        return self._series or self.episodes[0].series
+
+    @series.setter
+    def series(self, value):
+        self._series = value
+
+    @property
+    def quality(self):
+        return self._quality
+
+    @quality.setter
+    def quality(self, value):
+        self._quality = int(value)
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        self._size = int(value)
+
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, value):
+        self._version = int(value)
+
+    @property
+    def proper_tags(self):
+        return self._proper_tags
+
+    @proper_tags.setter
+    def proper_tags(self, value):
+        if isinstance(string_types, value):
+            self._proper_tags = value.split('|')
+        else:
+            self._proper_tags = value
+
+    @property
+    def actual_season(self):
+        return self._actual_season or self.episodes[0].season
+
+    @actual_season.setter
+    def actual_season(self, value):
+        self._actual_season = int(value)
 
     @property
     def actual_episode(self):
@@ -95,22 +148,6 @@ class SearchResult(object):
         self._actual_episodes = value
         if len(value) == 1:
             self._actual_episode = value[0]
-
-    @property
-    def show(self):
-        log.warning(
-            'Please use SearchResult.series and not show. Show has been deprecated.',
-            DeprecationWarning,
-        )
-        return self.series
-
-    @show.setter
-    def show(self, value):
-        log.warning(
-            'Please use SearchResult.series and not show. Show has been deprecated.',
-            DeprecationWarning,
-        )
-        self.series = value
 
     def __str__(self):
 
@@ -196,3 +233,19 @@ class TorrentSearchResult(SearchResult):
     def __init__(self, episodes, provider=None):
         super(TorrentSearchResult, self).__init__(episodes, provider=provider)
         self.result_type = u'torrent'
+
+    @property
+    def seeders(self):
+        return self._seeders
+
+    @seeders.setter
+    def seeders(self, value):
+        self._seeders = int(value)
+
+    @property
+    def leechers(self):
+        return self._leechers
+
+    @leechers.setter
+    def leechers(self, value):
+        self._leechers = int(value)

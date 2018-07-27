@@ -447,19 +447,22 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        result = providers.get_provider_class(self.provider).search_result(self.segment)
+        provider = providers.get_provider_class(self.provider)
+        result = provider.search_result(episodes=self.segment)
+
         result.series = self.show
         result.url = self.cached_result[b'url']
-        result.quality = int(self.cached_result[b'quality'])
+        result.quality = self.cached_result[b'quality']
         result.name = self.cached_result[b'name']
-        result.size = int(self.cached_result[b'size'])
-        result.seeders = int(self.cached_result[b'seeders'])
-        result.leechers = int(self.cached_result[b'leechers'])
+        result.size = self.cached_result[b'size']
         result.release_group = self.cached_result[b'release_group']
-        result.version = int(self.cached_result[b'version'])
-        result.proper_tags = self.cached_result[b'proper_tags'].split('|') \
-            if self.cached_result[b'proper_tags'] else ''
+        result.version = self.cached_result[b'version']
+        result.proper_tags = self.cached_result[b'proper_tags']
         result.manually_searched = True
+
+        if result.result_type == 'torrent':
+            result.seeders = self.cached_result[b'seeders']
+            result.leechers = self.cached_result[b'leechers']
 
         try:
             log.info('Beginning to manual snatch release: {name}',
