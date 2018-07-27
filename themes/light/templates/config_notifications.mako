@@ -10,20 +10,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Notifications'
-        },
-        data() {
-            return {
-                header: 'Notifications'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Notifications'
+    },
+    data() {
+        return {
+            header: 'Notifications'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">

@@ -27,22 +27,22 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@vue/test-utils": "1.0.0-beta.20",
-    "ansi-colors": "2.0.4",
-    "autoprefixer": "8.6.5",
-    "ava": "1.0.0-beta.6",
+    "@vue/test-utils": "1.0.0-beta.21",
+    "ansi-colors": "2.0.5",
+    "ava": "0.25.0",
     "axios": "0.18.0",
-    "babel-core": "6.26.3",
     "babel-plugin-istanbul": "4.1.6",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-env": "1.7.0",
+    "babel-register": "6.26.0",
     "babelify": "8.0.0",
     "browser-env": "3.2.5",
     "browserify": "16.2.2",
     "codecov": "3.0.4",
-    "concurrently": "3.6.0",
     "cross-env": "5.2.0",
-    "eslint": "5.1.0",
+    "eslint": "5.2.0",
     "eslint-config-xo": "0.23.0",
-    "eslint-plugin-vue": "4.7.0",
+    "eslint-plugin-vue": "4.7.1",
     "event-stream": "3.3.4",
     "fancy-log": "1.3.2",
     "glob": "7.1.2",
@@ -52,10 +52,10 @@
     "gulp-imagemin": "4.1.0",
     "gulp-livereload": "3.8.1",
     "gulp-postcss": "7.0.1",
-    "gulp-rename": "1.3.0",
+    "gulp-rename": "1.4.0",
     "gulp-sourcemaps": "2.6.4",
     "gulp-uglify-es": "1.0.4",
-    "imagemin-pngquant": "5.1.0",
+    "imagemin-pngquant": "6.0.0",
     "jquery": "3.3.1",
     "nyc": "12.0.2",
     "postcss-reporter": "5.0.0",
@@ -112,25 +112,32 @@
       "$",
       "MEDUSA",
       "api",
+      "apiv1",
+      "apiRoute",
       "jQuery",
       "axios",
       "webRoot",
       "apiRoot",
-      "apiKey"
+      "apiKey",
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
       "build/**",
-      "gulpfile.js"
+      "gulpfile.js",
+      "static/js/templates/name-pattern.vue"
     ],
     "esnext": true
   },
   "ava": {
     "require": [
+      "babel-register",
+      "babel-polyfill",
       "./test/helpers/setup.js"
     ],
+    "babel": "inherit",
     "files": [
       "test/specs/**/*.spec.js"
     ],

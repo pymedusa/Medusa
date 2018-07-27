@@ -60,9 +60,10 @@ if (!window.router) {
                 header: '404 - page not found'
             },
             component: notFoundComponent
-        }, {
-            path: '*',
-            redirect: '/not-found'
+        // @NOTE: Redirect can only be added once all routes are vue
+        // }, {
+        //     path: '*',
+        //     redirect: '/not-found'
         }])
     });
 
