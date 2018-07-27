@@ -7,6 +7,7 @@
 #### Fixes
 - Fixed tabs on home page when using the split home layout ([#4764](https://github.com/pymedusa/Medusa/pull/4764))
 - Fixed black screen after update ([#4774](https://github.com/pymedusa/Medusa/pull/4774))
+- Fixed error when trying to rename episodes ([#4774](https://github.com/pymedusa/Medusa/pull/4774))
 
 -----
 
