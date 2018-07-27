@@ -492,6 +492,8 @@ class EnumField(PatchField):
         super(EnumField, self).__init__(target, attr, attr_type, validator=lambda v: v in enums,
                                         converter=converter, default_value=default_value,
                                         setter=setter, post_processor=post_processor)
+
+
 class MetadataStructureField(PatchField):
     """Process the metadata structure."""
 
@@ -502,7 +504,6 @@ class MetadataStructureField(PatchField):
 
     def patch(self, target, value):
         """Patch the field with the specified value."""
-
         map_values = {
             'seasonAllBannerName': 'season_all_bannerName',
             'seasonAllBanner': 'season_all_banner',

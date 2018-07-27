@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 
 import inspect
 import logging
-import platform
 import pkgutil
+import platform
 import sys
 
 from medusa import (
@@ -23,8 +23,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
-    MetadataStructureField,
     EnumField,
+    MetadataStructureField,
     IntegerField,
     ListField,
     StringField,
@@ -179,10 +179,6 @@ class ConfigHandler(BaseRequestHandler):
             config_data = config_data[path_param]
 
         return self._ok(data=config_data)
-
-    # def patchMetadata(selfs):
-    #     """Patch the metadata config."""
-
 
     def patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
