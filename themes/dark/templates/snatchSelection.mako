@@ -5,14 +5,24 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         data() {
             return {};
+        },
+        mounted() {
+            // Adjust the summary background position and size on page load and resize
+            this.$once('loaded', () => {
+                this.$nextTick(() => {
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         }
     });
 };

@@ -14,6 +14,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Preview Rename'
@@ -40,10 +41,10 @@ const startVue = () => {
                 const seasCheck = this;
                 const seasNo = $(seasCheck).attr('id');
 
+                const seasonIdentifier = 's' + seasNo;
                 $('.epCheck:visible').each(function() {
-                    const epParts = $(this).attr('id').split('x');
-
-                    if (epParts[0] === seasNo) {
+                    const epParts = $(this).attr('id').split('e');
+                    if (epParts[0] === seasonIdentifier) {
                         this.checked = seasCheck.checked;
                     }
                 });

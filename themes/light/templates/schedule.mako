@@ -10,39 +10,30 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
-        el: '#vue-wrap',
         store,
+        el: '#vue-wrap',
         router,
-        metaInfo: {
-            title: 'Schedule'
-        },
-        data() {
-            return {
-                header: 'Schedule'
-            };
-        },
-        computed: Object.assign(
-            store.mapState(['shows']),
-            {
-                layout: {
-                    get() {
-                        const { config } = this;
-                        return config.layout.schedule;
-                    },
-                    set(layout) {
-                        const { $store } = this;
-                        const page = 'schedule';
-                        $store.dispatch('setLayout', { page, layout });
-                    }
+        computed: Object.assign(Vuex.mapState(['shows']), {
+            header() {
+                return this.$route.meta.header;
+            },
+            layout: {
+                get() {
+                    const { config } = this;
+                    return config.layout.schedule;
+                },
+                set(layout) {
+                    const { $store } = this;
+                    const page = 'schedule';
+                    $store.dispatch('setLayout', { page, layout });
                 }
             }
-        ),
+        }),
         mounted() {
             const { $store, $route } = this;
             // $store.dispatch('getShows');
 
-            const unwatch = this.$watch('layout', () => {
-                unwatch();
+            this.$once('loaded', () => {
                 const { config, layout } = this;
                 if (layout === 'list') {
                     const sortCodes = {

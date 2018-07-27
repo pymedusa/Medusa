@@ -9,47 +9,56 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Mass Edit'
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Mass Edit'
+    },
+    beforeMount() {
+        $('#config-components').tabs();
+    },
+    methods: {
+        findDirIndex(which) {
+            const dirParts = which.split('_');
+            return dirParts[dirParts.length - 1];
         },
-        mounted() {
-            function findDirIndex(which) {
-                const dirParts = which.split('_');
-                return dirParts[dirParts.length - 1];
-            }
-
-            function editRootDir(path, options) {
-                $('#new_root_dir_' + options.whichId).val(path);
-                $('#new_root_dir_' + options.whichId).change();
-            }
-
-            $('.new_root_dir').on('change', function() {
-                const curIndex = findDirIndex($(this).attr('id'));
-                $('#display_new_root_dir_' + curIndex).html('<b>' + $(this).val() + '</b>');
-            });
-
-            $('.edit_root_dir').on('click', function(event) {
-                event.preventDefault();
-                const curIndex = findDirIndex($(this).attr('id'));
-                const initialDir = $('#new_root_dir_' + curIndex).val();
-                $(this).nFileBrowser(editRootDir, {
-                    initialDir,
-                    whichId: curIndex,
-                    title: 'Select Show Location'
-                });
-            });
-
-            $('.delete_root_dir').on('click', function() {
-                const curIndex = findDirIndex($(this).attr('id'));
-                $('#new_root_dir_' + curIndex).val(null);
-                $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
-            });
+        editRootDir(path, options) {
+            $('#new_root_dir_' + options.whichId).val(path);
+            $('#new_root_dir_' + options.whichId).change();
         }
-    });
-};
+    },
+    mounted() {
+        const { findDirIndex, editRootDir } = this;
+
+        $(document.body).on('change', '.new_root_dir', event => {
+            event.preventDefault();
+            const target = event.currentTarget;
+            const curIndex = findDirIndex($(target).attr('id'));
+            $('#display_new_root_dir_' + curIndex).html('<b>' + $(target).val() + '</b>');
+        });
+
+        $(document.body).on('click', '.edit_root_dir', event => {
+            event.preventDefault();
+            const target = event.currentTarget;
+            const curIndex = findDirIndex($(target).attr('id'));
+            const initialDir = $('#new_root_dir_' + curIndex).val();
+            $(target).nFileBrowser(editRootDir, {
+                initialDir,
+                whichId: curIndex,
+                title: 'Select Show Location'
+            });
+        });
+
+        $(document.body).on('click', '.delete_root_dir', event => {
+            event.preventDefault();
+            const target = event.currentTarget;
+            const curIndex = findDirIndex($(target).attr('id'));
+            $('#new_root_dir_' + curIndex).val(null);
+            $('#display_new_root_dir_' + curIndex).html('<b>DELETED</b>');
+        });
+    }
+});
 </script>
 </%block>
 
@@ -109,7 +118,7 @@ const startVue = () => {
                                 </div>
                                 <div class="field-pair">
                                     <label for="qualityPreset">
-                                        <span class="component-title">Preferred Quality</span>
+                                        <span class="component-title">Quality</span>
                                         <span class="component-desc">
                                             <%
                                                 ## quality_value is None when the qualities of the edited shows differ

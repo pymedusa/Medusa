@@ -40,13 +40,12 @@ from contextlib2 import suppress
 
 import guessit
 
-from imdbpie import imdbpie
-
 from medusa import app, db
 from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -433,8 +432,8 @@ def reflink_file(src_file, dest_file):
         if reflink is None:
             raise NotImplementedError()
         reflink.reflink(src_file, dest_file)
-    except reflink.ReflinkImpossibleError as msg:
-        if msg.args[0] == 'EOPNOTSUPP':
+    except (reflink.ReflinkImpossibleError, IOError) as msg:
+        if msg.args and msg.args[0] == 'EOPNOTSUPP':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
@@ -443,7 +442,7 @@ def reflink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
-        elif msg.args[0] == 'EXDEV':
+        elif msg.args and msg.args[0] == 'EXDEV':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Can not reflink between two devices. Copying instead', {
@@ -468,16 +467,6 @@ def reflink_file(src_file, dest_file):
             u' Error: Filesystem does not support reflink or reflink is not installed. Copying instead', {
                 'source': src_file,
                 'destination': dest_file,
-            }
-        )
-        copy_file(src_file, dest_file)
-    except IOError as msg:
-        log.warning(
-            u'Failed to create reflink of {source} at {destination}.'
-            u' Error: {error!r}. Copying instead', {
-                'source': src_file,
-                'destination': dest_file,
-                'error': msg,
             }
         )
         copy_file(src_file, dest_file)
@@ -1737,7 +1726,7 @@ def is_info_hash_processed(info_hash):
 def title_to_imdb(title, start_year, imdb_api=None):
     """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
 

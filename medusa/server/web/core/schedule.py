@@ -22,38 +22,9 @@ class Schedule(WebRoot):
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
 
-        submenu = [
-            {
-                'title': 'Sort by:',
-                'path': {
-                    'Date': 'schedule/setScheduleSort/?sort=date',
-                    'Show': 'schedule/setScheduleSort/?sort=show',
-                    'Network': 'schedule/setScheduleSort/?sort=network',
-                }
-            },
-            {
-                'title': 'Layout:',
-                'path': {
-                    'Banner': 'schedule/setScheduleLayout/?layout=banner',
-                    'Poster': 'schedule/setScheduleLayout/?layout=poster',
-                    'List': 'schedule/setScheduleLayout/?layout=list',
-                    'Calendar': 'schedule/setScheduleLayout/?layout=calendar',
-                }
-            },
-            {
-                'title': 'View Paused:',
-                'path': {
-                    'Hide': 'schedule/toggleScheduleDisplayPaused'
-                } if app.COMING_EPS_DISPLAY_PAUSED else {
-                    'Show': 'schedule/toggleScheduleDisplayPaused'
-                }
-            },
-        ]
-
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results,
-                        layout=app.COMING_EPS_LAYOUT,
-                        topmenu='schedule', controller='schedule', action='index')
+        return t.render(next_week=next_week1, today=today, results=results,
+                        layout=app.COMING_EPS_LAYOUT, controller='schedule', action='index')
 
     def toggleScheduleDisplayPaused(self):
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED

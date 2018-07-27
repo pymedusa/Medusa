@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa.common import Overview, statusStrings, SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import Overview, statusStrings, SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa import app
 %>
 <%block name="scripts">
@@ -8,14 +8,74 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Episode Overview'
         },
         data() {
             return {
-                header: 'Episode Overview'
             };
+        },
+        mounted() {
+            $('.allCheck').on('click', function() {
+                const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
+                $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
+            });
+
+            $('.get_more_eps').on('click', function() {
+                const indexerId = $(this).attr('data-indexer-id');
+                const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
+                const seriesId = $(this).attr('data-series-id');
+                const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
+                const lastRow = $('tr#' + indexerId + '-' + seriesId);
+                const clicked = $(this).data('clicked');
+                const action = $(this).attr('value');
+
+                if (clicked) {
+                    if (action.toLowerCase() === 'collapse') {
+                        $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
+                        $(this).prop('value', 'Expand');
+                    } else if (action.toLowerCase() === 'expand') {
+                        $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
+                        $(this).prop('value', 'Collapse');
+                    }
+                } else {
+                    $.getJSON('manage/showEpisodeStatuses', {
+                        indexername: indexerName,
+                        seriesid: seriesId, // eslint-disable-line camelcase
+                        whichStatus: $('#oldStatus').val()
+                    }, data => {
+                        $.each(data, (season, eps) => {
+                            $.each(eps, (episode, name) => {
+                                lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
+                            });
+                        });
+                    });
+                    $(this).data('clicked', 1);
+                    $(this).prop('value', 'Collapse');
+                }
+            });
+
+            // Selects all visible episode checkboxes.
+            $('.selectAllShows').on('click', () => {
+                $('.allCheck').each(function() {
+                    this.checked = true;
+                });
+                $('input[class*="-epcheck"]').each(function() {
+                    this.checked = true;
+                });
+            });
+
+            // Clears all visible episode checkboxes and the season selectors
+            $('.unselectAllShows').on('click', () => {
+                $('.allCheck').each(function() {
+                    this.checked = false;
+                });
+                $('input[class*="-epcheck"]').each(function() {
+                    this.checked = false;
+                });
+            });
         }
     });
 };
@@ -23,7 +83,7 @@ const startVue = () => {
 </%block>
 <%block name="content">
 <div id="content960">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">Episode Overview</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
     % if whichStatus:
         <h2>None of your episodes have status ${statusStrings[int(whichStatus)]}</h2>
@@ -31,10 +91,8 @@ const startVue = () => {
     % endif
     <form action="manage/episodeStatuses" method="get">
     Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
-    % for cur_status in (SKIPPED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, WANTED, IGNORED, DOWNLOADED, ARCHIVED):
-        %if cur_status not in (ARCHIVED, DOWNLOADED):
-            <option value="${cur_status}">${statusStrings[cur_status]}</option>
-        %endif
+    % for cur_status in (WANTED, SKIPPED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
+        <option value="${cur_status}">${statusStrings[cur_status]}</option>
     % endfor
     </select>
     <input class="btn-medusa btn-inline" type="submit" value="Manage" />
@@ -53,14 +111,13 @@ const startVue = () => {
     <input type="hidden" id="row_class" value="${row_class}" />
     Set checked shows/episodes to <select name="newStatus" class="form-control form-control-inline input-sm">
     <%
-        statusList = [SKIPPED, WANTED, IGNORED, DOWNLOADED, ARCHIVED]
-        # Do not allow setting to bare downloaded or archived!
-        statusList.remove(DOWNLOADED)
-        statusList.remove(ARCHIVED)
+        statusList = [WANTED, SKIPPED, IGNORED, DOWNLOADED]
+        if int(whichStatus) == DOWNLOADED:
+            statusList.append(ARCHIVED)
+        if app.USE_FAILED_DOWNLOADS and int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, DOWNLOADED, ARCHIVED):
+            statusList.append(FAILED)
         if int(whichStatus) in statusList:
             statusList.remove(int(whichStatus))
-        if app.USE_FAILED_DOWNLOADS and int(whichStatus) in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED, DOWNLOADED):
-            statusList.append(FAILED)
     %>
     % for cur_status in statusList:
         <option value="${cur_status}">${statusStrings[cur_status]}</option>

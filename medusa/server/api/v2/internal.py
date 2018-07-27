@@ -18,6 +18,7 @@ from medusa.tv.series import Series, SeriesIdentifier
 from six import iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class InternalHandler(BaseRequestHandler):

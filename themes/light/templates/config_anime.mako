@@ -5,19 +5,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Anime'
-        },
-        data() {
-            return {
-                header: 'Anime'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Anime'
+    },
+    data() {
+        return {
+            header: 'Anime'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">

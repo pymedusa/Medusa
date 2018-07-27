@@ -187,16 +187,6 @@ inc_top.mako
     clear: both;
 }
 
-#sub-menu {
-    font-size: 12px;
-    padding-top: 2px;
-}
-
-#sub-menu > a {
-    float: right;
-    margin-left: 4px;
-}
-
 .upgrade-notification {
     text-align: center;
     margin-top: 20px;
@@ -453,6 +443,7 @@ home.mako
 
 .ui-progressbar .ui-progressbar-value {
     box-sizing: content-box !important;
+    height: 20px;
 }
 
 .progressbarText {
@@ -658,10 +649,6 @@ div.xem {
     border-bottom: 1px solid rgb(17, 17, 17);
     border-left: 0;
     border-right: 0;
-}
-
-.ui-progressbar .ui-progressbar-value {
-    height: 20px;
 }
 
 .ui-progressbar .progress-20 {
@@ -1029,11 +1016,6 @@ home_recommendedShows.mako
     top: -2px;
 }
 
-.recommended-container {
-    left: -4px;
-    position: relative;
-}
-
 div.recommended-image {
     background-color: #dfdacf;
 }
@@ -1069,6 +1051,8 @@ div.recommended-image {
 }
 
 .recommended-container {
+    left: -4px;
+    position: relative;
     margin: 12px;
     width: 188px;
     background-color: rgb(223, 218, 207);
@@ -1182,27 +1166,9 @@ div#col-show-summary {
     float: left;
 }
 
-@media (min-width: 1281px) {
-    #sub-menu-container {
-        position: fixed;
-        width: 100%;
-        top: 51px;
-    }
-}
-
-@media (max-width: 1281px) {
-    #sub-menu-container {
-        position: relative;
-        margin-top: -24px;
-    }
-}
-
 @media (max-width: 767px) and (min-width: 341px) {
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .container-navShow {
         display: none;
     }
 
@@ -1236,6 +1202,7 @@ div#col-show-summary {
 
     .tvshowImg {
         margin-bottom: 10px;
+        float: none;
     }
 
     .show-poster-container {
@@ -1249,10 +1216,6 @@ div#col-show-summary {
         display: block;
         margin: 0 auto;
         max-width: 280px !important;
-    }
-
-    .tvshowImg {
-        float: none;
     }
 
     .col-md-12 > .horizontal-scroll {
@@ -1364,9 +1327,6 @@ h1.title a {
 
 #showinfo {
     cursor: default;
-}
-
-#showinfo {
     display: inline-block;
     position: relative;
     top: -3px;
@@ -1541,21 +1501,6 @@ span.wanted b,
 span.snatched b {
     color: rgb(0, 0, 0);
     font-weight: 800;
-}
-
-.plotInfo {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-}
-
-.plotInfoNone {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-    opacity: 0.4;
 }
 
 .displayShowTable {
@@ -3027,11 +2972,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     height: auto;
 }
 
-#sub-menu-container {
-    z-index: 550;
-    min-height: 41px;
-}
-
 .shadow {
     box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
@@ -3086,11 +3026,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .btn-medusa[disabled] {
     background-color: rgb(230, 230, 230);
     *background-color: rgb(217, 217, 217);
-}
-
-.btn-medusa:active,
-.btn-medusa.active {
-    background-color: rgb(204, 204, 204) \9;
 }
 
 .btn-medusa:first-child {
@@ -3479,7 +3414,7 @@ div.stepsguide {
 div.stepsguide .step {
     float: left;
     width: 33%;
-    font: bold 24px Arial;
+    font: bold 24px Arial, sans-serif;
 }
 
 div.stepsguide .step p {
@@ -4393,70 +4328,8 @@ CSS helper classes
     cursor: default;
 }
 
-/* =======================================================================
- Scroll to top
-========================================================================== */
-.scroll-wrapper {
-    position: fixed;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    text-align: center;
-    font-size: 20px;
-    z-index: 999;
-    background-color: #777;
-    color: #eee;
-    width: 50px;
-    height: 48px;
-    line-height: 48px;
-    right: 30px;
-    bottom: 30px;
-    padding-top: 2px;
-    border-radius: 10px;
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -ms-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
-}
-
-.scroll-top-wrapper:hover {
-    background-color: #888;
-}
-
-.scroll-top-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-top-wrapper i.fa {
-    line-height: inherit;
-}
-
 /* CSS for Nav dropdown hover
 .dropdown:hover .dropdown-menu {
     display: block;
 }
 */
-
-/* =======================================================================
- overflow buttons for scrolling left and right.
- For horizontal scrolling, without breaking the ui.
-========================================================================== */
-
-.scroll-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-wrapper.left {
-    position: fixed;
-    right: 150px;
-}
-
-.scroll-wrapper.right {
-    position: fixed;
-    right: 90px;
-}

@@ -66,7 +66,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerShowNotFoundInLanguage,
 )
-from medusa.indexers.utils import indexer_name_to_id
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
@@ -132,7 +132,7 @@ class Home(WebRoot):
 
     def _genericMessage(self, subject, message):
         t = PageTemplate(rh=self, filename='genericMessage.mako')
-        return t.render(message=message, subject=subject, topmenu='home', title='')
+        return t.render(message=message, subject=subject, title='')
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
@@ -168,7 +168,7 @@ class Home(WebRoot):
             show_lists = [['Series', series]]
 
         stats = self.show_statistics()
-        return t.render(topmenu='home', show_lists=show_lists, show_stat=stats[0],
+        return t.render(show_lists=show_lists, show_stat=stats[0],
                         max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
@@ -695,7 +695,7 @@ class Home(WebRoot):
                 root_dir[subject] = helpers.get_disk_space_usage(subject)
 
         t = PageTemplate(rh=self, filename='status.mako')
-        return t.render(title='Status', header='Status', topmenu='system',
+        return t.render(title='Status', header='Status',
                         tvdirFree=tv_dir_free, rootDir=root_dir,
                         controller='home', action='status')
 
@@ -714,7 +714,7 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename='restart.mako')
 
-        return t.render(title='Home', header='Restarting Medusa', topmenu='system',
+        return t.render(title='Home', header='Restarting Medusa',
                         controller='home', action='restart')
 
     def updateCheck(self, pid=None):
@@ -739,7 +739,7 @@ class Home(WebRoot):
 
             # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
             t = PageTemplate(rh=self, filename='restart.mako')
-            restart_rendered = t.render(title='Home', header='Restarting Medusa', topmenu='home',
+            restart_rendered = t.render(title='Home', header='Restarting Medusa',
                                         controller='home', action='restart')
 
             if checkversion.updater.need_update() and checkversion.updater.update():
@@ -947,28 +947,8 @@ class Home(WebRoot):
         for cur_result in sql_results:
             cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
-                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
-
-        def titler(x):
-            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
-
-        if app.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in app.showList:
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    shows.append(show)
-            sorted_show_lists = [
-                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
-                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
-            ]
-        else:
-            sorted_show_lists = [
-                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
-            ]
 
         bwl = None
         if series_obj.is_anime:
@@ -980,8 +960,9 @@ class Home(WebRoot):
         series_id = int(series_obj.series_id)
 
         # Delete any previous occurrances
+        indexer_name = indexer_id_to_name(indexer_id)
         for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexer'] == indexer_id and recentShow['indexerid'] == series_id:
+            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
                 del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
@@ -989,15 +970,15 @@ class Home(WebRoot):
 
         # Insert most recent show
         app.SHOWS_RECENT.insert(0, {
-            'indexer': indexer_id,
-            'indexerid': series_id,
+            'indexerName': indexer_name,
+            'showId': series_id,
             'name': series_obj.name,
         })
 
         return t.render(
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=series_obj, sql_results=sql_results, season_results=season_results,
-            sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
+            bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(series_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
@@ -1246,26 +1227,6 @@ class Home(WebRoot):
                         'icon': 'ui-icon ui-icon-comment',
                     })
 
-        def titler(x):
-            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
-
-        if app.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in app.showList:
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    shows.append(show)
-            sorted_show_lists = [
-                ['Shows', sorted(shows, key=lambda x: titler(x.name).lower())],
-                ['Anime', sorted(anime, key=lambda x: titler(x.name).lower())]
-            ]
-        else:
-            sorted_show_lists = [
-                ['Shows', sorted(app.showList, key=lambda x: titler(x.name).lower())]
-            ]
-
         bwl = None
         if series_obj.is_anime:
             bwl = series_obj.release_groups
@@ -1276,8 +1237,9 @@ class Home(WebRoot):
         series_id = int(series_obj.series_id)
 
         # Delete any previous occurrances
+        indexer_name = indexer_id_to_name(indexer_id)
         for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexer'] == indexer_id and recentShow['indexerid'] == series_id:
+            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
                 del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
@@ -1285,8 +1247,8 @@ class Home(WebRoot):
 
         # Insert most recent show
         app.SHOWS_RECENT.insert(0, {
-            'indexer': indexer_id,
-            'indexerid': series_id,
+            'indexerName': indexer_name,
+            'showId': series_id,
             'name': series_obj.name,
         })
 
@@ -1389,14 +1351,14 @@ class Home(WebRoot):
             cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
                                                  manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
-                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
-                                                    episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'],
+                                                     episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
         return t.render(
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=series_obj, provider_results=provider_results, episode=episode,
-            sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
+            bwl=bwl, season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=' | '.join(series_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
@@ -1803,7 +1765,7 @@ class Home(WebRoot):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        app.SHOWS_RECENT = [x for x in app.SHOWS_RECENT if x['indexer'] != series_obj.indexer and x['indexerid'] != series_obj.series_id]
+        app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['indexerName'] != series_obj.indexer_name and show['showId'] != series_obj.series_id]
 
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
@@ -1963,13 +1925,13 @@ class Home(WebRoot):
                 logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
                     series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
 
-                ep_info = cur_ep.split('x')
-                if not all(ep_info):
+                season_no, episode_no = cur_ep.lstrip('s').split('e')
+                if not all([season_no, episode_no]):
                     logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
-                               (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
+                               (season=season_no, episode=episode_no), logger.DEBUG)
                     continue
 
-                ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+                ep_obj = series_obj.get_episode(season_no, episode_no)
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
@@ -2119,14 +2081,7 @@ class Home(WebRoot):
             ep_obj_rename_list.reverse()
 
         t = PageTemplate(rh=self, filename='testRename.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil'
-        }]
-
-        return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj,
+        return t.render(ep_obj_list=ep_obj_rename_list, show=series_obj,
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):
@@ -2150,8 +2105,7 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
-
-            ep_info = cur_ep.split('x')
+            season_no, episode_no = cur_ep.lstrip('s').split('e')
 
             # this is probably the worst possible way to deal with double eps
             # but I've kinda painted myself into a corner here with this stupid database
@@ -2159,7 +2113,7 @@ class Home(WebRoot):
                 b'SELECT location '
                 b'FROM tv_episodes '
                 b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [indexer_name_to_id(indexername), seriesid, ep_info[0], ep_info[1]])
+                [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
@@ -2168,10 +2122,10 @@ class Home(WebRoot):
                 b'SELECT season, episode '
                 b'FROM tv_episodes '
                 b'WHERE location = ? AND episode != ?',
-                [ep_result[0][b'location'], ep_info[1]]
+                [ep_result[0][b'location'], episode_no]
             )
 
-            root_ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+            root_ep_obj = series_obj.get_episode(season_no, episode_no)
             root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:

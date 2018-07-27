@@ -13,7 +13,9 @@
 %>
 <%block name="scripts">
 <script>
+window.app = {};
 window.app = new Vue({
+    store,
     el: '#vue-wrap',
     metaInfo: {
         title: 'Config - General'

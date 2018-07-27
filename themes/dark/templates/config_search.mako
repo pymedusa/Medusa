@@ -11,279 +11,277 @@ def js_bool(value):
 %>
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        store,
-        metaInfo: {
-            title: 'Config - Episode Search'
-        },
-        data() {
-            return {
-                header: 'Search Settings',
-                clients: {
-                    torrent: {
-                        blackhole: {
-                            title: 'Black hole'
-                        },
-                        utorrent: {
-                            title: 'uTorrent',
-                            description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
-                            labelOption: true,
-                            labelAnimeOption: true,
-                            seedTimeOption: true,
-                            pausedOption: true
-                        },
-                        transmission: {
-                            title: 'Transmission',
-                            description: 'URL to your Transmission client (e.g. http://localhost:9091)',
-                            pathOption: true,
-                            removeFromClientOption: true,
-                            seedLocationOption: true,
-                            seedTimeOption: true,
-                            pausedOption: true,
-                        },
-                        deluge: {
-                            title: 'Deluge (via WebUI)',
-                            shortTitle: 'Deluge',
-                            description: 'URL to your Deluge client (e.g. http://localhost:8112)',
-                            pathOption: true,
-                            removeFromClientOption: true,
-                            labelOption: true,
-                            labelAnimeOption: true,
-                            seedLocationOption: true,
-                            pausedOption: true,
-                            verifyCertOption: true
-                        },
-                        deluged: {
-                            title: 'Deluge (via Daemon)',
-                            shortTitle: 'Deluge',
-                            description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
-                            pathOption: true,
-                            removeFromClientOption: true,
-                            labelOption: true,
-                            labelAnimeOption: true,
-                            seedLocationOption: true,
-                            pausedOption: true,
-                            verifyCertOption: true
-                        },
-                        download_station: {
-                            title: 'Synology DS',
-                            description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
-                        },
-                        rtorrent: {
-                            title: 'rTorrent',
-                            description: 'URL to your rTorrent client (e.g. scgi://localhost:5000 <br> or https://localhost/rutorrent/plugins/httprpc/action.php)',
-                            pathOption: true,
-                            labelOption: true,
-                            labelAnimeOption: true,
-                            verifyCertOption: true
-                        },
-                        qbittorrent: {
-                            title: 'qBittorrent',
-                            description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
-                            labelOption: true,
-                            labelAnimeOption: true,
-                            pausedOption: true
-                        },
-                        mlnet: {
-                            title: 'MLDonkey',
-                            description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
-                            verifyCertOption: true
-                        }
-                    },
-                    nzb: {
-                        blackhole: {
-                            title: 'Black hole'
-                        },
-                        nzbget: {
-                            title: 'NZBget',
-                            description: 'NZBget RPC host name and port number (not NZBgetweb!) (e.g. localhost:6789)'
-                        },
-                        sabnzbd: {
-                            title: 'SABnzbd',
-                            description: 'URL to your SABnzbd server (e.g. http://localhost:8080/)'
-                        }
-                    },
-                },
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Episode Search'
+    },
+    data() {
+        return {
+            header: 'Search Settings',
+            clients: {
                 torrent: {
-                    enabled: ${js_bool(app.USE_TORRENTS)},
-                    dir: ${json.dumps(app.TORRENT_DIR)},
-                    method: ${json.dumps(app.TORRENT_METHOD)},
-                    host: ${json.dumps(app.TORRENT_HOST)},
-                    rpcUrl: ${json.dumps(app.TORRENT_RPCURL)},
-                    username: ${json.dumps(app.TORRENT_USERNAME)},
-                    password: ${json.dumps(app.TORRENT_PASSWORD)},
-                    label: ${json.dumps(app.TORRENT_LABEL)},
-                    labelAnime: ${json.dumps(app.TORRENT_LABEL_ANIME)},
-                    path: ${json.dumps(app.TORRENT_PATH)},
-                    seedLocation: ${json.dumps(app.TORRENT_SEED_LOCATION)},
-                    seedTime: ${json.dumps(app.TORRENT_SEED_TIME)},
-                    testStatus: 'Click below to test',
-                    authType: ${json.dumps(app.TORRENT_AUTH_TYPE)},
-                    verifyCert: ${js_bool(app.TORRENT_VERIFY_CERT)},
-                    paused: ${js_bool(app.TORRENT_PAUSED)},
-                    highBandwidth: ${js_bool(app.TORRENT_HIGH_BANDWIDTH)},
+                    blackhole: {
+                        title: 'Black hole'
+                    },
+                    utorrent: {
+                        title: 'uTorrent',
+                        description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
+                        labelOption: true,
+                        labelAnimeOption: true,
+                        seedTimeOption: true,
+                        pausedOption: true
+                    },
+                    transmission: {
+                        title: 'Transmission',
+                        description: 'URL to your Transmission client (e.g. http://localhost:9091)',
+                        pathOption: true,
+                        removeFromClientOption: true,
+                        seedLocationOption: true,
+                        seedTimeOption: true,
+                        pausedOption: true,
+                    },
+                    deluge: {
+                        title: 'Deluge (via WebUI)',
+                        shortTitle: 'Deluge',
+                        description: 'URL to your Deluge client (e.g. http://localhost:8112)',
+                        pathOption: true,
+                        removeFromClientOption: true,
+                        labelOption: true,
+                        labelAnimeOption: true,
+                        seedLocationOption: true,
+                        pausedOption: true,
+                        verifyCertOption: true
+                    },
+                    deluged: {
+                        title: 'Deluge (via Daemon)',
+                        shortTitle: 'Deluge',
+                        description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
+                        pathOption: true,
+                        removeFromClientOption: true,
+                        labelOption: true,
+                        labelAnimeOption: true,
+                        seedLocationOption: true,
+                        pausedOption: true,
+                        verifyCertOption: true
+                    },
+                    download_station: {
+                        title: 'Synology DS',
+                        description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
+                    },
+                    rtorrent: {
+                        title: 'rTorrent',
+                        description: 'URL to your rTorrent client (e.g. scgi://localhost:5000 <br> or https://localhost/rutorrent/plugins/httprpc/action.php)',
+                        pathOption: true,
+                        labelOption: true,
+                        labelAnimeOption: true,
+                        verifyCertOption: true
+                    },
+                    qbittorrent: {
+                        title: 'qBittorrent',
+                        description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
+                        labelOption: true,
+                        labelAnimeOption: true,
+                        pausedOption: true
+                    },
+                    mlnet: {
+                        title: 'MLDonkey',
+                        description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
+                        verifyCertOption: true
+                    }
                 },
                 nzb: {
-                    enabled: ${js_bool(app.USE_NZBS)},
-                    dir: ${json.dumps(app.NZB_DIR)},
-                    method: ${json.dumps(app.NZB_METHOD)},
+                    blackhole: {
+                        title: 'Black hole'
+                    },
                     nzbget: {
-                        useHttps: ${js_bool(app.NZBGET_USE_HTTPS)},
-                        host: ${json.dumps(app.NZBGET_HOST)},
-                        username: ${json.dumps(app.NZBGET_USERNAME)},
-                        password: ${json.dumps(app.NZBGET_PASSWORD)},
-                        testStatus: 'Click below to test',
-                        category: ${json.dumps(app.NZBGET_CATEGORY)},
-                        categoryBacklog: ${json.dumps(app.NZBGET_CATEGORY_BACKLOG)},
-                        categoryAnime: ${json.dumps(app.NZBGET_CATEGORY_ANIME)},
-                        categoryAnimeBacklog: ${json.dumps(app.NZBGET_CATEGORY_ANIME_BACKLOG)},
-                        priority: ${app.NZBGET_PRIORITY},
-                        priorityOptions: {
-                            'Very low': -100,
-                            'Low': -50,
-                            'Normal': 0,
-                            'High': 50,
-                            'Very high': 100,
-                            'Force': 900
-                        }
+                        title: 'NZBget',
+                        description: 'NZBget RPC host name and port number (not NZBgetweb!) (e.g. localhost:6789)'
                     },
                     sabnzbd: {
-                        host: ${json.dumps(app.SAB_HOST)},
-                        username: ${json.dumps(app.SAB_USERNAME)},
-                        password: ${json.dumps(app.SAB_PASSWORD)},
-                        apiKey: ${json.dumps(app.SAB_APIKEY)},
-                        testStatus: 'Click below to test',
-                        category: ${json.dumps(app.SAB_CATEGORY)},
-                        categoryBacklog: ${json.dumps(app.SAB_CATEGORY_BACKLOG)},
-                        categoryAnime: ${json.dumps(app.SAB_CATEGORY_ANIME)},
-                        categoryAnimeBacklog: ${json.dumps(app.SAB_CATEGORY_ANIME_BACKLOG)},
-                        forced: ${js_bool(app.SAB_FORCED)}
+                        title: 'SABnzbd',
+                        description: 'URL to your SABnzbd server (e.g. http://localhost:8080/)'
                     }
                 },
-                httpAuthTypes: {
-                    none: 'None',
-                    basic: 'Basic',
-                    digest: 'Digest'
+            },
+            torrent: {
+                enabled: ${js_bool(app.USE_TORRENTS)},
+                dir: ${json.dumps(app.TORRENT_DIR)},
+                method: ${json.dumps(app.TORRENT_METHOD)},
+                host: ${json.dumps(app.TORRENT_HOST)},
+                rpcUrl: ${json.dumps(app.TORRENT_RPCURL)},
+                username: ${json.dumps(app.TORRENT_USERNAME)},
+                password: ${json.dumps(app.TORRENT_PASSWORD)},
+                label: ${json.dumps(app.TORRENT_LABEL)},
+                labelAnime: ${json.dumps(app.TORRENT_LABEL_ANIME)},
+                path: ${json.dumps(app.TORRENT_PATH)},
+                seedLocation: ${json.dumps(app.TORRENT_SEED_LOCATION)},
+                seedTime: ${json.dumps(app.TORRENT_SEED_TIME)},
+                testStatus: 'Click below to test',
+                authType: ${json.dumps(app.TORRENT_AUTH_TYPE)},
+                verifyCert: ${js_bool(app.TORRENT_VERIFY_CERT)},
+                paused: ${js_bool(app.TORRENT_PAUSED)},
+                highBandwidth: ${js_bool(app.TORRENT_HIGH_BANDWIDTH)},
+            },
+            nzb: {
+                enabled: ${js_bool(app.USE_NZBS)},
+                dir: ${json.dumps(app.NZB_DIR)},
+                method: ${json.dumps(app.NZB_METHOD)},
+                nzbget: {
+                    useHttps: ${js_bool(app.NZBGET_USE_HTTPS)},
+                    host: ${json.dumps(app.NZBGET_HOST)},
+                    username: ${json.dumps(app.NZBGET_USERNAME)},
+                    password: ${json.dumps(app.NZBGET_PASSWORD)},
+                    testStatus: 'Click below to test',
+                    category: ${json.dumps(app.NZBGET_CATEGORY)},
+                    categoryBacklog: ${json.dumps(app.NZBGET_CATEGORY_BACKLOG)},
+                    categoryAnime: ${json.dumps(app.NZBGET_CATEGORY_ANIME)},
+                    categoryAnimeBacklog: ${json.dumps(app.NZBGET_CATEGORY_ANIME_BACKLOG)},
+                    priority: ${app.NZBGET_PRIORITY},
+                    priorityOptions: {
+                        'Very low': -100,
+                        'Low': -50,
+                        'Normal': 0,
+                        'High': 50,
+                        'Very high': 100,
+                        'Force': 900
+                    }
                 },
+                sabnzbd: {
+                    host: ${json.dumps(app.SAB_HOST)},
+                    username: ${json.dumps(app.SAB_USERNAME)},
+                    password: ${json.dumps(app.SAB_PASSWORD)},
+                    apiKey: ${json.dumps(app.SAB_APIKEY)},
+                    testStatus: 'Click below to test',
+                    category: ${json.dumps(app.SAB_CATEGORY)},
+                    categoryBacklog: ${json.dumps(app.SAB_CATEGORY_BACKLOG)},
+                    categoryAnime: ${json.dumps(app.SAB_CATEGORY_ANIME)},
+                    categoryAnimeBacklog: ${json.dumps(app.SAB_CATEGORY_ANIME_BACKLOG)},
+                    forced: ${js_bool(app.SAB_FORCED)}
+                }
+            },
+            httpAuthTypes: {
+                none: 'None',
+                basic: 'Basic',
+                digest: 'Digest'
+            },
 
-                // Episode Search: General Config
-                randomizeProviders: ${js_bool(app.RANDOMIZE_PROVIDERS)},
-                downloadPropers: ${js_bool(app.DOWNLOAD_PROPERS)},
-                checkPropersInterval: ${json.dumps(app.CHECK_PROPERS_INTERVAL)},
-                propersIntervalLabels: ${json.dumps(app.PROPERS_INTERVAL_LABELS)},
-                propersSearchDays: ${app.PROPERS_SEARCH_DAYS},
-                backlogDays: ${app.BACKLOG_DAYS},
-                backlogFrequency: ${app.BACKLOG_FREQUENCY},
-                minBacklogFrequency: ${app.MIN_BACKLOG_FREQUENCY},
-                dailySearchFrequency: ${app.DAILYSEARCH_FREQUENCY},
-                minDailySearchFrequency: ${app.MIN_DAILYSEARCH_FREQUENCY},
-                removeFromClient: ${js_bool(app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'))},
-                torrentCheckerFrequency: ${app.TORRENT_CHECKER_FREQUENCY},
-                minTorrentCheckerFrequency: ${app.MIN_TORRENT_CHECKER_FREQUENCY},
-                usenetRetention: ${app.USENET_RETENTION},
-                trackersList: ${json.dumps(app.TRACKERS_LIST)}.join(', '),
-                allowHighPriority: ${js_bool(app.ALLOW_HIGH_PRIORITY)},
-                useFailedDownloads: ${js_bool(app.USE_FAILED_DOWNLOADS)},
-                deleteFailed: ${js_bool(app.DELETE_FAILED)},
-                cacheTrimming: ${js_bool(app.CACHE_TRIMMING)},
-                maxCacheAge: ${app.MAX_CACHE_AGE},
+            // Episode Search: General Config
+            randomizeProviders: ${js_bool(app.RANDOMIZE_PROVIDERS)},
+            downloadPropers: ${js_bool(app.DOWNLOAD_PROPERS)},
+            checkPropersInterval: ${json.dumps(app.CHECK_PROPERS_INTERVAL)},
+            propersIntervalLabels: ${json.dumps(app.PROPERS_INTERVAL_LABELS)},
+            propersSearchDays: ${app.PROPERS_SEARCH_DAYS},
+            backlogDays: ${app.BACKLOG_DAYS},
+            backlogFrequency: ${app.BACKLOG_FREQUENCY},
+            minBacklogFrequency: ${app.MIN_BACKLOG_FREQUENCY},
+            dailySearchFrequency: ${app.DAILYSEARCH_FREQUENCY},
+            minDailySearchFrequency: ${app.MIN_DAILYSEARCH_FREQUENCY},
+            removeFromClient: ${js_bool(app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'))},
+            torrentCheckerFrequency: ${app.TORRENT_CHECKER_FREQUENCY},
+            minTorrentCheckerFrequency: ${app.MIN_TORRENT_CHECKER_FREQUENCY},
+            usenetRetention: ${app.USENET_RETENTION},
+            trackersList: ${json.dumps(app.TRACKERS_LIST)}.join(', '),
+            allowHighPriority: ${js_bool(app.ALLOW_HIGH_PRIORITY)},
+            useFailedDownloads: ${js_bool(app.USE_FAILED_DOWNLOADS)},
+            deleteFailed: ${js_bool(app.DELETE_FAILED)},
+            cacheTrimming: ${js_bool(app.CACHE_TRIMMING)},
+            maxCacheAge: ${app.MAX_CACHE_AGE},
 
-                // Episode Search: Search Filters
-                ignoreWords: ${json.dumps(app.IGNORE_WORDS)}.join(', '),
-                undesiredWords: ${json.dumps(app.UNDESIRED_WORDS)}.join(', '),
-                preferredWords: ${json.dumps(app.PREFERRED_WORDS)}.join(', '),
-                requireWords: ${json.dumps(app.REQUIRE_WORDS)}.join(', '),
-                ignoredSubsList: ${json.dumps(app.IGNORED_SUBS_LIST)}.join(', '),
-                ignoreUndSubs: ${js_bool(app.IGNORE_UND_SUBS)},
+            // Episode Search: Search Filters
+            ignoreWords: ${json.dumps(app.IGNORE_WORDS)}.join(', '),
+            undesiredWords: ${json.dumps(app.UNDESIRED_WORDS)}.join(', '),
+            preferredWords: ${json.dumps(app.PREFERRED_WORDS)}.join(', '),
+            requireWords: ${json.dumps(app.REQUIRE_WORDS)}.join(', '),
+            ignoredSubsList: ${json.dumps(app.IGNORED_SUBS_LIST)}.join(', '),
+            ignoreUndSubs: ${js_bool(app.IGNORE_UND_SUBS)},
 
-                // Global
-                dataDir: ${json.dumps(app.DATA_DIR)},
+            // Global
+            dataDir: ${json.dumps(app.DATA_DIR)},
+        };
+    },
+    beforeMount() {
+        $('#config-components').tabs();
+    },
+    methods: {
+        async testTorrentClient() {
+            const { torrent } = this;
+            const { method, host, username, password } = torrent;
+
+            this.torrent.testStatus = MEDUSA.config.loading;
+
+            const params = {
+                torrent_method: method,
+                host,
+                username,
+                password
             };
+            const resp = await apiRoute.get('home/testTorrent', { params });
+
+            this.torrent.testStatus = resp.data;
         },
-        mounted() {
-            $('#config-components').tabs();
+        async testNzbget() {
+            const { nzb } = this;
+            const { nzbget } = nzb;
+            const { host, username, password, useHttps } = nzbget;
+
+            this.nzb.nzbget.testStatus = MEDUSA.config.loading;
+
+            const params = {
+                host,
+                username,
+                password,
+                use_https: useHttps
+            };
+            const resp = await apiRoute.get('home/testNZBget', { params });
+
+            this.nzb.nzbget.testStatus = resp.data;
         },
-        methods: {
-            async testTorrentClient() {
-                const { torrent } = this;
-                const { method, host, username, password } = torrent;
+        async testSabnzbd() {
+            const { nzb } = this;
+            const { sabnzbd } = nzb;
+            const { host, username, password, apiKey } = sabnzbd;
 
-                this.torrent.testStatus = MEDUSA.config.loading;
+            this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
-                const params = {
-                    torrent_method: method,
-                    host,
-                    username,
-                    password
-                };
-                const resp = await apiRoute.get('home/testTorrent', { params });
+            const params = {
+                host,
+                username,
+                password,
+                apikey: apiKey
+            };
+            const resp = await apiRoute.get('home/testSABnzbd', { params });
 
-                this.torrent.testStatus = resp.data;
-            },
-            async testNzbget() {
-                const { nzb } = this;
-                const { nzbget } = nzb;
-                const { host, username, password, useHttps } = nzbget;
+            this.nzb.sabnzbd.testStatus = resp.data;
+        }
+    },
+    watch: {
+        'torrent.host'(host) {
+            const { torrent } = this;
+            const { method } = torrent;
 
-                this.nzb.nzbget.testStatus = MEDUSA.config.loading;
+            if (method === 'rtorrent') {
+                const isMatch = host.startsWith('scgi://');
 
-                const params = {
-                    host,
-                    username,
-                    password,
-                    use_https: useHttps
-                };
-                const resp = await apiRoute.get('home/testNZBget', { params });
+                if (isMatch) {
+                    this.torrent.username = '';
+                    this.torrent.password = '';
+                    this.torrent.authType = 'none';
+                }
+            }
 
-                this.nzb.nzbget.testStatus = resp.data;
-            },
-            async testSabnzbd() {
-                const { nzb } = this;
-                const { sabnzbd } = nzb;
-                const { host, username, password, apiKey } = sabnzbd;
-
-                this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
-
-                const params = {
-                    host,
-                    username,
-                    password,
-                    apikey: apiKey
-                };
-                const resp = await apiRoute.get('home/testSABnzbd', { params });
-
-                this.nzb.sabnzbd.testStatus = resp.data;
+            if (method === 'deluge') {
+                this.torrent.username = '';
             }
         },
-        watch: {
-            'torrent.host'(host) {
-                const { torrent } = this;
-                const { method } = torrent;
-
-                if (method === 'rtorrent') {
-                    const isMatch = host.startsWith('scgi://');
-
-                    if (isMatch) {
-                        this.torrent.username = '';
-                        this.torrent.password = '';
-                        this.torrent.authType = 'none';
-                    }
-                }
-
-                if (method === 'deluge') {
-                    this.torrent.username = '';
-                }
-            },
-            'torrent.method'(method) {
-                if (!this.clients.torrent[method].removeFromClientOption) {
-                    this.removeFromClient = false;
-                }
+        'torrent.method'(method) {
+            if (!this.clients.torrent[method].removeFromClientOption) {
+                this.removeFromClient = false;
             }
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">

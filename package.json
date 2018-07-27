@@ -11,28 +11,34 @@
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
     "test": "yarn run build && yarn run test-css && yarn run test-api",
-    "gulp": "gulp",
-    "build": "gulp lintthemes",
+    "build": "node ./themes-default/helper.js lint",
     "coverage": "nyc ava && yarn report-coverage",
     "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "test-css": "node node_modules/stylelint/bin/stylelint.js ./themes-default/**/static/css/*.css",
+    "test-css": "stylelint ./themes-default/**/static/css/*.css ./themes-default/**/static/js/templates/**/*.vue",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
     "install": "yarn run build"
   },
   "devDependencies": {
-    "ava": "^0.24.0",
-    "codecov": "^3.0.0",
-    "dredd": "^4.7.2",
-    "execa": "^0.9.0",
-    "gulp": "^3.9.1",
-    "nyc": "^11.3.0",
-    "snyk": "^1.9.1",
-    "stylelint": "^7.9.0",
-    "stylelint-config-standard": "^16.0.0"
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
+    "ava": "0.25.0",
+    "codecov": "3.0.4",
+    "dredd": "5.1.11",
+    "execa": "0.10.0",
+    "nyc": "12.0.2",
+    "snyk": "1.89.0",
+    "stylelint": "9.4.0",
+    "stylelint-config-standard": "18.2.0",
+    "yargs": "12.0.1"
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
+    "processors": [
+      [
+        "@mapbox/stylelint-processor-arbitrary-tags",
+        { "fileFilterRegex": [".vue$"] }
+      ]
+    ],
     "rules": {
       "indentation": [
         4,
@@ -43,7 +49,8 @@
           "message": "Please use 4 spaces for indentation.",
           "severity": "error"
         }
-      ]
+      ],
+      "no-descending-specificity": null
     },
     "ignoreFiles": [
       "themes-default/**/static/css/lib/**",

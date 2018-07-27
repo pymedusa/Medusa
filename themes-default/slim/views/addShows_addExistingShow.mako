@@ -12,99 +12,114 @@
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Existing Show'
-        },
-        data() {
-            <% indexers = { str(i): { 'name': v['name'], 'showUrl': v['show_url'] } for i, v in iteritems(indexerConfig) } %>
-            return {
-                // @FIXME: Python conversions (fix when config is loaded before routes)
-                indexers: ${json.dumps(indexers)},
-                defaultIndexer: ${app.INDEXER_DEFAULT},
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Existing Show'
+    },
+    data() {
+        <% indexers = { str(i): { 'name': v['name'], 'showUrl': v['show_url'] } for i, v in iteritems(indexerConfig) } %>
+        return {
+            // @FIXME: Python conversions (fix when config is loaded before routes)
+            indexers: ${json.dumps(indexers)},
+            defaultIndexer: ${app.INDEXER_DEFAULT},
 
-                isLoading: false,
-                rootDirs: [],
-                dirList: [],
-                promptForSettings: false
-            };
+            isLoading: false,
+            requestTimeout: 3 * 60 * 1000,
+            errorMessage: '',
+            rootDirs: [],
+            dirList: [],
+            promptForSettings: false
+        };
+    },
+    mounted() {
+        // Need to delay that a bit
+        setTimeout(() => {
+            // Hide the black/whitelist, because it can only be used for a single anime show
+            $.updateBlackWhiteList(undefined);
+        }, 500);
+    },
+    computed: {
+        selectedRootDirs() {
+            return this.rootDirs.filter(rd => rd.selected);
         },
-        mounted() {
-            // Need to delay that a bit
-            this.$nextTick(() => {
-                // Hide the black/whitelist, because it can only be used for a single anime show
-                $.updateBlackWhiteList(undefined);
+        filteredDirList() {
+            return this.dirList.filter(dir => !dir.alreadyAdded);
+        },
+        displayPaths() {
+            // Mark the root dir as bold in the path
+            const appendSepChar = path => {
+                const sepChar = (() => {
+                    if (path.includes('\\')) return '\\';
+                    if (path.includes('/')) return '/';
+                    return '';
+                })();
+                return path.slice(-1) !== sepChar ? path + sepChar : path;
+            };
+            return this.filteredDirList
+                .map(dir => {
+                    const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
+                    if (!rootDirObj) return dir.path;
+                    const rootDir = appendSepChar(rootDirObj.path);
+                    const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
+                    return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
+                });
+        },
+        showTable() {
+            const { isLoading, selectedRootDirs, errorMessage } = this;
+            return !isLoading && selectedRootDirs.length !== 0 && errorMessage === '';
+        },
+        checkAll: {
+            get() {
+                const selectedDirList = this.filteredDirList.filter(dir => dir.selected);
+                if (selectedDirList.length === 0) return false;
+                return selectedDirList.length === this.filteredDirList.length;
+            },
+            set(newValue) {
+                this.dirList = this.dirList.map(dir => {
+                    dir.selected = newValue;
+                    return dir;
+                });
+            }
+        }
+    },
+    methods: {
+        rootDirsUpdated(value, data) {
+            this.rootDirs = data.map(rd => {
+                return {
+                    selected: true,
+                    path: rd.path
+                };
             });
         },
-        computed: {
-            selectedRootDirs() {
-                return this.rootDirs.filter(rd => rd.selected);
-            },
-            filteredDirList() {
-                return this.dirList.filter(dir => !dir.alreadyAdded);
-            },
-            displayPaths() {
-                // Mark the root dir as bold in the path
-                const appendSepChar = path => {
-                    const sepChar = (() => {
-                        if (path.includes('\\')) return '\\';
-                        if (path.includes('/')) return '/';
-                        return '';
-                    })();
-                    return path.slice(-1) !== sepChar ? path + sepChar : path;
-                };
-                return this.filteredDirList
-                    .map(dir => {
-                        const rootDirObj = this.rootDirs.find(rd => dir.path.startsWith(rd.path));
-                        if (!rootDirObj) return dir.path;
-                        const rootDir = appendSepChar(rootDirObj.path);
-                        const rdEndIndex = dir.path.indexOf(rootDir) + rootDir.length;
-                        return '<b>' + dir.path.slice(0, rdEndIndex) + '</b>' + dir.path.slice(rdEndIndex);
-                    });
-            },
-            checkAll: {
-                get() {
-                    const selectedDirList = this.filteredDirList.filter(dir => dir.selected);
-                    if (selectedDirList.length === 0) return false;
-                    return selectedDirList.length === this.filteredDirList.length;
-                },
-                set(newValue) {
-                    this.dirList = this.dirList.map(dir => {
-                        dir.selected = newValue;
-                        return dir;
-                    });
-                }
+        update() {
+            if (this.isLoading) {
+                return;
             }
-        },
-        methods: {
-            rootDirsUpdated(value, data) {
-                this.rootDirs = data.map(rd => {
-                    return {
-                        selected: true,
-                        path: rd.path
-                    };
-                });
-            },
-            async update() {
-                if (this.isLoading) return;
 
-                this.isLoading = true;
+            this.isLoading = true;
+            this.errorMessage = '';
 
-                const indices = this.rootDirs
-                    .reduce((indices, rd, index) => {
-                        if (rd.selected) indices.push(index);
-                        return indices;
-                    }, []);
-                if (indices.length === 0) {
-                    this.dirList = [];
-                    this.isLoading = false;
-                    return;
-                }
+            const indices = this.rootDirs
+                .reduce((indices, rd, index) => {
+                    if (rd.selected) indices.push(index);
+                    return indices;
+                }, []);
+            if (indices.length === 0) {
+                this.dirList = [];
+                this.isLoading = false;
+                return;
+            }
 
-                const params = { 'rootDirs': indices.join(',') };
-                const { data } = await api.get('internal/existingSeries', { params });
+            const config = {
+                params: {
+                    'rootDirs': indices.join(',')
+                },
+                timeout: this.requestTimeout
+            };
+            api.get('internal/existingSeries', config).then(response => {
+                const { data } = response;
                 this.dirList = data
                     .map(dir => {
                         // Pre-select all dirs not already added
@@ -129,70 +144,74 @@ const startVue = () => {
                         // Fixes tablesorter not working after root dirs are refreshed
                         .trigger('updateAll');
                 });
-            },
-            seriesIndexerUrl(curDir) {
-                return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
-            },
-            async submitSeriesDirs() {
-                const dirList = this.filteredDirList.filter(dir => dir.selected);
-                if (dirList.length === 0) return false;
+            }).catch(error => {
+                this.errorMessage = error.message;
+                this.dirList = [];
+                this.isLoading = false;
+            });
+        },
+        seriesIndexerUrl(curDir) {
+            return this.indexers[curDir.metadata.indexer].showUrl + curDir.metadata.seriesId.toString();
+        },
+        async submitSeriesDirs() {
+            const dirList = this.filteredDirList.filter(dir => dir.selected);
+            if (dirList.length === 0) return false;
 
-                const formData = new FormData();
-                formData.append('promptForSettings', this.promptForSettings);
-                dirList.forEach(dir => {
-                    const originalIndexer = dir.metadata.indexer;
-                    let seriesId = dir.metadata.seriesId;
-                    if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-                        seriesId = '';
-                    }
+            const formData = new FormData();
+            formData.append('promptForSettings', this.promptForSettings);
+            dirList.forEach(dir => {
+                const originalIndexer = dir.metadata.indexer;
+                let seriesId = dir.metadata.seriesId;
+                if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
+                    seriesId = '';
+                }
 
-                    const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
-                        .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
+                const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
+                    .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                    formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+            });
+
+            const response = await apiRoute.post('addShows/addExistingShows', formData);
+            const { data } = response;
+            const { result, message, redirect, params } = data;
+
+            if (message) {
+                if (result === false) {
+                    console.log('Error: ' + message);
+                } else {
+                    console.log('Response: ' + message);
+                }
+            }
+            if (redirect) {
+                const baseUrl = apiRoute.defaults.baseURL;
+                if (params.length === 0) {
+                    window.location.href = baseUrl + redirect;
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = baseUrl + redirect;
+                form.acceptCharset = 'utf-8';
+
+                params.forEach(param => {
+                    const element = document.createElement('input');
+                    [ element.name, element.value ] = param; // Unpack
+                    form.appendChild(element);
                 });
 
-                const response = await apiRoute.post('addShows/addExistingShows', formData);
-                const { data } = response;
-                const { result, message, redirect, params } = data;
-
-                if (message) {
-                    if (result === false) {
-                        console.log('Error: ' + message);
-                    } else {
-                        console.log('Response: ' + message);
-                    }
-                }
-                if (redirect) {
-                    const baseUrl = apiRoute.defaults.baseURL;
-                    if (params.length === 0) {
-                        window.location.href = baseUrl + redirect;
-                        return;
-                    }
-
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = baseUrl + redirect;
-                    form.acceptCharset = 'utf-8';
-
-                    params.forEach(param => {
-                        const element = document.createElement('input');
-                        [ element.name, element.value ] = param; // Unpack
-                        form.appendChild(element);
-                    });
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            }
-        },
-        watch: {
-            selectedRootDirs() {
-                this.update();
+                document.body.appendChild(form);
+                form.submit();
             }
         }
-    });
-};
+    },
+    watch: {
+        selectedRootDirs() {
+            this.update();
+        }
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -227,9 +246,18 @@ const startVue = () => {
                     </li>
                 </ul>
                 <br>
-                <span v-if="isLoading"><img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...</span>
-                <span v-if="!isLoading && selectedRootDirs.length === 0">No folders selected.</span>
-                <table v-show="!isLoading && selectedRootDirs.length !== 0" id="addRootDirTable" class="defaultTable tablesorter">
+
+                <span v-if="isLoading">
+                    <img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...
+                </span>
+                <template v-else>
+                    <span v-if="errorMessage !== ''">
+                        <b>Encountered an error while loading folders:</b> {{ errorMessage }}
+                    </span>
+                    <span v-else-if="selectedRootDirs.length === 0">No folders selected.</span>
+                </template>
+
+                <table v-show="showTable" id="addRootDirTable" class="defaultTable tablesorter">
                     <thead>
                         <tr>
                             <th class="col-checkbox"><input type="checkbox" v-model="checkAll" /></th>
