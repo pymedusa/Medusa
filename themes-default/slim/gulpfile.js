@@ -9,7 +9,7 @@ const livereload = require('gulp-livereload');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpif = require('gulp-if');
 const gulp = require('gulp');
-const webpack = require('webpack-stream');
+// const webpack = require('webpack-stream');
 const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify-es').default;
 const browserify = require('browserify');
@@ -53,6 +53,15 @@ if (PROD) {
 }
 */
 
+// List JS files handled by Webpack
+const webpackedJsFiles = [
+    'static/js/app.js',
+    'static/js/index.js',
+    'static/js/api.js',
+    'static/js/router.js',
+    'static/js/store.js'
+];
+
 const staticAssets = [
     'static/browserconfig.xml',
     'static/favicon.ico',
@@ -61,11 +70,7 @@ const staticAssets = [
     'static/css/**/*',
 
     // Webpacked files
-    '!static/js/app.js',
-    '!static/js/index.js',
-    '!static/js/api.js',
-    '!static/js/router.js',
-    '!static/js/store.js'
+    ...webpackedJsFiles.map(file => '!' + file)
 ];
 
 /**
@@ -164,12 +169,8 @@ const bundleJs = done => {
             'js/*.min.js',
             'js/vender.js',
 
-            // Webpacked files
-            'js/app.js',
-            'js/index.js',
-            'js/api.js',
-            'js/router.js',
-            'js/store.js'
+            // Webpacked JS files
+            ...webpackedJsFiles.map(file => file.replace('static/', ''))
         ]
     }, (err, files) => {
         if (err) {
@@ -233,7 +234,6 @@ const moveWebpackedFiles = () => {
         .src('./dist/*.js', {
             base: 'dist'
         })
-        .pipe(webpack(require('./webpack.config.js')))
         .pipe(gulp.dest(dest));
 };
 
