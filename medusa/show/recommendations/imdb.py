@@ -8,10 +8,9 @@ import posixpath
 import re
 from builtins import object
 
-from imdbpie import imdbpie
-
 from medusa import helpers
 from medusa.cache import recommended_series_cache
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
@@ -27,8 +26,6 @@ from six import binary_type
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-imdb_api = imdbpie.Imdb()
-
 
 class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
@@ -37,6 +34,7 @@ class ImdbPopular(object):
         """Initialize class."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = MedusaSession()
+        self.imdb_api = Imdb(session=self.session)
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
 
@@ -68,7 +66,7 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        imdb_result = imdb_api.get_popular_shows()
+        imdb_result = self.imdb_api.get_popular_shows()
 
         for imdb_show in imdb_result['ranks']:
             series = {}

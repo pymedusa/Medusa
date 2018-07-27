@@ -22,14 +22,13 @@ import os
 import posixpath
 from builtins import object
 
-from imdbpie import imdbpie
-
 from medusa import (
     app,
     helpers,
 )
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
+from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
@@ -43,24 +42,41 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSession()
-imdb_api = imdbpie.Imdb(session=session)
-
-anidb_api = None
 
 
-def load_anidb_api(func):
-    """
-    Decorate a function to lazy load the anidb_api.
+class LazyApi(object):
+    """Decorators to lazily construct API classes."""
 
-    We need to do this, because we're passing the Medusa cache location to the lib. As the module is imported before
-    the app.CACHE_DIR location has been read, we can't initialize it at module level.
-    """
-    def func_wrapper(aid):
-        global anidb_api
-        if anidb_api is None:
-            anidb_api = Anidb(cache_dir=app.CACHE_DIR)
-        return func(aid)
-    return func_wrapper
+    imdb_api = None
+    anidb_api = None
+
+    @classmethod
+    def load_anidb_api(cls, func):
+        """
+        Decorate a function to lazy load the anidb_api.
+
+        We need to do this, because we're passing the Medusa cache location to the lib. As the module is imported before
+        the app.CACHE_DIR location has been read, we can't initialize it at module level.
+        """
+        def func_wrapper(*args, **kwargs):
+            if cls.anidb_api is None:
+                cls.anidb_api = Anidb(cache_dir=app.CACHE_DIR)
+            return func(*args, **kwargs)
+        return func_wrapper
+
+    @classmethod
+    def load_imdb_api(cls, func):
+        """
+        Decorate a function to lazy load the imdb_api.
+
+        We need to do this, because we're overriding the cache location of the library.
+        As the module is imported before the app.CACHE_DIR location has been read, we can't initialize it at module level.
+        """
+        def func_wrapper(*args, **kwargs):
+            if cls.imdb_api is None:
+                cls.imdb_api = Imdb(session=session)
+            return func(*args, **kwargs)
+        return func_wrapper
 
 
 class MissingTvdbMapping(Exception):
@@ -167,7 +183,7 @@ class RecommendedShow(object):
         return 'Recommended show {0} from recommended list: {1}'.format(self.title, self.recommender)
 
 
-@load_anidb_api
+@LazyApi.load_anidb_api
 @recommended_series_cache.cache_on_arguments()
 def cached_tvdb_to_aid(tvdb_id):
     """
@@ -175,10 +191,10 @@ def cached_tvdb_to_aid(tvdb_id):
 
     Use dogpile cache to return a cached id if available.
     """
-    return anidb_api.tvdb_id_to_aid(tvdbid=tvdb_id)
+    return LazyApi.anidb_api.tvdb_id_to_aid(tvdbid=tvdb_id)
 
 
-@load_anidb_api
+@LazyApi.load_anidb_api
 @recommended_series_cache.cache_on_arguments()
 def cached_aid_to_tvdb(aid):
     """
@@ -186,9 +202,10 @@ def cached_aid_to_tvdb(aid):
 
     Use dogpile cache to return a cached id if available.
     """
-    return anidb_api.aid_to_tvdb_id(aid=aid)
+    return LazyApi.anidb_api.aid_to_tvdb_id(aid=aid)
 
 
+@LazyApi.load_imdb_api
 @recommended_series_cache.cache_on_arguments()
 def cached_get_imdb_series_details(imdb_id):
     """
@@ -196,7 +213,7 @@ def cached_get_imdb_series_details(imdb_id):
 
     Use dogpile cache to return a cached id if available.
     """
-    return imdb_api.get_title(imdb_id)
+    return LazyApi.imdb_api.get_title(imdb_id)
 
 
 def create_key_from_series(namespace, fn, **kw):

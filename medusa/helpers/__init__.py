@@ -40,13 +40,12 @@ from contextlib2 import suppress
 
 import guessit
 
-from imdbpie import imdbpie
-
 from medusa import app, db
 from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -1727,7 +1726,7 @@ def is_info_hash_processed(info_hash):
 def title_to_imdb(title, start_year, imdb_api=None):
     """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
 

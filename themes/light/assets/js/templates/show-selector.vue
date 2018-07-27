@@ -22,7 +22,8 @@ module.exports = {
     },
     data() {
         return {
-            selectedShowSlug: this.showSlug
+            selectedShowSlug: this.showSlug,
+            lock: false
         };
     },
     computed: Object.assign(Vuex.mapState(['config', 'shows']), {
@@ -69,7 +70,15 @@ module.exports = {
         }
     }),
     watch: {
+        showSlug(newSlug) {
+            this.lock = true;
+            this.selectedShowSlug = newSlug;
+        },
         selectedShowSlug(newSlug) {
+            if (this.lock) {
+                this.lock = false;
+                return;
+            }
             const { shows } = this;
             const selectedShow = shows.find(show => show.id.slug === newSlug);
             if (!selectedShow) {

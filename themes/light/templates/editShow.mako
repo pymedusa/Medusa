@@ -1,5 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<link rel="stylesheet" type="text/css" href="css/vue/editshow.css?${sbPID}" />
 <%block name="scripts">
 <script>
 Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
@@ -14,9 +13,9 @@ window.app = new Vue({
     },
     data() {
         return {
-            seriesSlug: $('#series-slug').attr('value'),
-            seriesId: $('#series-id').attr('value'),
-            indexerName: $('#indexer-name').attr('value'),
+            seriesSlug: document.querySelector('#series-slug').value,
+            seriesId: document.querySelector('#series-id').value,
+            indexerName: document.querySelector('#indexer-name').value,
             series: {
                 config: {
                     aliases: [],
@@ -53,73 +52,78 @@ window.app = new Vue({
             saving: false
         }
     },
-    async mounted() {
-        const seriesSlug = $('#series-slug').attr('value');
-        const url = 'series/' + seriesSlug;
-        try {
-            const response = await api.get('series/' + this.seriesSlug);
+    created() {
+        const { $store, seriesSlug } = this;
+
+        const params = { detailed: false }; // Don't get episodes
+        api.get('series/' + seriesSlug, { params }).then(response => {
             this.series = Object.assign({}, this.series, response.data);
-            this.series.language = response.data.language;
-        } catch (error) {
-            console.debug('Could not get series info for: '+ seriesSlug);
-        }
-        this.seriesLoaded = true;
+            this.seriesLoaded = true;
+        }).catch(error => {
+            const msg = 'Could not get series info for: ' + seriesSlug;
+            this.$snotify.error(msg, 'Error');
+            console.debug(msg, error);
+        });
     },
     methods: {
-        async saveSeries(subject) {
+        saveSeries(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.seriesLoaded) {
+                return;
+            }
+
+            if (!['series', 'all'].includes(subject)) {
                 return;
             }
 
             // Disable the save button until we're done.
             this.saving = true;
 
-            if (['series', 'all'].includes(subject)) {
-                const data = {
-                    config: {
-                        aliases: this.series.config.aliases,
-                        defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
-                        dvdOrder: this.series.config.dvdOrder,
-                        seasonFolders: this.series.config.seasonFolders,
-                        anime: this.series.config.anime,
-                        scene: this.series.config.scene,
-                        sports: this.series.config.sports,
-                        paused: this.series.config.paused,
-                        location: this.series.config.location,
-                        airByDate: this.series.config.airByDate,
-                        subtitlesEnabled: this.series.config.subtitlesEnabled,
-                        release: {
-                            requiredWords: this.series.config.release.requiredWords,
-                            ignoredWords: this.series.config.release.ignoredWords
-                        },
-                        qualities: {
-                            preferred: this.series.config.qualities.preferred,
-                            allowed: this.series.config.qualities.allowed
-                        }
+            const data = {
+                config: {
+                    aliases: this.series.config.aliases,
+                    defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
+                    dvdOrder: this.series.config.dvdOrder,
+                    seasonFolders: this.series.config.seasonFolders,
+                    anime: this.series.config.anime,
+                    scene: this.series.config.scene,
+                    sports: this.series.config.sports,
+                    paused: this.series.config.paused,
+                    location: this.series.config.location,
+                    airByDate: this.series.config.airByDate,
+                    subtitlesEnabled: this.series.config.subtitlesEnabled,
+                    release: {
+                        requiredWords: this.series.config.release.requiredWords,
+                        ignoredWords: this.series.config.release.ignoredWords
                     },
-                    language: this.series.language
-                };
-
-                if (data.config.anime) {
-                    data.config.release.blacklist = this.series.config.release.blacklist;
-                    data.config.release.whitelist = this.series.config.release.whitelist;
-                }
-
-                try {
-                    const response = await api.patch('series/' + this.seriesSlug, data);
-                    this.$snotify.success('You may need to "Re-scan files" or "Force Full Update".', 'Saved', { timeout: 5000 });
-
-                } catch (error) {
-                    this.$snotify.error(
-                        'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
-                        'Error'
-                    );
-                }
+                    qualities: {
+                        preferred: this.series.config.qualities.preferred,
+                        allowed: this.series.config.qualities.allowed
+                    }
+                },
+                language: this.series.language
             };
 
-            // Re-enable the save button.
-            this.saving = false;
+            if (data.config.anime) {
+                data.config.release.blacklist = this.series.config.release.blacklist;
+                data.config.release.whitelist = this.series.config.release.whitelist;
+            }
+
+            api.patch('series/' + this.seriesSlug, data).then(response => {
+                this.$snotify.success(
+                    'You may need to "Re-scan files" or "Force Full Update".',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                    'Error'
+                );
+            }).finally(() => {
+                // Re-enable the save button.
+                this.saving = false;
+            });
         },
         onChangeIgnoredWords(items) {
             this.series.config.release.ignoredWords = items.map(item => item.value);
@@ -189,14 +193,12 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="location" class="col-sm-2 control-label">Show Location</label>
                             <div class="col-sm-10 content">
-                                <input type="hidden" name="indexername" id="form-indexername" :value="indexerName"/>
-                                <input type="hidden" name="seriesid" id="form-seriesid" :value="seriesId" />
                                 <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="qualityPreset" class="col-sm-2 control-label">Preferred Quality</label>
+                            <label for="qualityPreset" class="col-sm-2 control-label">Quality</label>
                             <div class="col-sm-10 content">
                                 <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
                             </div>
