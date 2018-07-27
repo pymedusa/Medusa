@@ -3,7 +3,7 @@
         <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values"></i>
 
         <ul v-if="!csvEnabled">
-            <li v-for="item of editItems">
+            <li v-for="item of editItems" :key="item.id">
                 <div class="input-group">
                     <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)"/>
                     <div class="input-group-btn" @click="deleteItem(item)">
@@ -51,7 +51,6 @@ module.exports = {
     data() {
         return {
             lock: false,
-            unwatchProp: null,
             editItems: [],
             newItem: '',
             indexCounter: 0,
@@ -65,12 +64,14 @@ module.exports = {
          * that are sometimes not avaiable when rendering.
          * @TODO: Maybe we can remove this in the future.
          */
-        this.unwatchProp = this.$watch('listItems', () => {
-            this.unwatchProp();
+        const unwatchProp = this.$watch('listItems', () => {
+            unwatchProp();
 
             this.lock = true;
             this.editItems = this.sanitize(this.listItems);
-            this.$nextTick(() => this.lock = false);
+            this.$nextTick(() => {
+                this.lock = false;
+            });
             this.csv = this.editItems.map(x => x.value).join(', ');
         });
     },
@@ -82,7 +83,7 @@ module.exports = {
             this.editItems.push({ id: this.indexCounter, value: item });
             this.indexCounter += 1;
         },
-        addNewItem(evt) {
+        addNewItem() {
             if (this.newItem === '') {
                 return;
             }
@@ -99,8 +100,8 @@ module.exports = {
         /**
          * Initially an array of strings is passed, which we'd like to translate to an array of object.
          * Where the index has been added.
-         * @param values - array of strings.
-         * @returns - An array of objects with the index and value.
+         * @param {string[]} values - Array of strings.
+         * @returns {Object[]} - An array of objects with the index and value.
          */
         sanitize(values) {
             if (!values) {
@@ -179,7 +180,8 @@ div.select-list .new-item-help {
     padding-top: 5px;
 }
 
-div.select-list input, div.select-list img {
+div.select-list input,
+div.select-list img {
     display: inline-block;
     box-sizing: border-box;
 }

@@ -42,4 +42,5 @@ module.exports = {
 };
 </script>
 <style>
+/* placeholder */
 </style>

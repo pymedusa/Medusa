@@ -6,3 +6,6 @@ module.exports = {
     name: 'not-found'
 };
 </script>
+<style>
+/* placeholder */
+</style>

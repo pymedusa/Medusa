@@ -81,14 +81,15 @@ window.app = new Vue({
                 }
             });
 
-            const { providedInfo } = this;
-            const { use, showId, showDir } = providedInfo;
-            if (use && showId !== 0 && showDir) {
+            setTimeout(() => {
                 this.updateBlackWhiteList();
-                this.$nextTick(() => {
-                    goToStep(3);
-                });
-            }
+
+                const { providedInfo } = this;
+                const { use, showId, showDir } = providedInfo;
+                if (use && showId !== 0 && showDir) {
+                    this.formwizard.loadsection(2);
+                }
+            }, 100);
 
             setTimeout(() => {
                 if (this.$refs.nameToSearch) {
@@ -105,15 +106,6 @@ window.app = new Vue({
         *  This notice MUST stay intact for legal use
         *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
         // @TODO: we need to move to real forms instead of this
-
-        const goToStep = num => {
-            $('.step').each((idx, step) => {
-                if ($.data(step, 'section') + 1 === num) {
-                    $(step).click();
-                }
-            });
-        }
-
         this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
             formid: 'addShowForm',
             revealfx: ['slide', 300],
@@ -130,6 +122,9 @@ window.app = new Vue({
         });
     },
     computed: {
+        config() {
+            return this.$store.state.config;
+        },
         selectedShow() {
             const { searchResults, selectedShowSlug } = this;
             if (searchResults.length === 0 || !selectedShowSlug) return null;
@@ -182,8 +177,9 @@ window.app = new Vue({
             return this.providedInfo.showDir ? 'from' : 'into';
         },
         spinnerSrc() {
-            const themeSpinner = MEDUSA.config.themeSpinner;
-            if (themeSpinner === undefined) return '';
+            const { config } = this;
+            const { themeName } = config;
+            const themeSpinner = themeName === 'dark' ? '-dark' : '';
             return 'images/loading32' + themeSpinner + '.gif';
         },
         displayStatus() {

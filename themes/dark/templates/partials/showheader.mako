@@ -1,10 +1,7 @@
 <%!
-    import datetime
-    import urllib
-    import ntpath
     import operator
-    from medusa import app, helpers, subtitles, sbdatetime, network_timezones
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
+    from medusa import app, helpers, subtitles, network_timezones
+    from medusa.common import SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi

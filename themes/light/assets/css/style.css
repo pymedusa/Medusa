@@ -187,16 +187,6 @@ inc_top.mako
     clear: both;
 }
 
-#sub-menu {
-    font-size: 12px;
-    padding-top: 2px;
-}
-
-#sub-menu > a {
-    float: right;
-    margin-left: 4px;
-}
-
 .upgrade-notification {
     text-align: center;
     margin-top: 20px;
@@ -1174,21 +1164,6 @@ div#col-show-summary {
     height: 311px;
     width: auto;
     float: left;
-}
-
-@media (min-width: 1281px) {
-    #sub-menu-container {
-        position: fixed;
-        width: 100%;
-        top: 51px;
-    }
-}
-
-@media (max-width: 1281px) {
-    #sub-menu-container {
-        position: relative;
-        margin-top: -24px;
-    }
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
@@ -2995,11 +2970,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-radius: 1px;
     line-height: 1.5;
     height: auto;
-}
-
-#sub-menu-container {
-    z-index: 550;
-    min-height: 41px;
 }
 
 .shadow {

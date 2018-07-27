@@ -16,7 +16,7 @@
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `validators` | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | -
-:: | `dogpile.cache` | [0.6.6](https://pypi.org/project/dogpile.cache/0.6.6/) | **`medusa`**, `subliminal` | -
+:: | `dogpile.cache` | [0.6.7](https://pypi.org/project/dogpile.cache/0.6.7/) | **`medusa`**, `subliminal` | -
 :: | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
 :: | `feedparser` | [f1dd1bb](https://github.com/kurtmckee/feedparser/tree/f1dd1bb923ebfe6482fc2521c1f150b4032289ec) | **`medusa`** | -
 :warning: | `funcsigs` | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `mock`(?) | -
