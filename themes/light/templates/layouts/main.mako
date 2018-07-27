@@ -185,6 +185,7 @@
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
                 Vue.use(AsyncComputed);
+                Vue.use(VueMeta);
 
                 // Load x-template components
                 window.components.forEach(component => {
