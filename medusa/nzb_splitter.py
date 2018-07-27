@@ -24,11 +24,11 @@ from __future__ import unicode_literals
 import logging
 import re
 
-from medusa import classes
 from medusa.helper.encoding import ss
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.search.result import NZBDataSearchResult
 from medusa.session.core import MedusaSession
 
 try:
@@ -59,8 +59,8 @@ def get_season_nzbs(name, url_data, season):
         # Example:  nzbElement.getchildren()[1].tag == '{http://www.newzbin.com/DTD/2003/nzb}file'
         #           regex match returns  'http://www.newzbin.com/DTD/2003/nzb'
         'nzb_xmlns': r"{(http://[\w_\./]+nzb)}file",
-        'scene_name': '([\w\._\ ]+)[\. ]S%02d[\. ]([\w\._\-\ ]+)[\- ]([\w_\-\ ]+?)',  # pylint: disable=anomalous-backslash-in-string
-        'episode': '\.S%02d(?:[E0-9]+)\.[\w\._]+\-\w+',  # pylint: disable=anomalous-backslash-in-string
+        'scene_name': '([\w\._\ ]+)[\. ]S%02d[\. ]([\w\._\-\ ]+)[\- ]([\w_\-\ ]+?)',
+        'episode': '\.S%02d(?:[E0-9]+)\.[\w\._]+\-\w+',
     }
 
     try:
@@ -218,7 +218,7 @@ def split_result(obj):
         ep_obj_list = [obj.extraInfo[0].get_episode(season, ep) for ep in parsed_obj.episode_numbers]
 
         # make a result
-        cur_obj = classes.NZBDataSearchResult(ep_obj_list)
+        cur_obj = NZBDataSearchResult(ep_obj_list)
         cur_obj.name = new_nzb
         cur_obj.provider = obj.provider
         cur_obj.quality = obj.quality

@@ -23,9 +23,6 @@ from medusa import (
     tv,
     ui,
 )
-from medusa.classes import (
-    SearchResult,
-)
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
@@ -47,6 +44,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.search import PROPER_SEARCH
+from medusa.search.result import SearchResult
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
@@ -194,18 +192,18 @@ class GenericProvider(object):
         """Find propers in providers."""
         results = []
 
-        for proper_candidate in proper_candidates:
-            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
+        for candidate in proper_candidates:
+            series_obj = Show.find_by_id(app.showList, candidate[b'indexer'], candidate[b'showid'])
 
             if series_obj:
                 self.series = series_obj
-                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+                episode_obj = series_obj.get_episode(candidate[b'season'], candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
 
                     for item in self.search(search_strings[0], ep_obj=episode_obj):
-                        search_result = self.get_result()
+                        search_result = SearchResult(episodes=[episode_obj])
                         results.append(search_result)
 
                         search_result.name, search_result.url = self._get_title_and_url(item)
@@ -308,8 +306,9 @@ class GenericProvider(object):
         search_results = []
         for item in items_list:
 
-            # Make sure we start with a TorrentSearchResult, NZBDataSearchResult or NZBSearchResult search result obj.
-            search_result = self.get_result()
+            # Make sure we start with a TorrentSearchResult, NZBDataSearchResult
+            # or NZBSearchResult search result obj.
+            search_result = SearchResult()
             search_results.append(search_result)
             search_result.item = item
             search_result.download_current_quality = download_current_quality
@@ -459,7 +458,6 @@ class GenericProvider(object):
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
             search_result.create_episode_object()
-            # result = self.get_result(episode_object, search_result)
             search_result.finish_search_result(self)
 
             if not search_result.actual_episodes:
@@ -497,9 +495,9 @@ class GenericProvider(object):
 
         return quality
 
-    def get_result(self, episodes=None):
+    def search_result(self, episodes=None):
         """Get result."""
-        return self._get_result(episodes)
+        return SearchResult(episodes)
 
     def image_name(self):
         """Return provider image name."""
@@ -593,10 +591,6 @@ class GenericProvider(object):
             return dt
         except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
-
-    def _get_result(self, episodes=None):
-        """Get result."""
-        return SearchResult(episodes)
 
     def _create_air_by_date_search_string(self, show_scene_name, episode, search_string, add_string=None):
         """Create a search string used for series that are indexed by air date."""

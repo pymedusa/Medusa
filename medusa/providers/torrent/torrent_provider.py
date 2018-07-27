@@ -17,11 +17,11 @@ from bencode.BTL import BTFailure
 from feedparser.util import FeedParserDict
 
 from medusa import app
-from medusa.classes import TorrentSearchResult
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import remove_file_failed
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
+from medusa.search.result import TorrentSearchResult
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -49,7 +49,7 @@ class TorrentProvider(GenericProvider):
 
         return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST if x.strip())
 
-    def _get_result(self, episodes):
+    def search_result(self, episodes):
         """Return a provider result object."""
         return TorrentSearchResult(episodes, provider=self)
 

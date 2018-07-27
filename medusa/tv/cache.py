@@ -513,7 +513,7 @@ class Cache(object):
                           ' prior to medusa version 0.2.0', cur_result[b'name'])
                 continue
 
-            search_result = self.provider.get_result()
+            search_result = self.provider.search_result()
 
             # ignored/required words, and non-tv junk
             if not naming.filter_bad_releases(cur_result[b'name']):
@@ -530,25 +530,24 @@ class Cache(object):
                 continue
 
             # build a result object
-            search_result.quality = int(cur_result[b'quality'])
+            search_result.quality = cur_result[b'quality']
             search_result.release_group = cur_result[b'release_group']
             search_result.version = cur_result[b'version']
             search_result.name = cur_result[b'name']
             search_result.url = cur_result[b'url']
-            search_result.season = int(cur_result[b'season'])
-            search_result.actual_season = search_result.season
+            search_result.actual_season = cur_result[b'season']
 
             sql_episodes = cur_result[b'episodes'].strip('|')
             # TODO: Add support for season results
             # Season result
             if not sql_episodes:
-                ep_objs = self.series.get_all_episodes(search_result.season)
+                ep_objs = self.series.get_all_episodes(search_result.actual_season)
                 actual_episodes = [ep.episode for ep in ep_objs]
                 episode_number = SEASON_RESULT
             # Multi or single episode result
             else:
                 actual_episodes = [int(ep) for ep in sql_episodes.split('|')]
-                ep_objs = [series_obj.get_episode(search_result.season, ep) for ep in actual_episodes]
+                ep_objs = [series_obj.get_episode(search_result.actual_season, ep) for ep in actual_episodes]
                 if len(actual_episodes) == 1:
                     episode_number = actual_episodes[0]
                 else:
@@ -557,7 +556,7 @@ class Cache(object):
             all_wanted = True
             for cur_ep in actual_episodes:
                 # if the show says we want that episode then add it to the list
-                if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
+                if not series_obj.want_episode(search_result.actual_season, cur_ep, search_result.quality,
                                                forced_search, down_cur_quality):
                     log.debug('Ignoring {0} because one or more episodes are unwanted', cur_result[b'name'])
                     all_wanted = False
