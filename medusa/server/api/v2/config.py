@@ -404,11 +404,12 @@ class DataGenerator(object):
 
         section_data['indexers'] = NonEmptyDict()
         section_data['indexers']['config'] = get_indexer_config()
+
         section_data['postProcessing'] = NonEmptyDict()
         section_data['postProcessing']['naming'] = NonEmptyDict()
         section_data['postProcessing']['naming']['stripYear'] = app.NAMING_STRIP_YEAR
         section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
-        section_data['postProcessing']['naming']['multiEp'] = app.NAMING_MULTI_EP
+        section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
         section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
         section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
         section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN

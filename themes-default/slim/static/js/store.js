@@ -291,6 +291,7 @@ const store = new Store({
             postProcessing: {
                 naming: {
                     pattern: null,
+                    multiEp: null,
                     enableCustomNamingSports: null,
                     enableCustomNamingAirByDate: null,
                     patternSports: null,
@@ -321,7 +322,8 @@ const store = new Store({
                 syncFiles: [],
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
-                extraScriptsUrl: null
+                extraScriptsUrl: null,
+                multiEpStrings: null
             },
             metadata: {}
         },

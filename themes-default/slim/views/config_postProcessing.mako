@@ -1,9 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%namespace name="inc_defs" file="/inc_defs.mako"/>
-<%!
-    from medusa.common import MULTI_EP_STRINGS
-%>
-
 <%block name="scripts">
 <script>
 Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
@@ -16,9 +11,6 @@ window.app = new Vue({
         title: 'Config - Post Processing'
     },
     data() {
-        // FIXME: replace with MEUDSA.config.
-        const multiEpStrings = ${inc_defs.convert([{'value': str(x), 'text': y} for x, y in MULTI_EP_STRINGS.items()])};
-
         const processMethods = [
             { value: 'copy', text: 'Copy'},
             { value: 'move', text: 'Move'},
@@ -43,7 +35,6 @@ window.app = new Vue({
 
         return {
             configLoaded: false,
-
             header: 'Post Processing',
             presets: [
                 '%SN - %Sx%0E - %EN',
@@ -53,12 +44,11 @@ window.app = new Vue({
                 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG'
             ],
             processMethods: processMethods,
-            multiEpStrings: multiEpStrings,
-            animeMultiEpStrings: multiEpStrings,
             timezoneOptions: timezoneOptions,
             postProcessing: {
                 naming: {
                     pattern: null,
+                    multiEp: null,
                     enableCustomNamingSports: null,
                     enableCustomNamingAirByDate: null,
                     patternSports: null,
@@ -90,6 +80,7 @@ window.app = new Vue({
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
                 extraScriptsUrl: null,
+                multiEpStrings: null
             },
             metadataProviders: defaultMetadataProviders,
             metadataProviderSelected: getFirstEnabledMetadataProvider()
@@ -101,7 +92,7 @@ window.app = new Vue({
                 return
             }
             this.postProcessing.naming.pattern = values.pattern;
-            this.postProcessing.naming.multiEpStyle = values.multiEpStyle;
+            this.postProcessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
             if (!this.configLoaded) {
@@ -162,6 +153,14 @@ window.app = new Vue({
                 providers.push(provider);
             }
             return providers;
+        },
+        multiEpStringsSelect() {
+            if (!this.postProcessing.multiEpStrings) {
+                return [];
+            }
+            return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
+                value: Number(k), text: this.postProcessing.multiEpStrings[k]
+            }));
         }
     },
     mounted() {
@@ -434,7 +433,7 @@ window.app = new Vue({
                                     <!-- default name-pattern component -->
                                     <name-pattern class="component-group" :naming-pattern="postProcessing.naming.pattern"
                                         :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp"
-                                        :multi-ep-styles="multiEpStrings" @change="saveNaming" :flag-loaded="configLoaded">
+                                        :multi-ep-styles="multiEpStringsSelect" @change="saveNaming" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default sports name-pattern component -->
@@ -452,7 +451,7 @@ window.app = new Vue({
                                     <!-- default anime name-pattern component -->
                                     <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAnime"
                                         :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp"
-                                        :multi-ep-styles="animeMultiEpStrings" :anime-naming-type="postProcessing.naming.animeNamingType"
+                                        :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postProcessing.naming.animeNamingType"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded">
                                     </name-pattern>
 

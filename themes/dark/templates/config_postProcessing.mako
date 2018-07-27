@@ -35,7 +35,6 @@ window.app = new Vue({
 
         return {
             configLoaded: false,
-            multiEpStrings: [],
             header: 'Post Processing',
             presets: [
                 '%SN - %Sx%0E - %EN',
@@ -49,6 +48,7 @@ window.app = new Vue({
             postProcessing: {
                 naming: {
                     pattern: null,
+                    multiEp: null,
                     enableCustomNamingSports: null,
                     enableCustomNamingAirByDate: null,
                     patternSports: null,
@@ -80,6 +80,7 @@ window.app = new Vue({
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
                 extraScriptsUrl: null,
+                multiEpStrings: null
             },
             metadataProviders: defaultMetadataProviders,
             metadataProviderSelected: getFirstEnabledMetadataProvider()
@@ -91,7 +92,7 @@ window.app = new Vue({
                 return
             }
             this.postProcessing.naming.pattern = values.pattern;
-            this.postProcessing.naming.multiEpStyle = values.multiEpStyle;
+            this.postProcessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
             if (!this.configLoaded) {
@@ -154,7 +155,12 @@ window.app = new Vue({
             return providers;
         },
         multiEpStringsSelect() {
-            return Object.keys(this.multiEpStrings).map(k => ({value: k, text: this.multiEpStrings[k]}));
+            if (!this.postProcessing.multiEpStrings) {
+                return [];
+            }
+            return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
+                value: Number(k), text: this.postProcessing.multiEpStrings[k]
+            }));
         }
     },
     mounted() {
