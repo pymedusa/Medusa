@@ -7,7 +7,7 @@
     "gulp": "gulp",
     "lint": "xo",
     "build": "cross-env NODE_ENV=production gulp build",
-    "webpack": "webpack-cli && cp dist/js/*.js ../../themes/dark/assets/js && cp dist/js/*.js ../../themes/light/assets/js",
+    "webpack": "webpack && cp dist/js/*.js ../../themes/dark/assets/js && cp dist/js/*.js ../../themes/light/assets/js",
     "install": "yarn run lint",
     "test": "cross-env NODE_ENV=test nyc ava",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
