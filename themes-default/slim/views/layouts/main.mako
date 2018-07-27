@@ -88,9 +88,9 @@
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
         ## This contains all the Webpack-imported modules
-        <script type="text/javascript" src="js/vendors.js"></script>
+        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
@@ -117,7 +117,7 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/notifications.js"></script>
+        <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
             // Used to get mako vue components to the app.js
             window.components = [];
