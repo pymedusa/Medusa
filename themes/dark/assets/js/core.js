@@ -57,6 +57,8 @@ const UTIL = {
         UTIL.exec('common'); // Load common
         UTIL.exec(controller); // Load MEDUSA[controller]
         UTIL.exec(controller, action); // Load MEDUSA[controller][action]
+
+        window.dispatchEvent(new Event('medusa-loaded'));
     }
 };
 
