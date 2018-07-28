@@ -1,5 +1,5 @@
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
-beautifulsoup4==4.6.0
+beautifulsoup4==4.6.1
 CacheControl==0.12.5
 certifi==2018.04.16
 chardet==3.0.4
