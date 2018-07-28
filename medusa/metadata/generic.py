@@ -76,6 +76,18 @@ class GenericMetadata(object):
         self.season_all_poster = season_all_poster
         self.season_all_banner = season_all_banner
 
+        # Web UI metadata template (override when subclassing)
+        self.eg_show_metadata = '<i>not supported</i>'
+        self.eg_episode_metadata = '<i>not supported</i>'
+        self.eg_fanart = '<i>not supported</i>'
+        self.eg_poster = '<i>not supported</i>'
+        self.eg_banner = '<i>not supported</i>'
+        self.eg_episode_thumbnails = '<i>not supported</i>'
+        self.eg_season_posters = '<i>not supported</i>'
+        self.eg_season_banners = '<i>not supported</i>'
+        self.eg_season_all_poster = '<i>not supported</i>'
+        self.eg_season_all_banner = '<i>not supported</i>'
+
         # Reuse indexer api, as it's crazy to hit the api with a full search, for every season search.
         self.indexer_api = None
 

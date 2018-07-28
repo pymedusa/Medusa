@@ -62,9 +62,9 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         self.eg_banner = 'folder.jpg'
         self.eg_episode_thumbnails = 'Season##\\<i>filename</i>.tbn'
         self.eg_season_posters = 'season##.tbn'
-        self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
         self.eg_season_all_poster = 'season-all.tbn'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def create_season_banners(self, ep_obj):
