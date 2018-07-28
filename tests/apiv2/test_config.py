@@ -7,19 +7,19 @@ import platform
 import pkgutil
 import sys
 
-from medusa import app, classes, common, db, logger
+from medusa import app, classes, common, db, logger, metadata
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
 
-from six import iteritems, text_type
+from six import iteritems, itervalues, text_type
 
 from tornado.httpclient import HTTPError
 
 
 @pytest.fixture
-def config(monkeypatch, app_config):
+def config_main(monkeypatch, app_config):
     python_version = 'Python Test v1.2.3.4'
     monkeypatch.setattr(sys, 'version', python_version)
     app_config('PID', 4321)
@@ -232,9 +232,9 @@ def config(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config_get(http_client, create_url, auth_headers, config):
+def test_config_get(http_client, create_url, auth_headers, config_main):
     # given
-    expected = config
+    expected = config_main
 
     url = create_url('/config/main')
 
@@ -255,9 +255,9 @@ def test_config_get(http_client, create_url, auth_headers, config):
     'dbPath',
     'postProcessing'
 ])
-def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
+def test_config_get_detailed(http_client, create_url, auth_headers, config_main, query):
     # given
-    expected = config[query]
+    expected = config_main[query]
     url = create_url('/config/main/{0}/'.format(query))
 
     # when
@@ -269,7 +269,7 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config, quer
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, config):
+def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, config_main):
     # given
     url = create_url('/config/main/abcdef/')
 
@@ -282,7 +282,7 @@ def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, 
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers, config):
+def test_config_get_not_found(http_client, create_url, auth_headers, config_main):
     # given
     url = create_url('/config/abcdef/')
 
@@ -292,3 +292,50 @@ def test_config_get_not_found(http_client, create_url, auth_headers, config):
 
     # then
     assert 404 == error.value.code
+
+
+@pytest.fixture
+def config_metadata(monkeypatch, app_config):
+    # initialize metadata_providers
+    default_config = ['0'] * 10
+    providers = [
+        (default_config, metadata.kodi),
+        (default_config, metadata.kodi_12plus),
+        (default_config, metadata.media_browser),
+        (default_config, metadata.ps3),
+        (default_config, metadata.wdtv),
+        (default_config, metadata.tivo),
+        (default_config, metadata.mede8er)
+    ]
+
+    metadata_provider_dict = app_config('metadata_provider_dict', metadata.get_metadata_generator_dict())
+    for cur_metadata_tuple in providers:
+        (cur_metadata_config, cur_metadata_class) = cur_metadata_tuple
+        tmp_provider = cur_metadata_class.metadata_class()
+        tmp_provider.set_config(cur_metadata_config)
+        monkeypatch.setitem(metadata_provider_dict, tmp_provider.name, tmp_provider)
+
+    section_data = NonEmptyDict()
+
+    section_data['metadataProviders'] = NonEmptyDict()
+
+    for provider in itervalues(app.metadata_provider_dict):
+        json_repr = provider.to_json()
+        section_data['metadataProviders'][json_repr['id']] = json_repr
+
+    return section_data
+
+
+@pytest.mark.gen_test
+def test_config_get_metadata(http_client, create_url, auth_headers, config_metadata):
+    # given
+    expected = config_metadata
+
+    url = create_url('/config/metadata')
+
+    # when
+    response = yield http_client.fetch(url, **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert expected == json.loads(response.body)
