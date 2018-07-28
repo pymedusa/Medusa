@@ -483,12 +483,12 @@ const store = new Store({
                     commit(ADD_CONFIG, { section, config });
                     return config;
                 }
+
                 const sections = res.data;
                 Object.keys(sections).forEach(section => {
                     const config = sections[section];
                     commit(ADD_CONFIG, { section, config });
                 });
-
                 return sections;
             });
         },
@@ -496,7 +496,9 @@ const store = new Store({
             if (section !== 'main') {
                 return;
             }
-            config = Object.keys(config).length ? config : store.state.config;
+
+            // If an empty config object was passed, use the current state config
+            config = Object.keys(config).length === 0 ? context.state.config : config;
 
             return api.patch('config/' + section, config);
         },
