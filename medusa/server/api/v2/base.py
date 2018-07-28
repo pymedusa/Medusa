@@ -19,7 +19,7 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import string_types, text_type, viewitems
+from six import itervalues, string_types, text_type, viewitems
 
 from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
@@ -492,3 +492,35 @@ class EnumField(PatchField):
         super(EnumField, self).__init__(target, attr, attr_type, validator=lambda v: v in enums,
                                         converter=converter, default_value=default_value,
                                         setter=setter, post_processor=post_processor)
+
+
+# @TODO: Make this field more dynamic (a dict patch field)
+class MetadataStructureField(PatchField):
+    """Process the metadata structure."""
+
+    def __init__(self, target, attr):
+        """Constructor."""
+        super(MetadataStructureField, self).__init__(target, attr, dict, validator=None, converter=None,
+                                                     default_value=None, setter=None, post_processor=None)
+
+    def patch(self, target, value):
+        """Patch the field with the specified value."""
+        map_values = {
+            'showMetadata': 'show_metadata',
+            'episodeMetadata': 'episode_metadata',
+            'episodeThumbnails': 'episode_thumbnails',
+            'seasonPosters': 'season_posters',
+            'seasonBanners': 'season_banners',
+            'seasonAllPoster': 'season_all_poster',
+            'seasonAllBanner': 'season_all_banner',
+        }
+
+        try:
+            for new_provider_config in itervalues(value):
+                for k, v in viewitems(new_provider_config):
+                    setattr(target.metadata_provider_dict[new_provider_config['name']], map_values.get(k, k), v)
+        except Exception as error:
+            log.warning('Error trying to change attribute app.metadata_provider_dict: {0!r}', error)
+            return False
+
+        return True

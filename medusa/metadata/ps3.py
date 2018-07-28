@@ -48,16 +48,16 @@ class PS3Metadata(generic.GenericMetadata):
         self.poster_name = 'cover.jpg'
 
         # web-ui metadata template
-        self.eg_show_metadata = '<i>not supported</i>'
-        self.eg_episode_metadata = '<i>not supported</i>'
-        self.eg_fanart = '<i>not supported</i>'
+        # self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_episode_metadata = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
         self.eg_poster = 'cover.jpg'
-        self.eg_banner = '<i>not supported</i>'
+        # self.eg_banner = '<i>not supported</i>'
         self.eg_episode_thumbnails = 'Season##\\<i>filename</i>.ext.cover.jpg'
-        self.eg_season_posters = '<i>not supported</i>'
-        self.eg_season_banners = '<i>not supported</i>'
-        self.eg_season_all_poster = '<i>not supported</i>'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_season_posters = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
