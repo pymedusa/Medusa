@@ -268,52 +268,52 @@ module.exports = {
     name: 'name-pattern',
     props: {
         /**
-            * Current naming pattern.
+         * Current naming pattern.
         */
         namingPattern: {
             type: String,
             default: ''
         },
         /**
-            * An array of available preset naming patterns.
+         * An array of available preset naming patterns.
         */
         namingPresets: {
             type: Array,
             default: () => []
         },
         /**
-            * The selected multi ep style
-            */
+         * The selected multi ep style
+        */
         multiEpStyle: {
             type: Number
         },
         /**
-            * Availale multi ep style
-            */
+         * Availale multi ep style
+        */
         multiEpStyles: {
             type: Array,
             default: () => []
         },
         /**
-            * For anime shows there are a number of variations on how the absolute episode number
-            * is added to the episode.
-            */
+         * For anime shows there are a number of variations on how the absolute episode number
+         * is added to the episode.
+        */
         animeNamingType: {
             type: Number,
             default: 0
         },
         /**
-            * Provide the custom naming type. -Like sports, anime, air by date- description.
-            * If none provided we asume this is the default episode naming component.
-            * And that means there will be no checkbox available to enable/disable it.
-            */
+         * Provide the custom naming type. -Like sports, anime, air by date- description.
+         * If none provided we asume this is the default episode naming component.
+         * And that means there will be no checkbox available to enable/disable it.
+        */
         type: {
             type: String,
             default: ''
         },
         /**
-            * Used icw with the type property.
-            * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings.
+         * Used icw with the type property.
+         * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings.
         */
         enabled: {
             type: Boolean,
