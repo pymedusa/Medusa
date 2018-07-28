@@ -10,25 +10,25 @@ window.app = new Vue({
     },
     data() {
         const processMethods = [
-            { value: 'copy', text: 'Copy'},
-            { value: 'move', text: 'Move'},
-            { value: 'hardlink', text: 'Hard Link'},
-            { value: 'symlink', text: 'Symbolic Link'}
+            { value: 'copy', text: 'Copy' },
+            { value: 'move', text: 'Move' },
+            { value: 'hardlink', text: 'Hard Link' },
+            { value: 'symlink', text: 'Symbolic Link' }
         ];
 
         const timezoneOptions = [
-            { value: 'local', text: 'Local'},
-            { value: 'network', text: 'Network'}
+            { value: 'local', text: 'Local' },
+            { value: 'network', text: 'Network' }
         ]
 
         let defaultMetadataProviders = [];
         const getFirstEnabledMetadataProvider = () => {
             defaultMetadataProviders.forEach(provider => {
                 if (provider.show_metadata || provider.episode_metadata) {
-                    return provider
+                    return provider;
                 }
             });
-            return 'kodi'
+            return 'kodi';
         }
 
         return {
@@ -235,7 +235,7 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <select id="naming_multi_ep" name="naming_multi_ep" v-model="postProcessing.processMethod" class="form-control input-sm">
-                                                    <option :value="option.value" v-for="option in processMethods">{{ option.text }}</option>
+                                                    <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
                                                 </select>
                                                 <span>What method should be used to put files into the library?</span>
                                                 <p><b>NOTE:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
@@ -248,7 +248,7 @@ window.app = new Vue({
                                                 <span>Auto Post-Processing Frequency</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model="postProcessing.autoPostprocessorFrequency || 10" class="form-control input-sm input75" />
+                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model="postProcessing.autoPostprocessorFrequency" class="form-control input-sm input75" />
                                                 <span>Time in minutes to check for new files to auto post-process (min 10)</span>
                                             </div>
                                         </div>
@@ -363,7 +363,7 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
-                                                    <option :value="option.value" v-for="option in timezoneOptions">{{ option.text }}</option>
+                                                    <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
                                                 </select>
                                                 <span >What timezone should be used to change File Date?</span>
                                             </div>
@@ -483,7 +483,7 @@ window.app = new Vue({
                                     <span>Metadata Type:</span>
                                     <span>
                                         <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
-                                            <option :value="option.id" v-for="option in metadataProviders">{{ option.name }}</option>
+                                            <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
                                         </select>
 
                                     </span>
@@ -491,7 +491,7 @@ window.app = new Vue({
                                 <span>Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                             </div>
 
-                            <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" id="provider.id">
+                            <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" :key="provider.id" id="provider.id">
                                 <div class="metadata_options_wrapper">
                                     <h4>Create:</h4>
                                     <div class="metadata_options">
