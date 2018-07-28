@@ -29,22 +29,28 @@ Vue.use(Snotify);
 
 // Load x-template components
 window.components.forEach(component => {
-    console.log(`Registering ${component.name}`);
+    console.debug(`Registering ${component.name}`);
     Vue.component(component.name, component);
 });
 
 // Global components
-Vue.component('app-header', AppHeader);
-Vue.component('scroll-buttons', ScrollButtons);
-Vue.component('app-link', AppLink);
-Vue.component('asset', Asset);
-Vue.component('file-browser', FileBrowser);
-Vue.component('plot-info', PlotInfo);
-Vue.component('name-pattern', NamePattern);
-Vue.component('select-list', SelectList);
-Vue.component('language-select', LanguageSelect);
-Vue.component('root-dirs', RootDirs);
-Vue.component('backstretch', Backstretch);
+const globalComponents = [
+    AppHeader,
+    ScrollButtons,
+    AppLink,
+    Asset,
+    FileBrowser,
+    PlotInfo,
+    NamePattern,
+    SelectList,
+    LanguageSelect,
+    RootDirs,
+    Backstretch
+];
+
+globalComponents.forEach(component => {
+    Vue.component(component.name, component);
+});
 
 const app = new Vue({
     name: 'App',
