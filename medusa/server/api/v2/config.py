@@ -233,10 +233,11 @@ class DataGenerator(object):
     @classmethod
     def sections(cls):
         """Get the available section names."""
-        cls.data__ = [name[5:] for (name, function) in inspect.getmembers(cls, predicate=inspect.isfunction) if
-                      name.startswith('data_')]
-        cls.cls_data__ = cls.data__
-        return cls.cls_data__
+        return [
+            name[5:]
+            for (name, function) in inspect.getmembers(cls, predicate=inspect.isfunction)
+            if name.startswith('data_')
+        ]
 
     @classmethod
     def get_data(cls, section):
