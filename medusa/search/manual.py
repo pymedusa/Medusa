@@ -201,10 +201,10 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select(
-            b"SELECT name "
-            b"FROM sqlite_master "
+            b'SELECT name '
+            b'FROM sqlite_master '
             b"WHERE type='table'"
-            b" AND name=?",
+            b' AND name=?',
             [cur_provider.get_id()]
         )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
@@ -220,10 +220,10 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
                 b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
-                b" url, proper_tags, quality, release_group, version,"
-                b" seeders, leechers, size, time, pubdate, date_added "
+                b' url, proper_tags, quality, release_group, version,'
+                b' seeders, leechers, size, time, pubdate, date_added '
                 b"FROM '{provider_id}' "
-                b"WHERE indexer = ? AND indexerid = ? AND quality > 0 ".format(
+                b'WHERE indexer = ? AND indexerid = ? AND quality > 0 '.format(
                     provider_id=cur_provider.get_id()
                 )
             )
@@ -237,8 +237,8 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
                     # If it's an episode search, pass season and episode.
-                    common_sql += " AND season = ? AND episodes LIKE ? "
-                    add_params += [season, "%|{0}|%".format(episode)]
+                    common_sql += ' AND season = ? AND episodes LIKE ? '
+                    add_params += [season, '%|{0}|%'.format(episode)]
 
             else:
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
@@ -247,7 +247,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                         ['?' for _ in series_obj.get_all_episodes(season)]
                     ))
 
-                    common_sql += " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(
+                    common_sql += ' AND season = ? AND (episodes LIKE ? OR {list_of_episodes})'.format(
                         list_of_episodes=list_of_episodes
                     )
                     add_params += [season, '||']  # When the episodes field is empty.
@@ -258,14 +258,14 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             combined_sql_params += add_params
 
             # Get the last updated cache items timestamp
-            last_update = main_db_con.select(b"SELECT max(time) AS lastupdate "
+            last_update = main_db_con.select(b'SELECT max(time) AS lastupdate '
                                              b"FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
             provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0][b'lastupdate'] if last_update[0][b'lastupdate'] else 0
 
     # Check if we have the combined sql strings
     if combined_sql_q:
-        sql_prepend = b"SELECT * FROM ("
-        sql_append = b") ORDER BY quality DESC, proper_tags DESC, seeders DESC"
+        sql_prepend = b'SELECT * FROM ('
+        sql_append = b') ORDER BY quality DESC, proper_tags DESC, seeders DESC'
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.

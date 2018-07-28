@@ -12,8 +12,8 @@ from six import text_type
 class StyleAdapter(logging.LoggerAdapter):
     """Logger Adapter with new string format style."""
 
-    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr)
-                       and not attr.startswith('__')}
+    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and
+                       not attr.startswith('__')}
     adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
     reserved_keywords = getargspec(logging.Logger._log).args[1:]
 

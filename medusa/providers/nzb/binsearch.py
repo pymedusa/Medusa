@@ -192,7 +192,7 @@ class BinSearchProvider(NZBProvider):
             for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb', '.part'):
                 # Strip extensions that aren't part of the file name
                 if title.endswith(extension):
-                    title = title[:len(title)-len(extension)]
+                    title = title[:len(title) - len(extension)]
             return title
         except AttributeError:
             return None

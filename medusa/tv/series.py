@@ -910,7 +910,7 @@ class Series(TV):
 
     def __write_episode_nfos(self):
 
-        log.debug(u"{id}: Writing NFOs for all episodes",
+        log.debug(u'{id}: Writing NFOs for all episodes',
                   {'id': self.series_id})
 
         main_db_con = db.DBConnection()
@@ -950,7 +950,7 @@ class Series(TV):
 
         result = False
 
-        log.info(u"{id}: Updating NFOs for show with new indexer info",
+        log.info(u'{id}: Updating NFOs for show with new indexer info',
                  {'id': self.series_id})
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
@@ -966,7 +966,7 @@ class Series(TV):
                         {'id': self.series_id})
             return
 
-        log.debug(u"{id}: Loading all episodes from the show directory: {location}",
+        log.debug(u'{id}: Loading all episodes from the show directory: {location}',
                   {'id': self.series_id, 'location': self.location})
 
         # get file list
@@ -979,13 +979,13 @@ class Series(TV):
         for media_file in media_files:
             cur_episode = None
 
-            log.debug(u"{id}: Creating episode from: {location}",
+            log.debug(u'{id}: Creating episode from: {location}',
                       {'id': self.series_id, 'location': media_file})
             try:
                 cur_episode = self.make_ep_from_file(os.path.join(self.location, media_file))
             except (ShowNotFoundException, EpisodeNotFoundException) as error:
                 log.warning(
-                    u"{id}: Episode {location} returned an exception {error_msg}", {
+                    u'{id}: Episode {location} returned an exception {error_msg}', {
                         'id': self.series_id,
                         'location': media_file,
                         'error_msg': ex(error),
@@ -1540,7 +1540,7 @@ class Series(TV):
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
         except LookupError as error:
-            log.warning(u"{id}: IMDbPie error while loading show info: {error}",
+            log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
 
@@ -2186,7 +2186,7 @@ class Series(TV):
         log.debug(
             u"{id}: '{show}' {ep} status is: '{status}'."
             u" {action} result with quality '{new_quality}'."
-            u" Reason: {reason}", {
+            u' Reason: {reason}', {
                 'id': self.series_id,
                 'show': self.name,
                 'ep': episode_num(season, episode),

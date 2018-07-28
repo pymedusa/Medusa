@@ -120,8 +120,8 @@ class TraktChecker(object):
             log.info('No shows found in your Trakt library. Nothing to sync')
             return
         trakt_show = [x for x in trakt_library if
-                      get_trakt_indexer(indexer)
-                      and int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
+                      get_trakt_indexer(indexer) and
+                      int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
 
         return trakt_show if trakt_show else None
 

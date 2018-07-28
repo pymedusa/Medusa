@@ -170,7 +170,7 @@ class AnimeBytes(TorrentProvider):
 
                 # Attempt and get an season or episode number
                 title_info = row.get('EditionData').get('EditionTitle')
-                if title_info != "":
+                if title_info != '':
                     if title_info.startswith('Episodes'):
                         episode = re.match('Episodes 1-(\d+)', title_info).group(1)
                         release_type = MULTI_EP
@@ -241,7 +241,7 @@ class AnimeBytes(TorrentProvider):
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
+                                  ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 

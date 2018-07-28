@@ -194,7 +194,7 @@ class AppWebServer(threading.Thread):
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
         # Websocket handler
-        self.app.add_handlers(".*$", [
+        self.app.add_handlers('.*$', [
             (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), WebSocketUIHandler)
         ])
 

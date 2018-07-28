@@ -92,7 +92,7 @@ class Tmdb(BaseIndexer):
         :type tmdb_response: object
         """
         def week_day(input_date):
-            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             week_day_number = parser.parse(input_date).weekday()
             return days[week_day_number]
 
