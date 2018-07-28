@@ -1,8 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
-<%include file="/vue-components/anidb-release-group-ui.mako"/>
 <script>
-Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
 Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
 
 window.app = {};
