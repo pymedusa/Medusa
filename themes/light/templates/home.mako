@@ -11,35 +11,38 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Home'
-        },
-        data() {
-            return {
-                header: 'Show List'
-            };
-        },
-        computed: Object.assign({
-            layout: {
-                get() {
-                    const { config } = this;
-                    return config.layout.home;
-                },
-                set(layout) {
-                    const { $store } = this;
-                    const page = 'home';
-                    $store.dispatch('setLayout', { page, layout });
-                }
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Home'
+    },
+    data() {
+        return {
+            header: 'Show List'
+        };
+    },
+    computed: Object.assign({
+        layout: {
+            get() {
+                const { config } = this;
+                return config.layout.home;
+            },
+            set(layout) {
+                const { $store } = this;
+                const page = 'home';
+                $store.dispatch('setLayout', { page, layout });
             }
-        }),
-        mounted() {
         }
-    });
-};
+    }),
+    mounted() {
+        const postLoad = () => {
+            // Update VueInViewport
+            window.dispatchEvent(new Event('scroll'));
+        };
+        window.addEventListener('medusa-loaded', postLoad, { once: true });
+    }
+});
 </script>
 </%block>
 <%block name="metas">

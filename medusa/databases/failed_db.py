@@ -158,7 +158,7 @@ class UpdateHistoryTableQuality(AddIndexerIds):
     def inc_major_version(self):
         major_version, minor_version = self.connection.version
         major_version += 1
-        self.connection.action("UPDATE db_version SET db_version = ?;", [major_version])
+        self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
         return self.connection.version
 
 
@@ -185,16 +185,16 @@ class ShiftQualities(UpdateHistoryTableQuality):
         This makes it possible to set UNKNOWN as 1, making it the lowest quality.
         """
         log.info('Shift qualities in history one place to the left.')
-        sql_results = self.connection.select("SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;")
+        sql_results = self.connection.select('SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
             quality = result[b'quality']
             new_quality = quality << 1
             self.connection.action(
-                "UPDATE history SET quality = ? WHERE quality = ?;",
+                'UPDATE history SET quality = ? WHERE quality = ?;',
                 [new_quality, quality]
             )
 
     def update_status_unknown(self):
         """Change any `UNKNOWN` quality to 1."""
         log.info(u'Update status UNKONWN from tv_episodes')
-        self.connection.action("UPDATE history SET quality = 1 WHERE quality = 65536;")
+        self.connection.action('UPDATE history SET quality = 1 WHERE quality = 65536;')

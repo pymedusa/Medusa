@@ -34,7 +34,7 @@ class Events(threading.Thread):
         # http://stackoverflow.com/a/20598791
         self.daemon = False
         self.callback = callback
-        self.name = "EVENT-QUEUE"
+        self.name = 'EVENT-QUEUE'
         self.stop = threading.Event()
 
     def put(self, event_type):
@@ -61,11 +61,11 @@ class Events(threading.Thread):
             # exiting thread
             self.stop.clear()
         except Exception as error:
-            log.error(u"Exception generated in thread %s: %s",
+            log.error(u'Exception generated in thread %s: %s',
                       self.name, ex(error))
             log.debug(repr(traceback.format_exc()))
 
     # System Events
     class SystemEvent(Event):
-        RESTART = "RESTART"
-        SHUTDOWN = "SHUTDOWN"
+        RESTART = 'RESTART'
+        SHUTDOWN = 'SHUTDOWN'

@@ -41,7 +41,7 @@ class TraktPopular(object):
     def __init__(self):
         """Initialize the trakt recommended list object."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.recommender = "Trakt Popular"
+        self.recommender = 'Trakt Popular'
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
@@ -67,8 +67,8 @@ class TraktPopular(object):
         try:
             if not missing_posters.has(series['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(series['show']['ids']['tvdb']) or \
-                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
-                            series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+                    self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
+                        series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
             else:
                 log.info('CACHE: Missing poster on TVDB for show {0}', series['show']['title'])
                 use_default = self.default_img_src

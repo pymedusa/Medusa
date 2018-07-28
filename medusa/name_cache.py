@@ -60,9 +60,9 @@ def clear_cache(indexer_id=0, series_id=0):
     series_ids = (0, series_id)
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
-        "DELETE FROM scene_names "
-        "WHERE (indexer_id = 0 AND indexer = ?) OR"
-        "      (indexer_id = ? AND indexer = ?) ",
+        'DELETE FROM scene_names '
+        'WHERE (indexer_id = 0 AND indexer = ?) OR'
+        '      (indexer_id = ? AND indexer = ?) ',
         [series_id, indexer_id, series_id]
     )
 
@@ -82,7 +82,7 @@ def saveNameCacheToDb():
 
     for name, series in iteritems(name_cache):
         indexer_id, series_id = series
-        cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)", [series_id, name, indexer_id])
+        cache_db_con.action('INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)', [series_id, name, indexer_id])
 
 
 def build_name_cache(series_obj=None):

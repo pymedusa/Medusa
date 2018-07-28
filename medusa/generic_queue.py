@@ -21,19 +21,19 @@ class GenericQueue(object):
     def __init__(self):
         self.currentItem = None
         self.queue = []
-        self.queue_name = "QUEUE"
+        self.queue_name = 'QUEUE'
         self.min_priority = 0
         self.lock = threading.Lock()
         self.amActive = False
 
     def pause(self):
         """Pauses this queue."""
-        log.info(u"Pausing queue")
+        log.info(u'Pausing queue')
         self.min_priority = 999999999999
 
     def unpause(self):
         """Unpauses this queue."""
-        log.info(u"Unpausing queue")
+        log.info(u'Unpausing queue')
         self.min_priority = 0
 
     def add_item(self, item):
@@ -102,7 +102,7 @@ class GenericQueue(object):
 class QueueItem(threading.Thread):
     def __init__(self, name, action_id=0):
         super(QueueItem, self).__init__()
-        self.name = name.replace(" ", "-").upper()
+        self.name = name.replace(' ', '-').upper()
         self.inProgress = False
         self.priority = QueuePriorities.NORMAL
         self.action_id = action_id
