@@ -13,7 +13,6 @@ from builtins import str
 from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
-from medusa.helper.mappings import NonEmptyDict
 from medusa.helper.metadata import get_image
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
@@ -76,6 +75,18 @@ class GenericMetadata(object):
         self.season_banners = season_banners
         self.season_all_poster = season_all_poster
         self.season_all_banner = season_all_banner
+
+        # Web UI metadata template (override when subclassing)
+        self.eg_show_metadata = '<i>not supported</i>'
+        self.eg_episode_metadata = '<i>not supported</i>'
+        self.eg_fanart = '<i>not supported</i>'
+        self.eg_poster = '<i>not supported</i>'
+        self.eg_banner = '<i>not supported</i>'
+        self.eg_episode_thumbnails = '<i>not supported</i>'
+        self.eg_season_posters = '<i>not supported</i>'
+        self.eg_season_banners = '<i>not supported</i>'
+        self.eg_season_all_poster = '<i>not supported</i>'
+        self.eg_season_all_banner = '<i>not supported</i>'
 
         # Reuse indexer api, as it's crazy to hit the api with a full search, for every season search.
         self.indexer_api = None
@@ -1008,14 +1019,9 @@ class GenericMetadata(object):
 
     def to_json(self):
         """Return JSON representation."""
-        data = NonEmptyDict()
+        data = {}
         data['id'] = self.get_id()
         data['name'] = self.name
-        data['fanartName'] = self.fanart_name
-        data['posterName'] = self.poster_name
-        data['bannerName'] = self.banner_name
-        data['seasonAllPosterName'] = self.season_all_poster_name
-        data['seasonAllBannerName'] = self.season_all_banner_name
         data['showMetadata'] = self.show_metadata
         data['episodeMetadata'] = self.episode_metadata
         data['fanart'] = self.fanart
@@ -1027,7 +1033,7 @@ class GenericMetadata(object):
         data['seasonAllPoster'] = self.season_all_poster
         data['seasonAllBanner'] = self.season_all_banner
 
-        data['example'] = NonEmptyDict()
+        data['example'] = {}
         data['example']['banner'] = self.eg_banner
         data['example']['episodeMetadata'] = self.eg_episode_metadata
         data['example']['episodeThumbnails'] = self.eg_episode_thumbnails

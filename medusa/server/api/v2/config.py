@@ -403,7 +403,6 @@ class DataGenerator(object):
 
         section_data['postProcessing'] = NonEmptyDict()
         section_data['postProcessing']['naming'] = NonEmptyDict()
-        section_data['postProcessing']['naming']['stripYear'] = app.NAMING_STRIP_YEAR
         section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
         section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
         section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN

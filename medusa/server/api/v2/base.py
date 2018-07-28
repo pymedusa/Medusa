@@ -494,29 +494,25 @@ class EnumField(PatchField):
                                         setter=setter, post_processor=post_processor)
 
 
+# @TODO: Make this field more dynamic (a dict patch field)
 class MetadataStructureField(PatchField):
     """Process the metadata structure."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr):
         """Constructor."""
-        super(MetadataStructureField, self).__init__(target_type, attr, dict, validator=validator, converter=converter,
-                                                     default_value=default_value, post_processor=post_processor)
+        super(MetadataStructureField, self).__init__(target, attr, dict, validator=None, converter=None,
+                                                     default_value=None, setter=None, post_processor=None)
 
     def patch(self, target, value):
         """Patch the field with the specified value."""
         map_values = {
-            'seasonAllBannerName': 'season_all_bannerName',
-            'seasonAllBanner': 'season_all_banner',
-            'bannerName': 'banner_name',
-            'seasonBanners': 'season_banners',
             'showMetadata': 'show_metadata',
             'episodeMetadata': 'episode_metadata',
-            'seasonAllPosterName': 'season_all_poster_name',
-            'posterName': 'poster_name',
-            'fanartName': 'fanart_name',
-            'seasonAllPoster': 'season_all_poster',
             'episodeThumbnails': 'episode_thumbnails',
             'seasonPosters': 'season_posters',
+            'seasonBanners': 'season_banners',
+            'seasonAllPoster': 'season_all_poster',
+            'seasonAllBanner': 'season_all_banner',
         }
 
         try:
@@ -524,10 +520,7 @@ class MetadataStructureField(PatchField):
                 for k, v in viewitems(new_provider_config):
                     setattr(target.metadata_provider_dict[new_provider_config['name']], map_values.get(k, k), v)
         except Exception as error:
-            log.warning(
-                'Error trying to change attribute app.metadata_provider_dict, error: %s',
-                error
-            )
+            log.warning('Error trying to change attribute app.metadata_provider_dict: {0!r}', error)
             return False
 
         return True

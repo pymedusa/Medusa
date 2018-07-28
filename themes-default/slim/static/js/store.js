@@ -73,6 +73,9 @@ const store = new Store({
         },
         qualities: {},
         statuses: {},
+        metadata: {
+            metadataProviders: {}
+        },
         // Main config
         config: {
             wikiUrl: null,
@@ -277,17 +280,6 @@ const store = new Store({
                 enabled: null,
                 deleteFailed: null
             },
-            sslVersion: null,
-            pythonVersion: null,
-            comingEpsSort: null,
-            githubUrl: null,
-            datePreset: null,
-            subtitlesMulti: null,
-            pid: null,
-            os: null,
-            anonRedirect: null,
-            logDir: null,
-            recentShows: [],
             postProcessing: {
                 naming: {
                     pattern: null,
@@ -325,7 +317,17 @@ const store = new Store({
                 extraScriptsUrl: null,
                 multiEpStrings: null
             },
-            metadata: {}
+            sslVersion: null,
+            pythonVersion: null,
+            comingEpsSort: null,
+            githubUrl: null,
+            datePreset: null,
+            subtitlesMulti: null,
+            pid: null,
+            os: null,
+            anonRedirect: null,
+            logDir: null,
+            recentShows: []
         },
         // Loaded show list
         // New shows can be added via
@@ -486,7 +488,6 @@ const store = new Store({
                     const config = sections[section];
                     commit(ADD_CONFIG, { section, config });
                 });
-
                 return sections;
             });
         },
@@ -494,7 +495,9 @@ const store = new Store({
             if (section !== 'main') {
                 return;
             }
-            config = Object.keys(config).length ? config : store.state.config;
+
+            // If an empty config object was passed, use the current state config
+            config = Object.keys(config).length === 0 ? context.state.config : config;
 
             return api.patch('config/' + section, config);
         },
