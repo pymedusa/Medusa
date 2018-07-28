@@ -356,7 +356,7 @@ module.exports = {
             }
 
             try {
-                return apiRoute.get('config/postProcessing/testNaming', { params }).then(res => res.data);
+                return apiRoute.get('config/postProcessing/testNaming', { params, timeout: 20000 }).then(res => res.data);
             } catch (error) {
                 console.warn(error);
                 return '';
@@ -424,7 +424,7 @@ module.exports = {
             const { $el } = this;
             const el = $($el);
 
-            apiRoute.get('config/postProcessing/isNamingValid', { params })
+            apiRoute.get('config/postProcessing/isNamingValid', { params, timeout: 20000 })
                 .then(result => {
                     if (result.data === 'invalid') {
                         el.find('#naming_pattern').qtip('option', {
