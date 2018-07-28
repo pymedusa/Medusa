@@ -46,6 +46,11 @@ module.exports = {
             type: Boolean,
             default: true,
             required: false
+        },
+        csvEnabled: {
+            type: Boolean,
+            default: false,
+            required: false
         }
     },
     data() {
@@ -54,8 +59,7 @@ module.exports = {
             editItems: [],
             newItem: '',
             indexCounter: 0,
-            csv: '',
-            csvEnabled: false
+            csv: ''
         };
     },
     created() {
