@@ -63,10 +63,10 @@ class ProcessResult(object):
             self.log('Trying to use folder: {0}'.format(directory),
                      logger.DEBUG)
         else:
-            self.log("Unable to figure out what folder to process."
+            self.log('Unable to figure out what folder to process.'
                      " If your download client and Medusa aren't on the same"
-                     " machine, make sure to fill out the Post Processing Dir"
-                     " field in the config.", logger.WARNING)
+                     ' machine, make sure to fill out the Post Processing Dir'
+                     ' field in the config.', logger.WARNING)
         setattr(self, '_directory', directory)
 
     @property
@@ -521,7 +521,7 @@ class ProcessResult(object):
 
             if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
                 self.log("You're trying to post-process an automatically searched file that has"
-                         " already been processed, skipping: {0}".format(video_file), logger.DEBUG)
+                         ' already been processed, skipping: {0}'.format(video_file), logger.DEBUG)
                 return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
@@ -576,7 +576,7 @@ class ProcessResult(object):
                 # We want to ignore embedded subtitles and video has at least one
                 if accept_unknown(embedded_subs):
                     self.log("Found embedded unknown subtitles and we don't want to ignore them. "
-                             "Continuing the post-processing of this file: {0}".format(video))
+                             'Continuing the post-processing of this file: {0}'.format(video))
                 elif accept_any(embedded_subs):
                     self.log('Found wanted embedded subtitles. '
                              'Continuing the post-processing of this file: {0}'.format(video))
@@ -640,7 +640,7 @@ class ProcessResult(object):
                 parse_result = NameParser().parse(name)
                 if parse_result.series.indexerid:
                     main_db_con = db.DBConnection()
-                    sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1",
+                    sql_results = main_db_con.select('SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1',
                                                      [parse_result.series.indexer, parse_result.series.indexerid])
                     return bool(sql_results[0][b'subtitles']) if sql_results else False
 
@@ -677,6 +677,6 @@ class ProcessResult(object):
             return True
         else:
             logger.log("Couldn't move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
-                       "Please check logs.".format(release=release_names, hash=info_hash, s=s,
+                       'Please check logs.'.format(release=release_names, hash=info_hash, s=s,
                                                    path=app.TORRENT_SEED_LOCATION), logger.WARNING)
             return False

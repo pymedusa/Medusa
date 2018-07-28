@@ -525,20 +525,20 @@ class Home(WebRoot):
         result = notifiers.nmjv2_notifier.notify_settings(unquote_plus(host), dbloc, instance)
         if result:
             return json.dumps({
-                "message": "NMJ Database found at: {host}".format(host=host),
-                "database": app.NMJv2_DATABASE,
+                'message': 'NMJ Database found at: {host}'.format(host=host),
+                'database': app.NMJv2_DATABASE,
             })
         else:
             return json.dumps({
-                "message": "Unable to find NMJ Database at location: {db_loc}. "
-                           "Is the right location selected and PCH running?".format(db_loc=dbloc),
-                "database": ""
+                'message': 'Unable to find NMJ Database at location: {db_loc}. '
+                           'Is the right location selected and PCH running?'.format(db_loc=dbloc),
+                'database': ''
             })
 
     @staticmethod
     def getTraktToken(trakt_pin=None):
-        trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
-                          "trakt_api_secret": app.TRAKT_API_SECRET}
+        trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_api_secret': app.TRAKT_API_SECRET}
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
         response = None
         try:
@@ -561,9 +561,9 @@ class Home(WebRoot):
             return "Connection error. Click 'Authorize Medusa' button again"
         if response:
             ui.notifications.message('Trakt Authorized')
-            return "Trakt Authorized"
+            return 'Trakt Authorized'
         ui.notifications.error('Connection error. Reload the page to get new token!')
-        return "Trakt Not Authorized!"
+        return 'Trakt Not Authorized!'
 
     @staticmethod
     def testTrakt(username=None, blacklist_name=None):
@@ -1625,7 +1625,7 @@ class Home(WebRoot):
                             logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
                                        (location=new_location, msg=error), logger.WARNING)
                         else:
-                            logger.log(u"New show directory created", logger.INFO)
+                            logger.log(u'New show directory created', logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
                         changed_location = False
@@ -1690,7 +1690,7 @@ class Home(WebRoot):
             except CantRefreshShowException as e:
                 errors += 1
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           "Error: {error}".format(show=series_obj.name, error=e.message), logger.WARNING)
+                           'Error: {error}'.format(show=series_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
@@ -1702,7 +1702,7 @@ class Home(WebRoot):
                 )
             )
 
-        logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
+        logger.log(u'Finished editing show: {show}'.format(show=series_obj.name), logger.DEBUG)
         return self.redirect(
             '/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(
                 series_obj=series_obj))
@@ -1952,8 +1952,8 @@ class Home(WebRoot):
                     snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + [DOWNLOADED]
-                            or os.path.isfile(ep_obj.location)):
+                            ep_obj.status in snatched_qualities + [DOWNLOADED] or
+                            os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
@@ -1962,7 +1962,7 @@ class Home(WebRoot):
                     if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
-                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
@@ -1973,8 +1973,8 @@ class Home(WebRoot):
 
                         if ep_obj.manually_searched:
                             logger.log("Resetting 'manually searched' flag of {series} {episode}"
-                                       " as episode was changed to WANTED".format(
-                                            series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                                       ' as episode was changed to WANTED'.format(
+                                           series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
@@ -1995,7 +1995,7 @@ class Home(WebRoot):
                     upd = 'Remove'
 
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
-                                action=upd, show=series_obj), logger.DEBUG)
+                    action=upd, show=series_obj), logger.DEBUG)
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
@@ -2194,7 +2194,7 @@ class Home(WebRoot):
 
         try:
             if lang:
-                logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
+                logger.log('Manual re-downloading subtitles for {show} with language {lang}'.format
                            (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
@@ -2242,7 +2242,7 @@ class Home(WebRoot):
             logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
             return json.dumps({'result': 'failure'})
         except (ValueError, TypeError) as e:
-            ui.notifications.message('Error', "Please check logs")
+            ui.notifications.message('Error', 'Please check logs')
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
             return json.dumps({'result': 'failure'})
@@ -2253,7 +2253,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         if mode == 'searching':
-            logger.log("Manual searching subtitles for: {0}".format(release_name))
+            logger.log('Manual searching subtitles for: {0}'.format(release_name))
             found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
             if found_subtitles:
                 ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
@@ -2262,7 +2262,7 @@ class Home(WebRoot):
             result = 'success' if found_subtitles else 'failure'
             subtitles_result = found_subtitles
         else:
-            logger.log("Manual downloading subtitles for: {0}".format(release_name))
+            logger.log('Manual downloading subtitles for: {0}'.format(release_name))
             new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id,
                                                           video_path=video_path)
             if new_manual_subtitle:

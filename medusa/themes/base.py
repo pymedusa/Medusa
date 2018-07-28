@@ -55,7 +55,7 @@ def validate_theme(theme_path):
     try:
         dir_list = os.listdir(theme_path)
     except Exception as err:
-        raise Exception("Unable to list directories in {path}: {err!r}".format(path=theme_path, err=err))
+        raise Exception('Unable to list directories in {path}: {err!r}'.format(path=theme_path, err=err))
 
     # If the folder is completely empty, then the theme was probably removed, so just skip it
     if not dir_list:
@@ -76,11 +76,11 @@ def validate_theme(theme_path):
 
     # Validate if they mandatory keys are configured in the package.json.
     if not package_json.get('name') or not package_json.get('version'):
-        raise Exception("As a bare minimum you'l need at least to provide the 'name' and and 'version' key. "
-                        "Please refer to the medusa theming documentation.")
+        raise Exception("As a bare minimum you'll need at least to provide the 'name' and and 'version' key. "
+                        'Please refer to the medusa theming documentation.')
 
     if not os.path.isdir(os.path.join(theme_path, 'templates')) and not os.path.isfile(os.path.join(theme_path, 'index.html')):
-        raise Exception("You need to have at least a templates folder with mako temnplates, "
+        raise Exception('You need to have at least a templates folder with mako temnplates, '
                         "or an index.html in your [theme's] root. Please refer to the medusa theming documentation.")
 
     return True

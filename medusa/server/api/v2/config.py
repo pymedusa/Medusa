@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import inspect
 import logging
+import pkgutil
 import platform
 import sys
 
@@ -25,12 +26,13 @@ from medusa.server.api.v2.base import (
     EnumField,
     IntegerField,
     ListField,
+    MetadataStructureField,
     StringField,
     iter_nested_items,
     set_nested_value,
 )
 
-from six import iteritems, text_type
+from six import iteritems, itervalues, text_type
 
 from tornado.escape import json_decode
 
@@ -114,6 +116,38 @@ class ConfigHandler(BaseRequestHandler):
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+        'postProcessing.seriesDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
+        'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
+        'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
+        'postProcessing.unpack': BooleanField(app, 'UNPACK'),
+        'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
+        'postProcessing.postponeIfSyncFiles': BooleanField(app, 'POSTPONE_IF_SYNC_FILES'),
+        'postProcessing.autoPostprocessorFrequency': IntegerField(app, 'AUTOPOSTPROCESSOR_FREQUENCY'),
+        'postProcessing.airdateEpisodes': BooleanField(app, 'AIRDATE_EPISODES'),
+
+        'postProcessing.moveAssociatedFiles': BooleanField(app, 'MOVE_ASSOCIATED_FILES'),
+        'postProcessing.allowedExtensions': ListField(app, 'ALLOWED_EXTENSIONS'),
+        'postProcessing.addShowsWithoutDir': BooleanField(app, 'ADD_SHOWS_WO_DIR'),
+        'postProcessing.createMissingShowDirs': BooleanField(app, 'CREATE_MISSING_SHOW_DIRS'),
+        'postProcessing.renameEpisodes': BooleanField(app, 'RENAME_EPISODES'),
+        'postProcessing.postponeIfNoSubs': BooleanField(app, 'POSTPONE_IF_NO_SUBS'),
+        'postProcessing.nfoRename': BooleanField(app, 'NFO_RENAME'),
+        'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
+        'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
+        'postProcessing.extraScripts': ListField(app, 'EXTRA_SCRIPTS'),
+        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS_URL'),
+        'postProcessing.naming.pattern': StringField(app, 'NAMING_PATTERN'),
+        'postProcessing.naming.enableCustomNamingAnime': BooleanField(app, 'NAMING_CUSTOM_ANIME'),
+        'postProcessing.naming.enableCustomNamingSports': BooleanField(app, 'NAMING_CUSTOM_SPORTS'),
+        'postProcessing.naming.enableCustomNamingAirByDate': BooleanField(app, 'NAMING_CUSTOM_ABD'),
+        'postProcessing.naming.patternSports': StringField(app, 'NAMING_SPORTS_PATTERN'),
+        'postProcessing.naming.patternAirByDate': StringField(app, 'NAMING_ABD_PATTERN'),
+        'postProcessing.naming.patternAnime': StringField(app, 'NAMING_ANIME_PATTERN'),
+        'postProcessing.naming.animeMultiEp': IntegerField(app, 'NAMING_ANIME_MULTI_EP'),
+        'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
+        'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
     }
 
     def get(self, identifier, path_param=None):
@@ -157,6 +191,18 @@ class ConfigHandler(BaseRequestHandler):
         data = json_decode(self.request.body)
         accepted = {}
         ignored = {}
+
+        # Remove the metadata providers from the nested items.
+        # It's ugly but I don't see a better solution for it right now.
+        if data.get('metadata'):
+            metadata_providers = data['metadata'].pop('metadataProviders')
+
+            if metadata_providers:
+                patch_metadata_providers = MetadataStructureField(app, 'metadata_provider_dict')
+                if patch_metadata_providers and patch_metadata_providers.patch(app, metadata_providers):
+                    set_nested_value(accepted, 'metadata.metadataProviders', metadata_providers)
+                else:
+                    set_nested_value(ignored, 'metadata.metadataProviders', metadata_providers)
 
         for key, value in iter_nested_items(data):
             patch_field = self.patches.get(key)
@@ -357,8 +403,40 @@ class DataGenerator(object):
         section_data['indexers']['config'] = get_indexer_config()
 
         section_data['postProcessing'] = NonEmptyDict()
-        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+        section_data['postProcessing']['naming'] = NonEmptyDict()
+        section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
+        section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
+        section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+        section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+        section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
+        section_data['postProcessing']['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
+        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
+        section_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
+        section_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
+        section_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
+        section_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+        section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
+        section_data['postProcessing']['renameEpisodes'] = bool(app.RENAME_EPISODES)
+        section_data['postProcessing']['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
+        section_data['postProcessing']['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
+        section_data['postProcessing']['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
+        section_data['postProcessing']['nfoRename'] = bool(app.NFO_RENAME)
+        section_data['postProcessing']['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
+        section_data['postProcessing']['unpack'] = bool(app.UNPACK)
+        section_data['postProcessing']['deleteRarContent'] = bool(app.DELRARCONTENTS)
+        section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
+        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+        section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+        section_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+        section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
+        section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
+        section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
+        section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
+        section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
+        section_data['postProcessing']['multiEpStrings'] = common.MULTI_EP_STRINGS
 
         return section_data
 
@@ -428,5 +506,18 @@ class DataGenerator(object):
         section_data['values']['failed'] = common.FAILED
         section_data['values']['snatchedBest'] = common.SNATCHED_BEST
         section_data['strings'] = common.statusStrings
+
+        return section_data
+
+    @staticmethod
+    def data_metadata():
+        """Metadata."""
+        section_data = NonEmptyDict()
+
+        section_data['metadataProviders'] = NonEmptyDict()
+
+        for provider in itervalues(app.metadata_provider_dict):
+            json_repr = provider.to_json()
+            section_data['metadataProviders'][json_repr['id']] = json_repr
 
         return section_data

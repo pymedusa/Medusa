@@ -114,7 +114,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
-        self.queue_name = "SHOWQUEUE"
+        self.queue_name = 'SHOWQUEUE'
 
     def _isInQueue(self, show, actions):
         if not show:
@@ -187,13 +187,13 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingUpdated(show):
             raise CantUpdateShowException(
-                "{show_name} is already being updated by Post-processor or manually started,"
+                '{show_name} is already being updated by Post-processor or manually started,'
                 " can't update again until it's done.".format(show_name=show.name)
             )
 
         if self.isInUpdateQueue(show):
             raise CantUpdateShowException(
-                "{show_name} is in process of being updated by Post-processor or manually started,"
+                '{show_name} is in process of being updated by Post-processor or manually started,'
                 " can't update again until it's done.".format(show_name=show.name)
             )
 
@@ -209,7 +209,7 @@ class ShowQueue(generic_queue.GenericQueue):
             raise CantRefreshShowException('This show is already being refreshed, not refreshing again.')
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
-            log.debug("A refresh was attempted but there is already an update queued or in progress."
+            log.debug('A refresh was attempted but there is already an update queued or in progress.'
                       " Since updates do a refresh at the end anyway I'm skipping this request.")
             return
 
