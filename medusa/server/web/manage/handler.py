@@ -170,10 +170,16 @@ class Manage(Home, WebRoot):
                     status_list + [cur_indexer_id, cur_series_id]
                 )
 
-                all_eps = ['{season}x{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
+                all_eps = ['s{season}e{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
                 to_change[cur_indexer_id, cur_series_id] = all_eps
 
-            self.setStatus(indexer_id_to_name(int(cur_indexer_id)), cur_series_id, '|'.join(to_change[(cur_indexer_id, cur_series_id)]), newStatus, direct=True)
+            self.setStatus(
+                indexername=indexer_id_to_name(int(cur_indexer_id)),
+                seriesid=cur_series_id,
+                eps='|'.join(to_change[(cur_indexer_id, cur_series_id)]),
+                status=newStatus,
+                direct=True
+            )
 
         return self.redirect('/manage/episodeStatuses/')
 
