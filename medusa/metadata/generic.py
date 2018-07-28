@@ -1004,3 +1004,33 @@ class GenericMetadata(object):
             u'Could not find any {type} images on TMDB for {series}',
             {u'type': img_type, u'series': show.name}
         )
+
+    def to_json(self):
+        """Return JSON representation."""
+        data = {}
+        data['id'] = self.get_id()
+        data['name'] = self.name
+        data['showMetadata'] = self.show_metadata
+        data['episodeMetadata'] = self.episode_metadata
+        data['fanart'] = self.fanart
+        data['poster'] = self.poster
+        data['banner'] = self.banner
+        data['episodeThumbnails'] = self.episode_thumbnails
+        data['seasonPosters'] = self.season_posters
+        data['seasonBanners'] = self.season_banners
+        data['seasonAllPoster'] = self.season_all_poster
+        data['seasonAllBanner'] = self.season_all_banner
+
+        data['example'] = {}
+        data['example']['banner'] = self.eg_banner
+        data['example']['episodeMetadata'] = self.eg_episode_metadata
+        data['example']['episodeThumbnails'] = self.eg_episode_thumbnails
+        data['example']['fanart'] = self.eg_fanart
+        data['example']['poster'] = self.eg_poster
+        data['example']['seasonAllBanner'] = self.eg_season_all_banner
+        data['example']['seasonAllPoster'] = self.eg_season_all_poster
+        data['example']['seasonBanners'] = self.eg_season_banners
+        data['example']['seasonPosters'] = self.eg_season_posters
+        data['example']['showMetadata'] = self.eg_show_metadata
+
+        return data

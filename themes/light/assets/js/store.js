@@ -73,6 +73,9 @@ const store = new Store({
         },
         qualities: {},
         statuses: {},
+        metadata: {
+            metadataProviders: {}
+        },
         // Main config
         config: {
             wikiUrl: null,
@@ -278,8 +281,41 @@ const store = new Store({
                 deleteFailed: null
             },
             postProcessing: {
+                naming: {
+                    pattern: null,
+                    multiEp: null,
+                    enableCustomNamingSports: null,
+                    enableCustomNamingAirByDate: null,
+                    patternSports: null,
+                    patternAirByDate: null,
+                    enableCustomNamingAnime: null,
+                    patternAnime: null,
+                    animeMultiEp: null,
+                    animeNamingType: null,
+                    stripYear: null
+                },
+                seriesDownloadDir: null,
+                processAutomatically: null,
                 processMethod: null,
-                postponeIfNoSubs: null
+                deleteRarContent: null,
+                unpack: null,
+                noDelete: null,
+                reflinkAvailable: null,
+                postponeIfSyncFiles: null,
+                autoPostprocessorFrequency: 10,
+                airdateEpisodes: null,
+                moveAssociatedFiles: null,
+                allowedExtensions: [],
+                addShowsWithoutDir: null,
+                createMissingShowDirs: null,
+                renameEpisodes: null,
+                postponeIfNoSubs: null,
+                nfoRename: null,
+                syncFiles: [],
+                fileTimestampTimezone: 'local',
+                extraScripts: [],
+                extraScriptsUrl: null,
+                multiEpStrings: null
             },
             sslVersion: null,
             pythonVersion: null,
@@ -403,7 +439,7 @@ const store = new Store({
             if (section === 'main') {
                 state.config = config;
             }
-            if (['qualities', 'statuses'].includes(section)) {
+            if (['qualities', 'statuses', 'metadata'].includes(section)) {
                 state[section] = config;
             }
         },
