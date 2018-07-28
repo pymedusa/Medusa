@@ -368,7 +368,7 @@ module.exports = {
             if (!this.customName) {
                 this.customName = this.lastSelectedPattern;
             }
-            
+
             const pattern = this.isCustom ? this.customName : this.pattern;
 
             // Update single
@@ -464,7 +464,6 @@ module.exports = {
             if (!this.customName) {
                 this.customName = this.lastSelectedPattern;
             }
-
         }
     },
     computed: {
@@ -478,12 +477,11 @@ module.exports = {
             get() {
                 const filterPattern = () => {
                     const foundPattern = this.presets.filter(preset => preset.pattern === this.pattern);
-                    if (foundPattern.length !== 0) {
+                    if (foundPattern.length > 0) {
                         return foundPattern[0].example;
-                    } else {
-                        return false;
                     }
-                }
+                    return false;
+                };
                 return this.isCustom ? 'Custom...' : filterPattern();
             },
             set(example) {
@@ -492,7 +490,7 @@ module.exports = {
             }
         },
         presetsPatterns() {
-           return this.presets.map(preset => preset.pattern); 
+            return this.presets.map(preset => preset.pattern);
         }
     },
     mounted() {
@@ -522,7 +520,7 @@ module.exports = {
             this.isEnabled = this.enabled;
         },
         namingPattern(newPattern, oldPattern) {
-            this.lastSelectedPattern = newPattern ||  oldPattern;
+            this.lastSelectedPattern = newPattern || oldPattern;
 
             this.pattern = this.namingPattern;
             this.updateCustomName();

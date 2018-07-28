@@ -27,14 +27,13 @@ test('renders', t => {
         },
         methods: {
             checkNaming(pattern, selectedMultiEpStyle, animeType) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
                     console.debug(`Mocking method checkNaming with params: ${pattern}, ${selectedMultiEpStyle} and ${animeType}`);
                     resolve();
                 });
-                
             },
             testNaming(pattern, selectedMultiEpStyle, animeType) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
                     console.debug(`Mocking method testNaming with params: ${pattern}, ${selectedMultiEpStyle} and ${animeType}`);
                     resolve('MockTestNamingResult');
                 });
