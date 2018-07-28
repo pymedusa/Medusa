@@ -119,7 +119,8 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex"
+      "Vuex",
+      "dateFns"
     ],
     "ignores": [
       "static/js/lib/**",

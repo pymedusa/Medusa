@@ -20,11 +20,11 @@
                 </label>
                 <div class="col-sm-10 content">
                     <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples" @input="update()">
-                        <option id="preset" v-for="preset in presets">{{ preset }}</option>
+                        <option :id="preset.pattern" v-for="preset in presets" :key="preset.pattern">{{ preset.example }}</option>
                     </select>
                 </div>
             </div>
-                    
+
             <div id="naming_custom">
                 <div v-if="isCustom" class="form-group" style="padding-top: 0;">
                     <label class="col-sm-2 control-label">
@@ -207,11 +207,11 @@
                 </label>
                 <div class="col-sm-10 content">
                     <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples" @input="update($event)">
-                        <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles">{{ multiEpStyle.text }}</option>
+                        <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles" :key="multiEpStyle.value">{{ multiEpStyle.text }}</option>
                     </select>
                 </div>
             </div>
-                                
+
             <div class="form-group row">
                 <h3 class="col-sm-12">Single-EP Sample:</h3>
                 <div class="example col-sm-12">
@@ -224,7 +224,7 @@
                     <span class="jumbo" id="naming_example_multi">{{ namingExampleMulti }}</span>
                 </div>
             </div>
-        
+
             <!-- Anime only -->
             <div v-if="animeType > 0" class="form-group">
                 <label for="naming_anime" class="col-sm-2 control-label">
@@ -234,7 +234,7 @@
                     <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()" />
                     <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
                     <p>Add the absolute number to the season/episode format?</p>
-                </div>                    
+                </div>
             </div>
 
             <div v-if="animeType > 0" class="form-group">
@@ -313,7 +313,7 @@ module.exports = {
         },
         /**
             * Used icw with the type property.
-            * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings. 
+            * If a type has been passed, the `enabled` property can be used to toggle the visibilty of the name-pattern settings.
         */
         enabled: {
             type: Boolean,
@@ -336,45 +336,58 @@ module.exports = {
             isEnabled: false,
             isMulti: false,
             selectedMultiEpStyle: 1,
-            animeType: 0
-        }
+            animeType: 0,
+            lastSelectedPattern: ''
+        };
     },
     methods: {
         getDateFormat(format) {
             return dateFns.format(new Date(), format);
         },
         testNaming(pattern, selectedMultiEpStyle, animeType) {
-            console.debug('Test pattern ' + pattern + ' for ' + (selectedMultiEpStyle) ? 'multi' : 'single' + ' ep');
+            console.debug(`Test pattern ${pattern} for ${(selectedMultiEpStyle) ? 'multi' : 'single ep'}`);
             const params = {
                 pattern,
-                anime_type: animeType
-            }
+                anime_type: animeType // eslint-disable-line camelcase
+            };
 
             if (selectedMultiEpStyle) {
                 params.multi = selectedMultiEpStyle;
             }
 
             try {
-                return apiRoute.get('config/postProcessing/testNaming', {params: params}).then(res => res.data);
-            } catch (e) {
-                console.warn(e);
+                return apiRoute.get('config/postProcessing/testNaming', { params }).then(res => res.data);
+            } catch (error) {
+                console.warn(error);
                 return '';
             }
         },
-        async updatePatternSamples() {
+        updatePatternSamples() {
             // If it's a custom pattern, we need to get the custom pattern from this.customName
-            const pattern = this.isCustom ? this.customName : this.pattern; 
+            // if customName if empty for whatever reason, just use the last selected preset value.
+            if (!this.customName) {
+                this.customName = this.lastSelectedPattern;
+            }
             
+            const pattern = this.isCustom ? this.customName : this.pattern;
+
             // Update single
-            this.namingExample = await this.testNaming(pattern, false, this.animeType) + '.ext';
+            this.testNaming(pattern, false, this.animeType).then(result => {
+                this.namingExample = result + '.ext';
+            });
+
             console.debug('Result of naming pattern check: ' + this.namingExample);
 
             // Test naming
             this.checkNaming(pattern, false, this.animeType);
-            
+
             // Update multi if needed
             if (this.isMulti) {
-                this.namingExampleMulti = await this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType) + '.ext';
+                this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType)
+                    .then(result => {
+                        this.namingExampleMulti = result + '.ext';
+                    });
+
                 this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
             }
         },
@@ -390,16 +403,19 @@ module.exports = {
                     multiEpStyle: this.selectedMultiEpStyle,
                     custom: this.isCustom,
                     enabled: this.isEnabled,
-                    animeNamingType: Number(this.animeType),
+                    animeNamingType: Number(this.animeType)
                 });
-            })
-
+            });
         },
         checkNaming(pattern, selectedMultiEpStyle, animeType) {
+            if (!pattern) {
+                return;
+            }
+
             const params = {
                 pattern,
-                anime_type: animeType
-            }
+                anime_type: animeType // eslint-disable-line camelcase
+            };
 
             if (selectedMultiEpStyle) {
                 params.multi = selectedMultiEpStyle;
@@ -408,60 +424,82 @@ module.exports = {
             const { $el } = this;
             const el = $($el);
 
-            const result = apiRoute.get('config/postProcessing/isNamingValid', {params: params})
-            .then(res => {
-                if (result.data === 'invalid') {
-                    el.find('#naming_pattern').qtip('option', {
-                        'content.text': 'This pattern is invalid.',
-                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                    });
-                    el.find('#naming_pattern').qtip('toggle', true);
-                    el.find('#naming_pattern').css('background-color', '#FFDDDD');
-                } else if (result.data === 'seasonfolders') {
-                    el.find('#naming_pattern').qtip('option', {
-                        'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
-                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                    });
-                    el.find('#naming_pattern').qtip('toggle', true);
-                    el.find('#naming_pattern').css('background-color', '#FFFFDD');
-                } else {
-                    el.find('#naming_pattern').qtip('option', {
-                        'content.text': 'This pattern is valid.',
-                        'style.classes': 'qtip-rounded qtip-shadow qtip-green'
-                    });
-                    el.find('#naming_pattern').qtip('toggle', false);
-                    el.find('#naming_pattern').css('background-color', '#FFFFFF');
-                }
-            })
-            .catch(error => {
-                console.warn(error);
-            })
+            apiRoute.get('config/postProcessing/isNamingValid', { params })
+                .then(result => {
+                    if (result.data === 'invalid') {
+                        el.find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is invalid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        el.find('#naming_pattern').qtip('toggle', true);
+                        el.find('#naming_pattern').css('background-color', '#FFDDDD');
+                    } else if (result.data === 'seasonfolders') {
+                        el.find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                        });
+                        el.find('#naming_pattern').qtip('toggle', true);
+                        el.find('#naming_pattern').css('background-color', '#FFFFDD');
+                    } else {
+                        el.find('#naming_pattern').qtip('option', {
+                            'content.text': 'This pattern is valid.',
+                            'style.classes': 'qtip-rounded qtip-shadow qtip-green'
+                        });
+                        el.find('#naming_pattern').qtip('toggle', false);
+                        el.find('#naming_pattern').css('background-color', '#FFFFFF');
+                    }
+                })
+                .catch(error => {
+                    console.warn(error);
+                });
         },
         updateCustomName() {
             // Store the custom naming pattern.
-            if (!this.presets.includes(this.pattern)) {
+            if (!this.presetsPatterns.includes(this.pattern)) {
                 this.customName = this.pattern;
             }
+
+            // If the custom name is empty, let's use the last selected pattern.
+            // We'd prefer to cache the last configured custom pattern.
+            if (!this.customName) {
+                this.customName = this.lastSelectedPattern;
+            }
+
         }
     },
     computed: {
         isCustom() {
-            return !this.presets.includes(this.pattern) || this.pattern === 'Custom...';
+            if (this.pattern) {
+                return !this.presetsPatterns.includes(this.pattern) || this.pattern === 'Custom...';
+            }
+            return false;
         },
         selectedNamingPattern: {
-            get: function() {
-                return this.isCustom ? 'Custom...' : this.pattern;
+            get() {
+                const filterPattern = () => {
+                    const foundPattern = this.presets.filter(preset => preset.pattern === this.pattern);
+                    if (foundPattern.length !== 0) {
+                        return foundPattern[0].example;
+                    } else {
+                        return false;
+                    }
+                }
+                return this.isCustom ? 'Custom...' : filterPattern();
             },
-            set: function(value) {
-                this.pattern = value;
+            set(example) {
+                // We need to convert the selected example back to a pattern
+                this.pattern = this.presets.filter(preset => preset.example === example)[0].pattern;
             }
+        },
+        presetsPatterns() {
+           return this.presets.map(preset => preset.pattern); 
         }
     },
     mounted() {
         this.pattern = this.namingPattern;
 
         // Add Custom... as an option to the presets.
-        this.presets = this.namingPresets.concat('Custom...');
+        this.presets = this.namingPresets.concat({ pattern: 'Custom...', example: 'Custom...' });
 
         // Update the custom name
         this.updateCustomName();
@@ -470,7 +508,7 @@ module.exports = {
         this.availableMultiEpStyles = this.multiEpStyles;
         this.selectedMultiEpStyle = this.multiEpStyle;
         this.animeType = this.animeNamingType;
-        this.isMulti = Boolean(this.multiEpStyle)
+        this.isMulti = Boolean(this.multiEpStyle);
 
         // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
         this.isEnabled = this.type ? false : this.enabled;
@@ -483,16 +521,20 @@ module.exports = {
         enabled() {
             this.isEnabled = this.enabled;
         },
-        namingPattern() {
+        namingPattern(newPattern, oldPattern) {
+            this.lastSelectedPattern = newPattern ||  oldPattern;
+
             this.pattern = this.namingPattern;
             this.updateCustomName();
+            this.updatePatternSamples();
         },
         namingPresets() {
-            this.presets = namingPresets;
+            this.presets = this.namingPresets;
         },
         multiEpStyle() {
             this.selectedMultiEpStyle = this.multiEpStyle;
             this.isMulti = Boolean(this.multiEpStyle);
+            this.updatePatternSamples();
         },
         multiEpStyles() {
             this.availableMultiEpStyles = this.multiEpStyles;
@@ -503,7 +545,7 @@ module.exports = {
         type() {
             this.isEnabled = this.type ? false : this.enabled;
         }
-    }    
+    }
 };
 </script>
 <style>
