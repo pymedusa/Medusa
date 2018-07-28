@@ -1434,8 +1434,6 @@ definitions:
                     type: integer
                   animeNamingType:
                     type: integer
-                  stripYear:
-                    type: boolean
               seriesDownloadDir:
                 type: string
               processAutomatically:
