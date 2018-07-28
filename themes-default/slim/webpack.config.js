@@ -1,9 +1,8 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 module.exports = {
-    devtool: 'eval',
     entry: {
         // Exports all window. objects for mako files
         index: './static/js/index.js',
@@ -29,14 +28,35 @@ module.exports = {
             name: 'vendors'
         }
     },
+    module: {
+        rules: [
+            {
+                test: /\.vue$/,
+                loader: 'vue-loader'
+            },
+            {
+                test: /\.js$/,
+                loader: 'babel-loader'
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    'vue-style-loader',
+                    'css-loader'
+                ]
+            }
+        ]
+    },
     plugins: [
         new VueLoaderPlugin(),
-        new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, 'dist', 'js'),
-            to: path.resolve(__dirname, '../../themes/dark/assets/js/')
-        }, {
-            from: path.resolve(__dirname, 'dist', 'js'),
-            to: path.resolve(__dirname, '../../themes/light/assets/js/')
-        }])
+        new FileManagerPlugin({
+            onEnd: {
+                copy: [{
+                    source: './dist/js/**', destination: '../../themes/dark/assets/js/'
+                }, {
+                    source: './dist/js/**', destination: '../../themes/light/assets/js/'
+                }]
+            }
+        })
     ]
 };

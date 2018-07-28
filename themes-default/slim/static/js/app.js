@@ -4,9 +4,17 @@ import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
-import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
+import AppHeader from './templates/app-header.vue';
+import ScrollButtons from './templates/scroll-buttons.vue';
+import AppLink from './templates/app-link.vue';
+import Asset from './templates/asset.vue';
+import FileBrowser from './templates/file-browser.vue';
+import PlotInfo from './templates/plot-info.vue';
+import LanguageSelect from './templates/language-select.vue';
+import RootDirs from './templates/root-dirs.vue';
+import Backstretch from './templates/backstretch.vue';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -24,15 +32,15 @@ window.components.forEach(component => {
 });
 
 // Global components
-Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
-Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
-Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
-Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
+Vue.component('app-header', AppHeader);
+Vue.component('scroll-buttons', ScrollButtons);
+Vue.component('app-link', AppLink);
+Vue.component('asset', Asset);
+Vue.component('file-browser', FileBrowser);
+Vue.component('plot-info', PlotInfo);
+Vue.component('language-select', LanguageSelect);
+Vue.component('root-dirs', RootDirs);
+Vue.component('backstretch', Backstretch);
 
 const app = new Vue({
     name: 'App',
