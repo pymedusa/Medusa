@@ -4,15 +4,16 @@ from __future__ import unicode_literals
 
 import json
 import platform
+import pkgutil
 import sys
 
-from medusa import app, classes, db, logger
+from medusa import app, classes, common, db, logger
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
 
-from six import iteritems
+from six import iteritems, text_type
 
 from tornado.httpclient import HTTPError
 
@@ -192,8 +193,40 @@ def config(monkeypatch, app_config):
     config_data['indexers']['config'] = get_indexer_config()
 
     config_data['postProcessing'] = NonEmptyDict()
-    config_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+    config_data['postProcessing']['naming'] = NonEmptyDict()
+    config_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
+    config_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
+    config_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+    config_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+    config_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+    config_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
+    config_data['postProcessing']['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
+    config_data['postProcessing']['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
+    config_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
+    config_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
+    config_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
+    config_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
+    config_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+    config_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
     config_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
+    config_data['postProcessing']['renameEpisodes'] = bool(app.RENAME_EPISODES)
+    config_data['postProcessing']['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
+    config_data['postProcessing']['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
+    config_data['postProcessing']['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
+    config_data['postProcessing']['nfoRename'] = bool(app.NFO_RENAME)
+    config_data['postProcessing']['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
+    config_data['postProcessing']['unpack'] = bool(app.UNPACK)
+    config_data['postProcessing']['deleteRarContent'] = bool(app.DELRARCONTENTS)
+    config_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
+    config_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
+    config_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+    config_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+    config_data['postProcessing']['syncFiles'] = app.SYNC_FILES
+    config_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
+    config_data['postProcessing']['allowedExtensions'] = list(app.ALLOWED_EXTENSIONS)
+    config_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
+    config_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
+    config_data['postProcessing']['multiEpStrings'] = {text_type(k): v for k, v in iteritems(common.MULTI_EP_STRINGS)}
 
     return config_data
 
@@ -220,6 +253,7 @@ def test_config_get(http_client, create_url, auth_headers, config):
     'localUser',
     'githubUrl',
     'dbPath',
+    'postProcessing'
 ])
 def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
     # given
