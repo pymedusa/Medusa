@@ -82,18 +82,3 @@
     else:
         cssClass = overrideClass
 %><span${title} class="${cssClass}">${qualityString}</span></%def>
-
-<%def name="convert(obj)">
-    <%
-    import json
-    ## This converts the keys to strings
-    if isinstance(obj, dict):
-        new_obj = {}
-        for key in obj:
-            new_obj[str(key)] = obj[key]
-        obj = new_obj
-
-    return json.dumps(obj)
-    %>
-</%def>
-
