@@ -36,6 +36,11 @@ window.app = new Vue({
         }
     }),
     mounted() {
+        const postLoad = () => {
+            // Update VueInViewport
+            window.dispatchEvent(new Event('scroll'));
+        };
+        window.addEventListener('medusa-loaded', postLoad, { once: true });
     }
 });
 </script>
