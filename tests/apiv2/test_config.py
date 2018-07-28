@@ -26,6 +26,9 @@ def config(monkeypatch, app_config):
     app_config('LOCALE', (None, 'ABC'))
     app_locale = 'Unknown.ABC'
 
+    # postProcessing.naming
+    app_config('NAMING_ANIME', 3)
+
     config_data = NonEmptyDict()
     config_data['anonRedirect'] = app.ANON_REDIRECT
     config_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -232,7 +235,7 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config, quer
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
+def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, config):
     # given
     url = create_url('/config/main/abcdef/')
 
@@ -245,7 +248,7 @@ def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers):
+def test_config_get_not_found(http_client, create_url, auth_headers, config):
     # given
     url = create_url('/config/abcdef/')
 
