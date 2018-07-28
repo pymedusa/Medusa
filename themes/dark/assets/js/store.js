@@ -483,6 +483,7 @@ const store = new Store({
                     commit(ADD_CONFIG, { section, config });
                     return config;
                 }
+
                 const sections = res.data;
                 Object.keys(sections).forEach(section => {
                     const config = sections[section];
