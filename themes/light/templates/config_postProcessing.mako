@@ -139,9 +139,6 @@ window.app = new Vue({
                     'Error'
                 );
             });
-        },
-        processMethodDescription(processMethod) {
-            return this.processMethods.get(processMethod)
         }
     },
     computed: {
