@@ -25,7 +25,7 @@ class BaseUI(object):
         if enable_logging is not None:
             warnings.warn("the UI's log parameter is deprecated, instead use\n"
                           "use import logging; logging.getLogger('ui').info('blah')\n"
-                          "The self.log attribute will be removed in the next version")
+                          'The self.log attribute will be removed in the next version')
             self.log = logging.getLogger(__name__)
 
     def select_series(self, all_series):

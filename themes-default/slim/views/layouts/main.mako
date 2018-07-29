@@ -115,18 +115,18 @@
 
         ## Add Vue component x-templates here
         ## @NOTE: These will be usable on all pages
-        <script src="js/lib/vue.js"></script>
-        <script src="js/lib/http-vue-loader.js"></script>
-        <script src="js/lib/vue-async-computed@3.3.0.js"></script>
-        <script src="js/lib/vue-in-viewport-mixin.min.js"></script>
-        <script src="js/lib/vue-router.min.js"></script>
-        <script src="js/lib/vue-meta.min.js"></script>
-        <script src="js/lib/vue-snotify.min.js"></script>
-        <script src="js/lib/vue-js-toggle-button.js"></script>
-        <script src="js/lib/vuex.js"></script>
-        <script src="js/lib/vue-native-websocket-2.0.7.js"></script>
-        <script src="js/notifications.js"></script>
-        <script src="js/store.js"></script>
+        <script src="js/lib/vue.js?${sbPID}"></script>
+        <script src="js/lib/http-vue-loader.js?${sbPID}"></script>
+        <script src="js/lib/vue-async-computed@3.3.0.js?${sbPID}"></script>
+        <script src="js/lib/vue-in-viewport-mixin.min.js?${sbPID}"></script>
+        <script src="js/lib/vue-router.min.js?${sbPID}"></script>
+        <script src="js/lib/vue-meta.min.js?${sbPID}"></script>
+        <script src="js/lib/vue-snotify.min.js?${sbPID}"></script>
+        <script src="js/lib/vue-js-toggle-button.js?${sbPID}"></script>
+        <script src="js/lib/vuex.js?${sbPID}"></script>
+        <script src="js/lib/vue-native-websocket-2.0.7.js?${sbPID}"></script>
+        <script src="js/notifications.js?${sbPID}"></script>
+        <script src="js/store.js?${sbPID}"></script>
         <script>
             Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
             Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
@@ -134,6 +134,7 @@
             Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
             Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
             Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
+            Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
         </script>
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
@@ -202,7 +203,7 @@
             }
         </script>
         <%block name="scripts" />
-        <script src="js/router.js"></script>
+        <script src="js/router.js?${sbPID}"></script>
         <script>
             if (!window.app) {
                 console.info('Loading Vue with router since window.app is missing.');

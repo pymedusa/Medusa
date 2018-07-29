@@ -42,10 +42,10 @@ def _log_history_item(action, ep_obj, resource, provider, version=-1, proper_tag
 
     main_db_con = db.DBConnection()
     main_db_con.action(
-        "INSERT INTO history "
-        "(action, date, indexer_id, showid, season, episode, quality, "
-        "resource, provider, version, proper_tags, manually_searched, info_hash, size) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        'INSERT INTO history '
+        '(action, date, indexer_id, showid, season, episode, quality, '
+        'resource, provider, version, proper_tags, manually_searched, info_hash, size) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, ep_obj.quality,
          resource, provider, version, proper_tags, manually_searched, info_hash, size])
 
@@ -68,7 +68,7 @@ def log_snatch(search_result):
         if providerClass is not None:
             provider = providerClass.name
         else:
-            provider = "unknown"
+            provider = 'unknown'
 
         action = SNATCHED
         ep_obj.quality = search_result.quality

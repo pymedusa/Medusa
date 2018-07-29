@@ -141,11 +141,11 @@ class HomeAddShows(Home):
         else:
             page_title = 'Trakt Most Anticipated Shows'
 
-        t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
+        t = PageTemplate(rh=self, filename='addShows_trendingShows.mako')
         return t.render(title=page_title, header=page_title,
                         enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        traktList=traktList, controller="addShows", action="trendingShows",
-                        realpage="trendingShows")
+                        traktList=traktList, controller='addShows', action='trendingShows',
+                        realpage='trendingShows')
 
     def getTrendingShows(self, traktList=None):
         """
@@ -153,32 +153,32 @@ class HomeAddShows(Home):
         posts them to addNewShow
         """
         e = None
-        t = PageTemplate(rh=self, filename="addShows_recommended.mako")
+        t = PageTemplate(rh=self, filename='addShows_recommended.mako')
         if traktList is None:
-            traktList = ""
+            traktList = ''
 
         traktList = traktList.lower()
 
-        if traktList == "trending":
-            page_url = "shows/trending"
-        elif traktList == "popular":
-            page_url = "shows/popular"
-        elif traktList == "anticipated":
-            page_url = "shows/anticipated"
-        elif traktList == "collected":
-            page_url = "shows/collected"
-        elif traktList == "watched":
-            page_url = "shows/watched"
-        elif traktList == "played":
-            page_url = "shows/played"
-        elif traktList == "recommended":
-            page_url = "recommendations/shows"
-        elif traktList == "newshow":
-            page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime("%Y-%m-%d")
-        elif traktList == "newseason":
-            page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime("%Y-%m-%d")
+        if traktList == 'trending':
+            page_url = 'shows/trending'
+        elif traktList == 'popular':
+            page_url = 'shows/popular'
+        elif traktList == 'anticipated':
+            page_url = 'shows/anticipated'
+        elif traktList == 'collected':
+            page_url = 'shows/collected'
+        elif traktList == 'watched':
+            page_url = 'shows/watched'
+        elif traktList == 'played':
+            page_url = 'shows/played'
+        elif traktList == 'recommended':
+            page_url = 'recommendations/shows'
+        elif traktList == 'newshow':
+            page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
+        elif traktList == 'newseason':
+            page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
         else:
-            page_url = "shows/anticipated"
+            page_url = 'shows/anticipated'
 
         try:
             (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
@@ -189,13 +189,13 @@ class HomeAddShows(Home):
             removed_from_medusa = None
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
-                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[], realpage="getTrendingShows")
+                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
 
     def popularShows(self):
         """
         Fetches data from IMDB to show a list of popular shows.
         """
-        t = PageTemplate(rh=self, filename="addShows_recommended.mako")
+        t = PageTemplate(rh=self, filename='addShows_recommended.mako')
         e = None
 
         try:
@@ -203,16 +203,16 @@ class HomeAddShows(Home):
         except (RequestException, Exception) as e:
             recommended_shows = None
 
-        return t.render(title="Popular Shows", header="Popular Shows",
+        return t.render(title='Popular Shows', header='Popular Shows',
                         recommended_shows=recommended_shows, exception=e, groups=[],
                         enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller="addShows", action="recommendedShows", realpage="popularShows")
+                        controller='addShows', action='recommendedShows', realpage='popularShows')
 
     def popularAnime(self, list_type=REQUEST_HOT):
         """
         Fetches list recommeded shows from anidb.info.
         """
-        t = PageTemplate(rh=self, filename="addShows_recommended.mako")
+        t = PageTemplate(rh=self, filename='addShows_recommended.mako')
         e = None
 
         try:
@@ -221,10 +221,10 @@ class HomeAddShows(Home):
             # print traceback.format_exc()
             recommended_shows = None
 
-        return t.render(title="Popular Anime Shows", header="Popular Anime Shows",
+        return t.render(title='Popular Anime Shows', header='Popular Anime Shows',
                         recommended_shows=recommended_shows, exception=e, groups=[],
                         enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller="addShows", action="recommendedShows", realpage="popularAnime")
+                        controller='addShows', action='recommendedShows', realpage='popularAnime')
 
     def addShowToBlacklist(self, seriesid):
         # URL parameters

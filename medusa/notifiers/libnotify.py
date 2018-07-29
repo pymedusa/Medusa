@@ -23,12 +23,12 @@ def diagnose():
         from gi.repository import Notify  # @UnusedImport
     except ImportError:
         return (u"<p>Error: gir-notify isn't installed. On Ubuntu/Debian, install the "
-                u"<a href=\"apt:gir1.2-notify-0.7\">gir1.2-notify-0.7</a> or "
-                u"<a href=\"apt:gir1.0-notify-0.4\">gir1.0-notify-0.4</a> package.")
+                u'<a href="apt:gir1.2-notify-0.7">gir1.2-notify-0.7</a> or '
+                u'<a href="apt:gir1.0-notify-0.4">gir1.0-notify-0.4</a> package.')
     if 'DISPLAY' not in os.environ and 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
-        return (u"<p>Error: Environment variables DISPLAY and DBUS_SESSION_BUS_ADDRESS "
+        return (u'<p>Error: Environment variables DISPLAY and DBUS_SESSION_BUS_ADDRESS '
                 u"aren't set.  libnotify will only work when you run Medusa "
-                u"from a desktop login.")
+                u'from a desktop login.')
     try:
         import dbus
     except ImportError:
@@ -37,15 +37,15 @@ def diagnose():
         try:
             bus = dbus.SessionBus()
         except dbus.DBusException as e:
-            return (u"<p>Error: unable to connect to D-Bus session bus: <code>%s</code>."
-                    u"<p>Are you running Medusa in a desktop session?") % (cgi.escape(e),)
+            return (u'<p>Error: unable to connect to D-Bus session bus: <code>%s</code>.'
+                    u'<p>Are you running Medusa in a desktop session?') % (cgi.escape(e),)
         try:
             bus.get_object('org.freedesktop.Notifications',
                            '/org/freedesktop/Notifications')
         except dbus.DBusException as e:
             return (u"<p>Error: there doesn't seem to be a notification daemon available: <code>%s</code> "
-                    u"<p>Try installing notification-daemon or notify-osd.") % (cgi.escape(e),)
-    return u"<p>Error: Unable to send notification."
+                    u'<p>Try installing notification-daemon or notify-osd.') % (cgi.escape(e),)
+    return u'<p>Error: Unable to send notification.'
 
 
 class Notifier(object):
@@ -83,22 +83,22 @@ class Notifier(object):
 
     def notify_subtitle_download(self, ep_name, lang):
         if app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ": " + lang)
+            self._notify(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ': ' + lang)
 
-    def notify_git_update(self, new_version="??"):
+    def notify_git_update(self, new_version='??'):
         if app.USE_LIBNOTIFY:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._notify(title, update_text + new_version)
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         if app.USE_LIBNOTIFY:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._notify(title, update_text.format(ipaddress))
 
     def test_notify(self):
-        return self._notify('Test notification', "This is a test notification from Medusa", force=True)
+        return self._notify('Test notification', 'This is a test notification from Medusa', force=True)
 
     def _notify(self, title, message, force=False):
         if not app.USE_LIBNOTIFY and not force:

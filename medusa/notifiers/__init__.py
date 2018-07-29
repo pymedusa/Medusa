@@ -110,7 +110,7 @@ def notify_snatch(ep_name, is_proper):
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
 
-def notify_git_update(new_version=""):
+def notify_git_update(new_version=''):
     for n in notifiers:
         if app.NOTIFY_ON_UPDATE:
             try:
