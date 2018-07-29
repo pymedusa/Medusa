@@ -370,7 +370,7 @@ module.exports = {
 
             const pattern = this.isCustom ? this.customName : this.pattern;
 
-            // exiting early as we probably don't have all the properties yet.
+            // Exiting early as we probably don't have all the properties yet.
             // updatePatternSamples() can be triggered from a watcher on pattern, this.selectedMultiEpStyle or this.animeType
             // We want to make sure that the data passed on to the component is complete before making calls to the backend.
             // If we don't check on this, it will send api requests with null data.
