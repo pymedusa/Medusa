@@ -54,6 +54,11 @@ module.exports = {
     plugins: [
         new VueLoaderPlugin(),
         new FileManagerPlugin({
+            onStart: {
+                delete: [
+                    './dist/js/**'
+                ],
+            },
             onEnd: {
                 copy: Object.values(cssThemes).reduce((operations, theme) => {
                     // Queue operations for each theme
