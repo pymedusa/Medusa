@@ -334,7 +334,6 @@ module.exports = {
             namingExample: '',
             namingExampleMulti: '',
             isEnabled: false,
-            isMulti: false,
             selectedMultiEpStyle: 1,
             animeType: 0,
             lastSelectedPattern: ''
@@ -488,6 +487,9 @@ module.exports = {
         },
         presetsPatterns() {
             return this.presets.map(preset => preset.pattern);
+        },
+        isMulti() {
+            return Boolean(this.multiEpStyle);
         }
     },
     mounted() {
@@ -503,7 +505,6 @@ module.exports = {
         this.availableMultiEpStyles = this.multiEpStyles;
         this.selectedMultiEpStyle = this.multiEpStyle;
         this.animeType = this.animeNamingType;
-        this.isMulti = Boolean(this.multiEpStyle);
 
         // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
         this.isEnabled = this.type ? false : this.enabled;
@@ -528,7 +529,6 @@ module.exports = {
         },
         multiEpStyle() {
             this.selectedMultiEpStyle = this.multiEpStyle;
-            this.isMulti = Boolean(this.multiEpStyle);
             this.updatePatternSamples();
         },
         multiEpStyles() {
