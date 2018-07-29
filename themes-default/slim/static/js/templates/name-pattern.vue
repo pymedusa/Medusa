@@ -383,10 +383,9 @@ module.exports = {
 
             // Update multi if needed
             if (this.isMulti) {
-                this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType)
-                    .then(result => {
-                        this.namingExampleMulti = result + '.ext';
-                    });
+                this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType).then(result => {
+                    this.namingExampleMulti = result + '.ext';
+                });
 
                 this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
             }
@@ -424,34 +423,32 @@ module.exports = {
             const { $el } = this;
             const el = $($el);
 
-            apiRoute.get('config/postProcessing/isNamingValid', { params, timeout: 20000 })
-                .then(result => {
-                    if (result.data === 'invalid') {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern is invalid.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', true);
-                        el.find('#naming_pattern').css('background-color', '#FFDDDD');
-                    } else if (result.data === 'seasonfolders') {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', true);
-                        el.find('#naming_pattern').css('background-color', '#FFFFDD');
-                    } else {
-                        el.find('#naming_pattern').qtip('option', {
-                            'content.text': 'This pattern is valid.',
-                            'style.classes': 'qtip-rounded qtip-shadow qtip-green'
-                        });
-                        el.find('#naming_pattern').qtip('toggle', false);
-                        el.find('#naming_pattern').css('background-color', '#FFFFFF');
-                    }
-                })
-                .catch(error => {
-                    console.warn(error);
-                });
+            apiRoute.get('config/postProcessing/isNamingValid', { params, timeout: 20000 }).then(result => {
+                if (result.data === 'invalid') {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern is invalid.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                    });
+                    el.find('#naming_pattern').qtip('toggle', true);
+                    el.find('#naming_pattern').css('background-color', '#FFDDDD');
+                } else if (result.data === 'seasonfolders') {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern would be invalid without the folders, using it will force "Flatten" off for all shows.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-red'
+                    });
+                    el.find('#naming_pattern').qtip('toggle', true);
+                    el.find('#naming_pattern').css('background-color', '#FFFFDD');
+                } else {
+                    el.find('#naming_pattern').qtip('option', {
+                        'content.text': 'This pattern is valid.',
+                        'style.classes': 'qtip-rounded qtip-shadow qtip-green'
+                    });
+                    el.find('#naming_pattern').qtip('toggle', false);
+                    el.find('#naming_pattern').css('background-color', '#FFFFFF');
+                }
+            }).catch(error => {
+                console.warn(error);
+            });
         },
         updateCustomName() {
             // Store the custom naming pattern.
