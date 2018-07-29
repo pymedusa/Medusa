@@ -232,8 +232,8 @@
                 </label>
                 <div class="col-sm-10 content">
                     <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()" />
-                    <span>Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
-                    <p>Add the absolute number to the season/episode format?</p>
+                    <span>Add the absolute number to the season/episode format?</span>
+                    <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
                 </div>
             </div>
 
@@ -254,8 +254,8 @@
                 </label>
                 <div class="col-sm-10 content">
                     <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples" @input="update()"/>
-                    <span>Only applies to animes.</span>
-                    <p>Dont include the absolute number</p>
+                    <span>Don't include the absolute number</span>
+                    <p>Only applies to animes.</p>
                 </div>
             </div>
         </div>
