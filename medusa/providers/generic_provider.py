@@ -247,9 +247,7 @@ class GenericProvider(object):
 
         results = {}
         items_list = []
-        season_search = (
-            len(episodes) > 1 or manual_search_type == 'season'
-        ) and search_mode == 'sponly'
+        season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
 
         for episode in episodes:
             if not manual_search:

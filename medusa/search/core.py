@@ -490,7 +490,11 @@ def wanted_episodes(series_obj, from_date):
 
 
 def search_for_needed_episodes(force=False):
-    """Check providers for details on wanted episodes."""
+    """Search providers for needed episodes.
+
+    :param force: run the search even if no episodes are needed
+    :return: list of found episodes
+    """
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
     episodes = []
@@ -822,16 +826,12 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
         return multi_candidates, single_candidates
 
     for candidate in wanted_candidates:
-        all_wanted = True
-        any_wanted = False
-        for ep_obj in candidate.episodes:
-            if not series_obj.want_episode(ep_obj.season, ep_obj.episode,
-                                           candidate.quality, down_cur_quality):
-                all_wanted = False
-            else:
-                any_wanted = True
+        wanted_episodes = (
+            series_obj.want_episode(ep_obj.season, ep_obj.episode, candidate.quality, down_cur_quality)
+            for ep_obj in candidate.episodes
+        )
 
-        if all_wanted:
+        if all(wanted_episodes):
             log.info(u'All episodes in this season are needed, adding {0} {1}',
                      candidate.provider.provider_type,
                      candidate.name)
@@ -840,7 +840,7 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
             if not delay_search(candidate):
                 multi_candidates.append(candidate)
 
-        elif not any_wanted:
+        elif not any(wanted_episodes):
             log.debug(u'No episodes in this season are needed at this quality, ignoring {0} {1}',
                       candidate.provider.provider_type,
                       candidate.name)
