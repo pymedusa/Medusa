@@ -370,6 +370,15 @@ module.exports = {
 
             const pattern = this.isCustom ? this.customName : this.pattern;
 
+            // exiting early as we probably don't have all the properties yet.
+            // updatePatternSamples() can be triggered from a watcher on pattern, this.selectedMultiEpStyle or this.animeType
+            // We want to make sure that the data passed on to the component is complete before making calls to the backend.
+            // If we don't check on this, it will send api requests with null data.
+
+            if (!pattern || this.animeType === null || this.selectedMultiEpStyle === null) {
+                return;
+            }
+
             // Update single
             this.testNaming(pattern, false, this.animeType).then(result => {
                 this.namingExample = result + '.ext';
@@ -380,7 +389,6 @@ module.exports = {
             // Test naming
             this.checkNaming(pattern, false, this.animeType);
 
-            // Update multi if needed
             if (this.isMulti) {
                 this.testNaming(pattern, this.selectedMultiEpStyle, this.animeType).then(result => {
                     this.namingExampleMulti = result + '.ext';
@@ -536,6 +544,7 @@ module.exports = {
         },
         animeNamingType() {
             this.animeType = this.animeNamingType;
+            this.updatePatternSamples();
         },
         type() {
             this.isEnabled = this.type ? false : this.enabled;
