@@ -1,6 +1,10 @@
+const pkg = require('./package.json');
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
+
+const { config } = pkg;
+const { cssThemes } = config;
 
 module.exports = {
     entry: {
@@ -51,11 +55,14 @@ module.exports = {
         new VueLoaderPlugin(),
         new FileManagerPlugin({
             onEnd: {
-                copy: [{
-                    source: './dist/js/**', destination: '../../themes/dark/assets/js/'
-                }, {
-                    source: './dist/js/**', destination: '../../themes/light/assets/js/'
-                }]
+                copy: Object.values(cssThemes).reduce((operations, theme) => {
+                    // Queue operations for each theme
+                    operations.push({
+                        source: './dist/js/**',
+                        destination: path.join(theme.dest, 'assets', 'js')
+                    });
+                    return operations;
+                }, [])
             }
         })
     ]
