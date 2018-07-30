@@ -839,20 +839,19 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
                 'UPDATE history SET quality = ? WHERE quality = ?;',
                 [new_quality, quality]
             )
-        app.MIGRATE_IMAGES = True
 
 
 class AddSearchTemplates(ShiftQualities):
-    """Adds column size to history table."""
+    """Create a new table scene_exceptions in main.db, as part of the process to move it from cache to main."""
 
     def test(self):
         """
-        Test if the version is at least 44.10
+        Test if the version is at least 44.12
         """
-        return self.connection.version >= (44, 10)
+        return self.connection.version >= (44, 12)
 
     def execute(self):
-        backupDatabase(self.connection.version)
+        utils.backup_database(self.connection.path, self.checkDBVersion())
 
         log.info(u"Creating a new table scene_exceptions in the main.db database.")
 
@@ -863,4 +862,3 @@ class AddSearchTemplates(ShiftQualities):
         )
 
         self.inc_minor_version()
-
