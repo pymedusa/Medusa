@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import errno
 import io
 import logging
 import os
@@ -74,6 +75,18 @@ class GenericMetadata(object):
         self.season_banners = season_banners
         self.season_all_poster = season_all_poster
         self.season_all_banner = season_all_banner
+
+        # Web UI metadata template (override when subclassing)
+        self.eg_show_metadata = '<i>not supported</i>'
+        self.eg_episode_metadata = '<i>not supported</i>'
+        self.eg_fanart = '<i>not supported</i>'
+        self.eg_poster = '<i>not supported</i>'
+        self.eg_banner = '<i>not supported</i>'
+        self.eg_episode_thumbnails = '<i>not supported</i>'
+        self.eg_season_posters = '<i>not supported</i>'
+        self.eg_season_banners = '<i>not supported</i>'
+        self.eg_season_all_poster = '<i>not supported</i>'
+        self.eg_season_all_banner = '<i>not supported</i>'
 
         # Reuse indexer api, as it's crazy to hit the api with a full search, for every season search.
         self.indexer_api = None
@@ -287,11 +300,17 @@ class GenericMetadata(object):
                     u'Received an invalid XML for {series}, try again later. Error: {error}',
                     {u'series': show_obj.name, u'error': error}
                 )
-            except IOError as e:
-                log.error(
-                    u'Unable to write file to {location} - are you sure the folder is writeable? {error}',
-                    {u'location': nfo_file_path, u'error': ex(e)}
-                )
+            except IOError as error:
+                if error.errno == errno.EACCES:
+                    log.warning(
+                        u'Unable to write metadata file to {location} - verify that the path is writeable',
+                        {u'location': nfo_file_path}
+                    )
+                else:
+                    log.error(
+                        u'Unable to write metadata file to {location}. Error: {error!r}',
+                        {u'location': nfo_file_path, u'error': error}
+                    )
 
     def create_fanart(self, show_obj):
         if self.fanart and show_obj and not self._has_fanart(show_obj):
@@ -736,6 +755,8 @@ class GenericMetadata(object):
         image_url = None
 
         indexer_show_obj = self._get_show_data(show_obj)
+        if not indexer_show_obj:
+            return None
 
         if image_type not in (u'fanart', u'poster', u'banner', u'thumbnail', u'poster_thumb', u'banner_thumb'):
             log.error(
@@ -995,3 +1016,33 @@ class GenericMetadata(object):
             u'Could not find any {type} images on TMDB for {series}',
             {u'type': img_type, u'series': show.name}
         )
+
+    def to_json(self):
+        """Return JSON representation."""
+        data = {}
+        data['id'] = self.get_id()
+        data['name'] = self.name
+        data['showMetadata'] = self.show_metadata
+        data['episodeMetadata'] = self.episode_metadata
+        data['fanart'] = self.fanart
+        data['poster'] = self.poster
+        data['banner'] = self.banner
+        data['episodeThumbnails'] = self.episode_thumbnails
+        data['seasonPosters'] = self.season_posters
+        data['seasonBanners'] = self.season_banners
+        data['seasonAllPoster'] = self.season_all_poster
+        data['seasonAllBanner'] = self.season_all_banner
+
+        data['example'] = {}
+        data['example']['banner'] = self.eg_banner
+        data['example']['episodeMetadata'] = self.eg_episode_metadata
+        data['example']['episodeThumbnails'] = self.eg_episode_thumbnails
+        data['example']['fanart'] = self.eg_fanart
+        data['example']['poster'] = self.eg_poster
+        data['example']['seasonAllBanner'] = self.eg_season_all_banner
+        data['example']['seasonAllPoster'] = self.eg_season_all_poster
+        data['example']['seasonBanners'] = self.eg_season_banners
+        data['example']['seasonPosters'] = self.eg_season_posters
+        data['example']['showMetadata'] = self.eg_show_metadata
+
+        return data

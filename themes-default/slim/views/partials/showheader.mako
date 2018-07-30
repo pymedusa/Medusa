@@ -1,9 +1,7 @@
 <%!
-    import datetime
-    import urllib
-    import ntpath
-    from medusa import app, helpers, subtitles, sbdatetime, network_timezones
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
+    import operator
+    from medusa import app, helpers, subtitles, network_timezones
+    from medusa.common import SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
@@ -38,16 +36,15 @@
             % endif
             <div id="show-specials-and-seasons" class="pull-right">
                 <span class="h2footer display-specials">
-                    % if season_special:
-                    Display Specials:
-                        <app-link class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</app-link>
-                    % endif
+                % if season_special:
+                    Display Specials: <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                % endif
                 </span>
 
                 <div class="h2footer display-seasons clear">
                     <span>
                     % if (len(season_results) > 14):
-                        <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
+                        <select id="seasonJump" class="form-control input-sm" style="position: relative">
                             <option value="jump">Jump to Season</option>
                         % for seasonNum in season_results:
                             <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
@@ -87,9 +84,7 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <app-link series="${show.slug}" asset="poster">
-                        <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
-                    </app-link>
+                    <asset default="images/poster.png" series-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
                 </div>
             </div>
         </div>
@@ -99,7 +94,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right shadow" series="${show.slug}" asset="banner">
+                    <asset default="images/banner.png" series-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -176,12 +171,12 @@
                             % if show.quality in qualityPresets:
                                 ${renderQualityPill(show.quality)}
                             % else:
-                            % if allowed_qualities:
-                                <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
-                            % endif
-                            % if preferred_qualities:
-                                <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
-                            % endif
+                                % if allowed_qualities:
+                                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                % endif
+                                % if preferred_qualities:
+                                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                % endif
                             % endif
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
@@ -268,17 +263,23 @@
                 </div>
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                    <option selected value="">Change selected to:</option>
-                    <option value="">--------------------------------------------</option>
-                    <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-                    % if not app.USE_FAILED_DOWNLOADS:
-                    <% availableStatus.remove(FAILED) %>
-                    % endif
-                    % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-                        % if cur_status not in [DOWNLOADED, ARCHIVED]:
-                        <option value="${cur_status}">${statusStrings[cur_status]}</option>
+                        <option selected value="">Change status to:</option>
+                        <% statuses = [WANTED, SKIPPED, IGNORED, DOWNLOADED, ARCHIVED] %>
+                        % if app.USE_FAILED_DOWNLOADS:
+                            <% statuses.append(FAILED) %>
                         % endif
-                    % endfor
+                        % for cur_status in statuses:
+                            <option value="${cur_status}">${statusStrings[cur_status]}</option>
+                        % endfor
+                    </select>
+                    <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                        <option selected value="">Change quality to:</option>
+                        <% qualities = sorted(Quality.qualityStrings.items(), key=operator.itemgetter(0)) %>
+                        % for quality, name in qualities:
+                            % if quality not in (Quality.NA, Quality.UNKNOWN):
+                                <option value="${quality}">${name}</option>
+                            % endif
+                        % endfor
                     </select>
                     <input type="hidden" id="series-slug" value="${show.slug}" />
                     <input type="hidden" id="series-id" value="${show.indexerid}" />

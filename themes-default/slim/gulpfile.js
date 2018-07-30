@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-const gutil = require('gulp-util');
+const fs = require('fs');
+const path = require('path');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
 const babelify = require('babelify');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpif = require('gulp-if');
-const xo = require('gulp-xo');
 const gulp = require('gulp');
 const source = require('vinyl-source-stream');
 const uglify = require('gulp-uglify-es').default;
@@ -15,22 +17,30 @@ const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
-const argv = require('yargs').argv;
+const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
 
-// Const postcss = require('gulp-postcss');
-// const sass = require('gulp-sass');
+const xo = require('xo');
+
+const xoReporter = xo.getFormatter('eslint-formatter-pretty');
+
+/*
+const postcss = require('gulp-postcss');
+const sass = require('gulp-sass');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
+*/
 
 const PROD = process.env.NODE_ENV === 'production';
-const config = require('./package.json').config;
+const pkg = require('./package.json');
 
+const { config, xo: xoConfig } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
+/*
 const processors = [
     reporter({
         clearMessages: true
@@ -41,6 +51,7 @@ const processors = [
 if (PROD) {
     processors.push(cssnano());
 }
+*/
 
 const staticAssets = [
     'static/browserconfig.xml',
@@ -75,7 +86,7 @@ const getCssTheme = theme => {
 const setCsstheme = theme => {
     cssTheme = getCssTheme(theme || cssTheme);
     if (cssTheme) {
-        buildDest = cssTheme.dest;
+        buildDest = path.normalize(cssTheme.dest);
     }
 };
 
@@ -84,33 +95,31 @@ const setCsstheme = theme => {
  * @param {*} file object that has been changed.
  */
 const lintFile = file => {
-    return gulp
-        .src(file.path)
-        .pipe(xo())
-        .pipe(xo.format());
+    const files = [file.path];
+    return xo.lintFiles(files, {}).then(report => {
+        const formatted = xoReporter(report.results);
+        if (formatted) {
+            log(formatted);
+        }
+    });
 };
 
 /**
  * Run all js files through the xo (eslint) linter.
  */
 const lint = () => {
-    return gulp
-        .src([
-            'static/js/**/*.js',
-            '!static/js/lib/**',
-            '!static/js/*.min.js',
-            '!static/js/vender.js'
-        ])
-        .pipe(xo())
-        .pipe(xo.result(result => {
-            // Called for each xo result.
-            console.log(`xo linting: ${result.filePath}`);
-        }))
-        .pipe(xo.format(err => {
-            // This somehow prints the full path, instead of the relative.
-            console.log(err);
-        }))
-        .pipe(xo.failAfterError());
+    return xo.lintFiles([], {}).then(report => {
+        const formatted = xoReporter(report.results);
+        if (formatted) {
+            log(formatted);
+        }
+        let error = null;
+        if (report.errorCount > 0) {
+            error = new Error('Lint failed, see errors above.');
+            error.showStack = false;
+            throw error;
+        }
+    });
 };
 
 const watch = () => {
@@ -130,10 +139,8 @@ const watch = () => {
 
     // Js Changes
     gulp.watch([
-        'static/js/**/*.js',
-        '!static/js/lib/**',
-        '!static/js/*.min.js',
-        '!static/js/vender.js'
+        'static/js/**/*.{js,vue}',
+        ...xoConfig.ignores.map(ignore => '!' + ignore)
     ], ['js'])
         .on('change', lintFile);
 
@@ -164,7 +171,7 @@ const bundleJs = done => {
                 .transform(babelify)
                 .bundle()
                 .on('error', function(err) {
-                    gutil.log(err.message);
+                    log(err.message);
                     this.emit('end');
                 })
                 .pipe(source(entry))
@@ -174,7 +181,7 @@ const bundleJs = done => {
                     loadMaps: true
                 }))
                 .pipe(gulpif(PROD, uglify()))
-                .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
+                .on('error', err => log(colors.red('[Error]'), err.toString()))
                 .pipe(sourcemaps.write('./'))
                 .pipe(gulp.dest(dest))
                 .pipe(gulpif(!PROD, livereload({ port: 35729 })));
@@ -210,11 +217,19 @@ const moveTemplates = () => {
  * Files from the source root to copy to destination.
  */
 const rootFiles = [
-    'index.html',
-    'package.json'
+    'index.html'
 ];
 
 const moveRoot = () => {
+    const pkgFilePath = path.join(buildDest, 'package.json');
+    console.log(`Writing ${pkgFilePath}`);
+    const theme = JSON.stringify({
+        name: cssTheme.name,
+        version: pkg.version,
+        author: pkg.author
+    }, undefined, 2);
+    fs.writeFileSync(pkgFilePath, theme);
+
     console.log(`Moving root files to: ${buildDest}`);
     return gulp
         .src(rootFiles)
@@ -280,7 +295,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', async() => {
+    runSequence('lint', 'css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -288,7 +303,7 @@ gulp.task('build', done => {
 });
 
 const syncTheme = (theme, sequence) => {
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
         console.log(`Starting syncing for theme: ${theme[0]}`);
         setCsstheme(theme[0]);
         runSequence(sequence, resolve);
@@ -301,12 +316,12 @@ const syncTheme = (theme, sequence) => {
  * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
  * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
  *
- * Do not run the xo build, as this takes allot of time.
+ * Do not run the xo build, as this takes a lot of time.
  */
-gulp.task('sync', async() => {
+gulp.task('sync', async () => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
-    for (let theme of Object.entries(config.cssThemes)) {
+    for (const theme of Object.entries(config.cssThemes)) {
         await syncTheme(theme, ['css', 'cssTheme', 'img', 'js', 'static', 'templates', 'root']);
     }
 });

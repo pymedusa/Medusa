@@ -9,7 +9,10 @@ import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import try_int
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -149,11 +152,12 @@ class NebulanceProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
-                    size = temp_anchor['data-filesize'] or -1
+                    torrent_size = cells[2].find('div').get_text(strip=True)
+                    size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[3].find('span')['title']
                     pubdate = self.parse_pubdate(pubdate_raw)

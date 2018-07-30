@@ -33,16 +33,12 @@ class ConfigGeneral(Config):
     def index(self):
         t = PageTemplate(rh=self, filename='config_general.mako')
 
-        return t.render(topmenu='config', submenu=self.ConfigMenu(),
+        return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='index')
 
     @staticmethod
     def generate_api_key():
         return helpers.generate_api_key()
-
-    @staticmethod
-    def saveRootDirs(rootDirString=None):
-        app.ROOT_DIRS = rootDirString.split('|')
 
     @staticmethod
     def saveAddShowDefaults(default_status, allowed_qualities, preferred_qualities, default_season_folders,
@@ -197,7 +193,8 @@ class ConfigGeneral(Config):
 
         app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
-        app.THEME_NAME = theme_name
+        config.change_theme(theme_name)
+
         app.LAYOUT_WIDE = config.checkbox_to_value(layout_wide)
         app.FANART_BACKGROUND = config.checkbox_to_value(fanart_background)
         app.FANART_BACKGROUND_OPACITY = fanart_background_opacity

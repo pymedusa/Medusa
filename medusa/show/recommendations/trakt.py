@@ -41,7 +41,7 @@ class TraktPopular(object):
     def __init__(self):
         """Initialize the trakt recommended list object."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.recommender = "Trakt Popular"
+        self.recommender = 'Trakt Popular'
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
@@ -67,8 +67,8 @@ class TraktPopular(object):
         try:
             if not missing_posters.has(series['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(series['show']['ids']['tvdb']) or \
-                        self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
-                            series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+                    self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(
+                        series['show']['ids']['tvdb'], key_type='poster').data[0].file_name
             else:
                 log.info('CACHE: Missing poster on TVDB for show {0}', series['show']['title'])
                 use_default = self.default_img_src
@@ -81,14 +81,15 @@ class TraktPopular(object):
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
 
+        image_url = ''
         if image:
-            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
-        else:
-            rec_show.cache_image('', default=use_default)
+            image_url = self.tvdb_api_v2.config['artwork_prefix'].format(image=image)
 
-        # As the method below requires allot of resources, i've only enabled it when
+        rec_show.cache_image(image_url, default=use_default)
+
+        # As the method below requires a lot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
-        # but alternative is allot of resource used
+        # but alternative is a lot of resource used
         if 'jp' in [series['show']['country'], series['show']['language']]:
             rec_show.flag_as_anime(series['show']['ids']['tvdb'])
 

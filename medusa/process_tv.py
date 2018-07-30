@@ -11,12 +11,11 @@ from builtins import object
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
-
-import shutil_custom
 
 from six import iteritems
 
@@ -24,12 +23,10 @@ from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('@eaDir', '#recycle',)
+    IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
     def __init__(self, path, process_method=None):
 
@@ -66,10 +63,10 @@ class ProcessResult(object):
             self.log('Trying to use folder: {0}'.format(directory),
                      logger.DEBUG)
         else:
-            self.log("Unable to figure out what folder to process."
+            self.log('Unable to figure out what folder to process.'
                      " If your download client and Medusa aren't on the same"
-                     " machine, make sure to fill out the Post Processing Dir"
-                     " field in the config.", logger.WARNING)
+                     ' machine, make sure to fill out the Post Processing Dir'
+                     ' field in the config.', logger.WARNING)
         setattr(self, '_directory', directory)
 
     @property
@@ -169,7 +166,7 @@ class ProcessResult(object):
             for missedfile in self.missedfiles:
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink') and app.TORRENT_SEED_LOCATION:
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -314,7 +311,7 @@ class ProcessResult(object):
         if self.video_in_rar:
             video_files = set(self.video_files + self.video_in_rar)
 
-            if self.process_method in ('hardlink', 'symlink'):
+            if self.process_method in ('hardlink', 'symlink', 'reflink'):
                 process_method = self.process_method
                 # Move extracted video files instead of hard/softlinking them
                 self.process_method = 'move'
@@ -490,22 +487,42 @@ class ProcessResult(object):
 
     def already_postprocessed(self, video_file):
         """
-        Check if we already post processed a file.
+        Check if we already post-processed an auto snatched file.
 
         :param video_file: File name
         :return:
         """
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
-            'SELECT * FROM history '
-            "WHERE action LIKE '%04' "
-            'AND resource LIKE ?',
-            ['%' + video_file])
+            'SELECT showid, season, episode, indexer_id '
+            'FROM history '
+            'WHERE action = ? '
+            'AND resource LIKE ?'
+            'ORDER BY date DESC',
+            [DOWNLOADED, '%' + video_file])
 
         if history_result:
-            self.log("You're trying to post-process a file that has already "
-                     "been processed, skipping: {0}".format(video_file), logger.DEBUG)
-            return True
+            snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+            tv_episodes_result = main_db_con.select(
+                'SELECT manually_searched '
+                'FROM tv_episodes '
+                'WHERE indexer = ? '
+                'AND showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND status IN (?, ?, ?) ',
+                [history_result[0][b'indexer_id'],
+                 history_result[0][b'showid'],
+                 history_result[0][b'season'],
+                 history_result[0][b'episode']
+                 ] + snatched_statuses
+            )
+
+            if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
+                self.log("You're trying to post-process an automatically searched file that has"
+                         ' already been processed, skipping: {0}'.format(video_file), logger.DEBUG)
+                return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
         """
@@ -559,7 +576,7 @@ class ProcessResult(object):
                 # We want to ignore embedded subtitles and video has at least one
                 if accept_unknown(embedded_subs):
                     self.log("Found embedded unknown subtitles and we don't want to ignore them. "
-                             "Continuing the post-processing of this file: {0}".format(video))
+                             'Continuing the post-processing of this file: {0}'.format(video))
                 elif accept_any(embedded_subs):
                     self.log('Found wanted embedded subtitles. '
                              'Continuing the post-processing of this file: {0}'.format(video))
@@ -623,7 +640,7 @@ class ProcessResult(object):
                 parse_result = NameParser().parse(name)
                 if parse_result.series.indexerid:
                     main_db_con = db.DBConnection()
-                    sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1",
+                    sql_results = main_db_con.select('SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1',
                                                      [parse_result.series.indexer, parse_result.series.indexerid])
                     return bool(sql_results[0][b'subtitles']) if sql_results else False
 
@@ -660,6 +677,6 @@ class ProcessResult(object):
             return True
         else:
             logger.log("Couldn't move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
-                       "Please check logs.".format(release=release_names, hash=info_hash, s=s,
+                       'Please check logs.'.format(release=release_names, hash=info_hash, s=s,
                                                    path=app.TORRENT_SEED_LOCATION), logger.WARNING)
             return False

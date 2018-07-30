@@ -11,19 +11,38 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Home'
-        },
-        data() {
-            return {
-                header: 'Show List'
-            };
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Home'
+    },
+    data() {
+        return {
+            header: 'Show List'
+        };
+    },
+    computed: Object.assign({
+        layout: {
+            get() {
+                const { config } = this;
+                return config.layout.home;
+            },
+            set(layout) {
+                const { $store } = this;
+                const page = 'home';
+                $store.dispatch('setLayout', { page, layout });
+            }
         }
-    });
-};
+    }),
+    mounted() {
+        const postLoad = () => {
+            // Update VueInViewport
+            window.dispatchEvent(new Event('scroll'));
+        };
+        window.addEventListener('medusa-loaded', postLoad, { once: true });
+    }
+});
 </script>
 </%block>
 <%block name="metas">
@@ -46,8 +65,7 @@ const startVue = () => {
                 <div class="show-option pull-right"> Direction:
                     <select id="postersortdirection" class="form-control form-control-inline input-sm">
                             <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected" ' if app.POSTER_SORTDIR==1 else ''}>Ascending</option>
-                            <option value="false" data-sort="setPosterSortDir/?direction=0"
-                                ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
+                            <option value="false" data-sort="setPosterSortDir/?direction=0" ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
@@ -94,12 +112,11 @@ const startVue = () => {
                         Filter(s)</button>
                 </span>&nbsp;
             % endif
-            Layout: <select name="layout"
-                class="form-control form-control-inline input-sm show-layout">
-                <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
-                <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
-                <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
-                <option value="simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
+            Layout: <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                <option value="poster">Poster</option>
+                <option value="small">Small Poster</option>
+                <option value="banner">Banner</option>
+                <option value="simple">Simple</option>
             </select>
         </div>
     </div>

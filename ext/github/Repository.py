@@ -107,6 +107,7 @@ import github.Download
 import github.Permissions
 import github.Event
 import github.Legacy
+import github.SourceImport
 import github.StatsContributor
 import github.StatsCommitActivity
 import github.StatsCodeFrequency
@@ -829,6 +830,16 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return self.create_git_release(tag, release_name, release_message, draft, prerelease)
 
     def create_git_release(self, tag, name, message, draft=False, prerelease=False, target_commitish=github.GithubObject.NotSet):
+        """
+        :calls: `POST /repos/:owner/:repo/releases <http://developer.github.com/v3/repos/releases>`_
+        :param tag: string
+        :param name: string
+        :param message: string
+        :param draft: bool
+        :param prerelease: bool
+        :param target_commitish: string or :class:`github.Branch.Branch` or :class:`github.Commit.Commit` or :class:`github.GitCommit.GitCommit`
+        :rtype: :class:`github.GitRelease.GitRelease`
+        """
         assert isinstance(tag, (str, unicode)), tag
         assert isinstance(name, (str, unicode)), name
         assert isinstance(message, (str, unicode)), message
@@ -996,25 +1007,30 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self.url + "/keys",
             input=post_parameters
         )
-        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True, repoUrl=self.url)
+        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True)
 
-    def create_label(self, name, color):
+    def create_label(self, name, color, description=github.GithubObject.NotSet):
         """
         :calls: `POST /repos/:owner/:repo/labels <http://developer.github.com/v3/issues/labels>`_
         :param name: string
         :param color: string
+        :param description: string
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, (str, unicode)), name
         assert isinstance(color, (str, unicode)), color
+        assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
         post_parameters = {
             "name": name,
             "color": color,
         }
+        if description is not github.GithubObject.NotSet:
+            post_parameters["description"] = description
         headers, data = self._requester.requestJsonAndCheck(
             "POST",
             self.url + "/labels",
-            input=post_parameters
+            input=post_parameters,
+            headers={'Accept': 'application/vnd.github.symmetra-preview+json'}
         )
         return github.Label.Label(self._requester, headers, data, completed=True)
 
@@ -1091,6 +1107,41 @@ class Repository(github.GithubObject.CompletableGithubObject):
             input=post_parameters
         )
         return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
+
+    def create_source_import(self, vcs, vcs_url, vcs_username=github.GithubObject.NotSet, vcs_password=github.GithubObject.NotSet):
+        """
+        :calls: `PUT /repos/:owner/:repo/import <https://developer.github.com/v3/migration/source_imports/#start-an-import>`_
+        :param vcs: string
+        :param vcs_url: string
+        :param vcs_username: string
+        :param vcs_password: string
+        :rtype: :class:`github.SourceImport.SourceImport`
+        """
+        assert isinstance(vcs, (str, unicode)), vcs
+        assert isinstance(vcs_url, (str, unicode)), vcs_url
+        assert vcs_username is github.GithubObject.NotSet or isinstance(vcs_username, (str, unicode)), vcs_username
+        assert vcs_password is github.GithubObject.NotSet or isinstance(vcs_password, (str, unicode)), vcs_password
+        put_parameters = {
+            "vcs": vcs,
+            "vcs_url": vcs_url
+        }
+
+        if vcs_username is not github.GithubObject.NotSet:
+            put_parameters["vcs_username"] = vcs_username
+
+        if vcs_password is not github.GithubObject.NotSet:
+            put_parameters["vcs_password"] = vcs_password
+
+        import_header = {"Accept": "application/vnd.github.barred-rock-preview"}
+
+        headers, data = self._requester.requestJsonAndCheck(
+            "PUT",
+            self.url + "/import",
+            headers=import_header,
+            input=put_parameters
+        )
+
+        return github.SourceImport.SourceImport(self._requester, headers, data, completed=False)
 
     def delete(self):
         """
@@ -1201,8 +1252,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert isinstance(branch, (str, unicode)), branch
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
-            self.url + "/branches/" + branch,
-            headers={'Accept': 'application/vnd.github.loki-preview+json'}
+            self.url + "/branches/" + branch
         )
         return github.Branch.Branch(self._requester, headers, data, completed=True)
 
@@ -1342,6 +1392,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
                     committer=github.GithubObject.NotSet,
                     author=github.GithubObject.NotSet):
         """Create a file in this repository.
+
         :calls: `PUT /repos/:owner/:repo/contents/:path <http://developer.github.com/v3/repos/contents#create-a-file>`_
         :param path: string, (required), path of the file in the repository
         :param message: string, (required), commit message
@@ -1400,6 +1451,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
                     committer=github.GithubObject.NotSet,
                     author=github.GithubObject.NotSet):
         """This method updates a file in a repository
+
         :calls: `PUT /repos/:owner/:repo/contents/:path <http://developer.github.com/v3/repos/contents#update-a-file>`_
         :param path: string, Required. The content path.
         :param message: string, Required. The commit message.
@@ -1462,7 +1514,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
                     branch=github.GithubObject.NotSet,
                     committer=github.GithubObject.NotSet,
                     author=github.GithubObject.NotSet):
-        """This method delete a file in a repository
+        """This method deletes a file in a repository
+
         :calls: `DELETE /repos/:owner/:repo/contents/:path <https://developer.github.com/v3/repos/contents/#delete-a-file>`_
         :param path: string, Required. The content path.
         :param message: string, Required. The commit message.
@@ -1676,8 +1729,9 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert isinstance(sha, (str, unicode)), sha
         assert recursive is github.GithubObject.NotSet or isinstance(recursive, bool), recursive
         url_parameters = dict()
-        if recursive is not github.GithubObject.NotSet:
-            url_parameters["recursive"] = recursive
+        if recursive is not github.GithubObject.NotSet and recursive:
+            # GitHub API requires the recursive parameter be set to 1.
+            url_parameters["recursive"] = 1
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
             self.url + "/git/trees/" + sha,
@@ -1842,7 +1896,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             "GET",
             self.url + "/keys/" + str(id)
         )
-        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True, repoUrl=self.url)
+        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True)
 
     def get_keys(self):
         """
@@ -1850,7 +1904,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.RepositoryKey.RepositoryKey`
         """
         return github.PaginatedList.PaginatedList(
-            lambda requester, headers, data, completed: github.RepositoryKey.RepositoryKey(requester, headers, data, completed, repoUrl=self.url),
+            github.RepositoryKey.RepositoryKey,
             self._requester,
             self.url + "/keys",
             None
@@ -1891,6 +1945,18 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self.url + "/languages"
         )
         return data
+
+    def get_license(self):
+        """
+        :calls: `GET /repos/:owner/:repo/license <https://developer.github.com/v3/licenses>`_
+        :rtype: :class:`github.ContentFile.ContentFile`
+        """
+
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            self.url + "/license"
+        )
+        return github.ContentFile.ContentFile(self._requester, headers, data, completed=True)
 
     def get_milestone(self, number):
         """
@@ -2040,6 +2106,22 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
         return github.ContentFile.ContentFile(self._requester, headers, data, completed=True)
 
+    def get_source_import(self):
+        """
+        :calls: `GET /repos/:owner/:repo/import https://developer.github.com/v3/migration/source_imports/#get-import-progress`_
+        :rtype: :class:`github.SourceImport.SourceImport`
+        """
+        import_header = {"Accept": "application/vnd.github.barred-rock-preview"}
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            self.url + "/import",
+            headers=import_header,
+        )
+        if not data:
+            return None
+        else:
+            return github.SourceImport.SourceImport(self._requester, headers, data, completed=True)
+
     def get_stargazers(self):
         """
         :calls: `GET /repos/:owner/:repo/stargazers <http://developer.github.com/v3/activity/starring>`_
@@ -2182,7 +2264,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
     def get_release(self, id):
         """
-        :calls: `GET /repos/:owner/:repo/releases/:id https://developer.github.com/v3/repos/releases/#get-a-single-release
+        :calls: `GET /repos/:owner/:repo/releases/:id <https://developer.github.com/v3/repos/releases/#get-a-single-release>`_
         :param id: int (release id), str (tag name)
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
@@ -2341,8 +2423,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
             self.url + "/branches/" + branch,
-            input=post_parameters,
-            headers={'Accept': 'application/vnd.github.loki-preview+json'}
+            input=post_parameters
         )
 
     def remove_from_collaborators(self, collaborator):

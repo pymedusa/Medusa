@@ -16,8 +16,8 @@ from six import iteritems
 
 initConfig = {
     'valid_languages': [
-        "da", "fi", "nl", "de", "it", "es", "fr", "pl", "hu", "el", "tr",
-        "ru", "he", "ja", "pt", "zh", "cs", "sl", "hr", "ko", "en", "sv", "no"
+        'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
+        'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
     ],
     'langabbv_to_id': {
         'el': 20, 'en': 7, 'zh': 27,
@@ -78,7 +78,7 @@ indexerConfig = {
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com/',
-        'show_url': 'http://thetvdb.com/?tab=series&id=',
+        'show_url': 'https://www.thetvdb.com/dereferrer/series/',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },

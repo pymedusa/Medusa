@@ -38,7 +38,7 @@ import knowit
 
 from medusa import app, db, helpers, history
 from medusa.cache import cache, memory_cache
-from medusa.common import Quality, cpu_presets
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, cpu_presets
 from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
@@ -334,7 +334,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     for subtitle, _ in scored_subtitles:
         cache.set(subtitle_key.format(id=subtitle.id).encode('utf-8'), subtitle)
 
-    logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
+    logger.debug('Scores computed for release: {release}'.format(release=os.path.basename(video_path)))
 
     max_score = episode_scores['hash']
     max_scores = set(episode_scores) - {'hearing_impaired', 'hash'}
@@ -472,7 +472,6 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     episode = tv_episode.episode
     episode_name = tv_episode.name
     show_indexerid = tv_episode.series.indexerid
-    status = tv_episode.status
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
                                      single=not app.SUBTITLES_MULTI)
@@ -493,7 +492,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         if app.SUBTITLES_HISTORY:
             logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
                          subtitle.provider_name, subtitle.language.opensubtitles)
-            history.logSubtitle(tv_episode, status, subtitle)
+            history.log_subtitle(tv_episode, subtitle)
 
     # Refresh the subtitles property
     if tv_episode.location:
@@ -868,7 +867,7 @@ class SubtitlesFinder(object):
                     logger.debug(u'%s cannot be parsed to an episode', filename)
                     continue
 
-                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                if tv_episode.status not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     continue
 
                 if not tv_episode.series.subtitles:
@@ -880,7 +879,7 @@ class SubtitlesFinder(object):
                 new_release_name = remove_extension(filename)
                 if tv_episode.release_name and new_release_name != tv_episode.release_name:
                     logger.debug(u"As this is a release replacement I'm not going to consider existing "
-                                 u"subtitles or release name from database to refine the new release")
+                                 u'subtitles or release name from database to refine the new release')
                     logger.debug(u"Replacing old release name '%s' with new release name '%s'",
                                  tv_episode.release_name, new_release_name)
                     tv_episode.subtitles = []
@@ -974,34 +973,35 @@ class SubtitlesFinder(object):
         sql_results = []
         for args in sql_args:
             sql_results += database.select(
-                "SELECT "
-                "s.show_name, "
-                "e.indexer,"
-                "e.showid, "
-                "e.season, "
-                "e.episode,"
-                "e.release_name, "
-                "e.status, "
-                "e.subtitles, "
-                "e.subtitles_searchcount AS searchcount, "
-                "e.subtitles_lastsearch AS lastsearch, "
-                "e.location, (? - e.airdate) as age "
-                "FROM "
-                "tv_episodes AS e "
-                "INNER JOIN tv_shows AS s "
-                "ON (e.showid = s.indexer_id AND e.indexer = s.indexer) "
-                "WHERE "
-                "s.subtitles = 1 "
-                "AND s.paused = 0 "
-                "AND e.status LIKE '%4' "
-                "AND e.season > 0 "
+                'SELECT '
+                's.show_name, '
+                'e.indexer,'
+                'e.showid, '
+                'e.season, '
+                'e.episode,'
+                'e.release_name, '
+                'e.status, '
+                'e.subtitles, '
+                'e.subtitles_searchcount AS searchcount, '
+                'e.subtitles_lastsearch AS lastsearch, '
+                'e.location, (? - e.airdate) as age '
+                'FROM '
+                'tv_episodes AS e '
+                'INNER JOIN tv_shows AS s '
+                'ON (e.showid = s.indexer_id AND e.indexer = s.indexer) '
+                'WHERE '
+                's.subtitles = 1 '
+                'AND s.paused = 0 '
+                'AND e.status = ? '
+                'AND e.season > 0 '
                 "AND e.location != '' "
-                "AND age {} 30 "
-                "AND e.subtitles NOT LIKE ? "
-                "ORDER BY "
-                "lastsearch ASC "
-                "LIMIT {}".format
-                (args['age_comparison'], args['limit']), [datetime.datetime.now().toordinal(), sql_like_languages]
+                'AND age {} 30 '
+                'AND e.subtitles NOT LIKE ? '
+                'ORDER BY '
+                'lastsearch ASC '
+                'LIMIT {}'.format
+                (args['age_comparison'], args['limit']),
+                [datetime.datetime.now().toordinal(), DOWNLOADED, sql_like_languages]
             )
 
         if not sql_results:

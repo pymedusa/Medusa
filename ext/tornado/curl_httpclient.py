@@ -80,7 +80,7 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
         self._multi = None
 
     def fetch_impl(self, request, callback):
-        self._requests.append((request, callback))
+        self._requests.append((request, callback, self.io_loop.time()))
         self._process_queue()
         self._set_timeout(0)
 
@@ -205,13 +205,15 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
                 while self._free_list and self._requests:
                     started += 1
                     curl = self._free_list.pop()
-                    (request, callback) = self._requests.popleft()
+                    (request, callback, queue_start_time) = self._requests.popleft()
                     curl.info = {
                         "headers": httputil.HTTPHeaders(),
                         "buffer": BytesIO(),
                         "request": request,
                         "callback": callback,
+                        "queue_start_time": queue_start_time,
                         "curl_start_time": time.time(),
+                        "curl_start_ioloop_time": self.io_loop.current().time(),
                     }
                     try:
                         self._curl_setup_request(
@@ -257,7 +259,7 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
         # the various curl timings are documented at
         # http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
         time_info = dict(
-            queue=info["curl_start_time"] - info["request"].start_time,
+            queue=info["curl_start_ioloop_time"] - info["queue_start_time"],
             namelookup=curl.getinfo(pycurl.NAMELOOKUP_TIME),
             connect=curl.getinfo(pycurl.CONNECT_TIME),
             appconnect=curl.getinfo(pycurl.APPCONNECT_TIME),
@@ -271,7 +273,8 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
                 request=info["request"], code=code, headers=info["headers"],
                 buffer=buffer, effective_url=effective_url, error=error,
                 reason=info['headers'].get("X-Http-Reason", None),
-                request_time=time.time() - info["curl_start_time"],
+                request_time=self.io_loop.time() - info["curl_start_ioloop_time"],
+                start_time=info["curl_start_time"],
                 time_info=time_info))
         except Exception:
             self.handle_callback_exception(info["callback"])
@@ -319,17 +322,7 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
                 self.io_loop.add_callback(request.streaming_callback, chunk)
         else:
             write_function = buffer.write
-        if bytes is str:  # py2
-            curl.setopt(pycurl.WRITEFUNCTION, write_function)
-        else:  # py3
-            # Upstream pycurl doesn't support py3, but ubuntu 12.10 includes
-            # a fork/port.  That version has a bug in which it passes unicode
-            # strings instead of bytes to the WRITEFUNCTION.  This means that
-            # if you use a WRITEFUNCTION (which tornado always does), you cannot
-            # download arbitrary binary data.  This needs to be fixed in the
-            # ported pycurl package, but in the meantime this lambda will
-            # make it work for downloading (utf8) text.
-            curl.setopt(pycurl.WRITEFUNCTION, lambda s: write_function(utf8(s)))
+        curl.setopt(pycurl.WRITEFUNCTION, write_function)
         curl.setopt(pycurl.FOLLOWLOCATION, request.follow_redirects)
         curl.setopt(pycurl.MAXREDIRS, request.max_redirects)
         curl.setopt(pycurl.CONNECTTIMEOUT_MS, int(1000 * request.connect_timeout))
@@ -348,8 +341,8 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
             curl.setopt(pycurl.PROXY, request.proxy_host)
             curl.setopt(pycurl.PROXYPORT, request.proxy_port)
             if request.proxy_username:
-                credentials = '%s:%s' % (request.proxy_username,
-                                         request.proxy_password)
+                credentials = httputil.encode_username_password(request.proxy_username,
+                                                                request.proxy_password)
                 curl.setopt(pycurl.PROXYUSERPWD, credentials)
 
             if (request.proxy_auth_mode is None or
@@ -441,8 +434,6 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
                 curl.setopt(pycurl.INFILESIZE, len(request.body or ''))
 
         if request.auth_username is not None:
-            userpwd = "%s:%s" % (request.auth_username, request.auth_password or '')
-
             if request.auth_mode is None or request.auth_mode == "basic":
                 curl.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
             elif request.auth_mode == "digest":
@@ -450,7 +441,9 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
             else:
                 raise ValueError("Unsupported auth_mode %s" % request.auth_mode)
 
-            curl.setopt(pycurl.USERPWD, native_str(userpwd))
+            userpwd = httputil.encode_username_password(request.auth_username,
+                                                        request.auth_password)
+            curl.setopt(pycurl.USERPWD, userpwd)
             curl_log.debug("%s %s (username: %r)", request.method, request.url,
                            request.auth_username)
         else:

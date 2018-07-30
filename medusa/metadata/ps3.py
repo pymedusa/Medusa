@@ -2,6 +2,7 @@
 
 
 from __future__ import unicode_literals
+
 import os
 
 from medusa.metadata import generic
@@ -42,21 +43,21 @@ class PS3Metadata(generic.GenericMetadata):
                                          season_all_poster,
                                          season_all_banner)
 
-        self.name = "Sony PS3"
+        self.name = 'Sony PS3'
 
-        self.poster_name = "cover.jpg"
+        self.poster_name = 'cover.jpg'
 
         # web-ui metadata template
-        self.eg_show_metadata = "<i>not supported</i>"
-        self.eg_episode_metadata = "<i>not supported</i>"
-        self.eg_fanart = "<i>not supported</i>"
-        self.eg_poster = "cover.jpg"
-        self.eg_banner = "<i>not supported</i>"
-        self.eg_episode_thumbnails = "Season##\\<i>filename</i>.ext.cover.jpg"
-        self.eg_season_posters = "<i>not supported</i>"
-        self.eg_season_banners = "<i>not supported</i>"
-        self.eg_season_all_poster = "<i>not supported</i>"
-        self.eg_season_all_banner = "<i>not supported</i>"
+        # self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_episode_metadata = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
+        self.eg_poster = 'cover.jpg'
+        # self.eg_banner = '<i>not supported</i>'
+        self.eg_episode_thumbnails = 'Season##\\<i>filename</i>.ext.cover.jpg'
+        # self.eg_season_posters = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
@@ -102,7 +103,7 @@ class PS3Metadata(generic.GenericMetadata):
         ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
-            tbn_filename = ep_obj.location + ".cover.jpg"
+            tbn_filename = ep_obj.location + '.cover.jpg'
         else:
             return None
 

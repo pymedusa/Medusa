@@ -3,9 +3,9 @@
 from __future__ import unicode_literals
 
 from medusa import db
-from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
+
 from tornado.escape import json_decode
 
 
@@ -83,7 +83,7 @@ class AliasHandler(BaseRequestHandler):
 
         data = []
         for item in sql_results:
-            d = NonEmptyDict()
+            d = {}
             d['id'] = item[0]
             d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
             d['name'] = item[3]

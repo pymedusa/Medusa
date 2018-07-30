@@ -1,13 +1,15 @@
 {
   "manifest_version": 1,
   "version": "0.1.0",
-  "name": "dark",
+  "name": "slim",
   "author": "p0psicles",
   "scripts": {
     "gulp": "gulp",
-    "lint": "gulp lint",
+    "lint": "xo",
     "build": "cross-env NODE_ENV=production gulp build",
-    "install": "yarn run lint"
+    "install": "yarn run lint",
+    "test": "cross-env NODE_ENV=test nyc ava",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
     "cssThemes": {
@@ -23,49 +25,64 @@
       }
     }
   },
+  "dependencies": {},
   "devDependencies": {
-    "autoprefixer": "^7.1.6",
-    "ava": "^0.23.0",
-    "axios": "^0.17.1",
-    "babel-core": "^6.26.0",
-    "babelify": "^8.0.0",
-    "browserify": "^14.5.0",
-    "concurrently": "^3.5.0",
-    "cssnano": "^3.10.0",
-    "eslint": "^4.16.0",
-    "eslint-config-xo": "^0.19.0",
-    "event-stream": "^3.3.4",
-    "glob": "^7.1.2",
-    "gulp": "^3.9.1",
-    "gulp-changed": "^3.2.0",
-    "gulp-changed-in-place": "^2.3.0",
-    "gulp-if": "^2.0.2",
-    "gulp-imagemin": "^3.4.0",
-    "gulp-livereload": "^3.8.1",
-    "gulp-postcss": "^7.0.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-rev": "^8.1.0",
-    "gulp-sass": "^3.1.0",
-    "gulp-sourcemaps": "^2.6.1",
-    "gulp-swagger-js-codegen": "^1.0.0",
-    "gulp-uglify-es": "^0.1.4",
-    "gulp-util": "^3.0.8",
-    "gulp-xo": "^0.16.1",
-    "imagemin-pngquant": "^5.0.1",
-    "jquery": "^3.2.1",
-    "nyc": "^11.3.0",
-    "postcss-reporter": "^5.0.0",
-    "run-sequence": "^2.2.0",
-    "snyk": "^1.9.1",
-    "url-parse": "^1.2.0",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "vue": "^2.5.5",
-    "xo": "^0.20.0",
-    "yargs": "^11.0.0"
+    "@vue/test-utils": "1.0.0-beta.22",
+    "ansi-colors": "2.0.5",
+    "ava": "0.25.0",
+    "axios": "0.18.0",
+    "babel-plugin-istanbul": "4.1.6",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-env": "1.7.0",
+    "babel-register": "6.26.0",
+    "babelify": "8.0.0",
+    "browser-env": "3.2.5",
+    "browserify": "16.2.2",
+    "codecov": "3.0.4",
+    "cross-env": "5.2.0",
+    "eslint": "5.2.0",
+    "eslint-config-xo": "0.23.0",
+    "eslint-plugin-vue": "4.7.1",
+    "event-stream": "3.3.4",
+    "fancy-log": "1.3.2",
+    "glob": "7.1.2",
+    "gulp": "3.9.1",
+    "gulp-changed": "3.2.0",
+    "gulp-if": "2.0.2",
+    "gulp-imagemin": "4.1.0",
+    "gulp-livereload": "3.8.1",
+    "gulp-postcss": "7.0.1",
+    "gulp-rename": "1.4.0",
+    "gulp-sourcemaps": "2.6.4",
+    "gulp-uglify-es": "1.0.4",
+    "imagemin-pngquant": "6.0.0",
+    "jquery": "3.3.1",
+    "nyc": "12.0.2",
+    "postcss-reporter": "5.0.0",
+    "puex": "0.5.2",
+    "require-extension-hooks": "0.3.2",
+    "require-extension-hooks-babel": "0.1.1",
+    "require-extension-hooks-vue": "1.0.1",
+    "run-sequence": "2.2.1",
+    "snyk": "1.89.1",
+    "source-map-support": "0.5.6",
+    "vinyl-buffer": "1.0.1",
+    "vinyl-source-stream": "2.0.0",
+    "vue": "2.5.16",
+    "vue-router": "3.0.1",
+    "vue-template-compiler": "2.5.16",
+    "vuex": "3.0.1",
+    "xo": "0.21.1",
+    "yargs": "12.0.1"
   },
   "xo": {
     "space": 4,
+    "extends": [
+      "plugin:vue/essential"
+    ],
+    "extensions": [
+      "vue"
+    ],
     "rules": {
       "object-curly-spacing": [
         "error",
@@ -74,11 +91,16 @@
       "space-before-function-paren": [
         "error",
         "never"
+      ],
+      "unicorn/catch-error-name": [
+        "error",
+        {
+          "name": "error"
+        }
       ]
     },
     "envs": [
-      "browser",
-      "node"
+      "browser"
     ],
     "globals": [
       "PNotify",
@@ -89,56 +111,49 @@
       "$",
       "MEDUSA",
       "api",
+      "apiv1",
+      "apiRoute",
       "jQuery",
       "axios",
+      "webRoot",
       "apiRoot",
-      "apiKey"
+      "apiKey",
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "/**/*.spec.js",
-      "build/**"
+      "build/**",
+      "gulpfile.js",
+      "static/js/templates/name-pattern.vue"
     ],
     "esnext": true
   },
-  "stylelint": {
-    "extends": "stylelint-config-standard",
-    "rules": {
-      "indentation": [
-        4,
-        {
-          "ignore": [
-            "inside-parens"
-          ],
-          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
-          "severity": "error"
-        }
-      ]
-    },
-    "ignoreFiles": [
-      "static/css/lib/**",
-      "static/css/*.min.css",
-      "gulpfile.js"
-    ]
-  },
-  "dependencies": {
-    "stylelint": "^7.9.0"
-  },
   "ava": {
-    "files": [
-      "vue/test/**/*.js"
+    "require": [
+      "babel-register",
+      "babel-polyfill",
+      "./test/helpers/setup.js"
     ],
-    "source": [
-      "vue/src/**/*.{js,jsx}",
-      "!dist/**/*"
+    "babel": "inherit",
+    "files": [
+      "test/specs/**/*.spec.js"
+    ],
+    "sources": [
+      "static/js/templates/**/*.vue"
     ],
     "concurrency": 5,
-    "failFast": true,
-    "failWithoutAssertions": false,
-    "tap": true,
-    "powerAssert": false,
-    "babel": "inherit"
+    "failWithoutAssertions": true,
+    "powerAssert": true
+  },
+  "nyc": {
+    "extension": [
+      ".vue"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
   }
 }

@@ -10,6 +10,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Logs'
@@ -60,9 +61,9 @@ const startVue = () => {
 <%block name="css">
 <style>
 pre {
-  overflow: auto;
-  word-wrap: normal;
-  white-space: pre;
+    overflow: auto;
+    word-wrap: normal;
+    white-space: pre;
 }
 </style>
 </%block>

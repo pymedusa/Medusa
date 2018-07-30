@@ -5,19 +5,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Anime'
-        },
-        data() {
-            return {
-                header: 'Anime'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Anime'
+    },
+    data() {
+        return {
+            header: 'Anime'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -83,7 +82,7 @@ const startVue = () => {
                     <div id="anime-look-feel" class="tab-pane component-group">
                         <div class="component-group-desc">
                             <span class="icon-notifiers-look" title="look"></span>
-                            <h3>Look and Feel</h3>
+                            <h3><a>Look and Feel</a></h3>
                             <p>How should the anime functions show and behave.</p>
                        </div><!-- .component-group-desc //-->
                         <fieldset class="component-group-list">

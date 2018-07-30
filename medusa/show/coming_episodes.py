@@ -1,8 +1,6 @@
 # coding=utf-8
 # This file is part of Medusa.
 #
-
-#
 # Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -25,10 +23,14 @@ from operator import itemgetter
 
 from medusa import app
 from medusa.common import (
+    ARCHIVED,
+    DOWNLOADED,
     IGNORED,
-    Quality,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
-    WANTED,
+    WANTED
 )
 from medusa.db import DBConnection
 from medusa.helper.common import dateFormat, timeFormat
@@ -71,12 +73,14 @@ class ComingEpisodes(object):
         today = date.today().toordinal()
         next_week = (date.today() + timedelta(days=7)).toordinal()
         recently = (date.today() - timedelta(days=app.COMING_EPS_MISSED_RANGE)).toordinal()
-        qualities_list = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER + Quality.ARCHIVED + [IGNORED]
+        status_list = [DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER,
+                       ARCHIVED, IGNORED]
 
         db = DBConnection()
         fields_to_select = ', '.join(
-            ['airdate', 'airs', 'e.description as description', 'episode', 'imdb_id', 'e.indexer', 'indexer_id', 'name', 'network',
-             'paused', 'quality', 'runtime', 'season', 'show_name', 'showid', 's.status']
+            ['airdate', 'airs', 'e.description as description', 'episode', 'imdb_id', 'e.indexer',
+             'indexer_id', 'name', 'network', 'paused', 's.quality', 'runtime', 'season', 'show_name',
+             'showid', 's.status']
         )
         results = db.select(
             'SELECT %s ' % fields_to_select +
@@ -86,13 +90,13 @@ class ComingEpisodes(object):
             'AND airdate < ? '
             'AND s.indexer = e.indexer '
             'AND s.indexer_id = e.showid '
-            'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
-            [today, next_week] + qualities_list
+            'AND e.status NOT IN (' + ','.join(['?'] * len(status_list)) + ')',
+            [today, next_week] + status_list
         )
 
         done_shows_list = [int(result[b'showid']) for result in results]
         placeholder = ','.join(['?'] * len(done_shows_list))
-        placeholder2 = ','.join(['?'] * len(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER))
+        placeholder2 = ','.join(['?'] * len([DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER]))
 
         # FIXME: This inner join is not multi indexer friendly.
         results += db.select(
@@ -109,7 +113,7 @@ class ComingEpisodes(object):
             'AND inner_e.airdate >= ? '
             'ORDER BY inner_e.airdate ASC LIMIT 1) '
             'AND e.status NOT IN (' + placeholder2 + ')',
-            done_shows_list + [next_week] + Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER
+            done_shows_list + [next_week] + [DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER]
         )
 
         results += db.select(
@@ -120,8 +124,8 @@ class ComingEpisodes(object):
             'AND airdate < ? '
             'AND airdate >= ? '
             'AND e.status IN (?,?) '
-            'AND e.status NOT IN (' + ','.join(['?'] * len(qualities_list)) + ')',
-            [today, recently, WANTED, UNAIRED] + qualities_list
+            'AND e.status NOT IN (' + ','.join(['?'] * len(status_list)) + ')',
+            [today, recently, WANTED, UNAIRED] + status_list
         )
 
         results = [dict(result) for result in results]

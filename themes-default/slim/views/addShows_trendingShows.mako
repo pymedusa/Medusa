@@ -8,14 +8,15 @@
 % endif
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        el: '#vue-wrap',
-        data() {
-            return {};
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    data() {
+        return {
+            rootDirs: []
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -50,7 +51,7 @@ const startVue = () => {
                             <li><app-link id="trakt-tab-2" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</app-link></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
-                            <%include file="/inc_rootDirs.mako"/>
+                            <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
                             <br/>
                         </div>
                         <div id="tabs-2" class="existingtabs">

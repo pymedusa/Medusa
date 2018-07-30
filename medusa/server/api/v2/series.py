@@ -21,6 +21,7 @@ from six import itervalues, viewitems
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class SeriesHandler(BaseRequestHandler):
@@ -136,6 +137,7 @@ class SeriesHandler(BaseRequestHandler):
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
         }
+
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
             if patch_field and patch_field.patch(series, value):
@@ -147,7 +149,7 @@ class SeriesHandler(BaseRequestHandler):
         series.save_to_db()
 
         if ignored:
-            log.warning('Series patch ignored %r', ignored)
+            log.warning('Series patch ignored {items!r}', {'items': ignored})
 
         self._ok(data=accepted)
 

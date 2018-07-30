@@ -328,6 +328,7 @@ class Application(object):
 
         # Initialize all available themes
         app.AVAILABLE_THEMES = read_themes()
+        app.DATA_ROOT = os.path.join(app.PROG_DIR, 'themes')
 
         # Load the config and publish it to the application package
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
@@ -374,7 +375,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'themes'),
+            'data_root': app.DATA_ROOT,
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -422,7 +423,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'NMA', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -841,13 +842,6 @@ class Application(object):
             app.PYTIVO_HOST = check_setting_str(app.CFG, 'pyTivo', 'pytivo_host', '')
             app.PYTIVO_SHARE_NAME = check_setting_str(app.CFG, 'pyTivo', 'pytivo_share_name', '')
             app.PYTIVO_TIVO_NAME = check_setting_str(app.CFG, 'pyTivo', 'pytivo_tivo_name', '')
-
-            app.USE_NMA = bool(check_setting_int(app.CFG, 'NMA', 'use_nma', 0))
-            app.NMA_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsnatch', 0))
-            app.NMA_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_ondownload', 0))
-            app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsubtitledownload', 0))
-            app.NMA_API = check_setting_list(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
-            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', '0')
 
             app.USE_PUSHALOT = bool(check_setting_int(app.CFG, 'Pushalot', 'use_pushalot', 0))
             app.PUSHALOT_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Pushalot', 'pushalot_notify_onsnatch', 0))
@@ -1821,14 +1815,6 @@ class Application(object):
         new_config['pyTivo']['pytivo_host'] = app.PYTIVO_HOST
         new_config['pyTivo']['pytivo_share_name'] = app.PYTIVO_SHARE_NAME
         new_config['pyTivo']['pytivo_tivo_name'] = app.PYTIVO_TIVO_NAME
-
-        new_config['NMA'] = {}
-        new_config['NMA']['use_nma'] = int(app.USE_NMA)
-        new_config['NMA']['nma_notify_onsnatch'] = int(app.NMA_NOTIFY_ONSNATCH)
-        new_config['NMA']['nma_notify_ondownload'] = int(app.NMA_NOTIFY_ONDOWNLOAD)
-        new_config['NMA']['nma_notify_onsubtitledownload'] = int(app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD)
-        new_config['NMA']['nma_api'] = app.NMA_API
-        new_config['NMA']['nma_priority'] = app.NMA_PRIORITY
 
         new_config['Pushalot'] = {}
         new_config['Pushalot']['use_pushalot'] = int(app.USE_PUSHALOT)

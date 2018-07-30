@@ -1,6 +1,7 @@
 # coding=utf-8
 """Request handler for logs."""
 from __future__ import unicode_literals
+
 import json
 import logging
 
@@ -8,8 +9,8 @@ from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 
-
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class LogHandler(BaseRequestHandler):

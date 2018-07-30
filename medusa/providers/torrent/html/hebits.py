@@ -111,7 +111,7 @@ class HeBitsProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as html:
+        with BS4Parser(data, 'html.parser') as html:
             torrent_table = html.find('div', class_='browse')
             torrent_rows = torrent_table('div', class_=re.compile('^line')) if torrent_table else []
 
@@ -144,7 +144,7 @@ class HeBitsProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 

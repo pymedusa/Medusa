@@ -14,6 +14,7 @@
 window.app = {};
 const startVue = () => {
     window.app = new Vue({
+        store,
         el: '#vue-wrap',
         metaInfo: {
             title: 'Preview Rename'
@@ -40,10 +41,10 @@ const startVue = () => {
                 const seasCheck = this;
                 const seasNo = $(seasCheck).attr('id');
 
+                const seasonIdentifier = 's' + seasNo;
                 $('.epCheck:visible').each(function() {
-                    const epParts = $(this).attr('id').split('x');
-
-                    if (epParts[0] === seasNo) {
+                    const epParts = $(this).attr('id').split('e');
+                    if (epParts[0] === seasonIdentifier) {
                         this.checked = seasCheck.checked;
                     }
                 });
@@ -137,7 +138,7 @@ const startVue = () => {
     <tbody>
 <%
 odd = not odd
-epStr = str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)
+epStr = 's{season}e{episode}'.format(season=cur_ep_obj.season, episode=cur_ep_obj.episode)
 epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.related_episodes])
 if len(epList) > 1:
     epList = [min(epList), max(epList)]
@@ -145,7 +146,7 @@ if len(epList) > 1:
         <tr class="season-${cur_season} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
             <td class="col-checkbox">
             % if curLoc != newLoc:
-                <input type="checkbox" class="epCheck" id="${str(cur_ep_obj.season) + 'x' + str(cur_ep_obj.episode)}" name="${str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)}" />
+                <input type="checkbox" class="epCheck" id="${epStr}" name="${epStr}" />
             % endif
             </td>
             <td align="center" valign="top" class="nowrap">${"-".join(map(str, epList))}</td>

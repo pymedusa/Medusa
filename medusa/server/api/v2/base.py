@@ -17,13 +17,16 @@ from babelfish.language import Language
 import jwt
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 
-from six import string_types, text_type, viewitems
+from six import itervalues, string_types, text_type, viewitems
 
 from tornado.httpclient import HTTPError
+from tornado.httputil import url_concat
 from tornado.web import RequestHandler
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class BaseRequestHandler(RequestHandler):
@@ -90,10 +93,17 @@ class BaseRequestHandler(RequestHandler):
         """Set default CORS headers."""
         if app.APP_VERSION:
             self.set_header('X-Medusa-Server', app.APP_VERSION)
+
         self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type,'
-                                                        'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
-        self.set_header('Access-Control-Allow-Methods', ', '.join(self.DEFAULT_ALLOWED_METHODS + self.allowed_methods))
+
+        allowed_headers = ('Origin', 'Accept', 'Authorization', 'Content-Type',
+                           'X-Requested-With', 'X-CSRF-Token', 'X-Api-Key', 'X-Medusa-Server')
+        self.set_header('Access-Control-Allow-Headers', ', '.join(allowed_headers))
+
+        allowed_methods = self.DEFAULT_ALLOWED_METHODS
+        if self.allowed_methods:
+            allowed_methods += self.allowed_methods
+        self.set_header('Access-Control-Allow-Methods', ', '.join(allowed_methods))
 
     def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
         """End the api request writing error or data to http response."""
@@ -178,6 +188,9 @@ class BaseRequestHandler(RequestHandler):
 
     def _no_content(self):
         self.api_finish(204)
+
+    def _multi_status(self, data=None, headers=None):
+        self.api_finish(207, data=data, headers=headers)
 
     def _bad_request(self, error):
         self.api_finish(400, error=error)
@@ -272,15 +285,25 @@ class BaseRequestHandler(RequestHandler):
             if last_page <= arg_page:
                 last_page = None
 
+        # Reconstruct the query parameters
+        query_params = []
+        for arg, values in viewitems(self.request.query_arguments):
+            if arg in ('page', 'limit'):
+                continue
+            if not isinstance(values, list):
+                values = [values]
+            query_params += [(arg, value) for value in values]
+
+        bare_uri = url_concat(self.request.path, query_params)
+
         links = []
         for rel, page in (('next', next_page), ('last', last_page),
                           ('first', first_page), ('previous', previous_page)):
             if page is None:
                 continue
 
-            delimiter = '&' if self.request.query_arguments else '?'
-            link = '<{uri}{delimiter}page={page}&limit={limit}>; rel="{rel}"'.format(
-                uri=self.request.uri, delimiter=delimiter, page=page, limit=arg_limit, rel=rel)
+            uri = url_concat(bare_uri, dict(page=page, limit=arg_limit))
+            link = '<{uri}>; rel="{rel}"'.format(uri=uri, rel=rel)
             links.append(link)
 
         self.set_header('Link', ', '.join(links))
@@ -378,18 +401,19 @@ def set_nested_value(data, key, value):
 class PatchField(object):
     """Represent a field to be patched."""
 
-    def __init__(self, target_type, attr, attr_type,
-                 validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, attr_type, validator=None, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
-        if not hasattr(target_type, attr):
-            raise ValueError('{0!r} has no attribute {1}'.format(target_type, attr))
+        if not hasattr(target, attr):
+            raise ValueError('{0!r} has no attribute {1}'.format(target, attr))
 
-        self.target_type = target_type
+        self.target = target
         self.attr = attr
         self.attr_type = attr_type
         self.validator = validator or (lambda v: isinstance(v, self.attr_type))
         self.converter = converter or (lambda v: v)
         self.default_value = default_value
+        self.setter = setter
         self.post_processor = post_processor
 
     def patch(self, target, value):
@@ -402,13 +426,15 @@ class PatchField(object):
 
         if valid:
             try:
-                setattr(target, self.attr, self.converter(value))
+                if self.setter:
+                    self.setter(target, self.attr, self.converter(value))
+                else:
+                    setattr(target, self.attr, self.converter(value))
             except AttributeError:
                 log.warning(
-                    'Error trying to change attribute %s on target %s, you sure'
-                    ' you are allowed to change this attribute?',
-                    self.attr,
-                    target
+                    'Error trying to change attribute {attr} on target {target!r}'
+                    ' are you allowed to change this attribute?',
+                    {'attr': self.attr, 'target': target}
                 )
                 return False
 
@@ -420,44 +446,81 @@ class PatchField(object):
 class StringField(PatchField):
     """Patch string fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(StringField, self).__init__(target_type, attr, string_types, validator=validator, converter=converter,
-                                          default_value=default_value, post_processor=post_processor)
+        super(StringField, self).__init__(target, attr, string_types, validator=validator, converter=converter,
+                                          default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class IntegerField(PatchField):
     """Patch integer fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+        super(IntegerField, self).__init__(target, attr, int, validator=validator, converter=converter,
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class ListField(PatchField):
     """Patch list fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
-                                        default_value=default_value, post_processor=post_processor)
+        super(ListField, self).__init__(target, attr, list, validator=validator, converter=converter,
+                                        default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class BooleanField(PatchField):
     """Patch boolean fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=int, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=int, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(BooleanField, self).__init__(target_type, attr, bool, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+        super(BooleanField, self).__init__(target, attr, bool, validator=validator, converter=converter,
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class EnumField(PatchField):
     """Patch enumeration fields."""
 
-    def __init__(self, target_type, attr, enums, attr_type=text_type,
-                 converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, enums, attr_type=text_type, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
-        super(EnumField, self).__init__(target_type, attr, attr_type, validator=lambda v: v in enums,
-                                        converter=converter, default_value=default_value, post_processor=post_processor)
+        super(EnumField, self).__init__(target, attr, attr_type, validator=lambda v: v in enums,
+                                        converter=converter, default_value=default_value,
+                                        setter=setter, post_processor=post_processor)
+
+
+# @TODO: Make this field more dynamic (a dict patch field)
+class MetadataStructureField(PatchField):
+    """Process the metadata structure."""
+
+    def __init__(self, target, attr):
+        """Constructor."""
+        super(MetadataStructureField, self).__init__(target, attr, dict, validator=None, converter=None,
+                                                     default_value=None, setter=None, post_processor=None)
+
+    def patch(self, target, value):
+        """Patch the field with the specified value."""
+        map_values = {
+            'showMetadata': 'show_metadata',
+            'episodeMetadata': 'episode_metadata',
+            'episodeThumbnails': 'episode_thumbnails',
+            'seasonPosters': 'season_posters',
+            'seasonBanners': 'season_banners',
+            'seasonAllPoster': 'season_all_poster',
+            'seasonAllBanner': 'season_all_banner',
+        }
+
+        try:
+            for new_provider_config in itervalues(value):
+                for k, v in viewitems(new_provider_config):
+                    setattr(target.metadata_provider_dict[new_provider_config['name']], map_values.get(k, k), v)
+        except Exception as error:
+            log.warning('Error trying to change attribute app.metadata_provider_dict: {0!r}', error)
+            return False
+
+        return True

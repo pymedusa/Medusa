@@ -33,7 +33,7 @@ MEDUSA.home.snatchSelection = function() {
 
     // Check the previous status of the history table, for hidden or shown, through the data attribute
     // data-history-toggle-hidden
-    function toggleHistoryTable() {
+    function toggleHistoryTable() { // eslint-disable-line no-unused-vars
         // Get previous state which was saved on the wrapper
         const showOrHide = $('#wrapper').attr('data-history-toggle');
         $('#historydata').collapse(showOrHide);
@@ -132,7 +132,7 @@ MEDUSA.home.snatchSelection = function() {
         });
 
         if (!checkParams) {
-            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName}, 
+            console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
                         seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
             return;
         }

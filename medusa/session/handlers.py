@@ -78,8 +78,8 @@ def is_cloudflare_challenge(resp):
     Source: goo.gl/v8FvnD
     """
     return (
-        resp.status_code == 503
-        and resp.headers.get('Server', '').startswith('cloudflare')
-        and b'jschl_vc' in resp.content
-        and b'jschl_answer' in resp.content
+        resp.status_code == 503 and
+        resp.headers.get('Server', '').startswith('cloudflare') and
+        b'jschl_vc' in resp.content and
+        b'jschl_answer' in resp.content
     )

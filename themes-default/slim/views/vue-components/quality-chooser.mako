@@ -1,4 +1,3 @@
-<%namespace name="main" file="/layouts/main.mako" />
 <script type="text/x-template" id="quality-chooser-template">
     <div id="quality_chooser_wrapper">
         <select v-model.number="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
@@ -17,7 +16,7 @@
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model="preferredQualities" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
+                    <select v-model="preferredQualities" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm" :disabled="allowedQualities.length === 0">
                         <option v-for="quality in preferredQualityList" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
@@ -52,7 +51,7 @@
     </div>
 </script>
 <%!
-
+    import json
     from medusa import app
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
@@ -64,6 +63,15 @@ else:
 allowed_qualities, preferred_qualities = Quality.split_quality(__quality)
 overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
 
+def convert(obj):
+    ## This converts the keys to strings as keys can't be ints
+    if isinstance(obj, dict):
+        new_obj = {}
+        for key in obj:
+            new_obj[str(key)] = obj[key]
+        obj = new_obj
+
+    return json.dumps(obj)
 %>
 <script>
 Vue.component('quality-chooser', {
@@ -84,14 +92,16 @@ Vue.component('quality-chooser', {
     },
     data() {
         // Python conversions
-        const qualityPresets = ${main.convert(qualityPresets)};
+        const qualityPresets = ${convert(qualityPresets)};
         return {
-            qualityStrings: ${main.convert(Quality.qualityStrings)},
+            qualityStrings: ${convert(Quality.qualityStrings)},
             qualityPresets,
-            qualityPresetStrings: ${main.convert(qualityPresetStrings)},
+            qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
             lock: false,
+            unwatchProp: null,
+
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -120,11 +130,11 @@ Vue.component('quality-chooser', {
         },
         allowedQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE});
+                .filter(val => val > ${Quality.NA});
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NA});
         }
     },
     asyncComputed: {
@@ -170,6 +180,21 @@ Vue.component('quality-chooser', {
             return html;
         }
     },
+    created() {
+        /**
+         * overallQuality property might receive values originating from the API,
+         * that are sometimes not avaiable when rendering.
+         * @TODO: Maybe we can remove this in the future.
+         */
+        this.unwatchProp = this.$watch('overallQuality', (newValue, oldValue) => {
+            this.unwatchProp();
+
+            this.lock = true;
+            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
+            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
+            this.$nextTick(() => this.lock = false);
+        });
+    },
     mounted() {
         this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
     },
@@ -199,27 +224,16 @@ Vue.component('quality-chooser', {
             // If preset is custom set to last preset
             if (parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset))) preset = oldPreset;
 
-            // Convert values to int, and filter selected/prefrred qualities
+            // Convert values to unsigned int, and filter selected/prefrred qualities
             this.allowedQualities = Object.keys(this.qualityStrings)
                 .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & quality) > 0);
+                .filter(quality => ( (preset & quality) >>> 0 ) > 0);
             this.preferredQualities = Object.keys(this.qualityStrings)
                 .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & (quality << 16)) > 0);
+                .filter(quality => ( (preset & (quality << 16)) >>> 0 ) > 0);
         }
     },
     watch: {
-        /**
-         * overallQuality property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
-         */
-        overallQuality(newValue, oldValue) {
-            this.lock = true;
-            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
-            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
-            this.$nextTick(() => this.lock = false);
-        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
