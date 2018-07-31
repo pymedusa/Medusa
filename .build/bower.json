@@ -1,5 +1,5 @@
 {
-  "name": "Medusa",
+  "name": "medusa",
   "private": true,
   "dependencies": {
     "jquery": "3.0.0",
@@ -12,7 +12,6 @@
     "jquery-backstretch": "^2.1.15",
     "bootstrap3-typeahead": "4.0.2",
     "lodash": "4.17.4",
-    "underscore.string": "^3.3.4",
     "loglevel": "1.4.1",
     "timeago": "1.5.4",
     "pnotify": "2.1.0",
