@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <div id="naming_key" class="nocheck" v-if="showLegend">
+                <div id="naming_key" class="nocheck" v-if="showLegend && isCustom">
                     <table class="Key">
                         <thead>
                             <tr>

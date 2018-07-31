@@ -201,7 +201,7 @@ window.app = new Vue({
                             <div class="component-group-desc col-xs-12 col-md-2">
                                     <h3>Scheduled Post-Processing</h3>
                                     <p>Settings that dictate how Medusa should process completed downloads.</p>
-                                    <p>The scheduled postprocessor while periodically scan a folder for media to process.</p>
+                                    <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
                             </div>
 
                             <div class="col-xs-12 col-md-10">
