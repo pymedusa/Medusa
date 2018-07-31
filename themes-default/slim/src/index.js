@@ -8,6 +8,7 @@ import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import axios from 'axios';
+import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
@@ -27,6 +28,7 @@ if (window) {
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
     window.axios = axios;
+    window._ = { debounce };
     window.store = store;
     window.router = router;
     window.apiRoute = apiRoute;
