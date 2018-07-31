@@ -1972,7 +1972,7 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(204, 204, 204);
-    min-height: 200px;
+    min-height: 100px;
 }
 
 .component-item {
@@ -1980,10 +1980,14 @@ config*.mako
     min-height: 200px;
 }
 
-.component-group-desc {
+.component-group-desc-legacy {
     margin-top: 5px;
     float: left;
     width: 250px;
+}
+
+.component-group-desc {
+    margin-top: 5px;
 }
 
 .component-group-desc h3 {
@@ -4370,3 +4374,8 @@ CSS helper classes
     display: block;
 }
 */
+
+/* These classes should be natively available in bootstrap 4 */
+.d-block {
+    display: block;
+}

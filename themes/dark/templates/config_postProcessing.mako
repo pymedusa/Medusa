@@ -196,28 +196,28 @@ window.app = new Vue({
                         <li><app-link href="#episode-naming">Episode Naming</app-link></li>
                         <li><app-link href="#metadata">Metadata</app-link></li>
                     </ul>
-                    <div id="post-processing" class="component-group">
-                        <div class="row">
+                    <div id="post-processing">
+                        <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                    <h3>Post-Processing</h3>
+                                    <h3>Scheduled Post-Processing</h3>
                                     <p>Settings that dictate how Medusa should process completed downloads.</p>
+                                    <p>The scheduled postprocessor while periodically scan a folder for media to process.</p>
                             </div>
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
                                     <div class="form-group">
                                         <label for="process_automatically" class="col-sm-2 control-label">
-                                            <span>Enable</span>
+                                            <span>Scheduled Postprocessor</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postProcessing.processAutomatically" sync></toggle-button>
-                                            <p>Enable the automatic post processor to scan and process any files in your <i>Post Processing Dir</i>?</p>
+                                            <p>Enable the scheduled post processor to scan and process any files in your <i>Post Processing Dir</i>?</p>
                                             <div class="clear-left"><p><b>NOTE:</b> Do not use if you use an external Post Processing script</p></div>
                                         </div>
                                     </div>
 
                                     <div v-show="postProcessing.processAutomatically" id="post-process-toggle-wrapper">
-
                                         <div class="form-group">
                                             <label for="tv_download_dir" class="col-sm-2 control-label">
                                                 <span>Post Processing Dir</span>
@@ -231,7 +231,7 @@ window.app = new Vue({
 
                                         <div class="form-group">
                                             <label for="process_method" class="col-sm-2 control-label">
-                                                <span>Processing Method:</span>
+                                                <span>Processing Method</span>
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <select id="naming_multi_ep" name="naming_multi_ep" v-model="postProcessing.processMethod" class="form-control input-sm">
@@ -252,174 +252,183 @@ window.app = new Vue({
                                                 <span>Time in minutes to check for new files to auto post-process (min 10)</span>
                                             </div>
                                         </div>
-
-                                        <div class="form-group">
-                                            <label for="postpone_if_sync_files" class="col-sm-2 control-label">
-                                                <span>Postpone post processing</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postProcessing.postponeIfSyncFiles" sync></toggle-button>
-                                                <span>Wait to process a folder if sync files are present.</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="sync_files" class="col-sm-2 control-label">
-                                                <span>Sync File Extensions</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postProcessing.syncFiles" @change="postProcessing.syncFiles = $event"></select-list>
-                                                <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="postpone_if_no_subs" class="col-sm-2 control-label">
-                                                <span>Postpone if no subtitle</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                    <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
-                                                    <span>Wait to process a file until subtitles are present</span>
-                                                    <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
-                                                    <span>&nbsp;</span>
-                                                    <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
-                                                    <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="rename_episodes" class="col-sm-2 control-label">
-                                                <span>Rename Episodes</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="rename_episodes" name="rename_episodes" v-model="postProcessing.renameEpisodes" sync></toggle-button>
-                                                <span>Rename episode using the Episode Naming settings?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="create_missing_show_dirs" class="col-sm-2 control-label">
-                                                <span>Create missing show directories</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postProcessing.createMissingShowDirs" sync></toggle-button>
-                                                <span >Create missing show directories when they get deleted</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="add_shows_wo_dir" class="col-sm-2 control-label">
-                                                <span>Add shows without directory</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="add_shows_wo_dir" name="add_shows_wo_dir" v-model="postProcessing.addShowsWithoutDir" sync></toggle-button>
-                                                <span>Add shows without creating a directory (not recommended)</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="move_associated_files" class="col-sm-2 control-label">
-                                                <span>Delete associated files</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postProcessing.moveAssociatedFiles" sync></toggle-button>
-                                                <span>Delete srt/srr/sfv/etc files while post processing?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">
-                                                <span>Keep associated file extensions</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="postProcessing.allowedExtensions = $event"></select-list>
-                                                <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="nfo_rename" class="col-sm-2 control-label">
-                                                <span>Rename .nfo file</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postProcessing.nfoRename" sync></toggle-button>
-                                                <span >Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="airdate_episodes" class="col-sm-2 control-label">
-                                                <span>Change File Date</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync></toggle-button>
-                                                <span >Set last modified filedate to the date that the episode aired?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="file_timestamp_timezone" class="col-sm-2 control-label">
-                                                <span>Timezone for File Date:</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
-                                                    <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
-                                                </select>
-                                                <span >What timezone should be used to change File Date?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="unpack" class="col-sm-2 control-label">
-                                                <span>Unpack</span>
-                                                <span >Unpack any TV releases in your <i>TV Download Dir</i>?</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postProcessing.unpack" sync></toggle-button>
-                                                <span ><b>NOTE:</b> Only working with RAR archive</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="del_rar_contents" class="col-sm-2 control-label">
-                                                <span>Delete RAR contents</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="del_rar_contents" name="del_rar_contents" v-model="postProcessing.deleteRarContent" sync></toggle-button>
-                                                <span>Delete content of RAR files, even if Process Method not set to move?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="no_delete" class="col-sm-2 control-label">
-                                                <span>Don't delete empty folders</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postProcessing.noDelete" sync></toggle-button>
-                                                <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
-                                                <span>Leave empty folders when Post Processing?</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">
-                                                <span>Extra Scripts</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postProcessing.extraScripts" @change="postProcessing.extraScripts = $event"></select-list>
-                                                <span>See <app-link :href="postProcessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
-                                            </div>
-                                        </div>
-
                                     </div> <!-- End of content wrapper -->
                                 </fieldset>
-                            </div> <!-- /col -->
-                            </div> <!-- /row -->
-                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                            </div> <!-- end of col -->
+                        </div> <!-- end of row -->
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                    <h3>General Post-Processing</h3>
+                                    <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <div class="form-group">
+                                        <label for="postpone_if_sync_files" class="col-sm-2 control-label">
+                                            <span>Postpone post processing</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postProcessing.postponeIfSyncFiles" sync></toggle-button>
+                                            <span>Wait to process a folder if sync files are present.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="sync_files" class="col-sm-2 control-label">
+                                            <span>Sync File Extensions</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postProcessing.syncFiles" @change="postProcessing.syncFiles = $event"></select-list>
+                                            <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="postpone_if_no_subs" class="col-sm-2 control-label">
+                                            <span>Postpone if no subtitle</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                                <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
+                                                <span>Wait to process a file until subtitles are present</span>
+                                                <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
+                                                <span>&nbsp;</span>
+                                                <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                                <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="rename_episodes" class="col-sm-2 control-label">
+                                            <span>Rename Episodes</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="rename_episodes" name="rename_episodes" v-model="postProcessing.renameEpisodes" sync></toggle-button>
+                                            <span>Rename episode using the Episode Naming settings?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="create_missing_show_dirs" class="col-sm-2 control-label">
+                                            <span>Create missing show directories</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postProcessing.createMissingShowDirs" sync></toggle-button>
+                                            <span >Create missing show directories when they get deleted</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="add_shows_wo_dir" class="col-sm-2 control-label">
+                                            <span>Add shows without directory</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="add_shows_wo_dir" name="add_shows_wo_dir" v-model="postProcessing.addShowsWithoutDir" sync></toggle-button>
+                                            <span>Add shows without creating a directory (not recommended)</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="move_associated_files" class="col-sm-2 control-label">
+                                            <span>Delete associated files</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postProcessing.moveAssociatedFiles" sync></toggle-button>
+                                            <span>Delete srt/srr/sfv/etc files while post processing?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">
+                                            <span>Keep associated file extensions</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="postProcessing.allowedExtensions = $event"></select-list>
+                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="nfo_rename" class="col-sm-2 control-label">
+                                            <span>Rename .nfo file</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postProcessing.nfoRename" sync></toggle-button>
+                                            <span >Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="airdate_episodes" class="col-sm-2 control-label">
+                                            <span>Change File Date</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync></toggle-button>
+                                            <span >Set last modified filedate to the date that the episode aired?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="file_timestamp_timezone" class="col-sm-2 control-label">
+                                            <span>Timezone for File Date:</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
+                                                <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
+                                            </select>
+                                            <span >What timezone should be used to change File Date?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="unpack" class="col-sm-2 control-label">
+                                            <span>Unpack</span>
+                                            <span >Unpack any TV releases in your <i>TV Download Dir</i>?</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postProcessing.unpack" sync></toggle-button>
+                                            <span ><b>NOTE:</b> Only working with RAR archive</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="del_rar_contents" class="col-sm-2 control-label">
+                                            <span>Delete RAR contents</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="del_rar_contents" name="del_rar_contents" v-model="postProcessing.deleteRarContent" sync></toggle-button>
+                                            <span>Delete content of RAR files, even if Process Method not set to move?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="no_delete" class="col-sm-2 control-label">
+                                            <span>Don't delete empty folders</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postProcessing.noDelete" sync></toggle-button>
+                                            <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
+                                            <span>Leave empty folders when Post Processing?</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">
+                                            <span>Extra Scripts</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postProcessing.extraScripts" @change="postProcessing.extraScripts = $event"></select-list>
+                                            <span>See <app-link :href="postProcessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                            </div> <!-- /col --> 
+                        </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
 
-                    <div id="episode-naming" class="component-group">
-                        <div class="row">
+                    <div id="episode-naming">
+                        <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Episode Naming</h3>
                                 <p>How Medusa will name and sort your episodes.</p>
@@ -465,70 +474,70 @@ window.app = new Vue({
                                             <p>Only applies to shows that have year inside parentheses</p>
                                         </div>
                                     </div>
-
                                 </fieldset>
                             </div>
                         </div>
                     </div>
 
-
-                    <div id="metadata" class="component-group">
-                        <div class="component-group-desc">
-                            <h3>Metadata</h3>
-                            <p>The data associated to the data. These are files associated to a TV show in the form of images and text that, when supported, will enhance the viewing experience.</p>
-                        </div>
-                        <fieldset class="component-group-list">
-                            <div class="form-group">
-                                <label>
-                                    <span>Metadata Type:</span>
-                                    <span>
-                                        <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
-                                            <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
-                                        </select>
-
-                                    </span>
-                                </label>
-                                <span>Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
+                    <div id="metadata">
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Metadata</h3>
+                                <p>The data associated to the data. These are files associated to a TV show in the form of images and text that, when supported, will enhance the viewing experience.</p>
                             </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <div class="form-group">
+                                        <label for="metadataType" class="col-sm-2 control-label">
+                                            <span>Metadata Type</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
+                                                <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
+                                            </select>
+                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>    
+                                        </div>
+                                    </div>
 
-                            <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" :key="provider.id" id="provider.id">
-                                <div class="metadata_options_wrapper">
-                                    <h4>Create:</h4>
-                                    <div class="metadata_options">
-                                        <label :for="provider.id + '_show_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_show_metadata'" v-model="provider.showMetadata"/>&nbsp;Show Metadata</label>
-                                        <label :for="provider.id + '_episode_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_episode_metadata'" v-model="provider.episodeMetadata" :disabled="provider.example.episodeMetadata.includes('not supported')"/>&nbsp;Episode Metadata</label>
-                                        <label :for="provider.id + '_fanart'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_fanart'" v-model="provider.fanart" :disabled="provider.example.fanart.includes('not supported')"/>&nbsp;Show Fanart</label>
-                                        <label :for="provider.id + '_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_poster'" v-model="provider.poster" :disabled="provider.example.poster.includes('not supported')"/>&nbsp;Show Poster</label>
-                                        <label :for="provider.id + '_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_banner'" v-model="provider.banner" :disabled="provider.example.banner.includes('not supported')"/>&nbsp;Show Banner</label>
-                                        <label :for="provider.id + '_episode_thumbnails'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_episode_thumbnails'" v-model="provider.episodeThumbnails" :disabled="provider.example.episodeThumbnails.includes('not supported')"/>&nbsp;Episode Thumbnails</label>
-                                        <label :for="provider.id + '_season_posters'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_posters'" v-model="provider.seasonPosters" :disabled="provider.example.seasonPosters.includes('not supported')"/>&nbsp;Season Posters</label>
-                                        <label :for="provider.id + '_season_banners'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_banners'" v-model="provider.seasonBanners" :disabled="provider.example.seasonBanners.includes('not supported')"/>&nbsp;Season Banners</label>
-                                        <label :for="provider.id + '_season_all_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_poster'" v-model="provider.seasonAllPoster" :disabled="provider.example.seasonAllPoster.includes('not supported')"/>&nbsp;Season All Poster</label>
-                                        <label :for="provider.id + '_season_all_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_banner'" v-model="provider.seasonAllBanner" :disabled="provider.example.seasonAllBanner.includes('not supported')"/>&nbsp;Season All Banner</label>
+                                    <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" :key="provider.id" id="provider.id">
+                                        <div class="metadata_options_wrapper">
+                                            <h4>Create:</h4>
+                                            <div class="metadata_options">
+                                                <label :for="provider.id + '_show_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_show_metadata'" v-model="provider.showMetadata"/>&nbsp;Show Metadata</label>
+                                                <label :for="provider.id + '_episode_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_episode_metadata'" v-model="provider.episodeMetadata" :disabled="provider.example.episodeMetadata.includes('not supported')"/>&nbsp;Episode Metadata</label>
+                                                <label :for="provider.id + '_fanart'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_fanart'" v-model="provider.fanart" :disabled="provider.example.fanart.includes('not supported')"/>&nbsp;Show Fanart</label>
+                                                <label :for="provider.id + '_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_poster'" v-model="provider.poster" :disabled="provider.example.poster.includes('not supported')"/>&nbsp;Show Poster</label>
+                                                <label :for="provider.id + '_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_banner'" v-model="provider.banner" :disabled="provider.example.banner.includes('not supported')"/>&nbsp;Show Banner</label>
+                                                <label :for="provider.id + '_episode_thumbnails'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_episode_thumbnails'" v-model="provider.episodeThumbnails" :disabled="provider.example.episodeThumbnails.includes('not supported')"/>&nbsp;Episode Thumbnails</label>
+                                                <label :for="provider.id + '_season_posters'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_posters'" v-model="provider.seasonPosters" :disabled="provider.example.seasonPosters.includes('not supported')"/>&nbsp;Season Posters</label>
+                                                <label :for="provider.id + '_season_banners'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_banners'" v-model="provider.seasonBanners" :disabled="provider.example.seasonBanners.includes('not supported')"/>&nbsp;Season Banners</label>
+                                                <label :for="provider.id + '_season_all_poster'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_poster'" v-model="provider.seasonAllPoster" :disabled="provider.example.seasonAllPoster.includes('not supported')"/>&nbsp;Season All Poster</label>
+                                                <label :for="provider.id + '_season_all_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_banner'" v-model="provider.seasonAllBanner" :disabled="provider.example.seasonAllBanner.includes('not supported')"/>&nbsp;Season All Banner</label>
+                                            </div>
+                                        </div>
+                                        <div class="metadata_example_wrapper">
+                                            <h4>Results:</h4>
+                                            <div class="metadata_example">
+                                                <label :for="provider.id + '_show_metadata'"><span :id="provider.id + '_eg_show_metadata'" :class="{disabled: !provider.showMetadata}"><span v-html="'<span>' + provider.example.showMetadata + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_episode_metadata'"><span :id="provider.id + '_eg_episode_metadata'" :class="{disabled: !provider.episodeMetadata}"><span v-html="'<span>' + provider.example.episodeMetadata + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_fanart'"><span :id="provider.id + '_eg_fanart'" :class="{disabled: !provider.fanart}"><span v-html="'<span>' + provider.example.fanart + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_poster'"><span :id="provider.id + '_eg_poster'" :class="{disabled: !provider.poster}"><span v-html="'<span>' + provider.example.poster + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_banner'"><span :id="provider.id + '_eg_banner'" :class="{disabled: !provider.banner}"><span v-html="'<span>' + provider.example.banner + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_episode_thumbnails'"><span :id="provider.id + '_eg_episode_thumbnails'" :class="{disabled: !provider.EpisodeThumbnails}"><span v-html="'<span>' + provider.example.EpisodeThumbnails + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_season_posters'"><span :id="provider.id + '_eg_season_posters'" :class="{disabled: !provider.seasonPosters}"><span v-html="'<span>' + provider.example.seasonPosters + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_season_banners'"><span :id="provider.id + '_eg_season_banners'" :class="{disabled: !provider.seasonBanners}"><span v-html="'<span>' + provider.example.seasonBanners + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_season_all_poster'"><span :id="provider.id + '_eg_season_all_poster'" :class="{disabled: !provider.seasonAllPoster}"><span v-html="'<span>' + provider.example.seasonAllPoster + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_season_all_banner'"><span :id="provider.id + '_eg_season_all_banner'" :class="{disabled: !provider.seasonAllBanner}"><span v-html="'<span>' + provider.example.seasonAllBanner + '</span>'"></span></span></label>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="metadata_example_wrapper">
-                                    <h4>Results:</h4>
-                                    <div class="metadata_example">
-                                        <label :for="provider.id + '_show_metadata'"><span :id="provider.id + '_eg_show_metadata'" :class="{disabled: !provider.showMetadata}"><span v-html="'<span>' + provider.example.showMetadata + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_episode_metadata'"><span :id="provider.id + '_eg_episode_metadata'" :class="{disabled: !provider.episodeMetadata}"><span v-html="'<span>' + provider.example.episodeMetadata + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_fanart'"><span :id="provider.id + '_eg_fanart'" :class="{disabled: !provider.fanart}"><span v-html="'<span>' + provider.example.fanart + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_poster'"><span :id="provider.id + '_eg_poster'" :class="{disabled: !provider.poster}"><span v-html="'<span>' + provider.example.poster + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_banner'"><span :id="provider.id + '_eg_banner'" :class="{disabled: !provider.banner}"><span v-html="'<span>' + provider.example.banner + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_episode_thumbnails'"><span :id="provider.id + '_eg_episode_thumbnails'" :class="{disabled: !provider.EpisodeThumbnails}"><span v-html="'<span>' + provider.example.EpisodeThumbnails + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_season_posters'"><span :id="provider.id + '_eg_season_posters'" :class="{disabled: !provider.seasonPosters}"><span v-html="'<span>' + provider.example.seasonPosters + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_season_banners'"><span :id="provider.id + '_eg_season_banners'" :class="{disabled: !provider.seasonBanners}"><span v-html="'<span>' + provider.example.seasonBanners + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_season_all_poster'"><span :id="provider.id + '_eg_season_all_poster'" :class="{disabled: !provider.seasonAllPoster}"><span v-html="'<span>' + provider.example.seasonAllPoster + '</span>'"></span></span></label>
-                                        <label :for="provider.id + '_season_all_banner'"><span :id="provider.id + '_eg_season_all_banner'" :class="{disabled: !provider.seasonAllBanner}"><span v-html="'<span>' + provider.example.seasonAllBanner + '</span>'"></span></span></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- % endfor -->
-                            <div class="clearfix"></div><br>
-                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
-                        </fieldset>
-                    </div><!-- /component-group3 //-->
-                    <br>
+                                </fieldset>
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
+
+                            </div> <!-- end of col -->
+                        </div> <!-- end of row -->
+                    </div> <!-- end of metatdata id -->
+
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{ config.dataDir }}</span></b> </h6>
                     <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes"/>
                 </div><!--/config-components//-->
