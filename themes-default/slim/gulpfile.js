@@ -6,7 +6,6 @@ const colors = require('ansi-colors');
 const babelify = require('babelify');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
-const sourcemaps = require('gulp-sourcemaps');
 const gulpif = require('gulp-if');
 const gulp = require('gulp');
 const source = require('vinyl-source-stream');
@@ -192,13 +191,8 @@ const bundleJs = done => {
                 })
                 .pipe(source(entry))
                 .pipe(buffer())
-                .pipe(sourcemaps.init({
-                    // Loads map from browserify file
-                    loadMaps: true
-                }))
                 .pipe(gulpif(PROD, uglify()))
                 .on('error', err => log(colors.red('[Error]'), err.toString()))
-                .pipe(sourcemaps.write('./'))
                 .pipe(gulp.dest(dest))
                 .pipe(gulpif(!PROD, livereload({ port: 35729 })));
         });
