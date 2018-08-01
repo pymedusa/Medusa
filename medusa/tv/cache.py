@@ -15,6 +15,10 @@ from medusa import (
     app,
     db,
 )
+from medusa.common import (
+    MULTI_EP_RESULT,
+    SEASON_RESULT,
+)
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
@@ -413,7 +417,7 @@ class Cache(object):
             proper_tags = '|'.join(parse_result.proper_tags)
 
             if not self.item_in_cache(url):
-                log.debug('Added RSS item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
+                log.debug('Added item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
                 return [
                     b'INSERT INTO [{name}] '
                     b'   (name, season, episodes, indexerid, url, time, quality, '
@@ -427,7 +431,7 @@ class Cache(object):
                      seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
                 ]
             else:
-                log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
+                log.debug('Updating item: {0} to cache: {1}', name, self.provider_id)
                 return [
                     b'UPDATE [{name}] '
                     b'SET name=?, season=?, episodes=?, indexer=?, indexerid=?, '
@@ -440,13 +444,6 @@ class Cache(object):
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, url]
                 ]
-
-    def search_cache(self, episode, forced_search=False,
-                     down_cur_quality=False):
-        """Search cache for needed episodes."""
-        needed_eps = self.find_needed_episodes(episode, forced_search,
-                                               down_cur_quality)
-        return needed_eps[episode] if episode in needed_eps else []
 
     def item_in_cache(self, url):
         """Check if the url is already available for the specific provider."""
@@ -475,7 +472,7 @@ class Cache(object):
                 b'      season = ? AND'
                 b'      episodes LIKE ?'.format(name=self.provider_id),
                 [episode.series.indexer, episode.series.series_id, episode.season,
-                 b'%|{0}|%'.format(episode.episode)]
+                 '%|{0}|%'.format(episode.episode)]
             )
         else:
             for ep_obj in episode:
@@ -491,7 +488,7 @@ class Cache(object):
                                             for x in ep_obj.wanted_quality))
                     ),
                     [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season,
-                     b'%|{0}|%'.format(ep_obj.episode)]]
+                     '%|{0}|%'.format(ep_obj.episode)]]
                 )
 
             if results:
@@ -532,35 +529,45 @@ class Cache(object):
                 log.debug('{0} is not an anime, skipping', series_obj.name)
                 continue
 
-            # get season and ep data (ignoring multi-eps for now)
-            search_result.season = int(cur_result[b'season'])
-            if search_result.season == -1:
-                continue
-
-            cur_ep = cur_result[b'episodes'].split('|')[1]
-            if not cur_ep:
-                continue
-
-            cur_ep = int(cur_ep)
-
+            # build a result object
             search_result.quality = int(cur_result[b'quality'])
             search_result.release_group = cur_result[b'release_group']
             search_result.version = cur_result[b'version']
-
-            # if the show says we want that episode then add it to the list
-            if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
-                                           forced_search, down_cur_quality):
-                log.debug('Ignoring {0}', cur_result[b'name'])
-                continue
-
-            search_result.episodes = [series_obj.get_episode(search_result.season, cur_ep)]
-
-            search_result.actual_episodes = [search_result.episodes[0].episode]
-            search_result.actual_season = search_result.season
-
-            # build a result object
             search_result.name = cur_result[b'name']
             search_result.url = cur_result[b'url']
+            search_result.season = int(cur_result[b'season'])
+            search_result.actual_season = search_result.season
+
+            sql_episodes = cur_result[b'episodes'].strip('|')
+            # TODO: Add support for season results
+            # Season result
+            if not sql_episodes:
+                ep_objs = self.series.get_all_episodes(search_result.season)
+                actual_episodes = [ep.episode for ep in ep_objs]
+                episode_number = SEASON_RESULT
+            # Multi or single episode result
+            else:
+                actual_episodes = [int(ep) for ep in sql_episodes.split('|')]
+                ep_objs = [series_obj.get_episode(search_result.season, ep) for ep in actual_episodes]
+                if len(actual_episodes) == 1:
+                    episode_number = actual_episodes[0]
+                else:
+                    episode_number = MULTI_EP_RESULT
+
+            all_wanted = True
+            for cur_ep in actual_episodes:
+                # if the show says we want that episode then add it to the list
+                if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
+                                               forced_search, down_cur_quality):
+                    log.debug('Ignoring {0} because one or more episodes are unwanted', cur_result[b'name'])
+                    all_wanted = False
+                    break
+
+            if not all_wanted:
+                continue
+
+            search_result.episodes = ep_objs
+            search_result.actual_episodes = actual_episodes
 
             log.debug(
                 '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
@@ -582,15 +589,13 @@ class Cache(object):
 
             # FIXME: Should be changed to search_result.search_type
             search_result.forced_search = forced_search
-
             search_result.download_current_quality = down_cur_quality
 
-            episode_object = search_result.episodes[0]
             # add it to the list
-            if episode_object not in needed_eps:
-                needed_eps[episode_object] = [search_result]
+            if episode_number not in needed_eps:
+                needed_eps[episode_number] = [search_result]
             else:
-                needed_eps[episode_object].append(search_result)
+                needed_eps[episode_number].append(search_result)
 
         # datetime stamp this search so cache gets cleared
         self.searched = time()
