@@ -60,6 +60,7 @@ def config_main(monkeypatch, app_config):
     config_data['locale'] = app_locale
     config_data['localUser'] = os_user
     config_data['programDir'] = app.PROG_DIR
+    config_data['dataDir'] = app.DATA_DIR
     config_data['configFile'] = app.CONFIG_FILE
     config_data['dbPath'] = db.DBConnection().path
     config_data['cacheDir'] = app.CACHE_DIR

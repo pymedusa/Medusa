@@ -72,7 +72,7 @@ window.app = new Vue({
                     <li><app-link href="#restore">Restore</app-link></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Backup</h3>
                         <p><b>Backup your main database file and config.</b></p>
                     </div>
@@ -89,7 +89,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="restore" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Restore</h3>
                         <p><b>Restore your main database file and config.</b></p>
                     </div>

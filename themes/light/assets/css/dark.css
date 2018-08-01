@@ -464,7 +464,6 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(85, 85, 85);
-    min-height: 200px;
 }
 
 .component-group-desc p {

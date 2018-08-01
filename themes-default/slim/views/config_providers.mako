@@ -871,7 +871,7 @@ window.app = new Vue({
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
@@ -919,7 +919,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="provider-options" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Options</h3>
                         <p>Configure individual provider settings here.</p>
                         <p>Check with provider's website on how to obtain an API key if needed.</p>
@@ -1527,7 +1527,7 @@ window.app = new Vue({
                 </div><!-- /component-group2 //-->
                 % if app.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Custom Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
@@ -1597,7 +1597,7 @@ window.app = new Vue({
                 % endif
                 % if app.USE_TORRENTS:
                 <div id="custom-torrent" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Custom Torrent Providers</h3>
                         <p>Add and setup or remove custom RSS providers.</p>
                     </div>
@@ -1656,7 +1656,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group4 //-->
                 <div id="custom-torznab" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Jackett Providers</h3>
                         <p>Add and setup or remove Jackett providers.</p>
                     </div>

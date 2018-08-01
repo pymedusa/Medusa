@@ -1,7 +1,12 @@
 ## Unreleased
 
+#### Fixes
+
+#### New Features
+
 #### Improvements
-- Bundle the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
+- Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
+- Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
 
 -----
 

@@ -206,6 +206,7 @@
                 Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
                 Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
                 Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
+                Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
                 Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
                 Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
                 Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));

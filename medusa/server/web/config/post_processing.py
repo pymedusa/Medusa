@@ -39,24 +39,13 @@ class ConfigPostProcessing(Config):
         return t.render(submenu=self.ConfigMenu(),
                         controller='config', action='postProcessing')
 
-    def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,
-                           mediabrowser_data=None, sony_ps3_data=None,
-                           wdtv_data=None, tivo_data=None, mede8er_data=None,
-                           keep_processed_dir=None, process_method=None,
-                           del_rar_contents=None, process_automatically=None,
-                           no_delete=None, rename_episodes=None, airdate_episodes=None,
-                           file_timestamp_timezone=None, unpack=None,
-                           move_associated_files=None, sync_files=None,
-                           postpone_if_sync_files=None, postpone_if_no_subs=None,
-                           allowed_extensions=None, tv_download_dir=None,
-                           create_missing_show_dirs=None, add_shows_wo_dir=None,
-                           extra_scripts=None, nfo_rename=None,
-                           naming_pattern=None, naming_multi_ep=None,
-                           naming_custom_abd=None, naming_anime=None,
-                           naming_abd_pattern=None, naming_strip_year=None,
-                           naming_custom_sports=None, naming_sports_pattern=None,
-                           naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocessor_frequency=None):
+    def savePostProcessing(self, process_automatically=None, unpack=None, allowed_extensions=None,
+                           tv_download_dir=None, naming_pattern=None, naming_multi_ep=None,
+                           naming_anime=None, naming_abd_pattern=None, naming_sports_pattern=None,
+                           naming_anime_pattern=None, naming_anime_multi_ep=None,
+                           autopostprocessor_frequency=None):
+
+        # @TODO: The following validations need to be incorporated into API v2 (PATCH /api/v2/config/main)
 
         results = []
 
@@ -75,47 +64,13 @@ class ConfigPostProcessing(Config):
                 results.append('Unpacking Not Supported, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
-        app.NO_DELETE = config.checkbox_to_value(no_delete)
-        app.KEEP_PROCESSED_DIR = config.checkbox_to_value(keep_processed_dir)
-        app.CREATE_MISSING_SHOW_DIRS = config.checkbox_to_value(create_missing_show_dirs)
-        app.ADD_SHOWS_WO_DIR = config.checkbox_to_value(add_shows_wo_dir)
-        app.PROCESS_METHOD = process_method
-        app.DELRARCONTENTS = config.checkbox_to_value(del_rar_contents)
-        app.EXTRA_SCRIPTS = [_.strip() for _ in extra_scripts.split('|') if _.strip()]
-        app.RENAME_EPISODES = config.checkbox_to_value(rename_episodes)
-        app.AIRDATE_EPISODES = config.checkbox_to_value(airdate_episodes)
-        app.FILE_TIMESTAMP_TIMEZONE = file_timestamp_timezone
-        app.MOVE_ASSOCIATED_FILES = config.checkbox_to_value(move_associated_files)
-        app.SYNC_FILES = [_.strip() for _ in sync_files.split(',') if _.strip()]
-        app.POSTPONE_IF_SYNC_FILES = config.checkbox_to_value(postpone_if_sync_files)
-        app.POSTPONE_IF_NO_SUBS = config.checkbox_to_value(postpone_if_no_subs)
+
+        # @TODO: postprocessor for `POSTPONE_IF_NO_SUBS` and `ALLOWED_EXTENSIONS` ?
         # If 'postpone if no subs' is enabled, we must have SRT in allowed extensions list
         if app.POSTPONE_IF_NO_SUBS:
             allowed_extensions += ',srt'
             # # Auto PP must be disabled because FINDSUBTITLE thread that calls manual PP (like nzbtomedia)
             # app.PROCESS_AUTOMATICALLY = 0
-        app.ALLOWED_EXTENSIONS = {_.strip() for _ in allowed_extensions.split(',') if _.strip()}
-        app.NAMING_CUSTOM_ABD = config.checkbox_to_value(naming_custom_abd)
-        app.NAMING_CUSTOM_SPORTS = config.checkbox_to_value(naming_custom_sports)
-        app.NAMING_CUSTOM_ANIME = config.checkbox_to_value(naming_custom_anime)
-        app.NAMING_STRIP_YEAR = config.checkbox_to_value(naming_strip_year)
-        app.NFO_RENAME = config.checkbox_to_value(nfo_rename)
-
-        app.METADATA_KODI = kodi_data.split('|')
-        app.METADATA_KODI_12PLUS = kodi_12plus_data.split('|')
-        app.METADATA_MEDIABROWSER = mediabrowser_data.split('|')
-        app.METADATA_PS3 = sony_ps3_data.split('|')
-        app.METADATA_WDTV = wdtv_data.split('|')
-        app.METADATA_TIVO = tivo_data.split('|')
-        app.METADATA_MEDE8ER = mede8er_data.split('|')
-
-        app.metadata_provider_dict['KODI'].set_config(app.METADATA_KODI)
-        app.metadata_provider_dict['KODI 12+'].set_config(app.METADATA_KODI_12PLUS)
-        app.metadata_provider_dict['MediaBrowser'].set_config(app.METADATA_MEDIABROWSER)
-        app.metadata_provider_dict['Sony PS3'].set_config(app.METADATA_PS3)
-        app.metadata_provider_dict['WDTV'].set_config(app.METADATA_WDTV)
-        app.metadata_provider_dict['TIVO'].set_config(app.METADATA_TIVO)
-        app.metadata_provider_dict['Mede8er'].set_config(app.METADATA_MEDE8ER)
 
         if self.isNamingValid(naming_pattern, naming_multi_ep, anime_type=naming_anime) != 'invalid':
             app.NAMING_PATTERN = naming_pattern

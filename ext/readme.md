@@ -5,7 +5,7 @@
 :: | `attrs` | [18.1.0](https://pypi.org/project/attrs/18.1.0/) | `imdbpie` | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
-:: | `beautifulsoup4` | [4.6.0](https://pypi.org/project/beautifulsoup4/4.6.0/) | **`medusa`**, `subliminal` | Module: `bs4`
+:: | `beautifulsoup4` | [4.6.1](https://pypi.org/project/beautifulsoup4/4.6.1/) | **`medusa`**, `subliminal` | Module: `bs4`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie`, `vcrpy`(?) | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 :: | `certifi` | [2018.04.16](https://pypi.org/project/certifi/2018.04.16/) | **`medusa`**, `traktor`, `requests` | -
