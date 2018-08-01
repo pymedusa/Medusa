@@ -27,7 +27,7 @@
     import json
 %>
 <script>
-const SubmenuComponent = {
+const SubMenuComponent = {
     name: 'sub-menu',
     template: '#sub-menu-template',
     data() {
@@ -107,7 +107,8 @@ const SubmenuComponent = {
         }
     }
 };
-Vue.component(SubmenuComponent.name, SubmenuComponent);
+
+window.components.push(SubMenuComponent);
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */

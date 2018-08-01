@@ -1,7 +1,9 @@
-/* globals Vue, Vuex */
-const VueNativeSock = window.VueNativeSock.default;
+import Vue from 'vue';
+import Vuex from 'vuex';
+import VueNativeSock from 'vue-native-websocket';
+import { api } from './api';
+
 const { Store } = Vuex;
-const { displayNotification } = window;
 
 Vue.use(Vuex);
 
@@ -428,7 +430,7 @@ const store = new Store({
             error += 'Please check your network connection. ';
             error += 'If you are using a reverse proxy, please take a look at our wiki for config examples.';
 
-            displayNotification('notice', title, error);
+            window.displayNotification('notice', title, error);
         },
         [NOTIFICATIONS_ENABLED](state) {
             state.notifications.enabled = true;
@@ -464,7 +466,7 @@ const store = new Store({
             commit(LOGIN_PENDING);
 
             // @TODO: Add real JWT login
-            const apiLogin = () => Promise.resolve(credentials);
+            const apiLogin = credentials => Promise.resolve(credentials);
 
             apiLogin(credentials).then(user => {
                 return commit(LOGIN_SUCCESS, user);
@@ -528,7 +530,7 @@ const store = new Store({
             return shows.forEach(show => dispatch('getShow', show));
         },
         testNotifications() {
-            return displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+            return window.displayNotification('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
         },
         setLayout(context, { page, layout }) {
             return api.patch('config/main', {
@@ -536,7 +538,11 @@ const store = new Store({
                     [page]: layout
                 }
             // For now we reload the page since the layouts use python still
-            }).then(setTimeout(() => location.reload(), 500));
+            }).then(() => {
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            });
         }
     },
     // @TODO Add logging here
@@ -546,6 +552,7 @@ const store = new Store({
 const websocketUrl = (() => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const WSMessageUrl = '/ui';
+    const webRoot = document.body.getAttribute('web-root');
     return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;
 })();
 
@@ -557,4 +564,4 @@ Vue.use(VueNativeSock, websocketUrl, {
     reconnectionDelay: 1000 // (Number) how long to initially wait before attempting a new (1000)
 });
 
-window.store = store;
+export default store;

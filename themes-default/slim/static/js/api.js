@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 const baseUrl = document.body.getAttribute('web-root');
 const idToken = document.body.getAttribute('api-key');
 
@@ -37,3 +39,9 @@ const api = axios.create({ // eslint-disable-line no-unused-vars
         'X-Api-Key': idToken
     }
 });
+
+export {
+    apiRoute,
+    apiv1,
+    api
+};
