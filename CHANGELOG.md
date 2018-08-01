@@ -1,20 +1,15 @@
 ## Unreleased
 
-#### Fixes
-
 #### New Features
 
 #### Improvements
 - Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
 
------
-
-## 0.2.9 (2018-08-10)
-
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
 - Fixed multi-episode snatches not being marked as snatched in history ([#229](https://github.com/pymedusa/Medusa/issues/229))
 - Fixed whole seasons being downloaded as multi-episode replacement ([#4750](https://github.com/pymedusa/Medusa/issues/4750))
+
 
 -----
 
