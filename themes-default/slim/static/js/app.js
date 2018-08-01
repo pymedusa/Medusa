@@ -59,11 +59,13 @@ const app = new Vue({
     mounted() {
         console.log('App Mounted!');
 
-        const { $store } = this;
-        $store.dispatch('login', { username: window.username });
-        $store.dispatch('getConfig');
+        if (!document.location.pathname.includes('/login')) {
+            const { $store } = this;
+            $store.dispatch('login', { username: window.username });
+            $store.dispatch('getConfig');
 
-        console.log('App Loaded!');
+            console.log('App Loaded!');
+        }
     }
 }).$mount('#vue-wrap');
 
