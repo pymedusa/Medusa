@@ -1,7 +1,7 @@
-const pkg = require('./package.json');
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
+const pkg = require('./package.json');
 
 const { config } = pkg;
 const { cssThemes } = config;
@@ -57,7 +57,7 @@ module.exports = {
             onStart: {
                 delete: [
                     './dist/js/**'
-                ],
+                ]
             },
             onEnd: {
                 copy: Object.values(cssThemes).reduce((operations, theme) => {

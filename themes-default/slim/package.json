@@ -142,8 +142,7 @@
       "static/js/*.min.js",
       "static/js/vender.js",
       "build/**",
-      "gulpfile.js",
-      "webpack.config.js"
+      "gulpfile.js"
     ],
     "esnext": true
   },
