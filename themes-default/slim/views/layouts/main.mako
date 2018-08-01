@@ -91,7 +91,6 @@
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
