@@ -406,7 +406,8 @@ def _get_anidb_exceptions(force):
                         None,
                         name=show.name,
                         tvdbid=show.indexerid,
-                        autoCorrectName=True
+                        autoCorrectName=True,
+                        cache_path=app.CACHE_DIR
                     )
                 except ValueError as error:
                     logger.debug(

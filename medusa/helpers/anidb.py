@@ -28,11 +28,8 @@ def set_up_anidb_connection():
         return False
 
     if not app.ADBA_CONNECTION:
-        def anidb_logger(msg):
-            return log.debug(u'anidb: {0}', msg)
-
         try:
-            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
+            app.ADBA_CONNECTION = adba.Connection(keepAlive=True)
         except Exception as error:
             log.warning(u'anidb exception msg: {0!r}', error)
             return False
@@ -43,6 +40,8 @@ def set_up_anidb_connection():
         else:
             return True
     except Exception as error:
+        import traceback
+        print traceback.format_exc()
         log.warning(u'anidb exception msg: {0!r}', error)
         return False
 
@@ -61,7 +60,7 @@ def get_release_groups_for_anime(series_name):
     groups = []
     if set_up_anidb_connection():
         try:
-            anime = adba.Anime(app.ADBA_CONNECTION, name=series_name)
+            anime = adba.Anime(app.ADBA_CONNECTION, name=series_name, cache_path=app.CACHE_DIR)
             groups = anime.get_groups()
         except Exception as error:
             log.warning(u'Unable to retrieve Fansub Groups from AniDB. Error: {error}', {'error': error.message})
