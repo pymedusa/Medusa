@@ -431,7 +431,7 @@ window.app = new Vue({
                                     </div>
                                 </fieldset>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div> <!-- /col --> 
+                            </div> <!-- /col -->
                         </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
 
@@ -503,7 +503,7 @@ window.app = new Vue({
                                             <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
                                                 <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
                                             </select>
-                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>    
+                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                                         </div>
                                     </div>
 
