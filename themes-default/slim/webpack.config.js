@@ -6,7 +6,7 @@ const pkg = require('./package.json');
 const { config } = pkg;
 const { cssThemes } = config;
 
-module.exports = {
+const webpackConfig = mode => ({
     entry: {
         // Exports all window. objects for mako files
         index: './static/js/index.js',
@@ -36,7 +36,13 @@ module.exports = {
         rules: [
             {
                 test: /\.vue$/,
-                loader: 'vue-loader'
+                use: [{
+                    loader: 'vue-loader',
+                    options: {
+                        // This is a workaround because vue-loader can't get the webpack mode
+                        productionMode: mode === 'production'
+                    }
+                }]
             },
             {
                 test: /\.js$/,
@@ -71,4 +77,6 @@ module.exports = {
             }
         })
     ]
-};
+});
+
+module.exports = (_env, argv) => webpackConfig(argv.mode);
