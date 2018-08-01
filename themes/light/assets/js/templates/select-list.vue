@@ -2,7 +2,7 @@
     <div class="select-list max-width">
         <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values"></i>
 
-        <ul v-if="!csvEnabled">
+        <ul v-if="!csvMode">
             <li v-for="item of editItems" :key="item.id">
                 <div class="input-group">
                     <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)"/>
@@ -59,7 +59,8 @@ module.exports = {
             editItems: [],
             newItem: '',
             indexCounter: 0,
-            csv: ''
+            csv: '',
+            csvMode: this.csvEnabled
         };
     },
     created() {
@@ -128,7 +129,7 @@ module.exports = {
          * Or from csv to editItems.
          */
         syncValues() {
-            if (this.csvEnabled) {
+            if (this.csvMode) {
                 this.editItems = [];
                 this.csv.split(',').forEach((value => {
                     // Omit empty strings
@@ -147,7 +148,7 @@ module.exports = {
          */
         switchFields() {
             this.syncValues();
-            this.csvEnabled = !this.csvEnabled;
+            this.csvMode = !this.csvMode;
         }
     },
     watch: {
