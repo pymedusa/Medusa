@@ -7,6 +7,7 @@ run_verbose () {
 }
 
 cd themes-default/slim/
+run_verbose "yarn webpack-build"
 run_verbose "yarn gulp sync"
 cd ../../
 status="$(git status --porcelain -- themes/)";
