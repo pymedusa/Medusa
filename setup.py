@@ -44,7 +44,7 @@ setup(
         'flake8-quotes',
         'pep8-naming',
         'pycodestyle==2.3.1',
-        'pytest',
+        'pytest==3.6.4',
         'pytest-cov',
         'pytest-flake8',
         'pytest-tornado5',

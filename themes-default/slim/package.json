@@ -118,15 +118,15 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex"
+      "Vuex",
+      "dateFns"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
       "build/**",
-      "gulpfile.js",
-      "static/js/templates/name-pattern.vue"
+      "gulpfile.js"
     ],
     "esnext": true
   },
