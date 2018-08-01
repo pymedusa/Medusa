@@ -8,6 +8,7 @@ import {
 } from '../mutation-types';
 
 const state = {
+    isAuthenticated: false,
     user: {},
     tokens: {
         access: null,
@@ -37,11 +38,7 @@ const mutations = {
     [REMOVE_AUTH_ERROR]() {}
 };
 
-const getters = {
-    isAuthenticated(state) {
-        return Boolean(state.user);
-    }
-};
+const getters = {};
 
 const actions = {
     login(context, credentials) {

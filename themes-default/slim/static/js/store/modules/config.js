@@ -257,7 +257,7 @@ const state = {
 const mutations = {
     [ADD_CONFIG](state, { section, config }) {
         if (section === 'main') {
-            state = config;
+            state = Object.assign(state, config);
         }
         if (['qualities', 'statuses', 'metadata'].includes(section)) {
             state[section] = config;
