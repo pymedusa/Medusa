@@ -1,5 +1,12 @@
 ## Unreleased
 
+#### Fixes
+
+#### New Features
+
+#### Improvements
+- Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
+
 -----
 
 ## 0.2.9 (2018-08-10)

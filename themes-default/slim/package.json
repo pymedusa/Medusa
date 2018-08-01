@@ -27,7 +27,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@vue/test-utils": "1.0.0-beta.21",
+    "@vue/test-utils": "1.0.0-beta.22",
     "ansi-colors": "2.0.5",
     "ava": "0.25.0",
     "axios": "0.18.0",
@@ -118,15 +118,15 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex"
+      "Vuex",
+      "dateFns"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
       "build/**",
-      "gulpfile.js",
-      "static/js/templates/name-pattern.vue"
+      "gulpfile.js"
     ],
     "esnext": true
   },

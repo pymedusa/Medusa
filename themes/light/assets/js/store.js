@@ -93,6 +93,7 @@ const store = new Store({
                 minor: null
             },
             programDir: null,
+            dataDir: null,
             animeSplitHomeInTabs: null,
             torrents: {
                 authType: null,

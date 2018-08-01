@@ -134,6 +134,7 @@
             Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
             Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
             Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
+            Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
             Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
         </script>
         <%include file="/vue-components/sub-menu.mako"/>
