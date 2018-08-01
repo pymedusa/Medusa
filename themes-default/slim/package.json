@@ -28,7 +28,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@vue/test-utils": "1.0.0-beta.22",
+    "@vue/test-utils": "1.0.0-beta.23",
     "ansi-colors": "2.0.5",
     "ava": "0.25.0",
     "axios": "0.18.0",
