@@ -1,4 +1,5 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
+# coding=utf-8
 #
 # This file is part of aDBa.
 #
@@ -16,8 +17,8 @@
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
 from threading import Lock
-from aniDBresponses import *
-from aniDBerrors import *
+from .aniDBresponses import *
+from .aniDBerrors import *
 
 
 class Command:
@@ -57,13 +58,14 @@ class Command:
 
     def flatten(self, command, parameters):
         tmp = []
-        for key, value in parameters.iteritems():
-            if value == None:
+        for key, value in parameters.items():
+            if value is None:
                 continue
             tmp.append("%s=%s" % (self.escape(key), self.escape(value)))
         return ' '.join([command, '&'.join(tmp)])
 
-    def escape(self, data):
+    @staticmethod
+    def escape(data):
         return str(data).replace('&', '&amp;')
 
     def raw_data(self):
@@ -77,11 +79,10 @@ class Command:
         pass
 
 
-#first run
+# first run
 class AuthCommand(Command):
     def __init__(self, username, password, protover, client, clientver, nat=None, comp=None, enc=None, mtu=None):
-        parameters = {'user': username, 'pass': password, 'protover': protover, 'client': client,
-                      'clientver': clientver, 'nat': nat, 'comp': comp, 'enc': enc, 'mtu': mtu}
+        parameters = {'user': username, 'pass': password, 'protover': protover, 'client': client, 'clientver': clientver, 'nat': nat, 'comp': comp, 'enc': enc, 'mtu': mtu}
         Command.__init__(self, 'AUTH', **parameters)
 
 
@@ -90,7 +91,7 @@ class LogoutCommand(Command):
         Command.__init__(self, 'LOGOUT')
 
 
-#third run (at the same time as second)
+# third run (at the same time as second)
 class PushCommand(Command):
     def __init__(self, notify, msg, buddy=None):
         parameters = {'notify': notify, 'msg': msg, 'buddy': buddy}
@@ -103,28 +104,12 @@ class PushAckCommand(Command):
         Command.__init__(self, 'PUSHACK', **parameters)
 
 
-class Notification(Command):
-    def __init__(self, aid=None, gid=None, type=None, priority=None):
-        if not (aid or gid) or (aid and gid):
-            raise AniDBIncorrectParameterError, "You must provide aid OR gid for NOTIFICATION command"
-        parameters = {'aid': aid, "gid": gid, "type": type, "priority": priority}
-        Command.__init__(self, 'NOTIFICATION', **parameters)
-
-
 class NotifyAddCommand(Command):
     def __init__(self, aid=None, gid=None, type=None, priority=None):
         if not (aid or gid) or (aid and gid):
-            raise AniDBIncorrectParameterError, "You must provide aid OR gid for NOTIFICATIONADD command"
+            raise AniDBIncorrectParameterError("You must provide aid OR gid for NOTIFICATIONADD command")
         parameters = {'aid': aid, "gid": gid, "type": type, "priority": priority}
         Command.__init__(self, 'NOTIFICATIONADD', **parameters)
-
-
-class NotifyDelCommand(Command):
-    def __init__(self, aid=None, gid=None, type=None, priority=None):
-        if not (aid or gid) or (aid and gid):
-            raise AniDBIncorrectParameterError, "You must provide aid OR gid for NOTIFICATIONDEL command"
-        parameters = {'aid': aid, "gid": gid, "type": type, "priority": priority}
-        Command.__init__(self, 'NOTIFICATIONDEL', **parameters)
 
 
 class NotifyCommand(Command):
@@ -153,7 +138,7 @@ class NotifyAckCommand(Command):
 class BuddyAddCommand(Command):
     def __init__(self, uid=None, uname=None):
         if not (uid or uname) or (uid and uname):
-            raise AniDBIncorrectParameterError, "You must provide <u(id|name)> for BUDDYADD command"
+            raise AniDBIncorrectParameterError("You must provide <u(id|name)> for BUDDYADD command")
         parameters = {'uid': uid, 'uname': uname.lower()}
         Command.__init__(self, 'BUDDYADD', **parameters)
 
@@ -188,11 +173,11 @@ class BuddyStateCommand(Command):
         Command.__init__(self, 'BUDDYSTATE', **parameters)
 
 
-#first run
+# first run
 class AnimeCommand(Command):
     def __init__(self, aid=None, aname=None, amask=None):
         if not (aid or aname):
-            raise AniDBIncorrectParameterError, "You must provide <a(id|name)> for ANIME command"
+            raise AniDBIncorrectParameterError("You must provide <a(id|name)> for ANIME command")
         parameters = {'aid': aid, 'aname': aname, 'amask': amask}
         Command.__init__(self, 'ANIME', **parameters)
 
@@ -200,29 +185,23 @@ class AnimeCommand(Command):
 class EpisodeCommand(Command):
     def __init__(self, eid=None, aid=None, aname=None, epno=None):
         if not (eid or ((aname or aid) and epno)) or (aname and aid) or (eid and (aname or aid or epno)):
-            raise AniDBIncorrectParameterError, "You must provide <eid XOR a(id|name)+epno> for EPISODE command"
+            raise AniDBIncorrectParameterError("You must provide <eid XOR a(id|name)+epno> for EPISODE command")
         parameters = {'eid': eid, 'aid': aid, 'aname': aname, 'epno': epno}
         Command.__init__(self, 'EPISODE', **parameters)
 
 
 class FileCommand(Command):
-    def __init__(self, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None,
-                 fmask=None, amask=None):
-        if not (fid or (size and ed2k) or ((aid or aname) and (gid or gname) and epno)) or (
-            fid and (size or ed2k or aid or aname or gid or gname or epno)) or (
-            (size and ed2k) and (fid or aid or aname or gid or gname or epno)) or (
-            ((aid or aname) and (gid or gname) and epno) and (fid or size or ed2k)) or (aid and aname) or (
-            gid and gname):
-            raise AniDBIncorrectParameterError, "You must provide <fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for FILE command"
-        parameters = {'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid, 'gname': gname,
-                      'epno': epno, 'fmask': fmask, 'amask': amask}
+    def __init__(self, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None, fmask=None, amask=None):
+        if not (fid or (size and ed2k) or ((aid or aname) and (gid or gname) and epno)) or (fid and (size or ed2k or aid or aname or gid or gname or epno)) or ((size and ed2k) and (fid or aid or aname or gid or gname or epno)) or (((aid or aname) and (gid or gname) and epno) and (fid or size or ed2k)) or (aid and aname) or (gid and gname):
+            raise AniDBIncorrectParameterError("You must provide <fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for FILE command")
+        parameters = {'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid, 'gname': gname, 'epno': epno, 'fmask': fmask, 'amask': amask}
         Command.__init__(self, 'FILE', **parameters)
 
 
 class GroupCommand(Command):
     def __init__(self, gid=None, gname=None):
         if not (gid or gname) or (gid and gname):
-            raise AniDBIncorrectParameterError, "You must provide <g(id|name)> for GROUP command"
+            raise AniDBIncorrectParameterError("You must provide <g(id|name)> for GROUP command")
         parameters = {'gid': gid, 'gname': gname}
         Command.__init__(self, 'GROUP', **parameters)
 
@@ -230,7 +209,7 @@ class GroupCommand(Command):
 class GroupstatusCommand(Command):
     def __init__(self, aid=None, status=None):
         if not aid:
-            raise AniDBIncorrectParameterError, "You must provide aid for GROUPSTATUS command"
+            raise AniDBIncorrectParameterError("You must provide aid for GROUPSTATUS command")
         parameters = {'aid': aid, 'status': status}
         Command.__init__(self, 'GROUPSTATUS', **parameters)
 
@@ -238,7 +217,7 @@ class GroupstatusCommand(Command):
 class ProducerCommand(Command):
     def __init__(self, pid=None, pname=None):
         if not (pid or pname) or (pid and pname):
-            raise AniDBIncorrectParameterError, "You must provide <p(id|name)> for PRODUCER command"
+            raise AniDBIncorrectParameterError("You must provide <p(id|name)> for PRODUCER command")
         parameters = {'pid': pid, 'pname': pname}
         Command.__init__(self, 'PRODUCER', **parameters)
 
@@ -254,7 +233,7 @@ class ProducerCommand(Command):
         rows = db.select('ptb', names, ruleholder + " AND status&8", *rulevalues)
 
         if len(rows) > 1:
-            raise AniDBInternalError, "It shouldn't be possible for database to return more than 1 line for PRODUCER cache"
+            raise AniDBInternalError("It shouldn't be possible for database to return more than 1 line for PRODUCER cache")
         elif not len(rows):
             return None
         else:
@@ -282,14 +261,9 @@ class ProducerCommand(Command):
 
 class MyListCommand(Command):
     def __init__(self, lid=None, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None):
-        if not (lid or fid or (size and ed2k) or (aid or aname)) or (
-            lid and (fid or size or ed2k or aid or aname or gid or gname or epno)) or (
-            fid and (lid or size or ed2k or aid or aname or gid or gname or epno)) or (
-            (size and ed2k) and (lid or fid or aid or aname or gid or gname or epno)) or (
-            (aid or aname) and (lid or fid or size or ed2k)) or (aid and aname) or (gid and gname):
-            raise AniDBIncorrectParameterError, "You must provide <lid XOR fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for MYLIST command"
-        parameters = {'lid': lid, 'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid,
-                      'gname': gname, 'epno': epno}
+        if not (lid or fid or (size and ed2k) or (aid or aname)) or (lid and (fid or size or ed2k or aid or aname or gid or gname or epno)) or (fid and (lid or size or ed2k or aid or aname or gid or gname or epno)) or ((size and ed2k) and (lid or fid or aid or aname or gid or gname or epno)) or ((aid or aname) and (lid or fid or size or ed2k)) or (aid and aname) or (gid and gname):
+            raise AniDBIncorrectParameterError("You must provide <lid XOR fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for MYLIST command")
+        parameters = {'lid': lid, 'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid, 'gname': gname, 'epno': epno}
         Command.__init__(self, 'MYLIST', **parameters)
 
     def cached(self, intr, db):
@@ -311,7 +285,7 @@ class MyListCommand(Command):
         elif fid or size or ed2k:
             resp = intr.file(fid=fid, size=size, ed2k=ed2k)
             if resp.rescode != '220':
-                resp = NoSuchMylistResponse(self, None, '321', 'NO SUCH ENTRY (FILE NOT FOUND)', [])
+                resp = NoSuchMylistFileResponse(self, None, '321', 'NO SUCH ENTRY (FILE NOT FOUND)', [])
                 resp.parse()
                 return resp
             fid = resp.datalines[0]['fid']
@@ -346,7 +320,7 @@ class MyListCommand(Command):
         rows = db.select('ltb', names, ruleholder + " AND status&8", *rulevalues)
 
         if len(rows) > 1:
-            #resp=MultipleFilesFoundResponse(self,None,'322','CACHED MULTIPLE FILES FOUND',/*get fids from rows, not gonna do this as you haven't got a real cache out of these..*/)
+            # resp=MultipleFilesFoundResponse(self,None,'322','CACHED MULTIPLE FILES FOUND',/*get fids from rows, not gonna do this as you haven't got a real cache out of these..*/)
             return None
         elif not len(rows):
             return None
@@ -374,28 +348,17 @@ class MyListCommand(Command):
 
 
 class MyListAddCommand(Command):
-    def __init__(self, lid=None, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None,
-                 edit=None, state=None, viewed=None, source=None, storage=None, other=None):
-        if not (lid or fid or (size and ed2k) or ((aid or aname) and (gid or gname))) or (
-            lid and (fid or size or ed2k or aid or aname or gid or gname or epno)) or (
-            fid and (lid or size or ed2k or aid or aname or gid or gname or epno)) or (
-            (size and ed2k) and (lid or fid or aid or aname or gid or gname or epno)) or (
-            ((aid or aname) and (gid or gname)) and (lid or fid or size or ed2k)) or (aid and aname) or (
-            gid and gname) or (lid and not edit):
-            raise AniDBIncorrectParameterError, "You must provide <lid XOR fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for MYLISTADD command"
-        parameters = {'lid': lid, 'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid,
-                      'gname': gname, 'epno': epno, 'edit': edit, 'state': state, 'viewed': viewed, 'source': source,
-                      'storage': storage, 'other': other}
+    def __init__(self, lid=None, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None, edit=None, state=None, viewed=None, source=None, storage=None, other=None):
+        if not (lid or fid or (size and ed2k) or ((aid or aname) and (gid or gname))) or (lid and (fid or size or ed2k or aid or aname or gid or gname or epno)) or (fid and (lid or size or ed2k or aid or aname or gid or gname or epno)) or ((size and ed2k) and (lid or fid or aid or aname or gid or gname or epno)) or (((aid or aname) and (gid or gname)) and (lid or fid or size or ed2k)) or (aid and aname) or (gid and gname) or (lid and not edit):
+            raise AniDBIncorrectParameterError("You must provide <lid XOR fid XOR size+ed2k XOR a(id|name)+g(id|name)+epno> for MYLISTADD command")
+        parameters = {'lid': lid, 'fid': fid, 'size': size, 'ed2k': ed2k, 'aid': aid, 'aname': aname, 'gid': gid, 'gname': gname, 'epno': epno, 'edit': edit, 'state': state, 'viewed': viewed, 'source': source, 'storage': storage, 'other': other}
         Command.__init__(self, 'MYLISTADD', **parameters)
 
 
 class MyListDelCommand(Command):
     def __init__(self, lid=None, fid=None, aid=None, aname=None, gid=None, gname=None, epno=None):
-        if not (lid or fid or ((aid or aname) and (gid or gname) and epno)) or (
-            lid and (fid or aid or aname or gid or gname or epno)) or (
-            fid and (lid or aid or aname or gid or gname or epno)) or (
-            ((aid or aname) and (gid or gname) and epno) and (lid or fid)) or (aid and aname) or (gid and gname):
-            raise AniDBIncorrectParameterError, "You must provide <lid+edit=1 XOR fid XOR a(id|name)+g(id|name)+epno> for MYLISTDEL command"
+        if not (lid or fid or ((aid or aname) and (gid or gname) and epno)) or (lid and (fid or aid or aname or gid or gname or epno)) or (fid and (lid or aid or aname or gid or gname or epno)) or (((aid or aname) and (gid or gname) and epno) and (lid or fid)) or (aid and aname) or (gid and gname):
+            raise AniDBIncorrectParameterError("You must provide <lid+edit=1 XOR fid XOR a(id|name)+g(id|name)+epno> for MYLISTDEL command")
         parameters = {'lid': lid, 'fid': fid, 'aid': aid, 'aname': aname, 'gid': gid, 'gname': gname, 'epno': epno}
         Command.__init__(self, 'MYLISTDEL', **parameters)
 
@@ -408,7 +371,7 @@ class MyListStatsCommand(Command):
 class VoteCommand(Command):
     def __init__(self, type, id=None, name=None, value=None, epno=None):
         if not (id or name) or (id and name):
-            raise AniDBIncorrectParameterError, "You must provide <(id|name)> for VOTE command"
+            raise AniDBIncorrectParameterError("You must provide <(id|name)> for VOTE command")
         parameters = {'type': type, 'id': id, 'name': name, 'value': value, 'epno': epno}
         Command.__init__(self, 'VOTE', **parameters)
 
@@ -424,7 +387,7 @@ class PingCommand(Command):
         Command.__init__(self, 'PING')
 
 
-#second run
+# second run
 class EncryptCommand(Command):
     def __init__(self, user, apipassword, type):
         self.apipassword = apipassword
@@ -441,7 +404,7 @@ class EncodingCommand(Command):
 class SendMsgCommand(Command):
     def __init__(self, to, title, body):
         if len(title) > 50 or len(body) > 900:
-            raise AniDBIncorrectParameterError, "Title must not be longer than 50 chars and body must not be longer than 900 chars for SENDMSG command"
+            raise AniDBIncorrectParameterError("Title must not be longer than 50 chars and body must not be longer than 900 chars for SENDMSG command")
         parameters = {'to': to.lower(), 'title': title, 'body': body}
         Command.__init__(self, 'SENDMSG', **parameters)
 
@@ -460,4 +423,3 @@ class UptimeCommand(Command):
 class VersionCommand(Command):
     def __init__(self):
         Command.__init__(self, 'VERSION')
-
