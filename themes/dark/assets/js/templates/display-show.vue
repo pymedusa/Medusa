@@ -18,27 +18,22 @@ export default {
             showHideRows
         } = this;
 
-        $(window).resize(() => {
+        $(window).on('resize', () => {
             moveSummaryBackground();
             movecheckboxControlsBackground();
         });
 
-        this.$once('loaded', () => {
-            this.$nextTick(() => {
-                // Used by show-selector component
-                $store.dispatch('getShows');
+        window.addEventListener('load', event => {
+            // Adjust the summary background position and size
+            window.dispatchEvent(new Event('resize'));
 
-                // Adjust the summary background position and size
-                window.dispatchEvent(new Event('resize'));
-
-                $.ajaxEpSearch({
-                    colorRow: true
-                });
-
-                startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
-                $.ajaxEpSubtitlesSearch();
-                $.ajaxEpRedownloadSubtitle();
+            $.ajaxEpSearch({
+                colorRow: true
             });
+
+            startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
+            $.ajaxEpSubtitlesSearch();
+            $.ajaxEpRedownloadSubtitle();
         });
 
         $(document.body).on('click', '.imdbPlot', event => {
