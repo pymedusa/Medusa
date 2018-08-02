@@ -49,7 +49,7 @@ if (window) {
     window.apiRoot = webRoot + '/api/v2/';
 
     // Push pages that load via a vue file but still use `el` for mounting
-    window.components = []
+    window.components = [];
     window.components.push(displayShow.default);
     window.components.push(showSelector.default);
 }
