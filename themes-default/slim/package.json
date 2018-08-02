@@ -75,7 +75,6 @@
     "vinyl-source-stream": "2.0.0",
     "vue": "2.5.16",
     "vue-async-computed": "3.3.1",
-    "vue-in-viewport-mixin": "1.0.4",
     "vue-js-toggle-button": "1.2.3",
     "vue-loader": "15.2.6",
     "vue-meta": "1.5.2",
