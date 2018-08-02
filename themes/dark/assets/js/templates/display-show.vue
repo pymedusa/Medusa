@@ -15,7 +15,7 @@ export default {
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             setSeasonSceneException,
-            showHideRows,
+            showHideRows
         } = this;
 
         $(window).resize(() => {
@@ -53,7 +53,7 @@ export default {
             movecheckboxControlsBackground();
         });
 
-        $(document.body).on('change', '#seasonJump', (event) => {
+        $(document.body).on('change', '#seasonJump', event => {
             const id = $('#seasonJump option:selected').val();
             if (id && id !== 'jump') {
                 const season = $('#seasonJump option:selected').data('season');

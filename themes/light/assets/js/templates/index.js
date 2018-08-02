@@ -1,5 +1,5 @@
-import * as displayShow from './display-show';
-import * as showSelector from './show-selector';
+import * as displayShow from './display-show.vue';
+import * as showSelector from './show-selector.vue';
 
 export {
     displayShow,
