@@ -20,7 +20,6 @@ const pngquant = require('imagemin-pngquant');
 const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
-
 const xo = require('xo');
 
 const xoReporter = xo.getFormatter('eslint-formatter-pretty');
@@ -53,12 +52,25 @@ if (PROD) {
 }
 */
 
+// List JS files handled by Webpack
+// These files will be ignored by the gulp tasks
+const webpackedJsFiles = [
+    'static/js/app.js',
+    'static/js/index.js',
+    'static/js/api.js',
+    'static/js/router.js',
+    'static/js/store.js'
+];
+
 const staticAssets = [
     'static/browserconfig.xml',
     'static/favicon.ico',
     'static/fonts/**/*',
     'static/js/**/*',
-    'static/css/**/*'
+    'static/css/**/*',
+
+    // Webpacked files
+    ...webpackedJsFiles.map(file => '!' + file)
 ];
 
 /**
@@ -155,7 +167,10 @@ const bundleJs = done => {
         ignore: [
             'js/lib/**',
             'js/*.min.js',
-            'js/vender.js'
+            'js/vender.js',
+
+            // Webpacked JS files
+            ...webpackedJsFiles.map(file => file.replace('static/', ''))
         ]
     }, (err, files) => {
         if (err) {

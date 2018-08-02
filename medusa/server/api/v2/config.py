@@ -278,6 +278,7 @@ class DataGenerator(object):
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
         section_data['programDir'] = app.PROG_DIR
+        section_data['dataDir'] = app.DATA_DIR
         section_data['configFile'] = app.CONFIG_FILE
         section_data['dbPath'] = db.DBConnection().path
         section_data['cacheDir'] = app.CACHE_DIR
