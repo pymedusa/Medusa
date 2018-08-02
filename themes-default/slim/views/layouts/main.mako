@@ -155,7 +155,8 @@
             Vue.mixin({
                 data() {
                     return {
-                        globalLoading: true
+                        globalLoading: true,
+                        pageComponent: false
                     };
                 },
                 mounted() {

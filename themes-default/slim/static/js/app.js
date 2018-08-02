@@ -58,7 +58,8 @@ const app = new Vue({
     router,
     data() {
         return {
-            globalLoading: false
+            globalLoading: false,
+            pageComponent: false
         };
     },
     computed: Object.assign(mapState(['auth', 'config']), {}),
