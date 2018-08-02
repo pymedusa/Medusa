@@ -13,6 +13,7 @@ import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
+import { displayShow, showSelector } from './templates';
 
 if (window) {
     // Adding libs to window so mako files can use them
@@ -46,8 +47,12 @@ if (window) {
     window.webRoot = webRoot;
     window.apiKey = apiKey;
     window.apiRoot = webRoot + '/api/v2/';
-}
 
+    // Push pages that load via a vue file but still use `el` for mounting
+    window.components = []
+    window.components.push(displayShow.default);
+    window.components.push(showSelector.default);
+}
 const UTIL = {
     exec(controller, action) {
         const ns = MEDUSA;

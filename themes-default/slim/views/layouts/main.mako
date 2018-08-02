@@ -70,9 +70,9 @@
                         If this is taking too long,<br>
                         <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
                     </div>
-                    <div :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <component :is="pageComponent || 'div'" :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
-                    </div>
+                    </component>
                </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
@@ -119,8 +119,6 @@
 
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
-            // Used to get mako vue components to the app.js
-            window.components = [];
             // Used to get username to the app.js and header
             % if app.WEB_USERNAME and app.WEB_PASSWORD:
             window.username = ${json.dumps(app.WEB_USERNAME)};

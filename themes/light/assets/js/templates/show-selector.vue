@@ -15,7 +15,9 @@
     </div> <!-- end of container -->
 </template>
 <script>
-module.exports = {
+import Vuex from 'vuex';
+
+export default {
     name: 'show-selector',
     props: {
         showSlug: String
