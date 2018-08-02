@@ -7,7 +7,6 @@ export default {
     },
     mounted() {
         const {
-            $store,
             moveSummaryBackground,
             movecheckboxControlsBackground,
             setQuality,
@@ -23,7 +22,7 @@ export default {
             movecheckboxControlsBackground();
         });
 
-        window.addEventListener('load', event => {
+        window.addEventListener('load', () => {
             // Adjust the summary background position and size
             window.dispatchEvent(new Event('resize'));
 
