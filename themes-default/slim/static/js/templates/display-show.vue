@@ -1,12 +1,14 @@
 <script>
-import plotInfo from './plot-info';
+import AppLink from './app-link';
+import PlotInfo from './plot-info';
 import { api } from '../api';
 
 module.exports = {
     name: 'displayShow',
     template: '#display-show-template',
     components: {
-        'plot-info': plotInfo
+        AppLink,
+        PlotInfo
     },
     data() {
         return {};

@@ -5,10 +5,14 @@
     </app-link>
 </template>
 <script>
+import AppLink from './app-link.vue';
 import { webRoot, apiKey } from '../api';
 
 module.exports = {
     name: 'asset',
+    components: {
+        AppLink
+    },
     props: {
         seriesSlug: String,
         type: {

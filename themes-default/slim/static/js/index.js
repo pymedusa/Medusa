@@ -12,7 +12,7 @@ import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { displayShow, showSelector, asset, backstretch, plotInfo } from './templates';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector } from './templates';
 
 if (window) {
     // Adding libs to window so mako files can use them
@@ -48,11 +48,11 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
-    window.components.push(asset);
-    window.components.push(backstretch);
-    window.components.push(displayShow);
-    window.components.push(showSelector);
-    window.components.push(plotInfo);
+    window.components.push(Asset);
+    window.components.push(Backstretch);
+    window.components.push(DisplayShow);
+    window.components.push(ShowSelector);
+    window.components.push(PlotInfo);
     // Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
     // Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
     // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
