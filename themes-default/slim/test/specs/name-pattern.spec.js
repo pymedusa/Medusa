@@ -1,6 +1,6 @@
 import test from 'ava';
-import { NamePattern } from '../../static/js/templates';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { NamePattern } from '../../static/js/templates';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

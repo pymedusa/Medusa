@@ -26,7 +26,7 @@
     </div>
 </template>
 <script>
-import AppLink from './app-link';
+import AppLink from './app-link.vue';
 
 module.exports = {
     name: 'addRecommended',

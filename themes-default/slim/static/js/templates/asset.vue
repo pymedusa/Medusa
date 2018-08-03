@@ -5,8 +5,8 @@
     </app-link>
 </template>
 <script>
-import AppLink from './app-link.vue';
 import { webRoot, apiKey } from '../api';
+import AppLink from './app-link.vue';
 
 module.exports = {
     name: 'asset',

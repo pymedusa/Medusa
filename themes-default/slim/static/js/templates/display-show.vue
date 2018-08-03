@@ -1,7 +1,7 @@
 <script>
-import AppLink from './app-link';
-import PlotInfo from './plot-info';
 import { api } from '../api';
+import AppLink from './app-link.vue';
+import PlotInfo from './plot-info.vue';
 
 module.exports = {
     name: 'displayShow',
