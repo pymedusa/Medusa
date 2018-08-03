@@ -16,6 +16,7 @@ import RootDirs from './root-dirs.vue';
 import ScrollButtons from './scroll-buttons.vue';
 import SelectList from './select-list.vue';
 import ShowSelector from './show-selector.vue';
+import { NotFound } from './http';
 
 export {
     AddRecommended,
@@ -35,5 +36,6 @@ export {
     RootDirs,
     ScrollButtons,
     SelectList,
-    ShowSelector
+    ShowSelector,
+    NotFound
 };
