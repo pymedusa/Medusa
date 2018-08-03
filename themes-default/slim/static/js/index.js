@@ -12,7 +12,7 @@ import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { displayShow, showSelector, asset } from './templates';
+import { displayShow, showSelector, asset, backstretch, plotInfo } from './templates';
 
 if (window) {
     // Adding libs to window so mako files can use them
@@ -48,19 +48,19 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(asset.default);
+    window.components.push(backstretch.default);
     window.components.push(displayShow.default);
     window.components.push(showSelector.default);
-    window.components.push(asset.default);
+    window.components.push(plotInfo.default);
     // Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
     // Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
     // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
     // Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-    // Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
     // Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
     // Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
     // Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
     // Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
-    // Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
 }
 const UTIL = {
     exec(controller, action) {

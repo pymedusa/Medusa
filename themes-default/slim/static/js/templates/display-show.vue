@@ -1,7 +1,13 @@
 <script>
+import plotInfo from './plot-info';
+import { api } from '../api';
+
 export default {
     name: 'displayShow',
     template: '#display-show-template',
+    components: {
+        'plot-info': plotInfo
+    },
     data() {
         return {};
     },

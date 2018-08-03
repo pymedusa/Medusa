@@ -2,7 +2,9 @@
     <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
 </template>
 <script>
-module.exports = {
+import { api } from '../api';
+
+export default {
     name: 'plot-info',
     props: {
         hasPlot: Boolean,

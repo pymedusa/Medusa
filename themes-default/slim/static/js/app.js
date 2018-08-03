@@ -36,16 +36,16 @@ window.components.forEach(component => {
 // Global components
 const globalComponents = [
     AppHeader,
-    ScrollButtons,
     AppLink,
     Asset,
+    Backstretch,
     FileBrowser,
-    PlotInfo,
-    NamePattern,
-    SelectList,
     LanguageSelect,
+    NamePattern,
+    PlotInfo,
     RootDirs,
-    Backstretch
+    ScrollButtons,
+    SelectList
 ];
 
 globalComponents.forEach(component => {

@@ -2,7 +2,9 @@
     <div></div>
 </template>
 <script>
-module.exports = {
+import { webRoot, apiKey } from '../api';
+
+export default {
     name: 'backstretch',
     props: {
         opacity: {
@@ -34,7 +36,7 @@ module.exports = {
         const seriesSlug = indexer + String(id);
 
         if (indexer && id) {
-            $.backstretch(apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey);
+            $.backstretch(webRoot + '/api/v2/series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey);
             el.css('top', offset);
             el.css('opacity', opacity).fadeIn(500);
         }

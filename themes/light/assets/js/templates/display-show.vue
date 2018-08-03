@@ -1,4 +1,6 @@
 <script>
+import { api } from '../api';
+
 export default {
     name: 'displayShow',
     template: '#display-show-template',
