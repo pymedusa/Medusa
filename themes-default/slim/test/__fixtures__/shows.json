@@ -1,0 +1,209 @@
+{
+    "shows": [
+        {
+            "status": "Ended",
+            "rating": {
+                "imdb": {
+                    "rating": "9.3",
+                    "votes": 9942
+                }
+            },
+            "genres": [
+                "Documentary"
+            ],
+            "showType": "series",
+            "network": "BBC One",
+            "language": "en",
+            "title": "Blue Planet II",
+            "akas": {},
+            "classification": "",
+            "plot": "World-renowned naturalist Sir David Attenborough returns to present this landmark seven-part series about our planet’s oceans. Blue Planet II explores the latest frontiers of scientific discovery, from icy-white polar seas to vibrant blues of the coral atolls, from the storm-tossed green Atlantic coastline to the black depths of the alien deep.",
+            "indexer": "tvdb",
+            "countries": [
+                "UNITED KINGDOM"
+            ],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/330942.poster.jpg",
+                "banner": "/config/cache/images/tvdb/330942.poster.jpg"
+            },
+            "airs": "Sunday 8:00 PM",
+            "nextAirDate": null,
+            "year": {
+                "start": 2017
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Wanted",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/Blue Planet II",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "country_codes": [
+                "gb"
+            ],
+            "runtime": 60,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 330942,
+                "imdb": "tt6769208",
+                "slug": "tvdb330942"
+            }
+        },
+        {
+            "status": "Ended",
+            "rating": {},
+            "genres": [
+                "Comedy",
+                "Family"
+            ],
+            "showType": "series",
+            "network": "FOX (US)",
+            "language": "en",
+            "title": "That '70s Show",
+            "akas": {},
+            "classification": null,
+            "plot": "Set in the Wisconsin suburbs of the United States, Eric Forman lives under the authority of his parents, Red and Kitty. Next door is his girlfriend/neighbor, Donna Pinciotti and her parents Bob and Midge. The rest of the gang includes Jackie, and her sometimes boyfriend, Kelso, Hyde, a conspiracy theorist and Fez, a foreign exchange student. The gang mostly likes to spend their time in Eric's basement, pondering their lives, parents, and their futures, while getting into many funny mishaps and adventures in their teenage lives along the way.",
+            "indexer": "tvdb",
+            "countries": [],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/73787.poster.jpg",
+                "banner": "/config/cache/images/tvdb/73787.poster.jpg"
+            },
+            "airs": "Thursday 8:00 PM",
+            "nextAirDate": null,
+            "year": {
+                "start": 1998
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Skipped",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/That '70s Show",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "country_codes": [],
+            "runtime": 25,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 73787,
+                "imdb": "tt0165598",
+                "slug": "tvdb73787"
+            }
+        },
+        {
+            "status": "Ended",
+            "rating": {
+                "imdb": {
+                    "rating": "8.5",
+                    "votes": 44981
+                }
+            },
+            "genres": [
+                "Comedy"
+            ],
+            "showType": "series",
+            "network": "Channel 4",
+            "language": "en",
+            "title": "Black Books",
+            "akas": {},
+            "classification": "TV-PG",
+            "plot": "Black Books is a second-hand bookshop in London run by an Irishman named Bernard Black. He is probably the planet's worst-suited person to run such an establishment: he makes no effort to sell, closes at strange hours on a whim, is in a perpetual alcoholic stupor, abhors his customers (sometimes physically abusing them) and is often comatose at his desk. Help comes in the lumpy shape of Manny Bianco, a hairy, bumbling individual who (almost by osmosis) becomes Bernard's assistant. Manny is not exactly great at the job either but he is a million times better than Bernard. Next door is Fran, an anxious, frustrated woman who runs a sort of new-age shop selling the most unlikely bits of arty junk. Fran is friends with Bernard and, through him, with Manny; together the trio become embroiled in escapades that are sometimes extreme or violent or fantastically ludicrous, and always bizarre.",
+            "indexer": "tvdb",
+            "countries": [
+                "UNITED KINGDOM"
+            ],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/76924.poster.jpg",
+                "banner": "/config/cache/images/tvdb/76924.poster.jpg"
+            },
+            "airs": "",
+            "nextAirDate": null,
+            "year": {
+                "start": 2000
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Skipped",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/Black Books",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "country_codes": [
+                "gb"
+            ],
+            "runtime": 25,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 76924,
+                "imdb": "tt0262150",
+                "slug": "tvdb76924"
+            }
+        }
+    ]
+}
