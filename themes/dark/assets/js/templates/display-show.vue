@@ -1,9 +1,15 @@
 <script>
 import { api } from '../api';
+import AppLink from './app-link.vue';
+import PlotInfo from './plot-info.vue';
 
-export default {
+module.exports = {
     name: 'displayShow',
     template: '#display-show-template',
+    components: {
+        AppLink,
+        PlotInfo
+    },
     data() {
         return {};
     },

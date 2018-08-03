@@ -6,9 +6,13 @@
 </template>
 <script>
 import { webRoot, apiKey } from '../api';
+import AppLink from './app-link.vue';
 
-export default {
+module.exports = {
     name: 'asset',
+    components: {
+        AppLink
+    },
     props: {
         seriesSlug: String,
         type: {
