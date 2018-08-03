@@ -81,7 +81,7 @@
     "vue-meta": "1.5.2",
     "vue-native-websocket": "2.0.8",
     "vue-router": "3.0.1",
-    "vue-snotify": "3.2.0",
+    "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.5.16",
     "vuex": "3.0.1",
     "webpack": "4.16.4",
