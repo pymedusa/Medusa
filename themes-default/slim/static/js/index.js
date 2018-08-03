@@ -8,11 +8,10 @@ import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import axios from 'axios';
-import httpVueLoader from 'http-vue-loader';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector } from './templates';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './templates';
 
 if (window) {
     // Adding libs to window so mako files can use them
@@ -25,7 +24,6 @@ if (window) {
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
     window.axios = axios;
-    window.httpVueLoader = httpVueLoader;
     window.store = store;
     window.router = router;
     window.apiRoute = apiRoute;
@@ -48,19 +46,19 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(AppHeader);
+    window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
     window.components.push(DisplayShow);
-    window.components.push(ShowSelector);
+    window.components.push(FileBrowser);
+    window.components.push(LanguageSelect);
+    window.components.push(NamePattern);
     window.components.push(PlotInfo);
-    // Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-    // Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-    // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-    // Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-    // Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
-    // Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
-    // Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-    // Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
+    window.components.push(RootDirs);
+    window.components.push(ScrollButtons);
+    window.components.push(SelectList);
+    window.components.push(ShowSelector);
 }
 const UTIL = {
     exec(controller, action) {

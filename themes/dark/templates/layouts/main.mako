@@ -199,14 +199,6 @@
                 // Global components
                 Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-                Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-                Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-                Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-                Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
-                Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
-                Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-                Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
             }
         </script>
         <%block name="scripts" />

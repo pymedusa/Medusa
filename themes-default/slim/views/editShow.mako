@@ -1,8 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
-Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
-
 window.app = {};
 window.app = new Vue({
     store,
