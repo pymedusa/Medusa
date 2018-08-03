@@ -7,7 +7,7 @@
 <script>
 import { webRoot, apiKey } from '../api';
 
-export default {
+module.exports = {
     name: 'asset',
     props: {
         seriesSlug: String,

@@ -4,7 +4,7 @@
 <script>
 import { api } from '../api';
 
-export default {
+module.exports = {
     name: 'plot-info',
     props: {
         hasPlot: Boolean,

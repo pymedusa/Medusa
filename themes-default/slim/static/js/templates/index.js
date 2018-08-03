@@ -1,8 +1,8 @@
-import * as asset from './asset.vue';
-import * as backstretch from './backstretch.vue';
-import * as displayShow from './display-show.vue';
-import * as plotInfo from './plot-info.vue';
-import * as showSelector from './show-selector.vue';
+import asset from './asset.vue';
+import backstretch from './backstretch.vue';
+import displayShow from './display-show.vue';
+import plotInfo from './plot-info.vue';
+import showSelector from './show-selector.vue';
 
 export {
     asset,

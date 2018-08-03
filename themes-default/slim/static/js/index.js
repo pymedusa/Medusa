@@ -48,11 +48,11 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
-    window.components.push(asset.default);
-    window.components.push(backstretch.default);
-    window.components.push(displayShow.default);
-    window.components.push(showSelector.default);
-    window.components.push(plotInfo.default);
+    window.components.push(asset);
+    window.components.push(backstretch);
+    window.components.push(displayShow);
+    window.components.push(showSelector);
+    window.components.push(plotInfo);
     // Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
     // Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
     // Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));

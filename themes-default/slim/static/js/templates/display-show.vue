@@ -2,7 +2,7 @@
 import plotInfo from './plot-info';
 import { api } from '../api';
 
-export default {
+module.exports = {
     name: 'displayShow',
     template: '#display-show-template',
     components: {

@@ -17,7 +17,7 @@
 <script>
 import Vuex from 'vuex';
 
-export default {
+module.exports = {
     name: 'show-selector',
     props: {
         showSlug: String

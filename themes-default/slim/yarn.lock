@@ -3483,6 +3483,10 @@ eslint@^4.19.1:
     table "4.0.2"
     text-table "~0.2.0"
 
+esm@^3.0.73:
+  version "3.0.73"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.73.tgz#ea6175e9bb671180a13b6f1fb083ffee99aaf76d"
+
 espower-location-detector@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/espower-location-detector/-/espower-location-detector-1.0.0.tgz#a17b7ecc59d30e179e2bef73fb4137704cb331b5"
