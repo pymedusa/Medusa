@@ -211,6 +211,7 @@
                 Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
                 Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
                 Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
+                Vue.component('config-checkbox', httpVueLoader('js/templates/config-checkbox.vue'));
             }
         </script>
         <%block name="scripts" />
