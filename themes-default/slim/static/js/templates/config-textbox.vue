@@ -3,11 +3,11 @@
         <div class="form-group">
             <div class="row">
                 <label :for="name" class="col-sm-2 control-label">
-                    <span>{{ localLabel }}</span>
+                    <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" :id="localId" :name="name" v-model="localValue" :class="inputClass" />
-                    <p v-for="(explanation, index) in localExplanations" :key="index">{{ explanation }}</p>
+                    <input type="text" :id="id" :name="name" v-model="localValue" :class="inputClass" />
+                    <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>
         </div>
@@ -45,20 +45,12 @@ module.exports = {
     },
     data() {
         return {
-            localLabel: '',
-            localExplanations: [],
-            localValue: null,
-            localId: '',
-            name: '',
+            localValue: null
         }
     },
     mounted() {
         // Assign properties
-        this.localLabel = this.label;
-        this.localExplanations = this.explanations;
         this.localValue = this.value;
-        this.localId = this.id;
-        this.name = this.id;
     },
     computed: {
         config() {
