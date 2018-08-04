@@ -85,11 +85,15 @@ window.app = new Vue({
         }
     },
     methods: {
-        rootDirsUpdated(value, data) {
-            this.rootDirs = data.map(rd => {
+        /**
+         * Transform root dirs paths array, and select all the paths.
+         * @param {string[]} paths - The root dir paths
+         */
+        rootDirsPathsUpdated(paths) {
+            this.rootDirs = paths.map(path => {
                 return {
                     selected: true,
-                    path: rd.path
+                    path
                 };
             });
         },
@@ -227,7 +231,7 @@ window.app = new Vue({
                         <li><app-link href="#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
-                        <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
+                        <root-dirs @update:paths="rootDirsPathsUpdated"></root-dirs>
                     </div>
                     <div id="tabs-2" class="existingtabs">
                         <%include file="/inc_addShowOptions.mako"/>
