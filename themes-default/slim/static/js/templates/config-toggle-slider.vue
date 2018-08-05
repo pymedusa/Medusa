@@ -2,11 +2,11 @@
     <div id="config-toggle-slider-content">
         <div class="form-group">
             <div class="row">
-                <label :for="name" class="col-sm-2 control-label">
+                <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <toggle-button :width="45" :height="22" v-bind="{id, name}" v-model="localChecked" sync></toggle-button>
+                    <toggle-button :width="45" :height="22" v-bind="{id, name: id}" v-model="localChecked" sync></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>

@@ -2,11 +2,11 @@
     <div id="config-textbox-content">
         <div class="form-group">
             <div class="row">
-                <label :for="name" class="col-sm-2 control-label">
+                <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" v-bind="{id, name}" v-model="localValue" :class="inputClass" />
+                    <input type="text" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" />
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>

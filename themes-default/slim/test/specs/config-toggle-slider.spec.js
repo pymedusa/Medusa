@@ -12,6 +12,7 @@ test('renders', t => {
     const { localVue } = t.context;
     const wrapper = mount(configToggleSlider, {
         localVue,
+        stubs: ['ToggleButton'],
         propsData: {
             label: 'test-label',
             explanations: [
