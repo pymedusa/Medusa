@@ -3837,9 +3837,9 @@ file-uri-to-path@1:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
 
-filemanager-webpack-plugin@1.0.28:
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-1.0.28.tgz#fe1bf1281a3279e4bc58c4df8aad9fe48f01d1d4"
+filemanager-webpack-plugin@1.0.29:
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-1.0.29.tgz#1e9f71b606b6d1b9d8c185d288b4402c2fce7bb3"
   dependencies:
     archiver "^2.1.1"
     cpx "^1.5.0"
