@@ -84,7 +84,7 @@ module.exports = {
         /**
          * Transform raw root dirs to an array of objects
          * @param {string[]} rawRootDirs - [defaultIndex, rootDir0, rootDir1, ...]
-         * @return {rootDir[]}
+         * @return {rootDir[]} - Root dir objects
          */
         transformRaw(rawRootDirs) {
             if (rawRootDirs.length < 2) {

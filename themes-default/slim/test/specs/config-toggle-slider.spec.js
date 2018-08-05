@@ -1,8 +1,6 @@
 import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
-
-// Needs to be required otherwise nyc won't see it
-const configToggleSlider = require('../../static/js/templates/config-toggle-slider.vue');
+import { ConfigToggleSlider } from '../../static/js/templates';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
@@ -10,8 +8,9 @@ test.beforeEach(t => {
 
 test('renders', t => {
     const { localVue } = t.context;
-    const wrapper = mount(configToggleSlider, {
+    const wrapper = mount(ConfigToggleSlider, {
         localVue,
+        stubs: ['ToggleButton'],
         propsData: {
             label: 'test-label',
             explanations: [

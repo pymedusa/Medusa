@@ -2,7 +2,7 @@
     <div id="config-textbox-number-content">
         <div class="form-group">
             <div class="row">
-                <label :for="name" class="col-sm-2 control-label">
+                <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">

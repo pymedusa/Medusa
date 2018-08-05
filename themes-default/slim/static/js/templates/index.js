@@ -6,6 +6,9 @@ import AppLink from './app-link.vue';
 import Asset from './asset.vue';
 import Backstretch from './backstretch.vue';
 import Config from './config.vue';
+import ConfigTextbox from './config-textbox.vue';
+import ConfigTextboxNumber from './config-textbox-number.vue';
+import ConfigToggleSlider from './config-toggle-slider.vue';
 import DisplayShow from './display-show.vue';
 import FileBrowser from './file-browser.vue';
 import LanguageSelect from './language-select.vue';
@@ -27,6 +30,9 @@ export {
     Asset,
     Backstretch,
     Config,
+    ConfigTextbox,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
     DisplayShow,
     FileBrowser,
     LanguageSelect,
