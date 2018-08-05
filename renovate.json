@@ -20,8 +20,17 @@
   "ignoreDeps": [
     "guessit"
   ],
-  "packageRules": [{
-    "packageNames": ["tornado"],
-    "allowedVersions": "<6"
-  }]
+  "packageRules": [
+    {
+      "packageNames": ["tornado"],
+      "allowedVersions": "<6"
+    },
+    {
+      "packageNames": [
+        "vue",
+        "vue-template-compiler"
+      ],
+      "groupName": "vue-base"
+    }
+  ]
 }
