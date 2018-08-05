@@ -124,14 +124,22 @@ window.app = new Vue({
             // Disable the save button until we're done.
             this.saving = true;
 
-            let config = {
+            const config = {
                 postProcessing: this.postProcessing,
                 metadata: {
                     metadataProviders: this.metadataProviders
                 }
             };
 
-            $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
+            // Clone the config into a new object
+            let configCopy = Object.assign({}, config);
+
+            // Use destructuring to remove the unwanted keys.
+            const { multiEpStrings, reflinkAvailable, ...rest} = configCopy.postProcessing
+            // Assign the object with the keys removed to our copied object.
+            configCopy.postProcessing = rest;
+
+            $store.dispatch('setConfig', {section: 'main', config: configCopy}).then(() => {
                 this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
             }).catch(error => {
                 this.$snotify.error(

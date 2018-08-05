@@ -26,8 +26,13 @@
     </div>
 </template>
 <script>
+import AppLink from './app-link.vue';
+
 module.exports = {
     name: 'addRecommended',
+    components: {
+        AppLink
+    },
     computed: {
         header() {
             return this.$route.meta.header;

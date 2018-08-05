@@ -2,10 +2,8 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { AppLink } from '../../static/js/templates';
 import fixtures from '../__fixtures__/app-link';
-
-// Needs to be required otherwise nyc won't see it
-const AppLink = require('../../static/js/templates/app-link.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

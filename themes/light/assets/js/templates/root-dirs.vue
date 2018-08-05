@@ -2,8 +2,10 @@
     <div id="root-dirs-wrapper">
         <div class="root-dirs-selectbox">
             <!-- @TODO: Remove `id` and `name` attributes -->
-            <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" name="rootDir" id="rootDirs" size="6">
-                <option v-for="curDir in rootDirs" :key="curDir.path" :value="curDir.path">{{markDefault(curDir)}}</option>
+            <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" ref="rootDirs" name="rootDir" id="rootDirs" size="6">
+                <option v-for="curDir in rootDirs" :key="curDir.path" :value="curDir.path">
+                    {{ markDefault(curDir) }}
+                </option>
             </select>
         </div>
         <div class="root-dirs-controls">
@@ -12,62 +14,47 @@
             <button type="button" class="btn-medusa" @click.prevent="remove" :disabled="!selectedRootDir">Delete</button>
             <button type="button" class="btn-medusa" @click.prevent="setDefault" :disabled="!selectedRootDir">Set as Default *</button>
         </div>
-        <!-- @TODO: Remove this element (use a Vue events to watch for changes) -->
-        <input type="text" style="display: none;" id="rootDirText" :value="rootDirsValue" />
     </div>
 </template>
 <script>
+/**
+ * An object representing a root dir
+ * @typedef {Object} rootDir
+ * @property {string} path - Root dir path
+ * @property {boolean} selected - Is this root dir selected?
+ * @property {boolean} default - Is this the default root dir?
+ */
 module.exports = {
     name: 'root-dirs',
     inheritAttrs: false,
     data() {
-        const rawRootDirs = MEDUSA.config.rootDirs;
-        let rootDirs = [];
-        if (rawRootDirs.length !== 0) {
-            // Transform raw root dirs in the form of an array, to an array of objects
-            const defaultDir = parseInt(rawRootDirs[0], 10);
-            rootDirs = rawRootDirs.slice(1)
-                .map((rd, index) => {
-                    return {
-                        path: rd,
-                        default: index === defaultDir,
-                        selected: index === defaultDir
-                    };
-                });
-        }
-
         return {
-            rootDirs
+            rootDirs: []
         };
     },
-    mounted() {
-        // Emit the initial values
-        this.$emit('update:root-dirs', this.rootDirs);
-        this.$emit('update:root-dirs-value', this.rootDirsValue, this.rootDirs);
-        // @FIXME: Temporarily trigger regular events as well
-        this.$nextTick(() => {
-            $('#rootDirs').trigger('change');
-            $('#rootDirText').trigger('change');
-        });
+    beforeMount() {
+        const { config, transformRaw } = this;
+        this.rootDirs = transformRaw(config.rootDirs);
     },
     computed: {
-        rootDirsValue() {
-            if (this.defaultRootDir === null || this.rootDirs.length === 0) {
-                return '';
-            }
-            const defaultIndex = this.rootDirs.findIndex(rd => rd.default);
-            return defaultIndex.toString() + '|' + this.rootDirs.map(rd => rd.path).join('|');
+        config() {
+            return this.$store.state.config;
+        },
+        paths() {
+            return this.rootDirs.map(rd => rd.path);
         },
         selectedRootDir: {
             get() {
-                const selectedDir = this.rootDirs.find(rd => rd.selected);
-                if (!selectedDir || this.rootDirs.length === 0) {
+                const { rootDirs } = this;
+                const selectedDir = rootDirs.find(rd => rd.selected);
+                if (!selectedDir || rootDirs.length === 0) {
                     return null;
                 }
                 return selectedDir.path;
             },
             set(newRootDir) {
-                this.rootDirs = this.rootDirs
+                const { rootDirs } = this;
+                this.rootDirs = rootDirs
                     .map(rd => {
                         rd.selected = (rd.path === newRootDir);
                         return rd;
@@ -76,14 +63,16 @@ module.exports = {
         },
         defaultRootDir: {
             get() {
-                const defaultDir = this.rootDirs.find(rd => rd.default);
-                if (!defaultDir || this.rootDirs.length === 0) {
+                const { rootDirs } = this;
+                const defaultDir = rootDirs.find(rd => rd.default);
+                if (!defaultDir || rootDirs.length === 0) {
                     return null;
                 }
                 return defaultDir.path;
             },
             set(newRootDir) {
-                this.rootDirs = this.rootDirs
+                const { rootDirs } = this;
+                this.rootDirs = rootDirs
                     .map(rd => {
                         rd.default = (rd.path === newRootDir);
                         return rd;
@@ -92,48 +81,83 @@ module.exports = {
         }
     },
     methods: {
-        markDefault(rd) {
-            return ((rd.path === this.defaultRootDir) ? '* ' : '') + rd.path;
+        /**
+         * Transform raw root dirs to an array of objects
+         * @param {string[]} rawRootDirs - [defaultIndex, rootDir0, rootDir1, ...]
+         * @return {rootDir[]}
+         */
+        transformRaw(rawRootDirs) {
+            if (rawRootDirs.length < 2) {
+                return [];
+            }
+            // Transform raw root dirs in the form of an array, to an array of objects
+            const defaultDir = parseInt(rawRootDirs[0], 10);
+            return rawRootDirs
+                .slice(1)
+                .map((path, index) => {
+                    return {
+                        path,
+                        default: index === defaultDir,
+                        selected: index === defaultDir
+                    };
+                });
         },
+        /**
+         * Prefix the default root dir path with '* '
+         * @param {rootDir} rootDir - Current root dir object
+         * @returns {string} - Modified root dir path
+         */
+        markDefault(rootDir) {
+            if (rootDir.default) {
+                return `* ${rootDir.path}`;
+            }
+            return rootDir.path;
+        },
+        /**
+         * Add a new root dir
+         */
         add() {
-            // Add a new root dir
-            $(this.$el).nFileBrowser(path => {
+            const { $el, rootDirs, selectedRootDir, defaultRootDir, saveRootDirs } = this;
+            $($el).nFileBrowser(path => {
                 if (path.length === 0) {
                     return;
                 }
 
                 // If the path is already a root dir, select it
-                const found = this.rootDirs.find(rd => rd.path === path);
-                if (found && found.path !== this.selectedRootDir) {
+                const found = rootDirs.find(rd => rd.path === path);
+                if (found && found.path !== selectedRootDir) {
                     this.selectedRootDir = path;
                     return;
                 }
 
                 // If this the first root dir, set it as default and select it
-                const isFirst = this.defaultRootDir === null;
-                this.rootDirs.push({
+                const isFirst = defaultRootDir === null;
+                rootDirs.push({
                     path,
                     default: isFirst,
                     selected: isFirst
                 });
 
-                this.saveRootDirs();
+                saveRootDirs();
             });
         },
+        /**
+         * Edit the selected root dir's path
+         */
         edit() {
-            // Edit a root dir's path
-            $(this.$el).nFileBrowser(path => {
+            const { $el, rootDirs, selectedRootDir, saveRootDirs } = this;
+            $($el).nFileBrowser(path => {
                 if (path.length === 0) {
                     return;
                 }
 
                 // If the path is already a root dir, select it and remove the one being edited
-                const found = this.rootDirs.find(rd => rd.path === path);
-                if (found && found.path !== this.selectedRootDir) {
+                const found = rootDirs.find(rd => rd.path === path);
+                if (found && found.path !== selectedRootDir) {
                     const wasDefault = found.default;
-                    this.rootDirs = this.rootDirs
+                    this.rootDirs = rootDirs
                         .reduce((accumlator, rd) => {
-                            if (rd.path === this.selectedRootDir) {
+                            if (rd.path === selectedRootDir) {
                                 return accumlator;
                             }
                             const isNewRootDir = rd.path === path;
@@ -147,19 +171,23 @@ module.exports = {
                 }
 
                 // Update selected root dir path and select it
-                this.rootDirs.find(rd => rd.selected).path = path;
+                rootDirs.find(rd => rd.selected).path = path;
                 this.selectedRootDir = path;
 
-                this.saveRootDirs();
-            }, { initialDir: this.selectedRootDir });
+                saveRootDirs();
+            }, { initialDir: selectedRootDir });
         },
+        /**
+         * Remove the selected root dir
+         */
         remove() {
-            // Remove a root dir
-            const oldDirIndex = this.rootDirs.findIndex(rd => rd.selected);
-            const oldDirPath = this.selectedRootDir;
+            const { rootDirs, selectedRootDir, defaultRootDir, saveRootDirs } = this;
+
+            const oldDirIndex = rootDirs.findIndex(rd => rd.selected);
+            const oldDirPath = selectedRootDir;
 
             // What would the list be like without the root dir we're removing?
-            const filteredRootDirs = this.rootDirs.filter(rd => !rd.selected);
+            const filteredRootDirs = rootDirs.filter(rd => !rd.selected);
 
             // Pick a new selection, or null
             if (filteredRootDirs.length > 0) {
@@ -170,33 +198,38 @@ module.exports = {
             }
 
             // If we're deleting the current default root dir, pick a new default, or null
-            if (this.defaultRootDir !== null && oldDirPath === this.defaultRootDir) {
-                this.defaultRootDir = this.selectedRootDir;
+            if (this.defaultRootDir !== null && oldDirPath === defaultRootDir) {
+                this.defaultRootDir = selectedRootDir;
             }
 
             // Finally, remove the root dir from the list
             this.rootDirs = filteredRootDirs;
 
-            this.saveRootDirs();
+            saveRootDirs();
         },
+        /**
+         * Set the selected root dir as default
+         */
         setDefault() {
-            if (this.selectedRootDir === this.defaultRootDir) {
+            const { selectedRootDir, defaultRootDir, saveRootDirs } = this;
+
+            if (selectedRootDir === defaultRootDir) {
                 return;
             }
-            this.defaultRootDir = this.selectedRootDir;
-            this.saveRootDirs();
+            this.defaultRootDir = selectedRootDir;
+            saveRootDirs();
         },
+        /**
+         * Save the root dirs
+         * @returns {Promise} - The axios Promise from the store action.
+         */
         saveRootDirs() {
-            let rootDirs = [];
-            if (this.defaultRootDir !== null && this.rootDirs.length !== 0) {
-                let defaultIndex;
-                const paths = this.rootDirs.map((rd, index) => {
-                    if (rd.default) {
-                        defaultIndex = index;
-                    }
-                    return rd.path;
-                });
-                rootDirs = [defaultIndex.toString()].concat(paths);
+            const { paths, defaultRootDir } = this;
+
+            const rootDirs = paths.slice();
+            if (defaultRootDir !== null && paths.length !== 0) {
+                const defaultIndex = rootDirs.findIndex(path => path === defaultRootDir);
+                rootDirs.splice(0, 0, defaultIndex.toString());
             }
             return this.$store.dispatch('setConfig', {
                 section: 'main',
@@ -207,23 +240,25 @@ module.exports = {
         }
     },
     watch: {
+        'config.rootDirs'(rawRootDirs) {
+            const { transformRaw } = this;
+            this.rootDirs = transformRaw(rawRootDirs);
+        },
         rootDirs: {
-            handler() {
-                this.$emit('update:root-dirs', this.rootDirs);
+            handler(newValue) {
+                this.$emit('update', newValue);
                 this.$nextTick(() => {
                     // @FIXME: Temporarily trigger a regular event as well
-                    $('#rootDirs').trigger('change');
+                    $(this.$refs.rootDirs).trigger('change');
                 });
             },
             deep: true,
             immediate: false
         },
-        rootDirsValue() {
-            this.$emit('update:root-dirs-value', this.rootDirsValue, this.rootDirs);
-            this.$nextTick(() => {
-                // @FIXME: Temporarily trigger a regular event as well
-                $('#rootDirText').trigger('change');
-            });
+        paths(newValue, oldValue) {
+            if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+                this.$emit('update:paths', newValue);
+            }
         }
     }
 };

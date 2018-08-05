@@ -1,5 +1,6 @@
 <template>
-    <div class="show-selector form-inline hidden-print">
+    <span v-if="shows.length === 0">Loading...</span>
+    <div v-else class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-model="selectedShowSlug" class="select-show form-control input-sm-custom">
                 <template v-if="whichList === -1">
@@ -15,6 +16,8 @@
     </div> <!-- end of container -->
 </template>
 <script>
+import Vuex from 'vuex';
+
 module.exports = {
     name: 'show-selector',
     props: {
@@ -34,6 +37,11 @@ module.exports = {
                 { type: 'Shows', shows: [] },
                 { type: 'Anime', shows: [] }
             ];
+
+            // We're still loading
+            if (shows.length === 0) {
+                return;
+            }
 
             shows.forEach(show => {
                 const type = Number(animeSplitHome && show.config.anime);
