@@ -39,7 +39,7 @@ module.exports = {
     props: {
         listItems: {
             type: Array,
-            default: [],
+            default: () => [],
             required: true
         },
         unique: {
