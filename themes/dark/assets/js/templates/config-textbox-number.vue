@@ -20,13 +20,11 @@ module.exports = {
     props: {
         label: {
             type: String,
-            required: true,
-            default: ''
+            required: true
         },
         id: {
             type: String,
-            required: true,
-            default: ''
+            required: true
         },
         explanations: {
             type: Array,
@@ -36,6 +34,9 @@ module.exports = {
             type: String,
             default: ''
         },
+        /**
+         * Overwrite the default configured class on the <input/> element.
+         */
         inputClass: {
             type: String,
             default: 'form-control input-sm input75'
@@ -55,7 +56,6 @@ module.exports = {
         };
     },
     mounted() {
-        // Assign properties
         this.localValue = this.value;
     },
     computed: {

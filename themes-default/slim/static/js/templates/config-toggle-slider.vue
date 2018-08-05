@@ -20,13 +20,11 @@ module.exports = {
     props: {
         label: {
             type: String,
-            required: true,
-            default: ''
+            required: true
         },
         id: {
             type: String,
-            required: true,
-            default: ''
+            required: true
         },
         checked: {
             type: Boolean,
@@ -43,7 +41,6 @@ module.exports = {
         };
     },
     mounted() {
-        // Assign properties
         this.localChecked = this.checked;
     },
     computed: {
