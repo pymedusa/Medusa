@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
-<script type="text/javascript" src="js/app.js?${sbPID}"></script>
+<script src="js/app.js?${sbPID}"></script>
 </%block>
 <%block name="load_main_app">
 <script>
