@@ -20,7 +20,7 @@ test('renders', t => {
     const { localVue, store } = t.context;
     const wrapper = mount(SelectList, {
         localVue,
-        propData: {
+        propsData: {
             listItems: []
         },
         store

@@ -1,8 +1,6 @@
 import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
-
-// Needs to be required otherwise nyc won't see it
-const NamePattern = require('../../static/js/templates/config-textbox.vue');
+import { ConfigTextbox } from '../../static/js/templates';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
@@ -10,7 +8,7 @@ test.beforeEach(t => {
 
 test('renders', t => {
     const { localVue } = t.context;
-    const wrapper = mount(NamePattern, {
+    const wrapper = mount(ConfigTextbox, {
         localVue,
         propsData: {
             label: 'test-label',
