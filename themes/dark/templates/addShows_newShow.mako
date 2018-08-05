@@ -96,6 +96,14 @@ window.app = new Vue({
             });
 
             setTimeout(() => {
+                const { providedInfo } = this;
+                const { use, showId, showDir } = providedInfo;
+                if (use && showId !== 0 && showDir) {
+                    this.formwizard.loadsection(2);
+                }
+            }, 100);
+
+            setTimeout(() => {
                 if (this.$refs.nameToSearch) {
                     this.$refs.nameToSearch.focus();
 

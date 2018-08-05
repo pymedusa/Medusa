@@ -1,7 +1,6 @@
 <template>
     <div id="add-show-options-content">
         <fieldset class="component-group-list">
-            
             <div class="form-group">
                 <div class="row">
                     <label for="customQuality" class="col-sm-2 control-label">
@@ -15,7 +14,7 @@
 
             <!-- app.USE_SUBTITLES: -->
             <div v-show="config.subtitles.enabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :checked="config.subtitles.enabled" @update="selectedSubtitleEnabled = $event" 
+                <config-toggle-slider label="Subtitles" id="subtitles" :checked="config.subtitles.enabled" @update="selectedSubtitleEnabled = $event"
                     :explanations="['Download subtitles for this show?']">
                 </config-toggle-slider>
             </div>
@@ -46,11 +45,11 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders" 
+            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders"
                 :explanations="['Group episodes by season folder?']" @update="selectedSeasonFolderEnabled = $event">
             </config-toggle-slider>
 
-            <config-toggle-slider label="Anime" id="anime" :checked="defaultConfig.anime" 
+            <config-toggle-slider label="Anime" id="anime" :checked="defaultConfig.anime"
                 :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
@@ -60,22 +59,22 @@
                         <span>Release Groups</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist" 
+                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist"
                             :all-groups="release.allgroups" @change="onChangeReleaseGroupsAnime">
                         </anidb-release-group-ui>
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :checked="defaultConfig.scene" 
+            <config-toggle-slider label="Scene Numbering" id="scene" :checked="defaultConfig.scene"
                 :explanations="['Is this show scene numbered?']" @update="selectedSceneEnabled = $event">
             </config-toggle-slider>
-            
+
             <div class="form-group">
                 <div class="row">
                     <label for="saveDefaultsButton" class="col-sm-2 control-label">
                         <span>Use current values as the defaults</span>
-                    </label>    
+                    </label>
                     <div class="col-sm-10 content">
                         <input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" />
                     </div>
@@ -101,9 +100,9 @@ export default {
             enableAnimeOptions: true,
             useSubtitles: false,
             defaultEpisodeStatusOptions: [
-                {text: 'Wanted', value: 'Wanted'},
-                {text: 'Skipped', value: 'Skipped'},
-                {text: 'Ignored', value: 'Ignored'}
+                { text: 'Wanted', value: 'Wanted' },
+                { text: 'Skipped', value: 'Skipped' },
+                { text: 'Ignored', value: 'Ignored' }
             ],
             release: {
                 blacklist: [],
@@ -122,7 +121,7 @@ export default {
                 preferred: []
             },
             defaultOptions: null
-        }
+        };
     },
     mounted() {
         const { selectedShow, defaultConfig, update } = this;
@@ -134,11 +133,11 @@ export default {
     methods: {
         getReleaseGroups(showName) {
             const params = {
-                'series_name': showName
-            }
-            
+                'series_name': showName // eslint-disable-line quote-props
+            };
+
             try {
-                return apiRoute.get('home/fetch_releasegroups', { params, timeout: 20000 }).then(res => res.data);
+                return apiRoute.get('home/fetch_releasegroups', { params, timeout: 30000 }).then(res => res.data);
             } catch (error) {
                 console.warn(error);
                 return '';
@@ -155,7 +154,6 @@ export default {
                 release,
                 quality
             } = this;
-            
             this.$nextTick(() => {
                 this.$emit('change', {
                     subtitles: selectedSubtitleEnabled,
@@ -173,7 +171,7 @@ export default {
             this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
             this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
             this.update();
-        },
+        }
     },
     computed: {
         header() {
@@ -192,6 +190,7 @@ export default {
         },
         /**
          * Map the vuex state config.default on defaulConfig so we can watch it.
+         * @returns {Object} config.default from state.
          */
         defaultConfig() {
             return this.config.default;
@@ -199,14 +198,13 @@ export default {
         selectedShowName() {
             if (this.selectedShow) {
                 return this.selectedShow.showName;
-            } else {
-                return '';
             }
+            return '';
         }
     },
     watch: {
         selectedShowName() {
-            const { selectedShowName } = this; 
+            const { selectedShowName } = this;
             this.show = selectedShowName;
             if (this.releaseGroups) {
                 this.releaseGroups.then(groups => {
@@ -246,7 +244,7 @@ export default {
         selectedShow(newValue) {
             this.show = newValue;
         },
-        defaultConfig(newValue, oldValue) {
+        defaultConfig(newValue) {
             this.selectedStatus = newValue.status;
             this.selectedStatusAfter = newValue.statusAfter;
         }
