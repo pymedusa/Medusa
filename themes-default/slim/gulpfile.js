@@ -59,7 +59,8 @@ const webpackedJsFiles = [
     'static/js/index.js',
     'static/js/api.js',
     'static/js/router.js',
-    'static/js/store/**/*.js'
+    'static/js/store/**/*.js',
+    'static/js/templates/**/*'
 ];
 
 const staticAssets = [

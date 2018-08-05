@@ -5,6 +5,12 @@
   "baseBranches": [
     "develop"
   ],
+  "js": {
+    "labels": ["Update dep (JS)"]
+  },
+  "python": {
+    "labels": ["Update dep (Py)"]
+  },
   "ignorePaths": [
     ".build/**",
     "themes/**",
@@ -14,8 +20,18 @@
   "ignoreDeps": [
     "guessit"
   ],
-  "packageRules": [{
-    "packageNames": ["tornado"],
-    "allowedVersions": "<6"
-  }]
+  "packageRules": [
+    {
+      "packageNames": ["tornado"],
+      "allowedVersions": "<6"
+    },
+    {
+      "packageNames": [
+        "vue",
+        "vue-template-compiler",
+        "@vue/test-utils"
+      ],
+      "groupName": "vue-base"
+    }
+  ]
 }

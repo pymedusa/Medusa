@@ -1972,12 +1972,13 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(204, 204, 204);
-    min-height: 100px;
+    min-height: 200px;
 }
 
 .component-item {
+    padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(102, 102, 102);
-    min-height: 200px;
+    min-height: 100px;
 }
 
 .component-group-desc-legacy {

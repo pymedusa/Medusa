@@ -29,7 +29,7 @@ if (window) {
     window.apiRoute = apiRoute;
     window.apiv1 = apiv1;
     window.api = api;
-    window.topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
+
     window.MEDUSA = {
         common: {},
         config: {},
@@ -114,7 +114,7 @@ $.fn.extend({
     }
 });
 
-if (!document.location.pathname.endsWith('/login/')) {
+if (!document.location.pathname.includes('/login')) {
     api.get('config/main').then(response => {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
