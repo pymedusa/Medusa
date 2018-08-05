@@ -110,6 +110,9 @@
         {
           "name": "error"
         }
+      ],
+      "valid-jsdoc": [
+        "error"
       ]
     },
     "envs": [
