@@ -64,7 +64,7 @@
     "run-sequence": "2.2.1",
     "snyk": "1.90.0",
     "vue": "2.5.17",
-    "vue-async-computed": "3.3.1",
+    "vue-async-computed": "3.4.0",
     "vue-js-toggle-button": "1.2.3",
     "vue-loader": "15.2.7",
     "vue-meta": "1.5.2",
