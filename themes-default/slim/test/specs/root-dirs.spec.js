@@ -2,10 +2,8 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { RootDirs } from '../../static/js/templates';
 import fixtures from '../__fixtures__/root-dirs';
-
-// Needs to be required otherwise nyc won't see it
-const RootDirs = require('../../static/js/templates/root-dirs.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

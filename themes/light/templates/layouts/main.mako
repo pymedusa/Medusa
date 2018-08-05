@@ -91,7 +91,6 @@
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
@@ -120,7 +119,7 @@
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
             // Used to get username to the app.js and header
-            % if app.WEB_USERNAME and app.WEB_PASSWORD:
+            % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
             window.username = ${json.dumps(app.WEB_USERNAME)};
             % else:
             window.username = '';
@@ -160,7 +159,7 @@
                     };
                 },
                 mounted() {
-                    if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
+                    if (this.$root === this && !document.location.pathname.includes('/login')) {
                         const { store, username } = window;
                         /* This is used by the `app-header` component
                            to only show the logout button if a username is set */
