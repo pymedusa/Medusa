@@ -5,6 +5,12 @@
   "baseBranches": [
     "develop"
   ],
+  "js": {
+    "labels": ["Update dep (JS)"]
+  },
+  "python": {
+    "labels": ["Update dep (Py)"]
+  },
   "ignorePaths": [
     ".build/**",
     "themes/**",
