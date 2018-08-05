@@ -68,7 +68,23 @@ window.app = new Vue({
             },
 
             selectedRootDir: '',
-            selectedShowSlug: ''
+            selectedShowSlug: '',
+            selectedShowOptions: {
+                subtitles: false,
+                status: '',
+                statusAfter: '',
+                seasonFolder: false,
+                anime: false,
+                scene: false,
+                release: {
+                    blacklist: [],
+                    whitelist: []
+                },
+                quality: {
+                    allowed: [],
+                    preferred: []
+                }
+            }
         };
     },
     mounted() {
@@ -78,16 +94,6 @@ window.app = new Vue({
                     this.$refs.nameToSearch.focus();
                 }
             });
-
-            setTimeout(() => {
-                this.updateBlackWhiteList();
-
-                const { providedInfo } = this;
-                const { use, showId, showDir } = providedInfo;
-                if (use && showId !== 0 && showDir) {
-                    this.formwizard.loadsection(2);
-                }
-            }, 100);
 
             setTimeout(() => {
                 if (this.$refs.nameToSearch) {
@@ -115,7 +121,6 @@ window.app = new Vue({
         });
 
         $(document.body).on('change', '#anime', () => {
-            this.updateBlackWhiteList();
             this.$nextTick(() => this.formwizard.loadsection(2));
         });
     },
@@ -190,7 +195,8 @@ window.app = new Vue({
     },
     methods: {
         async submitForm(skipShow) {
-            const { currentSearch, addButtonDisabled } = this;
+            const { currentSearch, addButtonDisabled, selectedShowOptions } = this;
+            const { subtitles, anime, scene, seasonFolder, release } = selectedShowOptions;
 
             let formData;
 
@@ -211,12 +217,32 @@ window.app = new Vue({
                 }
 
                 // Converts select boxes to command separated values [js/blackwhite.js]
-                generateBlackWhiteList(); // eslint-disable-line no-undef
+                //generateBlackWhiteList(); // eslint-disable-line no-undef
 
                 formData = new FormData(this.$refs.addShowForm);
             }
 
             this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
+
+            // Because we're using te toggle-button.vue component, we don't have valid form input's for these.
+            // Therefor we need to add these values manually to the form data.
+
+            formData.append('subtitles', subtitles ? '1' : '0');
+            formData.append('anime', anime ? '1' : '0');
+            formData.append('scene', scene ? '1' : '0');
+            formData.append('season_folders', seasonFolder ? '1' : '0');
+
+            for (name of release.whitelist) {
+                formData.append('whitelist', name);
+            }
+
+            for (name of release.blacklist) {
+                formData.append('blacklist', name);
+            }
+
+            const statusToDesc = { 'Wanted': 3, 'Skipped': 5, 'Ignored': 7 }
+            formData.set('defaultStatus', statusToDesc[formData.get('defaultStatus')]);
+            formData.set('defaultStatusAfter', statusToDesc[formData.get('defaultStatusAfter')]);
 
             const response = await apiRoute.post('addShows/addNewShow', formData);
             const { data } = response;
@@ -400,10 +426,27 @@ window.app = new Vue({
                 this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
             });
         },
-        updateBlackWhiteList() {
-            // Currently requires jQuery
-            if ($ === undefined) return;
-            $.updateBlackWhiteList(this.showName);
+        /**
+         * The formwizard sets a fixed height when the step has been loaded. We need to refresh this on the option
+         * page, when showing/hiding the release groups. 
+         */
+        refreshOptionStep() {
+            if (this.formwizard.currentsection === 2) {
+                this.$nextTick(() => this.formwizard.loadsection(2));
+            }
+        },
+        updateOptions(options) {
+            // Update seleted options from add-show-options.vue @change event.
+            this.selectedShowOptions.subtitles = options.subtitles;
+            this.selectedShowOptions.status = options.status;
+            this.selectedShowOptions.statusAfter = options.statusAfter;
+            this.selectedShowOptions.seasonFolder = options.seasonFolder;
+            this.selectedShowOptions.anime = options.anime;
+            this.selectedShowOptions.scene = options.scene;
+            this.selectedShowOptions.release.blacklist = options.release.blacklist;
+            this.selectedShowOptions.release.whitelist = options.release.whitelist;
+            this.selectedShowOptions.quality.allowed = options.quality.allowed;
+            this.selectedShowOptions.quality.preferred = options.quality.preferred;
         }
     }
 });
@@ -517,7 +560,8 @@ window.app = new Vue({
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <%include file="/inc_addShowOptions.mako"/>
+                        <!-- <include file="/inc_addShowOptions.mako"/> -->
+                        <add-show-options :selected-show="this.selectedShow" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
             </form>

@@ -215,7 +215,7 @@ window.app = new Vue({
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
                                 <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"/>
+                                    v-model="series.config.defaultEpisodeStatus">
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>

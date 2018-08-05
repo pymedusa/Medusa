@@ -159,6 +159,11 @@ export default {
                 this.$emit('change', this.allReleaseGroups);
             },
             deep: true
+        },
+        allGroups: {
+            handler(newValue) {
+                this.createIndexedObjects(newValue, 'releasegroups');
+            }
         }
     }
 };
