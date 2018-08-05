@@ -14,17 +14,24 @@ module.exports = {
         AppLink
     },
     props: {
-        seriesSlug: String,
+        seriesSlug: {
+            type: String
+        },
         type: {
             type: String,
             required: true
         },
-        default: String,
+        default: {
+            type: String,
+            required: true
+        },
         link: {
             type: Boolean,
             default: false
         },
-        cls: String
+        cls: {
+            type: String
+        }
     },
     data() {
         return {
