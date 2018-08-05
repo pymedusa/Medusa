@@ -251,7 +251,14 @@ const state = {
     os: null,
     anonRedirect: null,
     logDir: null,
-    recentShows: []
+    recentShows: [],
+    default: {
+        status: null,
+        statusAfter: null,
+        seasonFolders: null,
+        anime: null,
+        scene: null
+    }
 };
 
 const mutations = {
