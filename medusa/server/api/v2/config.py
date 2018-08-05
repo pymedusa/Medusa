@@ -296,6 +296,13 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
 
+        section_data['default'] = {}
+        section_data['default']['status'] = app.STATUS_DEFAULT
+        section_data['default']['statusAfter'] = app.STATUS_DEFAULT_AFTER
+        section_data['default']['seasonFolders'] = app.SEASON_FOLDERS_DEFAULT
+        section_data['default']['anime'] = app.ANIME_DEFAULT
+        section_data['default']['scene'] = app.SCENE_DEFAULT
+
         section_data['news'] = NonEmptyDict()
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
         section_data['news']['latest'] = app.NEWS_LATEST
