@@ -1,8 +1,6 @@
 import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
-
-// Needs to be required otherwise nyc won't see it
-const NamePattern = require('../../static/js/templates/name-pattern.vue');
+import { NamePattern } from '../../static/js/templates';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

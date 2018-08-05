@@ -44,10 +44,14 @@
         </table>
     </div>
 </template>
-
 <script>
+import AppLink from './app-link.vue';
+
 module.exports = {
     name: 'config',
+    components: {
+        AppLink
+    },
     computed: {
         config() {
             return this.$store.state.config;
@@ -58,7 +62,6 @@ module.exports = {
     }
 };
 </script>
-
 <style>
 .infoTable tr td:first-child {
     vertical-align: top;

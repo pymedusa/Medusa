@@ -70,9 +70,9 @@
                         If this is taking too long,<br>
                         <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
                     </div>
-                    <div :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <component :is="pageComponent || 'div'" :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
-                    </div>
+                    </component>
                </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
@@ -119,8 +119,6 @@
 
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
-            // Used to get mako vue components to the app.js
-            window.components = [];
             // Used to get username to the app.js and header
             % if app.WEB_USERNAME and app.WEB_PASSWORD:
             window.username = ${json.dumps(app.WEB_USERNAME)};
@@ -157,7 +155,8 @@
             Vue.mixin({
                 data() {
                     return {
-                        globalLoading: true
+                        globalLoading: true,
+                        pageComponent: false
                     };
                 },
                 mounted() {
@@ -200,17 +199,6 @@
                 // Global components
                 Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-                Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-                Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-                Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
-                Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-                Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
-                Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
-                Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
-                Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-                Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
-                Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
             }
         </script>
         <%block name="scripts" />

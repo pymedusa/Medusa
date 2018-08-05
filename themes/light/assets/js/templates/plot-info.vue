@@ -2,6 +2,8 @@
     <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
 </template>
 <script>
+import { api } from '../api';
+
 module.exports = {
     name: 'plot-info',
     props: {

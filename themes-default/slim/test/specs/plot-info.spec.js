@@ -2,10 +2,8 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { PlotInfo } from '../../static/js/templates';
 import fixtures from '../__fixtures__/common';
-
-// Needs to be required otherwise nyc won't see it
-const PlotInfo = require('../../static/js/templates/plot-info.vue');
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

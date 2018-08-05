@@ -3483,6 +3483,10 @@ eslint@^4.19.1:
     table "4.0.2"
     text-table "~0.2.0"
 
+esm@^3.0.73:
+  version "3.0.73"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.73.tgz#ea6175e9bb671180a13b6f1fb083ffee99aaf76d"
+
 espower-location-detector@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/espower-location-detector/-/espower-location-detector-1.0.0.tgz#a17b7ecc59d30e179e2bef73fb4137704cb331b5"
@@ -8289,10 +8293,6 @@ schema-utils@^0.4.4, schema-utils@^0.4.5:
     ajv "^6.1.0"
     ajv-keywords "^3.1.0"
 
-scrollmonitor@^1.1.3:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/scrollmonitor/-/scrollmonitor-1.2.4.tgz#823d04cc1574aa3b71de7cc70ef91ebe633344a0"
-
 secure-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/secure-keys/-/secure-keys-1.0.0.tgz#f0c82d98a3b139a8776a8808050b824431087fca"
@@ -9838,12 +9838,6 @@ vue-eslint-parser@^2.0.3:
 vue-hot-reload-api@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.0.tgz#97976142405d13d8efae154749e88c4e358cf926"
-
-vue-in-viewport-mixin@1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/vue-in-viewport-mixin/-/vue-in-viewport-mixin-1.0.4.tgz#51a3eb3e9a58211dfb25dc7882ab84b73aa0b225"
-  dependencies:
-    scrollmonitor "^1.1.3"
 
 vue-js-toggle-button@1.2.3:
   version "1.2.3"

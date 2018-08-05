@@ -1,11 +1,5 @@
 import VueRouter from 'vue-router';
-import httpVueLoader from 'http-vue-loader';
-
-const loginComponent = httpVueLoader('js/templates/login.vue');
-const configComponent = httpVueLoader('js/templates/config.vue');
-const addShowsComponent = httpVueLoader('js/templates/add-shows.vue');
-const addRecommendedComponent = httpVueLoader('js/templates/add-recommended.vue');
-const notFoundComponent = httpVueLoader('js/templates/http/404.vue');
+import { Login, Config, AddShows, AddRecommended, NotFound } from './templates';
 
 const router = new VueRouter({
     base: document.body.getAttribute('web-root') + '/',
@@ -16,7 +10,7 @@ const router = new VueRouter({
         meta: {
             title: 'Login'
         },
-        component: loginComponent
+        component: Login
     }, {
         path: '/config',
         name: 'config',
@@ -24,7 +18,7 @@ const router = new VueRouter({
             title: 'Help & Info',
             header: 'Medusa Configuration'
         },
-        component: configComponent
+        component: Config
     }, {
         path: '/addShows',
         name: 'addShows',
@@ -32,7 +26,7 @@ const router = new VueRouter({
             title: 'Add Shows',
             header: 'Add Shows'
         },
-        component: addShowsComponent
+        component: AddShows
     }, {
         path: '/addRecommended',
         name: 'addRecommended',
@@ -40,7 +34,7 @@ const router = new VueRouter({
             title: 'Add Recommended Shows',
             header: 'Add Recommended Shows'
         },
-        component: addRecommendedComponent
+        component: AddRecommended
     }, {
         path: '/schedule',
         name: 'schedule',
@@ -56,7 +50,7 @@ const router = new VueRouter({
             title: '404',
             header: '404 - page not found'
         },
-        component: notFoundComponent
+        component: NotFound
     // @NOTE: Redirect can only be added once all routes are vue
     // }, {
     //     path: '*',

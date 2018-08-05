@@ -6,17 +6,7 @@ import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
-import AppHeader from './templates/app-header.vue';
-import ScrollButtons from './templates/scroll-buttons.vue';
-import AppLink from './templates/app-link.vue';
-import Asset from './templates/asset.vue';
-import FileBrowser from './templates/file-browser.vue';
-import PlotInfo from './templates/plot-info.vue';
-import NamePattern from './templates/name-pattern.vue';
-import SelectList from './templates/select-list.vue';
-import LanguageSelect from './templates/language-select.vue';
-import RootDirs from './templates/root-dirs.vue';
-import Backstretch from './templates/backstretch.vue';
+import { AppHeader, ScrollButtons, AppLink, Asset, FileBrowser, PlotInfo, NamePattern, SelectList, LanguageSelect, RootDirs, Backstretch, DisplayShow, ShowSelector, Config } from './templates';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -36,16 +26,19 @@ window.components.forEach(component => {
 // Global components
 const globalComponents = [
     AppHeader,
-    ScrollButtons,
     AppLink,
     Asset,
+    Backstretch,
+    Config,
+    DisplayShow,
     FileBrowser,
-    PlotInfo,
-    NamePattern,
-    SelectList,
     LanguageSelect,
+    NamePattern,
+    PlotInfo,
     RootDirs,
-    Backstretch
+    ScrollButtons,
+    SelectList,
+    ShowSelector
 ];
 
 globalComponents.forEach(component => {
@@ -58,7 +51,8 @@ const app = new Vue({
     router,
     data() {
         return {
-            globalLoading: false
+            globalLoading: false,
+            pageComponent: false
         };
     },
     computed: Object.assign(mapState(['auth', 'config']), {}),
