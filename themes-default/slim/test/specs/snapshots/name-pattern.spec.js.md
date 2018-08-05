@@ -1,4 +1,4 @@
-# Snapshot report for `test\specs\name-pattern.spec.js`
+# Snapshot report for `test/specs/name-pattern.spec.js`
 
 The actual snapshot is saved in `name-pattern.spec.js.snap`.
 
