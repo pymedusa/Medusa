@@ -9,3 +9,4 @@ export { default as notifiers } from './notifiers';
 export { default as search } from './search';
 export { default as shows } from './shows';
 export { default as socket } from './socket';
+export { default as stats } from './stats';
