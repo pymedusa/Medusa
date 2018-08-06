@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from os.path import join
 import logging
 import traceback
 from builtins import object
@@ -81,7 +82,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         result = []
 
         try:
-            series = Anidb(cache_dir=app.CACHE_DIR).get_list(list_type)
+            series = Anidb(cache_dir=join(app.CACHE_DIR, 'simpleanidb')).get_list(list_type)
         except GeneralError as error:
             log.warning('Could not connect to AniDB service: {0}', error)
 

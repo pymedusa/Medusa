@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from os.path import join
 import posixpath
 from builtins import object
 
@@ -60,7 +61,7 @@ class LazyApi(object):
         """
         def func_wrapper(*args, **kwargs):
             if cls.anidb_api is None:
-                cls.anidb_api = Anidb(cache_dir=app.CACHE_DIR)
+                cls.anidb_api = Anidb(cache_dir=join(app.CACHE_DIR, 'simpleanidb'))
             return func(*args, **kwargs)
         return func_wrapper
 

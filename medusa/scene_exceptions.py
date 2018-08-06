@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+from os.path import join
 import logging
 import threading
 import time
@@ -407,7 +408,7 @@ def _get_anidb_exceptions(force):
                         name=show.name,
                         tvdbid=show.indexerid,
                         autoCorrectName=True,
-                        cache_path=app.CACHE_DIR
+                        cache_path=join(app.CACHE_DIR, 'adba')
                     )
                 except ValueError as error:
                     logger.debug(

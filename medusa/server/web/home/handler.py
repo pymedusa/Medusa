@@ -9,8 +9,6 @@ import time
 from builtins import str
 from datetime import date, datetime
 
-import adba
-
 from medusa import (
     app,
     config,
@@ -60,7 +58,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, set_up_anidb_connection, short_group_names
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
