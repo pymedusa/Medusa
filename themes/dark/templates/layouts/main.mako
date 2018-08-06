@@ -83,6 +83,12 @@
 
         </div>
         <%block name="load_main_app" />
+
+        ## This contains all the Webpack-imported modules
+        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
@@ -91,11 +97,6 @@
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-
-        ## This contains all the Webpack-imported modules
-        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>

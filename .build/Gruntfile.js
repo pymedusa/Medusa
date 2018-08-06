@@ -24,6 +24,8 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     css: './dist/bower.css'
                 },
                 exclude: [
+                    // Moved to Webpack
+                    'jquery'
                 ],
                 dependencies: {
                 },

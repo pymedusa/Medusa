@@ -19,6 +19,8 @@ if (window) {
     window.isDevelopment = isDevelopment;
 
     // Adding libs to window so mako files can use them
+    window.$ = $;
+    window.jQuery = $;
     window.Vue = Vue;
     window.Vuex = Vuex;
     window.VueMeta = VueMeta;
@@ -119,6 +121,15 @@ $.fn.extend({
         return $(this).addClass('warning');
     }
 });
+
+// @FIXME: Workaround just for the time being!
+const log = {
+    setDefaultLevel: () => {},
+    log: console.log,
+    info: console.info,
+    error: console.error,
+    debug: console.debug
+};
 
 if (!document.location.pathname.includes('/login')) {
     api.get('config/main').then(response => {
