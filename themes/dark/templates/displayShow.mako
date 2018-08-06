@@ -376,9 +376,6 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
-const {components} = window;
-const displayShow = window.components.find(component => component.name === 'displayShow');
-
 window.app = {};
 window.app = new Vue({
     el: '#vue-wrap',
@@ -389,13 +386,9 @@ window.app = new Vue({
             pageComponent: 'displayShow'
         }
     },
-    components: components.reduce((components, component) => {
-        components[component.name] = component
-        return components;
-    }, {}),
-    mounted() {
+    created() {
         const { $store } = this;
-        $store.dispatch('getConfig');
+        // Needed for the show-selector component
         $store.dispatch('getShows');
     }
 });
