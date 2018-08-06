@@ -21,16 +21,6 @@ window.app = new Vue({
             { value: 'network', text: 'Network' }
         ]
 
-        let defaultMetadataProviders = [];
-        const getFirstEnabledMetadataProvider = () => {
-            defaultMetadataProviders.forEach(provider => {
-                if (provider.show_metadata || provider.episode_metadata) {
-                    return provider;
-                }
-            });
-            return 'kodi';
-        }
-
         return {
             configLoaded: false,
             header: 'Post Processing',
@@ -78,37 +68,37 @@ window.app = new Vue({
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
                 extraScriptsUrl: null,
-                multiEpStrings: null
+                multiEpStrings: {}
             },
-            metadataProviders: defaultMetadataProviders,
-            metadataProviderSelected: getFirstEnabledMetadataProvider()
+            metadataProviders: {},
+            metadataProviderSelected: null
         };
     },
     methods: {
         saveNaming(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.pattern = values.pattern;
             this.postProcessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternSports = values.pattern;
             this.postProcessing.naming.enableCustomNamingSports = values.enabled;
         },
         saveNamingAbd(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternAirByDate = values.pattern;
             this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
         },
         saveNamingAnime(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternAnime = values.pattern;
             this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
@@ -116,34 +106,38 @@ window.app = new Vue({
             this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
         },
         save() {
-            const { $store } = this;
+            const { $store, postProcessing, metadataProviders } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.configLoaded) {
-                return
+                return;
             }
             // Disable the save button until we're done.
             this.saving = true;
 
-            const config = {
-                postProcessing: this.postProcessing,
-                metadata: {
-                    metadataProviders: this.metadataProviders
-                }
-            };
-
             // Clone the config into a new object
-            let configCopy = Object.assign({}, config);
+            const config = Object.assign({}, {
+                postProcessing,
+                metadata: {
+                    metadataProviders
+                }
+            });
 
             // Use destructuring to remove the unwanted keys.
-            const { multiEpStrings, reflinkAvailable, ...rest} = configCopy.postProcessing
+            const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
             // Assign the object with the keys removed to our copied object.
-            configCopy.postProcessing = rest;
+            config.postProcessing = rest;
 
-            $store.dispatch('setConfig', {section: 'main', config: configCopy}).then(() => {
-                this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
+            const section = 'main';
+
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Saved Post-Processing config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
             }).catch(error => {
                 this.$snotify.error(
-                    'Error while trying to save postprocessing config',
+                    'Error while trying to save Post-Processing config',
                     'Error'
                 );
             });
@@ -153,39 +147,43 @@ window.app = new Vue({
         config() {
             return this.$store.state.config;
         },
-        availableMetadataProviders() {
-            let providers = [];
-            for (provider of this.metadataProviders) {
-                providers.push(provider);
-            }
-            return providers;
+        metadata() {
+            return this.$store.state.metadata;
         },
         multiEpStringsSelect() {
             if (!this.postProcessing.multiEpStrings) {
                 return [];
             }
             return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
-                value: Number(k), text: this.postProcessing.multiEpStrings[k]
+                value: Number(k),
+                text: this.postProcessing.multiEpStrings[k]
             }));
         }
     },
     mounted() {
-        const { $store } = this;
+        /**
+         * Get the first enabled metadata provider based on enabled features.
+         * @param {Object} providers - The metadata providers object.
+         * @return {String} - The id of the first enabled provider.
+         */
+        const getFirstEnabledMetadataProvider = providers => {
+            const firstEnabledProvider = Object.values(providers).find(provider => {
+                return provider.showMetadata || provider.episodeMetadata;
+            });
+            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
+        }
 
-        $store.dispatch('getConfig', 'main').then(config => {
+        // This is used to wait for the config to be loaded by the store.
+        this.$once('loaded', () => {
+            const { config, metadata } = this;
+
             this.configLoaded = true;
+
             // Map the state values to local data.
             this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
-        }).catch(error => {
-            console.debug(error);
-        });
 
-        // Get metadata config
-        $store.dispatch('getConfig', 'metadata').then(metadata => {
-            // Map the state values to local data
             this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
-        }).catch(error => {
-            console.debug(error);
+            this.metadataProviderSelected = getFirstEnabledMetadataProvider(this.metadataProviders);
         });
     }
 });
