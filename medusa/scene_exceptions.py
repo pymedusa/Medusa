@@ -8,6 +8,7 @@ import logging
 import threading
 import time
 from collections import defaultdict
+from os.path import join
 
 import adba
 
@@ -15,7 +16,6 @@ from medusa import app, db, helpers
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.session.core import MedusaSafeSession
-from os.path import join
 
 from six import iteritems
 
