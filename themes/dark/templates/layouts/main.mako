@@ -53,7 +53,14 @@
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
     <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
-        <div v-cloak id="vue-wrap" class="container-fluid">
+        <div id="vue-wrap" class="container-fluid">
+
+          <div v-if="globalLoading" class="text-center">
+              <h3>Loading&hellip;</h3>
+              If this is taking too long,<br>
+              <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
+          </div>
+          <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -64,18 +71,16 @@
             <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
-               <div id="content-row" class="row">
-                    <div v-if="globalLoading" class="text-center ${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <h3>Loading....</h3>
-                        If this is taking too long,<br>
-                        <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-                    </div>
-                    <component :is="pageComponent || 'div'" :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <%block name="content" />
-                    </component>
-               </div><!-- /content -->
+            <div id="content-row" class="row">
+                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <%block name="content" />
+                </component>
+            </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
+
+          </div><!-- /globalLoading wrapper -->
+
         </div>
         <%block name="load_main_app" />
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
