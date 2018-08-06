@@ -10,21 +10,14 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
-    metaInfo: {
-        title: 'Missing Subtitles'
-    },
-    data() {
-        return {
-            header: 'Missing Subtitles'
-        };
-    }
+    router,
+    el: '#vue-wrap'
 });
 </script>
 </%block>
 <%block name="content">
     <div id="content960">
-    <h1 class="header">{{header}}</h1>
+    <h1 class="header">{{ $route.meta.header }}</h1>
     <% subsLanguage = subtitles.name_from_code(whichSubs) if whichSubs and whichSubs != 'all' else 'All' %>
     <% wanted_languages = subtitles.wanted_languages() %>
     <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>

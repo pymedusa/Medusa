@@ -15,13 +15,10 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Failed Downloads'
-    },
     data() {
         return {
-            header: 'Failed Downloads',
             limit: '${limit}'
         };
     }
@@ -29,7 +26,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="h2footer pull-right"><b>Limit:</b>
     <select v-model="limit" name="limit" id="limit" class="form-control form-control-inline input-sm">
         <option value="100">100</option>
