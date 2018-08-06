@@ -6,7 +6,22 @@ import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
-import { AppHeader, ScrollButtons, AppLink, Asset, FileBrowser, PlotInfo, NamePattern, SelectList, LanguageSelect, RootDirs, Backstretch, DisplayShow, ShowSelector, Config } from './templates';
+import {
+    AppHeader,
+    AppLink,
+    Asset,
+    Backstretch,
+    Config,
+    DisplayShow,
+    FileBrowser,
+    LanguageSelect,
+    NamePattern,
+    PlotInfo,
+    RootDirs,
+    ScrollButtons,
+    SelectList,
+    ShowSelector
+} from './components';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;

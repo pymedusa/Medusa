@@ -1,6 +1,6 @@
 import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { ConfigTextboxNumber } from '../../static/js/templates';
+import { ConfigTextboxNumber } from '../../src/components';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

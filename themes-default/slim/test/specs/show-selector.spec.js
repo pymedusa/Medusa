@@ -2,7 +2,7 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { ShowSelector } from '../../static/js/templates';
+import { ShowSelector } from '../../src/components';
 import { state } from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
 

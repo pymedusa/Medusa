@@ -11,7 +11,7 @@ import axios from 'axios';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './templates';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './components';
 
 if (window) {
     // Adding libs to window so mako files can use them

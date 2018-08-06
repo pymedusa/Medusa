@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 const log = require('fancy-log');
@@ -15,14 +14,6 @@ const xo = require('xo');
 
 const xoReporter = xo.getFormatter('eslint-formatter-pretty');
 
-/*
-const postcss = require('gulp-postcss');
-const sass = require('gulp-sass');
-const cssnano = require('cssnano');
-const autoprefixer = require('autoprefixer');
-const reporter = require('postcss-reporter');
-*/
-
 const PROD = process.env.NODE_ENV === 'production';
 const pkg = require('./package.json');
 
@@ -30,39 +21,12 @@ const { config, xo: xoConfig } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
-/*
-const processors = [
-    reporter({
-        clearMessages: true
-    }),
-    autoprefixer()
-];
-
-if (PROD) {
-    processors.push(cssnano());
-}
-*/
-
-// List JS files handled by Webpack
-// These files will be ignored by the gulp tasks
-const webpackedJsFiles = [
-    'static/js/app.js',
-    'static/js/index.js',
-    'static/js/api.js',
-    'static/js/router.js',
-    'static/js/store/**/*.js',
-    'static/js/templates/**/*'
-];
-
 const staticAssets = [
     'static/browserconfig.xml',
     'static/favicon.ico',
     'static/fonts/**/*',
     'static/js/**/*',
-    'static/css/**/*',
-
-    // Webpacked files
-    ...webpackedJsFiles.map(file => '!' + file)
+    'static/css/**/*'
 ];
 
 /**
