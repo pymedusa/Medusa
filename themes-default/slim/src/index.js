@@ -10,10 +10,13 @@ import Snotify from 'vue-snotify';
 import axios from 'axios';
 import store from './store';
 import router from './router';
+import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './components';
 
 if (window) {
+    window.isDevelopment = isDevelopment;
+
     // Adding libs to window so mako files can use them
     window.Vue = Vue;
     window.Vuex = Vuex;

@@ -2880,6 +2880,18 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 "use strict";
 eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nvar LOGIN_PENDING = '🔒 Logging in';\nvar LOGIN_SUCCESS = '🔒 ✅ Login Successful';\nvar LOGIN_FAILED = '🔒 ❌ Login Failed';\nvar LOGOUT = '🔒 Logout';\nvar REFRESH_TOKEN = '🔒 Refresh Token';\nvar REMOVE_AUTH_ERROR = '🔒 Remove Auth Error';\nvar SOCKET_ONOPEN = 'SOCKET_ONOPEN';\nvar SOCKET_ONCLOSE = 'SOCKET_ONCLOSE';\nvar SOCKET_ONERROR = 'SOCKET_ONERROR';\nvar SOCKET_ONMESSAGE = 'SOCKET_ONMESSAGE';\nvar SOCKET_RECONNECT = 'SOCKET_RECONNECT';\nvar SOCKET_RECONNECT_ERROR = 'SOCKET_RECONNECT_ERROR';\nvar NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';\nvar NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';\nvar ADD_CONFIG = '⚙️ Config added to store';\nvar ADD_SHOW = '📺 Show added to store';\n\nexports.LOGIN_PENDING = LOGIN_PENDING;\nexports.LOGIN_SUCCESS = LOGIN_SUCCESS;\nexports.LOGIN_FAILED = LOGIN_FAILED;\nexports.LOGOUT = LOGOUT;\nexports.REFRESH_TOKEN = REFRESH_TOKEN;\nexports.REMOVE_AUTH_ERROR = REMOVE_AUTH_ERROR;\nexports.SOCKET_ONOPEN = SOCKET_ONOPEN;\nexports.SOCKET_ONCLOSE = SOCKET_ONCLOSE;\nexports.SOCKET_ONERROR = SOCKET_ONERROR;\nexports.SOCKET_ONMESSAGE = SOCKET_ONMESSAGE;\nexports.SOCKET_RECONNECT = SOCKET_RECONNECT;\nexports.SOCKET_RECONNECT_ERROR = SOCKET_RECONNECT_ERROR;\nexports.NOTIFICATIONS_ENABLED = NOTIFICATIONS_ENABLED;\nexports.NOTIFICATIONS_DISABLED = NOTIFICATIONS_DISABLED;\nexports.ADD_CONFIG = ADD_CONFIG;\nexports.ADD_SHOW = ADD_SHOW;\n\n//# sourceURL=webpack:///./src/store/mutation-types.js?");
 
+/***/ }),
+
+/***/ "./src/utils.js":
+/*!**********************!*\
+  !*** ./src/utils.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nvar isDevelopment = \"development\" === 'development';\n\nexports.isDevelopment = isDevelopment;\n\n//# sourceURL=webpack:///./src/utils.js?");
+
 /***/ })
 
 /******/ });
