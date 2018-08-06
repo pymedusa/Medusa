@@ -2,7 +2,7 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { Login } from '../../static/js/templates';
+import { Login } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
 test.beforeEach(t => {

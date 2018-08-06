@@ -2,7 +2,7 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { Asset } from '../../static/js/templates';
+import { Asset } from '../../src/components';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();

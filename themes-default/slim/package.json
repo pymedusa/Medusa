@@ -149,7 +149,7 @@
       "test/specs/**/*.spec.js"
     ],
     "sources": [
-      "static/js/templates/**/*.vue"
+      "static/js/components/**/*.vue"
     ],
     "concurrency": 5,
     "failWithoutAssertions": true,

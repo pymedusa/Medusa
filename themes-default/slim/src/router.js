@@ -1,5 +1,5 @@
 import VueRouter from 'vue-router';
-import { Login, Config, AddShows, AddRecommended, NotFound } from './templates';
+import { Login, Config, AddShows, AddRecommended, NotFound } from './components';
 
 const router = new VueRouter({
     base: document.body.getAttribute('web-root') + '/',

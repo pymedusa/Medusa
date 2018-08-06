@@ -9,9 +9,9 @@ const { cssThemes } = config;
 const webpackConfig = mode => ({
     entry: {
         // Exports all window. objects for mako files
-        index: './static/js/index.js',
+        index: path.resolve(__dirname, 'src/index.js'),
         // Main Vue app
-        app: './static/js/app.js'
+        app: path.resolve(__dirname, 'src/app.js')
     },
     output: {
         filename: '[name].js',
@@ -60,11 +60,6 @@ const webpackConfig = mode => ({
     plugins: [
         new VueLoaderPlugin(),
         new FileManagerPlugin({
-            onStart: {
-                delete: [
-                    './dist/js/**'
-                ]
-            },
             onEnd: {
                 copy: Object.values(cssThemes).reduce((operations, theme) => {
                     // Queue operations for each theme

@@ -1,6 +1,6 @@
 import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { ScrollButtons } from '../../static/js/templates';
+import { ScrollButtons } from '../../src/components';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
