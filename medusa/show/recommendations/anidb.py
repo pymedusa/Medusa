@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import logging
-from os.path import join
 import traceback
 from builtins import object
 
@@ -16,6 +15,7 @@ from medusa.show.recommendations.recommended import (
     MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series,
     update_recommended_series_cache_index
 )
+from os.path import join
 
 from simpleanidb import Anidb, REQUEST_HOT
 from simpleanidb.exceptions import GeneralError

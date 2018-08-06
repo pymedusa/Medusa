@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
-from os.path import join
 from builtins import object
 
 from medusa import (
@@ -33,6 +32,7 @@ from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
+from os.path import join
 
 from simpleanidb import Anidb
 
