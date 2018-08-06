@@ -2,8 +2,8 @@
 
 from __future__ import unicode_literals
 
-from os.path import join
 import logging
+from os.path import join
 import traceback
 from builtins import object
 

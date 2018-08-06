@@ -4,8 +4,8 @@
 
 from __future__ import unicode_literals
 
-from os.path import join
 import logging
+from os.path import join
 import threading
 import time
 from collections import defaultdict

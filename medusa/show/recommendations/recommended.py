@@ -19,8 +19,8 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from os.path import join
 import posixpath
+from os.path import join
 from builtins import object
 
 from medusa import (

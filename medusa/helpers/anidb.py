@@ -1,8 +1,8 @@
 """Helper for anidb communications."""
 
 
-from os.path import join
 import logging
+from os.path import join
 
 import adba
 from adba.aniDBerrors import AniDBCommandTimeoutError
