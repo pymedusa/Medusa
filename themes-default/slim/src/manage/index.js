@@ -1,5 +1,7 @@
+import failedDownloads from './failed-downloads';
 import subtitleMissed from './subtitle-missed';
 
-export default {
+export {
+    failedDownloads,
     subtitleMissed
 };

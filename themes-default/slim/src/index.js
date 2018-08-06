@@ -11,7 +11,7 @@ import axios from 'axios';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { subtitleMissed } from './manage';
+import { failedDownloads, subtitleMissed } from './manage';
 import {
     Asset,
     Backstretch,
@@ -50,6 +50,7 @@ if (window) {
         config: {},
         home: {},
         manage: {
+            failedDownloads,
             subtitleMissed
         },
         history: {},

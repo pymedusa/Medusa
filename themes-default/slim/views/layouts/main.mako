@@ -109,7 +109,6 @@
         <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
 

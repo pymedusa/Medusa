@@ -1,19 +1,23 @@
-MEDUSA.manage.failedDownloads = function() {
+import $ from 'jquery';
+import 'tablesorter'; // eslint-disable-line import/no-unassigned-import
+
+export default () => {
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],
         sortList: [],
         headers: { 3: { sorter: false } }
     });
-    $('#limit').on('change', function() {
-        window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(this).val();
+
+    $('#limit').on('change', event => {
+        window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(event.currentTarget).val();
     });
 
     $('#submitMassRemove').on('click', () => {
         const removeArr = [];
 
-        $('.removeCheck').each(function() {
-            if (this.checked === true) {
-                removeArr.push($(this).attr('id').split('-')[1]);
+        $('.removeCheck').each((index, element) => {
+            if (element.checked === true) {
+                removeArr.push($(element).attr('id').split('-')[1]);
             }
         });
 
@@ -25,26 +29,26 @@ MEDUSA.manage.failedDownloads = function() {
     });
 
     if ($('.removeCheck').length !== 0) {
-        $('.removeCheck').each(name => {
+        $('.removeCheck').each((index, element) => {
             let lastCheck = null;
-            $(name).click(function(event) {
+            $(element).on('click', event => {
                 if (!lastCheck || !event.shiftKey) {
                     lastCheck = this;
                     return;
                 }
 
-                const check = this;
+                const check = event.currentTarget;
                 let found = 0;
 
-                $(name + ':visible').each(function() {
+                $(name + ':visible').each((index, element) => {
                     if (found === 1) {
-                        this.checked = lastCheck.checked;
+                        element.checked = lastCheck.checked;
                     }
                     if (found === 2) {
                         return false;
                     }
 
-                    if (this === check || this === lastCheck) {
+                    if (element === check || element === lastCheck) {
                         found++;
                     }
                 });
