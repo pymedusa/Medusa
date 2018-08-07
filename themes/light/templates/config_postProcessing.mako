@@ -9,18 +9,6 @@ window.app = new Vue({
         title: 'Config - Post Processing'
     },
     data() {
-        const processMethods = [
-            { value: 'copy', text: 'Copy' },
-            { value: 'move', text: 'Move' },
-            { value: 'hardlink', text: 'Hard Link' },
-            { value: 'symlink', text: 'Symbolic Link' }
-        ];
-
-        const timezoneOptions = [
-            { value: 'local', text: 'Local' },
-            { value: 'network', text: 'Network' }
-        ]
-
         return {
             configLoaded: false,
             header: 'Post Processing',
@@ -31,8 +19,16 @@ window.app = new Vue({
                 { pattern: 'S%0SE%0E - %EN', example: 'S02E03 - Ep Name' },
                 { pattern: 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG', example: 'Season 02/Show.Name.S02E03.720p.HDTV-RLSGROUP' }
             ],
-            processMethods: processMethods,
-            timezoneOptions: timezoneOptions,
+            processMethods: [
+                { value: 'copy', text: 'Copy' },
+                { value: 'move', text: 'Move' },
+                { value: 'hardlink', text: 'Hard Link' },
+                { value: 'symlink', text: 'Symbolic Link' }
+            ],
+            timezoneOptions: [
+                { value: 'local', text: 'Local' },
+                { value: 'network', text: 'Network' }
+            ],
             postProcessing: {
                 naming: {
                     pattern: null,
@@ -135,7 +131,7 @@ window.app = new Vue({
                     'Saved',
                     { timeout: 5000 }
                 );
-            }).catch(error => {
+            }).catch(() => {
                 this.$snotify.error(
                     'Error while trying to save Post-Processing config',
                     'Error'
@@ -171,7 +167,7 @@ window.app = new Vue({
                 return provider.showMetadata || provider.episodeMetadata;
             });
             return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
-        }
+        };
 
         // This is used to wait for the config to be loaded by the store.
         this.$once('loaded', () => {
@@ -205,9 +201,9 @@ window.app = new Vue({
                     <div id="post-processing">
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                    <h3>Scheduled Post-Processing</h3>
-                                    <p>Settings that dictate how Medusa should process completed downloads.</p>
-                                    <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
+                                <h3>Scheduled Post-Processing</h3>
+                                <p>Settings that dictate how Medusa should process completed downloads.</p>
+                                <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
                             </div>
 
                             <div class="col-xs-12 col-md-10">
@@ -265,8 +261,8 @@ window.app = new Vue({
 
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                    <h3>General Post-Processing</h3>
-                                    <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
+                                <h3>General Post-Processing</h3>
+                                <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
@@ -295,12 +291,12 @@ window.app = new Vue({
                                             <span>Postpone if no subtitle</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
-                                                <span>Wait to process a file until subtitles are present</span>
-                                                <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
-                                                <span>&nbsp;</span>
-                                                <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
-                                                <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
+                                            <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
+                                            <span>Wait to process a file until subtitles are present</span>
+                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
+                                            <span>&nbsp;</span>
+                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                            <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                         </div>
                                     </div>
 
