@@ -21,7 +21,7 @@ import logging
 import os
 import posixpath
 from builtins import object
-from simpleanidb import Anidb
+from os.path import join
 
 from medusa import (
     app,
@@ -33,9 +33,10 @@ from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-from os.path import join
 
 from six import binary_type
+
+from simpleanidb import Anidb
 
 
 log = BraceAdapter(logging.getLogger(__name__))
