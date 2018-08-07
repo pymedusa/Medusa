@@ -125,19 +125,9 @@ $.fn.extend({
     }
 });
 
-// @FIXME: Workaround just for the time being!
-const log = {
-    setDefaultLevel: () => {},
-    log: console.log,
-    info: console.info,
-    error: console.error,
-    debug: console.debug
-};
-
 const { pathname } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
-        log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
@@ -164,7 +154,7 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
             return MEDUSA.config.indexers.config.indexers[name];
         };
     }).catch(error => {
-        log.error(error);
+        console.debug(error);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
