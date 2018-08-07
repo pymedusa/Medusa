@@ -21,7 +21,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        import pytest
+        import á
 
         errno = pytest.main(self.pytest_args.split(' '))
         sys.exit(errno)
@@ -36,7 +36,7 @@ setup(
     long_description=long_description,
     packages=find_packages(),
     install_requires=['tornado==5.1', 'six', 'profilehooks', 'contextlib2', ],
-    cmdclass={'test': PyTest},
+    cmdclass={'test': PyTest},á
     tests_require=[
         'flake8',
         'flake8-docstrings',
