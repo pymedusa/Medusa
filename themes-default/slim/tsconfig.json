@@ -4,7 +4,7 @@
         "noImplicitAny": true
     },
     "include": [
-        "./static/js/*.js"
+        "./src/**/*"
     ],
     "exclude": [
         "node_modules"
