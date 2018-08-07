@@ -4,7 +4,7 @@
             <!-- @TODO: Remove `id` and `name` attributes -->
             <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" ref="rootDirs" name="rootDir" id="rootDirs" size="6">
                 <option v-for="curDir in rootDirs" :key="curDir.path" :value="curDir.path">
-                    {{ markDefault(curDir) }}
+                    {{ curDir | markDefault }}
                 </option>
             </select>
         </div>
@@ -82,6 +82,19 @@ export default {
             }
         }
     },
+    filters: {
+        /**
+         * Prefix the default root dir path with '* '
+         * @param {rootDir} rootDir - Current root dir object
+         * @returns {string} - Modified root dir path
+         */
+        markDefault(rootDir) {
+            if (rootDir.default) {
+                return `* ${rootDir.path}`;
+            }
+            return rootDir.path;
+        }
+    },
     methods: {
         /**
          * Transform raw root dirs to an array of objects
@@ -103,17 +116,6 @@ export default {
                         selected: index === defaultDir
                     };
                 });
-        },
-        /**
-         * Prefix the default root dir path with '* '
-         * @param {rootDir} rootDir - Current root dir object
-         * @returns {string} - Modified root dir path
-         */
-        markDefault(rootDir) {
-            if (rootDir.default) {
-                return `* ${rootDir.path}`;
-            }
-            return rootDir.path;
         },
         /**
          * Add a new root dir
