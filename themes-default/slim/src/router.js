@@ -3,6 +3,7 @@ import {
     AddRecommended,
     AddShows,
     Config,
+    ConfigPostProcessing,
     Login,
     NotFound
 } from './components';
@@ -100,7 +101,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Post Processing',
         header: 'Post Processing'
-    }
+    },
+    component: ConfigPostProcessing
 }, {
     path: '/config/providers',
     name: 'configSearchProviders',

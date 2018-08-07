@@ -33,11 +33,11 @@ class ConfigPostProcessing(Config):
     def index(self):
         """
         Render the Post Processor configuration page
-        """
-        t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='postProcessing')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(submenu=self.ConfigMenu())
 
     def savePostProcessing(self, process_automatically=None, unpack=None, allowed_extensions=None,
                            tv_download_dir=None, naming_pattern=None, naming_multi_ep=None,

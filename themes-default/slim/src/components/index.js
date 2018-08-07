@@ -6,6 +6,7 @@ export { default as AppLink } from './app-link.vue';
 export { default as Asset } from './asset.vue';
 export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
+export { default as ConfigPostProcessing } from './config-post-processing.vue';
 export { default as ConfigTextbox } from './config-textbox.vue';
 export { default as ConfigTextboxNumber } from './config-textbox-number.vue';
 export { default as ConfigToggleSlider } from './config-toggle-slider.vue';

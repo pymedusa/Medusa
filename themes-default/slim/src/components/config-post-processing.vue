@@ -1,7 +1,4 @@
 <template>
-<div id="content960">
-    <vue-snotify></vue-snotify>
-    <h1 class="header">{{ $route.meta.header }}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
@@ -359,14 +356,24 @@
             </form>
         </div><!--/config-content//-->
     </div><!--/config//-->
-    <div class="clearfix"></div>
-</div><!-- #content960 //-->
 </template>
 <script>
+import { mapState } from 'vuex';
+import AppLink from './app-link.vue';
+import FileBrowser from './file-browser.vue';
+import NamePattern from './name-pattern.vue';
+import SelectList from './select-list.vue';
+
 export default {
+    name: 'config-post-processing',
+    components: {
+        AppLink,
+        FileBrowser,
+        NamePattern,
+        SelectList
+    },
     data() {
         return {
-            configLoaded: false,
             presets: [
                 { pattern: '%SN - %Sx%0E - %EN', example: 'Show Name - 2x03 - Ep Name' },
                 { pattern: '%S.N.S%0SE%0E.%E.N', example: 'Show.Name.S02E03.Ep.Name' },
@@ -492,14 +499,27 @@ export default {
                     'Error'
                 );
             });
+        },
+        /**
+         * Get the first enabled metadata provider based on enabled features.
+         * @param {Object} providers - The metadata providers object.
+         * @return {String} - The id of the first enabled provider.
+         */
+        getFirstEnabledMetadataProvider() {
+            const { metadataProviders } = this;
+            const firstEnabledProvider = Object.values(metadataProviders).find(provider => {
+                return provider.showMetadata || provider.episodeMetadata;
+            });
+            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
         }
     },
     computed: {
-        config() {
-            return this.$store.state.config;
-        },
-        metadata() {
-            return this.$store.state.metadata;
+        ...mapState([
+            'config',
+            'metadata'
+        ]),
+        configLoaded() {
+            return this.postProcessing.processAutomatically !== null;
         },
         multiEpStringsSelect() {
             if (!this.postProcessing.multiEpStrings) {
@@ -511,31 +531,26 @@ export default {
             }));
         }
     },
-    mounted() {
-        /**
-         * Get the first enabled metadata provider based on enabled features.
-         * @param {Object} providers - The metadata providers object.
-         * @return {String} - The id of the first enabled provider.
-         */
-        const getFirstEnabledMetadataProvider = providers => {
-            const firstEnabledProvider = Object.values(providers).find(provider => {
-                return provider.showMetadata || provider.episodeMetadata;
-            });
-            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
-        };
+    watch: {
+        'config.postProcessing': {
+            handler(newValue) {
+                // Map the state values to local data.
+                this.postProcessing = Object.assign({}, this.postProcessing, newValue);
+            },
+            deep: true,
+            immediate: false
+        },
+        'metadata.metadataProviders': {
+            handler(newValue) {
+                const { getFirstEnabledMetadataProvider } = this;
 
-        // This is used to wait for the config to be loaded by the store.
-        this.$once('loaded', () => {
-            const { config, metadata } = this;
-
-            this.configLoaded = true;
-
-            // Map the state values to local data.
-            this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
-
-            this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
-            this.metadataProviderSelected = getFirstEnabledMetadataProvider(this.metadataProviders);
-        });
+                // Map the state values to local data.
+                this.metadataProviders = Object.assign({}, this.metadataProviders, newValue);
+                this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+            },
+            deep: true,
+            immediate: false
+        }
     }
 };
 </script>
