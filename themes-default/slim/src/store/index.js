@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import { api } from '../api';
-import { auth, config, defaults, socket, notifications } from './modules';
+import { auth, config, defaults, socket, notifications, qualities, statuses, metadata } from './modules';
 import { ADD_SHOW } from './mutation-types';
 
 const { Store } = Vuex;
@@ -15,14 +15,12 @@ const store = new Store({
         config,
         defaults,
         socket,
-        notifications
+        notifications,
+        qualities,
+        statuses,
+        metadata
     },
     state: {
-        qualities: {},
-        statuses: {},
-        metadata: {
-            metadataProviders: {}
-        },
         shows: []
     },
     mutations: {

@@ -259,9 +259,6 @@ const mutations = {
         if (section === 'main') {
             state = Object.assign(state, config);
         }
-        if (['qualities', 'statuses', 'metadata'].includes(section)) {
-            state[section] = config;
-        }
     }
 };
 
