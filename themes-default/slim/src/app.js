@@ -8,6 +8,7 @@ import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
 import {
+    AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
     Asset,
@@ -43,6 +44,7 @@ window.components.forEach(component => {
 
 // Global components
 const globalComponents = [
+    AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
     Asset,
