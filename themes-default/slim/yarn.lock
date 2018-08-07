@@ -3022,11 +3022,7 @@ eslint-config-prettier@^2.9.0:
   dependencies:
     get-stdin "^5.0.1"
 
-eslint-config-xo@0.24.1:
-  version "0.24.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-xo/-/eslint-config-xo-0.24.1.tgz#9e0334f98454eb82e8b9164ba4214c492092edc4"
-
-eslint-config-xo@^0.24.1:
+eslint-config-xo@0.24.1, eslint-config-xo@^0.24.1:
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/eslint-config-xo/-/eslint-config-xo-0.24.1.tgz#9e0334f98454eb82e8b9164ba4214c492092edc4"
 
@@ -9269,9 +9265,9 @@ vue-js-toggle-button@1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.2.3.tgz#efc3309bf500ff5f84c5a8c3bea734b932cad191"
 
-vue-loader@15.2.6:
-  version "15.2.6"
-  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.2.6.tgz#4ad4e56a0ca1fd89ebc4220f9e3bd4723097b397"
+vue-loader@15.2.7:
+  version "15.2.7"
+  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.2.7.tgz#c1d40dae7407c2fc2215522d3b7cef736f568051"
   dependencies:
     "@vue/component-compiler-utils" "^2.0.0"
     hash-sum "^1.0.2"
