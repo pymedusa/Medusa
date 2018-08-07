@@ -102,3 +102,10 @@ def to_camel_case(snake_str):
     """Convert a snake formatted string to camel case."""
     components = snake_str.split('_')
     return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def timedelta_in_milliseconds(td):
+    if not td:
+        return 0
+
+    return td.total_seconds() * 1000

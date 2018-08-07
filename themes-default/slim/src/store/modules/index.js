@@ -10,3 +10,4 @@ export { default as search } from './search';
 export { default as shows } from './shows';
 export { default as socket } from './socket';
 export { default as stats } from './stats';
+export { default as system } from './system';

@@ -13,7 +13,8 @@ import {
     search,
     shows,
     socket,
-    stats
+    stats,
+    system
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -39,7 +40,8 @@ const store = new Store({
         search,
         shows,
         socket,
-        stats
+        stats,
+        system
     },
     state: {},
     mutations: {},
