@@ -10,9 +10,6 @@ before_install:
 install: false
 script: false
 jobs:
-  fast_finish: true
-  allow_failures:
-    - name: 'Dredd tests'
   include:
     # test stage + frontend tests start here
     - stage: test
