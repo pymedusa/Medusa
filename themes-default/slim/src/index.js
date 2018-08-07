@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import 'bootstrap'; // eslint-disable-line import/no-unassigned-import
-import 'bootstrap/dist/css/bootstrap.css'; // eslint-disable-line import/no-unassigned-import
+import 'bootstrap/dist/css/bootstrap.min.css'; // eslint-disable-line import/no-unassigned-import
 
 import Vue from 'vue';
 import Vuex from 'vuex';

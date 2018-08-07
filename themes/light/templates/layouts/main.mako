@@ -39,6 +39,10 @@
             display: none !important;
         }
         </style>
+
+        ## Webpack-imported CSS files
+        <link rel="stylesheet" type="text/css" href="css/vendors.css?${sbPID}"/>
+
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />

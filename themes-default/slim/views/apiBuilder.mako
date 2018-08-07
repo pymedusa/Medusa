@@ -39,6 +39,10 @@
     <link rel="apple-touch-icon" sizes="76x76" href="images/ico/favicon-76.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/ico/favicon-72.png">
     <link rel="apple-touch-icon" href="images/ico/favicon-57.png">
+
+    ## Webpack-imported CSS files
+    <link rel="stylesheet" type="text/css" href="css/vendors.css?${sbPID}"/>
+
     <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
     <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
