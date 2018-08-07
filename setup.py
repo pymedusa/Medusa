@@ -21,7 +21,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        import á
+        import pytest
 
         errno = pytest.main(self.pytest_args.split(' '))
         sys.exit(errno)
