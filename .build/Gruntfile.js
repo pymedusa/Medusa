@@ -25,7 +25,8 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                 },
                 exclude: [
                     // Moved to Webpack
-                    'jquery'
+                    'jquery',
+                    'bootstrap'
                 ],
                 dependencies: {
                 },
@@ -34,10 +35,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                         'dist/js/jquery.tablesorter.combined.js',
                         'dist/js/widgets/widget-columnSelector.min.js',
                         'dist/css/theme.blue.min.css'
-                    ],
-                    bootstrap: [
-                        'dist/css/bootstrap.min.css',
-                        'dist/js/bootstrap.min.js'
                     ],
                     isotope: [
                         'dist/isotope.pkgd.min.js'
@@ -65,21 +62,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                         '*.ttf'
                     ],
                     dest: '../themes-default/slim/static/css/'
-                }]
-            },
-            glyphicon: {
-                files: [{
-                    expand: true,
-                    dot: true,
-                    cwd: 'bower_components/bootstrap/fonts',
-                    src: [
-                        '*.eot',
-                        '*.svg',
-                        '*.ttf',
-                        '*.woff',
-                        '*.woff2'
-                    ],
-                    dest: '../themes-default/slim/static/fonts/'
                 }]
             },
             vender: {

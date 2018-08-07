@@ -1,4 +1,5 @@
 const path = require('path');
+const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const pkg = require('./package.json');
@@ -14,8 +15,8 @@ const webpackConfig = mode => ({
         app: path.resolve(__dirname, 'src/app.js')
     },
     output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, 'dist', 'js')
+        filename: 'js/[name].js',
+        path: path.resolve(__dirname, 'dist')
     },
     resolve: {
         extensions: ['.js', '.vue', '.json'],
@@ -55,7 +56,11 @@ const webpackConfig = mode => ({
                     loader: 'vue-loader',
                     options: {
                         // This is a workaround because vue-loader can't get the webpack mode
-                        productionMode: mode === 'production'
+                        productionMode: mode === 'production',
+                        loaders: {
+                            css: ['vue-style-loader', { loader: 'css-loader' }],
+                            js: ['babel-loader']
+                        }
                     }
                 }]
             },
@@ -66,13 +71,33 @@ const webpackConfig = mode => ({
             {
                 test: /\.css$/,
                 use: [
-                    'vue-style-loader',
+                    {
+                        loader: 'style-loader',
+                        options: {
+                            insertAt: 'top'
+                        }
+                    },
                     'css-loader'
                 ]
+            },
+            {
+                test: /\.(woff2?|ttf|eot|svg)$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'fonts'
+                    }
+                }]
             }
         ]
     },
     plugins: [
+        // This fixes Bootstrap being unable to use jQuery
+        new ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery'
+        }),
         new VueLoaderPlugin(),
         new FileManagerPlugin({
             onEnd: {
@@ -81,6 +106,10 @@ const webpackConfig = mode => ({
                     operations.push({
                         source: './dist/js/**',
                         destination: path.join(theme.dest, 'assets', 'js')
+                    });
+                    operations.push({
+                        source: './dist/fonts/**',
+                        destination: path.join(theme.dest, 'assets', 'fonts')
                     });
                     return operations;
                 }, [])
