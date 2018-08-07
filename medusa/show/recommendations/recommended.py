@@ -35,6 +35,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
+
 from six import binary_type
 
 
