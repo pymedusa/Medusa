@@ -128,28 +128,6 @@
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
-            Vue.mixin({
-                created() {
-                    if (this.$root === this) {
-                        this.$options.sockets.onmessage = messageEvent => {
-                            const { store } = window;
-                            const message = JSON.parse(messageEvent.data);
-                            const { data, event } = message;
-
-                            // Show the notification to the user
-                            if (event === 'notification') {
-                                const { body, hash, type, title } = data;
-                                displayNotification(type, title, body, hash);
-                            } else if (event === 'configUpdated') {
-                                store.dispatch('updateConfig', data);
-                            } else {
-                                displayNotification('info', event, data);
-                            }
-                        };
-                    }
-                }
-            });
-
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 data() {
