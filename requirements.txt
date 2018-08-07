@@ -1,3 +1,5 @@
+# No setup.py, unable to install using pip
+# git+https://github.com/pymedusa/adba.git@0e1657f16aef81f7c1659a7d210f1e54dee3647f#egg=adba
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.6.1
 CacheControl==0.12.5
@@ -5,6 +7,7 @@ certifi==2018.04.16
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
+configparser==3.5.0
 contextlib2==0.5.5 ; python_version < '3.5'
 dirtyjson==1.0.7
 dogpile.cache==0.6.7
@@ -35,4 +38,3 @@ git+https://github.com/Diaoul/subliminal.git@879c0c8d18618e32ad466bb63bd939edb26
 tornado==5.1
 tornroutes==0.5.1
 validators==0.12.2
-configparser==3.5.0
