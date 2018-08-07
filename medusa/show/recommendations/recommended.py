@@ -34,9 +34,8 @@ from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
-from six import binary_type
-
 from simpleanidb import Anidb
+from six import binary_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
