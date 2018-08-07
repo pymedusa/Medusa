@@ -134,7 +134,8 @@ const log = {
     debug: console.debug
 };
 
-if (!document.location.pathname.includes('/login')) {
+const { pathname } = window.location;
+if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
@@ -167,4 +168,3 @@ if (!document.location.pathname.includes('/login')) {
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
-
