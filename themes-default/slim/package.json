@@ -58,7 +58,7 @@
     "nyc": "12.0.2",
     "postcss-reporter": "5.0.0",
     "puex": "0.5.2",
-    "require-extension-hooks": "0.3.2",
+    "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "0.1.1",
     "require-extension-hooks-vue": "1.0.1",
     "run-sequence": "2.2.1",
