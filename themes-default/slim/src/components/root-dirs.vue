@@ -17,6 +17,8 @@
     </div>
 </template>
 <script>
+import $ from 'jquery';
+
 /**
  * An object representing a root dir
  * @typedef {Object} rootDir

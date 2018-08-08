@@ -1,4 +1,5 @@
 <script>
+import $ from 'jquery';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import AppLink from './app-link.vue';
@@ -86,6 +87,7 @@ export default {
         });
 
         $(document.body).on('change', '#seasonJump', event => {
+            const element = event.currentTarget;
             const id = $('#seasonJump option:selected').val();
             if (id && id !== 'jump') {
                 const season = $('#seasonJump option:selected').data('season');
@@ -93,7 +95,7 @@ export default {
                 $('#collapseSeason-' + season).collapse('show');
                 location.hash = id;
             }
-            $(event.currentTarget).val('jump');
+            element.value = 'jump';
         });
 
         $(document.body).on('click', '#changeStatus', () => {

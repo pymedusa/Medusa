@@ -111,25 +111,6 @@ const UTIL = {
         }
 
         const { body } = document;
-        [...$('[asset]')].forEach(element => {
-            const asset = element.getAttribute('asset');
-            const show = element.getAttribute('series');
-            const path = webRoot + '/api/v2/series/' + show + '/asset/' + asset + '?api_key=' + apiKey;
-
-            if (element.tagName.toLowerCase() === 'img') {
-                const defaultPath = element.getAttribute('src');
-
-                if (element.getAttribute('lazy') === 'on') {
-                    element.setAttribute('data-original', path);
-                } else {
-                    element.setAttribute('src', path);
-                }
-                element.setAttribute('onerror', 'this.src = "' + defaultPath + '"; return false;');
-            }
-            if (element.tagName.toLowerCase() === 'a') {
-                element.setAttribute('href', path);
-            }
-        });
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
@@ -162,13 +143,6 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
                     return MEDUSA.config.indexers.config.indexers[indexer].name;
                 }
             })[0];
-        };
-
-        MEDUSA.config.indexers.nameToIndexerId = name => {
-            if (!name) {
-                return '';
-            }
-            return MEDUSA.config.indexers.config.indexers[name];
         };
     }).catch(error => {
         console.debug(error);

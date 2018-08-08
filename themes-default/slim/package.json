@@ -26,6 +26,11 @@
       }
     }
   },
+  "typeAcquisition": {
+    "include": [
+      "jquery"
+    ]
+  },
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "7.0.0-rc.1",
@@ -138,7 +143,8 @@
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "gulpfile.js"
+      "gulpfile.js",
+      "typings/**"
     ],
     "esnext": true
   },

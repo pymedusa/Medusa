@@ -106,6 +106,7 @@
     </nav>
 </template>
 <script>
+import $ from 'jquery';
 import AppLink from './app-link.vue';
 
 export default {

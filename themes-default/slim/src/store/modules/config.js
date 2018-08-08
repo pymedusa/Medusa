@@ -1,4 +1,5 @@
 import { ADD_CONFIG } from '../mutation-types';
+import { api } from '../../api';
 
 const state = {
     wikiUrl: null,

@@ -2,6 +2,7 @@
     <div></div>
 </template>
 <script>
+import $ from 'jquery';
 import { webRoot, apiKey } from '../api';
 
 export default {
