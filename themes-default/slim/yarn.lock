@@ -9183,9 +9183,9 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
-vue-async-computed@3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.4.0.tgz#5b041e7eb74d423e7bf09e113210516b064527a6"
+vue-async-computed@3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.4.1.tgz#b3923c177b38ab80cb767bbc09cca3dbbb25dd48"
 
 vue-eslint-parser@^2.0.3:
   version "2.0.3"
