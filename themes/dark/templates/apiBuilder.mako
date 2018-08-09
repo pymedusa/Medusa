@@ -80,7 +80,7 @@
         </div>
     </div>
 </nav>
-<div id="content">
+<div id="content" style="margin-top: 50px;">
     <div class="panel-group" id="commands_list">
         % for command in sorted(commands):
         <%
@@ -145,9 +145,6 @@ var commands = ${sorted([binary_type(_) for _ in commands])};
 var episodes = ${episodes};
 </script>
 <script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
-<script type="text/javascript" src="js/api.js?${sbPID}"></script>
-<script type="text/javascript" src="js/core.js?${sbPID}"></script>
 <script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>

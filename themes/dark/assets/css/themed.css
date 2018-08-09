@@ -464,13 +464,16 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(85, 85, 85);
-    min-height: 200px;
 }
 
 .component-group-desc p {
     width: 90%;
     margin: 10px 0;
     color: rgb(221, 221, 221);
+}
+
+.component-item {
+    border-bottom: 1px dotted rgb(85, 85, 85);
 }
 
 #provider_order_list li,

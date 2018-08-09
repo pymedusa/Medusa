@@ -163,7 +163,7 @@
                                     <span class="imdbPlot" style="color:#6ae;cursor:pointer">show more..</span>
                                     </div>
                                 % endif
-                                    </td></tr>
+                                    </i></td></tr>
                             % endif
 
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
@@ -178,6 +178,7 @@
                                     <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
                                 % endif
                             % endif
+                                </td></tr>
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
                             % elif show.network:

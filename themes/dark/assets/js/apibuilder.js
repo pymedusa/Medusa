@@ -108,7 +108,7 @@ $(document).ready(() => {
 
         if (command) {
             const commandId = command.replace('.', '-');
-            $('[href=#command-' + commandId + ']').click();
+            $('[href="#command-' + commandId + '"]').click();
         }
     });
 });

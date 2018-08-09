@@ -1976,14 +1976,19 @@ config*.mako
 }
 
 .component-item {
+    padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(102, 102, 102);
-    min-height: 200px;
+    min-height: 100px;
+}
+
+.component-group-desc-legacy {
+    margin-top: 5px;
+    float: left;
+    width: 250px;
 }
 
 .component-group-desc {
     margin-top: 5px;
-    float: left;
-    width: 250px;
 }
 
 .component-group-desc h3 {
@@ -2033,10 +2038,6 @@ config*.mako
 
 #config label.space-right {
     margin-right: 10px;
-}
-
-#config .metadataDiv {
-    display: none;
 }
 
 .component-group-save {
@@ -2961,6 +2962,11 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.form-control-inline-max {
+    display: inline;
+    width: 100%;
+}
+
 .input-sm-smallfont {
     font-size: 11px;
 }
@@ -3381,6 +3387,42 @@ input sizing (for config pages)
 
 .input350 {
     width: 350px;
+    margin-top: -4px;
+}
+
+/* Added max-width, as setting width is really not optimal on smaller viewports */
+.max-input75 {
+    max-width: 75px;
+    margin-top: -4px;
+}
+
+.max-input100 {
+    max-width: 100px;
+    margin-top: -4px;
+}
+
+.max-input150 {
+    max-width: 150px;
+    margin-top: -4px;
+}
+
+.max-input200 {
+    max-width: 200px;
+    margin-top: -4px;
+}
+
+.max-input250 {
+    max-width: 250px;
+    margin-top: -4px;
+}
+
+.max-input300 {
+    max-width: 300px;
+    margin-top: -4px;
+}
+
+.max-input350 {
+    max-width: 350px;
     margin-top: -4px;
 }
 
@@ -4333,3 +4375,8 @@ CSS helper classes
     display: block;
 }
 */
+
+/* These classes should be natively available in bootstrap 4 */
+.d-block {
+    display: block;
+}

@@ -77,7 +77,7 @@ window.app = new Vue({
                     <li><app-link href="#plugin-settings">Plugin Settings</app-link></li>
                 </ul>
                 <div id="subtitles-search" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitles Search</h3>
                         <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
@@ -242,7 +242,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitle Providers</h3>
                         <p>Check off and drag the plugins into the order you want them to be used.</p>
                         <p class="note">At least one plugin is required.</p>
@@ -263,10 +263,10 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Settings</h3>
                         <p>Set user and password for each provider.</p>
-                    </div><!-- /component-group-desc //-->
+                    </div><!-- /component-group-desc-legacy //-->
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
