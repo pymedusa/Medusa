@@ -22,6 +22,7 @@
 </template>
 <script>
 import $ from 'jquery';
+import { apiRoute } from '../api';
 
 export default {
     name: 'file-browser',
