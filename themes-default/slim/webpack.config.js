@@ -40,6 +40,10 @@ const webpackConfig = mode => ({
             chunks: 'all',
             name: 'vendors',
             cacheGroups: {
+                styles: {
+                    test: /\.css$/,
+                    priority: 10
+                },
                 // These are the default cacheGroups!
                 vendors: {
                     test: /[\\/]node_modules[\\/]/,
