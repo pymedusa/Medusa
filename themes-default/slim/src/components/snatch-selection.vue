@@ -49,6 +49,7 @@ export default {
             window.dispatchEvent(new Event('resize'));
         });
 
+        // From rating-tooltip.js
         attachImdbTooltip(); // eslint-disable-line no-undef
 
         $(document.body).on('click', '.imdbPlot', event => {

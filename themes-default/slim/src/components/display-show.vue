@@ -106,9 +106,9 @@ export default {
             const quality = document.querySelector('#qualitySelect').value;
             const showSlug = document.querySelector('#series-slug').value;
 
-            $('.epCheck').each((index, element) => {
+            document.querySelectorAll('.epCheck').forEach(element => {
                 if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
+                    epArr.push(element.getAttribute('id'));
                 }
             });
 
@@ -121,22 +121,24 @@ export default {
             }
 
             if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
+                const base = document.getElementsByTagName('base')[0].getAttribute('href');
+                const indexerName = document.querySelector('#indexer-name').value;
+                const seriesId = document.querySelector('#series-id').value;
+                window.location.href = `${base}home/setStatus?` +
+                    `indexername=${indexerName}&seriesid=${seriesId}` +
+                    `&eps=${epArr.join('|')}&status=${status}`;
             }
         });
 
         $(document.body).on('click', '.seasonCheck', event => {
             const seasCheck = event.currentTarget;
-            const seasNo = $(seasCheck).attr('id');
+            const seasNo = seasCheck.getAttribute('id');
 
-            $('#collapseSeason-' + seasNo).collapse('show');
-            const seasonIdentifier = 's' + seasNo;
+            $(`#collapseSeason-${seasNo}`).collapse('show');
+            const seasonIdentifier = `s${seasNo}`;
+            // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
             $('.epCheck:visible').each((index, element) => {
-                const epParts = $(element).attr('id').split('e');
+                const epParts = element.getAttribute('id').split('e');
                 if (epParts[0] === seasonIdentifier) {
                     element.checked = seasCheck.checked;
                 }
@@ -154,7 +156,7 @@ export default {
             const check = target;
             let found = 0;
 
-            $('.epCheck').each((index, element) => {
+            document.querySelectorAll('.epCheck').forEach(element => {
                 if (found === 1) {
                     element.checked = lastCheck.checked;
                 }
@@ -171,9 +173,11 @@ export default {
 
         // Selects all visible episode checkboxes.
         $(document.body).on('click', '.seriesCheck', () => {
+            // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
             $('.epCheck:visible').each((index, element) => {
                 element.checked = true;
             });
+            // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
             $('.seasonCheck:visible').each((index, element) => {
                 element.checked = true;
             });
@@ -181,9 +185,11 @@ export default {
 
         // Clears all visible episode checkboxes and the season selectors
         $(document.body).on('click', '.clearAll', () => {
+            // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
             $('.epCheck:visible').each((index, element) => {
                 element.checked = false;
             });
+            // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
             $('.seasonCheck:visible').each((index, element) => {
                 element.checked = false;
             });
@@ -191,18 +197,19 @@ export default {
 
         // Show/hide different types of rows when the checkboxes are changed
         $(document.body).on('change', '#checkboxControls input', event => {
-            const whichClass = $(event.currentTarget).attr('id');
+            const whichClass = event.currentTarget.getAttribute('id');
             showHideRows(whichClass);
         });
 
         // Initially show/hide all the rows according to the checkboxes
-        $('#checkboxControls input').each((index, element) => {
-            const status = $(element).prop('checked');
-            $('tr.' + $(element).attr('id')).each((index, tableRow) => {
+        document.querySelectorAll('#checkboxControls input').forEach(element => {
+            const status = element.checked;
+            const id = element.getAttribute('id');
+            document.querySelectorAll(`tr.${id}`).forEach(tableRow => {
                 if (status) {
-                    $(tableRow).show();
+                    $(tableRow).show(); // eslint-disable-line jquery/no-show
                 } else {
-                    $(tableRow).hide();
+                    $(tableRow).hide(); // eslint-disable-line jquery/no-hide
                 }
             });
         });
@@ -212,8 +219,7 @@ export default {
             // Strip non-numeric characters
             const { value } = target;
             target.value = value.replace(/[^0-9xX]*/g, '');
-            const forSeason = $(target).attr('data-for-season');
-            const forEpisode = $(target).attr('data-for-episode');
+            const { forSeason, forEpisode } = target.dataset;
 
             // If empty reset the field
             if (value === '') {
@@ -229,14 +235,14 @@ export default {
             if (m) {
                 sceneSeason = m[1];
                 sceneEpisode = m[2];
-                isValid = setInputValidInvalid(true, $(target));
+                isValid = setInputValidInvalid(true, target);
             } else if (onlyEpisode) {
                 // For example when '5' is filled in instead of '1x5', asume it's the first season
                 sceneSeason = forSeason;
                 sceneEpisode = onlyEpisode[1];
-                isValid = setInputValidInvalid(true, $(target));
+                isValid = setInputValidInvalid(true, target);
             } else {
-                isValid = setInputValidInvalid(false, $(target));
+                isValid = setInputValidInvalid(false, target);
             }
 
             if (isValid) {
@@ -248,7 +254,7 @@ export default {
             const target = event.currentTarget;
             // Strip non-numeric characters
             target.value = target.value.replace(/[^0-9xX]*/g, '');
-            const forAbsolute = $(target).attr('data-for-absolute');
+            const { forAbsolute } = target.dataset;
 
             const m = target.value.match(/^(\d{1,3})$/i);
             let sceneAbsolute = null;
@@ -281,20 +287,23 @@ export default {
         $('.collapse.toggle').on('hide.bs.collapse', function() {
             const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Show Episodes');
+            document.querySelector(`#showseason-${result[1]}`).textContent = 'Show Episodes';
             $('#season-' + result[1] + '-cols').addClass('shadow');
         });
         $('.collapse.toggle').on('show.bs.collapse', function() {
             const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Hide Episodes');
+            document.querySelector(`#showseason-${result[1]}`).textContent = 'Hide Episodes';
             $('#season-' + result[1] + '-cols').removeClass('shadow');
         });
 
         // Generate IMDB stars
-        $('.imdbstars').each((index, element) => {
-            $(element).html($('<span/>').width($(element).text() * 12));
+        document.querySelectorAll('.imdbstars').forEach(element => {
+            const rating = document.createElement('span');
+            rating.style.width = `${element.textContent * 12}px`;
+            element.innerHTML = rating.outerHTML;
         });
+        // From rating-tooltip.js
         attachImdbTooltip(); // eslint-disable-line no-undef
 
         // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
@@ -310,7 +319,7 @@ export default {
             api.patch('config/main', {
                 layout: {
                     show: {
-                        specials: $(event.currentTarget).text() !== 'Hide'
+                        specials: event.currentTarget.textContent !== 'Hide'
                     }
                 }
             }).then(response => {
@@ -436,12 +445,13 @@ export default {
         // Set the season exception based on using the get_xem_numbering_for_show() for animes if available in data.xemNumbering,
         // or else try to map using just the data.season_exceptions.
         setSeasonSceneException(data) {
-            $.each(data.seasonExceptions, (season, nameExceptions) => {
+            const { seasonExceptions, xemNumbering } = data;
+            for (const [season, nameExceptions] of Object.entries(seasonExceptions)) {
                 let foundInXem = false;
                 // Check if it is a season name exception, we don't handle the show name exceptions here
                 if (season >= 0) {
                     // Loop through the xem mapping, and check if there is a xem_season, that needs to show the season name exception
-                    $.each(data.xemNumbering, (indexerSeason, xemSeason) => {
+                    for (const [indexerSeason, xemSeason] of Object.entries(xemNumbering)) {
                         if (xemSeason === parseInt(season, 10)) {
                             foundInXem = true;
                             $('<img>', {
@@ -453,7 +463,7 @@ export default {
                                 title: nameExceptions.join(', ')
                             }).appendTo('[data-season=' + indexerSeason + ']');
                         }
-                    });
+                    }
 
                     // This is not a xem season exception, let's set the exceptions as a medusa exception
                     if (!foundInXem) {
@@ -467,31 +477,32 @@ export default {
                         }).appendTo('[data-season=' + season + ']');
                     }
                 }
-            });
+            }
         },
         showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
+            const status = $(`#checkboxControls > input, #${whichClass}`)[0].checked;
+            document.querySelectorAll(`tr.${whichClass}`).forEach(element => {
                 if (status) {
-                    $(element).show();
+                    $(element).show(); // eslint-disable-line jquery/no-show
                 } else {
-                    $(element).hide();
+                    $(element).hide(); // eslint-disable-line jquery/no-hide
                 }
             });
 
             // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
+            document.querySelectorAll('tr.seasonheader').forEach(element => {
                 let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
+                const seasonNo = element.getAttribute('id');
+                // eslint-disable-next-line jquery/no-each, jquery/no-sizzle
+                $(`tr.${seasonNo} :visible`).each(() => {
                     numRows++;
                 });
                 if (numRows === 0) {
                     $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
+                    $('#' + seasonNo + '-cols').hide(); // eslint-disable-line jquery/no-hide
                 } else {
                     $(element).show();
-                    $('#' + seasonNo + '-cols').show();
+                    $('#' + seasonNo + '-cols').show(); // eslint-disable-line jquery/no-show
                 }
             });
         }
