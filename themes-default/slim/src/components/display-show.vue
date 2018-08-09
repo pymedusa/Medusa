@@ -91,9 +91,10 @@ export default {
             const selectedOption = element.options[element.selectedIndex];
             const id = selectedOption.value;
             if (id && id !== 'jump') {
-                const season = $('#seasonJump option:selected').data('season');
-                $('html,body').animate({ scrollTop: $('[name="' + id.substring(1) + '"]').offset().top - 100 }, 'slow');
-                $('#collapseSeason-' + season).collapse('show');
+                const { season } = selectedOption.dataset;
+                const seasonHeader = document.querySelector('[name="' + id.substring(1) + '"]');
+                $('html,body').animate({ scrollTop: $(seasonHeader).offset().top - 100 }, 'slow');
+                $(`#collapseSeason-${season}`).collapse('show');
                 location.hash = id;
             }
             element.value = 'jump';
