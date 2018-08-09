@@ -41,8 +41,6 @@ def set_up_anidb_connection():
         else:
             return True
     except Exception as error:
-        import traceback
-        print traceback.format_exc()
         log.warning(u'anidb exception msg: {0!r}', error)
         return False
 
