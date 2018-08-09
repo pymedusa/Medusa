@@ -251,7 +251,7 @@ export default {
                 this.$emit('update', newValue);
                 this.$nextTick(() => {
                     // @FIXME: Temporarily trigger a regular event as well
-                    $(this.$refs.rootDirs).trigger('change');
+                    this.$refs.rootDirs.dispatchEvent(new Event('change'));
                 });
             },
             deep: true,
