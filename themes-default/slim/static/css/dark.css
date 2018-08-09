@@ -472,6 +472,10 @@ config*.mako
     color: rgb(221, 221, 221);
 }
 
+.component-item {
+    border-bottom: 1px dotted rgb(85, 85, 85);
+}
+
 #provider_order_list li,
 #service_order_list li {
     padding: 5px;

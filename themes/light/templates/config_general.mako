@@ -20,14 +20,9 @@ window.app = new Vue({
     metaInfo: {
         title: 'Config - General'
     },
-    created() {
-        // @FIXME: This is a workaround to make sure `rootDirs` is available for the component.
-        MEDUSA.config.rootDirs = ${json.dumps(app.ROOT_DIRS)};
-    },
     data() {
         return {
-            header: 'General Configuration',
-            rootDirs: []
+            header: 'General Configuration'
         };
     }
 });
@@ -124,8 +119,9 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Show root directories</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                        <p>where the files of shows are located<br>
+                                        <b>These changes are automatically saved!</b></p>
+                                        <root-dirs></root-dirs>
                                     </span>
                                 </label>
                             </div>

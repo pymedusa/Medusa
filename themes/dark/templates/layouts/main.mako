@@ -70,24 +70,27 @@
                         If this is taking too long,<br>
                         <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
                     </div>
-                    <div :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <component :is="pageComponent || 'div'" :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
-                    </div>
+                    </component>
                </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
         </div>
+        <%block name="load_main_app" />
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/api.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/core.js?${sbPID}"></script>
+
+        ## This contains all the Webpack-imported modules
+        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
@@ -113,39 +116,18 @@
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        ## Add Vue component x-templates here
-        ## @NOTE: These will be usable on all pages
-        <script src="js/lib/vue.js?${sbPID}"></script>
-        <script src="js/lib/http-vue-loader.js?${sbPID}"></script>
-        <script src="js/lib/vue-async-computed@3.3.0.js?${sbPID}"></script>
-        <script src="js/lib/vue-in-viewport-mixin.min.js?${sbPID}"></script>
-        <script src="js/lib/vue-router.min.js?${sbPID}"></script>
-        <script src="js/lib/vue-meta.min.js?${sbPID}"></script>
-        <script src="js/lib/vue-snotify.min.js?${sbPID}"></script>
-        <script src="js/lib/vue-js-toggle-button.js?${sbPID}"></script>
-        <script src="js/lib/vuex.js?${sbPID}"></script>
-        <script src="js/lib/vue-native-websocket-2.0.7.js?${sbPID}"></script>
-        <script src="js/notifications.js?${sbPID}"></script>
-        <script src="js/store.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
-            Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-            Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-            Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-            Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
-            Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-            Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
-            Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
-            Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
+            // Used to get username to the app.js and header
+            % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
+            window.username = ${json.dumps(app.WEB_USERNAME)};
+            % else:
+            window.username = '';
+            % endif
         </script>
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
-            Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-            Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
-            Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
-
-            Vue.use(window['vue-js-toggle-button'].default);
-
             Vue.mixin({
                 created() {
                     if (this.$root === this) {
@@ -172,19 +154,15 @@
             Vue.mixin({
                 data() {
                     return {
-                        globalLoading: true
+                        globalLoading: true,
+                        pageComponent: false
                     };
                 },
                 mounted() {
-                    if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
-                        const { store } = window;
+                    if (this.$root === this && !document.location.pathname.includes('/login')) {
+                        const { store, username } = window;
                         /* This is used by the `app-header` component
                            to only show the logout button if a username is set */
-                        % if app.WEB_USERNAME and app.WEB_PASSWORD:
-                        const username = ${json.dumps(app.WEB_USERNAME)};
-                        % else:
-                        const username = '';
-                        % endif
                         store.dispatch('login', { username });
                         store.dispatch('getConfig').then(() => this.$emit('loaded'));
                     }
@@ -203,19 +181,25 @@
                 Vue.config.performance = true;
             }
         </script>
-        <%block name="scripts" />
-        <script src="js/router.js?${sbPID}"></script>
         <script>
-            if (!window.app) {
-                console.info('Loading Vue with router since window.app is missing.');
-                window.app = new Vue({
-                    store,
-                    el: '#vue-wrap',
-                    router: window.router
+            if (!window.loadMainApp) {
+                console.debug('Loading local Vue');
+                Vue.use(Vuex);
+                Vue.use(VueRouter);
+                Vue.use(AsyncComputed);
+                Vue.use(VueMeta);
+
+                // Load x-template components
+                window.components.forEach(component => {
+                    console.log('Registering ' + component.name);
+                    Vue.component(component.name, component);
                 });
-            } else {
-                console.info('Loading local Vue since we found a window.app');
+
+                // Global components
+                Vue.use(ToggleButton);
+                Vue.use(Snotify);
             }
         </script>
+        <%block name="scripts" />
     </body>
 </html>

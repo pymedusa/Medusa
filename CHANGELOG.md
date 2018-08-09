@@ -4,12 +4,13 @@
 
 #### Improvements
 - Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
+- Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
 
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
 - Fixed multi-episode snatches not being marked as snatched in history ([#229](https://github.com/pymedusa/Medusa/issues/229))
 - Fixed whole seasons being downloaded as multi-episode replacement ([#4750](https://github.com/pymedusa/Medusa/issues/4750))
-
+- Fixed yggtorrent changed url to new url. ([#4843](https://github.com/pymedusa/Medusa/issues/4843))
 
 -----
 

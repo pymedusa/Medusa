@@ -124,14 +124,22 @@ window.app = new Vue({
             // Disable the save button until we're done.
             this.saving = true;
 
-            let config = {
+            const config = {
                 postProcessing: this.postProcessing,
                 metadata: {
                     metadataProviders: this.metadataProviders
                 }
             };
 
-            $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
+            // Clone the config into a new object
+            let configCopy = Object.assign({}, config);
+
+            // Use destructuring to remove the unwanted keys.
+            const { multiEpStrings, reflinkAvailable, ...rest} = configCopy.postProcessing
+            // Assign the object with the keys removed to our copied object.
+            configCopy.postProcessing = rest;
+
+            $store.dispatch('setConfig', {section: 'main', config: configCopy}).then(() => {
                 this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
             }).catch(error => {
                 this.$snotify.error(
@@ -423,7 +431,7 @@ window.app = new Vue({
                                     </div>
                                 </fieldset>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div> <!-- /col --> 
+                            </div> <!-- /col -->
                         </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
 
@@ -438,31 +446,31 @@ window.app = new Vue({
                                 <fieldset class="component-group-list">
 
                                     <!-- default name-pattern component -->
-                                    <name-pattern class="component-group" :naming-pattern="postProcessing.naming.pattern"
+                                    <name-pattern class="component-item" :naming-pattern="postProcessing.naming.pattern"
                                         :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp"
                                         :multi-ep-styles="multiEpStringsSelect" @change="saveNaming" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default sports name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingSports"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingSports"
                                         :naming-pattern="postProcessing.naming.patternSports" :naming-presets="presets" type="sports"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default airs by date name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
                                         :naming-pattern="postProcessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default anime name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAnime"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingAnime"
                                         :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp"
                                         :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postProcessing.naming.animeNamingType"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded">
                                     </name-pattern>
 
-                                    <div class="form-group component-group">
+                                    <div class="form-group component-item">
                                         <label for="naming_strip_year" class="col-sm-2 control-label">
                                             <span>Strip Show Year</span>
                                         </label>
@@ -495,7 +503,7 @@ window.app = new Vue({
                                             <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
                                                 <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
                                             </select>
-                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>    
+                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                                         </div>
                                     </div>
 
