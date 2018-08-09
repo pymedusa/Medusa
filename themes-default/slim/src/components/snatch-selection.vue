@@ -52,11 +52,12 @@ export default {
         attachImdbTooltip(); // eslint-disable-line no-undef
 
         $(document.body).on('click', '.imdbPlot', event => {
-            $(event.currentTarget).prev('span').toggle();
-            if ($(event.currentTarget).html() === '..show less') {
-                $(event.currentTarget).html('..show more');
+            const target = event.currentTarget;
+            $(target).prev('span').toggle();
+            if (target.innerHTML === '..show less') {
+                target.innerHTML = '..show more';
             } else {
-                $(event.currentTarget).html('..show less');
+                target.innerHTML = '..show less';
             }
             moveSummaryBackground();
         });

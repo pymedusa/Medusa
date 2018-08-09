@@ -75,12 +75,12 @@ export default {
         });
 
         $(document.body).on('click', '.imdbPlot', event => {
-            const $target = $(event.currentTarget);
-            $target.prev('span').toggle();
-            if ($target.html() === '..show less') {
-                $target.html('..show more');
+            const target = event.currentTarget;
+            $(target).prev('span').toggle();
+            if (target.innerHTML === '..show less') {
+                target.innerHTML = '..show more';
             } else {
-                $target.html('..show less');
+                target.innerHTML = '..show less';
             }
             moveSummaryBackground();
             movecheckboxControlsBackground();
