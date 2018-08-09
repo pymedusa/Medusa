@@ -88,7 +88,8 @@ export default {
 
         $(document.body).on('change', '#seasonJump', event => {
             const element = event.currentTarget;
-            const id = $('#seasonJump option:selected').val();
+            const selectedOption = element.options[element.selectedIndex];
+            const id = selectedOption.value;
             if (id && id !== 'jump') {
                 const season = $('#seasonJump option:selected').data('season');
                 $('html,body').animate({ scrollTop: $('[name="' + id.substring(1) + '"]').offset().top - 100 }, 'slow');
@@ -100,9 +101,9 @@ export default {
 
         $(document.body).on('click', '#changeStatus', () => {
             const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
+            const status = document.querySelector('#statusSelect').value;
+            const quality = document.querySelector('#qualitySelect').value;
+            const showSlug = document.querySelector('#series-slug').value;
 
             $('.epCheck').each((index, element) => {
                 if (element.checked === true) {
@@ -208,8 +209,8 @@ export default {
         $(document.body).on('change', '.sceneSeasonXEpisode', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
-            const value = $(target).val();
-            $(target).val(value.replace(/[^0-9xX]*/g, ''));
+            const { value } = target;
+            target.value = value.replace(/[^0-9xX]*/g, '');
             const forSeason = $(target).attr('data-for-season');
             const forEpisode = $(target).attr('data-for-episode');
 
@@ -219,8 +220,8 @@ export default {
                 return;
             }
 
-            const m = $(target).val().match(/^(\d+)x(\d+)$/i);
-            const onlyEpisode = $(target).val().match(/^(\d+)$/i);
+            const m = target.value.match(/^(\d+)x(\d+)$/i);
+            const onlyEpisode = target.value.match(/^(\d+)$/i);
             let sceneSeason = null;
             let sceneEpisode = null;
             let isValid = false;
@@ -245,10 +246,10 @@ export default {
         $(document.body).on('change', '.sceneAbsolute', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
-            $(target).val($(target).val().replace(/[^0-9xX]*/g, ''));
+            target.value = target.value.replace(/[^0-9xX]*/g, '');
             const forAbsolute = $(target).attr('data-for-absolute');
 
-            const m = $(target).val().match(/^(\d{1,3})$/i);
+            const m = target.value.match(/^(\d{1,3})$/i);
             let sceneAbsolute = null;
             if (m) {
                 sceneAbsolute = m[1];
@@ -298,8 +299,8 @@ export default {
         // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
         // Get the season exceptions and the xem season mappings.
         $.getJSON('home/getSeasonSceneExceptions', {
-            indexername: $('#indexer-name').val(),
-            seriesid: $('#series-id').val() // eslint-disable-line camelcase
+            indexername: document.querySelector('#indexer-name').value,
+            seriesid: document.querySelector('#series-id').value
         }, data => {
             setSeasonSceneException(data);
         });
@@ -349,8 +350,8 @@ export default {
             });
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-            const indexerName = $('#indexer-name').val();
-            const seriesId = $('#series-id').val();
+            const indexerName = document.querySelector('#indexer-name').value;
+            const seriesId = document.querySelector('#series-id').value;
 
             if (sceneSeason === '') {
                 sceneSeason = null;
@@ -368,10 +369,12 @@ export default {
                 sceneEpisode
             }, data => {
                 // Set the values we get back
+                const element = document.querySelector(`#sceneSeasonXEpisode_${seriesId}_${forSeason}_${forEpisode}`);
                 if (data.sceneSeason === null || data.sceneEpisode === null) {
-                    $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val('');
+                    element.value = '';
                 } else {
-                    $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                    const { sceneSeason, sceneEpisode } = data;
+                    element.value = `${sceneSeason}x${sceneEpisode}`;
                 }
                 if (!data.success) {
                     if (data.errorMessage) {
@@ -383,8 +386,8 @@ export default {
             });
         },
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-            const indexerName = $('#indexer-name').val();
-            const seriesId = $('#series-id').val();
+            const indexerName = document.querySelector('#indexer-name').value;
+            const seriesId = document.querySelector('#series-id').value;
 
             if (sceneAbsolute === '') {
                 sceneAbsolute = null;
@@ -397,10 +400,11 @@ export default {
                 sceneAbsolute
             }, data => {
                 // Set the values we get back
+                const element = document.querySelector(`#sceneAbsolute_${seriesId}_${forAbsolute}`);
                 if (data.sceneAbsolute === null) {
-                    $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val('');
+                    element.value = '';
                 } else {
-                    $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val(data.sceneAbsolute);
+                    element.value = data.sceneAbsolute;
                 }
 
                 if (!data.success) {

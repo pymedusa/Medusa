@@ -37,7 +37,7 @@ export default {
     },
     watch: {
         language() {
-            $(this.$el).val(this.language);
+            this.$el.value = this.language;
         }
     }
 };
