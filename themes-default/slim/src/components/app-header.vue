@@ -201,15 +201,15 @@ export default {
         // Hover Dropdown for Nav
         $($el).on({
             mouseenter(event) {
-                const $target = $(event.currentTarget);
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500, () => {
-                    $target.find('.dropdown-toggle').attr('aria-expanded', 'true');
+                const target = event.currentTarget;
+                $(target.querySelector('.dropdown-menu')).stop(true, true).delay(200).fadeIn(500, () => {
+                    target.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'true');
                 });
             },
             mouseleave(event) {
-                const $target = $(event.currentTarget);
-                $target.find('.dropdown-toggle').attr('aria-expanded', 'false');
-                $target.find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
+                const target = event.currentTarget;
+                target.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+                $(target.querySelector('.dropdown-menu')).stop(true, true).delay(200).fadeOut(500);
             }
         }, 'ul.nav li.dropdown');
 
@@ -217,9 +217,9 @@ export default {
         // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
         if ((navigator.maxTouchPoints || 0) < 2) {
             $($el).on('click', '.dropdown-toggle', event => {
-                const $target = $(event.currentTarget);
-                if ($target.attr('aria-expanded') === 'true') {
-                    window.location.href = $target.attr('href');
+                const target = event.currentTarget;
+                if (target.getAttribute('aria-expanded') === 'true') {
+                    window.location.href = target.getAttribute('href');
                 }
             });
         }
