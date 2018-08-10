@@ -1219,7 +1219,7 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
                         b'  watched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
@@ -1256,7 +1256,7 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
                         b'  watched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
@@ -1339,7 +1339,7 @@ class Episode(TV):
             b'indexer': self.series.indexer,
             b'showid': self.series.series_id,
             b'season': self.season,
-            b'episode': self.episode
+            b'episode': self.episode,
         }
 
         # use a custom update/insert method to get the data into the DB
