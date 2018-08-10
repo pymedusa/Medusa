@@ -1,5 +1,5 @@
 import VueRouter from 'vue-router';
-import { Login, Config, AddShows, AddRecommended, NotFound } from './components';
+import { DisplayShow, Login, Config, AddShows, AddRecommended, NotFound } from './components';
 
 const router = new VueRouter({
     base: document.body.getAttribute('web-root') + '/',
@@ -11,6 +11,9 @@ const router = new VueRouter({
             title: 'Login'
         },
         component: Login
+    }, {
+        path: '/home/displayShow',
+        name: 'displayShow'
     }, {
         path: '/config',
         name: 'config',
