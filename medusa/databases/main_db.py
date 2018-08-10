@@ -876,7 +876,7 @@ class AddEpisodeWatchedField(ShiftQualities):
             'version, release_group, manually_searched, watched) '
             'SELECT showid, indexerid, indexer, '
             'name, season, episode, description, airdate, hasnfo, '
-            'hastbn, status, -1 AS quality, location, file_size, release_name, '
+            'hastbn, status, quality, location, file_size, release_name, '
             'subtitles, subtitles_searchcount, subtitles_lastsearch, '
             'is_proper, scene_season, scene_episode, absolute_number, '
             'scene_absolute_number, version, release_group, manually_searched, 0 '
