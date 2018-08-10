@@ -30,7 +30,7 @@ export default {
         show() {
             const { indexer, id, getShowById, shows, $route, $store } = this;
             const { query } = $route;
-            const { defaults } = $store;
+            const { defaults } = $store.state;
 
             if (shows.length === 0 || !indexer || !id) {
                 return defaults.show;

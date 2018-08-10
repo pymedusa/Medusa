@@ -9,7 +9,7 @@
 %>
 <%block name="scripts">
 <script type="text/x-template" id="display-show-template">
-<div>
+<div v-show="show.indexer">
     <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
     <input type="hidden" id="series-id" value="${show.series_id}" />
     <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
@@ -64,21 +64,20 @@
                         % if cur_season == -1:
                 <thead>
                     <tr class="seasoncols" style="display:none;">
-                            <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
-                            <th data-sorter="false" class="col-metadata">NFO</th>
-                            <th data-sorter="false" class="col-metadata">TBN</th>
-                            <th data-sorter="false" class="col-ep">Episode</th>
-                            <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(show.is_anime)]}>Absolute</th>
-                            <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene)]}>Scene</th>
-                            <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene_anime)]}>Scene Absolute</th>
-                            <th data-sorter="false" class="col-name">Name</th>
-                            <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
-                            <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
-                            <th data-sorter="false" class="col-airdate">Airdate</th>
-                            <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(app.DOWNLOAD_URL)]}>Download</th>
-                            <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(app.USE_SUBTITLES)]}>Subtitles</th>
-                            <th data-sorter="false" class="col-status">Status</th>
-                            <th data-sorter="false" class="col-search">Search</th>
+                        <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
+                        <th data-sorter="false" class="col-metadata">NFO</th>
+                        <th data-sorter="false" class="col-metadata">TBN</th>
+                        <th data-sorter="false" class="col-ep">Episode</th>
+                        <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.anime }]">Absolute</th>
+                        <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene_anime)]}>Scene Absolute</th>
+                        <th data-sorter="false" class="col-name">Name</th>
+                        <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
+                        <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
+                        <th data-sorter="false" class="col-airdate">Airdate</th>
+                        <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(app.DOWNLOAD_URL)]}>Download</th>
+                        <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.subtitlesEnabled }]">Subtitles</th>
+                        <th data-sorter="false" class="col-status">Status</th>
+                        <th data-sorter="false" class="col-search">Search</th>
                     </tr>
                 </thead>
                 <tbody class="tablesorter-no-sort">
@@ -211,7 +210,7 @@
                         </td>
                         <td class="col-name hidden-xs triggerhighlight">
                             <% has_plot = 'has-plot' if epResult['description'] else '' %>
-                            <plot-info ${has_plot} series-slug="${show.indexer_slug}" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
+                            <plot-info ${has_plot} :series-slug="indexer + id" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
                             ${epResult['name']}
                         </td>
                         <td class="col-name hidden-xs triggerhighlight">${epLoc or ''}</td>
