@@ -27,9 +27,24 @@ const webpackConfig = mode => ({
         hints: false
     },
     optimization: {
+        runtimeChunk: {
+            name: 'vendors'
+        },
         splitChunks: {
             chunks: 'all',
-            name: 'vendors'
+            name: 'vendors',
+            cacheGroups: {
+                // These are the default cacheGroups!
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10
+                },
+                default: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true
+                }
+            }
         }
     },
     module: {
