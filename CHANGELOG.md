@@ -5,6 +5,7 @@
 #### Improvements
 - Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
 - Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
+- Added a new field name 'watched' to the tv_episodes db table. UI will be added in future. ([#4692](https://github.com/pymedusa/Medusa/pull/4825))
 
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
