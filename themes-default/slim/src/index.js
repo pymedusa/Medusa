@@ -32,7 +32,8 @@ import {
     ScrollButtons,
     SelectList,
     ShowSelector,
-    SnatchSelection
+    SnatchSelection,
+    Status
 } from './components';
 
 if (window) {
@@ -89,6 +90,7 @@ if (window) {
     window.components.push(SelectList);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
+    window.components.push(Status);
 }
 const UTIL = {
     exec(controller, action) {
