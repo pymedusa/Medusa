@@ -10,10 +10,13 @@ import Snotify from 'vue-snotify';
 import axios from 'axios';
 import store from './store';
 import router from './router';
+import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './components';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi } from './components';
 
 if (window) {
+    window.isDevelopment = isDevelopment;
+
     // Adding libs to window so mako files can use them
     window.Vue = Vue;
     window.Vuex = Vuex;
@@ -46,6 +49,7 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(AnidbReleaseGroupUi);
     window.components.push(AppHeader);
     window.components.push(AppLink);
     window.components.push(Asset);

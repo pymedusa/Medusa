@@ -239,7 +239,7 @@ const state = {
         fileTimestampTimezone: 'local',
         extraScripts: [],
         extraScriptsUrl: null,
-        multiEpStrings: null
+        multiEpStrings: {}
     },
     sslVersion: null,
     pythonVersion: null,

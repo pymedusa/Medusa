@@ -6,7 +6,9 @@ import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
+import { isDevelopment } from './utils';
 import {
+    AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
     Asset,
@@ -34,12 +36,15 @@ Vue.use(Snotify);
 
 // Load x-template components
 window.components.forEach(component => {
-    console.debug(`Registering ${component.name}`);
+    if (isDevelopment) {
+        console.debug(`Registering ${component.name}`);
+    }
     Vue.component(component.name, component);
 });
 
 // Global components
 const globalComponents = [
+    AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
     Asset,
@@ -72,14 +77,18 @@ const app = new Vue({
     },
     computed: Object.assign(mapState(['auth', 'config']), {}),
     mounted() {
-        console.log('App Mounted!');
+        if (isDevelopment) {
+            console.log('App Mounted!');
+        }
 
         if (!document.location.pathname.includes('/login')) {
             const { $store } = this;
             $store.dispatch('login', { username: window.username });
             $store.dispatch('getConfig');
 
-            console.log('App Loaded!');
+            if (isDevelopment) {
+                console.log('App Loaded!');
+            }
         }
     }
 }).$mount('#vue-wrap');
