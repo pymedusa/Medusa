@@ -115,7 +115,11 @@
 
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
+<<<<<<< HEAD
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
+=======
+        <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
+>>>>>>> 2b95d6b5d... remove old status script
 
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
