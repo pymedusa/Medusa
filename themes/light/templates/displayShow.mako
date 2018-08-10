@@ -376,10 +376,13 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 <script>
+const { store, router } = window;
+
 window.app = {};
 window.app = new Vue({
     el: '#vue-wrap',
     store,
+    router,
     data() {
         return {
             // This loads display-show.vue
