@@ -16,7 +16,7 @@
     </div> <!-- end of container -->
 </template>
 <script>
-import Vuex from 'vuex';
+import { mapState } from 'vuex';
 
 module.exports = {
     name: 'show-selector',
@@ -29,7 +29,9 @@ module.exports = {
             lock: false
         };
     },
-    computed: Object.assign(Vuex.mapState(['config', 'shows']), {
+    computed: {
+        ...mapState(['config']),
+        ...mapState({ shows: state => state.shows.shows }),
         showLists() {
             const { config, shows } = this;
             const { animeSplitHome, sortArticle } = config;
@@ -76,7 +78,7 @@ module.exports = {
             }
             return 0;
         }
-    }),
+    },
     watch: {
         showSlug(newSlug) {
             this.lock = true;
