@@ -23,7 +23,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 11
+CURRENT_MINOR_DB_VERSION = 12
 
 
 class MainSanityCheck(db.DBSanityCheck):
