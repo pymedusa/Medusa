@@ -1,9 +1,10 @@
 <script>
+import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import AppLink from './app-link.vue';
 import PlotInfo from './plot-info.vue';
 
-module.exports = {
+export default {
     name: 'displayShow',
     template: '#display-show-template',
     components: {
@@ -12,6 +13,36 @@ module.exports = {
     },
     data() {
         return {};
+    },
+    computed: {
+        ...mapState({
+            shows: state => state.shows.shows
+        }),
+        ...mapGetters([
+            'getShowById'
+        ]),
+        indexer() {
+            return this.$route.query.indexername;
+        },
+        id() {
+            return this.$route.query.seriesid;
+        },
+        show() {
+            const { indexer, id, getShowById, shows, $route, $store } = this;
+            const { query } = $route;
+            const { defaults } = $store;
+
+            if (shows.length === 0 || !indexer || !id) {
+                return defaults.show;
+            }
+
+            const show = getShowById({ indexer, id });
+            if (!show) {
+                return defaults.show;
+            }
+
+            return show;
+        }
     },
     mounted() {
         const {
