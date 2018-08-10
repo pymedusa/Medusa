@@ -884,3 +884,4 @@ class AddEpisodeWatchedField(ShiftQualities):
         )
 
         self.connection.action('DROP TABLE tmp_tv_episodes;')
+        self.inc_minor_version()
