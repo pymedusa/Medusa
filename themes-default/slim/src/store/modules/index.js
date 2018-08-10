@@ -4,6 +4,7 @@ import defaults from './defaults';
 import socket from './socket';
 import notifications from './notifications';
 import qualities from './qualities';
+import shows from './shows';
 import statuses from './statuses';
 import metadata from './metadata';
 
@@ -14,6 +15,7 @@ export {
     socket,
     notifications,
     qualities,
+    shows,
     statuses,
     metadata
 };
