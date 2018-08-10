@@ -1,9 +1,18 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
-import { api } from '../api';
-import { auth, config, defaults, socket, notifications, qualities, statuses, metadata } from './modules';
-import { ADD_SHOW, SOCKET_ONMESSAGE } from './mutation-types';
+import {
+    auth,
+    config,
+    defaults,
+    metadata,
+    notifications,
+    qualities,
+    shows,
+    socket,
+    statuses
+} from './modules';
+import { SOCKET_ONMESSAGE } from './mutation-types';
 
 const { Store } = Vuex;
 
@@ -14,49 +23,17 @@ const store = new Store({
         auth,
         config,
         defaults,
-        socket,
+        metadata,
         notifications,
         qualities,
-        statuses,
-        metadata
+        shows,
+        socket,
+        statuses
     },
-    state: {
-        shows: []
-    },
-    mutations: {
-        [ADD_SHOW](state, show) {
-            const { shows } = state;
-            const showExists = shows.filter(({ id, indexer }) => id[indexer] === show.id[indexer]).length === 1;
-            if (showExists) {
-                state.shows[shows.indexOf(showExists)] = show;
-            } else {
-                state.shows.push(show);
-            }
-        }
-    },
-    actions: {
-        getShow(context, { indexer, id }) {
-            const { commit } = context;
-            return api.get('/series/' + indexer + id).then(res => {
-                commit(ADD_SHOW, res.data);
-            });
-        },
-        getShows(context, shows) {
-            const { commit, dispatch } = context;
-
-            // If no shows are provided get all of them
-            if (!shows) {
-                return api.get('/series?limit=1000').then(res => {
-                    const shows = res.data;
-                    return shows.forEach(show => {
-                        commit(ADD_SHOW, show);
-                    });
-                });
-            }
-
-            return shows.forEach(show => dispatch('getShow', show));
-        }
-    }
+    state: {},
+    mutations: {},
+    getters: {},
+    actions: {}
 });
 
 // Keep as a non-arrow function for `this` context.
