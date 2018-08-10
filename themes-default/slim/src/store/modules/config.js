@@ -263,7 +263,7 @@ const mutations = {
 };
 
 const getters = {
-    layout: layout => state => {
+    layout: state => layout => {
         return state.layout[layout];
     }
 };

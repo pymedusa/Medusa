@@ -1,4 +1,156 @@
-(window["webpackJsonp"] = window["webpackJsonp"] || []).push([["vendors"],{
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// install a JSONP callback for chunk loading
+/******/ 	function webpackJsonpCallback(data) {
+/******/ 		var chunkIds = data[0];
+/******/ 		var moreModules = data[1];
+/******/ 		var executeModules = data[2];
+/******/
+/******/ 		// add "moreModules" to the modules object,
+/******/ 		// then flag all "chunkIds" as loaded and fire callback
+/******/ 		var moduleId, chunkId, i = 0, resolves = [];
+/******/ 		for(;i < chunkIds.length; i++) {
+/******/ 			chunkId = chunkIds[i];
+/******/ 			if(installedChunks[chunkId]) {
+/******/ 				resolves.push(installedChunks[chunkId][0]);
+/******/ 			}
+/******/ 			installedChunks[chunkId] = 0;
+/******/ 		}
+/******/ 		for(moduleId in moreModules) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
+/******/ 				modules[moduleId] = moreModules[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 		if(parentJsonpFunction) parentJsonpFunction(data);
+/******/
+/******/ 		while(resolves.length) {
+/******/ 			resolves.shift()();
+/******/ 		}
+/******/
+/******/ 		// add entry modules from loaded chunk to deferred list
+/******/ 		deferredModules.push.apply(deferredModules, executeModules || []);
+/******/
+/******/ 		// run deferred modules when all chunks ready
+/******/ 		return checkDeferredModules();
+/******/ 	};
+/******/ 	function checkDeferredModules() {
+/******/ 		var result;
+/******/ 		for(var i = 0; i < deferredModules.length; i++) {
+/******/ 			var deferredModule = deferredModules[i];
+/******/ 			var fulfilled = true;
+/******/ 			for(var j = 1; j < deferredModule.length; j++) {
+/******/ 				var depId = deferredModule[j];
+/******/ 				if(installedChunks[depId] !== 0) fulfilled = false;
+/******/ 			}
+/******/ 			if(fulfilled) {
+/******/ 				deferredModules.splice(i--, 1);
+/******/ 				result = __webpack_require__(__webpack_require__.s = deferredModule[0]);
+/******/ 			}
+/******/ 		}
+/******/ 		return result;
+/******/ 	}
+/******/
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// object to store loaded and loading chunks
+/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 	// Promise = chunk loading, 0 = chunk loaded
+/******/ 	var installedChunks = {
+/******/ 		"vendors": 0
+/******/ 	};
+/******/
+/******/ 	var deferredModules = [];
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	var jsonpArray = window["webpackJsonp"] = window["webpackJsonp"] || [];
+/******/ 	var oldJsonpFunction = jsonpArray.push.bind(jsonpArray);
+/******/ 	jsonpArray.push = webpackJsonpCallback;
+/******/ 	jsonpArray = jsonpArray.slice();
+/******/ 	for(var i = 0; i < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);
+/******/ 	var parentJsonpFunction = oldJsonpFunction;
+/******/
+/******/
+/******/ 	// run deferred modules from other chunks
+/******/ 	checkDeferredModules();
+/******/ })
+/************************************************************************/
+/******/ ({
 
 /***/ "./node_modules/axios/index.js":
 /*!*************************************!*\
@@ -2594,7 +2746,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\n\nvar _vue = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.esm.js\");\n\nvar _vue2 = _interopRequireDefault(_vue);\n\nvar _vuex = __webpack_require__(/*! vuex */ \"./node_modules/vuex/dist/vuex.esm.js\");\n\nvar _vuex2 = _interopRequireDefault(_vuex);\n\nvar _vueNativeWebsocket = __webpack_require__(/*! vue-native-websocket */ \"./node_modules/vue-native-websocket/dist/build.js\");\n\nvar _vueNativeWebsocket2 = _interopRequireDefault(_vueNativeWebsocket);\n\nvar _api = __webpack_require__(/*! ../api */ \"./src/api.js\");\n\nvar _modules = __webpack_require__(/*! ./modules */ \"./src/store/modules/index.js\");\n\nvar _mutationTypes = __webpack_require__(/*! ./mutation-types */ \"./src/store/mutation-types.js\");\n\nfunction _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\nvar Store = _vuex2.default.Store;\n\n\n_vue2.default.use(_vuex2.default);\n\nvar store = new Store({\n    modules: {\n        auth: _modules.auth,\n        config: _modules.config,\n        defaults: _modules.defaults,\n        socket: _modules.socket,\n        notifications: _modules.notifications,\n        qualities: _modules.qualities,\n        statuses: _modules.statuses,\n        metadata: _modules.metadata\n    },\n    state: {\n        shows: []\n    },\n    mutations: _defineProperty({}, _mutationTypes.ADD_SHOW, function (state, show) {\n        var shows = state.shows;\n\n        var showExists = shows.filter(function (_ref) {\n            var id = _ref.id,\n                indexer = _ref.indexer;\n            return id[indexer] === show.id[indexer];\n        }).length === 1;\n        if (showExists) {\n            state.shows[shows.indexOf(showExists)] = show;\n        } else {\n            state.shows.push(show);\n        }\n    }),\n    actions: {\n        getShow: function getShow(context, _ref2) {\n            var indexer = _ref2.indexer,\n                id = _ref2.id;\n            var commit = context.commit;\n\n            return _api.api.get('/series/' + indexer + id).then(function (res) {\n                commit(_mutationTypes.ADD_SHOW, res.data);\n            });\n        },\n        getShows: function getShows(context, shows) {\n            var commit = context.commit,\n                dispatch = context.dispatch;\n\n            // If no shows are provided get all of them\n\n            if (!shows) {\n                return _api.api.get('/series?limit=1000').then(function (res) {\n                    var shows = res.data;\n                    return shows.forEach(function (show) {\n                        commit(_mutationTypes.ADD_SHOW, show);\n                    });\n                });\n            }\n\n            return shows.forEach(function (show) {\n                return dispatch('getShow', show);\n            });\n        }\n    }\n});\n\nvar websocketUrl = function () {\n    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';\n    var WSMessageUrl = '/ui';\n    var webRoot = document.body.getAttribute('web-root');\n    return proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl;\n}();\n\n_vue2.default.use(_vueNativeWebsocket2.default, websocketUrl, {\n    store: store,\n    format: 'json',\n    reconnection: true, // (Boolean) whether to reconnect automatically (false)\n    reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),\n    reconnectionDelay: 1000 // (Number) how long to initially wait before attempting a new (1000)\n});\n\nexports.default = store;\n\n//# sourceURL=webpack:///./src/store/index.js?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\n\nvar _vue = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.esm.js\");\n\nvar _vue2 = _interopRequireDefault(_vue);\n\nvar _vuex = __webpack_require__(/*! vuex */ \"./node_modules/vuex/dist/vuex.esm.js\");\n\nvar _vuex2 = _interopRequireDefault(_vuex);\n\nvar _vueNativeWebsocket = __webpack_require__(/*! vue-native-websocket */ \"./node_modules/vue-native-websocket/dist/build.js\");\n\nvar _vueNativeWebsocket2 = _interopRequireDefault(_vueNativeWebsocket);\n\nvar _api = __webpack_require__(/*! ../api */ \"./src/api.js\");\n\nvar _modules = __webpack_require__(/*! ./modules */ \"./src/store/modules/index.js\");\n\nvar _mutationTypes = __webpack_require__(/*! ./mutation-types */ \"./src/store/mutation-types.js\");\n\nfunction _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\nvar Store = _vuex2.default.Store;\n\n\n_vue2.default.use(_vuex2.default);\n\nvar store = new Store({\n    modules: {\n        auth: _modules.auth,\n        config: _modules.config,\n        defaults: _modules.defaults,\n        socket: _modules.socket,\n        notifications: _modules.notifications,\n        qualities: _modules.qualities,\n        statuses: _modules.statuses,\n        metadata: _modules.metadata\n    },\n    state: {\n        shows: []\n    },\n    mutations: _defineProperty({}, _mutationTypes.ADD_SHOW, function (state, show) {\n        var shows = state.shows;\n\n        var showExists = shows.filter(function (_ref) {\n            var id = _ref.id,\n                indexer = _ref.indexer;\n            return id[indexer] === show.id[indexer];\n        }).length === 1;\n        if (showExists) {\n            state.shows[shows.indexOf(showExists)] = show;\n        } else {\n            state.shows.push(show);\n        }\n    }),\n    actions: {\n        getShow: function getShow(context, _ref2) {\n            var indexer = _ref2.indexer,\n                id = _ref2.id;\n            var commit = context.commit;\n\n            return _api.api.get('/series/' + indexer + id).then(function (res) {\n                commit(_mutationTypes.ADD_SHOW, res.data);\n            });\n        },\n        getShows: function getShows(context, shows) {\n            var commit = context.commit,\n                dispatch = context.dispatch;\n\n            // If no shows are provided get all of them\n\n            if (!shows) {\n                return _api.api.get('/series?limit=1000').then(function (res) {\n                    var shows = res.data;\n                    return shows.forEach(function (show) {\n                        commit(_mutationTypes.ADD_SHOW, show);\n                    });\n                });\n            }\n\n            return shows.forEach(function (show) {\n                return dispatch('getShow', show);\n            });\n        }\n    }\n});\n\n// Keep as a non-arrow function for `this` context.\nvar passToStoreHandler = function passToStoreHandler(eventName, event, next) {\n    var target = eventName.toUpperCase();\n    var eventData = event.data;\n\n    if (target === _mutationTypes.SOCKET_ONMESSAGE) {\n        var message = JSON.parse(eventData);\n        var data = message.data,\n            _event = message.event;\n\n        // Show the notification to the user\n\n        if (_event === 'notification') {\n            var body = data.body,\n                hash = data.hash,\n                type = data.type,\n                title = data.title;\n\n            window.displayNotification(type, title, body, hash);\n        } else if (_event === 'configUpdated') {\n            var section = data.section,\n                _config = data.config;\n\n            this.store.dispatch('updateConfig', { section: section, config: _config });\n        } else {\n            window.displayNotification('info', _event, data);\n        }\n    }\n\n    // Resume normal 'passToStore' handling\n    next(eventName, event);\n};\n\nvar websocketUrl = function () {\n    var _window$location = window.location,\n        protocol = _window$location.protocol,\n        hostname = _window$location.hostname,\n        port = _window$location.port;\n\n    var proto = protocol === 'https:' ? 'wss:' : 'ws:';\n    var WSMessageUrl = '/ui';\n    var webRoot = document.body.getAttribute('web-root');\n    return proto + '//' + hostname + ':' + port + webRoot + '/ws' + WSMessageUrl;\n}();\n\n_vue2.default.use(_vueNativeWebsocket2.default, websocketUrl, {\n    store: store,\n    format: 'json',\n    reconnection: true, // (Boolean) whether to reconnect automatically (false)\n    reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),\n    reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)\n    passToStoreHandler: passToStoreHandler // (Function|<false-y>) Handler for events triggered by the WebSocket (false)\n});\n\nexports.default = store;\n\n//# sourceURL=webpack:///./src/store/index.js?");
 
 /***/ }),
 
@@ -2618,7 +2770,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\n\nvar _mutationTypes = __webpack_require__(/*! ../mutation-types */ \"./src/store/mutation-types.js\");\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\nvar state = {\n    wikiUrl: null,\n    donationsUrl: null,\n    localUser: null,\n    posterSortdir: null,\n    locale: null,\n    themeName: null,\n    selectedRootIndex: null,\n    webRoot: null,\n    namingForceFolders: null,\n    cacheDir: null,\n    databaseVersion: {\n        major: null,\n        minor: null\n    },\n    programDir: null,\n    dataDir: null,\n    animeSplitHomeInTabs: null,\n    torrents: {\n        authType: null,\n        dir: null,\n        enabled: null,\n        highBandwidth: null,\n        host: null,\n        label: null,\n        labelAnime: null,\n        method: null,\n        path: null,\n        paused: null,\n        rpcurl: null,\n        seedLocation: null,\n        seedTime: null,\n        username: null,\n        verifySSL: null\n    },\n    layout: {\n        show: {\n            specials: null,\n            showListOrder: [],\n            allSeasons: null\n        },\n        home: null,\n        history: null,\n        schedule: null\n    },\n    dbPath: null,\n    nzb: {\n        enabled: null,\n        method: null,\n        nzbget: {\n            category: null,\n            categoryAnime: null,\n            categoryAnimeBacklog: null,\n            categoryBacklog: null,\n            host: null,\n            priority: null,\n            useHttps: null,\n            username: null\n        },\n        sabnzbd: {\n            category: null,\n            forced: null,\n            categoryAnime: null,\n            categoryBacklog: null,\n            categoryAnimeBacklog: null,\n            host: null,\n            username: null\n        }\n    },\n    configFile: null,\n    fanartBackground: null,\n    trimZero: null,\n    animeSplitHome: null,\n    branch: null,\n    commitHash: null,\n    indexers: {\n        config: {\n            main: {\n                externalMappings: {},\n                statusMap: {},\n                traktIndexers: {},\n                validLanguages: [],\n                langabbvToId: {}\n            },\n            indexers: {\n                tvdb: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                },\n                tmdb: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                },\n                tvmaze: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                }\n            }\n        }\n    },\n    sourceUrl: null,\n    rootDirs: [],\n    fanartBackgroundOpacity: null,\n    appArgs: [],\n    emby: {\n        enabled: null,\n        host: null\n    },\n    comingEpsDisplayPaused: null,\n    sortArticle: null,\n    timePreset: null,\n    plex: {\n        client: {\n            host: [],\n            username: null,\n            enabled: null\n        },\n        server: {\n            updateLibrary: null,\n            host: [],\n            enabled: null,\n            notify: {\n                download: null,\n                subtitleDownload: null,\n                snatch: null\n            }\n        }\n    },\n    subtitles: {\n        enabled: null\n    },\n    fuzzyDating: null,\n    backlogOverview: {\n        status: null,\n        period: null\n    },\n    posterSortby: null,\n    kodi: {\n        enabled: null,\n        alwaysOn: null,\n        libraryCleanPending: null,\n        cleanLibrary: null,\n        host: [],\n        notify: {\n            snatch: null,\n            download: null,\n            subtitleDownload: null\n        },\n        update: {\n            library: null,\n            full: null,\n            onlyFirst: null\n        }\n    },\n    news: {\n        lastRead: null,\n        latest: null,\n        unread: null\n    },\n    logs: {\n        loggingLevels: {},\n        numErrors: null,\n        numWarnings: null\n    },\n    failedDownloads: {\n        enabled: null,\n        deleteFailed: null\n    },\n    postProcessing: {\n        naming: {\n            pattern: null,\n            multiEp: null,\n            enableCustomNamingSports: null,\n            enableCustomNamingAirByDate: null,\n            patternSports: null,\n            patternAirByDate: null,\n            enableCustomNamingAnime: null,\n            patternAnime: null,\n            animeMultiEp: null,\n            animeNamingType: null,\n            stripYear: null\n        },\n        seriesDownloadDir: null,\n        processAutomatically: null,\n        processMethod: null,\n        deleteRarContent: null,\n        unpack: null,\n        noDelete: null,\n        reflinkAvailable: null,\n        postponeIfSyncFiles: null,\n        autoPostprocessorFrequency: 10,\n        airdateEpisodes: null,\n        moveAssociatedFiles: null,\n        allowedExtensions: [],\n        addShowsWithoutDir: null,\n        createMissingShowDirs: null,\n        renameEpisodes: null,\n        postponeIfNoSubs: null,\n        nfoRename: null,\n        syncFiles: [],\n        fileTimestampTimezone: 'local',\n        extraScripts: [],\n        extraScriptsUrl: null,\n        multiEpStrings: null\n    },\n    sslVersion: null,\n    pythonVersion: null,\n    comingEpsSort: null,\n    githubUrl: null,\n    datePreset: null,\n    subtitlesMulti: null,\n    pid: null,\n    os: null,\n    anonRedirect: null,\n    logDir: null,\n    recentShows: []\n};\n\nvar mutations = _defineProperty({}, _mutationTypes.ADD_CONFIG, function (state, _ref) {\n    var section = _ref.section,\n        config = _ref.config;\n\n    if (section === 'main') {\n        state = Object.assign(state, config);\n    }\n});\n\nvar getters = {\n    layout: function layout(_layout) {\n        return function (state) {\n            return state.layout[_layout];\n        };\n    }\n};\n\nvar actions = {\n    getConfig: function getConfig(context, section) {\n        var commit = context.commit;\n\n        return api.get('/config/' + (section || '')).then(function (res) {\n            if (section) {\n                var config = res.data;\n                commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n                return config;\n            }\n\n            var sections = res.data;\n            Object.keys(sections).forEach(function (section) {\n                var config = sections[section];\n                commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n            });\n            return sections;\n        });\n    },\n    setConfig: function setConfig(context, _ref2) {\n        var section = _ref2.section,\n            config = _ref2.config;\n\n        if (section !== 'main') {\n            return;\n        }\n\n        // If an empty config object was passed, use the current state config\n        config = Object.keys(config).length === 0 ? context.state : config;\n\n        return api.patch('config/' + section, config);\n    },\n    updateConfig: function updateConfig(context, _ref3) {\n        var section = _ref3.section,\n            config = _ref3.config;\n        var commit = context.commit;\n\n        return commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n    },\n    setLayout: function setLayout(context, _ref4) {\n        var page = _ref4.page,\n            layout = _ref4.layout;\n\n        return api.patch('config/main', {\n            layout: _defineProperty({}, page, layout)\n        }).then(function () {\n            setTimeout(function () {\n                // For now we reload the page since the layouts use python still\n                location.reload();\n            }, 500);\n        });\n    }\n};\n\nexports.default = {\n    state: state,\n    mutations: mutations,\n    getters: getters,\n    actions: actions\n};\n\n//# sourceURL=webpack:///./src/store/modules/config.js?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\n\nvar _mutationTypes = __webpack_require__(/*! ../mutation-types */ \"./src/store/mutation-types.js\");\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\nvar state = {\n    wikiUrl: null,\n    donationsUrl: null,\n    localUser: null,\n    posterSortdir: null,\n    locale: null,\n    themeName: null,\n    selectedRootIndex: null,\n    webRoot: null,\n    namingForceFolders: null,\n    cacheDir: null,\n    databaseVersion: {\n        major: null,\n        minor: null\n    },\n    programDir: null,\n    dataDir: null,\n    animeSplitHomeInTabs: null,\n    torrents: {\n        authType: null,\n        dir: null,\n        enabled: null,\n        highBandwidth: null,\n        host: null,\n        label: null,\n        labelAnime: null,\n        method: null,\n        path: null,\n        paused: null,\n        rpcurl: null,\n        seedLocation: null,\n        seedTime: null,\n        username: null,\n        verifySSL: null\n    },\n    layout: {\n        show: {\n            specials: null,\n            showListOrder: [],\n            allSeasons: null\n        },\n        home: null,\n        history: null,\n        schedule: null\n    },\n    dbPath: null,\n    nzb: {\n        enabled: null,\n        method: null,\n        nzbget: {\n            category: null,\n            categoryAnime: null,\n            categoryAnimeBacklog: null,\n            categoryBacklog: null,\n            host: null,\n            priority: null,\n            useHttps: null,\n            username: null\n        },\n        sabnzbd: {\n            category: null,\n            forced: null,\n            categoryAnime: null,\n            categoryBacklog: null,\n            categoryAnimeBacklog: null,\n            host: null,\n            username: null\n        }\n    },\n    configFile: null,\n    fanartBackground: null,\n    trimZero: null,\n    animeSplitHome: null,\n    branch: null,\n    commitHash: null,\n    indexers: {\n        config: {\n            main: {\n                externalMappings: {},\n                statusMap: {},\n                traktIndexers: {},\n                validLanguages: [],\n                langabbvToId: {}\n            },\n            indexers: {\n                tvdb: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                },\n                tmdb: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                },\n                tvmaze: {\n                    apiParams: {\n                        useZip: null,\n                        language: null\n                    },\n                    baseUrl: null,\n                    enabled: null,\n                    icon: null,\n                    id: null,\n                    identifier: null,\n                    mappedTo: null,\n                    name: null,\n                    scene_loc: null, // eslint-disable-line camelcase\n                    showUrl: null,\n                    xemOrigin: null\n                }\n            }\n        }\n    },\n    sourceUrl: null,\n    rootDirs: [],\n    fanartBackgroundOpacity: null,\n    appArgs: [],\n    emby: {\n        enabled: null,\n        host: null\n    },\n    comingEpsDisplayPaused: null,\n    sortArticle: null,\n    timePreset: null,\n    plex: {\n        client: {\n            host: [],\n            username: null,\n            enabled: null\n        },\n        server: {\n            updateLibrary: null,\n            host: [],\n            enabled: null,\n            notify: {\n                download: null,\n                subtitleDownload: null,\n                snatch: null\n            }\n        }\n    },\n    subtitles: {\n        enabled: null\n    },\n    fuzzyDating: null,\n    backlogOverview: {\n        status: null,\n        period: null\n    },\n    posterSortby: null,\n    kodi: {\n        enabled: null,\n        alwaysOn: null,\n        libraryCleanPending: null,\n        cleanLibrary: null,\n        host: [],\n        notify: {\n            snatch: null,\n            download: null,\n            subtitleDownload: null\n        },\n        update: {\n            library: null,\n            full: null,\n            onlyFirst: null\n        }\n    },\n    news: {\n        lastRead: null,\n        latest: null,\n        unread: null\n    },\n    logs: {\n        loggingLevels: {},\n        numErrors: null,\n        numWarnings: null\n    },\n    failedDownloads: {\n        enabled: null,\n        deleteFailed: null\n    },\n    postProcessing: {\n        naming: {\n            pattern: null,\n            multiEp: null,\n            enableCustomNamingSports: null,\n            enableCustomNamingAirByDate: null,\n            patternSports: null,\n            patternAirByDate: null,\n            enableCustomNamingAnime: null,\n            patternAnime: null,\n            animeMultiEp: null,\n            animeNamingType: null,\n            stripYear: null\n        },\n        seriesDownloadDir: null,\n        processAutomatically: null,\n        processMethod: null,\n        deleteRarContent: null,\n        unpack: null,\n        noDelete: null,\n        reflinkAvailable: null,\n        postponeIfSyncFiles: null,\n        autoPostprocessorFrequency: 10,\n        airdateEpisodes: null,\n        moveAssociatedFiles: null,\n        allowedExtensions: [],\n        addShowsWithoutDir: null,\n        createMissingShowDirs: null,\n        renameEpisodes: null,\n        postponeIfNoSubs: null,\n        nfoRename: null,\n        syncFiles: [],\n        fileTimestampTimezone: 'local',\n        extraScripts: [],\n        extraScriptsUrl: null,\n        multiEpStrings: null\n    },\n    sslVersion: null,\n    pythonVersion: null,\n    comingEpsSort: null,\n    githubUrl: null,\n    datePreset: null,\n    subtitlesMulti: null,\n    pid: null,\n    os: null,\n    anonRedirect: null,\n    logDir: null,\n    recentShows: []\n};\n\nvar mutations = _defineProperty({}, _mutationTypes.ADD_CONFIG, function (state, _ref) {\n    var section = _ref.section,\n        config = _ref.config;\n\n    if (section === 'main') {\n        state = Object.assign(state, config);\n    }\n});\n\nvar getters = {\n    layout: function layout(state) {\n        return function (layout) {\n            return state.layout[layout];\n        };\n    }\n};\n\nvar actions = {\n    getConfig: function getConfig(context, section) {\n        var commit = context.commit;\n\n        return api.get('/config/' + (section || '')).then(function (res) {\n            if (section) {\n                var config = res.data;\n                commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n                return config;\n            }\n\n            var sections = res.data;\n            Object.keys(sections).forEach(function (section) {\n                var config = sections[section];\n                commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n            });\n            return sections;\n        });\n    },\n    setConfig: function setConfig(context, _ref2) {\n        var section = _ref2.section,\n            config = _ref2.config;\n\n        if (section !== 'main') {\n            return;\n        }\n\n        // If an empty config object was passed, use the current state config\n        config = Object.keys(config).length === 0 ? context.state : config;\n\n        return api.patch('config/' + section, config);\n    },\n    updateConfig: function updateConfig(context, _ref3) {\n        var section = _ref3.section,\n            config = _ref3.config;\n        var commit = context.commit;\n\n        return commit(_mutationTypes.ADD_CONFIG, { section: section, config: config });\n    },\n    setLayout: function setLayout(context, _ref4) {\n        var page = _ref4.page,\n            layout = _ref4.layout;\n\n        return api.patch('config/main', {\n            layout: _defineProperty({}, page, layout)\n        }).then(function () {\n            setTimeout(function () {\n                // For now we reload the page since the layouts use python still\n                location.reload();\n            }, 500);\n        });\n    }\n};\n\nexports.default = {\n    state: state,\n    mutations: mutations,\n    getters: getters,\n    actions: actions\n};\n\n//# sourceURL=webpack:///./src/store/modules/config.js?");
 
 /***/ }),
 
@@ -2718,4 +2870,4 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 
 /***/ })
 
-}]);
+/******/ });
