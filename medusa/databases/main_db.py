@@ -867,7 +867,7 @@ class AddEpisodeWatchedField(ShiftQualities):
             'manually_searched NUMERIC, watched NUMERIC);'
         )
 
-        # Re-insert old values, setting the new quality column to the invalid value of -1
+        # Re-insert old values, setting the new column 'watched' to the default value 0.
         self.connection.action(
             'INSERT INTO tv_episodes '
             '(showid, indexerid, indexer, name, season, episode, description, airdate, hasnfo, '
