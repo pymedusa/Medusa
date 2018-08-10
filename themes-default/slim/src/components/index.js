@@ -14,6 +14,7 @@ import FileBrowser from './file-browser.vue';
 import Home from './home.vue';
 import LanguageSelect from './language-select.vue';
 import Login from './login.vue';
+import ManualPostProcess from './manual-post-process.vue';
 import NamePattern from './name-pattern.vue';
 import PlotInfo from './plot-info.vue';
 import RootDirs from './root-dirs.vue';
@@ -41,6 +42,7 @@ export {
     Home,
     LanguageSelect,
     Login,
+    ManualPostProcess,
     NamePattern,
     PlotInfo,
     RootDirs,

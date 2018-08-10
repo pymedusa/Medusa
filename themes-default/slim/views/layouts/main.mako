@@ -113,7 +113,6 @@
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>

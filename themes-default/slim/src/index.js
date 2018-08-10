@@ -26,6 +26,7 @@ import {
     DisplayShow,
     FileBrowser,
     LanguageSelect,
+    ManualPostProcess,
     NamePattern,
     PlotInfo,
     RootDirs,
@@ -83,6 +84,7 @@ if (window) {
     window.components.push(FileBrowser);
     window.components.push(Home);
     window.components.push(LanguageSelect);
+    window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
     window.components.push(RootDirs);
