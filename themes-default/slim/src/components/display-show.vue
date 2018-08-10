@@ -28,8 +28,7 @@ export default {
             return this.$route.query.seriesid;
         },
         show() {
-            const { indexer, id, getShowById, shows, $route, $store } = this;
-            const { query } = $route;
+            const { indexer, id, getShowById, shows, $store } = this;
             const { defaults } = $store.state;
 
             if (shows.length === 0 || !indexer || !id) {
