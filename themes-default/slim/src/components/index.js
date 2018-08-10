@@ -11,6 +11,7 @@ import ConfigTextboxNumber from './config-textbox-number.vue';
 import ConfigToggleSlider from './config-toggle-slider.vue';
 import DisplayShow from './display-show.vue';
 import FileBrowser from './file-browser.vue';
+import Home from './home.vue';
 import LanguageSelect from './language-select.vue';
 import Login from './login.vue';
 import NamePattern from './name-pattern.vue';
@@ -36,6 +37,7 @@ export {
     ConfigToggleSlider,
     DisplayShow,
     FileBrowser,
+    Home,
     LanguageSelect,
     Login,
     NamePattern,

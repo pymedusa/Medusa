@@ -17,7 +17,23 @@ import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi, SnatchSelection } from './components';
+import {
+    AnidbReleaseGroupUi,
+    AppHeader,
+    AppLink,
+    Asset,
+    Backstretch,
+    DisplayShow,
+    FileBrowser,
+    LanguageSelect,
+    NamePattern,
+    PlotInfo,
+    RootDirs,
+    ScrollButtons,
+    SelectList,
+    ShowSelector,
+    SnatchSelection
+} from './components';
 
 if (window) {
     window.isDevelopment = isDevelopment;
@@ -64,6 +80,7 @@ if (window) {
     window.components.push(Backstretch);
     window.components.push(DisplayShow);
     window.components.push(FileBrowser);
+    window.components.push(Home);
     window.components.push(LanguageSelect);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
