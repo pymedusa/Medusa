@@ -5,7 +5,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         clean: {
             dist: './dist/',
             bower_components: './bower_components', // eslint-disable-line camelcase
-            fonts: '../themes-default/slim/static/css/*.ttf',
             options: {
                 force: true
             }
@@ -42,9 +41,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     outlayer: [
                         'item.js',
                         'outlayer.js'
-                    ],
-                    openSans: [
-                        'openSans.css'
                     ]
                 },
                 bowerOptions: {
@@ -53,17 +49,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
             }
         },
         copy: {
-            openSans: {
-                files: [{
-                    expand: true,
-                    dot: true,
-                    cwd: 'bower_components/openSans',
-                    src: [
-                        '*.ttf'
-                    ],
-                    dest: '../themes-default/slim/static/css/'
-                }]
-            },
             vender: {
                 files: [{
                     expand: true,
