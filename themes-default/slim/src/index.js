@@ -17,7 +17,7 @@ import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi } from './components';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi, SnatchSelection } from './components';
 
 if (window) {
     window.isDevelopment = isDevelopment;
@@ -71,6 +71,7 @@ if (window) {
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
     window.components.push(ShowSelector);
+    window.components.push(SnatchSelection);
 }
 const UTIL = {
     exec(controller, action) {
