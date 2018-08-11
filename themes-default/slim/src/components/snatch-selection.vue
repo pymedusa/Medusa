@@ -1,6 +1,5 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { api } from '../api';
 import AppLink from './app-link.vue';
 
 export default {
@@ -169,7 +168,6 @@ export default {
         $('.imdbstars').generateStars();
 
         function checkCacheUpdates(repeat) {
-            const self = this;
             let pollInterval = 5000;
             repeat = repeat || true;
 
@@ -202,18 +200,18 @@ export default {
                 }, 200);
             }
 
-            self.refreshResults = function() {
-                // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
-                /*
-                $('#manualSearchTbody').loadContainer(
-                    'home/snatchSelection' + urlParams,
-                    'Loading new search results...',
-                    'Time out, refresh page to try again',
-                    toggleHistoryTable // This is a callback function
-                );
-                */
-                window.location.reload();
-            };
+            // self.refreshResults = function() {
+            //     // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
+            //     /*
+            //     $('#manualSearchTbody').loadContainer(
+            //         'home/snatchSelection' + urlParams,
+            //         'Loading new search results...',
+            //         'Time out, refresh page to try again',
+            //         toggleHistoryTable // This is a callback function
+            //     );
+            //     */
+            //     window.location.reload();
+            // };
 
             $.ajax({
                 url: 'home/manualSearchCheckCache' + urlParams,
@@ -240,7 +238,7 @@ export default {
                 }
 
                 if (data.result === 'refresh') {
-                    self.refreshResults();
+                    window.location.reload();
                     updateSpinner('Refreshed results...', true);
                 }
                 if (data.result === 'searching') {
