@@ -200,19 +200,6 @@ export default {
                 }, 200);
             }
 
-            // self.refreshResults = function() {
-            //     // @FIXME: In the current transition phase to Vue, we can't load pages in this way, so use reload instead.
-            //     /*
-            //     $('#manualSearchTbody').loadContainer(
-            //         'home/snatchSelection' + urlParams,
-            //         'Loading new search results...',
-            //         'Time out, refresh page to try again',
-            //         toggleHistoryTable // This is a callback function
-            //     );
-            //     */
-            //     window.location.reload();
-            // };
-
             $.ajax({
                 url: 'home/manualSearchCheckCache' + urlParams,
                 type: 'GET',
