@@ -19,6 +19,7 @@ import RootDirs from './root-dirs.vue';
 import ScrollButtons from './scroll-buttons.vue';
 import SelectList from './select-list.vue';
 import ShowSelector from './show-selector.vue';
+import SnatchSelection from './snatch-selection.vue';
 import { NotFound } from './http';
 
 export {
@@ -43,5 +44,6 @@ export {
     ScrollButtons,
     SelectList,
     ShowSelector,
+    SnatchSelection,
     NotFound
 };
