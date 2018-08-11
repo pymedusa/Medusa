@@ -235,10 +235,10 @@ window.app = new Vue({
             // Because we're using te toggle-button.vue component, we don't have valid form input's for these.
             // Therefor we need to add these values manually to the form data.
 
-            formData.append('subtitles', subtitles ? '1' : '0');
-            formData.append('anime', anime ? '1' : '0');
-            formData.append('scene', scene ? '1' : '0');
-            formData.append('season_folders', seasonFolder ? '1' : '0');
+            formData.append('subtitles', Number(subtitles));
+            formData.append('anime', Number(anime));
+            formData.append('scene', Number(scene));
+            formData.append('season_folders', Number(seasonFolder));
 
             for (name of release.whitelist) {
                 formData.append('whitelist', name);
