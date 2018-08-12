@@ -12,6 +12,9 @@ const router = new VueRouter({
         },
         component: Login
     }, {
+        path: '/home/displayShow',
+        name: 'displayShow'
+    }, {
         path: '/config',
         name: 'config',
         meta: {

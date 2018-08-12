@@ -1,6 +1,8 @@
 const path = require('path');
+const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const pkg = require('./package.json');
 
 const { config } = pkg;
@@ -14,8 +16,8 @@ const webpackConfig = mode => ({
         app: path.resolve(__dirname, 'src/app.js')
     },
     output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, 'dist', 'js')
+        filename: 'js/[name].js',
+        path: path.resolve(__dirname, 'dist')
     },
     resolve: {
         extensions: ['.js', '.vue', '.json'],
@@ -26,10 +28,33 @@ const webpackConfig = mode => ({
     performance: {
         hints: false
     },
+    stats: {
+        // When `false`, hides extra information about assets collected by children (e.g. plugins)
+        children: false
+    },
     optimization: {
+        runtimeChunk: {
+            name: 'vendors'
+        },
         splitChunks: {
             chunks: 'all',
-            name: 'vendors'
+            name: 'vendors',
+            cacheGroups: {
+                styles: {
+                    test: /\.css$/,
+                    priority: 10
+                },
+                // These are the default cacheGroups!
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10
+                },
+                default: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true
+                }
+            }
         }
     },
     module: {
@@ -49,16 +74,56 @@ const webpackConfig = mode => ({
                 loader: 'babel-loader'
             },
             {
+                // This rule may get either actual `.css` files or the style blocks from `.vue` files.
+                // Here we delegate each request to use the appropriate loaders.
                 test: /\.css$/,
-                use: [
-                    'vue-style-loader',
-                    'css-loader'
+                oneOf: [
+                    {
+                        // Handle style blocks in `.vue` files
+                        // Based on this query: https://github.com/vuejs/vue-loader/blob/v15.2.7/lib/codegen/styleInjection.js#L27
+                        resourceQuery: /^\?vue&type=style/,
+                        use: [
+                            'vue-style-loader',
+                            'css-loader'
+                        ]
+                    },
+                    {
+                        // Handle regular `.css` files
+                        use: [
+                            {
+                                loader: MiniCssExtractPlugin.loader,
+                                options: {
+                                    // Fixes loading fonts from the fonts folder
+                                    publicPath: '../'
+                                }
+                            },
+                            'css-loader'
+                        ]
+                    }
                 ]
+            },
+            {
+                test: /\.(woff2?|ttf|eot|svg)$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'fonts'
+                    }
+                }]
             }
         ]
     },
     plugins: [
+        // This fixes Bootstrap being unable to use jQuery
+        new ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery'
+        }),
         new VueLoaderPlugin(),
+        new MiniCssExtractPlugin({
+            filename: 'css/[name].css'
+        }),
         new FileManagerPlugin({
             onEnd: {
                 copy: Object.values(cssThemes).reduce((operations, theme) => {
@@ -66,6 +131,14 @@ const webpackConfig = mode => ({
                     operations.push({
                         source: './dist/js/**',
                         destination: path.join(theme.dest, 'assets', 'js')
+                    });
+                    operations.push({
+                        source: './dist/css/**',
+                        destination: path.join(theme.dest, 'assets', 'css')
+                    });
+                    operations.push({
+                        source: './dist/fonts/**',
+                        destination: path.join(theme.dest, 'assets', 'fonts')
                     });
                     return operations;
                 }, [])

@@ -23,7 +23,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 11
+CURRENT_MINOR_DB_VERSION = 12
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -699,8 +699,8 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         utils.backup_database(self.connection.path, self.connection.version)
 
         log.info(u'Adding new quality field in the tv_episodes table')
-        self.connection.action('DROP TABLE IF EXISTS old_tv_episodes;')
-        self.connection.action('ALTER TABLE tv_episodes RENAME TO old_tv_episodes;')
+        self.connection.action('DROP TABLE IF EXISTS tmp_tv_episodes;')
+        self.connection.action('ALTER TABLE tv_episodes RENAME TO tmp_tv_episodes;')
 
         self.connection.action(
             'CREATE TABLE IF NOT EXISTS tv_episodes '
@@ -725,14 +725,14 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
             'subtitles, subtitles_searchcount, subtitles_lastsearch, '
             'is_proper, scene_season, scene_episode, absolute_number, '
             'scene_absolute_number, version, release_group, manually_searched '
-            'FROM old_tv_episodes;'
+            'FROM tmp_tv_episodes;'
         )
 
         # We have all that we need, drop the old table
         for index in ['idx_sta_epi_air', 'idx_sta_epi_sta_air', 'idx_status']:
             log.info(u'Dropping the index on {0}', index)
             self.connection.action('DROP INDEX IF EXISTS {index};'.format(index=index))
-        self.connection.action('DROP TABLE IF EXISTS old_tv_episodes;')
+        self.connection.action('DROP TABLE IF EXISTS tmp_tv_episodes;')
 
         log.info(u'Splitting the composite status into status and quality')
         sql_results = self.connection.select('SELECT status from tv_episodes GROUP BY status;')
@@ -840,3 +840,48 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
                 'UPDATE history SET quality = ? WHERE quality = ?;',
                 [new_quality, quality]
             )
+
+
+class AddEpisodeWatchedField(ShiftQualities):
+    """Add episode watched field."""
+
+    def test(self):
+        """Test if the version is at least 44.12"""
+        return self.connection.version >= (44, 12)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new watched field in the tv_episodes table')
+        self.connection.action('DROP TABLE IF EXISTS tmp_tv_episodes;')
+        self.connection.action('ALTER TABLE tv_episodes RENAME TO tmp_tv_episodes;')
+
+        self.connection.action(
+            'CREATE TABLE IF NOT EXISTS tv_episodes '
+            '(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, '
+            'name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, '
+            'hastbn NUMERIC, status NUMERIC, quality NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, '
+            'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
+            'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
+            'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, '
+            'manually_searched NUMERIC, watched NUMERIC);'
+        )
+
+        # Re-insert old values, setting the new column 'watched' to the default value 0.
+        self.connection.action(
+            'INSERT INTO tv_episodes '
+            '(showid, indexerid, indexer, name, season, episode, description, airdate, hasnfo, '
+            'hastbn, status, quality, location, file_size, release_name, subtitles, subtitles_searchcount, '
+            'subtitles_lastsearch, is_proper, scene_season, scene_episode, absolute_number, scene_absolute_number, '
+            'version, release_group, manually_searched, watched) '
+            'SELECT showid, indexerid, indexer, '
+            'name, season, episode, description, airdate, hasnfo, '
+            'hastbn, status, quality, location, file_size, release_name, '
+            'subtitles, subtitles_searchcount, subtitles_lastsearch, '
+            'is_proper, scene_season, scene_episode, absolute_number, '
+            'scene_absolute_number, version, release_group, manually_searched, 0 AS watched '
+            'FROM tmp_tv_episodes;'
+        )
+
+        self.connection.action('DROP TABLE tmp_tv_episodes;')
+        self.inc_minor_version()

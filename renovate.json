@@ -26,6 +26,10 @@
       "allowedVersions": "<6"
     },
     {
+      "packageNames": ["bootstrap"],
+      "allowedVersions": "<4"
+    },
+    {
       "packageNames": [
         "vue",
         "vue-template-compiler",

@@ -239,7 +239,7 @@ const state = {
         fileTimestampTimezone: 'local',
         extraScripts: [],
         extraScriptsUrl: null,
-        multiEpStrings: null
+        multiEpStrings: {}
     },
     sslVersion: null,
     pythonVersion: null,
@@ -263,7 +263,7 @@ const mutations = {
 };
 
 const getters = {
-    layout: layout => state => {
+    layout: state => layout => {
         return state.layout[layout];
     }
 };

@@ -39,6 +39,10 @@
             display: none !important;
         }
         </style>
+
+        ## Webpack-imported CSS files
+        <link rel="stylesheet" type="text/css" href="css/vendors.css?${sbPID}"/>
+
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
@@ -53,7 +57,14 @@
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
     <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
-        <div v-cloak id="vue-wrap" class="container-fluid">
+        <div id="vue-wrap" class="container-fluid">
+
+          <div v-if="globalLoading" class="text-center">
+              <h3>Loading&hellip;</h3>
+              If this is taking too long,<br>
+              <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
+          </div>
+          <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -64,20 +75,24 @@
             <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
-               <div id="content-row" class="row">
-                    <div v-if="globalLoading" class="text-center ${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <h3>Loading....</h3>
-                        If this is taking too long,<br>
-                        <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-                    </div>
-                    <component :is="pageComponent || 'div'" :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <%block name="content" />
-                    </component>
-               </div><!-- /content -->
+            <div id="content-row" class="row">
+                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <%block name="content" />
+                </component>
+            </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
+
+          </div><!-- /globalLoading wrapper -->
+
         </div>
         <%block name="load_main_app" />
+
+        ## This contains all the Webpack-imported modules
+        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
@@ -86,11 +101,6 @@
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-
-        ## This contains all the Webpack-imported modules
-        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
@@ -106,7 +116,6 @@
         <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
@@ -128,28 +137,6 @@
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
-            Vue.mixin({
-                created() {
-                    if (this.$root === this) {
-                        this.$options.sockets.onmessage = messageEvent => {
-                            const { store } = window;
-                            const message = JSON.parse(messageEvent.data);
-                            const { data, event } = message;
-
-                            // Show the notification to the user
-                            if (event === 'notification') {
-                                const { body, hash, type, title } = data;
-                                displayNotification(type, title, body, hash);
-                            } else if (event === 'configUpdated') {
-                                store.dispatch('updateConfig', data);
-                            } else {
-                                displayNotification('info', event, data);
-                            }
-                        };
-                    }
-                }
-            });
-
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 data() {
@@ -183,7 +170,9 @@
         </script>
         <script>
             if (!window.loadMainApp) {
-                console.debug('Loading local Vue');
+                if (window.isDevelopment) {
+                    console.debug('Loading local Vue');
+                }
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
                 Vue.use(AsyncComputed);
@@ -191,7 +180,9 @@
 
                 // Load x-template components
                 window.components.forEach(component => {
-                    console.log('Registering ' + component.name);
+                    if (window.isDevelopment) {
+                        console.log('Registering ' + component.name);
+                    }
                     Vue.component(component.name, component);
                 });
 

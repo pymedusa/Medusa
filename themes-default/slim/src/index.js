@@ -1,4 +1,8 @@
 import $ from 'jquery';
+import 'bootstrap'; // eslint-disable-line import/no-unassigned-import
+import 'bootstrap/dist/css/bootstrap.min.css'; // eslint-disable-line import/no-unassigned-import
+import './css/open-sans.css'; // eslint-disable-line import/no-unassigned-import
+
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VueMeta from 'vue-meta';
@@ -8,13 +12,19 @@ import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import axios from 'axios';
+import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
+import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs } from './components';
+import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi, SnatchSelection } from './components';
 
 if (window) {
+    window.isDevelopment = isDevelopment;
+
     // Adding libs to window so mako files can use them
+    window.$ = $;
+    window.jQuery = $;
     window.Vue = Vue;
     window.Vuex = Vuex;
     window.VueMeta = VueMeta;
@@ -24,6 +34,7 @@ if (window) {
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
     window.axios = axios;
+    window._ = { debounce };
     window.store = store;
     window.router = router;
     window.apiRoute = apiRoute;
@@ -46,6 +57,7 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(AnidbReleaseGroupUi);
     window.components.push(AppHeader);
     window.components.push(AppLink);
     window.components.push(Asset);
@@ -59,6 +71,7 @@ if (window) {
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
     window.components.push(ShowSelector);
+    window.components.push(SnatchSelection);
 }
 const UTIL = {
     exec(controller, action) {
@@ -114,9 +127,9 @@ $.fn.extend({
     }
 });
 
-if (!document.location.pathname.includes('/login')) {
+const { pathname } = window.location;
+if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
-        log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
@@ -143,8 +156,7 @@ if (!document.location.pathname.includes('/login')) {
             return MEDUSA.config.indexers.config.indexers[name];
         };
     }).catch(error => {
-        log.error(error);
+        console.debug(error);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
-

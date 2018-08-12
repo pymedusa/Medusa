@@ -7,6 +7,7 @@
 - Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
 - Updated adba (anidb) client to version 1.0.0 (python 2/3 compatible) ([#4692](https://github.com/pymedusa/Medusa/pull/4822))
 - Changed caching location for the adba and simpleanidb libs to the default Medusa cache location. ([#4692](https://github.com/pymedusa/Medusa/pull/4822))
+- Added a new field name 'watched' to the tv_episodes db table. UI will be added in future. ([#4692](https://github.com/pymedusa/Medusa/pull/4825))
 
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
