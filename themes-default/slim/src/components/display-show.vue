@@ -100,7 +100,7 @@ export default {
             const epArr = [];
             const status = $('#statusSelect').val();
             const quality = $('#qualitySelect').val();
-            const seriesSlug = $('#series-slug').val();
+            const showSlug = $('#series-slug').val();
 
             $('.epCheck').each((index, element) => {
                 if (element.checked === true) {
@@ -113,7 +113,7 @@ export default {
             }
 
             if (quality) {
-                setQuality(quality, seriesSlug, epArr);
+                setQuality(quality, showSlug, epArr);
             }
 
             if (status) {
@@ -333,13 +333,13 @@ export default {
             $('#checkboxControlsBackground').offset({ top, left: 0 });
             $('#checkboxControlsBackground').show();
         },
-        setQuality(quality, seriesSlug, episodes) {
+        setQuality(quality, showSlug, episodes) {
             const patchData = {};
             episodes.forEach(episode => {
                 patchData[episode] = { quality: parseInt(quality, 10) };
             });
 
-            api.patch('series/' + seriesSlug + '/episodes', patchData).then(response => {
+            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
                 log.info(response.data);
                 window.location.reload();
             }).catch(error => {

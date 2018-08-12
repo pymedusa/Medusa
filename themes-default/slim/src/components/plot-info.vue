@@ -8,7 +8,7 @@ module.exports = {
     name: 'plot-info',
     props: {
         hasPlot: Boolean,
-        seriesSlug: {
+        showSlug: {
             type: String,
             required: true
         },
