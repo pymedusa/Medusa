@@ -49,10 +49,6 @@ export {
     ScrollButtons,
     SelectList,
     ShowSelector,
-<<<<<<< HEAD
     SnatchSelection,
-=======
-    Status,
->>>>>>> e91bdec9d... move status to vue
     NotFound
 };
