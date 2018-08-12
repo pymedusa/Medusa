@@ -113,8 +113,8 @@ const UTIL = {
         const { body } = document;
         $('[asset]').each(function() {
             const asset = $(this).attr('asset');
-            const series = $(this).attr('series');
-            const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
+            const show = $(this).attr('series');
+            const path = apiRoot + 'series/' + show + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 const defaultPath = $(this).attr('src');
                 if ($(this).attr('lazy') === 'on') {
