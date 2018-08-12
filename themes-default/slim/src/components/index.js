@@ -49,6 +49,7 @@ export {
     ScrollButtons,
     SelectList,
     ShowSelector,
+    Status,
     SnatchSelection,
     NotFound
 };

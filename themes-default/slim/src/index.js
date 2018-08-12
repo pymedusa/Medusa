@@ -25,6 +25,7 @@ import {
     Backstretch,
     DisplayShow,
     FileBrowser,
+    Home,
     LanguageSelect,
     ManualPostProcess,
     NamePattern,
