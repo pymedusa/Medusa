@@ -117,6 +117,7 @@ from six import iteritems
 
 from tornroutes import route
 
+import trakt.core as trakt
 from traktor import (
     MissingTokenException,
     TokenExpiredException,
@@ -550,6 +551,33 @@ class Home(WebRoot):
             return "Trakt Authorized"
         ui.notifications.error('Connection error. Reload the page to get new token!')
         return "Trakt Not Authorized!"
+
+    @staticmethod
+    def requestTraktDeviceCodeOauth():
+        print('Start a new Oauth device authentication request. Request is valid for 60 minutes.')
+        app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+        return json.dumps(app.TRAKT_DEVICE_CODE)
+
+    @staticmethod
+    def checkTrakTokenOauth():
+        print('Get new oauth token and refresh token')
+        error = False
+
+        if (app.TRAKT_DEVICE_CODE.get('requested') + app.TRAKT_DEVICE_CODE.get('requested')) < time.time():
+            return json.dumps({'result': 'request expired', 'error': True})
+
+        if app.TRAKT_DEVICE_CODE and app.TRAKT_DEVICE_CODE.get('device_code'):
+            # If PR: https://github.com/moogar0880/PyTrakt/pull/83 we can remove the exception handling, and make this
+            # allot cleaner
+            try:
+                response = trakt.get_device_token(app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+                app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = response.get('access_token'), response.get('refresh_token')
+                return json.dumps({'result': 'succesfully updated trakt access and refresh token'})
+            except Exception:
+                print('replace with logger: device_code hasnt been activated yet.')
+                return json.dumps({'result': 'device_code hasnt been activated yet.', 'error': error})
+
+        return json.dumps({'result': 'Something went wrong', 'error': error})
 
     @staticmethod
     def testTrakt(username=None, blacklist_name=None):
