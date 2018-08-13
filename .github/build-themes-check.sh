@@ -1,35 +1,41 @@
 #!/bin/bash
 set -e
 
+# Helper function to print the command before running it.
 run_verbose () {
     echo "\$ $*"
     eval $*
 }
 
+# Determine if and how to build the Webpack bundle.
+build_cmd=""
+build_mode=""
 # $TRAVIS_BRANCH is either a PR's target branch, or the current branch if it's a push build.
+# Do not build on other branches because it will cause conflicts on pull requests,
+#   where push builds build for development and PR builds build for production.
 if [[ $TRAVIS_BRANCH == "master" ]]; then
-    build_cmd="webpack-build"
+    build_cmd="yarn webpack-build"
     build_mode="production"
-else
-    build_cmd="dev"
+elif [[ $TRAVIS_BRANCH == "develop" ]]; then
+    build_cmd="yarn dev"
     build_mode="development"
 fi
 
+# Build themes.
 cd themes-default/slim/
-run_verbose "yarn $build_cmd"
+[[ -n $build_cmd ]] && run_verbose "$build_cmd"
 run_verbose "yarn gulp sync"
 cd ../../
-
-status_cmd="git status --porcelain -- themes/"
-
-# if [[ $build_mode == "development" ]]; then
-#     status_cmd="$status_cmd :(exclude)themes/*/assets/js/vendors.js"
-# fi
-
-status="$($status_cmd)";
+# Check if the themes changed.
+status="$(git status --porcelain -- themes/)";
 if [[ -n $status ]]; then
-    echo "Please build the themes (mode: $build_mode) "
-    echo "--------------------------------------------"
+    if [[ -z $build_mode ]]; then
+        echo "Please build the themes"
+        echo "-----------------------"
+    else
+        echo "Please build the themes (mode: $build_mode) "
+        echo "--------------------------------------------"
+    fi
     echo "$status"
     exit 1
 fi
