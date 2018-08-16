@@ -1223,7 +1223,9 @@ class Tag(PageElement):
             prefix = self.prefix + ":"
 
         if self.is_empty_element:
-            close = formatter.void_element_close_prefix or ''
+            close = ''
+            if isinstance(formatter, Formatter):
+                close = formatter.void_element_close_prefix or close
         else:
             closeTag = '</%s%s>' % (prefix, self.name)
 

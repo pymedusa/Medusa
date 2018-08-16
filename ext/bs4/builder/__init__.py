@@ -239,6 +239,12 @@ class HTMLTreeBuilder(TreeBuilder):
         # These are from earlier versions of HTML and are removed in HTML5.
         'basefont', 'bgsound', 'command', 'frame', 'image', 'isindex', 'nextid', 'spacer'
     ])
+
+    # The HTML standard defines these as block-level elements. Beautiful
+    # Soup does not treat these elements differently from other elements,
+    # but it may do so eventually, and this information is available if
+    # you need to use it.
+    block_elements = set(["address", "article", "aside", "blockquote", "canvas", "dd", "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr", "li", "main", "nav", "noscript", "ol", "output", "p", "pre", "section", "table", "tfoot", "ul", "video"])
     
     # The HTML standard defines these attributes as containing a
     # space-separated list of values, not a single value. That is,
