@@ -1,7 +1,7 @@
 ## ext
  Status  |  Package  |  Version / Commit  | Usage | Notes
 :------: | :-------: | :----------------: | :---- | :----
-:: | `adba` | pymedusa/[0e1657f](https://github.com/pymedusa/adba/tree/0e1657f16aef81f7c1659a7d210f1e54dee3647f) | **`medusa`** | -
+:: | `adba` | pymedusa/[0e1657f](https://github.com/pymedusa/adba/tree/2aeff619e65ee0106b95660c253111cc0ce90c6c) | **`medusa`** | -
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | -
 :: | `attrs` | [18.1.0](https://pypi.org/project/attrs/18.1.0/) | `imdbpie` | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -

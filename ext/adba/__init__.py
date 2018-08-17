@@ -151,7 +151,7 @@ class Connection(threading.Thread):
             if callback:
                 callback(resp)
 
-        logging.debug("handling(%s-%s) command %s", self.counter, self.link.delay, command.command)
+        logging.debug("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
 
         # make live request
         command.authorize(self.mode, self.link.new_tag(), self.link.session, callback_wrapper)
@@ -185,7 +185,7 @@ class Connection(threading.Thread):
         if self._username and self._password:
             logging.info("auto re authenticating !")
             resp = self.auth(self._username, self._password)
-            if resp.rescode != '500':
+            if resp.rescode not in '500':
                 return True
         else:
             return False

@@ -17,7 +17,7 @@
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from os import makedirs, path
+import os
 import re
 from six import string_types
 import string
@@ -104,8 +104,8 @@ class Anime(aniDBabstractObject):
 
         self.maper = AniDBMaper()
 
-        if cache_path and not path.exists(cache_path):
-            makedirs(cache_path)
+        if cache_path and not os.path.exists(cache_path):
+            os.makedirs(cache_path)
 
         self.tvDBMap = TvDBMap(cache_path)
         self.allAnimeXML = None
@@ -172,7 +172,7 @@ class Anime(aniDBabstractObject):
     # TODO: refactor and use the new functions in anidbFileinfo
     def _get_aid_from_xml(self, name):
         if not self.allAnimeXML:
-            self.allAnimeXML = self._read_animetitels_xml()
+            self.allAnimeXML = read_anidb_xml(self.cache_path)
 
         regex = re.compile('( \(\d{4}\))|[%s]' % re.escape(string.punctuation))  # remove any punctuation and e.g. ' (2011)'
         # regex = re.compile('[%s]'  % re.escape(string.punctuation)) # remove any punctuation and e.g. ' (2011)'
@@ -191,7 +191,7 @@ class Anime(aniDBabstractObject):
     # TODO: refactor and use the new functions in anidbFileinfo
     def _get_name_from_xml(self, aid, onlyMain=True):
         if not self.allAnimeXML:
-            self.allAnimeXML = self._read_animetitels_xml()
+            self.allAnimeXML = read_anidb_xml(self.cache_path)
 
         for anime in self.allAnimeXML.findall("anime"):
             if int(anime.get("aid", False)) == aid:
@@ -201,10 +201,6 @@ class Anime(aniDBabstractObject):
                     if (current_lang == "en" and not onlyMain) or current_type == "main":
                         return title.text
         return ""
-
-    def _read_animetitels_xml(self):
-        all_anime_xml = read_anidb_xml(self.cache_path)
-        return all_anime_xml
 
     def _builPreSequal(self):
         if self.related_aid_list and self.related_aid_type:

@@ -100,7 +100,7 @@ def get_file_size(path):
 
 
 def read_anidb_xml(file_path=None):
-    if not os.path.join(file_path, "animetitles.xml"):
+    if not file_path:
         file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "animetitles.xml")
     elif not file_path.endswith("xml"):
         file_path = os.path.join(file_path, "animetitles.xml")
@@ -112,7 +112,6 @@ def read_tvdb_map_xml(file_path=None):
         file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "anime-list.xml")
     elif not file_path.endswith(".xml"):
         file_path = os.path.join(file_path, "anime-list.xml")
-
     return read_xml_into_etree(file_path)
 
 
@@ -137,8 +136,8 @@ def read_xml_into_etree(filePath):
 def _remove_file_failed(file):
     try:
         os.remove(file)
-    except:
-        pass
+    except OSError:
+        logging.warning("Error occurred while trying to remove file %s", file)
 
 
 def download_file(url, filename):
