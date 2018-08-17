@@ -56,6 +56,7 @@
 :: | `subliminal` | [879c0c8](https://github.com/Diaoul/subliminal/tree/879c0c8d18618e32ad466bb63bd939edb268bc60) | **`medusa`** | -
 :: | `tornado` | [5.1](https://pypi.org/project/tornado/5.1/) | **`medusa`**, `tornroutes` | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
+:: | `trakt` | [2.8.2](https://pypi.org/project/trakt/2.8.2/) | **`medusa`** | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
