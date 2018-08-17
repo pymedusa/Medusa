@@ -13,7 +13,6 @@ import time
 from collections import namedtuple
 from functools import wraps
 from requests.compat import urljoin
-from requests.exceptions import HTTPError
 from requests_oauthlib import OAuth2Session
 from trakt import errors
 
@@ -239,28 +238,20 @@ def get_device_token(device_code, client_id=None, client_secret=None,
         "client_secret": CLIENT_SECRET
     }
 
-    headers = {
-        'Content-Type': 'application/json'
-    }
+    response = requests.post(urljoin(BASE_URL, '/oauth/device/token'),
+                             json=data)
 
-    response = None
-    try:
-        response = requests.post(urljoin(BASE_URL, '/oauth/device/token'),
-                                 json=data, headers=headers)
-        response.raise_for_status()
-    except HTTPError as error:
-        if response and response.status_code == 400:
-            raise errors.BadRequestException(error.message)
+    # We only get json on success.
+    if response.status_code == 200:
+        data = response.json()
+        OAUTH_TOKEN = data.get('access_token')
+        OAUTH_REFRESH = data.get('refresh_token')
 
-    response = response.json()
-    OAUTH_TOKEN = response.get('access_token')
-    OAUTH_REFRESH = response.get('refresh_token')
-
-    if store:
-        _store(
-            CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
-            OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH
-        )
+        if store:
+            _store(
+                CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
+                OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH
+            )
 
     return response
 
@@ -287,42 +278,42 @@ def device_auth(client_id=None, client_secret=None, store=False):
     :return: A dict with the authentication result.
     Or False of authentication failed.
     """
-    device_response = get_device_code(client_id=client_id,
-                                      client_secret=client_secret)
+    error_messages = {
+        404: 'Invalid device_code',
+        409: 'You already approved this code',
+        410: 'The tokens have expired, restart the process',
+        418: 'You explicitly denied this code',
+    }
 
-    authenticated = False
-    result = None
-    try:
-        result = get_device_token(
-            device_response['device_code'], client_id=client_id,
-            client_secret=client_secret, store=store
-        )
-    except errors.BadRequestException:
-        authenticated = False
+    success_message = (
+        "You've been succesfully authenticated. "
+        "With access_token {access_token} and refresh_token {refresh_token}"
+    )
 
-    while all([authenticated, device_response.get('requested'),
-               device_response['requested'] + device_response['expires_in']
-               > time.time()]):
-        time.sleep(device_response['interval'])
-        try:
-            result = get_device_token(
-                device_response['device_code'], client_id=client_id,
-                client_secret=client_secret, store=store
-            )
-        except errors.BadRequestException:
-            authenticated = False
-        else:
-            if result.get('access_token'):
-                authenticated = True
+    response = get_device_code(client_id=client_id,
+                               client_secret=client_secret)
+    device_code = response['device_code']
+    interval = response['interval']
 
-    if authenticated:
-        print('Youve been succesfully authenticated. With access_token '
-              '{access_token} and refresh_token {refresh_token}'.format(
-                access_token=result['access_token'],
-                refresh_token=result['refresh_token']
-              ))
+    # No need to check for expiration, the API will notify us.
+    while True:
+        response = get_device_token(device_code, client_id, client_secret,
+                                    store)
 
-    return result
+        if response.status_code == 200:
+            print(success_message.format_map(response.json()))
+            break
+
+        elif response.status_code == 429:  # slow down
+            interval *= 2
+
+        elif response.status_code != 400:  # not pending
+            print(error_messages.get(response.status_code, response.reason))
+            break
+
+        time.sleep(interval)
+
+    return response
 
 
 auth_method = {
