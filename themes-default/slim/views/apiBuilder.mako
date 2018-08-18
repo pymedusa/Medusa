@@ -39,13 +39,17 @@
     <link rel="apple-touch-icon" sizes="76x76" href="images/ico/favicon-76.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/ico/favicon-72.png">
     <link rel="apple-touch-icon" href="images/ico/favicon-57.png">
+
+    ## Webpack-imported CSS files
+    <link rel="stylesheet" type="text/css" href="css/vendors.css?${sbPID}"/>
+
     <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
     <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-    <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" />
+    <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
 </head>
-<body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
+<body web-root="${app.WEB_ROOT}" style="display: none;">
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -144,8 +148,11 @@
 var commands = ${sorted([binary_type(_) for _ in commands])};
 var episodes = ${episodes};
 </script>
-<script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
+## This contains all the Webpack-imported modules
+<script src="js/vendors.js?${sbPID}"></script>
+<script src="js/index.js?${sbPID}"></script>
+<script src="js/vender.min.js?${sbPID}"></script>
+<script src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
 <%def name="display_parameters_doc(parameters, required)">

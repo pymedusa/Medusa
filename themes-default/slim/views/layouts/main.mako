@@ -39,6 +39,10 @@
             display: none !important;
         }
         </style>
+
+        ## Webpack-imported CSS files
+        <link rel="stylesheet" type="text/css" href="css/vendors.css?${sbPID}"/>
+
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
@@ -53,7 +57,14 @@
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
     <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
-        <div v-cloak id="vue-wrap" class="container-fluid">
+        <div id="vue-wrap" class="container-fluid">
+
+          <div v-if="globalLoading" class="text-center">
+              <h3>Loading&hellip;</h3>
+              If this is taking too long,<br>
+              <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
+          </div>
+          <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -65,19 +76,23 @@
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
-                    <div v-if="globalLoading" class="text-center ${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <h3>Loading....</h3>
-                        If this is taking too long,<br>
-                        <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-                    </div>
-                    <div :style="globalLoading ? { opacity: '0 !important' } : undefined" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
-                    </div>
+                </component>
                </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
+
+          </div><!-- /globalLoading wrapper -->
+
         </div>
         <%block name="load_main_app" />
+
+        ## This contains all the Webpack-imported modules
+        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+
+        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
+
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
@@ -86,12 +101,6 @@
         <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-
-        ## This contains all the Webpack-imported modules
-        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
@@ -107,7 +116,6 @@
         <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
         <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
@@ -119,10 +127,8 @@
 
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
         <script>
-            // Used to get mako vue components to the app.js
-            window.components = [];
             // Used to get username to the app.js and header
-            % if app.WEB_USERNAME and app.WEB_PASSWORD:
+            % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
             window.username = ${json.dumps(app.WEB_USERNAME)};
             % else:
             window.username = '';
@@ -131,37 +137,16 @@
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
-            Vue.mixin({
-                created() {
-                    if (this.$root === this) {
-                        this.$options.sockets.onmessage = messageEvent => {
-                            const { store } = window;
-                            const message = JSON.parse(messageEvent.data);
-                            const { data, event } = message;
-
-                            // Show the notification to the user
-                            if (event === 'notification') {
-                                const { body, hash, type, title } = data;
-                                displayNotification(type, title, body, hash);
-                            } else if (event === 'configUpdated') {
-                                store.dispatch('updateConfig', data);
-                            } else {
-                                displayNotification('info', event, data);
-                            }
-                        };
-                    }
-                }
-            });
-
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 data() {
                     return {
-                        globalLoading: true
+                        globalLoading: true,
+                        pageComponent: false
                     };
                 },
                 mounted() {
-                    if (this.$root === this && !document.location.pathname.endsWith('/login/')) {
+                    if (this.$root === this && !document.location.pathname.includes('/login')) {
                         const { store, username } = window;
                         /* This is used by the `app-header` component
                            to only show the logout button if a username is set */
@@ -185,7 +170,9 @@
         </script>
         <script>
             if (!window.loadMainApp) {
+                if (window.isDevelopment) {
                 console.debug('Loading local Vue');
+                }
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
                 Vue.use(AsyncComputed);
@@ -193,24 +180,15 @@
 
                 // Load x-template components
                 window.components.forEach(component => {
+                    if (window.isDevelopment) {
                     console.log('Registering ' + component.name);
+                    }
                     Vue.component(component.name, component);
                 });
 
                 // Global components
                 Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('app-header', httpVueLoader('js/templates/app-header.vue'));
-                Vue.component('scroll-buttons', httpVueLoader('js/templates/scroll-buttons.vue'));
-                Vue.component('app-link', httpVueLoader('js/templates/app-link.vue'));
-                Vue.component('asset', httpVueLoader('js/templates/asset.vue'));
-                Vue.component('file-browser', httpVueLoader('js/templates/file-browser.vue'));
-                Vue.component('plot-info', httpVueLoader('js/templates/plot-info.vue'));
-                Vue.component('name-pattern', httpVueLoader('js/templates/name-pattern.vue'));
-                Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
-                Vue.component('language-select', httpVueLoader('js/templates/language-select.vue'));
-                Vue.component('root-dirs', httpVueLoader('js/templates/root-dirs.vue'));
-                Vue.component('backstretch', httpVueLoader('js/templates/backstretch.vue'));
                 Vue.component('config-checkbox', httpVueLoader('js/templates/config-checkbox.vue'));
             }
         </script>

@@ -231,8 +231,12 @@ class TVChaosUKProvider(TorrentProvider):
         # Strip trailing 3 dots
         title = title[:-3]
         search_params = {'input': title}
-        result = self.session.get(self.urls['query'], params=search_params)
-        with BS4Parser(result.text, 'html5lib') as html:
+        response = self.session.get(self.urls['query'], params=search_params)
+        if not response or not response.text:
+            log.debug("Couldn't retrieve the full release title")
+            return title
+
+        with BS4Parser(response.text, 'html5lib') as html:
             titles = html('results')
             for item in titles:
                 title = item.text

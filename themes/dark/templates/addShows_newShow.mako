@@ -512,7 +512,7 @@ window.app = new Vue({
                         <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br>
                     </div>
                     <div v-else class="stepDiv">
-                        <root-dirs @update:root-dirs="rootDirsUpdated"></root-dirs>
+                        <root-dirs @update="rootDirsUpdated"></root-dirs>
                     </div>
                 </fieldset>
                 <fieldset class="sectionwrap">

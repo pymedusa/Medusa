@@ -9,28 +9,6 @@ window.app = new Vue({
         title: 'Config - Post Processing'
     },
     data() {
-        const processMethods = [
-            { value: 'copy', text: 'Copy' },
-            { value: 'move', text: 'Move' },
-            { value: 'hardlink', text: 'Hard Link' },
-            { value: 'symlink', text: 'Symbolic Link' }
-        ];
-
-        const timezoneOptions = [
-            { value: 'local', text: 'Local' },
-            { value: 'network', text: 'Network' }
-        ]
-
-        let defaultMetadataProviders = [];
-        const getFirstEnabledMetadataProvider = () => {
-            defaultMetadataProviders.forEach(provider => {
-                if (provider.show_metadata || provider.episode_metadata) {
-                    return provider;
-                }
-            });
-            return 'kodi';
-        }
-
         return {
             configLoaded: false,
             header: 'Post Processing',
@@ -41,8 +19,16 @@ window.app = new Vue({
                 { pattern: 'S%0SE%0E - %EN', example: 'S02E03 - Ep Name' },
                 { pattern: 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG', example: 'Season 02/Show.Name.S02E03.720p.HDTV-RLSGROUP' }
             ],
-            processMethods: processMethods,
-            timezoneOptions: timezoneOptions,
+            processMethods: [
+                { value: 'copy', text: 'Copy' },
+                { value: 'move', text: 'Move' },
+                { value: 'hardlink', text: 'Hard Link' },
+                { value: 'symlink', text: 'Symbolic Link' }
+            ],
+            timezoneOptions: [
+                { value: 'local', text: 'Local' },
+                { value: 'network', text: 'Network' }
+            ],
             postProcessing: {
                 naming: {
                     pattern: null,
@@ -78,37 +64,37 @@ window.app = new Vue({
                 fileTimestampTimezone: 'local',
                 extraScripts: [],
                 extraScriptsUrl: null,
-                multiEpStrings: null
+                multiEpStrings: {}
             },
-            metadataProviders: defaultMetadataProviders,
-            metadataProviderSelected: getFirstEnabledMetadataProvider()
+            metadataProviders: {},
+            metadataProviderSelected: null
         };
     },
     methods: {
         saveNaming(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.pattern = values.pattern;
             this.postProcessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternSports = values.pattern;
             this.postProcessing.naming.enableCustomNamingSports = values.enabled;
         },
         saveNamingAbd(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternAirByDate = values.pattern;
             this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
         },
         saveNamingAnime(values) {
             if (!this.configLoaded) {
-                return
+                return;
             }
             this.postProcessing.naming.patternAnime = values.pattern;
             this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
@@ -116,26 +102,38 @@ window.app = new Vue({
             this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
         },
         save() {
-            const { $store } = this;
+            const { $store, postProcessing, metadataProviders } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.configLoaded) {
-                return
+                return;
             }
             // Disable the save button until we're done.
             this.saving = true;
 
-            let config = {
-                postProcessing: this.postProcessing,
+            // Clone the config into a new object
+            const config = Object.assign({}, {
+                postProcessing,
                 metadata: {
-                    metadataProviders: this.metadataProviders
+                    metadataProviders
                 }
-            };
+            });
 
-            $store.dispatch('setConfig', {section: 'main', config: config}).then(() => {
-                this.$snotify.success('Saved postprocessing config', 'Saved', { timeout: 5000 });
-            }).catch(error => {
+            // Use destructuring to remove the unwanted keys.
+            const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
+            // Assign the object with the keys removed to our copied object.
+            config.postProcessing = rest;
+
+            const section = 'main';
+
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Saved Post-Processing config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(() => {
                 this.$snotify.error(
-                    'Error while trying to save postprocessing config',
+                    'Error while trying to save Post-Processing config',
                     'Error'
                 );
             });
@@ -145,39 +143,43 @@ window.app = new Vue({
         config() {
             return this.$store.state.config;
         },
-        availableMetadataProviders() {
-            let providers = [];
-            for (provider of this.metadataProviders) {
-                providers.push(provider);
-            }
-            return providers;
+        metadata() {
+            return this.$store.state.metadata;
         },
         multiEpStringsSelect() {
             if (!this.postProcessing.multiEpStrings) {
                 return [];
             }
             return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
-                value: Number(k), text: this.postProcessing.multiEpStrings[k]
+                value: Number(k),
+                text: this.postProcessing.multiEpStrings[k]
             }));
         }
     },
     mounted() {
-        const { $store } = this;
+        /**
+         * Get the first enabled metadata provider based on enabled features.
+         * @param {Object} providers - The metadata providers object.
+         * @return {String} - The id of the first enabled provider.
+         */
+        const getFirstEnabledMetadataProvider = providers => {
+            const firstEnabledProvider = Object.values(providers).find(provider => {
+                return provider.showMetadata || provider.episodeMetadata;
+            });
+            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
+        };
 
-        $store.dispatch('getConfig', 'main').then(config => {
+        // This is used to wait for the config to be loaded by the store.
+        this.$once('loaded', () => {
+            const { config, metadata } = this;
+
             this.configLoaded = true;
+
             // Map the state values to local data.
             this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
-        }).catch(error => {
-            console.debug(error);
-        });
 
-        // Get metadata config
-        $store.dispatch('getConfig', 'metadata').then(metadata => {
-            // Map the state values to local data
             this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
-        }).catch(error => {
-            console.debug(error);
+            this.metadataProviderSelected = getFirstEnabledMetadataProvider(this.metadataProviders);
         });
     }
 });
@@ -199,9 +201,9 @@ window.app = new Vue({
                     <div id="post-processing">
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                    <h3>Scheduled Post-Processing</h3>
-                                    <p>Settings that dictate how Medusa should process completed downloads.</p>
-                                    <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
+                                <h3>Scheduled Post-Processing</h3>
+                                <p>Settings that dictate how Medusa should process completed downloads.</p>
+                                <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
                             </div>
 
                             <div class="col-xs-12 col-md-10">
@@ -259,8 +261,8 @@ window.app = new Vue({
 
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                    <h3>General Post-Processing</h3>
-                                    <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
+                                <h3>General Post-Processing</h3>
+                                <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
@@ -289,12 +291,12 @@ window.app = new Vue({
                                             <span>Postpone if no subtitle</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
-                                                <span>Wait to process a file until subtitles are present</span>
-                                                <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
-                                                <span>&nbsp;</span>
-                                                <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
-                                                <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
+                                            <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
+                                            <span>Wait to process a file until subtitles are present</span>
+                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
+                                            <span>&nbsp;</span>
+                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                            <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                         </div>
                                     </div>
 
@@ -423,7 +425,7 @@ window.app = new Vue({
                                     </div>
                                 </fieldset>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div> <!-- /col --> 
+                            </div> <!-- /col -->
                         </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
 
@@ -438,31 +440,31 @@ window.app = new Vue({
                                 <fieldset class="component-group-list">
 
                                     <!-- default name-pattern component -->
-                                    <name-pattern class="component-group" :naming-pattern="postProcessing.naming.pattern"
+                                    <name-pattern class="component-item" :naming-pattern="postProcessing.naming.pattern"
                                         :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp"
                                         :multi-ep-styles="multiEpStringsSelect" @change="saveNaming" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default sports name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingSports"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingSports"
                                         :naming-pattern="postProcessing.naming.patternSports" :naming-presets="presets" type="sports"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default airs by date name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
                                         :naming-pattern="postProcessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded">
                                     </name-pattern>
 
                                     <!-- default anime name-pattern component -->
-                                    <name-pattern class="component-group" :enabled="postProcessing.naming.enableCustomNamingAnime"
+                                    <name-pattern class="component-item" :enabled="postProcessing.naming.enableCustomNamingAnime"
                                         :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp"
                                         :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postProcessing.naming.animeNamingType"
                                         :enabled-naming-custom="postProcessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded">
                                     </name-pattern>
 
-                                    <div class="form-group component-group">
+                                    <div class="form-group component-item">
                                         <label for="naming_strip_year" class="col-sm-2 control-label">
                                             <span>Strip Show Year</span>
                                         </label>
@@ -495,7 +497,7 @@ window.app = new Vue({
                                             <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
                                                 <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
                                             </select>
-                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>    
+                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                                         </div>
                                     </div>
 
@@ -523,7 +525,7 @@ window.app = new Vue({
                                                 <label :for="provider.id + '_fanart'"><span :id="provider.id + '_eg_fanart'" :class="{disabled: !provider.fanart}"><span v-html="'<span>' + provider.example.fanart + '</span>'"></span></span></label>
                                                 <label :for="provider.id + '_poster'"><span :id="provider.id + '_eg_poster'" :class="{disabled: !provider.poster}"><span v-html="'<span>' + provider.example.poster + '</span>'"></span></span></label>
                                                 <label :for="provider.id + '_banner'"><span :id="provider.id + '_eg_banner'" :class="{disabled: !provider.banner}"><span v-html="'<span>' + provider.example.banner + '</span>'"></span></span></label>
-                                                <label :for="provider.id + '_episode_thumbnails'"><span :id="provider.id + '_eg_episode_thumbnails'" :class="{disabled: !provider.EpisodeThumbnails}"><span v-html="'<span>' + provider.example.EpisodeThumbnails + '</span>'"></span></span></label>
+                                                <label :for="provider.id + '_episode_thumbnails'"><span :id="provider.id + '_eg_episode_thumbnails'" :class="{disabled: !provider.episodeThumbnails}"><span v-html="'<span>' + provider.example.episodeThumbnails + '</span>'"></span></span></label>
                                                 <label :for="provider.id + '_season_posters'"><span :id="provider.id + '_eg_season_posters'" :class="{disabled: !provider.seasonPosters}"><span v-html="'<span>' + provider.example.seasonPosters + '</span>'"></span></span></label>
                                                 <label :for="provider.id + '_season_banners'"><span :id="provider.id + '_eg_season_banners'" :class="{disabled: !provider.seasonBanners}"><span v-html="'<span>' + provider.example.seasonBanners + '</span>'"></span></span></label>
                                                 <label :for="provider.id + '_season_all_poster'"><span :id="provider.id + '_eg_season_all_poster'" :class="{disabled: !provider.seasonAllPoster}"><span v-html="'<span>' + provider.example.seasonAllPoster + '</span>'"></span></span></label>
