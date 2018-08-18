@@ -44,7 +44,7 @@
     "css-loader": "1.0.0",
     "eslint": "5.4.0",
     "eslint-config-xo": "0.24.1",
-    "eslint-plugin-vue": "4.7.1",
+    "eslint-plugin-vue": "5.0.0-beta.3",
     "esm": "3.0.79",
     "fancy-log": "1.3.2",
     "file-loader": "1.1.11",
