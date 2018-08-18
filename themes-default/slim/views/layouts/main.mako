@@ -75,11 +75,11 @@
             <sub-menu></sub-menu>
             % endif
             <%include file="/partials/alerts.mako"/>
-               <div id="content-row" class="row">
-                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                        <%block name="content" />
-                </component>
-               </div><!-- /content -->
+            <div id="content-row" class="row">
+            <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                    <%block name="content" />
+            </component>
+            </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
 
@@ -171,17 +171,17 @@
         <script>
             if (!window.loadMainApp) {
                 if (window.isDevelopment) {
-                console.debug('Loading local Vue');
+                    console.debug('Loading local Vue');
                 }
                 Vue.use(Vuex);
-                Vue.use(VueRouter);
+                Vue.use(VueRouter); 
                 Vue.use(AsyncComputed);
                 Vue.use(VueMeta);
 
                 // Load x-template components
                 window.components.forEach(component => {
                     if (window.isDevelopment) {
-                    console.log('Registering ' + component.name);
+                        console.log('Registering ' + component.name);
                     }
                     Vue.component(component.name, component);
                 });
