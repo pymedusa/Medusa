@@ -185,7 +185,7 @@ class Connection(threading.Thread):
         if self._username and self._password:
             logging.info("auto re authenticating !")
             resp = self.auth(self._username, self._password)
-            if resp.rescode not in '500':
+            if resp.rescode != '500':
                 return True
         else:
             return False
