@@ -25,6 +25,14 @@
           "@vue/test-utils"
         ],
         "groupName": "vue-base"
+      },
+      {
+        "packagePatterns": [
+          "^@babel/",
+          "^babel-",
+          "-babel$"
+        ],
+        "groupName": "babel"
       }
     ]
   },
