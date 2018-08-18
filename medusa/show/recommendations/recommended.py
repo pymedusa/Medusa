@@ -21,6 +21,7 @@ import logging
 import os
 import posixpath
 from builtins import object
+from os.path import join
 
 from medusa import (
     app,
@@ -60,7 +61,7 @@ class LazyApi(object):
         """
         def func_wrapper(*args, **kwargs):
             if cls.anidb_api is None:
-                cls.anidb_api = Anidb(cache_dir=app.CACHE_DIR)
+                cls.anidb_api = Anidb(cache_dir=join(app.CACHE_DIR, 'simpleanidb'))
             return func(*args, **kwargs)
         return func_wrapper
 

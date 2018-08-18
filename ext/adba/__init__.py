@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 #
 # This file is part of aDBa.
 #
@@ -14,42 +15,87 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
+import logging
+import logging.handlers
+import os
 import threading
-from time import time, sleep, strftime, localtime
-from types import *
 
-from aniDBlink import AniDBLink
-from aniDBcommands import *
-from aniDBerrors import *
-from aniDBAbstracter import Anime, Episode
+from datetime import timedelta
+from time import time, sleep
+import sys
+
+from configparser import ConfigParser
+from six.moves.queue import Queue
+
+from .aniDBlink import AniDBLink
+from .aniDBcommands import *
+from .aniDBerrors import *
+from .aniDBAbstracter import Anime, Episode
 
 version = 100
 
+
+def StartLogging():
+    # set up the format string
+    format_string = '[%(asctime)s]\t%(levelname)s\t%(message)s'
+
+    # set up the queue for the threaded listener
+    que = Queue(-1)  # no limit on size
+    queue_handler = logging.handlers.QueueHandler(que)
+
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('Debug.log', encoding='UTF-8')
+    # fh = logging.StreamHandler()
+    fh.setLevel(logging.DEBUG)
+
+    # set up the listener for the file handler
+    listener = logging.handlers.QueueListener(que, fh)
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+
+    # create formatter and add it to the console handler
+    formatter = logging.Formatter(format_string)
+    ch.setFormatter(formatter)
+    fh.setFormatter(formatter)
+
+    # initialize the basic logger with the handlers
+    logging.basicConfig(handlers=[queue_handler, ch], level=logging.DEBUG)
+
+    # start listener for logging
+    listener.start()
+    # logging.debug('starting up')
+    return listener
+
+
+def StopLogging(listener):
+    # listener.start()
+    listener.stop()
+    logging.shutdown()
+    return
+
+
 class Connection(threading.Thread):
-    def __init__(self, clientname='adba', server='api.anidb.info', port=9000, myport=9876, user=None, password=None, session=None, log=False, logPrivate=False, keepAlive=False):
+    def __init__(self, clientname='adba', server='api.anidb.info', port=9000, myport=9876, user=None, password=None, session=None, keepAlive=False, commandDelay=4.1):
         super(Connection, self).__init__()
-        # setting the log function
-        self.logPrivate = logPrivate
-        if type(log) in (FunctionType, MethodType):# if we get a function or a method use that.
-            self.log = log
-            self.logPrivate = True # true means sensitive data will not be NOT be logged ... yeah i know oO
-        elif log:# if it something else (like True) use the own print_log
-            self.log = self.print_log
-        else:# dont log at all
-            self.log = self.print_log_dummy
 
-
-        self.link = AniDBLink(server, port, myport, self.log, logPrivate=self.logPrivate)
+        self.link = AniDBLink(server, port, myport, delay=commandDelay)
         self.link.session = session
-
         self.clientname = clientname
         self.clientver = version
 
-        # from original lib 
-        self.mode = 1    #mode: 0=queue,1=unlock,2=callback
+        # from original lib
+        self.mode = 1  # mode: 0=queue,1=unlock,2=callback
+
+        # Filename to maintain session info always in script directory
+        self.SessionFile = os.path.normpath(sys.path[0] + os.sep + "Session.cfg")
 
         # to lock other threads out
         self.lock = threading.RLock()
+
+        # last Command Time set to now even though no commands are sent yet
+        self.LastCommandTime = time()
 
         # thread keep alive stuff
         self.keepAlive = keepAlive
@@ -64,38 +110,35 @@ class Connection(threading.Thread):
         self.counter = 0
         self.counterAge = 0
 
-    def print_log(self, data):
-        print(strftime("%Y-%m-%d %H:%M:%S", localtime(time())) + ": " + str(data))
-
-    def print_log_dummy(self, data):
-        pass
-
     def stop(self):
         self.logout(cutConnection=True)
-
 
     def cut(self):
         self.link.stop()
 
     def handle_response(self, response):
         if response.rescode in ('501', '506') and response.req.command != 'AUTH':
-            self.log("seams like the last command got a not authed error back tring to reconnect now")
+            logging.debug("seems like the last command got a not authed error back trying to reconnect now")
             if self._reAuthenticate():
                 response.req.resp = None
-                response = self.handle(response.req, response.req.callback)
-
+                self.handle(response.req, response.req.callback)
 
     def handle(self, command, callback):
 
         self.lock.acquire()
-        if self.counterAge < (time() - 120): # the last request was older then 2 min reset delay and counter
+
+        # the lines changing the timing of requests is being disabled due to impracticality of implementation
+        # once full session manager i.e. (one that works beyond a single run of the program)
+        # similiar code will handle this
+
+        if self.counterAge < (time() - 120):  # the last request was older then 2 min reset delay and counter
             self.counter = 0
-            self.link.delay = 2
-        else: # something happend in the last 120 seconds
-            if self.counter < 5:
-                self.link.delay = 2 # short term "A Client MUST NOT send more than 0.5 packets per second (that's one packet every two seconds, not two packets a second!)"
-            elif self.counter >= 5:
-                self.link.delay = 6 # long term "A Client MUST NOT send more than one packet every four seconds over an extended amount of time."
+            # self.link.delay = 2
+            # else: # something happend in the last 120 seconds
+            # if self.counter < 5:
+            # self.link.delay = 2 # short term "A Client MUST NOT send more than 0.5 packets per second (that's one packet every two seconds, not two packets a second!)"
+            # elif self.counter >= 5:
+            # self.link.delay = 6 # long term "A Client MUST NOT send more than one packet every four seconds over an extended amount of time."
 
         if command.command not in ('AUTH', 'PING', 'ENCRYPT'):
             self.counterAge = time()
@@ -108,23 +151,20 @@ class Connection(threading.Thread):
             if callback:
                 callback(resp)
 
-        self.log("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
+        logging.debug("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
 
-        #make live request
+        # make live request
         command.authorize(self.mode, self.link.new_tag(), self.link.session, callback_wrapper)
         self.link.request(command)
 
-        #handle mode 1 (wait for response)
+        # handle mode 1 (wait for response)
         if self.mode == 1:
             command.wait_response()
             try:
                 command.resp
             except:
                 self.lock.release()
-                if self.link.banned:
-                    raise AniDBBannedError("User is banned")
-                else:
-                    raise AniDBCommandTimeoutError("Command has timed out")
+                raise AniDBCommandTimeoutError("Command has timed out")
 
             self.handle_response(command.resp)
             self.lock.release()
@@ -134,87 +174,143 @@ class Connection(threading.Thread):
 
     def authed(self, reAuthenticate=False):
         self.lock.acquire()
-        authed = (self.link.session != None)
+        authed = (self.link.session is not None)
         if not authed and (reAuthenticate or self.keepAlive):
             self._reAuthenticate()
-            authed = (self.link.session != None)
+            authed = (self.link.session is not None)
         self.lock.release()
         return authed
 
     def _reAuthenticate(self):
         if self._username and self._password:
-            self.log("auto re authenticating !")
+            logging.info("auto re authenticating !")
             resp = self.auth(self._username, self._password)
-            if resp.rescode not in ('500'):
+            if resp.rescode != '500':
                 return True
         else:
             return False
 
     def _keep_alive(self):
         self.lastKeepAliveCheck = time()
-        self.log("auto check !")
+        logging.info("auto check !")
         # check every 30 minutes if the session is still valid
-        # if not reauthenticate 
+        # if not reauthenticate
         if self.lastAuth and time() - self.lastAuth > 1800:
-            self.log("auto uptime !")
-            self.uptime() # this will update the self.link.session and will refresh the session if it is still alive
+            logging.info("auto uptime !")
+            self.uptime()  # this will update the self.link.session and will refresh the session if it is still alive
 
-            if self.authed(): # if we are authed we set the time
+            if self.authed():  # if we are authed we set the time
                 self.lastAuth = time()
-            else: # if we aren't authed and we have the user and pw then reauthenticate
+            else:  # if we aren't authed and we have the user and pw then reauthenticate
                 self._reAuthenticate()
 
         # issue a ping every 20 minutes after the last package
         # this ensures the connection will be kept alive
         if self.link.lastpacket and time() - self.link.lastpacket > 1200:
-            self.log("auto ping !")
+            logging.info("auto ping !")
             self.ping()
-
 
     def run(self):
         while self.keepAlive:
             self._keep_alive()
             sleep(120)
 
-
     def auth(self, username, password, nat=None, mtu=None, callback=None):
         """
         Login to AniDB UDP API
-        
+
         parameters:
         username - your anidb username
         password - your anidb password
         nat     - if this is 1, response will have "address" in attributes with your "ip:port" (default:0)
         mtu     - maximum transmission unit (max packet size) (default: 1400)
-        
+
         """
-        self.log("ok1")
-        if self.keepAlive:
-            self.log("ok2")
-            self._username = username
-            self._password = password
-            if self.is_alive() == False:
-                self.log("You wanted to keep this thing alive!")
-                if self._iamALIVE == False:
-                    self.log("Starting thread now...")
-                    self.start()
-                    self._iamALIVE = True
+
+        # disabled, this code doesn't work with renovations
+        # logging.debug("ok1")
+        # if self.keepAlive:
+        #     logging.debug("ok2")
+        #     self._username = username
+        #     self._password = password
+        #     if self.is_alive() == False:
+        #         logging.debug("You wanted to keep this thing alive!")
+        #         if self._iamALIVE == False:
+        #             logging.info("Starting thread now...")
+        #             self.start()
+        #             self._iamALIVE = True
+        #         else:
+        #             logging.info("not starting thread seems like it is already running. this must be a _reAuthenticate")
+        config = ConfigParser()
+        config.read(self.SessionFile)
+        needauth = False
+
+        try:
+            if config.getboolean('DEFAULT', 'loggedin'):
+                self.lastCommandTime = config.getfloat('DEFAULT', 'lastcommandtime')
+                timeelapsed = time() - self.lastCommandTime
+                timeoutduration = timedelta(minutes=30).seconds
+                if timeelapsed < timeoutduration:
+                    # we are logged in and within timeout so set up session key and assume valid
+                    self.link.session = config.get('DEFAULT', 'sessionkey')
                 else:
-                    self.log("not starting thread seams like it is already running. this must be a _reAuthenticate")
+                    needauth = True
+            else:
+                needauth = True
+        except:
+            needauth = True
 
+        if needauth:
+            self.lastAuth = time()
+            logging.debug('No valid session, so authenticating')
+            try:
+                self.handle(AuthCommand(username, password, 3, self.clientname, self.clientver, nat, 1, 'utf8', mtu), callback)
+            except Exception as e:
+                logging.debug('Auth command with exception %s', e)
+                # we force a config file with logged out to ensure a known state if an exception occurs, forcing us to log in again
+                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'exception': str(e),
+                                     'lastcommandtime': repr(time())}
+                with open(self.SessionFile, 'w') as configfile:
+                    config.write(configfile)
+                return e
+            logging.debug('Successfully authenticated and recording session details')
+            config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'lastcommandtime': repr(time())}
+            with open(self.SessionFile, 'w') as configfile:
+                config.write(configfile)
+        return
 
-        self.lastAuth = time()
-        return self.handle(AuthCommand(username, password, 3, self.clientname, self.clientver, nat, 1, 'utf8', mtu), callback)
-
-    def logout(self, cutConnection=False, callback=None):
+    def logout(self, cutConnection=True, callback=None):
         """
         Log out from AniDB UDP API
-        
+
         """
-        result = self.handle(LogoutCommand(), callback)
-        if(cutConnection):
-            self.cut()
-        return result
+        config = ConfigParser()
+        config.read(self.SessionFile)
+        if config['DEFAULT']['loggedin'] == 'yes':
+            self.link.session = config.get('DEFAULT', 'sessionkey')
+            result = self.handle(LogoutCommand(), callback)
+            if cutConnection:
+                self.cut()
+            config['DEFAULT']['loggedin'] = 'no'
+            with open(self.SessionFile, 'w') as configfile:
+                config.write(configfile)
+            logging.debug('Logging out')
+            return result
+        logging.debug('Not logging out')
+        return
+
+    def stayloggedin(self):
+        """
+        handles timeout constraints of the link before exiting
+        """
+        config = ConfigParser()
+        config.read(self.SessionFile)
+        config['DEFAULT']['lastcommandtime'] = repr(time())
+        with open(self.SessionFile, 'w') as configfile:
+            config.write(configfile)
+        self.link._do_delay()
+        logging.debug('Staying logged in')
+        return
 
     def push(self, notify, msg, buddy=None, callback=None):
         """
@@ -227,7 +323,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         notify msg [buddy]
-        
+
         """
         return self.handle(PushCommand(notify, msg, buddy), callback)
 
@@ -240,26 +336,9 @@ class Connection(threading.Thread):
 
         structure of parameters:
         nid
-        
+
         """
         return self.handle(PushAckCommand(nid), callback)
-
-    def notification(self, aid=None, gid=None, type=None, priority=None, callback=None):
-        """
-        Add a notification
-
-        parameters:
-        aid    - Anime id
-        gid - Group id
-        type - Type of notification: type=>  0=all, 1=new, 2=group, 3=complete
-        priority - low = 0, medium = 1, high = 2 (unconfirmed)
-
-        structure of parameters:
-        [aid={int}|gid={int}]&type={int}&priority={int}
-
-        """
-
-        return self.handle(Notification(aid, gid, type, priority), callback)
 
     def notifyadd(self, aid=None, gid=None, type=None, priority=None, callback=None):
         """
@@ -278,23 +357,6 @@ class Connection(threading.Thread):
 
         return self.handle(NotifyAddCommand(aid, gid, type, priority), callback)
 
-    def notifydel(self, aid=None, gid=None, type=None, priority=None, callback=None):
-        """
-        Add a notification
-
-        parameters:
-        aid    - Anime id
-        gid - Group id
-        type - Type of notification: type=>  0=all, 1=new, 2=group, 3=complete
-        priority - low = 0, medium = 1, high = 2 (unconfirmed)
-
-        structure of parameters:
-        [aid={int}|gid={int}]&type={int}&priority={int}
-
-        """
-
-        return self.handle(NotifyDelCommand(aid, gid, type, priority), callback)
-
     def notify(self, buddy=None, callback=None):
         """
         Get number of pending notifications and messages
@@ -304,14 +366,14 @@ class Connection(threading.Thread):
 
         structure of parameters:
         [buddy]
-        
+
         """
         return self.handle(NotifyCommand(buddy), callback)
 
     def notifylist(self, callback=None):
         """
         List all pending notifications/messages
-        
+
         """
         return self.handle(NotifyListCommand(), callback)
 
@@ -325,7 +387,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         type id
-        
+
         """
         return self.handle(NotifyGetCommand(type, id), callback)
 
@@ -339,7 +401,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         type id
-        
+
         """
         return self.handle(NotifyAckCommand(type, id), callback)
 
@@ -353,7 +415,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (uid|uname)
-        
+
         """
         return self.handle(BuddyAddCommand(uid, uname), callback)
 
@@ -366,7 +428,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyDelCommand(uid), callback)
 
@@ -379,7 +441,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyAcceptCommand(uid), callback)
 
@@ -392,7 +454,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         uid
-        
+
         """
         return self.handle(BuddyDenyCommand(uid), callback)
 
@@ -405,7 +467,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         startat
-        
+
         """
         return self.handle(BuddyListCommand(startat), callback)
 
@@ -418,11 +480,11 @@ class Connection(threading.Thread):
 
         structure of parameters:
         startat
-        
+
         """
         return self.handle(BuddyStateCommand(startat), callback)
 
-    def anime(self, aid=None, aname=None, amask= -1, callback=None):
+    def anime(self, aid=None, aname=None, amask=-1, callback=None):
         """
         Get information about an anime
 
@@ -430,12 +492,12 @@ class Connection(threading.Thread):
         aid    - anime id
         aname    - name of the anime
         amask    - a bitfield describing what information you want about the anime
-        
+
         structure of parameters:
         (aid|aname) [amask]
-        
+
         structure of amask:
-        
+
         """
         return self.handle(AnimeCommand(aid, aname, amask), callback)
 
@@ -452,11 +514,11 @@ class Connection(threading.Thread):
         structure of parameters:
         eid
         (aid|aname) epno
-        
+
         """
         return self.handle(EpisodeCommand(eid, aid, aname, epno), callback)
 
-    def file(self, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None, fmask= -1, amask=0, callback=None):
+    def file(self, fid=None, size=None, ed2k=None, aid=None, aname=None, gid=None, gname=None, epno=None, fmask=-1, amask=0, callback=None):
         """
         Get information about a file
 
@@ -511,7 +573,7 @@ class Connection(threading.Thread):
         29    -        -
         30    filename    anidb file name
         31    -        -
-        
+
         structure of amask:
         bit    key        description
         0    gname        group name
@@ -546,7 +608,7 @@ class Connection(threading.Thread):
         29    producerids    producer id list
         30    -        -
         31    -        -
-        
+
         """
         return self.handle(FileCommand(fid, size, ed2k, aid, aname, gid, gname, epno, fmask, amask), callback)
 
@@ -560,7 +622,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (gid|gname)
-        
+
         """
         return self.handle(GroupCommand(gid, gname), callback)
 
@@ -590,7 +652,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         (pid|pname)
-        
+
         """
 
         return self.handle(ProducerCommand(pid, pname), callback)
@@ -615,7 +677,7 @@ class Connection(threading.Thread):
         fid
         size ed2k
         (aid|aname) (gid|gname) epno
-        
+
         """
         return self.handle(MyListCommand(lid, fid, size, ed2k, aid, aname, gid, gname, epno), callback)
 
@@ -653,13 +715,13 @@ class Connection(threading.Thread):
         1    on hdd    - the file is stored on hdd
         2    on cd    - the file is stored on cd
         3    deleted    - the file has been deleted or is not available for other reasons (i.e. reencoded)
-        
+
         structure of epno:
         value    meaning
         x    target episode x
         0    target all episodes
         -x    target all episodes upto x
-        
+
         """
         return self.handle(MyListAddCommand(lid, fid, size, ed2k, aid, aname, gid, gname, epno, edit, state, viewed, source, storage, other), callback)
 
@@ -689,7 +751,7 @@ class Connection(threading.Thread):
     def myliststats(self, callback=None):
         """
         Get summary information of your mylist
-        
+
         """
         return self.handle(MyListStatsCommand(), callback)
 
@@ -718,14 +780,14 @@ class Connection(threading.Thread):
         -x     revoke vote
         0     get old vote
         100-1000 give vote
-        
+
         """
         return self.handle(VoteCommand(type, id, name, value, epno), callback)
 
     def randomanime(self, type, callback=None):
         """
         Get information of random anime
-        
+
         parameters:
         type    - where to take the random anime
 
@@ -738,14 +800,14 @@ class Connection(threading.Thread):
         1    watched
         2    unwatched
         3    mylist
-        
+
         """
         return self.handle(RandomAnimeCommand(type), callback)
 
     def ping(self, callback=None):
         """
         Test connectivity to AniDB UDP API
-        
+
         """
         return self.handle(PingCommand(), callback)
 
@@ -760,7 +822,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         user [type]
-        
+
         """
         return self.handle(EncryptCommand(user, apipassword, type), callback)
 
@@ -781,10 +843,9 @@ class Connection(threading.Thread):
         even if you can't display utf-8 locally, don't change the server-client -connections encoding
         rather, make python convert the encoding when you DISPLAY the text
         it's better that way, let it go as utf8 to databases etc. because then you've the real data stored
-        
+
         """
-        raise AniDBStupidUserError, "pylibanidb sets the encoding to utf8 as default and it's stupid to use any other encoding. you WILL lose some data if you use other encodings, and now you've been warned. you will need to modify the code yourself if you want to do something as stupid as changing the encoding"
-        return self.handle(EncodingCommand(name), callback)
+        raise NotImplementedError("pylibanidb sets the encoding to utf8 as default and it's stupid to use any other encoding. you WILL lose some data if you use other encodings, and now you've been warned. you will need to modify the code yourself if you want to do something as stupid as changing the encoding")
 
     def sendmsg(self, to, title, body, callback=None):
         """
@@ -797,7 +858,7 @@ class Connection(threading.Thread):
 
         structure of parameters:
         to title body
-        
+
         """
         return self.handle(SendMsgCommand(to, title, body), callback)
 
@@ -810,20 +871,20 @@ class Connection(threading.Thread):
 
         structure of parameters:
         user
-        
+
         """
         return self.handle(UserCommand(user), callback)
 
     def uptime(self, callback=None):
         """
         Retrieve server uptime
-        
+
         """
         return self.handle(UptimeCommand(), callback)
 
     def version(self, callback=None):
         """
         Retrieve server version
-        
+
         """
         return self.handle(VersionCommand(), callback)
