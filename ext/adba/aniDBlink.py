@@ -99,7 +99,7 @@ class AniDBLink(threading.Thread):
             except OSError as e:
                 logging.exception('Exception: %s', e)
                 break
-            logging.debug("NetIO < %s" % repr(data))
+            logging.debug("NetIO < %r", data)
             try:
                 for i in range(2):
                     try:
@@ -107,7 +107,7 @@ class AniDBLink(threading.Thread):
                         resp = None
                         if tmp[:2] == '\x00\x00':
                             tmp = zlib.decompressobj().decompress(tmp[2:])
-                            logging.debug("UnZip | %s" % repr(tmp))
+                            logging.debug("UnZip | %r", tmp)
                         resp = ResponseResolver(tmp)
                     except Exception as e:
                         logging.exception('Exception: %s', e)

@@ -60,7 +60,7 @@ class Response:
         self.maper = AniDBMaper()
 
     def __repr__(self):
-        tmp = "%s(%s,%s,%s) %s\n" % (self.__class__.__name__, repr(self.restag), repr(self.rescode), repr(self.resstr), repr(self.attrs))
+        tmp = "%s(%r,%r,%r) %r\n" % (self.__class__.__name__, self.restag, self.rescode, self.resstr, self.attrs)
 
         m = 0
         for line in self.datalines:

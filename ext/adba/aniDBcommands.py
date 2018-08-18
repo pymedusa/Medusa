@@ -35,7 +35,7 @@ class Command:
         self.waiter.acquire()
 
     def __repr__(self):
-        return "Command(%s,%s) %s\n%s\n" % (repr(self.tag), repr(self.command), repr(self.parameters), self.raw_data())
+        return "Command(%r,%r) %r\n%s\n" % (self.tag, self.command, self.parameters, self.raw_data())
 
     def authorize(self, mode, tag, session, callback):
         self.mode = mode
