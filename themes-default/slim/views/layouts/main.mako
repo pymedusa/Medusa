@@ -189,7 +189,6 @@
                 // Global components
                 Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('config-checkbox', httpVueLoader('js/templates/config-checkbox.vue'));
             }
         </script>
         <%block name="scripts" />

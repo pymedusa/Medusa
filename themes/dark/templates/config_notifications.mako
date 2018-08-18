@@ -730,11 +730,11 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for KODI -->
 
-                                <config-checkbox :checked="config.kodi.enabled" label="Enable" id="use_kodi" :explaination="['Send KODI commands?']" @change="save()"  @update="config.kodi.enabled = $event"></config-checkbox>
+                                <config-toggle-slider :checked="config.kodi.enabled" label="Enable" id="use_kodi" :explaination="['Send KODI commands?']" @change="save()"  @update="config.kodi.enabled = $event"></config-toggle-slider>
 
                                 <div v-show="config.kodi.enabled" id="content-use-kodi"> <!-- show based on config.kodi.enabled -->
 
-                                    <config-checkbox :checked="config.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explaination="['log errors when unreachable?']" @change="save()"  @update="config.kodi.alwaysOn = $event"></config-checkbox>
+                                    <config-toggle-slider :checked="config.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explaination="['log errors when unreachable?']" @change="save()"  @update="config.kodi.alwaysOn = $event"></config-toggle-slider>
                                     
                                     <div class="form-group">
                                         <div class="row">
