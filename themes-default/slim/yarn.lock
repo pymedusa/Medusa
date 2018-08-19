@@ -3188,7 +3188,50 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@5.3.0, eslint@^5.3.0:
+eslint@5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.4.0.tgz#d068ec03006bb9e06b429dc85f7e46c1b69fac62"
+  dependencies:
+    ajv "^6.5.0"
+    babel-code-frame "^6.26.0"
+    chalk "^2.1.0"
+    cross-spawn "^6.0.5"
+    debug "^3.1.0"
+    doctrine "^2.1.0"
+    eslint-scope "^4.0.0"
+    eslint-utils "^1.3.1"
+    eslint-visitor-keys "^1.0.0"
+    espree "^4.0.0"
+    esquery "^1.0.1"
+    esutils "^2.0.2"
+    file-entry-cache "^2.0.0"
+    functional-red-black-tree "^1.0.1"
+    glob "^7.1.2"
+    globals "^11.7.0"
+    ignore "^4.0.2"
+    imurmurhash "^0.1.4"
+    inquirer "^5.2.0"
+    is-resolvable "^1.1.0"
+    js-yaml "^3.11.0"
+    json-stable-stringify-without-jsonify "^1.0.1"
+    levn "^0.3.0"
+    lodash "^4.17.5"
+    minimatch "^3.0.4"
+    mkdirp "^0.5.1"
+    natural-compare "^1.4.0"
+    optionator "^0.8.2"
+    path-is-inside "^1.0.2"
+    pluralize "^7.0.0"
+    progress "^2.0.0"
+    regexpp "^2.0.0"
+    require-uncached "^1.0.3"
+    semver "^5.5.0"
+    strip-ansi "^4.0.0"
+    strip-json-comments "^2.0.1"
+    table "^4.0.3"
+    text-table "^0.2.0"
+
+eslint@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.3.0.tgz#53695aca5213968aacdf970ccb231e42a2b285f8"
   dependencies:
@@ -3232,7 +3275,11 @@ eslint@5.3.0, eslint@^5.3.0:
     table "^4.0.3"
     text-table "^0.2.0"
 
-esm@3.0.74, esm@^3.0.71:
+esm@3.0.77:
+  version "3.0.77"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.77.tgz#9c81e3f4c8e422b86d525d0d365665825af8dfae"
+
+esm@^3.0.71:
   version "3.0.74"
   resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.74.tgz#d9b5ac6d6b210068a41337373b002c502c824fbf"
 
@@ -3586,9 +3633,9 @@ file-uri-to-path@1:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
 
-filemanager-webpack-plugin@1.0.29:
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-1.0.29.tgz#1e9f71b606b6d1b9d8c185d288b4402c2fce7bb3"
+filemanager-webpack-plugin@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-2.0.1.tgz#b7027d55552eb80d0b327f2d56b5779138e4f5ec"
   dependencies:
     archiver "^2.1.1"
     cpx "^1.5.0"
@@ -7133,15 +7180,6 @@ postcss-modules-values@^1.3.0:
     icss-replace-symbols "^1.1.0"
     postcss "^6.0.1"
 
-postcss-reporter@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/postcss-reporter/-/postcss-reporter-5.0.0.tgz#a14177fd1342829d291653f2786efd67110332c3"
-  dependencies:
-    chalk "^2.0.1"
-    lodash "^4.17.4"
-    log-symbols "^2.0.0"
-    postcss "^6.0.8"
-
 postcss-selector-parser@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-3.1.1.tgz#4f875f4afb0c96573d5cf4d74011aee250a7e865"
@@ -7163,7 +7201,7 @@ postcss@^5.2.5:
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.20, postcss@^6.0.23, postcss@^6.0.8:
+postcss@^6.0.1, postcss@^6.0.20, postcss@^6.0.23:
   version "6.0.23"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.23.tgz#61c82cc328ac60e677645f979054eb98bc0e3324"
   dependencies:
@@ -8068,6 +8106,14 @@ snyk-mvn-plugin@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/snyk-mvn-plugin/-/snyk-mvn-plugin-1.2.0.tgz#e23c60e35457ce5a26fd4252ddf120dbd7e9ef2a"
 
+snyk-nodejs-lockfile-parser@1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/snyk-nodejs-lockfile-parser/-/snyk-nodejs-lockfile-parser-1.2.2.tgz#d3f17710e6f0fecaffca71db7c7f8966180590cb"
+  dependencies:
+    lodash "4.17.10"
+    path "0.12.7"
+    source-map-support "^0.5.7"
+
 snyk-nuget-plugin@1.6.4:
   version "1.6.4"
   resolved "https://registry.yarnpkg.com/snyk-nuget-plugin/-/snyk-nuget-plugin-1.6.4.tgz#83cb3e699667ea808803d4020aa0e053e6f3bab4"
@@ -8152,9 +8198,9 @@ snyk-try-require@1.3.1, snyk-try-require@^1.1.1:
     lru-cache "^4.0.0"
     then-fs "^2.0.0"
 
-snyk@1.90.2:
-  version "1.90.2"
-  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.90.2.tgz#eb5a3b588959420365bd8448872f2caae454e9b6"
+snyk@1.91.0:
+  version "1.91.0"
+  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.91.0.tgz#36dc5aa357c6ac17b945f3cacd490e842f7107bb"
   dependencies:
     abbrev "^1.1.1"
     ansi-escapes "^3.1.0"
@@ -8177,6 +8223,7 @@ snyk@1.90.2:
     snyk-gradle-plugin "1.3.0"
     snyk-module "1.8.2"
     snyk-mvn-plugin "1.2.0"
+    snyk-nodejs-lockfile-parser "1.2.2"
     snyk-nuget-plugin "1.6.4"
     snyk-php-plugin "1.5.1"
     snyk-policy "1.12.0"
@@ -8250,7 +8297,7 @@ source-map-support@^0.5.0:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-source-map-support@^0.5.8:
+source-map-support@^0.5.7, source-map-support@^0.5.8:
   version "0.5.8"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.8.tgz#04f5581713a8a65612d0175fbf3a01f80a162613"
   dependencies:
@@ -9286,9 +9333,9 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.0.tgz#97976142405d13d8efae154749e88c4e358cf926"
 
-vue-js-toggle-button@1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.2.3.tgz#efc3309bf500ff5f84c5a8c3bea734b932cad191"
+vue-js-toggle-button@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.3.0.tgz#59240f215fd502f54f0c210c5fac878960b0131c"
 
 vue-loader@15.3.0:
   version "15.3.0"

@@ -9,8 +9,6 @@ import time
 from builtins import str
 from datetime import date, datetime
 
-import adba
-
 from medusa import (
     app,
     config,
@@ -60,7 +58,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, set_up_anidb_connection, short_group_names
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
@@ -1451,33 +1449,14 @@ class Home(WebRoot):
 
         if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
             t = PageTemplate(rh=self, filename='editShow.mako')
+            groups = []
 
             if series_obj.is_anime:
-                if not series_obj.release_groups:
-                    series_obj.release_groups = BlackAndWhiteList(series_obj)
-                whitelist = series_obj.release_groups.whitelist
-                blacklist = series_obj.release_groups.blacklist
-
-                groups = []
-                if set_up_anidb_connection() and not anidb_failed:
-                    try:
-                        anime = adba.Anime(app.ADBA_CONNECTION, name=series_obj.name)
-                        groups = anime.get_groups()
-                    except Exception as e:
-                        errors += 1
-                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
-                                   (error=e.message), logger.WARNING)
-
-            with series_obj.lock:
-                show = series_obj
-                scene_exceptions = get_scene_exceptions(series_obj)
-
-            if series_obj.is_anime:
-                return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
+                return t.render(show=series_obj, groups=groups, whitelist=whitelist,
                                 blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home',
                                 action='editShow')
             else:
-                return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
+                return t.render(show=series_obj, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
 
         season_folders = config.checkbox_to_value(season_folders)

@@ -1474,14 +1474,14 @@ class TestSubstitutions(SoupTest):
                           self.document_for(u"<b><<Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!>></b>"))
 
     def test_formatter_custom(self):
-        markup = u"<b>&lt;foo&gt;</b><b>bar</b>"
+        markup = u"<b>&lt;foo&gt;</b><b>bar</b><br/>"
         soup = self.soup(markup)
         decoded = soup.decode(formatter = lambda x: x.upper())
         # Instead of normal entity conversion code, the custom
         # callable is called on every string.
         self.assertEqual(
             decoded,
-            self.document_for(u"<b><FOO></b><b>BAR</b>"))
+            self.document_for(u"<b><FOO></b><b>BAR</b><br>"))
 
     def test_formatter_is_run_on_attribute_values(self):
         markup = u'<a href="http://a.com?a=b&c=é">e</a>'

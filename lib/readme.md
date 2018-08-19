@@ -1,7 +1,6 @@
 ## lib
  Status  |  Package  |  Version / Commit  | Usage | Notes
 :------: | :-------: | :----------------: | :---- | :----
-:: | `adba` | ????? | **`medusa`** | **Modified**: [commit log](https://github.com/pymedusa/Medusa/commits/master/lib/adba)
 :: | `bencode` | [1.0](https://pypi.org/project/bencode/1.0/) | **`medusa`** | **Modified**: Package structure, exception commented out
 :: | `certgen.py` | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | **Not a package**
 :: | `fake-useragent` | [0.0.8](https://pypi.org/project/fake-useragent/0.0.8/) | **`medusa`** | Module: `fake_useragent`<br>Note: `ua.json` should be moved elsewhere
@@ -14,7 +13,7 @@
 :: | `rtorrent-python` | [0.2.9](https://pypi.org/project/rtorrent-python/0.2.9/) | **`medusa`** | Module: `rtorrent`<br>**Modified**: [commit log](https://github.com/pymedusa/Medusa/commits/master/lib/rtorrent)
 :: | `send2trash` | [1.3.0](https://pypi.org/project/send2trash/1.3.0/) | **`medusa`** | **Modified**
 :: | `shutil_custom` | - | **`medusa`** | **Custom**
-:: | `simpleanidb` | pymedusa/[0.1.1](https://github.com/pymedusa/simpleanidb/tree/0.1.1) | **`medusa`** | **Modified**: [#3608](https://github.com/pymedusa/Medusa/pull/3608)
+:: | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb/tree/5d26c8c146891225c05651821ef34ced0c118221) | **`medusa`** | -
 :: | `synchronousdeluge` | ????? | **`medusa`** | From CouchPotato?
 :: | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 :: | `traktor` | - | **`medusa`** | **Custom**
