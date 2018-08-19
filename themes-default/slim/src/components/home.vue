@@ -118,10 +118,10 @@ export default {
             api.patch('config/main', {
                 selectedRootIndex: parseInt($(this).val(), 10)
             }).then(response => {
-                log.info(response);
+                console.info(response);
                 window.location.reload();
             }).catch(error => {
-                log.info(error);
+                console.info(error);
             });
         });
 
@@ -433,9 +433,9 @@ export default {
                             }
                         }
                     }).then(response => {
-                        log.info(response);
+                        console.info(response);
                     }).catch(error => {
-                        log.error(error);
+                        console.error(error);
                     });
                 }
             });
