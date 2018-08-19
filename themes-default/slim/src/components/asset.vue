@@ -14,7 +14,7 @@ module.exports = {
         AppLink
     },
     props: {
-        seriesSlug: {
+        showSlug: {
             type: String
         },
         type: {
@@ -40,13 +40,13 @@ module.exports = {
     },
     computed: {
         src() {
-            const { error, seriesSlug, type } = this;
+            const { error, showSlug, type } = this;
 
-            if (error || !seriesSlug || !type) {
+            if (error || !showSlug || !type) {
                 return this.default;
             }
 
-            return webRoot + '/api/v2/series/' + seriesSlug + '/asset/' + type + '?api_key=' + apiKey;
+            return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
         },
         href() {
             // Compute a link to the full asset, if applicable

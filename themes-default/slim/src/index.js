@@ -17,7 +17,26 @@ import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { Asset, Backstretch, DisplayShow, PlotInfo, ShowSelector, ScrollButtons, FileBrowser, NamePattern, AppHeader, AppLink, SelectList, LanguageSelect, RootDirs, AnidbReleaseGroupUi, SnatchSelection } from './components';
+import {
+    AnidbReleaseGroupUi,
+    AppHeader,
+    AppLink,
+    Asset,
+    Backstretch,
+    DisplayShow,
+    FileBrowser,
+    Home,
+    LanguageSelect,
+    ManualPostProcess,
+    NamePattern,
+    PlotInfo,
+    RootDirs,
+    ScrollButtons,
+    SelectList,
+    ShowSelector,
+    SnatchSelection,
+    Status
+} from './components';
 
 if (window) {
     window.isDevelopment = isDevelopment;
@@ -64,7 +83,9 @@ if (window) {
     window.components.push(Backstretch);
     window.components.push(DisplayShow);
     window.components.push(FileBrowser);
+    window.components.push(Home);
     window.components.push(LanguageSelect);
+    window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
     window.components.push(RootDirs);
@@ -72,6 +93,7 @@ if (window) {
     window.components.push(SelectList);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
+    window.components.push(Status);
 }
 const UTIL = {
     exec(controller, action) {
@@ -92,8 +114,8 @@ const UTIL = {
         const { body } = document;
         $('[asset]').each(function() {
             const asset = $(this).attr('asset');
-            const series = $(this).attr('series');
-            const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
+            const show = $(this).attr('series');
+            const path = apiRoot + 'series/' + show + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 const defaultPath = $(this).attr('src');
                 if ($(this).attr('lazy') === 'on') {

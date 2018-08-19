@@ -43,7 +43,7 @@ window.app = new Vue({
                     animeNamingType: null,
                     stripYear: null
                 },
-                seriesDownloadDir: null,
+                showDownloadDir: null,
                 processAutomatically: null,
                 processMethod: null,
                 deleteRarContent: null,
@@ -225,7 +225,7 @@ window.app = new Vue({
                                                 <span>Post Processing Dir</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postProcessing.seriesDownloadDir" @update="postProcessing.seriesDownloadDir = $event"></file-browser>
+                                                <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postProcessing.showDownloadDir" @update="postProcessing.showDownloadDir = $event"></file-browser>
                                                 <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
                                                 <div class="clear-left"><p><b>NOTE:</b> Please use seperate downloading and completed folders in your download client if possible.</p></div>
                                             </div>

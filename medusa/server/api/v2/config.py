@@ -116,7 +116,7 @@ class ConfigHandler(BaseRequestHandler):
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
-        'postProcessing.seriesDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
         'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
@@ -416,7 +416,7 @@ class DataGenerator(object):
         section_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
         section_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
         section_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
-        section_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['postProcessing']['showDownloadDir'] = app.TV_DOWNLOAD_DIR
         section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
         section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)

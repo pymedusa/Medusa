@@ -8,7 +8,7 @@ module.exports = {
     name: 'plot-info',
     props: {
         hasPlot: Boolean,
-        seriesSlug: {
+        showSlug: {
             type: String,
             required: true
         },
@@ -27,14 +27,14 @@ module.exports = {
         }
     },
     mounted() {
-        const { $el, hasPlot, seriesSlug, season, episode } = this;
+        const { $el, hasPlot, showSlug, season, episode } = this;
         if (!hasPlot) {
             return false;
         }
         $($el).qtip({
             content: {
                 text(event, qt) {
-                    api.get('series/' + seriesSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
+                    api.get('series/' + showSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
                     }).catch(error => {

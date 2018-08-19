@@ -11,8 +11,10 @@ import ConfigTextboxNumber from './config-textbox-number.vue';
 import ConfigToggleSlider from './config-toggle-slider.vue';
 import DisplayShow from './display-show.vue';
 import FileBrowser from './file-browser.vue';
+import Home from './home.vue';
 import LanguageSelect from './language-select.vue';
 import Login from './login.vue';
+import ManualPostProcess from './manual-post-process.vue';
 import NamePattern from './name-pattern.vue';
 import PlotInfo from './plot-info.vue';
 import RootDirs from './root-dirs.vue';
@@ -20,6 +22,7 @@ import ScrollButtons from './scroll-buttons.vue';
 import SelectList from './select-list.vue';
 import ShowSelector from './show-selector.vue';
 import SnatchSelection from './snatch-selection.vue';
+import Status from './status.vue';
 import { NotFound } from './http';
 
 export {
@@ -36,8 +39,10 @@ export {
     ConfigToggleSlider,
     DisplayShow,
     FileBrowser,
+    Home,
     LanguageSelect,
     Login,
+    ManualPostProcess,
     NamePattern,
     PlotInfo,
     RootDirs,
@@ -45,5 +50,6 @@ export {
     SelectList,
     ShowSelector,
     SnatchSelection,
+    Status,
     NotFound
 };

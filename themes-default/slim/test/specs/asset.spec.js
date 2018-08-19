@@ -32,7 +32,7 @@ test('renders image with API v2 path for network', t => {
         localVue,
         propsData: {
             type: 'network',
-            seriesSlug: 'tvdb1000',
+            showSlug: 'tvdb1000',
             default: 'https://default_website.tld/img.png'
         }
     });
