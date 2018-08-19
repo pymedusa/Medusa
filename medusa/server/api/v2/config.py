@@ -323,6 +323,7 @@ class DataGenerator(object):
         section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
         section_data['kodi']['host'] = app.KODI_HOST
         section_data['kodi']['username'] = app.KODI_USERNAME
+        section_data['kodi']['password'] = app.KODI_PASSWORD
         section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
         section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
 
