@@ -736,127 +736,34 @@ window.app = new Vue({
 
                                     <config-toggle-slider :checked="config.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explaination="['log errors when unreachable?']" @change="save()"  @update="config.kodi.alwaysOn = $event"></config-toggle-slider>
                                     
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="kodi_notify_onsnatch" class="col-sm-2 control-label">
-                                                <span>Notify on snatch</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="kodi_notify_onsnatch" name="kodi_notify_onsnatch" v-model="config.kodi.notify.snatch" sync></toggle-button>
-                                                <p>send a notification when a download starts?</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider :checked="config.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explaination="['send a notification when a download starts?']" @change="save()"  @update="config.kodi.notify.snatch = $event"></config-toggle-slider>
 
-                                    <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_notify_ondownload" class="col-sm-2 control-label">
-                                                    <span>Notify on download</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <toggle-button :width="45" :height="22" id="kodi_notify_ondownload" name="kodi_notify_ondownload" v-model="config.kodi.notify.download" sync></toggle-button>
-                                                    <p>send a notification when a download finishes?</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <config-toggle-slider :checked="config.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explaination="['send a notification when a download finishes?']" @change="save()"  @update="config.kodi.notify.download = $event"></config-toggle-slider>
+                                    
+                                    <config-toggle-slider :checked="config.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explaination="['send a notification when subtitles are downloaded?']" @change="save()"  @update="config.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
                                         
-                                    <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_notify_onsubtitledownload" class="col-sm-2 control-label">
-                                                    <span>Notify on subtitle download</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <toggle-button :width="45" :height="22" id="kodi_notify_onsubtitledownload" name="kodi_notify_onsubtitledownload" v-model="config.kodi.notify.subtitleDownload" sync></toggle-button>
-                                                    <p>send a notification when subtitles are downloaded?</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <config-toggle-slider :checked="config.kodi.notify.library" label="Update library" id="kodi_update_library" :explaination="['update KODI library when a download finishes?']" @change="save()"  @update="config.kodi.notify.library = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.update.full" label="Full library update" id="kodi_update_full" :explaination="['perform a full library update if update per-show fails?']" @change="save()"  @update="config.kodi.update.full = $event"></config-toggle-slider>
 
-                                    <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_update_library" class="col-sm-2 control-label">
-                                                    <span>Update library</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <toggle-button :width="45" :height="22" id="kodi_update_library" name="kodi_update_library" v-model="config.kodi.notify.library" sync></toggle-button>
-                                                    <p>update KODI library when a download finishes?</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_update_full" class="col-sm-2 control-label">
-                                                    <span>Full library update</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <toggle-button :width="45" :height="22" id="kodi_update_full" name="kodi_update_full" v-model="config.kodi.update.full" sync></toggle-button>
-                                                    <p>perform a full library update if update per-show fails?</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="kodi_clean_library" class="col-sm-2 control-label">
-                                                <span>Clean library</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="kodi_clean_library" name="kodi_clean_library" v-model="config.kodi.cleanLibrary" sync></toggle-button>
-                                                <p>clean KODI library when replaces a already downloaded episode?</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="kodi_update_onlyfirst" class="col-sm-2 control-label">
-                                                <span>Only update first host</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="kodi_update_onlyfirst" name="kodi_update_onlyfirst" v-model="config.kodi.update.onlyFirst" sync></toggle-button>
-                                                <p>only send library updates/clean to the first active host?</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <config-toggle-slider :checked="config.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explaination="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="config.kodi.cleanLibrary = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explaination="['only send library updates/clean to the first active host?']" @change="save()"  @update="config.kodi.update.onlyFirst = $event"></config-toggle-slider>
+                                    
+                                    
                                     <div class="form-group">
                                         <div class="row">
                                             <label for="kodi_host" class="col-sm-2 control-label">
                                                 <span>KODI IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <!-- @TODO: replace with a select-list component, when the KODI_HOSTS is patchable through apiv2 -->
-                                                <input type="text" name="kodi_host" id="kodi_host" value="${','.join(app.KODI_HOST)}" class="form-control input-sm max-input450"/>
+                                                <select-list name="kodi_host" id="kodi_host" :list-items="config.kodi.host" @change="config.kodi.host = $event"></select-list>
                                                 <p>host running KODI (eg. 192.168.1.100:8080)</p>
-                                                <p>(multiple host strings must be separated by commas)</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="kodi_username" class="col-sm-2 control-label">
-                                                <span>Username</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="text" name="kodi_username" id="kodi_username" value="${app.KODI_USERNAME}" class="form-control input-sm max-input350" autocomplete="no" />
-                                                <p>username for your KODI server (blank for none)</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-textbox :value="config.kodi.username" label="Username" id="kodi_username" :explaination="['username for your KODI server (blank for none)']" @change="save()"  @update="config.kodi.username = $event"></config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="kodi_password" class="col-sm-2 control-label">
-                                                <span>Password</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                    <input type="password" name="kodi_password" id="kodi_password" value="${app.KODI_PASSWORD}" class="form-control input-sm max-input350" autocomplete="no"/>
-                                                <p>password for your KODI server (blank for none)</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-textbox :value="config.kodi.password" label="Password" id="kodi_password" :explaination="['password for your KODI server (blank for none)']" @change="save()"  @update="config.kodi.password = $event"></config-toggle-slider>
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
@@ -882,7 +789,7 @@ window.app = new Vue({
                                 <div class="form-group">
                                     <div class="row">
                                         <label for="use_plex_server" class="col-sm-2 control-label">
-                                            <span>Password</span>
+                                            <span>Enable</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="use_kodi" name="use_kodi" v-model="config.plex.server.enabled" sync></toggle-button>
