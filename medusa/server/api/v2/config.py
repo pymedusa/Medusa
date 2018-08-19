@@ -336,6 +336,7 @@ class DataGenerator(object):
         section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
+        section_data['plex']['server']['https'] = bool(app.PLEX_SERVER_HTTPS)
         section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
         section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
         section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
@@ -343,6 +344,9 @@ class DataGenerator(object):
         section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
         section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
         section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
+        section_data['plex']['client']['notifyOnSnatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
+        section_data['plex']['client']['notifyOnDownload'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
+        section_data['plex']['client']['notifyOnSubtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
 
         section_data['emby'] = NonEmptyDict()
         section_data['emby']['enabled'] = bool(app.USE_EMBY)

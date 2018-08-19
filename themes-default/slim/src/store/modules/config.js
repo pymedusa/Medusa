@@ -151,12 +151,18 @@ const state = {
         client: {
             host: [],
             username: null,
-            enabled: null
+            enabled: null,
+            notifyOnSnatch: null,
+            notifyOnDownload: null,
+            notifyOnSubtitleDownload: null
         },
         server: {
             updateLibrary: null,
             host: [],
             enabled: null,
+            https: null,
+            username: null,
+            password: null,
             notify: {
                 download: null,
                 subtitleDownload: null,

@@ -797,7 +797,7 @@ window.app = new Vue({
                                     </div>
                                 </div>
 
-                                <div v-show="config.plex.server.enabled" id="content-use-kodi"> <!-- show based on config.plex.server.enabled -->
+                                <div v-show="config.plex.server.enabled" id="content-use-plex-server"> <!-- show based on config.plex.server.enabled -->
                                     <div class="form-group">
                                         <div class="row">
                                             <label for="plex_server_token" class="col-sm-2 control-label">
@@ -814,145 +814,76 @@ window.app = new Vue({
 
                                     <config-textbox :value="config.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.username = $event"></config-textbox>
                                     <config-textbox :value="config.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.password = $event"></config-textbox>
-                                    <config-toggle-slider :checked="config.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="config.plex.server.updateLibrary = $event"></config-textbox>
+                                    
+                                    <config-toggle-slider :checked="config.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="config.plex.server.updateLibrary = $event"></config-toggle-slider>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Plex Media Server IP:Port</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="config.plex.server.host" @change="config.plex.server.host = $event"></select-list>
+                                                <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+    
+                                    <config-toggle-slider :checked="config.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"  @update="config.plex.server.https = $event"></config-toggle-slider>
+                                    
+                                    <div class="field-pair">
+                                        <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
+                                        <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <div class="clear-left">&nbsp;</div>
+                                    </div>
+                            
                                 </div>
                             </fieldset>
                         </div>
                     </div>    
 
-                        
-                            <div id="content_use_plex_server">
-                                
-                                <div class="component-group" style="padding: 0; min-height: 130px;">
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-plexth" title="Plex Media Client"></span>
+                            <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for plex media client -->
+                                <config-toggle-slider :checked="config.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="config.plex.client.enabled = $event"></config-toggle-slider>
+                                <div v-show="config.plex.client.enabled" id="content-use-plex-client"> <!-- show based on config.plex.server.enabled -->
+                                    <config-toggle-slider :checked="config.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="config.plex.client.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="config.plex.client.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="config.plex.client.notifyOnSubtitleDownload = $event"></config-toggle-slider>
 
-                                    
-                                </div>
-                                <div class="component-group" style="padding: 0; min-height: 50px;">
-                                    <div class="field-pair">
-                                        <label for="plex_update_library">
-                                            <span class="component-title">Update Library</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" class="enabler" name="plex_update_library" id="plex_update_library" ${'checked="checked"' if app.PLEX_UPDATE_LIBRARY else ''}/>
-                                                <p>update Plex Media Server library when a download finishes</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div id="content_plex_update_library">
-                                        <div class="field-pair">
-                                            <label for="plex_server_host">
-                                                <span class="component-title">Plex Media Server IP:Port</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', ','.join(app.PLEX_SERVER_HOST))}" class="form-control input-sm input350"/>
-                                                    <div class="clear-left">
-                                                        <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
-                                                    </div>
-                                                </span>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Plex Home Theater IP:Port</span>
                                             </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label for="plex_server_https">
-                                                <span class="component-title">HTTPS</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="plex_server_https" id="plex_server_https" ${'checked="checked"' if app.PLEX_SERVER_HTTPS else ''}/>
-                                                    <p>use https for plex media server requests?</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
-                                            <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                                            <div class="clear-left">&nbsp;</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div><!-- /content_use_plex_server -->
-                        </fieldset>
-                    </div><!-- /plex media server component-group -->
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
-                        <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_plex_client">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_plex_client" id="use_plex_client" :checked="config.plex.client.enabled"/>
-                                        <p>Send Plex Home Theater notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_plex_client">
-                                <div class="field-pair">
-                                    <label for="plex_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="plex_notify_onsnatch" id="plex_notify_onsnatch" ${'checked="checked"' if app.PLEX_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="plex_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="plex_notify_ondownload" id="plex_notify_ondownload" ${'checked="checked"' if app.PLEX_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="plex_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="plex_notify_onsubtitledownload" id="plex_notify_onsubtitledownload" ${'checked="checked"' if app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="plex_client_host">
-                                        <span class="component-title">Plex Home Theater IP:Port</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="plex_client_host" id="plex_client_host" value="${','.join(app.PLEX_CLIENT_HOST)}" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
+                                            <div class="col-sm-10 content">
+                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="config.plex.client.host" @change="config.plex.client.host = $event"></select-list>
                                                 <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="component-group" style="padding: 0; min-height: 130px;">
-                                    <div class="field-pair">
-                                        <label for="plex_server_username">
-                                            <span class="component-title">Username</span>
-                                            <span class="component-desc">
-                                                <input type="text" name="plex_client_username" id="plex_client_username" value="${app.PLEX_CLIENT_USERNAME}" class="form-control input-sm input250"
-                                                       autocomplete="no" />
-                                                <p>blank = no authentication</p>
-                                            </span>
-                                        </label>
+                                        </div>
                                     </div>
+    
+                                    <config-textbox :value="config.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.username = $event"></config-textbox>
+                                    <config-textbox :value="config.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.password = $event"></config-textbox>
+
                                     <div class="field-pair">
-                                        <label for="plex_client_password">
-                                            <span class="component-title">Password</span>
-                                            <span class="component-desc">
-                                                <input type="password" name="plex_client_password" id="plex_client_password" value="${'*' * len(app.PLEX_CLIENT_PASSWORD)}" class="form-control input-sm input250" autocomplete="no"/>
-                                                <p>blank = no authentication</p>
-                                            </span>
-                                        </label>
+                                        <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
+                                        <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                     </div>
+
                                 </div>
-                                <div class="field-pair">
-                                    <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
-                                    <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                                    <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
-                                </div>
-                            </div><!-- /content_use_plex_client -->
-                        </fieldset>
-                    </div><!-- /Plex Home Theater component-group -->
+                            </fieldset>
+                        </div>
+                    </div>
+
+
                     <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-emby" title="Emby"></span>
                         <h3><app-link href="http://emby.media">Emby</app-link></h3>
