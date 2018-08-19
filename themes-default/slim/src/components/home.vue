@@ -33,6 +33,69 @@ module.exports = {
             }
         }
     },
+    methods: {
+        initializePosterSizeSlider() {
+            const resizePosters = newSize => {
+                let fontSize;
+                let logoWidth;
+                let borderRadius;
+                let borderWidth;
+                if (newSize < 125) { // Small
+                    borderRadius = 3;
+                    borderWidth = 4;
+                } else if (newSize < 175) { // Medium
+                    fontSize = 9;
+                    logoWidth = 40;
+                    borderRadius = 4;
+                    borderWidth = 5;
+                } else { // Large
+                    fontSize = 11;
+                    logoWidth = 50;
+                    borderRadius = 6;
+                    borderWidth = 6;
+                }
+
+                // If there's a poster popup, remove it before resizing
+                $('#posterPopup').remove();
+
+                if (fontSize === undefined) {
+                    $('.show-details').hide();
+                } else {
+                    $('.show-details').show();
+                    $('.show-dlstats, .show-quality').css('fontSize', fontSize);
+                    $('.show-network-image').css('width', logoWidth);
+                }
+
+                $('.show-container').css({
+                    width: newSize,
+                    borderWidth,
+                    borderRadius
+                });
+            };
+
+            let posterSize;
+            if (typeof (Storage) !== 'undefined') {
+                posterSize = parseInt(localStorage.getItem('posterSize'), 10);
+            }
+            if (typeof (posterSize) !== 'number' || isNaN(posterSize)) {
+                posterSize = 188;
+            }
+            resizePosters(posterSize);
+
+            $('#posterSizeSlider').slider({
+                min: 75,
+                max: 250,
+                value: posterSize,
+                change(e, ui) {
+                    if (typeof (Storage) !== 'undefined') {
+                        localStorage.setItem('posterSize', ui.value);
+                    }
+                    resizePosters(ui.value);
+                    $('.show-grid').isotope('layout');
+                }
+            });
+        }
+    },
     mounted() {
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
@@ -52,66 +115,6 @@ module.exports = {
         const imgLazyLoad = new LazyLoad({
             // Example of options object -> see options section
             threshold: 500
-        });
-
-        function resizePosters(newSize) {
-            let fontSize;
-            let logoWidth;
-            let borderRadius;
-            let borderWidth;
-            if (newSize < 125) { // Small
-                borderRadius = 3;
-                borderWidth = 4;
-            } else if (newSize < 175) { // Medium
-                fontSize = 9;
-                logoWidth = 40;
-                borderRadius = 4;
-                borderWidth = 5;
-            } else { // Large
-                fontSize = 11;
-                logoWidth = 50;
-                borderRadius = 6;
-                borderWidth = 6;
-            }
-
-            // If there's a poster popup, remove it before resizing
-            $('#posterPopup').remove();
-
-            if (fontSize === undefined) {
-                $('.show-details').hide();
-            } else {
-                $('.show-details').show();
-                $('.show-dlstats, .show-quality').css('fontSize', fontSize);
-                $('.show-network-image').css('width', logoWidth);
-            }
-
-            $('.show-container').css({
-                width: newSize,
-                borderWidth,
-                borderRadius
-            });
-        }
-
-        let posterSize;
-        if (typeof (Storage) !== 'undefined') {
-            posterSize = parseInt(localStorage.getItem('posterSize'), 10);
-        }
-        if (typeof (posterSize) !== 'number' || isNaN(posterSize)) {
-            posterSize = 188;
-        }
-        resizePosters(posterSize);
-
-        $('#posterSizeSlider').slider({
-            min: 75,
-            max: 250,
-            value: posterSize,
-            change(e, ui) {
-                if (typeof (Storage) !== 'undefined') {
-                    localStorage.setItem('posterSize', ui.value);
-                }
-                resizePosters(ui.value);
-                $('.show-grid').isotope('layout');
-            }
         });
 
         // This needs to be refined to work a little faster.
@@ -230,6 +233,7 @@ module.exports = {
         });
 
         $('.show-grid').imagesLoaded(() => {
+            this.initializePosterSizeSlider();
             $('.loading-spinner').hide();
             $('.show-grid').show().isotope({
                 itemSelector: '.show-container',
