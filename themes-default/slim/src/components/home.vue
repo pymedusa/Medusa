@@ -1,5 +1,6 @@
 <script>
 import { mapState } from 'vuex';
+import debounce from 'lodash/debounce';
 import AppLink from './app-link.vue';
 
 module.exports = {
@@ -34,12 +35,12 @@ module.exports = {
     },
     mounted() {
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
-        $('.resetsorting').on('click', () => {
+        $(document.body).on('click', '.resetsorting', () => {
             $('table').trigger('filterReset');
         });
 
         // Handle filtering in the poster layout
-        $('#filterShowName').on('input', _.debounce(() => { // eslint-disable-line no-undef
+        $(document.body).on('input', '#filterShowName', debounce(() => {
             $('.show-grid').isotope({
                 filter() {
                     const name = $(this).attr('data-name').toLowerCase();
@@ -356,7 +357,7 @@ module.exports = {
             }
         });
 
-        $('#showRootDir').on('change', function() {
+        $(document.body).on('change', '#showRootDir', function() {
             api.patch('config/main', {
                 selectedRootIndex: parseInt($(this).val(), 10)
             }).then(response => {
