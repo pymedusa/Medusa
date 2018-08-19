@@ -20,6 +20,7 @@ import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import {
     Asset,
     Backstretch,
+    ConfigTextbox,
     ConfigToggleSlider,
     DisplayShow,
     PlotInfo,
@@ -79,6 +80,7 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
+    window.components.push(ConfigTextbox);
     window.components.push(ConfigToggleSlider);
     window.components.push(DisplayShow);
     window.components.push(FileBrowser);
