@@ -334,13 +334,13 @@ module.exports = {
             imgLazyLoad.handleScroll();
         });
 
-        $('#postersort').on('change', function() {
+        $(document.body).on('change', '#postersort', function() {
             $('.show-grid').isotope({ sortBy: $(this).val() });
             $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
         });
 
-        $('#postersortdirection').on('change', function() {
-            $('.show-grid').isotope({ sortAscending: ($(this).val() === 'true') });
+        $(document.body).on('change', '#postersortdirection', function() {
+            $('.show-grid').isotope({ sortAscending: ($(this).val() === '1') });
             $.get($(this).find('option[value=' + $(this).val() + ']').attr('data-sort'));
         });
 

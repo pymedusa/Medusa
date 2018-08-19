@@ -27,18 +27,18 @@
                     <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                 </div>
                 <div class="show-option pull-right"> Direction:
-                    <select id="postersortdirection" class="form-control form-control-inline input-sm">
-                        <option value="true" data-sort="setPosterSortDir/?direction=1" selected="Number(config.posterSortdir) === 1">Ascending</option>
-                        <option value="false" data-sort="setPosterSortDir/?direction=0" selected="Number(config.posterSortdir) === 0">Descending</option>
+                    <select :value.number="config.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                        <option :value="1" data-sort="setPosterSortDir/?direction=1">Ascending</option>
+                        <option :value="0" data-sort="setPosterSortDir/?direction=0">Descending</option>
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
-                <select id="postersort" class="form-control form-control-inline input-sm">
-                    <option value="name" data-sort="setPosterSortBy/?sort=name" :selected"config.posterSortby === 'name'">Name</option>
-                    <option value="date" data-sort="setPosterSortBy/?sort=date" :selected"config.posterSortby === 'date'">Next Episode</option>
-                    <option value="network" data-sort="setPosterSortBy/?sort=network" :selected"config.posterSortby === 'network'">Network</option>
-                    <option value="progress" data-sort="setPosterSortBy/?sort=progress" :selected"config.posterSortby === 'progress'">Progress</option>
-                    <option value="indexer" data-sort="setPosterSortBy/?sort=indexer" :selected"config.posterSortby === 'indexer'">Indexer</option>
+                <select :value="config.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                    <option value="name" data-sort="setPosterSortBy/?sort=name">Name</option>
+                    <option value="date" data-sort="setPosterSortBy/?sort=date">Next Episode</option>
+                    <option value="network" data-sort="setPosterSortBy/?sort=network">Network</option>
+                    <option value="progress" data-sort="setPosterSortBy/?sort=progress">Progress</option>
+                    <option value="indexer" data-sort="setPosterSortBy/?sort=indexer">Indexer</option>
                 </select>
                 </div>
                 <div class="show-option pull-right">
