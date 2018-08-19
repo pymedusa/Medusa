@@ -7326,10 +7326,6 @@ public-encrypt@^4.0.0:
     parse-asn1 "^5.0.0"
     randombytes "^2.0.1"
 
-puex@0.5.2:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/puex/-/puex-0.5.2.tgz#c88e1c875b3c9378832a5c82ec71c987b9e89193"
-
 pump@^2.0.0, pump@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/pump/-/pump-2.0.1.tgz#12399add6e4cf7526d973cbc8b5ce2e2908b3909"
