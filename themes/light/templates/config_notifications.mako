@@ -730,23 +730,23 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for KODI -->
 
-                                <config-toggle-slider :checked="config.kodi.enabled" label="Enable" id="use_kodi" :explaination="['Send KODI commands?']" @change="save()"  @update="config.kodi.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider :checked="config.kodi.enabled" label="Enable" id="use_kodi" :explanations="['Send KODI commands?']" @change="save()"  @update="config.kodi.enabled = $event"></config-toggle-slider>
 
                                 <div v-show="config.kodi.enabled" id="content-use-kodi"> <!-- show based on config.kodi.enabled -->
 
-                                    <config-toggle-slider :checked="config.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explaination="['log errors when unreachable?']" @change="save()"  @update="config.kodi.alwaysOn = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()"  @update="config.kodi.alwaysOn = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="config.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explaination="['send a notification when a download starts?']" @change="save()"  @update="config.kodi.notify.snatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="config.kodi.notify.snatch = $event"></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="config.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explaination="['send a notification when a download finishes?']" @change="save()"  @update="config.kodi.notify.download = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="config.kodi.notify.download = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="config.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explaination="['send a notification when subtitles are downloaded?']" @change="save()"  @update="config.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="config.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
                                         
-                                    <config-toggle-slider :checked="config.kodi.notify.library" label="Update library" id="kodi_update_library" :explaination="['update KODI library when a download finishes?']" @change="save()"  @update="config.kodi.notify.library = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="config.kodi.update.full" label="Full library update" id="kodi_update_full" :explaination="['perform a full library update if update per-show fails?']" @change="save()"  @update="config.kodi.update.full = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.notify.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="config.kodi.notify.library = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="config.kodi.update.full = $event"></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="config.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explaination="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="config.kodi.cleanLibrary = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="config.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explaination="['only send library updates/clean to the first active host?']" @change="save()"  @update="config.kodi.update.onlyFirst = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="config.kodi.cleanLibrary = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="config.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()"  @update="config.kodi.update.onlyFirst = $event"></config-toggle-slider>
                                     
                                     
                                     <div class="form-group">
@@ -761,9 +761,8 @@ window.app = new Vue({
                                         </div>
                                     </div>
 
-                                    <config-textbox :value="config.kodi.username" label="Username" id="kodi_username" :explaination="['username for your KODI server (blank for none)']" @change="save()"  @update="config.kodi.username = $event"></config-toggle-slider>
-
-                                    <config-textbox :value="config.kodi.password" label="Password" id="kodi_password" :explaination="['password for your KODI server (blank for none)']" @change="save()"  @update="config.kodi.password = $event"></config-toggle-slider>
+                                    <config-textbox :value="config.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()"  @update="config.kodi.username = $event"></config-textbox>
+                                    <config-textbox :value="config.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" @update="config.kodi.password = $event"></config-textbox>
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
@@ -806,51 +805,17 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                     <input type="text" name="plex_server_token" id="plex_server_token" value="${app.PLEX_SERVER_TOKEN}" class="form-control input-sm input250"/>
+                                                <!-- Can't use the config-textbox component, because of the complex descriptions -->
                                                 <p>Auth Token used by plex</p>
                                                 <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_server_username" class="col-sm-2 control-label">
-                                                <span>Username</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="text" name="plex_server_username" id="plex_server_username" value="${app.PLEX_SERVER_USERNAME}" class="form-control input-sm max-input250" autocomplete="no"/>
-                                                <p>blank = no authentication</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_server_password" class="col-sm-2 control-label">
-                                                <span>Password</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                    <input type="password" name="plex_server_password" id="plex_server_password" value="${'*' * len(app.PLEX_SERVER_PASSWORD)}" class="form-control input-sm input250" autocomplete="no"/>
-                                                <p>blank = no authentication</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_update_library" class="col-sm-2 control-label">
-                                                <span>Update Library</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <toggle-button :width="45" :height="22" id="plex_update_library" name="plex_update_library" v-model="config.kodi.enabled" sync></toggle-button>
-                                                <p>update Plex Media Server library when a download finishes</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
+                                    <config-textbox :value="config.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.username = $event"></config-textbox>
+                                    <config-textbox :value="config.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="config.plex.server.password = $event"></config-textbox>
+                                    <config-toggle-slider :checked="config.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="config.plex.server.updateLibrary = $event"></config-textbox>
                                 </div>
-                            
-                            
                             </fieldset>
                         </div>
                     </div>    

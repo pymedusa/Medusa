@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" />
+                    <input :type="type" v-bind="{id, name: id}" v-model="localValue" :class="inputClass"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>
@@ -33,6 +33,10 @@ module.exports = {
         value: {
             type: String,
             default: ''
+        },
+        type: {
+            type: String,
+            default: 'text'
         },
         /**
          * Overwrite the default configured class on the <input/> element.
@@ -69,17 +73,14 @@ module.exports = {
     width: 75px;
     margin-top: -4px;
 }
-
 .input250 {
     width: 250px;
     margin-top: -4px;
 }
-
 .input350 {
     width: 350px;
     margin-top: -4px;
 }
-
 .input450 {
     width: 450px;
     margin-top: -4px;

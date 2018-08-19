@@ -337,6 +337,8 @@ class DataGenerator(object):
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
         section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
+        section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
+        section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
         section_data['plex']['client'] = NonEmptyDict()
         section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
         section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
