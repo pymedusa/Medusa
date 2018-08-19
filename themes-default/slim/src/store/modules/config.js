@@ -179,6 +179,8 @@ const state = {
         libraryCleanPending: null,
         cleanLibrary: null,
         host: [],
+        username: null,
+        password: null,
         notify: {
             snatch: null,
             download: null,
