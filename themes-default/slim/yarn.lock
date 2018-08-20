@@ -8102,9 +8102,9 @@ snyk-mvn-plugin@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/snyk-mvn-plugin/-/snyk-mvn-plugin-1.2.0.tgz#e23c60e35457ce5a26fd4252ddf120dbd7e9ef2a"
 
-snyk-nodejs-lockfile-parser@1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/snyk-nodejs-lockfile-parser/-/snyk-nodejs-lockfile-parser-1.2.2.tgz#d3f17710e6f0fecaffca71db7c7f8966180590cb"
+snyk-nodejs-lockfile-parser@1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/snyk-nodejs-lockfile-parser/-/snyk-nodejs-lockfile-parser-1.4.1.tgz#bfa090168be78bdb7ba2d28fbe67197e1a39d1f1"
   dependencies:
     lodash "4.17.10"
     path "0.12.7"
@@ -8194,9 +8194,9 @@ snyk-try-require@1.3.1, snyk-try-require@^1.1.1:
     lru-cache "^4.0.0"
     then-fs "^2.0.0"
 
-snyk@1.91.0:
-  version "1.91.0"
-  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.91.0.tgz#36dc5aa357c6ac17b945f3cacd490e842f7107bb"
+snyk@1.92.2:
+  version "1.92.2"
+  resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.92.2.tgz#3fa1566881918a3a2ed6b8ad04a35a6fd3d4dcd3"
   dependencies:
     abbrev "^1.1.1"
     ansi-escapes "^3.1.0"
@@ -8219,7 +8219,7 @@ snyk@1.91.0:
     snyk-gradle-plugin "1.3.0"
     snyk-module "1.8.2"
     snyk-mvn-plugin "1.2.0"
-    snyk-nodejs-lockfile-parser "1.2.2"
+    snyk-nodejs-lockfile-parser "1.4.1"
     snyk-nuget-plugin "1.6.4"
     snyk-php-plugin "1.5.1"
     snyk-policy "1.12.0"
