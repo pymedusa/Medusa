@@ -36,8 +36,9 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://ww3.yggtorrent.is'
+        self.url = 'https://ww4.yggtorrent.is'
         self.urls = {
+            'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
             'download': urljoin(self.url, 'engine/download_torrent?id={0}')
@@ -173,18 +174,19 @@ class YggtorrentProvider(TorrentProvider):
             'pass': self.password
         }
 
-        login_resp = self.session.post(self.urls['login'], data=login_params)
-        if not login_resp:
-            log.warning('Invalid username or password. Check your settings')
-            return False
+        if not self._is_authenticated():
+            login_url = self.get_redirect_url(self.urls['login'])
+            login_resp = self.session.post(login_url, data=login_params)
+            if not login_resp or not self._is_authenticated():
+                log.warning('Invalid username or password. Check your settings')
+                return False
 
-        response = self.session.get(self.url)
+        return True
+
+    def _is_authenticated(self):
+        response = self.session.get(self.urls['auth'])
         if not response:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if 'Bienvenue' not in response.text:
-            log.warning('Unable to login to provider')
+            log.warning('Unable to connect or login to provider')
             return False
 
         return True
