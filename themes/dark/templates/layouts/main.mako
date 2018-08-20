@@ -140,34 +140,34 @@
             }
 
             // @TODO: Remove this before v1.0.0
-            Vue.mixin({
-                data() {
-                    // These are only needed for the root Vue
-                    if (this.$root === this) {
-                        return {
-                            globalLoading: true,
-                            pageComponent: false
-                        };
-                    }
-                },
-                mounted() {
-                    if (this.$root === this && !document.location.pathname.includes('/login')) {
-                        const { store, username } = window;
-                        /* This is used by the `app-header` component
-                           to only show the logout button if a username is set */
-                        store.dispatch('login', { username });
-                        store.dispatch('getConfig').then(() => this.$emit('loaded'));
-                    }
-
-                    this.$once('loaded', () => {
-                        this.$root.globalLoading = false;
-                    });
-                },
-                // Make auth and config accessible to all components
-                computed: Vuex.mapState(['auth', 'config'])
-            });
-
             if (!window.loadMainApp) {
+                Vue.mixin({
+                    data() {
+                        // These are only needed for the root Vue
+                        if (this.$root === this) {
+                            return {
+                                globalLoading: true,
+                                pageComponent: false
+                            };
+                        }
+                    },
+                    mounted() {
+                        if (this.$root === this && !document.location.pathname.includes('/login')) {
+                            const { store, username } = window;
+                            /* This is used by the `app-header` component
+                            to only show the logout button if a username is set */
+                            store.dispatch('login', { username });
+                            store.dispatch('getConfig').then(() => this.$emit('loaded'));
+                        }
+
+                        this.$once('loaded', () => {
+                            this.$root.globalLoading = false;
+                        });
+                    },
+                    // Make auth and config accessible to all components
+                    computed: Vuex.mapState(['auth', 'config'])
+                });
+
                 if (window.isDevelopment) {
                     console.debug('Loading local Vue');
                 }
