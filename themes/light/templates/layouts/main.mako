@@ -134,6 +134,11 @@
         <%include file="/vue-components/sub-menu.mako"/>
         <%include file="/vue-components/quality-chooser.mako"/>
         <script>
+            if ('${bool(app.DEVELOPER)}' === 'True') {
+                Vue.config.devtools = true;
+                Vue.config.performance = true;
+            }
+
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 data() {
@@ -159,23 +164,17 @@
                 computed: Vuex.mapState(['auth', 'config'])
             });
 
-            window.routes = [];
-            if ('${bool(app.DEVELOPER)}' === 'True') {
-                Vue.config.devtools = true;
-                Vue.config.performance = true;
-            }
-        </script>
-        <script>
             if (!window.loadMainApp) {
                 if (window.isDevelopment) {
                     console.debug('Loading local Vue');
                 }
+
                 Vue.use(Vuex);
                 Vue.use(VueRouter);
                 Vue.use(AsyncComputed);
                 Vue.use(VueMeta);
 
-                // Load x-template components
+                // Register components
                 window.components.forEach(component => {
                     if (window.isDevelopment) {
                         console.log('Registering ' + component.name);
