@@ -65,8 +65,9 @@ const websocketUrl = (() => {
     const { protocol, hostname, port } = window.location;
     const proto = protocol === 'https:' ? 'wss:' : 'ws:';
     const WSMessageUrl = '/ui';
+    const wsPort = port ? `:${port}` : '';
     const webRoot = document.body.getAttribute('web-root');
-    return `${proto}//${hostname}:${port}${webRoot}/ws${WSMessageUrl}`;
+    return `${proto}//${hostname}${wsPort}${webRoot}/ws${WSMessageUrl}`;
 })();
 
 Vue.use(VueNativeSock, websocketUrl, {
