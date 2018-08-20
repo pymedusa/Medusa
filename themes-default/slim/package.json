@@ -45,7 +45,7 @@
     "eslint": "5.4.0",
     "eslint-config-xo": "0.24.1",
     "eslint-plugin-vue": "4.7.1",
-    "esm": "3.0.77",
+    "esm": "3.0.79",
     "fancy-log": "1.3.2",
     "file-loader": "1.1.11",
     "filemanager-webpack-plugin": "2.0.1",
