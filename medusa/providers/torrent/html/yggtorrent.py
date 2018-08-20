@@ -177,8 +177,12 @@ class YggtorrentProvider(TorrentProvider):
         if not self._is_authenticated():
             login_url = self.get_redirect_url(self.urls['login'])
             login_resp = self.session.post(login_url, data=login_params)
-            if not login_resp or not self._is_authenticated():
+            if not login_resp:
                 log.warning('Invalid username or password. Check your settings')
+                return False
+
+            if not self._is_authenticated():
+                log.warning('Unable to connect or login to provider')
                 return False
 
         return True
@@ -186,7 +190,6 @@ class YggtorrentProvider(TorrentProvider):
     def _is_authenticated(self):
         response = self.session.get(self.urls['auth'])
         if not response:
-            log.warning('Unable to connect or login to provider')
             return False
 
         return True
