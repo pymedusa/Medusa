@@ -15,6 +15,7 @@
 - Fixed whole seasons being downloaded as multi-episode replacement ([#4750](https://github.com/pymedusa/Medusa/issues/4750))
 - Fixed yggtorrent changed url to new url. ([#4843](https://github.com/pymedusa/Medusa/issues/4843))
 - Fixed excessive anidb udp calls when opening editShow. ([#4692](https://github.com/pymedusa/Medusa/pull/4822))
+- Fixed ui not loading using edge browser, when using a reverse proxy (without an alternative port). ([#4928](https://github.com/pymedusa/Medusa/pull/4928))
 
 -----
 
