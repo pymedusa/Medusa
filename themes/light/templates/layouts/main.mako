@@ -142,10 +142,13 @@
             // @TODO: Remove this before v1.0.0
             Vue.mixin({
                 data() {
-                    return {
-                        globalLoading: true,
-                        pageComponent: false
-                    };
+                    // These are only needed for the root Vue
+                    if (this.$root === this) {
+                        return {
+                            globalLoading: true,
+                            pageComponent: false
+                        };
+                    }
                 },
                 mounted() {
                     if (this.$root === this && !document.location.pathname.includes('/login')) {
@@ -157,7 +160,7 @@
                     }
 
                     this.$once('loaded', () => {
-                        this.globalLoading = false;
+                        this.$root.globalLoading = false;
                     });
                 },
                 // Make auth and config accessible to all components
