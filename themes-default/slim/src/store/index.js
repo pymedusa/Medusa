@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import VueNativeSock from 'vue-native-websocket';
+import VueNativeSock from 'vue-native-websocket/src/Main';
 import {
     auth,
     config,

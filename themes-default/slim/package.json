@@ -26,7 +26,10 @@
       }
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "global": "4.3.2",
+    "pngquant-bin": "5.0.0"
+  },
   "devDependencies": {
     "@vue/test-utils": "1.0.0-beta.24",
     "ava": "0.25.0",
