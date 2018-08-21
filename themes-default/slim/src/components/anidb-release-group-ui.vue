@@ -40,13 +40,8 @@
     </div>
 </template>
 <script>
-import AppLink from './app-link.vue';
-
 export default {
     name: 'anidb-release-group-ui',
-    components: {
-        AppLink
-    },
     props: {
         blacklist: {
             type: Array,
