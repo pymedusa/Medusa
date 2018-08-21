@@ -36,7 +36,7 @@
     "@vue/test-utils": "1.0.0-beta.24",
     "ava": "1.0.0-beta.7",
     "axios": "0.18.0",
-    "babel-loader": "8.0.0-beta.4",
+    "babel-loader": "8.0.0-beta.6",
     "babel-plugin-istanbul": "5.0.1",
     "bootstrap": "3.3.7",
     "browser-env": "3.2.5",
