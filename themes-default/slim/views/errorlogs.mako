@@ -8,15 +8,8 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
-    metaInfo: {
-        title: 'Logs & Errors'
-    },
-    data() {
-        return {
-            header: 'Logs & Errors'
-        };
-    }
+    router,
+    el: '#vue-wrap'
 });
 </script>
 </%block>
@@ -35,15 +28,15 @@ pre {
     from mako.filters import html_escape
     if logLevel == logger.WARNING:
         errors = classes.WarningViewer.errors
-        title = 'WARNING logs'
+        page_header = 'Warning Logs'
     else:
         errors = classes.ErrorViewer.errors
-        title = 'ERROR logs'
+        page_header = 'Error Logs'
 %>
 
 <div class="row">
     <div class="col-md-12 wide">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">${page_header}</h1>
     </div>
 </div>
 

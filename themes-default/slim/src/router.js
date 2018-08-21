@@ -261,6 +261,25 @@ const manageRoutes = {
     }]
 };
 
+const errorLogsRoutes = {
+    path: '/errorlogs',
+    component: { template: '<router-view/>' },
+    children: [{
+        path: '',
+        name: 'errorlogs',
+        meta: {
+            title: 'Logs & Errors'
+        }
+    }, {
+        path: 'viewlog',
+        name: 'viewlog',
+        meta: {
+            title: 'Logs',
+            header: 'Log File'
+        }
+    }]
+};
+
 const newsRoute = {
     path: '/news',
     name: 'news',
@@ -311,6 +330,7 @@ const routes = [
     scheduleRoute,
     historyRoute,
     manageRoutes,
+    errorLogsRoutes,
     newsRoute,
     changesRoute,
     ircRoute,
