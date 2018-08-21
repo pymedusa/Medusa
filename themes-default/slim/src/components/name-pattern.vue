@@ -264,7 +264,7 @@
 </template>
 
 <script>
-module.exports = {
+export default {
     name: 'name-pattern',
     props: {
         /**

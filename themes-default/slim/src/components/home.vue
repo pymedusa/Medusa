@@ -3,7 +3,7 @@ import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'home',
     template: '#home-template',
     components: {

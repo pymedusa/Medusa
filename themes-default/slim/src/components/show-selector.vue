@@ -18,7 +18,7 @@
 <script>
 import { mapState } from 'vuex';
 
-module.exports = {
+export default {
     name: 'show-selector',
     props: {
         showSlug: String

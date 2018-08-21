@@ -42,7 +42,7 @@
 <script>
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'anidb-release-group-ui',
     components: {
         AppLink

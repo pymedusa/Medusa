@@ -47,7 +47,7 @@
 <script>
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'config',
     components: {
         AppLink

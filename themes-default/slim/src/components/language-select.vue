@@ -2,7 +2,7 @@
     <select/>
 </template>
 <script>
-module.exports = {
+export default {
     name: 'language-select',
     props: {
         language: {
