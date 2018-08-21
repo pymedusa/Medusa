@@ -143,6 +143,23 @@ const addShowRoutes = {
             title: 'Add New Show',
             header: 'Add New Show'
         }
+    }, {
+        path: 'trendingShows',
+        name: 'addTrendingShows'
+    }, {
+        path: 'popularShows',
+        name: 'addPopularShows',
+        meta: {
+            title: 'Popular Shows',
+            header: 'Popular Shows'
+        }
+    }, {
+        path: 'popularAnime',
+        name: 'addPopularAnime',
+        meta: {
+            title: 'Popular Anime Shows',
+            header: 'Popular Anime Shows'
+        }
     }]
 };
 
