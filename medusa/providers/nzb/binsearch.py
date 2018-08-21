@@ -276,7 +276,7 @@ class BinSearchProvider(NZBProvider):
             log.warning('Result returned from BinSearch was not a valid NZB')
             return None
 
-        return result
+        return response.content
 
     def _get_size(self, item):
         """
