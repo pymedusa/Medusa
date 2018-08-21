@@ -22,6 +22,29 @@ const homeRoutes = {
     }, {
         path: 'displayShow',
         name: 'displayShow'
+    }, {
+        path: 'snatchSelection',
+        name: 'snatchSelection'
+    }, {
+        path: 'testRename',
+        name: 'testRename',
+        meta: {
+            title: 'Preview Rename',
+            header: 'Preview Rename'
+        }
+    }, {
+        path: 'postprocess',
+        name: 'postprocess',
+        meta: {
+            title: 'Manual Post-Processing',
+            header: 'Manual Post-Processing'
+        }
+    }, {
+        path: 'status',
+        name: 'status',
+        meta: {
+            title: 'Status'
+        }
     }]
 };
 
