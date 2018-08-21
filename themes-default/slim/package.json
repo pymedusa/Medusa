@@ -60,7 +60,7 @@
     "imagemin-pngquant": "6.0.0",
     "jquery": "3.3.1",
     "lodash": "4.17.10",
-    "mini-css-extract-plugin": "0.4.1",
+    "mini-css-extract-plugin": "0.4.2",
     "nyc": "13.0.1",
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
