@@ -65,9 +65,6 @@ if (window) {
         config: {},
         home: {},
         manage: {},
-        history: {},
-        errorlogs: {},
-        schedule: {},
         addShows: {}
     };
     window.webRoot = webRoot;
