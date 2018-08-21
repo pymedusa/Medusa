@@ -63,7 +63,9 @@ const homeRoutes = {
 
 const configRoutes = {
     path: '/config',
-    component: { template: '<router-view/>' },
+    component: {
+        template: '<router-view/>'
+    },
     children: [{
         path: '',
         name: 'config',
@@ -133,7 +135,9 @@ const configRoutes = {
 
 const addShowRoutes = {
     path: '/addShows',
-    component: { template: '<router-view/>' },
+    component: {
+        template: '<router-view/>'
+    },
     children: [{
         path: '',
         name: 'addShows',
@@ -215,7 +219,9 @@ const historyRoute = {
 
 const manageRoutes = {
     path: '/manage',
-    component: { template: '<router-view/>' },
+    component: {
+        template: '<router-view/>'
+    },
     children: [{
         path: '',
         name: 'manage',
@@ -276,7 +282,9 @@ const manageRoutes = {
 
 const errorLogsRoutes = {
     path: '/errorlogs',
-    component: { template: '<router-view/>' },
+    component: {
+        template: '<router-view/>'
+    },
     children: [{
         path: '',
         name: 'errorlogs',
@@ -320,7 +328,7 @@ const ircRoute = {
     }
 };
 
-const notFoundRoutes = {
+const notFoundRoute = {
     path: '/not-found',
     name: 'not-found',
     meta: {
@@ -328,11 +336,15 @@ const notFoundRoutes = {
         header: '404 - page not found'
     },
     component: NotFound
-// @NOTE: Redirect can only be added once all routes are vue
-// }, {
-//     path: '*',
-//     redirect: '/not-found'
 };
+
+// @NOTE: Redirect can only be added once all routes are vue
+/*
+const notFoundRedirect = {
+    path: '*',
+    redirect: '/not-found'
+};
+*/
 
 const routes = [
     homeRoutes,
@@ -347,7 +359,7 @@ const routes = [
     newsRoute,
     changesRoute,
     ircRoute,
-    notFoundRoutes
+    notFoundRoute
 ];
 
 const router = new VueRouter({
