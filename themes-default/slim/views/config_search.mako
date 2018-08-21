@@ -297,7 +297,7 @@ window.app = new Vue({
                 </ul>
                 <div id="episode-search">
                     <!-- general settings //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>General Search Settings</h3>
                         <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
                     </div>
@@ -464,7 +464,7 @@ window.app = new Vue({
                         </fieldset>
                     </div><!-- /general settings //-->
                     <!-- search filters //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Search Filters</h3>
                         <p>Options to filter search results</p>
                     </div>
@@ -546,7 +546,7 @@ window.app = new Vue({
                     </div><!-- /search filters //-->
                 </div><!-- /#episode-search //-->
                 <div id="nzb-search" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>NZB Search</h3>
                         <p>How to handle NZB search results.</p>
                         <div id="nzb_method_icon" :class="'add-client-icon-' + nzb.method"></div>
@@ -766,7 +766,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /#nzb-search //-->
                 <div id="torrent-search" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Torrent Search</h3>
                         <p>How to handle Torrent search results.</p>
                         <div id="torrent_method_icon" :class="'add-client-icon-' + torrent.method"></div>

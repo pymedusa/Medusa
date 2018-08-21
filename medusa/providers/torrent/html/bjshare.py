@@ -211,7 +211,7 @@ class BJShareProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -227,7 +227,7 @@ class BJShareProvider(TorrentProvider):
                     torrent_details = torrent_details.replace('[', ' ').replace(']', ' ').replace('/', ' ')
                     torrent_details = torrent_details.replace('Full HD ', '1080p').replace('HD ', '720p')
 
-                    torrent_size = cells[labels.index('Tamanho')+group_index].get_text(strip=True)
+                    torrent_size = cells[labels.index('Tamanho') + group_index].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()

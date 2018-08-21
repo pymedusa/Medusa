@@ -182,7 +182,7 @@ class QueueProgressIndicator(object):
             if curItem in self.queueItemList:
                 return curItem.name
 
-        return "Unknown"
+        return 'Unknown'
 
     def percentComplete(self):
         numFinished = self.numFinished()

@@ -656,7 +656,7 @@ class PostProcessor(object):
 
             if int(numseasons_result[0][0]) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
-                         u"to have only 1 season, setting season number to 1...", logger.DEBUG)
+                         u'to have only 1 season, setting season number to 1...', logger.DEBUG)
                 season = 1
 
         return series_obj, season, episodes, quality, version
@@ -1029,7 +1029,7 @@ class PostProcessor(object):
         (series_obj, season, episodes, quality, version) = self._find_info()
         if not series_obj:
             raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
-                                                       u"before post-processing an episode")
+                                                       u'before post-processing an episode')
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
@@ -1098,7 +1098,7 @@ class PostProcessor(object):
             if int(ep_obj.season) > 0:
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
-                    "SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?",
+                    'SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?',
                     [series_obj.series_id, series_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
@@ -1115,7 +1115,7 @@ class PostProcessor(object):
             if existing_file_status != PostProcessor.DOESNT_EXIST:
                 self.flag_kodi_clean_library()
             self.log(u"This download is marked a priority download so I'm going to replace "
-                     u"an existing file if I find one")
+                     u'an existing file if I find one')
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.is_file_locked(self.file_path, False):

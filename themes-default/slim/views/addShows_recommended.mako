@@ -48,7 +48,7 @@ window.app = new Vue({
                                 <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
-                                <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                <root-dirs @update="rootDirs = $event"></root-dirs>
                                 <br/>
                             </div>
                             <div id="tabs-2" class="existingtabs">

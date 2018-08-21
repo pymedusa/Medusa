@@ -20,14 +20,9 @@ window.app = new Vue({
     metaInfo: {
         title: 'Config - General'
     },
-    created() {
-        // @FIXME: This is a workaround to make sure `rootDirs` is available for the component.
-        MEDUSA.config.rootDirs = ${json.dumps(app.ROOT_DIRS)};
-    },
     data() {
         return {
-            header: 'General Configuration',
-            rootDirs: []
+            header: 'General Configuration'
         };
     }
 });
@@ -49,7 +44,7 @@ window.app = new Vue({
                     <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
                 </ul>
                 <div id="misc">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Misc</h3>
                         <p>Startup options. Indexer options. Log and show file locations.</p>
                         <p><b>Some options may require a manual restart to take effect.</b></p>
@@ -124,15 +119,16 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Show root directories</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                        <p>where the files of shows are located<br>
+                                        <b>These changes are automatically saved!</b></p>
+                                        <root-dirs></root-dirs>
                                     </span>
                                 </label>
                             </div>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Indexer</h3>
                         <p>Options for controlling the show indexers.</p>
                     </div>
@@ -211,7 +207,7 @@ window.app = new Vue({
                         </fieldset>
                     </div>
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Updates</h3>
                         <p>Options for software updates.</p>
                     </div>
@@ -260,7 +256,7 @@ window.app = new Vue({
                     </div>
                 </div><!-- /component-group1 //-->
                 <div id="interface">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
@@ -409,7 +405,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
@@ -539,7 +535,7 @@ window.app = new Vue({
                 </div><!-- /component-group2 //-->
                 </div>
                 <div id="advanced-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Advanced Settings</h3>
                     </div>
                 <div class="component-group">
@@ -686,7 +682,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Logging</h3>
                     </div>
                 <div class="component-group">
@@ -740,7 +736,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>GitHub</h3>
                         <p>Options for github related features.</p>
                     </div>

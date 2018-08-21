@@ -7,6 +7,7 @@ import logging
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
+    BooleanField,
     IntegerField,
     iter_nested_items,
     set_nested_value,
@@ -135,6 +136,7 @@ class EpisodeHandler(BaseRequestHandler):
         patches = {
             'status': IntegerField(episode, 'status'),
             'quality': IntegerField(episode, 'quality'),
+            'watched': BooleanField(episode, 'watched'),
         }
 
         for key, value in iter_nested_items(data):

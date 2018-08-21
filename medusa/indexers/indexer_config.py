@@ -16,8 +16,8 @@ from six import iteritems
 
 initConfig = {
     'valid_languages': [
-        "da", "fi", "nl", "de", "it", "es", "fr", "pl", "hu", "el", "tr",
-        "ru", "he", "ja", "pt", "zh", "cs", "sl", "hr", "ko", "en", "sv", "no"
+        'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
+        'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
     ],
     'langabbv_to_id': {
         'el': 20, 'en': 7, 'zh': 27,
