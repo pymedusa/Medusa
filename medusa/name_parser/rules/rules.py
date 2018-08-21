@@ -153,43 +153,47 @@ class FixAnimeReleaseGroup(Rule):
             return to_remove, to_append
 
 
-class FixInvalidTitleOrAlternativeTitle(Rule):
-    """Fix invalid title/alternative title due to absolute episode numbers range.
+class FixInvalidAbsoluteReleaseGroups(Rule):
+    """Fix invalid release groups due to absolute episode numbers range.
 
-    Some release names have season/episode defined twice (relative and absolute), and one of them becomes an
-    alternative_title or a suffix in the title. This fix will remove the invalid alternative_title or the
-    invalid title's suffix.
+    Some release names have season/episode defined twice (relative and absolute), and the ending
+    absolute episode becomes the release_group. This fix will remove the invalid release_group
+    and add the correct absolute episode ranges.
 
-    e.g.: "Show Name - 313-314 - s16e03-04"
+    e.g.: "Show.Name.s16e03-05.313-315"
 
-    guessit -t episode "Show Name - 313-314 - s16e03-04"
+    guessit -t episode "Show.Name.s16e03-05.313-315"
 
     without this fix:
-        For: Show Name - 313-314 - s16e03-04
+        For: Show.Name.s16e03-05.313-315
         GuessIt found: {
             "title": "Show Name",
-            "alternative_title": "313-314",
             "season": 16,
             "episode": [
                 3,
-                4
+                4,
+                5
             ],
+            "absolute_episode": 313,
+            "release_group": "315",
             "type": "episode"
         }
 
 
     with this fix:
-        For: Show Name - 313-314 - s16e03-04
+        For: Show.Name.s16e03-05.313-315
         GuessIt found: {
             "title": "Show Name",
             "season": 16,
-            "absolute_episode": [
-                313,
-                314
-            ],
             "episode": [
                 3,
-                4
+                4,
+                5
+            ],
+            "absolute_episode": [
+                313,
+                314,
+                315
             ],
             "type": "episode"
         }
@@ -198,7 +202,6 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     absolute_re = re.compile(r'([\W|_]*)(?P<absolute_episode_start>\d{2,4})(?:-(?P<absolute_episode_end>\d{3,4}))?\W*$')
-    properties = ('title', 'alternative_title', 'episode_title')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -211,50 +214,42 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
         """
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            # retrieve all problematic titles
-            problematic_titles = matches.range(filepart.start, filepart.end,
-                                               predicate=lambda match: match.name in self.properties)
+            # retrieve all problematic groups
+            problematic_groups = matches.range(filepart.start, filepart.end,
+                                               predicate=lambda match: match.name == 'release_group')
 
             to_remove = []
             to_append = []
 
-            for title in problematic_titles:
-                m = self.absolute_re.search(title.raw)
+            for group in problematic_groups:
+                filename = fileparts[-1].raw
+                m = self.absolute_re.search(filename)
                 if not m:
                     continue
 
-                # Remove the problematic title
-                to_remove.append(title)
-
-                # Remove the title suffix
-                new_value = title.raw[0: m.start()]
-                if new_value:
-                    # Add the correct title
-                    new_title = copy.copy(title)
-                    new_title.value = cleanup(new_value)
-                    new_title.end = title.start + m.start()
-                    to_append.append(new_title)
+                # Remove the problematic group
+                to_remove.append(group)
 
                 # and add the absolute episode range
                 g = m.groupdict()
-                if not g['absolute_episode_end'] and title.name != 'alternative_title':
+                if not g['absolute_episode_end']:
                     continue
 
                 absolute_episode_start = int(g['absolute_episode_start'])
                 absolute_episode_end = int(g['absolute_episode_end'] or g['absolute_episode_start'])
                 for i in range(absolute_episode_start, absolute_episode_end + 1):
-                    episode = copy.copy(title)
+                    episode = copy.copy(group)
                     episode.name = 'absolute_episode'
                     episode.value = i
                     if i == absolute_episode_start:
-                        episode.start = title.start + m.start('absolute_episode_start')
-                        episode.end = title.start + m.end('absolute_episode_start')
+                        episode.start = group.start + m.start('absolute_episode_start')
+                        episode.end = group.start + m.end('absolute_episode_start')
                     elif i < absolute_episode_end:
-                        episode.start = title.start + m.end('absolute_episode_start')
-                        episode.end = title.start + m.start('absolute_episode_end')
+                        episode.start = group.start + m.end('absolute_episode_start')
+                        episode.end = group.start + m.start('absolute_episode_end')
                     else:
-                        episode.start = title.start + m.start('absolute_episode_end')
-                        episode.end = title.start + m.end('absolute_episode_end')
+                        episode.start = group.start + m.start('absolute_episode_end')
+                        episode.end = group.start + m.end('absolute_episode_end')
 
                     to_append.append(episode)
 
@@ -1265,7 +1260,7 @@ def rules():
         BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
         FixAnimeReleaseGroup,
-        FixInvalidTitleOrAlternativeTitle,
+        FixInvalidAbsoluteReleaseGroups,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
