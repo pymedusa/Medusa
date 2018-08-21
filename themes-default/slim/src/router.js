@@ -45,6 +45,19 @@ const homeRoutes = {
         meta: {
             title: 'Status'
         }
+    }, {
+        path: 'restart',
+        name: 'restart',
+        meta: {
+            title: 'Restarting...',
+            header: 'Performing Restart'
+        }
+    }, {
+        path: 'shutdown',
+        name: 'shutdown',
+        meta: {
+            header: 'Shutting down'
+        }
     }]
 };
 
