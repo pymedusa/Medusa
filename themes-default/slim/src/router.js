@@ -261,6 +261,33 @@ const manageRoutes = {
     }]
 };
 
+const newsRoute = {
+    path: '/news',
+    name: 'news',
+    meta: {
+        title: 'News',
+        header: 'News'
+    }
+};
+
+const changesRoute = {
+    path: '/changes',
+    name: 'changes',
+    meta: {
+        title: 'Changelog',
+        header: 'Changelog'
+    }
+};
+
+const ircRoute = {
+    path: '/IRC',
+    name: 'IRC',
+    meta: {
+        title: 'IRC',
+        header: 'IRC'
+    }
+};
+
 const notFoundRoutes = {
     path: '/not-found',
     name: 'not-found',
@@ -284,6 +311,9 @@ const routes = [
     scheduleRoute,
     historyRoute,
     manageRoutes,
+    newsRoute,
+    changesRoute,
+    ircRoute,
     notFoundRoutes
 ];
 
