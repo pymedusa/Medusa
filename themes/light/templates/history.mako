@@ -22,14 +22,13 @@ window.app = new Vue({
     metaInfo: {
         title: 'History'
     },
-    store,
     data() {
         return {
             header: 'History',
             limit: '${limit}'
         };
     },
-    computed: Object.assign({
+    computed: {
         layout: {
             get() {
                 const { config } = this;
@@ -41,7 +40,7 @@ window.app = new Vue({
                 $store.dispatch('setLayout', { page, layout });
             }
         }
-    }),
+    },
     mounted() {
         const unwatch = this.$watch('layout', () => {
             unwatch();
