@@ -170,10 +170,16 @@ class Manage(Home, WebRoot):
                     status_list + [cur_indexer_id, cur_series_id]
                 )
 
-                all_eps = ['{season}x{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
+                all_eps = ['s{season}e{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
                 to_change[cur_indexer_id, cur_series_id] = all_eps
 
-            self.setStatus(indexer_id_to_name(int(cur_indexer_id)), cur_series_id, '|'.join(to_change[(cur_indexer_id, cur_series_id)]), newStatus, direct=True)
+            self.setStatus(
+                indexername=indexer_id_to_name(int(cur_indexer_id)),
+                seriesid=cur_series_id,
+                eps='|'.join(to_change[(cur_indexer_id, cur_series_id)]),
+                status=newStatus,
+                direct=True
+            )
 
         return self.redirect('/manage/episodeStatuses/')
 
@@ -294,10 +300,11 @@ class Manage(Home, WebRoot):
                     b"AND location != ''",
                     [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = ['s' + str(x[b'season']) + 'e' + str(x[b'episode'])
+                                                                for x in all_eps_results]
 
             for epResult in to_download[(cur_indexer_id, cur_series_id)]:
-                season, episode = epResult.split('x')
+                season, episode = epResult.lstrip('s').split('e')
 
                 series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
                 series_obj.get_episode(season, episode).download_subtitles()

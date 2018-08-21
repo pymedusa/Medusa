@@ -103,7 +103,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
         except IndexerUnavailable:
             continue
         if hasattr(t, 'get_id_by_external'):
-            log.debug(u"Trying other indexer: {indexer} get_id_by_external",
+            log.debug(u'Trying other indexer: {indexer} get_id_by_external',
                       {'indexer': indexerApi(other_indexer).name})
             # Call the get_id_by_external and pass all the externals we have,
             # except for the indexers own.

@@ -9,8 +9,6 @@ import time
 from builtins import str
 from datetime import date, datetime
 
-import adba
-
 from medusa import (
     app,
     config,
@@ -60,7 +58,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, set_up_anidb_connection, short_group_names
+from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import (
     IndexerException,
@@ -525,20 +523,20 @@ class Home(WebRoot):
         result = notifiers.nmjv2_notifier.notify_settings(unquote_plus(host), dbloc, instance)
         if result:
             return json.dumps({
-                "message": "NMJ Database found at: {host}".format(host=host),
-                "database": app.NMJv2_DATABASE,
+                'message': 'NMJ Database found at: {host}'.format(host=host),
+                'database': app.NMJv2_DATABASE,
             })
         else:
             return json.dumps({
-                "message": "Unable to find NMJ Database at location: {db_loc}. "
-                           "Is the right location selected and PCH running?".format(db_loc=dbloc),
-                "database": ""
+                'message': 'Unable to find NMJ Database at location: {db_loc}. '
+                           'Is the right location selected and PCH running?'.format(db_loc=dbloc),
+                'database': ''
             })
 
     @staticmethod
     def getTraktToken(trakt_pin=None):
-        trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
-                          "trakt_api_secret": app.TRAKT_API_SECRET}
+        trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_api_secret': app.TRAKT_API_SECRET}
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
         response = None
         try:
@@ -561,9 +559,9 @@ class Home(WebRoot):
             return "Connection error. Click 'Authorize Medusa' button again"
         if response:
             ui.notifications.message('Trakt Authorized')
-            return "Trakt Authorized"
+            return 'Trakt Authorized'
         ui.notifications.error('Connection error. Reload the page to get new token!')
-        return "Trakt Not Authorized!"
+        return 'Trakt Not Authorized!'
 
     @staticmethod
     def testTrakt(username=None, blacklist_name=None):
@@ -947,7 +945,7 @@ class Home(WebRoot):
         for cur_result in sql_results:
             cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
-                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
         bwl = None
@@ -1351,8 +1349,8 @@ class Home(WebRoot):
             cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
                                                  manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
-                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
-                                                    episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'],
+                                                     episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
         return t.render(
@@ -1451,33 +1449,14 @@ class Home(WebRoot):
 
         if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
             t = PageTemplate(rh=self, filename='editShow.mako')
+            groups = []
 
             if series_obj.is_anime:
-                if not series_obj.release_groups:
-                    series_obj.release_groups = BlackAndWhiteList(series_obj)
-                whitelist = series_obj.release_groups.whitelist
-                blacklist = series_obj.release_groups.blacklist
-
-                groups = []
-                if set_up_anidb_connection() and not anidb_failed:
-                    try:
-                        anime = adba.Anime(app.ADBA_CONNECTION, name=series_obj.name)
-                        groups = anime.get_groups()
-                    except Exception as e:
-                        errors += 1
-                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
-                                   (error=e.message), logger.WARNING)
-
-            with series_obj.lock:
-                show = series_obj
-                scene_exceptions = get_scene_exceptions(series_obj)
-
-            if series_obj.is_anime:
-                return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
+                return t.render(show=series_obj, groups=groups, whitelist=whitelist,
                                 blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home',
                                 action='editShow')
             else:
-                return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
+                return t.render(show=series_obj, title='Edit Show', header='Edit Show',
                                 controller='home', action='editShow')
 
         season_folders = config.checkbox_to_value(season_folders)
@@ -1625,7 +1604,7 @@ class Home(WebRoot):
                             logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
                                        (location=new_location, msg=error), logger.WARNING)
                         else:
-                            logger.log(u"New show directory created", logger.INFO)
+                            logger.log(u'New show directory created', logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
                         changed_location = False
@@ -1690,7 +1669,7 @@ class Home(WebRoot):
             except CantRefreshShowException as e:
                 errors += 1
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           "Error: {error}".format(show=series_obj.name, error=e.message), logger.WARNING)
+                           'Error: {error}'.format(show=series_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
@@ -1702,7 +1681,7 @@ class Home(WebRoot):
                 )
             )
 
-        logger.log(u"Finished editing show: {show}".format(show=series_obj.name), logger.DEBUG)
+        logger.log(u'Finished editing show: {show}'.format(show=series_obj.name), logger.DEBUG)
         return self.redirect(
             '/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(
                 series_obj=series_obj))
@@ -1765,7 +1744,7 @@ class Home(WebRoot):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        app.SHOWS_RECENT = [x for x in app.SHOWS_RECENT if x['indexer'] != series_obj.indexer and x['indexerid'] != series_obj.series_id]
+        app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['indexerName'] != series_obj.indexer_name and show['showId'] != series_obj.series_id]
 
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
@@ -1925,13 +1904,13 @@ class Home(WebRoot):
                 logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
                     series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
 
-                ep_info = cur_ep.split('x')
-                if not all(ep_info):
+                season_no, episode_no = cur_ep.lstrip('s').split('e')
+                if not all([season_no, episode_no]):
                     logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
-                               (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
+                               (season=season_no, episode=episode_no), logger.DEBUG)
                     continue
 
-                ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+                ep_obj = series_obj.get_episode(season_no, episode_no)
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
@@ -1952,8 +1931,8 @@ class Home(WebRoot):
                     snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + [DOWNLOADED]
-                            or os.path.isfile(ep_obj.location)):
+                            ep_obj.status in snatched_qualities + [DOWNLOADED] or
+                            os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
@@ -1962,7 +1941,7 @@ class Home(WebRoot):
                     if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
                                    ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
-                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == WANTED:
@@ -1973,8 +1952,8 @@ class Home(WebRoot):
 
                         if ep_obj.manually_searched:
                             logger.log("Resetting 'manually searched' flag of {series} {episode}"
-                                       " as episode was changed to WANTED".format(
-                                            series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                                       ' as episode was changed to WANTED'.format(
+                                           series=series_obj.name, episode=cur_ep), logger.DEBUG)
                             ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
@@ -1995,7 +1974,7 @@ class Home(WebRoot):
                     upd = 'Remove'
 
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
-                                action=upd, show=series_obj), logger.DEBUG)
+                    action=upd, show=series_obj), logger.DEBUG)
 
                 if data:
                     notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
@@ -2081,14 +2060,7 @@ class Home(WebRoot):
             ep_obj_rename_list.reverse()
 
         t = PageTemplate(rh=self, filename='testRename.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil'
-        }]
-
-        return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
-                        show=series_obj,
+        return t.render(ep_obj_list=ep_obj_rename_list, show=series_obj,
                         controller='home', action='previewRename')
 
     def doRename(self, indexername=None, seriesid=None, eps=None):
@@ -2112,8 +2084,7 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
-
-            ep_info = cur_ep.split('x')
+            season_no, episode_no = cur_ep.lstrip('s').split('e')
 
             # this is probably the worst possible way to deal with double eps
             # but I've kinda painted myself into a corner here with this stupid database
@@ -2121,7 +2092,7 @@ class Home(WebRoot):
                 b'SELECT location '
                 b'FROM tv_episodes '
                 b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [indexer_name_to_id(indexername), seriesid, ep_info[0], ep_info[1]])
+                [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
@@ -2130,10 +2101,10 @@ class Home(WebRoot):
                 b'SELECT season, episode '
                 b'FROM tv_episodes '
                 b'WHERE location = ? AND episode != ?',
-                [ep_result[0][b'location'], ep_info[1]]
+                [ep_result[0][b'location'], episode_no]
             )
 
-            root_ep_obj = series_obj.get_episode(ep_info[0], ep_info[1])
+            root_ep_obj = series_obj.get_episode(season_no, episode_no)
             root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:
@@ -2202,7 +2173,7 @@ class Home(WebRoot):
 
         try:
             if lang:
-                logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
+                logger.log('Manual re-downloading subtitles for {show} with language {lang}'.format
                            (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
@@ -2250,7 +2221,7 @@ class Home(WebRoot):
             logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
             return json.dumps({'result': 'failure'})
         except (ValueError, TypeError) as e:
-            ui.notifications.message('Error', "Please check logs")
+            ui.notifications.message('Error', 'Please check logs')
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
             return json.dumps({'result': 'failure'})
@@ -2261,7 +2232,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         if mode == 'searching':
-            logger.log("Manual searching subtitles for: {0}".format(release_name))
+            logger.log('Manual searching subtitles for: {0}'.format(release_name))
             found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
             if found_subtitles:
                 ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
@@ -2270,7 +2241,7 @@ class Home(WebRoot):
             result = 'success' if found_subtitles else 'failure'
             subtitles_result = found_subtitles
         else:
-            logger.log("Manual downloading subtitles for: {0}".format(release_name))
+            logger.log('Manual downloading subtitles for: {0}'.format(release_name))
             new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id,
                                                           video_path=video_path)
             if new_manual_subtitle:

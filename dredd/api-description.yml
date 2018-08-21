@@ -133,9 +133,12 @@ paths:
           description: Response with only the updated fields
           schema:
             $ref: '#/definitions/Series'
+          x-request:
+            body:
+              {"tvdb": 301824, "paused": true}
         400:
           $ref: '#/responses/error'
-          description: Invalid id
+          description: Conflicting series identifier
           x-request:
             body:
               id:
@@ -939,6 +942,7 @@ definitions:
         type: string
         format: date-time
         description: Next episode air date
+        x-nullable: true
       runtime:
         type: integer
         minimum: 1
@@ -969,7 +973,7 @@ definitions:
             votes: 558507
       classification:
         type: string
-        enum: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
+        enum: ['', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
         description: TV Parental Guidelines
       cache:
         type: object
@@ -1113,6 +1117,7 @@ definitions:
       airDate:
         type: string
         format: date-time
+        x-nullable: true
       title:
         type: string
         description: Episode title
@@ -1401,6 +1406,79 @@ definitions:
               numWarnings:
                 description: Number of logged warnings
                 type: integer
+          postProcessing:
+            type: object
+            properties:
+              naming:
+                type: object
+                properties:
+                  stripYear:
+                    type: boolean
+                  pattern:
+                    type: string
+                  multiEp:
+                    type: integer
+                  patternAirByDate:
+                    type: string
+                  patternSports:
+                    type: string
+                  patternAnime:
+                    type: string
+                  enableCustomNamingAirByDate:
+                    type: boolean
+                  enableCustomNamingSports:
+                    type: boolean
+                  enableCustomNamingAnime:
+                    type: boolean
+                  animeMultiEp:
+                    type: integer
+                  animeNamingType:
+                    type: integer
+              showDownloadDir:
+                type: string
+              processAutomatically:
+                type: boolean
+              postponeIfSyncFiles:
+                type: boolean
+              postponeIfNoSubs:
+                type: boolean
+              renameEpisodes:
+                type: boolean
+              createMissingShowDirs:
+                type: boolean
+              addShowsWithoutDir:
+                type: boolean
+              moveAssociatedFiles:
+                type: boolean
+              nfoRename:
+                type: boolean
+              airdateEpisodes:
+                type: boolean
+              unpack:
+                type: boolean
+              deleteRarContent:
+                type: boolean
+              noDelete:
+                type: boolean
+              processMethod:
+                type: string
+              reflinkAvailable:
+                type: boolean
+              autoPostprocessorFrequency:
+                type: integer
+              syncFiles:
+                type: array
+              fileTimestampTimezone:
+                type: string
+              allowedExtensions:
+                type: array
+              extraScripts:
+                type: array
+              extraScriptsUrl:
+                type: string
+              multiEpStrings:
+                type: object
+
   Log:
     type: object
     properties:
@@ -1458,10 +1536,12 @@ definitions:
         type: string
       season:
         type: integer
-        minimum: 0
+        minimum: 1
+        x-nullable: true
       type:
         type: string
-        enum: [local]
+        enum: [null, local]
+        x-nullable: true
     example:
       series: tvdb301824
       name: TheBig
@@ -1827,6 +1907,9 @@ parameters:
     type: string
     enum:
       - main
+      - statuses
+      - qualities
+      - metadata
   log-level:
     name: level
     in: query

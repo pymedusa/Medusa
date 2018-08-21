@@ -40,13 +40,12 @@ from contextlib2 import suppress
 
 import guessit
 
-from imdbpie import imdbpie
-
 from medusa import app, db
 from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -69,10 +68,10 @@ except ImportError:
 
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
-    i = "\n" + level * "  "
+    i = '\n' + level * '  '
     if elem:
         if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
+            elem.text = i + '  '
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
         for elem in elem:
@@ -105,7 +104,7 @@ def is_media_file(filename):
         if filename.startswith('._'):
             return False
 
-        sep_file = filename.rpartition(".")
+        sep_file = filename.rpartition('.')
 
         if re.search('extras?$', sep_file[0], re.I):
             return False
@@ -489,7 +488,7 @@ def make_dirs(path):
                           {'path': path})
                 os.makedirs(path)
             except (OSError, IOError) as msg:
-                log.error(u"Failed creating {path} : {error!r}",
+                log.error(u'Failed creating {path} : {error!r}',
                           {'path': path, 'error': msg})
                 return False
 
@@ -890,7 +889,7 @@ def backup_versioned_file(old_file, version):
             log.debug(u'Trying to back up {old} to new',
                       {'old': old_file, 'new': new_file})
             shutil.copy(old_file, new_file)
-            log.debug(u"Backup done")
+            log.debug(u'Backup done')
             break
         except OSError as error:
             log.warning(u'Error while trying to back up {old} to {new}:'
@@ -911,7 +910,7 @@ def backup_versioned_file(old_file, version):
 def get_lan_ip():
     """Return IP of system."""
     try:
-        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0]
+        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith('127.')][0]
     except Exception:
         return socket.gethostname()
 
@@ -1260,7 +1259,7 @@ def download_file(url, filename, session, method='GET', data=None, headers=None,
 
 
 def handle_requests_exception(requests_exception):
-    default = "Request failed: {0}"
+    default = 'Request failed: {0}'
     try:
         raise requests_exception
     except requests.exceptions.SSLError as error:
@@ -1423,7 +1422,7 @@ def is_file_locked(check_file, write_lock_check=False):
         return True
 
     if write_lock_check:
-        lock_file = check_file + ".lckchk"
+        lock_file = check_file + '.lckchk'
         if os.path.exists(lock_file):
             os.remove(lock_file)
         try:
@@ -1462,34 +1461,34 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
+        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         if tvdb_id:
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
+        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         return tvdb_id
 
     elif indexer == 'TVMAZE':
-        url = "http://api.tvmaze.com/shows/%s" % indexer_id
+        url = 'http://api.tvmaze.com/shows/%s' % indexer_id
         data = session.get_json(url)
         if data is None:
             return tvdb_id
@@ -1591,10 +1590,10 @@ def is_ip_private(ip):
     :return:
     :rtype: bool
     """
-    priv_lo = re.compile(r"^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_24 = re.compile(r"^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
-    priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
+    priv_lo = re.compile(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_24 = re.compile(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_20 = re.compile(r'^192\.168\.\d{1,3}.\d{1,3}$')
+    priv_16 = re.compile(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$')
     return bool(priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip))
 
 
@@ -1727,7 +1726,7 @@ def is_info_hash_processed(info_hash):
 def title_to_imdb(title, start_year, imdb_api=None):
     """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
 

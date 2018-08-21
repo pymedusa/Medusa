@@ -5,17 +5,15 @@
 % endif
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        data() {
-            return {
-                rootDirs: []
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    data() {
+        return {
+            rootDirs: []
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -50,7 +48,7 @@ const startVue = () => {
                                 <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
-                                <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                <root-dirs @update="rootDirs = $event"></root-dirs>
                                 <br/>
                             </div>
                             <div id="tabs-2" class="existingtabs">

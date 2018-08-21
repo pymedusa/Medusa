@@ -58,7 +58,6 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
-from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (
@@ -266,6 +265,7 @@ class Episode(TV):
         self.related_episodes = []
         self.wanted_quality = []
         self.loaded = False
+        self.watched = False
         if series:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -401,6 +401,9 @@ class Episode(TV):
     @property
     def air_date(self):
         """Return air date from the episode."""
+        if self.airdate == date.min:
+            return None
+
         return sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
@@ -629,6 +632,7 @@ class Episode(TV):
             self.airdate = date.fromordinal(int(sql_results[0][b'airdate']))
             self.status = int(sql_results[0][b'status'] or UNSET)
             self.quality = int(sql_results[0][b'quality'] or Quality.NA)
+            self.watched = int(sql_results[0][b'watched'])
 
             # don't overwrite my location
             if sql_results[0][b'location']:
@@ -1044,7 +1048,7 @@ class Episode(TV):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        data = NonEmptyDict()
+        data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
         data['season'] = self.season
@@ -1060,20 +1064,21 @@ class Episode(TV):
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
+        data['watched'] = self.watched
         data['quality'] = self.quality
-        data['release'] = NonEmptyDict()
+        data['release'] = {}
         data['release']['name'] = self.release_name
         data['release']['group'] = self.release_group
         data['release']['proper'] = self.is_proper
         data['release']['version'] = self.version
-        data['scene'] = NonEmptyDict()
+        data['scene'] = {}
         data['scene']['season'] = self.scene_season
         data['scene']['episode'] = self.scene_episode
 
         if self.scene_absolute_number:
             data['scene']['absoluteNumber'] = self.scene_absolute_number
 
-        data['file'] = NonEmptyDict()
+        data['file'] = {}
         data['file']['location'] = self.location
         if self.file_size:
             data['file']['size'] = self.file_size
@@ -1084,8 +1089,8 @@ class Episode(TV):
             data['content'].append('thumbnail')
 
         if detailed:
-            data['statistics'] = NonEmptyDict()
-            data['statistics']['subtitleSearch'] = NonEmptyDict()
+            data['statistics'] = {}
+            data['statistics']['subtitleSearch'] = {}
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
@@ -1214,14 +1219,15 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
+                        b'  watched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
                          self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
-                         self.version, self.release_group, self.manually_searched, ep_id]]
+                         self.version, self.release_group, self.manually_searched, self.watched, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
@@ -1250,14 +1256,15 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
+                        b'  watched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
                          self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
-                         self.version, self.release_group, self.manually_searched, ep_id]]
+                         self.version, self.release_group, self.manually_searched, self.watched, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
                 return [
@@ -1285,15 +1292,17 @@ class Episode(TV):
                     b'  episode, '
                     b'  absolute_number, '
                     b'  version, '
-                    b'  release_group) '
+                    b'  release_group, '
+                    b'  manually_searched, '
+                    b'  watched) '
                     b'VALUES '
                     b'  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
-                    b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
+                    b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
                     [self.series.indexer, self.series.series_id, self.season, self.episode, self.indexerid, self.series.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.quality, self.location,
                      self.file_size, self.release_name, self.is_proper, self.series.series_id, self.season, self.episode,
-                     self.absolute_number, self.version, self.release_group]]
+                     self.absolute_number, self.version, self.release_group, self.manually_searched, self.watched]]
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
                       {'id': self.series.series_id, 'error_msg': error})
@@ -1303,31 +1312,34 @@ class Episode(TV):
         if not self.dirty:
             return
 
-        new_value_dict = {b'indexerid': self.indexerid,
-                          b'name': self.name,
-                          b'description': self.description,
-                          b'subtitles': ','.join(self.subtitles),
-                          b'subtitles_searchcount': self.subtitles_searchcount,
-                          b'subtitles_lastsearch': self.subtitles_lastsearch,
-                          b'airdate': self.airdate.toordinal(),
-                          b'hasnfo': self.hasnfo,
-                          b'hastbn': self.hastbn,
-                          b'status': self.status,
-                          b'quality': self.quality,
-                          b'location': self.location,
-                          b'file_size': self.file_size,
-                          b'release_name': self.release_name,
-                          b'is_proper': self.is_proper,
-                          b'absolute_number': self.absolute_number,
-                          b'version': self.version,
-                          b'release_group': self.release_group,
-                          b'manually_searched': self.manually_searched}
+        new_value_dict = {
+            b'indexerid': self.indexerid,
+            b'name': self.name,
+            b'description': self.description,
+            b'subtitles': ','.join(self.subtitles),
+            b'subtitles_searchcount': self.subtitles_searchcount,
+            b'subtitles_lastsearch': self.subtitles_lastsearch,
+            b'airdate': self.airdate.toordinal(),
+            b'hasnfo': self.hasnfo,
+            b'hastbn': self.hastbn,
+            b'status': self.status,
+            b'quality': self.quality,
+            b'location': self.location,
+            b'file_size': self.file_size,
+            b'release_name': self.release_name,
+            b'is_proper': self.is_proper,
+            b'absolute_number': self.absolute_number,
+            b'version': self.version,
+            b'release_group': self.release_group,
+            b'manually_searched': self.manually_searched,
+            b'watched': self.watched,
+        }
 
         control_value_dict = {
             b'indexer': self.series.indexer,
             b'showid': self.series.series_id,
             b'season': self.season,
-            b'episode': self.episode
+            b'episode': self.episode,
         }
 
         # use a custom update/insert method to get the data into the DB

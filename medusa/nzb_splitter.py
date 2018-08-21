@@ -58,7 +58,7 @@ def get_season_nzbs(name, url_data, season):
         # Match the xmlns in an nzb
         # Example:  nzbElement.getchildren()[1].tag == '{http://www.newzbin.com/DTD/2003/nzb}file'
         #           regex match returns  'http://www.newzbin.com/DTD/2003/nzb'
-        'nzb_xmlns': r"{(http://[\w_\./]+nzb)}file",
+        'nzb_xmlns': r'{(http://[\w_\./]+nzb)}file',
         'scene_name': '([\w\._\ ]+)[\. ]S%02d[\. ]([\w\._\-\ ]+)[\- ]([\w_\-\ ]+?)',  # pylint: disable=anomalous-backslash-in-string
         'episode': '\.S%02d(?:[E0-9]+)\.[\w\._]+\-\w+',  # pylint: disable=anomalous-backslash-in-string
     }
@@ -91,9 +91,9 @@ def get_season_nzbs(name, url_data, season):
             continue
         else:
             xmlns = xmlns_match.group(1)
-        match = re.search(regex, cur_file.get("subject"), re.I)
+        match = re.search(regex, cur_file.get('subject'), re.I)
         if not match:
-            # regex couldn't match cur_file.get("subject")
+            # regex couldn't match cur_file.get('subject')
             continue
         cur_ep = match.group(1)
         if cur_ep not in ep_files:
@@ -112,9 +112,9 @@ def create_nzb_string(file_elements, xmlns):
     :param xmlns: the xml namespace to be used
     :return: string containing all extra info extracted from the file_elements
     """
-    root_element = ETree.Element("nzb")
+    root_element = ETree.Element('nzb')
     if xmlns:
-        root_element.set("xmlns", xmlns)
+        root_element.set('xmlns', xmlns)
 
     for cur_file in file_elements:
         root_element.append(strip_xmlns(cur_file, xmlns))
@@ -130,7 +130,7 @@ def save_nzb(nzb_name, nzb_string):
     :param nzb_string: Content to write in file
     """
     try:
-        with open(nzb_name + ".nzb", 'w') as nzb_fh:
+        with open(nzb_name + '.nzb', 'w') as nzb_fh:
             nzb_fh.write(nzb_string)
 
     except EnvironmentError as error:
@@ -145,7 +145,7 @@ def strip_xmlns(element, xmlns):
     :param xmlns: xml namespace to be removed
     :return: processed element
     """
-    element.tag = element.tag.replace("{" + xmlns + "}", "")
+    element.tag = element.tag.replace('{' + xmlns + '}', '')
     for cur_child in element.getchildren():
         strip_xmlns(cur_child, xmlns)
 

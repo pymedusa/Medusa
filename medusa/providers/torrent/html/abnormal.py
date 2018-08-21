@@ -148,7 +148,7 @@ class ABNormalProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -189,7 +189,7 @@ class ABNormalProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if not re.search('torrents.php', response.text):
+        if "Votre nom d'utilisateur ou mot de passe est incorrect." in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 

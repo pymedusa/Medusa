@@ -19,8 +19,6 @@ from collections import (
 )
 from itertools import groupby
 
-from imdbpie import imdbpie
-
 from medusa import (
     app,
     db,
@@ -63,10 +61,10 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
-from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
@@ -912,7 +910,7 @@ class Series(TV):
 
     def __write_episode_nfos(self):
 
-        log.debug(u"{id}: Writing NFOs for all episodes",
+        log.debug(u'{id}: Writing NFOs for all episodes',
                   {'id': self.series_id})
 
         main_db_con = db.DBConnection()
@@ -952,7 +950,7 @@ class Series(TV):
 
         result = False
 
-        log.info(u"{id}: Updating NFOs for show with new indexer info",
+        log.info(u'{id}: Updating NFOs for show with new indexer info',
                  {'id': self.series_id})
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
@@ -968,7 +966,7 @@ class Series(TV):
                         {'id': self.series_id})
             return
 
-        log.debug(u"{id}: Loading all episodes from the show directory: {location}",
+        log.debug(u'{id}: Loading all episodes from the show directory: {location}',
                   {'id': self.series_id, 'location': self.location})
 
         # get file list
@@ -981,13 +979,13 @@ class Series(TV):
         for media_file in media_files:
             cur_episode = None
 
-            log.debug(u"{id}: Creating episode from: {location}",
+            log.debug(u'{id}: Creating episode from: {location}',
                       {'id': self.series_id, 'location': media_file})
             try:
                 cur_episode = self.make_ep_from_file(os.path.join(self.location, media_file))
             except (ShowNotFoundException, EpisodeNotFoundException) as error:
                 log.warning(
-                    u"{id}: Episode {location} returned an exception {error_msg}", {
+                    u'{id}: Episode {location} returned an exception {error_msg}', {
                         'id': self.series_id,
                         'location': media_file,
                         'error_msg': ex(error),
@@ -1501,7 +1499,7 @@ class Series(TV):
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
         if not self.imdb_id:
             self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
@@ -1542,7 +1540,7 @@ class Series(TV):
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
         except LookupError as error:
-            log.warning(u"{id}: IMDbPie error while loading show info: {error}",
+            log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
 
@@ -1959,8 +1957,8 @@ class Series(TV):
         """Return JSON representation."""
         bw_list = self.release_groups or BlackAndWhiteList(self)
 
-        data = NonEmptyDict()
-        data['id'] = NonEmptyDict()
+        data = {}
+        data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
         data['id']['slug'] = self.identifier.slug
@@ -1973,27 +1971,27 @@ class Series(TV):
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['akas'] = self.imdb_akas
-        data['year'] = NonEmptyDict()
+        data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
-        data['rating'] = NonEmptyDict()
+        data['rating'] = {}
         if self.imdb_rating and self.imdb_votes:
-            data['rating']['imdb'] = NonEmptyDict()
+            data['rating']['imdb'] = {}
             data['rating']['imdb']['rating'] = self.imdb_rating
             data['rating']['imdb']['votes'] = self.imdb_votes
 
         data['classification'] = self.imdb_certificates
-        data['cache'] = NonEmptyDict()
+        data['cache'] = {}
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
         data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
-        data['config'] = NonEmptyDict()
+        data['config'] = {}
         data['config']['location'] = self.raw_location
-        data['config']['qualities'] = NonEmptyDict()
+        data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
         data['config']['paused'] = bool(self.paused)
@@ -2007,7 +2005,7 @@ class Series(TV):
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = list(self.aliases)
-        data['config']['release'] = NonEmptyDict()
+        data['config']['release'] = {}
         # These are for now considered anime-only options, as they query anidb for available release groups.
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
@@ -2188,7 +2186,7 @@ class Series(TV):
         log.debug(
             u"{id}: '{show}' {ep} status is: '{status}'."
             u" {action} result with quality '{new_quality}'."
-            u" Reason: {reason}", {
+            u' Reason: {reason}', {
                 'id': self.series_id,
                 'show': self.name,
                 'ep': episode_num(season, episode),

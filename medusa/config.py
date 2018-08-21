@@ -339,7 +339,7 @@ def change_GIT_PATH():
     """
     app.version_check_scheduler = None
     app.version_check_scheduler = scheduler.Scheduler(
-        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
+        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
     app.version_check_scheduler.forceRun()

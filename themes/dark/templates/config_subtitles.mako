@@ -8,61 +8,61 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Subtitles'
-        },
-        data() {
-            <%
-                subtitle_code_filter = [{'id': code, 'name': subtitles.name_from_code(code)}
-                                        for code in subtitles.subtitle_code_filter()]
-                wanted_languages = [{'id': code, 'name': subtitles.name_from_code(code)}
-                                    for code in subtitles.wanted_languages()]
-            %>
-            return {
-                header: 'Subtitles',
-                services: ${json.dumps(subtitles.sorted_service_list())},
-                subtitleCodeFilter: ${json.dumps(subtitle_code_filter)},
-                wantedLanguages: ${json.dumps(wanted_languages)},
-            };
-        },
-        computed: {
-            enabledServices() {
-                const { services } = this;
-                return services.map(service => service.name + ':' + (service.enabled ? '1' : '0')).join(' ');
-            }
-        },
-        methods: {
-            serviceOrderUpdated(event, ui) {
-                event.preventDefault(); // Stop sortable from changing the DOM, let Vue do it.
-                const newOrder = $('#service_order_list').sortable('toArray');
-                this.services = this.services.slice().sort((a, b) => {
-                    return newOrder.indexOf(a.name) - newOrder.indexOf(b.name);
-                });
-            }
-        },
-        mounted() {
-            const { subtitleCodeFilter, wantedLanguages, serviceOrderUpdated } = this;
-            $("#subtitles_languages").tokenInput(subtitleCodeFilter, {
-                method: 'POST',
-                hintText: 'Write to search a language and select it',
-                preventDuplicates: true,
-                prePopulate: wantedLanguages,
-                resultsFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>",
-                tokenFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>"
-            });
-            $('#config-components').tabs();
-            $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
-            $('#service_order_list').sortable({ update: serviceOrderUpdated }).disableSelection();
-        },
-        filters: {
-            capitalize: str => str.replace(/\b\w/g, str => str.toUpperCase())
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Subtitles'
+    },
+    data() {
+        <%
+            subtitle_code_filter = [{'id': code, 'name': subtitles.name_from_code(code)}
+                                    for code in subtitles.subtitle_code_filter()]
+            wanted_languages = [{'id': code, 'name': subtitles.name_from_code(code)}
+                                for code in subtitles.wanted_languages()]
+        %>
+        return {
+            header: 'Subtitles',
+            services: ${json.dumps(subtitles.sorted_service_list())},
+            subtitleCodeFilter: ${json.dumps(subtitle_code_filter)},
+            wantedLanguages: ${json.dumps(wanted_languages)},
+        };
+    },
+    computed: {
+        enabledServices() {
+            const { services } = this;
+            return services.map(service => service.name + ':' + (service.enabled ? '1' : '0')).join(' ');
         }
-    });
-};
+    },
+    methods: {
+        serviceOrderUpdated(event, ui) {
+            event.preventDefault(); // Stop sortable from changing the DOM, let Vue do it.
+            const newOrder = $('#service_order_list').sortable('toArray');
+            this.services = this.services.slice().sort((a, b) => {
+                return newOrder.indexOf(a.name) - newOrder.indexOf(b.name);
+            });
+        }
+    },
+    beforeMount() {
+        $('#config-components').tabs();
+    },
+    mounted() {
+        const { subtitleCodeFilter, wantedLanguages, serviceOrderUpdated } = this;
+        $("#subtitles_languages").tokenInput(subtitleCodeFilter, {
+            method: 'POST',
+            hintText: 'Write to search a language and select it',
+            preventDuplicates: true,
+            prePopulate: wantedLanguages,
+            resultsFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>",
+            tokenFormatter: item => "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>"
+        });
+        $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
+        $('#service_order_list').sortable({ update: serviceOrderUpdated }).disableSelection();
+    },
+    filters: {
+        capitalize: str => str.replace(/\b\w/g, str => str.toUpperCase())
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -77,7 +77,7 @@ const startVue = () => {
                     <li><app-link href="#plugin-settings">Plugin Settings</app-link></li>
                 </ul>
                 <div id="subtitles-search" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitles Search</h3>
                         <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
@@ -242,7 +242,7 @@ const startVue = () => {
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitle Providers</h3>
                         <p>Check off and drag the plugins into the order you want them to be used.</p>
                         <p class="note">At least one plugin is required.</p>
@@ -263,10 +263,10 @@ const startVue = () => {
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Settings</h3>
                         <p>Set user and password for each provider.</p>
-                    </div><!-- /component-group-desc //-->
+                    </div><!-- /component-group-desc-legacy //-->
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {

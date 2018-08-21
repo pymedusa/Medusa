@@ -5,20 +5,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Anime'
-        },
-        data() {
-            return {
-                header: 'Anime'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Config - Anime'
+    },
+    data() {
+        return {
+            header: 'Anime'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -33,13 +31,13 @@ const startVue = () => {
                         <li><app-link href="#anime-look-feel">Look &amp; Feel</app-link></li>
                     </ul>
                     <div id="animedb-settings" class="tab-pane active component-group">
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-anime" title="AniDB"></span>
                             <h3>
                                 <app-link href="http://anidb.info">AniDB</app-link>
                             </h3>
                             <p>AniDB is non-profit database of anime information that is freely open to the public</p>
-                        </div><!-- .component-group-desc //-->
+                        </div><!-- .component-group-desc-legacy //-->
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <input type="checkbox" class="enabler" name="use_anidb" id="use_anidb" ${'checked="checked"' if app.USE_ANIDB else ''} />
@@ -82,11 +80,11 @@ const startVue = () => {
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- #animedb-settings //-->
                     <div id="anime-look-feel" class="tab-pane component-group">
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-look" title="look"></span>
                             <h3><a>Look and Feel</a></h3>
                             <p>How should the anime functions show and behave.</p>
-                       </div><!-- .component-group-desc //-->
+                       </div><!-- .component-group-desc-legacy //-->
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <input type="checkbox" class="enabler" name="split_home" id="split_home" ${'checked="checked"' if app.ANIME_SPLIT_HOME else ''}/>

@@ -1,7 +1,4 @@
 MEDUSA.common.init = function() {
-    // Import underscore.string using it's mixin export.
-    _.mixin(s.exports());
-
     // Reset the layout for the activated tab (when using ui tabs)
     $('#showTabs').tabs({
         activate() {
@@ -32,66 +29,8 @@ MEDUSA.common.init = function() {
         return offset;
     }
 
-    /**
-     * Make an attempt to detect if there are currently scroll bars visible for divs with the horizontal-scroll class.
-     *
-     * If scroll bars are visible the fixed left and right buttons become visible on that page.
-     */
-    const initHorizontalScroll = function() {
-        const scrollDiv = $('div.horizontal-scroll').get();
-        if (scrollDiv.length === 0) {
-            return;
-        }
-
-        const scrollbarVisible = scrollDiv.map(el => {
-            return (el.scrollWidth > el.clientWidth);
-        }).indexOf(true);
-
-        if (scrollbarVisible >= 0) {
-            $('.scroll-wrapper.left').addClass('show');
-            $('.scroll-wrapper.right').addClass('show');
-        } else {
-            $('.scroll-wrapper.left').removeClass('show');
-            $('.scroll-wrapper.right').removeClass('show');
-        }
-    };
-
-    initHorizontalScroll();
-
     $(window).on('resize', () => {
         $('.backstretch').css('top', backstretchOffset());
-        initHorizontalScroll();
-    });
-
-    // Scroll Functions
-    function scrollTo(dest) {
-        $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
-    }
-
-    $('#scroll-left').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '-=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $('#scroll-right').on('click', e => {
-        e.preventDefault();
-        $('div.horizontal-scroll').animate({
-            scrollLeft: '+=153'
-        }, 1000, 'easeOutQuad');
-    });
-
-    $(document).on('scroll', () => {
-        if ($(window).scrollTop() > 100) {
-            $('.scroll-wrapper.top').addClass('show');
-        } else {
-            $('.scroll-wrapper.top').removeClass('show');
-        }
-    });
-
-    $('.scroll-wrapper.top').on('click', () => {
-        scrollTo($('body'));
     });
 
     // Scroll to Anchor
@@ -133,39 +72,6 @@ MEDUSA.common.init = function() {
         $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // Setting highlight background-color
     }).on('mouseout', function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // Reverting back to original background-color
-    });
-
-    $.confirm.options = {
-        confirmButton: 'Yes',
-        cancelButton: 'Cancel',
-        dialogClass: 'modal-dialog',
-        post: false,
-        confirm(e) {
-            location.href = e[0].href;
-        }
-    };
-
-    $('a.removeshow').confirm({
-        title: 'Remove Show',
-        text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
-        confirm(e) {
-            location.href = e[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
-        }
-    });
-
-    $('a.clearhistory').confirm({
-        title: 'Clear History',
-        text: 'Are you sure you want to clear all download history?'
-    });
-
-    $('a.trimhistory').confirm({
-        title: 'Trim History',
-        text: 'Are you sure you want to trim all download history older than 30 days?'
-    });
-
-    $('a.submiterrors').confirm({
-        title: 'Submit Errors',
-        text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure Medusa is updated and trigger<br> this error with debug enabled before submitting</span>'
     });
 
     $('#config-components').tabs({

@@ -63,7 +63,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         self.fanart_name = 'fanart.jpg'
 
-        # web-ui metadata template
+        # web-ui metadata template (based on MediaBrowser)
         # self.eg_show_metadata = 'series.xml'
         self.eg_episode_metadata = 'Season##\\<i>filename</i>.xml'
         self.eg_fanart = 'fanart.jpg'

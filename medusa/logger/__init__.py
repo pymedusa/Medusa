@@ -474,7 +474,7 @@ class LogLine(object):
 
     def __repr__(self):
         """Object representation."""
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return '%s(%r)' % (self.__class__, self.__dict__)
 
     def __str__(self):
         """String representation."""
