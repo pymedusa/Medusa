@@ -13,21 +13,19 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Failed Downloads'
-        },
-        data() {
-            return {
-                header: 'Failed Downloads',
-                limit: '${limit}'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Failed Downloads'
+    },
+    data() {
+        return {
+            header: 'Failed Downloads',
+            limit: '${limit}'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">

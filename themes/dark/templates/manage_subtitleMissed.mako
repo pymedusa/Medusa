@@ -8,20 +8,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Missing Subtitles'
-        },
-        data() {
-            return {
-                header: 'Missing Subtitles'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Missing Subtitles'
+    },
+    data() {
+        return {
+            header: 'Missing Subtitles'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">

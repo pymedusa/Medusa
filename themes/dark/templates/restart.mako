@@ -1,19 +1,17 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-from medusa import app
+    from medusa import app
 %>
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        data() {
-            return {};
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    data() {
+        return {};
+    }
+});
 </script>
 </%block>
 <%block name="css">

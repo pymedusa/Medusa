@@ -9,20 +9,18 @@
 <script type="text/javascript" src="js/mass-update.js?${sbPID}"></script>
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Mass Update'
-        },
-        data() {
-            return {
-                header: 'Mass Update'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Mass Update'
+    },
+    data() {
+        return {
+            header: 'Mass Update'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
