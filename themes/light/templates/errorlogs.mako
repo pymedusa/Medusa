@@ -6,20 +6,18 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Logs & Errors'
-        },
-        data() {
-            return {
-                header: 'Logs & Errors'
-            };
-        }
-    });
-};
+window.app = new Vue({
+    store,
+    el: '#vue-wrap',
+    metaInfo: {
+        title: 'Logs & Errors'
+    },
+    data() {
+        return {
+            header: 'Logs & Errors'
+        };
+    }
+});
 </script>
 </%block>
 <%block name="css">

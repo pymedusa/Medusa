@@ -210,7 +210,7 @@
                         </td>
                         <td class="col-name hidden-xs triggerhighlight">
                             <% has_plot = 'has-plot' if epResult['description'] else '' %>
-                            <plot-info ${has_plot} :series-slug="indexer + id" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
+                            <plot-info ${has_plot} :show-slug="indexer + id" season="${str(epResult['season'])}" episode="${str(epResult['episode'])}"></plot-info>
                             ${epResult['name']}
                         </td>
                         <td class="col-name hidden-xs triggerhighlight">${epLoc or ''}</td>

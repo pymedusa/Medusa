@@ -145,7 +145,7 @@
                     <td class="tvShow">
                         <div class="imgsmallposter small">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name | h}">
-                                <asset default="images/poster.png" series-slug="${cur_show.slug}" type="posterThumb" cls="small" :link="false"></asset>
+                                <asset default="images/poster.png" show-slug="${cur_show.slug}" type="posterThumb" cls="small" :link="false"></asset>
                             </app-link>
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
                         </div>
@@ -153,7 +153,7 @@
                     <td align="center">
                     % if cur_show.network:
                         <span title="${cur_show.network}" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                         </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:

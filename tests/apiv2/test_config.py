@@ -206,7 +206,7 @@ def config_main(monkeypatch, app_config):
     config_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
     config_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
     config_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
-    config_data['postProcessing']['seriesDownloadDir'] = app.TV_DOWNLOAD_DIR
+    config_data['postProcessing']['showDownloadDir'] = app.TV_DOWNLOAD_DIR
     config_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
     config_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
     config_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)

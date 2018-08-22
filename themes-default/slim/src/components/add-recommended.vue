@@ -12,7 +12,7 @@
             <div class="button"><div class="add-list-icon-addimdb"></div></div>
             <div class="buttontext">
                 <h3>Add From IMDB's Popular Shows</h3>
-                <p>View IMDB's list of the most popular shows. This feature uses IMDB's MOVIEMeter algorithm to identify popular TV Series.</p>
+                <p>View IMDB's list of the most popular shows. This feature uses IMDB's MOVIEMeter algorithm to identify popular TV Shows.</p>
             </div>
         </app-link>
 
@@ -28,7 +28,7 @@
 <script>
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'addRecommended',
     components: {
         AppLink

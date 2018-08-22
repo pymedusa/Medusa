@@ -109,7 +109,7 @@
 import AppLink from './app-link.vue';
 import { mapState } from 'vuex';
 
-module.exports = {
+export default {
     name: 'app-header',
     components: {
         AppLink

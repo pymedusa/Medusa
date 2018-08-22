@@ -4,7 +4,7 @@
 <script>
 import { webRoot, apiKey } from '../api';
 
-module.exports = {
+export default {
     name: 'backstretch',
     props: {
         opacity: {
@@ -33,10 +33,10 @@ module.exports = {
         const { $el, opacity, indexer, id, offset } = this;
         const el = $($el);
 
-        const seriesSlug = indexer + String(id);
+        const showSlug = indexer + String(id);
 
         if (indexer && id) {
-            $.backstretch(webRoot + '/api/v2/series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey);
+            $.backstretch(webRoot + '/api/v2/series/' + showSlug + '/asset/fanart?api_key=' + apiKey);
             el.css('top', offset);
             el.css('opacity', opacity).fadeIn(500);
         }

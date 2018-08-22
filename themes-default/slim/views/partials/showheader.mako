@@ -84,7 +84,7 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <asset default="images/poster.png" series-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                    <asset default="images/poster.png" show-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <asset default="images/banner.png" series-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                    <asset default="images/banner.png" show-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:

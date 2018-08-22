@@ -13,11 +13,8 @@
 </template>
 
 <script>
-module.exports = {
-    name: 'login',
-    mounted() {
-        this.$root.$emit('loaded');
-    }
+export default {
+    name: 'login'
 };
 </script>
 

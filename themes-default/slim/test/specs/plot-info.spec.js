@@ -22,7 +22,7 @@ test('renders', t => {
         localVue,
         store,
         propsData: {
-            seriesSlug: '',
+            showSlug: '',
             season: '',
             episode: ''
         }

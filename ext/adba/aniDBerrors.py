@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 #
 # This file is part of aDBa.
 #
@@ -33,10 +34,6 @@ class AniDBMustAuthError(AniDBError):
 
 
 class AniDBPacketCorruptedError(AniDBError):
-    pass
-
-
-class AniDBBannedError(AniDBError):
     pass
 
 

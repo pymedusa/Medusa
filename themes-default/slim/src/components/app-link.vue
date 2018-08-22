@@ -11,7 +11,7 @@
     </component>
 </template>
 <script>
-module.exports = {
+export default {
     name: 'app-link',
     props: {
         to: [String, Object],

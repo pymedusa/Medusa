@@ -180,7 +180,7 @@ const state = {
             animeNamingType: null,
             stripYear: null
         },
-        seriesDownloadDir: null,
+        showDownloadDir: null,
         processAutomatically: null,
         processMethod: null,
         deleteRarContent: null,

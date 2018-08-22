@@ -64,11 +64,11 @@ const passToStoreHandler = function(eventName, event, next) {
 };
 
 const websocketUrl = (() => {
-    const { protocol, hostname, port } = window.location;
+    const { protocol, host } = window.location;
     const proto = protocol === 'https:' ? 'wss:' : 'ws:';
     const WSMessageUrl = '/ui';
     const webRoot = document.body.getAttribute('web-root');
-    return `${proto}//${hostname}:${port}${webRoot}/ws${WSMessageUrl}`;
+    return `${proto}//${host}${webRoot}/ws${WSMessageUrl}`;
 })();
 
 Vue.use(VueNativeSock, websocketUrl, {
