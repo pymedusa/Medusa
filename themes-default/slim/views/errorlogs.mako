@@ -4,12 +4,24 @@
     from medusa import classes
 %>
 <%block name="scripts">
+
+<%
+    if logLevel == logger.WARNING:
+        page_header = 'Warning Logs'
+    else:
+        page_header = 'Error Logs'
+%>
 <script>
 window.app = {};
 window.app = new Vue({
     store,
     router,
-    el: '#vue-wrap'
+    el: '#vue-wrap',
+    data() {
+        return {
+            header: '${page_header}'
+        };
+    }
 });
 </script>
 </%block>
@@ -28,15 +40,13 @@ pre {
     from mako.filters import html_escape
     if logLevel == logger.WARNING:
         errors = classes.WarningViewer.errors
-        page_header = 'Warning Logs'
     else:
         errors = classes.ErrorViewer.errors
-        page_header = 'Error Logs'
 %>
 
 <div class="row">
     <div class="col-md-12 wide">
-        <h1 class="header">${page_header}</h1>
+        <h1 class="header">{{ header }}</h1>
     </div>
 </div>
 
