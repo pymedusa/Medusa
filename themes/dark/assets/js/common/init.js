@@ -1,4 +1,6 @@
 MEDUSA.common.init = function() {
+    const { webRoot, apiKey } = window;
+
     // Reset the layout for the activated tab (when using ui tabs)
     $('#showTabs').tabs({
         activate() {
@@ -11,7 +13,7 @@ MEDUSA.common.init = function() {
         const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
 
         if (seriesSlug) {
-            const path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
+            const path = webRoot + '/api/v2/series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);

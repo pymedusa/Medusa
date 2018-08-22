@@ -1,4 +1,6 @@
 MEDUSA.config.index = function() {
+    const { api } = window;
+
     if ($('input[name="proxy_setting"]').val().length === 0) {
         $('input[id="proxy_indexers"]').prop('checked', false);
         $('label[for="proxy_indexers"]').hide();
