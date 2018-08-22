@@ -1,27 +1,28 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa import logger
-    from medusa import classes
+    from medusa import classes, logger
 %>
 <%block name="scripts">
-
-<%
-    if logLevel == logger.WARNING:
-        page_header = 'Warning Logs'
-    else:
-        page_header = 'Error Logs'
-%>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
-    data() {
-        return {
-            header: '${page_header}'
-        };
-    }
+    // @TODO: Replace with Object destructuring (`...mapState`)
+    computed: Object.assign(mapState({
+        loggingLevels: state => state.config.logs.loggingLevels
+    }), {
+        header() {
+            const { loggingLevels, $route } = this;
+            if (Number($route.query.level) === loggingLevels.warning) {
+                return 'Warning Logs';
+            }
+            return 'Error Logs';
+        }
+    })
 });
 </script>
 </%block>
