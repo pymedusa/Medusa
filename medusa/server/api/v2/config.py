@@ -489,7 +489,7 @@ class DataGenerator(object):
         return section_data
 
     @staticmethod
-    def data_notifications():
+    def data_notifiers():
         """Notifications."""
         section_data = NonEmptyDict()
 

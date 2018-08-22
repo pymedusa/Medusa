@@ -20,12 +20,59 @@ window.app = new Vue({
         return {
             header: 'Notifications',
             configLoaded: false,
-            notifications: null
+            notifiers: {
+                emby: {
+                    enabled: null,
+                    host: null
+                },
+                kodi: {
+                    enabled: null,
+                    alwaysOn: null,
+                    libraryCleanPending: null,
+                    cleanLibrary: null,
+                    host: [],
+                    username: null,
+                    password: null,
+                    notify: {
+                        snatch: null,
+                        download: null,
+                        subtitleDownload: null
+                    },
+                    update: {
+                        library: null,
+                        full: null,
+                        onlyFirst: null
+                    }
+                },
+                plex: {
+                    client: {
+                        host: [],
+                        username: null,
+                        enabled: null,
+                        notifyOnSnatch: null,
+                        notifyOnDownload: null,
+                        notifyOnSubtitleDownload: null
+                    },
+                    server: {
+                        updateLibrary: null,
+                        host: [],
+                        enabled: null,
+                        https: null,
+                        username: null,
+                        password: null,
+                        notify: {
+                            download: null,
+                            subtitleDownload: null,
+                            snatch: null
+                        }
+                    }
+                }
+            }
         };
     },
     computed: {
-        stateNotifications() {
-            return this.$store.state.notifications;
+        stateNotifiers() {
+            return this.$store.state.notifiers;
         }
     },
     mounted() {
@@ -714,10 +761,11 @@ window.app = new Vue({
         // The real vue stuff
         // This is used to wait for the config to be loaded by the store.
         this.$once('loaded', () => {
-            const { config, stateNotifications } = this;
+            const { config, stateNotifiers } = this;
 
             // Map the state values to local data.
-            this.notifications = Object.assign({}, this.notifications, stateNotifications);
+            debugger;
+            this.notifiers = Object.assign({}, this.notifiers, stateNotifiers);
             this.configLoaded = true;
         });
 
@@ -748,23 +796,23 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for KODI -->
 
-                                <config-toggle-slider :checked="notifications.kodi.enabled" label="Enable" id="use_kodi" :explanations="['Send KODI commands?']" @change="save()"  @update="notifications.kodi.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider :checked="notifiers.kodi.enabled" label="Enable" id="use_kodi" :explanations="['Send KODI commands?']" @change="save()"  @update="notifiers.kodi.enabled = $event"></config-toggle-slider>
 
-                                <div v-show="notifications.kodi.enabled" id="content-use-kodi"> <!-- show based on notifications.kodi.enabled -->
+                                <div v-show="notifiers.kodi.enabled" id="content-use-kodi"> <!-- show based on notifiers.kodi.enabled -->
 
-                                    <config-toggle-slider :checked="notifications.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifications.kodi.alwaysOn = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.kodi.alwaysOn = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifications.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifications.kodi.notify.snatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.kodi.notify.snatch = $event"></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="notifications.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifications.kodi.notify.download = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.download = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifications.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifications.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
                                         
-                                    <config-toggle-slider :checked="notifications.kodi.notify.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifications.kodi.notify.library = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifications.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="notifications.kodi.update.full = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notify.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.library = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="notifiers.kodi.update.full = $event"></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="notifications.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="notifications.kodi.cleanLibrary = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifications.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()"  @update="notifications.kodi.update.onlyFirst = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="notifiers.kodi.cleanLibrary = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()"  @update="notifiers.kodi.update.onlyFirst = $event"></config-toggle-slider>
                                     
                                     
                                     <div class="form-group">
@@ -773,14 +821,14 @@ window.app = new Vue({
                                                 <span>KODI IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="kodi_host" id="kodi_host" :list-items="notifications.kodi.host" @change="notifications.kodi.host = $event"></select-list>
+                                                <select-list name="kodi_host" id="kodi_host" :list-items="notifiers.kodi.host" @change="notifiers.kodi.host = $event"></select-list>
                                                 <p>host running KODI (eg. 192.168.1.100:8080)</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <config-textbox :value="notifications.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()"  @update="notifications.kodi.username = $event"></config-textbox>
-                                    <config-textbox :value="notifications.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" @update="notifications.kodi.password = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()"  @update="notifiers.kodi.username = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" @update="notifiers.kodi.password = $event"></config-textbox>
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
@@ -809,13 +857,13 @@ window.app = new Vue({
                                             <span>Enable</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="use_kodi" name="use_kodi" v-model="notifications.plex.server.enabled" sync></toggle-button>
+                                            <toggle-button :width="45" :height="22" id="use_kodi" name="use_kodi" v-model="notifiers.plex.server.enabled" sync></toggle-button>
                                             <p>Send Plex Media Server library updates?</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div v-show="notifications.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifications.plex.server.enabled -->
+                                <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
                                     <div class="form-group">
                                         <div class="row">
                                             <label for="plex_server_token" class="col-sm-2 control-label">
@@ -830,23 +878,23 @@ window.app = new Vue({
                                         </div>
                                     </div>
 
-                                    <config-textbox :value="notifications.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifications.plex.server.username = $event"></config-textbox>
-                                    <config-textbox :value="notifications.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifications.plex.server.password = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
                                     
-                                    <config-toggle-slider :checked="notifications.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifications.plex.server.updateLibrary = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.plex.server.updateLibrary = $event"></config-toggle-slider>
                                     <div class="form-group">
                                         <div class="row">
                                             <label for="kodi_host" class="col-sm-2 control-label">
                                                 <span>Plex Media Server IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="notifications.plex.server.host" @change="notifications.plex.server.host = $event"></select-list>
+                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event"></select-list>
                                                 <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                             </div>
                                         </div>
                                     </div>
     
-                                    <config-toggle-slider :checked="notifications.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"  @update="notifications.plex.server.https = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"  @update="notifiers.plex.server.https = $event"></config-toggle-slider>
                                     
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
@@ -868,11 +916,11 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
-                                <config-toggle-slider :checked="notifications.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifications.plex.client.enabled = $event"></config-toggle-slider>
-                                <div v-show="notifications.plex.client.enabled" id="content-use-plex-client"> <!-- show based on notifications.plex.server.enabled -->
-                                    <config-toggle-slider :checked="notifications.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifications.plex.client.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifications.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifications.plex.client.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifications.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifications.plex.client.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                <config-toggle-slider :checked="notifiers.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifiers.plex.client.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.plex.client.enabled" id="content-use-plex-client"> <!-- show based on notifiers.plex.server.enabled -->
+                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.plex.client.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.plex.client.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.plex.client.notifyOnSubtitleDownload = $event"></config-toggle-slider>
 
                                     <div class="form-group">
                                         <div class="row">
@@ -880,14 +928,14 @@ window.app = new Vue({
                                                 <span>Plex Home Theater IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="notifications.plex.client.host" @change="notifications.plex.client.host = $event"></select-list>
+                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event"></select-list>
                                                 <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
                                         </div>
                                     </div>
     
-                                    <config-textbox :value="notifications.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifications.plex.server.username = $event"></config-textbox>
-                                    <config-textbox :value="notifications.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifications.plex.server.password = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
 
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
@@ -913,7 +961,7 @@ window.app = new Vue({
                                 <label for="use_emby">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" :checked="notifications.emby.enabled"/>
+                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" :checked="notifiers.emby.enabled"/>
                                         <p>Send update commands to Emby?<p>
                                     </span>
                                 </label>

@@ -107,6 +107,7 @@
 </template>
 <script>
 import AppLink from './app-link.vue';
+import { mapState } from 'vuex';
 
 module.exports = {
     name: 'app-header',
@@ -127,12 +128,7 @@ module.exports = {
         };
     },
     computed: {
-        config() {
-            return this.$store.state.config;
-        },
-        auth() {
-            return this.$store.state.auth;
-        },
+        ...mapState(['config', 'auth', 'notifiers']),
         warningLevel() {
             return this.config.logs.loggingLevels.warning;
         },
@@ -178,8 +174,9 @@ module.exports = {
             return '';
         },
         linkVisible() {
-            const { config } = this;
-            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { config, notifiers } = this;
+            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { kodi, plex, emby } = notifiers;
 
             return {
                 plex: plex.server.enabled && plex.server.host.length !== 0,
