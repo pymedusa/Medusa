@@ -310,48 +310,6 @@ class DataGenerator(object):
         section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
         section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
-        section_data['kodi'] = NonEmptyDict()
-        section_data['kodi']['enabled'] = bool(app.USE_KODI)
-        section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
-        section_data['kodi']['notify'] = NonEmptyDict()
-        section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
-        section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
-        section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-        section_data['kodi']['update'] = NonEmptyDict()
-        section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
-        section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
-        section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
-        section_data['kodi']['host'] = app.KODI_HOST
-        section_data['kodi']['username'] = app.KODI_USERNAME
-        section_data['kodi']['password'] = app.KODI_PASSWORD
-        section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
-        section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
-
-        section_data['plex'] = NonEmptyDict()
-        section_data['plex']['server'] = NonEmptyDict()
-        section_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
-        section_data['plex']['server']['notify'] = NonEmptyDict()
-        section_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
-        section_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
-        section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
-        section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
-        section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
-        section_data['plex']['server']['https'] = bool(app.PLEX_SERVER_HTTPS)
-        section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
-        section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
-        section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
-        section_data['plex']['client'] = NonEmptyDict()
-        section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
-        section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
-        section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
-        section_data['plex']['client']['notifyOnSnatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
-        section_data['plex']['client']['notifyOnDownload'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
-        section_data['plex']['client']['notifyOnSubtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
-
-        section_data['emby'] = NonEmptyDict()
-        section_data['emby']['enabled'] = bool(app.USE_EMBY)
-        section_data['emby']['host'] = app.EMBY_HOST
-
         section_data['torrents'] = NonEmptyDict()
         section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
         section_data['torrents']['dir'] = app.TORRENT_DIR
@@ -527,5 +485,54 @@ class DataGenerator(object):
         for provider in itervalues(app.metadata_provider_dict):
             json_repr = provider.to_json()
             section_data['metadataProviders'][json_repr['id']] = json_repr
+
+        return section_data
+
+    @staticmethod
+    def data_notifications():
+        """Notifications."""
+        section_data = NonEmptyDict()
+
+        section_data['kodi'] = NonEmptyDict()
+        section_data['kodi']['enabled'] = bool(app.USE_KODI)
+        section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
+        section_data['kodi']['notify'] = NonEmptyDict()
+        section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
+        section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
+        section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['kodi']['update'] = NonEmptyDict()
+        section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
+        section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
+        section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
+        section_data['kodi']['host'] = app.KODI_HOST
+        section_data['kodi']['username'] = app.KODI_USERNAME
+        section_data['kodi']['password'] = app.KODI_PASSWORD
+        section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
+        section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
+
+        section_data['plex'] = NonEmptyDict()
+        section_data['plex']['server'] = NonEmptyDict()
+        section_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
+        section_data['plex']['server']['notify'] = NonEmptyDict()
+        section_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
+        section_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
+        section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
+        section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
+        section_data['plex']['server']['https'] = bool(app.PLEX_SERVER_HTTPS)
+        section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
+        section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
+        section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
+        section_data['plex']['client'] = NonEmptyDict()
+        section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
+        section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
+        section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
+        section_data['plex']['client']['notifyOnSnatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
+        section_data['plex']['client']['notifyOnDownload'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
+        section_data['plex']['client']['notifyOnSubtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['emby'] = NonEmptyDict()
+        section_data['emby']['enabled'] = bool(app.USE_EMBY)
+        section_data['emby']['host'] = app.EMBY_HOST
 
         return section_data
