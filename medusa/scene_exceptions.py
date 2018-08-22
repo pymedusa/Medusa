@@ -170,7 +170,7 @@ def get_scene_exceptions_by_name(show_name):
             sanitized_name.lower().replace('.', ' '),
         )
 
-        if show_name.lower() in show_names:
+        if show_name and show_name.lower() in show_names:
             logger.debug(
                 'Scene exception lookup got indexer ID {cur_indexer},'
                 ' using that', cur_indexer=indexer_id
