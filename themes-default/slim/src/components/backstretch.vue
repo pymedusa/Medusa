@@ -4,7 +4,7 @@
 <script>
 import { webRoot, apiKey } from '../api';
 
-module.exports = {
+export default {
     name: 'backstretch',
     props: {
         opacity: {

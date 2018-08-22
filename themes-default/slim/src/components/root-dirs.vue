@@ -24,7 +24,7 @@
  * @property {boolean} selected - Is this root dir selected?
  * @property {boolean} default - Is this the default root dir?
  */
-module.exports = {
+export default {
     name: 'root-dirs',
     inheritAttrs: false,
     data() {
