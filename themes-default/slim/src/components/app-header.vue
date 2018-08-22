@@ -106,8 +106,8 @@
     </nav>
 </template>
 <script>
-import AppLink from './app-link.vue';
 import { mapState } from 'vuex';
+import AppLink from './app-link.vue';
 
 export default {
     name: 'app-header',

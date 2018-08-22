@@ -23,6 +23,8 @@ import {
     AppLink,
     Asset,
     Backstretch,
+    ConfigTextbox,
+    ConfigToggleSlider,
     DisplayShow,
     FileBrowser,
     Home,
