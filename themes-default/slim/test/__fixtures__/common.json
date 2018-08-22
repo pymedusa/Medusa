@@ -7,6 +7,14 @@
       }
     },
     "config": {
+      "branch": "master",
+      "commitHash": "f5973b28465246e67465d7d86bdc8aa74d13e659",
+      "release": "v0.2.8",
+      "databaseVersion": {
+        "major": 44,
+        "minor": 11
+      },
+      "sourceUrl": "https://github.com/pymedusa/Medusa",
       "pid": 1234,
       "postProcessing": {
         "processMethod": "copy",
@@ -32,7 +40,7 @@
         "enabled": true,
         "method": "qbittorrent"
       },
-      "donationsUrl": "https:\/\/github.com\/pymedusa\/Medusa\/wiki\/Donations",
+      "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
       "recentShows": [
         {
           "showId": 253463,
