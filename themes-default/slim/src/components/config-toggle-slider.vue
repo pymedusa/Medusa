@@ -43,11 +43,6 @@ export default {
     mounted() {
         this.localChecked = this.checked;
     },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        }
-    },
     watch: {
         localChecked() {
             this.$emit('update', this.localChecked);

@@ -49,6 +49,7 @@ window.app = new Vue({
         };
     },
     computed: {
+        // @TODO: Replace with mapState
         config() {
             return this.$store.state.config;
         },
