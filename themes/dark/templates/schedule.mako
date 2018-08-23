@@ -10,8 +10,8 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
     router,
+    el: '#vue-wrap',
     computed: Object.assign(Vuex.mapState(['shows']), {
         header() {
             return this.$route.meta.header;
