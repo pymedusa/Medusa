@@ -536,6 +536,13 @@ export default {
             }));
         }
     },
+    created() {
+        const { config, metadata, getFirstEnabledMetadataProvider } = this;
+        // Map the state values to local data.
+        this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
+        this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
+        this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+    },
     watch: {
         'config.postProcessing': {
             handler(newValue) {
