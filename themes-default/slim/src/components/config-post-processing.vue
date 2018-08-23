@@ -473,12 +473,17 @@ export default {
             this.saving = true;
 
             // Clone the config into a new object
-            const config = Object.assign({}, {
+            const config = Object.assign({
                 postProcessing,
                 metadata: {
                     metadataProviders
                 }
             });
+
+            // @FIXME: Fix invalid value - possibly caused by the use of NonEmptyDict on the backend.
+            if (config.postProcessing.showDownloadDir === null) {
+                config.postProcessing.showDownloadDir = '';
+            }
 
             // Use destructuring to remove the unwanted keys.
             const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
