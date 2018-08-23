@@ -18,6 +18,10 @@ test.beforeEach(t => {
 
 test('renders', t => {
     const { localVue, store } = t.context;
+
+    // Prevents `TypeError: $(...).tabs is not a function`
+    ConfigPostProcessing.beforeMount = () => {};
+
     const wrapper = mount(ConfigPostProcessing, {
         localVue,
         store,

@@ -543,6 +543,12 @@ export default {
         this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
         this.metadataProviderSelected = getFirstEnabledMetadataProvider();
     },
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#config-components').tabs();
+        });
+    },
     watch: {
         'config.postProcessing': {
             handler(newValue) {
