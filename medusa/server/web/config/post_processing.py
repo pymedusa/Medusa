@@ -24,15 +24,15 @@ from unrar2 import RarFile
 
 @route('/config/postProcessing(/?.*)')
 class ConfigPostProcessing(Config):
-    """
-    Handler for Post Processor configuration
-    """
+    """Handler for Post Processing configuration."""
+
     def __init__(self, *args, **kwargs):
+        """Initialize handler."""
         super(ConfigPostProcessing, self).__init__(*args, **kwargs)
 
     def index(self):
         """
-        Render the Post Processor configuration page
+        Render the Post Processing configuration page.
 
         [Converted to VueRouter]
         """
@@ -44,7 +44,7 @@ class ConfigPostProcessing(Config):
                            naming_anime=None, naming_abd_pattern=None, naming_sports_pattern=None,
                            naming_anime_pattern=None, naming_anime_multi_ep=None,
                            autopostprocessor_frequency=None):
-
+        """[deprecated] Save Post Processing configuration."""
         # @TODO: The following validations need to be incorporated into API v2 (PATCH /api/v2/config/main)
 
         results = []
@@ -120,10 +120,7 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def testNaming(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
-        """
-        Test episode naming pattern
-        """
-
+        """Test episode naming pattern."""
         if multi is not None:
             multi = int(multi)
 
@@ -138,9 +135,7 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def isNamingValid(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
-        """
-        Validate episode naming pattern
-        """
+        """Validate episode naming pattern."""
         if pattern is None:
             return 'invalid'
 
@@ -177,10 +172,11 @@ class ConfigPostProcessing(Config):
     @staticmethod
     def isRarSupported():
         """
+        Test unpacking support.
+
         Test Packing Support:
             - Simulating in memory rar extraction on test.rar file
         """
-
         try:
             rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
             testing = RarFile(rar_path).read_files('*test.txt')
