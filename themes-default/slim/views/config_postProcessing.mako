@@ -4,14 +4,11 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Post Processing'
-    },
     data() {
         return {
             configLoaded: false,
-            header: 'Post Processing',
             presets: [
                 { pattern: '%SN - %Sx%0E - %EN', example: 'Show Name - 2x03 - Ep Name' },
                 { pattern: '%S.N.S%0SE%0E.%E.N', example: 'Show.Name.S02E03.Ep.Name' },
@@ -188,7 +185,7 @@ window.app = new Vue({
 <%block name="content">
 <vue-snotify></vue-snotify>
 <div id="content960">
-    <h1 class="header">{{header}}</h1>
+    <h1 class="header">{{ $route.meta.header }}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">

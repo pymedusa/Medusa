@@ -8,7 +8,7 @@
 <div>
     <div class="row">
         <div class="col-md-12">
-            <h1 class="header">{{header}}</h1>
+            <h1 class="header">{{ $route.meta.header }}</h1>
         </div>
     </div>
     <div class="row">
@@ -112,6 +112,7 @@ window.app = {};
 window.app = new Vue({
     el: '#vue-wrap',
     store,
+    router,
     data() {
         return {
             // This loads manual-post-process.vue

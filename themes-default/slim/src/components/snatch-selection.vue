@@ -8,6 +8,18 @@ export default {
     components: {
         AppLink
     },
+    metaInfo() {
+        if (!this.show || !this.show.title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        const { title } = this.show;
+        return {
+            title,
+            titleTemplate: '%s | Medusa'
+        };
+    },
     computed: {
         ...mapState({
             shows: state => state.shows.shows
@@ -42,6 +54,11 @@ export default {
 
             return show;
         }
+    },
+    created() {
+        const { indexer, id, $store } = this;
+        // Needed for the title
+        $store.dispatch('getShow', { indexer, id });
     },
     mounted() {
         window.addEventListener('load', () => {

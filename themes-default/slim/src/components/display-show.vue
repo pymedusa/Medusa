@@ -11,8 +11,17 @@ export default {
         AppLink,
         PlotInfo
     },
-    data() {
-        return {};
+    metaInfo() {
+        if (!this.show || !this.show.title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        const { title } = this.show;
+        return {
+            title,
+            titleTemplate: '%s | Medusa'
+        };
     },
     computed: {
         ...mapState({

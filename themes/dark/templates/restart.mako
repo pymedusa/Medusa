@@ -7,6 +7,7 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
     data() {
         return {};
@@ -28,7 +29,7 @@ try:
 except NameError:
     themeSpinner = app.THEME_NAME
 %>
-<h2>Performing Restart</h2>
+<h2>{{ $route.meta.header }}</h2>
 <div default-page="${sbDefaultPage}" current-pid="${sbPID}" class="messages">
     <div id="shut_down_message">
         Waiting for Medusa to shut down:

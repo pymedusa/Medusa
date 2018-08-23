@@ -10,15 +10,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Logs'
-    },
-    data() {
-        return {
-            header: 'Log File'
-        };
-    },
     mounted() {
         function getParams() {
             return $.param({
@@ -76,7 +69,7 @@ pre {
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div>
     <div class="col-md-12 pull-right ">
         <div class="logging-filter-controll pull-right">

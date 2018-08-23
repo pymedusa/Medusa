@@ -18,13 +18,10 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'History'
-    },
     data() {
         return {
-            header: 'History',
             limit: '${limit}'
         };
     },
@@ -103,7 +100,7 @@ window.app = new Vue({
 
 <div class="row">
     <div class="col-md-6">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div> <!-- layout title -->
     <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">

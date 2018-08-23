@@ -7,21 +7,14 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Anime'
-    },
-    data() {
-        return {
-            header: 'Anime'
-        };
-    }
+    router,
+    el: '#vue-wrap'
 });
 </script>
 </%block>
 <%block name="content">
 <div id="content960">
-    <h1 class="header">{{header}}</h1>
+    <h1 class="header">{{ $route.meta.header }}</h1>
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/anime/saveAnime" method="post">

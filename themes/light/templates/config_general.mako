@@ -16,20 +16,13 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - General'
-    },
-    data() {
-        return {
-            header: 'General Configuration'
-        };
-    }
+    router,
+    el: '#vue-wrap'
 });
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <% indexer = 0 %>
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>

@@ -9,14 +9,6 @@ export default {
     components: {
         AppLink
     },
-    metaInfo: {
-        title: 'Home'
-    },
-    data() {
-        return {
-            header: 'Show List'
-        };
-    },
     computed: {
         ...mapState([
             'config'

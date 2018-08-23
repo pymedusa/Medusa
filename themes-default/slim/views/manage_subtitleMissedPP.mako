@@ -11,15 +11,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Missing Subtitles in Post-Process folder'
-    },
-    data() {
-        return {
-            header: 'Missing Subtitles in Post-Process folder'
-        };
-    },
     mounted() {
         this.$once('loaded', () => {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
@@ -56,7 +49,7 @@ window.app = new Vue({
 <%block name="content">
 <div class="row">
 <div class="col-md-12">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 </div>
 </div>
 <div class="row">

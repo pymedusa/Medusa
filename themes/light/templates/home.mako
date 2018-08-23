@@ -51,7 +51,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <h1 class="header pull-left" style="margin: 0;">{{header}}</h1>
+            <h1 class="header pull-left" style="margin: 0;">{{ $route.meta.header }}</h1>
         </div>
     </div>
 
