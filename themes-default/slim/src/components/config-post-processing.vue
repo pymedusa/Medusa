@@ -473,7 +473,7 @@ export default {
             this.saving = true;
 
             // Clone the config into a new object
-            const config = Object.assign({
+            const config = Object.assign({}, {
                 postProcessing,
                 metadata: {
                     metadataProviders
