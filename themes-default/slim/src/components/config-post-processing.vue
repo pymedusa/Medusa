@@ -102,10 +102,9 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
-                                            <span>Wait to process a file until subtitles are present</span>
-                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
-                                            <span>&nbsp;</span>
-                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                            <span>Wait to process a file until subtitles are present</span><br>
+                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
+                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
                                             <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                         </div>
                                     </div>
@@ -126,7 +125,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postProcessing.createMissingShowDirs" sync></toggle-button>
-                                            <span >Create missing show directories when they get deleted</span>
+                                            <span>Create missing show directories when they get deleted</span>
                                         </div>
                                     </div>
 
@@ -156,7 +155,8 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="postProcessing.allowedExtensions = $event"></select-list>
-                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
+                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
+                                            <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
                                     </div>
 
@@ -166,7 +166,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postProcessing.nfoRename" sync></toggle-button>
-                                            <span >Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
+                                            <span>Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
                                         </div>
                                     </div>
 
@@ -176,7 +176,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync></toggle-button>
-                                            <span >Set last modified filedate to the date that the episode aired?</span>
+                                            <span>Set last modified filedate to the date that the episode aired?</span>
                                         </div>
                                     </div>
 
@@ -188,18 +188,18 @@
                                             <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
                                                 <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
                                             </select>
-                                            <span >What timezone should be used to change File Date?</span>
+                                            <span>What timezone should be used to change File Date?</span>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="unpack" class="col-sm-2 control-label">
                                             <span>Unpack</span>
-                                            <span >Unpack any TV releases in your <i>TV Download Dir</i>?</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postProcessing.unpack" sync></toggle-button>
-                                            <span ><b>NOTE:</b> Only working with RAR archive</span>
+                                            <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
+                                            <span><b>NOTE:</b> Only working with RAR archive</span>
                                         </div>
                                     </div>
 
