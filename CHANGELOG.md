@@ -3,7 +3,7 @@
 #### New Features
 
 #### Improvements
-- Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
+- Converted Post-Processing Config to a Vue SFC ([#4259](https://github.com/pymedusa/Medusa/pull/4259) + [#4946](https://github.com/pymedusa/Medusa/pull/4946))
 - Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
 - Updated adba (anidb) client to version 1.0.0 (python 2/3 compatible) ([#4822](https://github.com/pymedusa/Medusa/pull/4822))
 - Changed caching location for the adba and simpleanidb libs to the default Medusa cache location ([#4822](https://github.com/pymedusa/Medusa/pull/4822))
