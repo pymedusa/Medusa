@@ -1,5 +1,1 @@
-import NotFound from './404.vue';
-
-export {
-    NotFound
-};
+export { default as NotFound } from './404.vue';
