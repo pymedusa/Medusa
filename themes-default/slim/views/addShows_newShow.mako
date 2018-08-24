@@ -9,8 +9,6 @@
     from six import iteritems, text_type
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
-<script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 <%
     valid_indexers = {
         '0': {
@@ -71,8 +69,8 @@ window.app = new Vue({
             selectedShowSlug: '',
             selectedShowOptions: {
                 subtitles: false,
-                status: '',
-                statusAfter: '',
+                status: null,
+                statusAfter: null,
                 seasonFolder: false,
                 anime: false,
                 scene: false,
@@ -204,7 +202,7 @@ window.app = new Vue({
     methods: {
         async submitForm(skipShow) {
             const { currentSearch, addButtonDisabled, selectedShowOptions } = this;
-            const { subtitles, anime, scene, seasonFolder, release } = selectedShowOptions;
+            const { status, statusAfter, subtitles, anime, scene, seasonFolder, release } = selectedShowOptions;
 
             let formData;
 
@@ -232,8 +230,8 @@ window.app = new Vue({
 
             this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
 
-            // Because we're using te toggle-button.vue component, we don't have valid form input's for these.
-            // Therefor we need to add these values manually to the form data.
+            // Because we're using the toggle-button.vue component, we don't have valid form input's for these.
+            // Therefore we need to add these values manually to the form data.
 
             formData.append('subtitles', Number(subtitles));
             formData.append('anime', Number(anime));
@@ -248,9 +246,8 @@ window.app = new Vue({
                 formData.append('blacklist', name);
             }
 
-            const statusToDesc = { 'Wanted': 3, 'Skipped': 5, 'Ignored': 7 }
-            formData.set('defaultStatus', statusToDesc[formData.get('defaultStatus')]);
-            formData.set('defaultStatusAfter', statusToDesc[formData.get('defaultStatusAfter')]);
+            formData.append('defaultStatus', status);
+            formData.append('defaultStatusAfter', statusAfter);
 
             const response = await apiRoute.post('addShows/addNewShow', formData);
             const { data } = response;
@@ -436,7 +433,7 @@ window.app = new Vue({
         },
         /**
          * The formwizard sets a fixed height when the step has been loaded. We need to refresh this on the option
-         * page, when showing/hiding the release groups. 
+         * page, when showing/hiding the release groups.
          */
         refreshOptionStep() {
             if (this.formwizard.currentsection === 2) {
@@ -569,7 +566,7 @@ window.app = new Vue({
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
                         <!-- <include file="/inc_addShowOptions.mako"/> -->
-                        <add-show-options :selected-show="this.selectedShow" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
+                        <add-show-options :show-name="showName" enable-anime-options @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
             </form>

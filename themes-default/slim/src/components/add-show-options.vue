@@ -4,17 +4,16 @@
             <div class="form-group">
                 <div class="row">
                     <label for="customQuality" class="col-sm-2 control-label">
-                        <span>Preferred Quality</span>
+                        <span>Quality</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <quality-chooser @update:quality:allowed="quality.allowed = $event" @update:quality:preferred="quality.preferred = $event"></quality-chooser>
+                        <quality-chooser :overall-quality="defaultConfig.quality" @update:quality:allowed="quality.allowed = $event" @update:quality:preferred="quality.preferred = $event"></quality-chooser>
                     </div>
                 </div>
             </div>
 
-            <!-- app.USE_SUBTITLES: -->
-            <div v-show="config.subtitles.enabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :checked="config.subtitles.enabled" @update="selectedSubtitleEnabled = $event"
+            <div v-if="subtitlesEnabled" id="use-subtitles">
+                <config-toggle-slider label="Subtitles" id="subtitles" :checked="defaultConfig.subtitles" @update="selectedSubtitleEnabled = $event"
                     :explanations="['Download subtitles for this show?']">
                 </config-toggle-slider>
             </div>
@@ -45,7 +44,7 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders"
+            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
                 :explanations="['Group episodes by season folder?']" @update="selectedSeasonFolderEnabled = $event">
             </config-toggle-slider>
 
@@ -53,7 +52,7 @@
                 :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
-            <div v-show="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
+            <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
                     <label for="anidbReleaseGroup" class="col-sm-2 control-label">
                         <span>Release Groups</span>
@@ -76,7 +75,7 @@
                         <span>Use current values as the defaults</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" />
+                        <input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" :disabled="saveDefaultsDisabled" />
                     </div>
                 </div>
             </div>
@@ -84,7 +83,8 @@
     </div>
 </template>
 <script>
-
+import { mapState } from 'vuex';
+import { combineQualities } from '../utils';
 import ConfigToggleSlider from './config-toggle-slider.vue';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 
@@ -94,38 +94,38 @@ export default {
         AnidbReleaseGroupUi,
         ConfigToggleSlider
     },
-    props: ['selectedShow'],
+    props: {
+        showName: {
+            type: String,
+            default: '',
+            required: false
+        },
+        enableAnimeOptions: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
-            enableAnimeOptions: true,
-            useSubtitles: false,
-            defaultEpisodeStatusOptions: [
-                { text: 'Wanted', value: 'Wanted' },
-                { text: 'Skipped', value: 'Skipped' },
-                { text: 'Ignored', value: 'Ignored' }
-            ],
-            release: {
-                blacklist: [],
-                whitelist: [],
-                allgroups: []
-            },
-            show: '',
-            selectedSubtitleEnabled: false,
-            selectedStatus: '',
-            selectedStatusAfter: '',
-            selectedSeasonFolderEnabled: false,
-            selectedAnimeEnabled: false,
-            selectedSceneEnabled: false,
+            selectedStatus: null,
+            selectedStatusAfter: null,
             quality: {
                 allowed: [],
                 preferred: []
             },
-            defaultOptions: null
+            selectedSubtitleEnabled: false,
+            selectedSeasonFolderEnabled: false,
+            selectedAnimeEnabled: false,
+            selectedSceneEnabled: false,
+            release: {
+                blacklist: [],
+                whitelist: [],
+                allgroups: []
+            }
         };
     },
     mounted() {
-        const { selectedShow, defaultConfig, update } = this;
-        this.show = selectedShow;
+        const { defaultConfig, update } = this;
         this.selectedStatus = defaultConfig.status;
         this.selectedStatusAfter = defaultConfig.statusAfter;
         this.$nextTick(() => update());
@@ -133,15 +133,16 @@ export default {
     methods: {
         getReleaseGroups(showName) {
             const params = {
-                'series_name': showName // eslint-disable-line quote-props
+                series_name: showName // eslint-disable-line camelcase
             };
 
-            try {
-                return apiRoute.get('home/fetch_releasegroups', { params, timeout: 30000 }).then(res => res.data);
-            } catch (error) {
-                console.warn(error);
-                return '';
-            }
+            return apiRoute
+                .get('home/fetch_releasegroups', { params, timeout: 30000 })
+                .then(response => response.data)
+                .catch(error => {
+                    console.warn(error);
+                    return '';
+                });
         },
         update() {
             const {
@@ -174,56 +175,87 @@ export default {
         }
     },
     computed: {
-        header() {
-            return this.$route.meta.header;
+        ...mapState({
+            defaultConfig: state => state.config.showDefaults,
+            namingForceFolders: state => state.config.namingForceFolders,
+            subtitlesEnabled: state => state.config.subtitles.enabled,
+            episodeStatuses: state => state.statuses
+        }),
+        defaultEpisodeStatusOptions() {
+            const { strings, values } = this.episodeStatuses;
+            const { skipped, wanted, ignored } = values;
+            return [skipped, wanted, ignored].map(value => ({
+                value,
+                text: strings[value]
+            }));
         },
+        /**
+         * Calculate the combined value of the selected qualities.
+         * @returns {number} - An unsigned integer.
+         */
+        combinedQualities() {
+            const { quality } = this;
+            const { allowed, preferred } = quality;
+            return combineQualities(allowed, preferred);
+        },
+        /**
+         * Check if any changes were made to determine if the "Save Defaults" button should be enabled.
+         * @returns {boolean} - Should the save default buttons be disabled?
+         */
+        saveDefaultsDisabled() {
+            const {
+                defaultConfig,
+                namingForceFolders,
+
+                selectedStatus,
+                selectedStatusAfter,
+                combinedQualities,
+                selectedSeasonFolderEnabled,
+                selectedSubtitleEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled
+            } = this;
+
+            return [
+                selectedStatus === defaultConfig.status,
+                selectedStatusAfter === defaultConfig.statusAfter,
+                combinedQualities === defaultConfig.quality,
+                selectedSeasonFolderEnabled === (defaultConfig.seasonFolders || namingForceFolders),
+                selectedSubtitleEnabled === defaultConfig.subtitles,
+                selectedAnimeEnabled === defaultConfig.anime,
+                selectedSceneEnabled === defaultConfig.scene
+            ].every(Boolean);
+        }
+    },
+    asyncComputed: {
         releaseGroups() {
-            if (!this.show) {
-                return;
+            const { selectedAnimeEnabled, showName } = this;
+            if (!selectedAnimeEnabled || !showName) {
+                return Promise.resolve([]);
             }
 
-            return this.getReleaseGroups(this.show).then(result => {
+            return this.getReleaseGroups(showName).then(result => {
                 if (result.groups) {
                     return result.groups;
                 }
             });
-        },
-        /**
-         * Map the vuex state config.default on defaulConfig so we can watch it.
-         * @returns {Object} config.default from state.
-         */
-        defaultConfig() {
-            return this.config.default;
-        },
-        selectedShowName() {
-            if (this.selectedShow) {
-                return this.selectedShow.showName;
-            }
-            return '';
         }
     },
     watch: {
-        selectedShowName() {
-            const { selectedShowName } = this;
-            this.show = selectedShowName;
-            if (this.releaseGroups) {
-                this.releaseGroups.then(groups => {
-                    if (groups) {
-                        this.release.allgroups = groups;
-                    }
-                });
-            }
+        releaseGroups(groups) {
+            this.release.allgroups = groups;
         },
         /**
-         * Whenever something changes that can impact the hight of the component, we need to update the parent formWizard.
-         * And make it resize.
+         * Whenever something changes that can impact the height of the component,
+         * we need to update the parent formWizard, and make it resize.
          */
         release: {
             handler() {
                 this.$emit('refresh');
                 this.update();
             },
-            deep: true
+            deep: true,
+            immediate: false
         },
         selectedAnimeEnabled() {
             this.$emit('refresh');
@@ -240,9 +272,6 @@ export default {
         },
         selectedSceneEnabled() {
             this.update();
-        },
-        selectedShow(newValue) {
-            this.show = newValue;
         },
         defaultConfig(newValue) {
             this.selectedStatus = newValue.status;

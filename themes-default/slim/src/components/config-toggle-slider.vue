@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <toggle-button :width="45" :height="22" v-bind="{id, name: id}" v-model="localChecked" sync></toggle-button>
+                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>
@@ -29,6 +29,10 @@ export default {
         checked: {
             type: Boolean,
             default: null
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         },
         explanations: {
             type: Array,

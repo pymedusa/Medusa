@@ -252,9 +252,11 @@ const state = {
     anonRedirect: null,
     logDir: null,
     recentShows: [],
-    default: {
+    showDefaults: {
         status: null,
         statusAfter: null,
+        quality: null,
+        subtitles: null,
         seasonFolders: null,
         anime: null,
         scene: null
