@@ -25,7 +25,6 @@ const staticAssets = [
     'static/browserconfig.xml',
     'static/favicon.ico',
     'static/fonts/**/*',
-    'static/js/**/*',
     'static/css/**/*'
 ];
 
@@ -104,12 +103,6 @@ const watch = () => {
         'static/css/**/*.scss',
         'static/css/**/*.css'
     ], ['css']);
-
-    // Js Changes
-    gulp.watch([
-        'static/js/**/*.{js,vue}',
-        ...xoConfig.ignores.map(ignore => '!' + ignore)
-    ]).on('change', lintFile);
 };
 
 const moveStatic = () => {

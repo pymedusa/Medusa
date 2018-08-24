@@ -158,6 +158,12 @@ const webpackConfig = mode => ({
                 context: './views/',
                 from: '**',
                 to: path.resolve(theme.dest, 'templates')
+            })),
+            // Old JS files
+            ...perTheme(theme => ({
+                context: './static/',
+                from: 'js/**',
+                to: path.resolve(theme.dest, 'assets')
             }))
         ])
     ]
