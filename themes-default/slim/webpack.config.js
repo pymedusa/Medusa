@@ -164,6 +164,20 @@ const webpackConfig = mode => ({
                 context: './static/',
                 from: 'js/**',
                 to: path.resolve(theme.dest, 'assets')
+            })),
+            // Old CSS files
+            ...perTheme(theme => ({
+                context: './static/',
+                from: 'css/**',
+                // Ignore theme-specific files as they are handled by the next entry
+                ignore: ['css/dark.css', 'css/light.css'],
+                to: path.resolve(theme.dest, 'assets')
+            })),
+            // Old CSS files - themed.css
+            ...perTheme(theme => ({
+                from: `static/css/${theme.css}`,
+                to: path.resolve(theme.dest, 'assets', 'css', 'themed.css'),
+                toType: 'file'
             }))
         ])
     ]

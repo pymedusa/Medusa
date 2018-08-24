@@ -7,7 +7,6 @@ const gulp = require('gulp');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
 const { argv } = require('yargs');
-const rename = require('gulp-rename');
 const changed = require('gulp-changed');
 
 const PROD = process.env.NODE_ENV === 'production';
@@ -54,11 +53,6 @@ const watch = () => {
         'static/images/**/*.png',
         'static/images/**/*.jpg'
     ], ['img']);
-
-    // Css changes
-    gulp.watch([
-        'static/css/**/*.css'
-    ], ['css']);
 };
 
 /**
@@ -102,36 +96,6 @@ const moveImages = () => {
         .pipe(gulpif(PROD, gulp.dest(dest)));
 };
 
-/**
- * Move and rename css.
- * @returns {*} gulp stream
- */
-const moveCss = () => {
-    const dest = `${buildDest}/assets`;
-    return gulp
-        .src([
-            '!static/css/light.css',
-            '!static/css/dark.css',
-            'static/css/**/*'
-        ], {
-            base: 'static'
-        })
-        .pipe(changed(dest))
-        .pipe(gulp.dest(dest));
-};
-
-/**
- * Move and rename themed css.
- * @returns {*} gulp stream
- */
-const moveAndRenameCss = () => {
-    const dest = `${buildDest}/assets/css`;
-    return gulp
-        .src(`static/css/${cssTheme.css}`)
-        .pipe(rename(`themed.css`))
-        .pipe(gulp.dest(dest));
-};
-
 /** Gulp tasks */
 
 /**
@@ -149,7 +113,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('css', 'cssTheme', 'img', 'root', () => {
+    runSequence('img', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -174,7 +138,7 @@ gulp.task('sync', async () => { // eslint-disable-line space-before-function-par
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (const theme of Object.entries(config.cssThemes)) {
-        await syncTheme(theme, ['css', 'cssTheme', 'img', 'root']); // eslint-disable-line no-await-in-loop
+        await syncTheme(theme, ['img', 'root']); // eslint-disable-line no-await-in-loop
     }
 });
 
@@ -188,17 +152,6 @@ gulp.task('watch', ['build'], watch);
  * Should save up to 50% of total filesize.
  */
 gulp.task('img', moveImages);
-
-/**
- * Copy all css files to the destination excluding the theme files, as whe're going to rename those.
- */
-gulp.task('css', moveCss);
-
-/**
- * Copy and rename the light or dark theme files from the configuration located in the package.json.
- * For example cssThemes.light.css for the `light.css` theme.
- */
-gulp.task('cssTheme', moveAndRenameCss);
 
 /**
  * Task for moving the files out of the root folder (index.html and package.json) to the destinations

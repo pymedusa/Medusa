@@ -55,7 +55,6 @@
     "gulp-if": "2.0.2",
     "gulp-imagemin": "4.1.0",
     "gulp-livereload": "3.8.1",
-    "gulp-rename": "1.4.0",
     "imagemin-pngquant": "6.0.0",
     "jquery": "3.3.1",
     "lodash": "4.17.10",
