@@ -44,7 +44,7 @@
     "cross-env": "5.2.0",
     "css-loader": "1.0.0",
     "eslint": "5.4.0",
-    "eslint-config-xo": "0.24.1",
+    "eslint-config-xo": "0.24.2",
     "eslint-plugin-vue": "5.0.0-beta.3",
     "esm": "3.0.80",
     "fancy-log": "1.3.2",
