@@ -1,12 +1,34 @@
 const path = require('path');
 const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const pkg = require('./package.json');
 
 const { config } = pkg;
 const { cssThemes } = config;
+
+/**
+ * Helper function to queue actions for each theme.
+ * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
+ * @returns {Object[]} - The actions for each theme.
+ */
+const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
+
+/**
+ * Helper function to simplify CopyWebpackPlugin configuration when copying assets from `./dist`.
+ * To be used in-conjunction-with `perTheme`.
+ * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
+ * @param {string} [search] - Glob-like string to match files. (default: `**`)
+ * @returns {function} - A function the recieves the theme object from `perTheme`.
+ */
+const copyAssets = (type, search = '**') => {
+    return theme => ({
+        context: './dist/',
+        from: `${type}/${search}`,
+        to: path.resolve(theme.dest, 'assets')
+    });
+};
 
 const webpackConfig = mode => ({
     entry: {
@@ -29,6 +51,8 @@ const webpackConfig = mode => ({
         hints: false
     },
     stats: {
+        // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
+        excludeAssets: /(\.\.\/)+themes\/.*/,
         // When `false`, hides extra information about assets collected by children (e.g. plugins)
         children: false
     },
@@ -124,26 +148,12 @@ const webpackConfig = mode => ({
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
-        new FileManagerPlugin({
-            onEnd: {
-                copy: Object.values(cssThemes).reduce((operations, theme) => {
-                    // Queue operations for each theme
-                    operations.push({
-                        source: './dist/js/**',
-                        destination: path.join(theme.dest, 'assets', 'js')
-                    });
-                    operations.push({
-                        source: './dist/css/**',
-                        destination: path.join(theme.dest, 'assets', 'css')
-                    });
-                    operations.push({
-                        source: './dist/fonts/**',
-                        destination: path.join(theme.dest, 'assets', 'fonts')
-                    });
-                    return operations;
-                }, [])
-            }
-        })
+        // Queue operations for each theme
+        new CopyWebpackPlugin([
+            ...perTheme(copyAssets('js')),
+            ...perTheme(copyAssets('css')),
+            ...perTheme(copyAssets('fonts'))
+        ])
     ]
 });
 
