@@ -17,13 +17,6 @@ const { config } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
-const staticAssets = [
-    'static/browserconfig.xml',
-    'static/favicon.ico',
-    'static/fonts/**/*',
-    'static/css/**/*'
-];
-
 /**
  * Get theme object.
  * @param {*} theme name passed by yargs.
@@ -64,19 +57,8 @@ const watch = () => {
 
     // Css changes
     gulp.watch([
-        'static/css/**/*.scss',
         'static/css/**/*.css'
     ], ['css']);
-};
-
-const moveStatic = () => {
-    const dest = `${buildDest}/assets`;
-    return gulp
-        .src(staticAssets, {
-            base: 'static'
-        })
-        .pipe(changed(buildDest))
-        .pipe(gulp.dest(dest));
 };
 
 /**
@@ -126,7 +108,11 @@ const moveImages = () => {
 const moveCss = () => {
     const dest = `${buildDest}/assets`;
     return gulp
-        .src(['!static/css/light.css', '!static/css/dark.css', 'static/css/**/*.css'], {
+        .src([
+            '!static/css/light.css',
+            '!static/css/dark.css',
+            'static/css/**/*'
+        ], {
             base: 'static'
         })
         .pipe(changed(dest))
@@ -161,7 +147,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('css', 'cssTheme', 'img', 'static', 'root', () => {
+    runSequence('css', 'cssTheme', 'img', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -186,7 +172,7 @@ gulp.task('sync', async () => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (const theme of Object.entries(config.cssThemes)) {
-        await syncTheme(theme, ['css', 'cssTheme', 'img', 'static', 'root']);
+        await syncTheme(theme, ['css', 'cssTheme', 'img', 'root']);
     }
 });
 
@@ -211,11 +197,6 @@ gulp.task('css', moveCss);
  * For example cssThemes.light.css for the `light.css` theme.
  */
 gulp.task('cssTheme', moveAndRenameCss);
-
-/**
- * Task for moving the static files to the destinations assets directory.
- */
-gulp.task('static', moveStatic);
 
 /**
  * Task for moving the files out of the root folder (index.html and package.json) to the destinations
