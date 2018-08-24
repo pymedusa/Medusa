@@ -180,6 +180,12 @@ const webpackConfig = mode => ({
                 toType: 'file',
                 transform: content => makeThemeMetadata(theme.name, content)
             })),
+            // Root files: index.html
+            ...perTheme(theme => ({
+                from: 'index.html',
+                to: path.resolve(theme.dest),
+                toType: 'dir'
+            })),
             // Old JS files
             ...perTheme(theme => ({
                 context: './static/',

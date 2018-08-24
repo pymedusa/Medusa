@@ -54,21 +54,6 @@ const watch = () => {
     ], ['img']);
 };
 
-/**
- * Files from the source root to copy to destination.
- */
-const rootFiles = [
-    'index.html'
-];
-
-const moveRoot = () => {
-    console.log(`Moving root files to: ${buildDest}`);
-    return gulp
-        .src(rootFiles)
-        .pipe(changed(buildDest))
-        .pipe(gulp.dest(buildDest));
-};
-
 const moveImages = () => {
     const dest = `${buildDest}/assets/img`;
     return gulp
@@ -103,7 +88,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('img', 'root', () => {
+    runSequence('img', () => {
         if (!PROD) {
             done();
         }
@@ -128,7 +113,7 @@ gulp.task('sync', async () => { // eslint-disable-line space-before-function-par
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (const theme of Object.entries(config.cssThemes)) {
-        await syncTheme(theme, ['img', 'root']); // eslint-disable-line no-await-in-loop
+        await syncTheme(theme, ['img']); // eslint-disable-line no-await-in-loop
     }
 });
 
@@ -142,9 +127,3 @@ gulp.task('watch', ['build'], watch);
  * Should save up to 50% of total filesize.
  */
 gulp.task('img', moveImages);
-
-/**
- * Task for moving the files out of the root folder (index.html and package.json) to the destinations
- * root folder. These are required to let medusa read the themes metadata.
- */
-gulp.task('root', moveRoot);
