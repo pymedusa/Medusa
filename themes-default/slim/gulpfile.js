@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
@@ -63,15 +62,6 @@ const rootFiles = [
 ];
 
 const moveRoot = () => {
-    const pkgFilePath = path.join(buildDest, 'package.json');
-    console.log(`Writing ${pkgFilePath}`);
-    const theme = JSON.stringify({
-        name: cssTheme.name,
-        version: pkg.version,
-        author: pkg.author
-    }, undefined, 2);
-    fs.writeFileSync(pkgFilePath, theme);
-
     console.log(`Moving root files to: ${buildDest}`);
     return gulp
         .src(rootFiles)

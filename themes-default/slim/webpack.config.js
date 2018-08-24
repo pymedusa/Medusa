@@ -5,8 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const pkg = require('./package.json');
 
-const { config } = pkg;
-const { cssThemes } = config;
+const { cssThemes } = pkg.config;
 
 /**
  * Helper function to queue actions for each theme.
@@ -28,6 +27,21 @@ const copyAssets = (type, search = '**') => {
         from: `${type}/${search}`,
         to: path.resolve(theme.dest, 'assets')
     });
+};
+
+/**
+ * Make a `package.json` for a theme.
+ * @param {string} themeName - Theme name
+ * @param {string} currentContent - Current package.json contents
+ * @returns {string} - New content
+ */
+const makeThemeMetadata = (themeName, currentContent) => {
+    const { version, author } = JSON.parse(currentContent);
+    return JSON.stringify({
+        name: themeName,
+        version,
+        author
+    }, undefined, 2);
 };
 
 const webpackConfig = mode => ({
@@ -158,6 +172,13 @@ const webpackConfig = mode => ({
                 context: './views/',
                 from: '**',
                 to: path.resolve(theme.dest, 'templates')
+            })),
+            // Create package.json
+            ...perTheme(theme => ({
+                from: 'package.json',
+                to: path.resolve(theme.dest, 'package.json'),
+                toType: 'file',
+                transform: content => makeThemeMetadata(theme.name, content)
             })),
             // Old JS files
             ...perTheme(theme => ({
