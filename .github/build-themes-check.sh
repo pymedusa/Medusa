@@ -14,7 +14,7 @@ build_mode=""
 # Do not build on other branches because it will cause conflicts on pull requests,
 #   where push builds build for development and PR builds build for production.
 if [[ $TRAVIS_BRANCH == "master" ]]; then
-    build_cmd="yarn webpack-build"
+    build_cmd="yarn build"
     build_mode="production"
 elif [[ $TRAVIS_BRANCH == "develop" ]]; then
     build_cmd="yarn dev"
