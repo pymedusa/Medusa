@@ -152,7 +152,13 @@ const webpackConfig = mode => ({
         new CopyWebpackPlugin([
             ...perTheme(copyAssets('js')),
             ...perTheme(copyAssets('css')),
-            ...perTheme(copyAssets('fonts'))
+            ...perTheme(copyAssets('fonts')),
+            // Templates
+            ...perTheme(theme => ({
+                context: './views/',
+                from: '**',
+                to: path.resolve(theme.dest, 'templates')
+            }))
         ])
     ]
 });
