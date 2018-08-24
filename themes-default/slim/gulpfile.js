@@ -20,24 +20,24 @@ let buildDest = '';
 /**
  * Get theme object.
  * @param {*} theme name passed by yargs.
+ * @returns {Object} theme object
  */
 const getCssTheme = theme => {
     // Using the --csstheme is mandatory.
     if (argv.csstheme === undefined && !theme) {
-        console.log('You need to pass a csstheme to build with the param --csstheme');
-        process.exit(1);
+        throw new Error('You need to pass a csstheme to build with the param --csstheme');
     }
 
     // Check if the theme provided is available in the package.json config.
     if (!config.cssThemes[theme]) {
-        console.log(`Please provide a valid theme with the --cssTheme parameter, theme ${theme} is not available in the package.json config section.`);
-        process.exit(1);
+        throw new Error(`Please provide a valid theme with the --cssTheme parameter, theme ${theme} is not available in the package.json config section.`);
     }
     return config.cssThemes[theme];
 };
 
 /**
- * Attemt to get the cssTheme config object from the package.json.
+ * Attempt to get the cssTheme config object from the package.json.
+ * @param {string} theme theme to try and get
  */
 const setCsstheme = theme => {
     cssTheme = getCssTheme(theme || cssTheme);
@@ -104,6 +104,7 @@ const moveImages = () => {
 
 /**
  * Move and rename css.
+ * @returns {*} gulp stream
  */
 const moveCss = () => {
     const dest = `${buildDest}/assets`;
@@ -121,6 +122,7 @@ const moveCss = () => {
 
 /**
  * Move and rename themed css.
+ * @returns {*} gulp stream
  */
 const moveAndRenameCss = () => {
     const dest = `${buildDest}/assets/css`;
@@ -168,11 +170,11 @@ const syncTheme = (theme, sequence) => {
  * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
  * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
  */
-gulp.task('sync', async () => {
+gulp.task('sync', async () => { // eslint-disable-line space-before-function-paren
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     for (const theme of Object.entries(config.cssThemes)) {
-        await syncTheme(theme, ['css', 'cssTheme', 'img', 'root']);
+        await syncTheme(theme, ['css', 'cssTheme', 'img', 'root']); // eslint-disable-line no-await-in-loop
     }
 });
 

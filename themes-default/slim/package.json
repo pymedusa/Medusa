@@ -131,9 +131,7 @@
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
-      "static/js/vender.js",
-      "build/**",
-      "gulpfile.js"
+      "static/js/vender.js"
     ],
     "esnext": true
   },
