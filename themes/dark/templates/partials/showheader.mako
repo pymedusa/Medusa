@@ -156,8 +156,8 @@
                         <table class="summaryTable pull-left">
                             % if show.plot:
                             <tr>
-                                <td colspan=2 style="padding-bottom:15px">
-                                    <truncate v-on:toggle="reflowLayout()" clamp="..." :length="250" less="Show Less" :text="`${show.plot}`"></truncate>
+                                <td colspan="2" style="padding-bottom: 15px;">
+                                    <truncate @toggle="reflowLayout()" :length="250" clamp="show more..." less="show less..." :text="`${show.plot}`"></truncate>
                                 </td>
                             </tr>
                             % endif
