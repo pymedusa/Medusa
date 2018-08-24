@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const log = require('fancy-log');
 const runSequence = require('run-sequence');
 const livereload = require('gulp-livereload');
 const gulpif = require('gulp-if');
@@ -10,14 +9,11 @@ const pngquant = require('imagemin-pngquant');
 const { argv } = require('yargs');
 const rename = require('gulp-rename');
 const changed = require('gulp-changed');
-const xo = require('xo');
-
-const xoReporter = xo.getFormatter('eslint-formatter-pretty');
 
 const PROD = process.env.NODE_ENV === 'production';
 const pkg = require('./package.json');
 
-const { config, xo: xoConfig } = pkg;
+const { config } = pkg;
 let cssTheme = argv.csstheme;
 let buildDest = '';
 
@@ -55,38 +51,6 @@ const setCsstheme = theme => {
     if (cssTheme) {
         buildDest = path.normalize(cssTheme.dest);
     }
-};
-
-/**
- * Run a single js file through the xo linter. The lintFile function is triggered by a gulp.onChange event.
- * @param {*} file object that has been changed.
- */
-const lintFile = file => {
-    const files = [file.path];
-    return xo.lintFiles(files, {}).then(report => {
-        const formatted = xoReporter(report.results);
-        if (formatted) {
-            log(formatted);
-        }
-    });
-};
-
-/**
- * Run all js files through the xo (eslint) linter.
- */
-const lint = () => {
-    return xo.lintFiles([], {}).then(report => {
-        const formatted = xoReporter(report.results);
-        if (formatted) {
-            log(formatted);
-        }
-        let error = null;
-        if (report.errorCount > 0) {
-            error = new Error('Lint failed, see errors above.');
-            error.showStack = false;
-            throw error;
-        }
-    });
 };
 
 const watch = () => {
@@ -197,7 +161,7 @@ gulp.task('build', done => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
     // If we need a yargs parameter name csstheme.
     setCsstheme();
-    runSequence('lint', 'css', 'cssTheme', 'img', 'static', 'root', () => {
+    runSequence('css', 'cssTheme', 'img', 'static', 'root', () => {
         if (!PROD) {
             done();
         }
@@ -217,8 +181,6 @@ const syncTheme = (theme, sequence) => {
  * It's required to pass the theme name through the `--csstheme` parameter.
  * For example: gulp build --csstheme light, will build the theme and rename the light.css to themed.css and
  * copy all files to /themes/[theme dest]/. Themes destination is configured in the package.json.
- *
- * Do not run the xo build, as this takes a lot of time.
  */
 gulp.task('sync', async () => {
     // Whe're building the light and dark theme. For this we need to run two sequences.
@@ -249,12 +211,6 @@ gulp.task('css', moveCss);
  * For example cssThemes.light.css for the `light.css` theme.
  */
 gulp.task('cssTheme', moveAndRenameCss);
-
-/**
- * Task for linting the js files using xo.
- * https://github.com/sindresorhus/xo
- */
-gulp.task('lint', lint);
 
 /**
  * Task for moving the static files to the destinations assets directory.
