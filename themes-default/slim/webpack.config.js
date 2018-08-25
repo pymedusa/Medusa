@@ -21,7 +21,7 @@ const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
  * To be used in-conjunction-with `perTheme`.
  * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
  * @param {string} [search] - Glob-like string to match files. (default: `**`)
- * @returns {function} - A function the recieves the theme object from `perTheme`.
+ * @returns {function} - A function the receives the theme object from `perTheme`.
  */
 const copyAssets = (type, search = '**') => {
     return theme => ({
