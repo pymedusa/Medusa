@@ -1291,8 +1291,7 @@
 ? "[Group].Show.Name.-.102.[720p]"
 : options: {show_type: normal}
   title: Show Name
-  season: 1
-  episode: 2
+  episode: 102
   screen_size: 720p
   release_group: Group
   type: episode
@@ -2477,13 +2476,12 @@
   mimetype: video/x-msvideo
   type: episode
 
-? Show.Name.Season.1.(x265.10bit.Joy)
+? Show.Name.Season.1.(x265.10bit)
 : title: Show Name
   season: 1
   video_codec: H.265
   video_encoder: x265
   color_depth: 10-bit
-  release_group: Joy
   type: episode
 
 ? - Show.Name.S01E01.DVDRip.XviD-W4F
@@ -4211,7 +4209,7 @@
 ? "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
 : title: Show Name
   absolute_episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
-  episode: [500, 501, 502, 503, 504, 505, 506, 507]
+  episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   screen_size: 720p
   release_group: VFR
   video_codec: H.264
