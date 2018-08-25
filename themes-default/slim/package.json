@@ -48,6 +48,7 @@
     "eslint-plugin-vue": "5.0.0-beta.3",
     "esm": "3.0.80",
     "file-loader": "2.0.0",
+    "filemanager-webpack-plugin": "2.0.1",
     "glob": "7.1.2",
     "gulp": "3.9.1",
     "gulp-changed": "3.2.0",
