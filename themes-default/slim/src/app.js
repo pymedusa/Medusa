@@ -4,6 +4,7 @@ import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
+import Truncate from 'vue-truncate-collapsed';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
@@ -69,6 +70,9 @@ const app = new Vue({
     name: 'App',
     store,
     router,
+    components: {
+        Truncate
+    },
     data() {
         return {
             globalLoading: false,

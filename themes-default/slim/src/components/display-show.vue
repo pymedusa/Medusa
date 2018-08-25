@@ -54,8 +54,6 @@ export default {
     },
     mounted() {
         const {
-            moveSummaryBackground,
-            movecheckboxControlsBackground,
             setQuality,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
@@ -65,13 +63,11 @@ export default {
         } = this;
 
         $(window).on('resize', () => {
-            moveSummaryBackground();
-            movecheckboxControlsBackground();
+            this.reflowLayout();
         });
 
         window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            window.dispatchEvent(new Event('resize'));
+            this.reflowLayout();
 
             $.ajaxEpSearch({
                 colorRow: true
@@ -80,18 +76,6 @@ export default {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
             $.ajaxEpSubtitlesSearch();
             $.ajaxEpRedownloadSubtitle();
-        });
-
-        $(document.body).on('click', '.imdbPlot', event => {
-            const $target = $(event.currentTarget);
-            $target.prev('span').toggle();
-            if ($target.html() === '..show less') {
-                $target.html('..show more');
-            } else {
-                $target.html('..show less');
-            }
-            moveSummaryBackground();
-            movecheckboxControlsBackground();
         });
 
         $(document.body).on('change', '#seasonJump', event => {
@@ -327,7 +311,18 @@ export default {
         });
     },
     methods: {
-        // Adjust the summary background position and size on page load and resize
+        /**
+         * Moves summary background and checkbox controls
+         */
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+                this.movecheckboxControlsBackground();
+            });
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
         moveSummaryBackground() {
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
