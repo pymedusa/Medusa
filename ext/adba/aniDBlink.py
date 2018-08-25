@@ -92,12 +92,15 @@ class AniDBLink(threading.Thread):
     def run(self):
         while not self._quiting:
             try:
-                data = self.sock.recv(8192).decode(encoding='UTF-8')
+                data = self.sock.recv(8192).decode(encoding='UTF-8', errors='replace')
             except socket.timeout:
                 self._handle_timeouts()
                 continue
-            except OSError as e:
-                logging.exception('Exception: %s', e)
+            except OSError as error:
+                logging.exception('Exception: %s', error)
+                break
+            except UnicodeDecodeError as error:
+                logging.exception('Bad response from server: %s', error)
                 break
             logging.debug("NetIO < %r", data)
             try:
