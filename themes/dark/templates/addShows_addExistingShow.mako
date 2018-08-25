@@ -14,10 +14,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Existing Show'
-    },
     data() {
         <% indexers = { str(i): { 'name': v['name'], 'showUrl': v['show_url'] } for i, v in iteritems(indexerConfig) } %>
         return {
@@ -85,11 +83,15 @@ window.app = new Vue({
         }
     },
     methods: {
-        rootDirsUpdated(value, data) {
-            this.rootDirs = data.map(rd => {
+        /**
+         * Transform root dirs paths array, and select all the paths.
+         * @param {string[]} paths - The root dir paths
+         */
+        rootDirsPathsUpdated(paths) {
+            this.rootDirs = paths.map(path => {
                 return {
                     selected: true,
-                    path: rd.path
+                    path
                 };
             });
         },
@@ -215,7 +217,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">Existing Show</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
@@ -227,7 +229,7 @@ window.app = new Vue({
                         <li><app-link href="#tabs-2">Customize Options</app-link></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
-                        <root-dirs @update:root-dirs-value="rootDirsUpdated"></root-dirs>
+                        <root-dirs @update:paths="rootDirsPathsUpdated"></root-dirs>
                     </div>
                     <div id="tabs-2" class="existingtabs">
                         <%include file="/inc_addShowOptions.mako"/>

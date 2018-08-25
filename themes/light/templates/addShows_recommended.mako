@@ -7,6 +7,7 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
     data() {
         return {
@@ -19,11 +20,7 @@ window.app = new Vue({
 <%block name="content">
 <div class="row">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div>
 </div>
 
@@ -48,7 +45,7 @@ window.app = new Vue({
                                 <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
-                                <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                <root-dirs @update="rootDirs = $event"></root-dirs>
                                 <br/>
                             </div>
                             <div id="tabs-2" class="existingtabs">

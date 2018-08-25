@@ -12,20 +12,13 @@
 window.app = {};
 window.app = new Vue({
     store,
-    el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Notifications'
-    },
-    data() {
-        return {
-            header: 'Notifications'
-        };
-    }
+    router,
+    el: '#vue-wrap'
 });
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
@@ -36,7 +29,7 @@ window.app = new Vue({
                     <li><app-link href="#social">Social</app-link></li>
                 </ul>
                 <div id="home-theater-nas">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
                         <h3><app-link href="http://kodi.tv">KODI</app-link></h3>
                         <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
@@ -165,7 +158,7 @@ window.app = new Vue({
                             </div><!-- /content_use_kodi //-->
                         </fieldset>
                     </div><!-- /kodi component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-plex" title="Plex Media Server"></span>
                             <h3><app-link href="https://plex.tv">Plex Media Server</app-link></h3>
                             <p>Experience your media on a visually stunning, easy to use interface on your Mac connected to your TV. Your media library has never looked this good!</p>
@@ -260,7 +253,7 @@ window.app = new Vue({
                             </div><!-- /content_use_plex_server -->
                         </fieldset>
                     </div><!-- /plex media server component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
                         <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
                     </div>
@@ -344,7 +337,7 @@ window.app = new Vue({
                             </div><!-- /content_use_plex_client -->
                         </fieldset>
                     </div><!-- /Plex Home Theater component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-emby" title="Emby"></span>
                         <h3><app-link href="http://emby.media">Emby</app-link></h3>
                         <p>A home media server built using other popular open source technologies.</p>
@@ -383,7 +376,7 @@ window.app = new Vue({
                             </div><!-- /content_use_emby //-->
                         </fieldset>
                     </div><!-- /emby component-group //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
@@ -446,7 +439,7 @@ window.app = new Vue({
                             </div><!-- /content_use_nmj //-->
                         </fieldset>
                     </div><!-- /nmj component-group //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
@@ -530,7 +523,7 @@ window.app = new Vue({
                             </div><!-- /content_use_nmjv2 //-->
                         </fieldset>
                     </div><!-- /nmjv2 component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-syno1" title="Synology"></span>
                             <h3><app-link href="http://synology.com/">Synology</app-link></h3>
                             <p>The Synology DiskStation NAS.</p>
@@ -556,7 +549,7 @@ window.app = new Vue({
                             </div><!-- /content_use_synoindex //-->
                         </fieldset>
                     </div><!-- /synoindex component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
                             <h3><app-link href="http://synology.com/">Synology Notifier</app-link></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
@@ -608,7 +601,7 @@ window.app = new Vue({
                                </div>
                         </fieldset>
                     </div><!-- /synology notifier component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
                             <h3><app-link href="http://pytivo.sourceforge.net/wiki/index.php/PyTivo">pyTivo</app-link></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
@@ -665,7 +658,7 @@ window.app = new Vue({
                     </div><!-- /component-group //-->
                 </div><!-- #home-theater-nas //-->
                 <div id="devices">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-growl" title="Growl"></span>
                         <h3><app-link href="http://growl.info/">Growl</app-link></h3>
                         <p>A cross-platform unobtrusive global notification system.</p>
@@ -739,7 +732,7 @@ window.app = new Vue({
                             </div><!-- /content_use_growl //-->
                         </fieldset>
                     </div><!-- /growl component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
                             <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
                             <p>A Growl client for iOS.</p>
@@ -847,7 +840,7 @@ window.app = new Vue({
                             </div><!-- /content_use_prowl //-->
                         </fieldset>
                     </div><!-- /prowl component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
                             <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>
                             <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <app-link href="apt:python-notify">python-notify</app-link>).</p>
@@ -897,7 +890,7 @@ window.app = new Vue({
                             </div><!-- /content_use_libnotify //-->
                         </fieldset>
                     </div><!-- /libnotify component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
                             <h3><app-link href="https://pushover.net/">Pushover</app-link></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
@@ -1012,7 +1005,7 @@ window.app = new Vue({
                             </div><!-- /content_use_pushover //-->
                         </fieldset>
                     </div><!-- /pushover component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
                             <h3><app-link href="https://new.boxcar.io/">Boxcar 2</app-link></h3>
                             <p>Read your messages where and when you want them!</p>
@@ -1072,7 +1065,7 @@ window.app = new Vue({
                             </div><!-- /content_use_boxcar2 //-->
                         </fieldset>
                     </div><!-- /boxcar2 component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushalot" title="Pushalot"></span>
                             <h3><app-link href="https://pushalot.com">Pushalot</app-link></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
@@ -1132,7 +1125,7 @@ window.app = new Vue({
                             </div><!-- /content_use_pushalot //-->
                         </fieldset>
                     </div><!-- /pushalot component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
                             <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
                             <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
@@ -1204,7 +1197,7 @@ window.app = new Vue({
                             </div><!-- /content_use_pushbullet //-->
                         </fieldset>
                     </div><!-- /pushbullet component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                             <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                             <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
@@ -1275,7 +1268,7 @@ window.app = new Vue({
                         </fieldset>
                     </div><!-- /freemobile component-group //-->
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-telegram" title="Telegram"></span>
                         <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
                         <p>Telegram is a cloud-based instant messaging service.</p>
@@ -1347,7 +1340,7 @@ window.app = new Vue({
                     </div><!-- /telegram component-group //-->
                 </div><!-- #devices //-->
                 <div id="social">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>
                         <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
                         <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
@@ -1445,11 +1438,11 @@ window.app = new Vue({
                             </div><!-- /content_use_twitter //-->
                         </fieldset>
                     </div><!-- twitter .component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
                             <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
-                        </div><!-- .component-group-desc //-->
+                        </div><!-- .component-group-desc-legacy //-->
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1613,14 +1606,14 @@ window.app = new Vue({
                                 <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
-                        </fieldset><!-- .component-group-desc //-->
+                        </fieldset><!-- .component-group-desc-legacy //-->
                     </div><!-- trakt .component-group //-->
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-email" title="Email"></span>
                         <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
                         <p>Allows configuration of email notifications on a per show basis.</p>
-                    </div><!-- .component-group-desc //-->
+                    </div><!-- .component-group-desc-legacy //-->
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1781,7 +1774,7 @@ window.app = new Vue({
                     </div><!-- email .component-group //-->
 
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-slack" title="Slack"></span>
                         <h3><app-link href="https://slack.com">Slack</app-link></h3>
                         <p>Slack is a messaging app for teams.</p>

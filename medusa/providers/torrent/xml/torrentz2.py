@@ -111,7 +111,7 @@ class Torrentz2Provider(TorrentProvider):
                     # Add "-" after codec and add missing "."
                     title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ', '.') if title_raw else ''
                     info_hash = row.guid.text.rsplit('/', 1)[-1]
-                    download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
+                    download_url = 'magnet:?xt=urn:btih:' + info_hash + '&dn=' + title + self._custom_trackers
                     if not all([title, download_url]):
                         continue
 
@@ -125,7 +125,7 @@ class Torrentz2Provider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 

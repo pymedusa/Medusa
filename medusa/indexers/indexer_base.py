@@ -417,7 +417,7 @@ class BaseIndexer(object):
         :param weeks: number of weeks to get updates for.
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
-        raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
+        raise IndexerSeasonUpdatesNotSupported('Method get_last_updated_series not implemented by this indexer')
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
         self._get_episodes(show_id, *args, **kwargs)

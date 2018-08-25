@@ -1,15 +1,22 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
-Vue.component('select-list', httpVueLoader('js/templates/select-list.vue'));
-Vue.component('anidb-release-group-ui', httpVueLoader('js/templates/anidb-release-group-ui.vue'));
-
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Edit Show'
+    metaInfo() {
+        const { title } = this.series;
+        if (!title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        return {
+            title,
+            titleTemplate: 'Editing %s | Medusa'
+        };
     },
     data() {
         return {

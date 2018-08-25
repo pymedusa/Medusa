@@ -37,5 +37,5 @@ class HomeAddRecommended(Home):
 
         [Converted to VueRouter]
         """
-        t = PageTemplate(rh=self, filename="index.mako")
-        return t.render(controller="addShows", action="index")
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='addShows', action='index')

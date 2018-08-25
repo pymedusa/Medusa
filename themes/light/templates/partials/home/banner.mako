@@ -146,14 +146,14 @@
                         <span style="display: none;">${cur_show.name}</span>
                         <div class="imgbanner banner">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">
-                                <asset default="images/banner.png" series-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
+                                <asset default="images/banner.png" show-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
                             </app-link>
                         </div>
                     </td>
                     <td align="center">
                     % if cur_show.network:
                         <span title="${cur_show.network}" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                         </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:

@@ -84,7 +84,7 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <asset default="images/poster.png" series-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                    <asset default="images/poster.png" show-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <asset default="images/banner.png" series-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                    <asset default="images/banner.png" show-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -154,17 +154,11 @@
                 <div id="summary" class="col-md-12">
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
-                            % if show.plot:
-                                <tr><td colspan=2 style="padding-bottom:15px"><i>
-                                % if len(show.plot) < 250:
-                                    <div>${show.plot}</div>
-                                % else:
-                                    <div>${show.plot[0:250]}<span style="display:none;">${show.plot[250:len(show.plot)]}</span>
-                                    <span class="imdbPlot" style="color:#6ae;cursor:pointer">show more..</span>
-                                    </div>
-                                % endif
-                                    </td></tr>
-                            % endif
+                            <tr v-if="show.plot">
+                                <td colspan="2" style="padding-bottom: 15px;">
+                                    <truncate @toggle="reflowLayout()" :length="250" clamp="show more..." less="show less..." :text="show.plot"></truncate>
+                                </td>
+                            </tr>
 
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
@@ -178,6 +172,7 @@
                                     <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
                                 % endif
                             % endif
+                                </td></tr>
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
                             % elif show.network:

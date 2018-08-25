@@ -74,7 +74,8 @@ def convert(obj):
     return json.dumps(obj)
 %>
 <script>
-Vue.component('quality-chooser', {
+const QualityChooserComponent = {
+    name: 'quality-chooser',
     template: '#quality-chooser-template',
     props: {
         overallQuality: {
@@ -248,5 +249,7 @@ Vue.component('quality-chooser', {
             }
         }
     }
-});
+};
+
+window.components.push(QualityChooserComponent);
 </script>
