@@ -53,6 +53,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
+    AnidbAdbaConnectionException,
     CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
@@ -2021,7 +2022,11 @@ class Series(TV):
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
-            data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+            try:
+                data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+            except AnidbAdbaConnectionException:
+                log.warning('An anidb adba exception occurred when attempting to get the release groups for the show {show}', {self.name})
+
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
 
