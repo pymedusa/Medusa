@@ -46,6 +46,7 @@ const makeThemeMetadata = (themeName, currentContent) => {
 };
 
 const webpackConfig = mode => ({
+    devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
         // Exports all window. objects for mako files
         index: path.resolve(__dirname, 'src/index.js'),
