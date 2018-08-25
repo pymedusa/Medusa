@@ -141,9 +141,7 @@ def get_scene_exceptions_by_name(show_name):
     # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
     # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
     if show_name is None:
-        logger.debug(
-            'Scene exception lookup failed because no show name was provided'
-        )
+        logger.debug('Scene exception lookup failed because no show name was provided')
         return [(None, None, None)]
 
     # Try the obvious case first
