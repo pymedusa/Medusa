@@ -38,7 +38,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'PATCH', )
 
-    def get(self, series_slug, episode_slug, path_param):
+    def _get(self, series_slug, episode_slug, path_param):
         """Query episode information.
 
         :param series_slug: series slug. E.g.: tvdb1234
@@ -105,7 +105,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         accepted = self._patch_episode(episode, data)
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
     def _patch_multi(self, series, request_data):
         """Patch multiple episodes."""
@@ -126,7 +126,7 @@ class EpisodeHandler(BaseRequestHandler):
 
             statuses[slug] = {'status': 200}
 
-        self._multi_status(data=statuses)
+        return self._multi_status(data=statuses)
 
     @staticmethod
     def _patch_episode(episode, data):

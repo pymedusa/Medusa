@@ -150,7 +150,7 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
     }
 
-    def get(self, identifier, path_param=None):
+    def _get(self, identifier, path_param=None):
         """Query general configuration.
 
         :param identifier:
@@ -180,7 +180,7 @@ class ConfigHandler(BaseRequestHandler):
 
         return self._ok(data=config_data)
 
-    def patch(self, identifier, *args, **kwargs):
+    def _patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
         if not identifier:
             return self._bad_request('Config identifier not specified')
@@ -224,7 +224,7 @@ class ConfigHandler(BaseRequestHandler):
         })
         msg.push()
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
 
 class DataGenerator(object):
