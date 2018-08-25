@@ -11,6 +11,8 @@
     </component>
 </template>
 <script>
+import { mapState } from 'vuex';
+
 export default {
     name: 'app-link',
     props: {
@@ -25,9 +27,7 @@ export default {
         }
     },
     computed: {
-        config() {
-            return this.$store.state.config;
-        },
+        ...mapState(['config']),
         indexerName() {
             const { config, indexerId } = this;
             const { indexers } = config.indexers.config;

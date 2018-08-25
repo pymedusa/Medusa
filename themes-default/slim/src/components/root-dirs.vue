@@ -4,7 +4,7 @@
             <!-- @TODO: Remove `id` and `name` attributes -->
             <select v-model="selectedRootDir" v-bind="$attrs" v-on="$listeners" ref="rootDirs" name="rootDir" id="rootDirs" size="6">
                 <option v-for="curDir in rootDirs" :key="curDir.path" :value="curDir.path">
-                    {{ markDefault(curDir) }}
+                    {{ curDir | markDefault }}
                 </option>
             </select>
         </div>
@@ -17,6 +17,8 @@
     </div>
 </template>
 <script>
+import { mapState } from 'vuex';
+
 /**
  * An object representing a root dir
  * @typedef {Object} rootDir
@@ -33,13 +35,13 @@ export default {
         };
     },
     beforeMount() {
-        const { config, transformRaw } = this;
-        this.rootDirs = transformRaw(config.rootDirs);
+        const { rawRootDirs, transformRaw } = this;
+        this.rootDirs = transformRaw(rawRootDirs);
     },
     computed: {
-        config() {
-            return this.$store.state.config;
-        },
+        ...mapState({
+            rawRootDirs: state => state.config.rootDirs
+        }),
         paths() {
             return this.rootDirs.map(rd => rd.path);
         },
@@ -80,6 +82,19 @@ export default {
             }
         }
     },
+    filters: {
+        /**
+         * Prefix the default root dir path with '* '
+         * @param {rootDir} rootDir - Current root dir object
+         * @returns {string} - Modified root dir path
+         */
+        markDefault(rootDir) {
+            if (rootDir.default) {
+                return `* ${rootDir.path}`;
+            }
+            return rootDir.path;
+        }
+    },
     methods: {
         /**
          * Transform raw root dirs to an array of objects
@@ -101,17 +116,6 @@ export default {
                         selected: index === defaultDir
                     };
                 });
-        },
-        /**
-         * Prefix the default root dir path with '* '
-         * @param {rootDir} rootDir - Current root dir object
-         * @returns {string} - Modified root dir path
-         */
-        markDefault(rootDir) {
-            if (rootDir.default) {
-                return `* ${rootDir.path}`;
-            }
-            return rootDir.path;
         },
         /**
          * Add a new root dir
@@ -224,14 +228,14 @@ export default {
          * @returns {Promise} - The axios Promise from the store action.
          */
         saveRootDirs() {
-            const { paths, defaultRootDir } = this;
+            const { $store, paths, defaultRootDir } = this;
 
             const rootDirs = paths.slice();
             if (defaultRootDir !== null && paths.length !== 0) {
                 const defaultIndex = rootDirs.findIndex(path => path === defaultRootDir);
                 rootDirs.splice(0, 0, defaultIndex.toString());
             }
-            return this.$store.dispatch('setConfig', {
+            return $store.dispatch('setConfig', {
                 section: 'main',
                 config: {
                     rootDirs
@@ -240,9 +244,9 @@ export default {
         }
     },
     watch: {
-        'config.rootDirs'(rawRootDirs) {
+        rawRootDirs(newValue) {
             const { transformRaw } = this;
-            this.rootDirs = transformRaw(rawRootDirs);
+            this.rootDirs = transformRaw(newValue);
         },
         rootDirs: {
             handler(newValue) {
