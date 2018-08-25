@@ -22,9 +22,13 @@ const getters = {
 };
 
 const actions = {
-    getShow(context, { indexer, id }) {
+    getShow(context, { indexer, id, detailed }) {
         const { commit } = context;
-        return api.get('/series/' + indexer + id).then(res => {
+        const params = {};
+        if (detailed !== undefined) {
+            params.detailed = Boolean(detailed);
+        }
+        return api.get('/series/' + indexer + id, { params }).then(res => {
             commit(ADD_SHOW, res.data);
         });
     },
@@ -33,7 +37,10 @@ const actions = {
 
         // If no shows are provided get all of them
         if (!shows) {
-            return api.get('/series?limit=1000').then(res => {
+            const params = {
+                limit: 1000
+            };
+            return api.get('/series', { params }).then(res => {
                 const shows = res.data;
                 return shows.forEach(show => {
                     commit(ADD_SHOW, show);

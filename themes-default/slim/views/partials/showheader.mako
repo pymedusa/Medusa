@@ -155,15 +155,11 @@
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
                             % if show.plot:
-                                <tr><td colspan=2 style="padding-bottom:15px"><i>
-                                % if len(show.plot) < 250:
-                                    <div>${show.plot}</div>
-                                % else:
-                                    <div>${show.plot[0:250]}<span style="display:none;">${show.plot[250:len(show.plot)]}</span>
-                                    <span class="imdbPlot" style="color:#6ae;cursor:pointer">show more..</span>
-                                    </div>
-                                % endif
-                                    </i></td></tr>
+                            <tr>
+                                <td colspan="2" style="padding-bottom: 15px;">
+                                    <truncate @toggle="reflowLayout()" :length="250" clamp="show more..." less="show less..." :text="`${show.plot}`"></truncate>
+                                </td>
+                            </tr>
                             % endif
 
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>

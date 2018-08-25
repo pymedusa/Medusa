@@ -11,7 +11,7 @@ window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
-    // @TODO: Replace with Object destructuring (`...mapState`)
+    // @TODO: Replace with Object spread (`...mapState`)
     computed: Object.assign(mapState({
         loggingLevels: state => state.config.logs.loggingLevels
     }), {

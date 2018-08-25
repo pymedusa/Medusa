@@ -2789,7 +2789,11 @@ eslint-config-prettier@^2.9.0:
   dependencies:
     get-stdin "^5.0.1"
 
-eslint-config-xo@0.24.1, eslint-config-xo@^0.24.1:
+eslint-config-xo@0.24.2:
+  version "0.24.2"
+  resolved "https://registry.yarnpkg.com/eslint-config-xo/-/eslint-config-xo-0.24.2.tgz#f61b8ce692e9f9519bdb6edc4ed7ebcd5be48f48"
+
+eslint-config-xo@^0.24.1:
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/eslint-config-xo/-/eslint-config-xo-0.24.1.tgz#9e0334f98454eb82e8b9164ba4214c492092edc4"
 
@@ -4175,6 +4179,10 @@ html-encoding-sniffer@^1.0.2:
   resolved "https://registry.yarnpkg.com/html-encoding-sniffer/-/html-encoding-sniffer-1.0.2.tgz#e70d84b94da53aa375e11fe3a351be6642ca46f8"
   dependencies:
     whatwg-encoding "^1.0.1"
+
+html-truncate@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/html-truncate/-/html-truncate-1.2.2.tgz#db2e331dcf1cba0bd432a507d16e988609f2575f"
 
 http-signature@~1.2.0:
   version "1.2.0"
@@ -8336,6 +8344,12 @@ vue-template-compiler@2.5.17, vue-template-compiler@^2.5.17:
 vue-template-es2015-compiler@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.6.0.tgz#dc42697133302ce3017524356a6c61b7b69b4a18"
+
+vue-truncate-collapsed@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/vue-truncate-collapsed/-/vue-truncate-collapsed-2.1.0.tgz#19404ea332647542a7e81f4773d09749af4056bc"
+  dependencies:
+    html-truncate "^1.2.2"
 
 vue@2.5.17:
   version "2.5.17"
