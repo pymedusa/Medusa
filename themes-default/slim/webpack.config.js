@@ -1,4 +1,5 @@
 const path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -154,6 +155,7 @@ const webpackConfig = mode => ({
         ]
     },
     plugins: [
+        new CleanWebpackPlugin(['dist']),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
