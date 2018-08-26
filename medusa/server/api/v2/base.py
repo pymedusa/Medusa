@@ -80,17 +80,13 @@ class BaseRequestHandler(RequestHandler):
 
     @run_on_executor
     def async_call(self, name, *args, **kwargs):
-        """@TODO:Document | Call."""
+        """Call the actual HTTP method, if available."""
         try:
             method = getattr(self, '_' + name)
-            # log.debug('{method} {uri}', {'method': name.upper(), 'uri': self.request.uri})
-            return method(*args, **kwargs)
         except AttributeError:
-            raise HTTPError(405, name.upper() + ' method is probably not allowed')
-        except Exception:
-            log.debug('Failed doing API {method} request: {error}',
-                      {'method': name.upper(), 'error': traceback.format_exc()})
-            raise HTTPError(404)
+            raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
+
+        return method(*args, **kwargs)
 
     @coroutine
     def head(self, *args, **kwargs):
