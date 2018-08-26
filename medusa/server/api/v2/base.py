@@ -94,7 +94,7 @@ class BaseRequestHandler(RequestHandler):
         """HEAD HTTP method."""
         content = self.async_call('head', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     @coroutine
@@ -102,7 +102,7 @@ class BaseRequestHandler(RequestHandler):
         """GET HTTP method."""
         content = self.async_call('get', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     @coroutine
@@ -110,7 +110,7 @@ class BaseRequestHandler(RequestHandler):
         """POST HTTP method."""
         content = self.async_call('post', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     @coroutine
@@ -118,7 +118,7 @@ class BaseRequestHandler(RequestHandler):
         """DELETE HTTP method."""
         content = self.async_call('delete', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     @coroutine
@@ -126,7 +126,7 @@ class BaseRequestHandler(RequestHandler):
         """PATCH HTTP method."""
         content = self.async_call('patch', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     @coroutine
@@ -134,7 +134,7 @@ class BaseRequestHandler(RequestHandler):
         """PUT HTTP method."""
         content = self.async_call('put', *args, **kwargs)
         if content is not None:
-            yield content
+            content = yield content
         self.finish(content)
 
     def write_error(self, *args, **kwargs):
