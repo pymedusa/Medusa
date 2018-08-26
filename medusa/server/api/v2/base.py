@@ -147,7 +147,8 @@ class BaseRequestHandler(RequestHandler):
                 self.write(line)
             self.finish()
         else:
-            self._internal_server_error()
+            response = self._internal_server_error()
+            self.finish(response)
 
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""
