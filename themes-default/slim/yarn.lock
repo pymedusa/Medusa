@@ -3469,9 +3469,9 @@ file-type@^6.1.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/file-type/-/file-type-6.2.0.tgz#e50cd75d356ffed4e306dc4f5bcf52a79903a919"
 
-filemanager-webpack-plugin@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-2.0.1.tgz#b7027d55552eb80d0b327f2d56b5779138e4f5ec"
+filemanager-webpack-plugin@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/filemanager-webpack-plugin/-/filemanager-webpack-plugin-2.0.2.tgz#b5385dfe62c87e6708febf4a33aa935b26e639d8"
   dependencies:
     archiver "^2.1.1"
     cpx "^1.5.0"
