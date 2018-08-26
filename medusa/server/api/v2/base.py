@@ -233,7 +233,8 @@ class BaseRequestHandler(RequestHandler):
 
     def _handle_request_exception(self, e):
         if isinstance(e, HTTPError):
-            return self.api_response(e.code, e.message)
+            response = self.api_response(e.code, e.message)
+            self.finish(response)
         else:
             super(BaseRequestHandler, self)._handle_request_exception(e)
 
