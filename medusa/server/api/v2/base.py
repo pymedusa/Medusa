@@ -94,38 +94,38 @@ class BaseRequestHandler(RequestHandler):
 
     @coroutine
     def head(self, *args, **kwargs):
+        """HEAD HTTP method."""
         content = yield self.async_call('head', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     @coroutine
     def get(self, *args, **kwargs):
+        """GET HTTP method."""
         content = yield self.async_call('get', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     @coroutine
     def post(self, *args, **kwargs):
+        """POST HTTP method."""
         content = yield self.async_call('post', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     @coroutine
     def delete(self, *args, **kwargs):
+        """DELETE HTTP method."""
         content = yield self.async_call('delete', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     @coroutine
     def patch(self, *args, **kwargs):
+        """PATCH HTTP method."""
         content = yield self.async_call('patch', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     @coroutine
     def put(self, *args, **kwargs):
+        """PUT HTTP method."""
         content = yield self.async_call('put', *args, **kwargs)
-        # log.debug('[APIv2-DONE] {uri}', {'uri': self.request.uri})
         self.finish(content)
 
     def write_error(self, *args, **kwargs):
@@ -140,7 +140,7 @@ class BaseRequestHandler(RequestHandler):
             self._internal_server_error()
 
     def options(self, *args, **kwargs):
-        """Options."""
+        """OPTIONS HTTP method."""
         self._no_content()
 
     def set_default_headers(self):
