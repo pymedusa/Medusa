@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import base64
 import collections
+import functools
 import json
 import logging
 import operator
@@ -22,20 +23,20 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from six import itervalues, string_types, text_type, viewitems
 
-from tornado.concurrent import run_on_executor
 from tornado.gen import coroutine
 from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
+from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+
 
 class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods."""
-
-    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
     DEFAULT_ALLOWED_METHODS = ('OPTIONS', )
 
@@ -79,7 +80,6 @@ class BaseRequestHandler(RequestHandler):
         else:
             return self._unauthorized('Invalid token.')
 
-    @run_on_executor
     def async_call(self, name, *args, **kwargs):
         """Call the actual HTTP method, if available."""
         try:
@@ -87,7 +87,8 @@ class BaseRequestHandler(RequestHandler):
         except AttributeError:
             raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
 
-        return method(*args, **kwargs)
+        method = functools.partial(method, *args, **kwargs)
+        return IOLoop.current().run_in_executor(executor, method)
 
     @coroutine
     def head(self, *args, **kwargs):
