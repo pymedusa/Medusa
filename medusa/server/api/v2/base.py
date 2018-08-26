@@ -91,37 +91,49 @@ class BaseRequestHandler(RequestHandler):
     @coroutine
     def head(self, *args, **kwargs):
         """HEAD HTTP method."""
-        content = yield self.async_call('head', *args, **kwargs)
+        content = self.async_call('head', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     @coroutine
     def get(self, *args, **kwargs):
         """GET HTTP method."""
-        content = yield self.async_call('get', *args, **kwargs)
+        content = self.async_call('get', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     @coroutine
     def post(self, *args, **kwargs):
         """POST HTTP method."""
-        content = yield self.async_call('post', *args, **kwargs)
+        content = self.async_call('post', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     @coroutine
     def delete(self, *args, **kwargs):
         """DELETE HTTP method."""
-        content = yield self.async_call('delete', *args, **kwargs)
+        content = self.async_call('delete', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     @coroutine
     def patch(self, *args, **kwargs):
         """PATCH HTTP method."""
-        content = yield self.async_call('patch', *args, **kwargs)
+        content = self.async_call('patch', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     @coroutine
     def put(self, *args, **kwargs):
         """PUT HTTP method."""
-        content = yield self.async_call('put', *args, **kwargs)
+        content = self.async_call('put', *args, **kwargs)
+        if content is not None:
+            yield content
         self.finish(content)
 
     def write_error(self, *args, **kwargs):
@@ -180,10 +192,7 @@ class BaseRequestHandler(RequestHandler):
                 self.set_header('content-type', content_type)
                 return kwargs
 
-        # Is this possible?
-        return {
-            'error': 'Unknown API error!'
-        }
+        return None
 
     @classmethod
     def _create_base_url(cls, prefix_url, resource_name, *args):
