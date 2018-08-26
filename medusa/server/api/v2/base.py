@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import base64
 import collections
-import functools
 import json
 import logging
 import operator
@@ -87,8 +86,13 @@ class BaseRequestHandler(RequestHandler):
         except AttributeError:
             raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
 
-        method = functools.partial(method, *args, **kwargs)
-        return IOLoop.current().run_in_executor(executor, method)
+        def blocking_call():
+            try:
+                return method(*args, **kwargs)
+            except Exception as error:
+                self._handle_request_exception(error)
+
+        return IOLoop.current().run_in_executor(executor, blocking_call)
 
     @coroutine
     def head(self, *args, **kwargs):
@@ -96,7 +100,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('head', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     @coroutine
     def get(self, *args, **kwargs):
@@ -104,7 +109,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('get', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     @coroutine
     def post(self, *args, **kwargs):
@@ -112,7 +118,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('post', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     @coroutine
     def delete(self, *args, **kwargs):
@@ -120,7 +127,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('delete', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     @coroutine
     def patch(self, *args, **kwargs):
@@ -128,7 +136,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('patch', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     @coroutine
     def put(self, *args, **kwargs):
@@ -136,7 +145,8 @@ class BaseRequestHandler(RequestHandler):
         content = self.async_call('put', *args, **kwargs)
         if content is not None:
             content = yield content
-        self.finish(content)
+        if not self._finished:
+            self.finish(content)
 
     def write_error(self, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
