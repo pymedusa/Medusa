@@ -19,6 +19,7 @@
 - Fixed UI not loading using edge browser, when using a reverse proxy (without an alternative port) ([#4928](https://github.com/pymedusa/Medusa/pull/4928))
 - Fixed episode lookup with conflicting show IDs ([#4933](https://github.com/pymedusa/Medusa/pull/4933))
 - Fixed error getting season scene exceptions on show page [#4964](https://github.com/pymedusa/Medusa/pull/4964)
+- Fixed testing email notification with TLS ([#4972](https://github.com/pymedusa/Medusa/pull/4972))
 
 -----
 
