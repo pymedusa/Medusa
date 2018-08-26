@@ -34,6 +34,7 @@ log.logger.addHandler(logging.NullHandler())
 
 class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods."""
+
     executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
     DEFAULT_ALLOWED_METHODS = ('OPTIONS', )
