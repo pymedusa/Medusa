@@ -23,7 +23,7 @@ class SeriesOperationHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def _post(self, series_slug):
+    def http_post(self, series_slug):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234

@@ -34,7 +34,7 @@ class AliasSourceHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def _get(self, identifier, path_param=None):
+    def http_get(self, identifier, path_param=None):
         """Query alias source information.
 
         :param identifier: source name
@@ -71,7 +71,7 @@ class AliasSourceOperationHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def _post(self, identifier):
+    def http_post(self, identifier):
         """Refresh all scene exception types."""
         types = {
             'local': 'custom_exceptions',

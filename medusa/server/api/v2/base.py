@@ -82,7 +82,7 @@ class BaseRequestHandler(RequestHandler):
     def async_call(self, name, *args, **kwargs):
         """Call the actual HTTP method, if available."""
         try:
-            method = getattr(self, '_' + name)
+            method = getattr(self, 'http_' + name)
         except AttributeError:
             raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
 
@@ -406,7 +406,7 @@ class BaseRequestHandler(RequestHandler):
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
 
-    def _get(self, *args, **kwargs):
+    def http_get(self, *args, **kwargs):
         """Get."""
         return self.api_response(status=404)
 

@@ -34,7 +34,7 @@ class AuthHandler(BaseRequestHandler):
         """Prepare."""
         pass
 
-    def _post(self, *args, **kwargs):
+    def http_post(self, *args, **kwargs):
         """Request JWT."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD

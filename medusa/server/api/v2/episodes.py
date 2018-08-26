@@ -38,7 +38,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'PATCH', )
 
-    def _get(self, series_slug, episode_slug, path_param):
+    def http_get(self, series_slug, episode_slug, path_param):
         """Query episode information.
 
         :param series_slug: series slug. E.g.: tvdb1234
