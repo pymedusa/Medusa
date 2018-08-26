@@ -79,7 +79,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         return self._ok(data=data)
 
-    def patch(self, series_slug, episode_slug=None, path_param=None):
+    def http_patch(self, series_slug, episode_slug=None, path_param=None):
         """Patch episode."""
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
