@@ -219,8 +219,8 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postProcessing.noDelete" sync></toggle-button>
+                                            <span>Leave empty folders when Post Processing?</span><br>
                                             <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
-                                            <span>Leave empty folders when Post Processing?</span>
                                         </div>
                                     </div>
 
