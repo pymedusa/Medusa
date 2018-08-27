@@ -234,12 +234,11 @@ class TraktChecker(object):
                 params = [filter_show.series_id, filter_show.indexer]
 
             sql_result = main_db_con.select(sql_selection, statuses + params)
-            episodes = [dict(e) for e in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode['indexer']):
                         continue
@@ -281,12 +280,11 @@ class TraktChecker(object):
                             "AND e.status in ({0}) AND e.location <> ''".format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(e) for e in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode['indexer']):
                         continue
@@ -344,12 +342,11 @@ class TraktChecker(object):
                             'AND s.indexer_id = e.showid AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(i) for i in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
 
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode['indexer']):
@@ -389,12 +386,11 @@ class TraktChecker(object):
                             'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(i) for i in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode['indexer']):
                         continue

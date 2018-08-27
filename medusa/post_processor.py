@@ -647,14 +647,14 @@ class PostProcessor(object):
         elif season is None and series_obj:
             main_db_con = db.DBConnection()
             numseasons_result = main_db_con.select(
-                'SELECT COUNT(DISTINCT season) '
+                'SELECT COUNT(DISTINCT season) as count '
                 'FROM tv_episodes '
                 'WHERE showid = ? '
                 'AND indexer = ? '
                 'AND season != 0',
                 [series_obj.series_id, series_obj.indexer])
 
-            if int(numseasons_result[0][0]) == 1:
+            if int(numseasons_result[0]['count']) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
                          u'to have only 1 season, setting season number to 1...', logger.DEBUG)
                 season = 1
@@ -1098,15 +1098,15 @@ class PostProcessor(object):
             if int(ep_obj.season) > 0:
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
-                    'SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?',
+                    'SELECT MAX(season) as max FROM tv_episodes WHERE showid = ? and indexer = ?',
                     [series_obj.series_id, series_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
-                # the indexer season (max_season[0][0]), skip the file
-                if int(ep_obj.season) > int(max_season[0][0]):
+                # the indexer season (max_season[0]['max']), skip the file
+                if int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
-                             (ep_obj.season, max_season[0][0]))
+                             (ep_obj.season, max_season[0]['max']))
                     return False
 
         # if the file is priority then we're going to replace it even if it exists

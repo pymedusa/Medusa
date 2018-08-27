@@ -449,10 +449,10 @@ class Cache(object):
         """Check if the url is already available for the specific provider."""
         cache_db_con = self._get_db()
         return cache_db_con.select(
-            'SELECT COUNT(url) '
+            'SELECT COUNT(url) as count '
             'FROM [{provider}] '
             'WHERE url=?'.format(provider=self.provider_id), [url]
-        )[0][0]
+        )[0]['count']
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):

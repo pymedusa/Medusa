@@ -192,7 +192,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
-    sql_total = []
+    cached_results_total = []
     combined_sql_q = []
     combined_sql_params = []
 
@@ -207,7 +207,12 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             ' AND name=?',
             [cur_provider.get_id()]
         )
-        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
+
+        columns = []
+        if table_exists:
+            table_columns = main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))
+            columns = [table_column['name'] for table_column in table_columns]
+
         minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
         minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
@@ -268,12 +273,12 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         sql_append = ') ORDER BY quality DESC, proper_tags DESC, seeders DESC'
 
         # Add all results
-        sql_total += main_db_con.select('{0} {1} {2}'.
-                                        format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
-                                        combined_sql_params)
+        cached_results_total += main_db_con.select('{0} {1} {2}'.
+                                                   format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
+                                                   combined_sql_params)
 
     # Always start a search when no items found in cache
-    if not sql_total or int(perform_search):
+    if not cached_results_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
         ep_obj = series_obj.get_episode(season, episode)
         if isinstance(ep_obj, str):
@@ -288,8 +293,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[app.CPU_PRESET])
     else:
-        cached_results = [dict(row) for row in sql_total]
-        for i in cached_results:
+        for i in cached_results_total:
             threading.currentThread().name = '{thread} :: [{provider}]'.format(
                 thread=original_thread_name, provider=i['provider'])
 
@@ -327,7 +331,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 i['name_highlight'] = ''
             i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
             i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
-        provider_results['found_items'] = cached_results
+        provider_results['found_items'] = cached_results_total
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

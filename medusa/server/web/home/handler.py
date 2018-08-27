@@ -1265,7 +1265,7 @@ class Home(WebRoot):
                 [indexer_id, series_id, season, episode,
                  DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
-            episode_history = [dict(row) for row in episode_status_result]
+            episode_history = episode_status_result
             for i in episode_history:
                 i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)

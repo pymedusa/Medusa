@@ -88,14 +88,14 @@ class NameParser(object):
         episode_numbers = []
 
         if episode_by_air_date:
-            season_number = int(episode_by_air_date[0][0])
-            episode_numbers = [int(episode_by_air_date[0][1])]
+            season_number = int(episode_by_air_date[0]['season'])
+            episode_numbers = [int(episode_by_air_date[0]['episode'])]
 
             # Use the next query item if we have multiple results
             # and the current one is a special episode (season 0)
             if season_number == 0 and len(episode_by_air_date) > 1:
-                season_number = int(episode_by_air_date[1][0])
-                episode_numbers = [int(episode_by_air_date[1][1])]
+                season_number = int(episode_by_air_date[1]['season'])
+                episode_numbers = [int(episode_by_air_date[1]['episode'])]
 
             log.debug(
                 'Database info for series {name}: Season: {season} Episode(s): {episodes}', {

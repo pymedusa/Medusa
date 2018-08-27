@@ -128,8 +128,6 @@ class ComingEpisodes(object):
             [today, recently, WANTED, UNAIRED] + status_list
         )
 
-        results = [dict(result) for result in results]
-
         for index, item in enumerate(results):
             item['series_slug'] = str(SeriesIdentifier.from_id(int(item['indexer']), item['indexer_id']))
             results[index]['localtime'] = sbdatetime.convert_to_setting(

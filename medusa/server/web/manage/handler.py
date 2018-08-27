@@ -424,8 +424,7 @@ class Manage(Home, WebRoot):
                 [cur_show.indexer, cur_show.series_id]
             )
             filtered_episodes = []
-            backlogged_episodes = [dict(row) for row in sql_results]
-            for cur_result in backlogged_episodes:
+            for cur_result in sql_results:
                 cur_ep_cat = cur_show.get_overview(cur_result['status'], cur_result['quality'], backlog_mode=True,
                                                    manually_searched=cur_result['manually_searched'])
                 if cur_ep_cat:

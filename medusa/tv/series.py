@@ -1450,7 +1450,7 @@ class Series(TV):
                      {'id': self.series_id, 'show': self.name})
             return
         else:
-            self.imdb_info = dict(sql_results[0])
+            self.imdb_info = sql_results[0]
 
         self.reset_dirty()
         return True

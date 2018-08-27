@@ -965,14 +965,14 @@ class SubtitlesFinder(object):
 
         logger.info(u'Checking for missed subtitles')
 
-        database = db.DBConnection()
+        main_db_con = db.DBConnection()
         # Shows with air date <= 30 days, have a limit of 100 results
         # Shows with air date > 30 days, have a limit of 200 results
         sql_args = [{'age_comparison': '<=', 'limit': 100}, {'age_comparison': '>', 'limit': 200}]
         sql_like_languages = '%' + ','.join(sorted(wanted_languages())) + '%' if app.SUBTITLES_MULTI else '%und%'
         sql_results = []
         for args in sql_args:
-            sql_results += database.select(
+            sql_results += main_db_con.select(
                 'SELECT '
                 's.show_name, '
                 'e.indexer,'

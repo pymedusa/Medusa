@@ -71,11 +71,11 @@ class AliasHandler(BaseRequestHandler):
         data = []
         for item in sql_results:
             d = {}
-            d['id'] = item[0]
-            d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
-            d['name'] = item[3]
-            d['season'] = item[4] if item[4] >= 0 else None
-            d['type'] = 'local' if item[5] else None
+            d['id'] = item['exception_id']
+            d['series'] = SeriesIdentifier.from_id(item['indexer'], item['indexer_id']).slug
+            d['name'] = item['show_name']
+            d['season'] = item['season'] if item['season'] >= 0 else None
+            d['type'] = 'local' if item['custom'] else None
             data.append(d)
 
         if not identifier:
