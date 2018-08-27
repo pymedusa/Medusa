@@ -31,6 +31,7 @@ from builtins import str
 from medusa import app, logger
 from medusa.helper.exceptions import ex
 
+import six
 from six import itervalues, text_type
 
 
@@ -491,7 +492,10 @@ class SchemaUpgrade(object):
         self.connection.action('UPDATE [%s] SET %s = ?' % (table, column), (default,))
 
     def checkDBVersion(self):
-        return self.connection.checkDBVersion()
+        if six.PY3:
+            return self.connection.checkDBVersion()[0]
+        else:
+            return self.connection.checkDBVersion()
 
     def incDBVersion(self):
         new_version = self.checkDBVersion() + 1
