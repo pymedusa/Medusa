@@ -141,7 +141,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         dir_list = [x for x in os.listdir(show_obj.location) if
                     os.path.isdir(os.path.join(show_obj.location, x))]
 
-        season_dir_regex = ur'^Season\s+(\d+)$'
+        season_dir_regex = r'^Season\s+(\d+)$'
 
         season_dir = None
 
@@ -183,7 +183,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         dir_list = [x for x in os.listdir(show_obj.location) if
                     os.path.isdir(os.path.join(show_obj.location, x))]
 
-        season_dir_regex = ur'^Season\s+(\d+)$'
+        season_dir_regex = r'^Season\s+(\d+)$'
 
         season_dir = None
 
