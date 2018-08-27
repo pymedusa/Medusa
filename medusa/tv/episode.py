@@ -79,6 +79,7 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import Identifier, TV
 
+import six
 from six import itervalues, viewitems
 
 try:
@@ -404,13 +405,17 @@ class Episode(TV):
         if self.airdate == date.min:
             return None
 
-        return sbdatetime.convert_to_setting(
+        date_parsed = sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
                 self.series.airs,
-                self.series.network
-            )
-        ).isoformat(b'T')
+                self.series.network)
+        )
+
+        if six.PY3:
+            return date_parsed.isoformat('T')
+        else:
+            return date_parsed.isoformat(b'T')
 
     @property
     def status_name(self):
