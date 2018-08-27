@@ -62,7 +62,7 @@ class NameParser(object):
         airdate = result.air_date.toordinal()
         main_db_con = db.DBConnection()
         sql_result = main_db_con.select(
-            b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+            'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
             [result.series.indexer, result.series.series_id, airdate])
 
         return sql_result

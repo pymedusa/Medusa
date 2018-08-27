@@ -94,7 +94,7 @@ class ComingEpisodes(object):
             [today, next_week] + status_list
         )
 
-        done_shows_list = [int(result[b'showid']) for result in results]
+        done_shows_list = [int(result['showid']) for result in results]
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len([DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER]))
 

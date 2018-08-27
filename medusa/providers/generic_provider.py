@@ -195,11 +195,11 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
+            series_obj = Show.find_by_id(app.showList, proper_candidate['indexer'], proper_candidate['showid'])
 
             if series_obj:
                 self.series = series_obj
-                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+                episode_obj = series_obj.get_episode(proper_candidate['season'], proper_candidate['episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
@@ -418,13 +418,13 @@ class GenericProvider(object):
                         )
 
                         if len(sql_results) == 2:
-                            if int(sql_results[0][b'season']) == 0 and int(sql_results[1][b'season']) != 0:
-                                search_result.actual_season = int(sql_results[1][b'season'])
-                                search_result.actual_episodes = [int(sql_results[1][b'episode'])]
+                            if int(sql_results[0]['season']) == 0 and int(sql_results[1]['season']) != 0:
+                                search_result.actual_season = int(sql_results[1]['season'])
+                                search_result.actual_episodes = [int(sql_results[1]['episode'])]
                                 search_result.same_day_special = True
-                            elif int(sql_results[1][b'season']) == 0 and int(sql_results[0][b'season']) != 0:
-                                search_result.actual_season = int(sql_results[0][b'season'])
-                                search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                            elif int(sql_results[1]['season']) == 0 and int(sql_results[0]['season']) != 0:
+                                search_result.actual_season = int(sql_results[0]['season'])
+                                search_result.actual_episodes = [int(sql_results[0]['episode'])]
                                 search_result.same_day_special = True
                         elif len(sql_results) != 1:
                             log.warning(
@@ -436,8 +436,8 @@ class GenericProvider(object):
 
                         # @TODO: Need to verify and test this.
                         if search_result.result_wanted and not search_result.same_day_special:
-                            search_result.actual_season = int(sql_results[0][b'season'])
-                            search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                            search_result.actual_season = int(sql_results[0]['season'])
+                            search_result.actual_episodes = [int(sql_results[0]['episode'])]
 
         cl = []
         # Iterate again over the search results, and see if there is anything we want.

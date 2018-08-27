@@ -2092,12 +2092,12 @@ class Application(object):
         app.showList = []
         for sql_show in sql_results:
             try:
-                cur_show = Series(sql_show[b'indexer'], sql_show[b'indexer_id'])
+                cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:
                 exception_handler.handle(error, 'There was an error creating the show in {location}',
-                                         location=sql_show[b'location'])
+                                         location=sql_show['location'])
 
     @staticmethod
     def restore_db(src_dir, dst_dir):

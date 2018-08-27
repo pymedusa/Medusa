@@ -201,10 +201,10 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select(
-            b'SELECT name '
-            b'FROM sqlite_master '
-            b"WHERE type='table'"
-            b' AND name=?',
+            'SELECT name '
+            'FROM sqlite_master '
+            "WHERE type='table'"
+            ' AND name=?',
             [cur_provider.get_id()]
         )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
@@ -217,13 +217,13 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
             common_sql = (
-                b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
-                b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
-                b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
-                b' url, proper_tags, quality, release_group, version,'
-                b' seeders, leechers, size, time, pubdate, date_added '
-                b"FROM '{provider_id}' "
-                b'WHERE indexer = ? AND indexerid = ? AND quality > 0 '.format(
+                "SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
+                " ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
+                " ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
+                ' url, proper_tags, quality, release_group, version,'
+                ' seeders, leechers, size, time, pubdate, date_added '
+                "FROM '{provider_id}' "
+                'WHERE indexer = ? AND indexerid = ? AND quality > 0 '.format(
                     provider_id=cur_provider.get_id()
                 )
             )
@@ -258,17 +258,17 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             combined_sql_params += add_params
 
             # Get the last updated cache items timestamp
-            last_update = main_db_con.select(b'SELECT max(time) AS lastupdate '
-                                             b"FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
-            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0][b'lastupdate'] if last_update[0][b'lastupdate'] else 0
+            last_update = main_db_con.select('SELECT max(time) AS lastupdate '
+                                             "FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
+            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
 
     # Check if we have the combined sql strings
     if combined_sql_q:
-        sql_prepend = b'SELECT * FROM ('
-        sql_append = b') ORDER BY quality DESC, proper_tags DESC, seeders DESC'
+        sql_prepend = 'SELECT * FROM ('
+        sql_append = ') ORDER BY quality DESC, proper_tags DESC, seeders DESC'
 
         # Add all results
-        sql_total += main_db_con.select(b'{0} {1} {2}'.
+        sql_total += main_db_con.select('{0} {1} {2}'.
                                         format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
                                         combined_sql_params)
 

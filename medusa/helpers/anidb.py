@@ -80,8 +80,8 @@ def get_short_group_name(release_group):
         log.debug('Failed while loading group from AniDB. Trying next group')
     else:
         for line in group.datalines:
-            if line[b'shortname']:
-                short_group_list.append(line[b'shortname'])
+            if line['shortname']:
+                short_group_list.append(line['shortname'])
             else:
                 if release_group not in short_group_list:
                     short_group_list.append(release_group)

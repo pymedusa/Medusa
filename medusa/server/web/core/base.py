@@ -304,19 +304,19 @@ class WebRoot(WebHandler):
         episodes = {}
 
         results = main_db_con.select(
-            b'SELECT episode, season, indexer, showid '
-            b'FROM tv_episodes '
-            b'ORDER BY season ASC, episode ASC'
+            'SELECT episode, season, indexer, showid '
+            'FROM tv_episodes '
+            'ORDER BY season ASC, episode ASC'
         )
 
         for result in results:
-            if result[b'showid'] not in episodes:
-                episodes[result[b'showid']] = {}
+            if result['showid'] not in episodes:
+                episodes[result['showid']] = {}
 
-            if result[b'season'] not in episodes[result[b'showid']]:
-                episodes[result[b'showid']][result[b'season']] = []
+            if result['season'] not in episodes[result['showid']]:
+                episodes[result['showid']][result['season']] = []
 
-            episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
+            episodes[result['showid']][result['season']].append(result['episode'])
 
         if len(app.API_KEY) == 32:
             apikey = app.API_KEY

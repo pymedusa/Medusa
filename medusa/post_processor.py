@@ -297,7 +297,7 @@ class PostProcessor(object):
                 # Escaping is done by wrapping any of "*?[" between square brackets.
                 # Modified from: https://hg.python.org/cpython/file/tip/Lib/glob.py#l161
                 if isinstance(new_pattern, bytes):
-                    new_pattern = re.compile(b'([*?[])').sub(br'[\1]', new_pattern)
+                    new_pattern = re.compile('([*?[])').sub(br'[\1]', new_pattern)
                 else:
                     new_pattern = re.compile('([*?[])').sub(r'[\1]', new_pattern)
 
@@ -621,8 +621,8 @@ class PostProcessor(object):
                 [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
-                season = int(sql_result[0][b'season'])
-                episodes = [int(sql_result[0][b'episode'])]
+                season = int(sql_result[0]['season'])
+                episodes = [int(sql_result[0]['episode'])]
             else:
                 # Found no result, trying with season 0
                 sql_result = main_db_con.select(
@@ -634,8 +634,8 @@ class PostProcessor(object):
                     [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
-                    season = int(sql_result[0][b'season'])
-                    episodes = [int(sql_result[0][b'episode'])]
+                    season = int(sql_result[0]['season'])
+                    episodes = [int(sql_result[0]['episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
                              (episodes[0], series_obj.indexerid), logger.DEBUG)
@@ -822,9 +822,9 @@ class PostProcessor(object):
                  season, episode] + snatched_statuses
             )
 
-            if tv_episodes_result and tv_episodes_result[0][b'quality'] == quality:
+            if tv_episodes_result and tv_episodes_result[0]['quality'] == quality:
                 # Check if the snatch is a manual snatch
-                if tv_episodes_result[0][b'manually_searched'] == 1:
+                if tv_episodes_result[0]['manually_searched'] == 1:
                     self.manually_searched = True
 
                 # Second: get the quality of the last snatched epsiode
@@ -842,12 +842,12 @@ class PostProcessor(object):
                      season, episode] + snatched_statuses
                 )
 
-                if history_result and history_result[0][b'quality'] == quality:
+                if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
                     # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0][b'info_hash'] or None
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -864,7 +864,7 @@ class PostProcessor(object):
                     )
 
                     if download_result:
-                        download_name = os.path.basename(download_result[0][b'resource'])
+                        download_name = os.path.basename(download_result[0]['resource'])
                         # If the file name we are processing differs from the file
                         # that was previously processed, we want this file
                         if self.file_name != download_name:

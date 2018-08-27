@@ -738,24 +738,24 @@ class CMD_Episode(ApiCall):
             pass
 
         if not show_path:  # show dir is broken ... episode path will be empty
-            episode[b'location'] = ''
+            episode['location'] = ''
         elif not self.full_path:
             # using the length because lstrip() removes to much
             show_path_length = len(show_path) + 1  # the / or \ yeah not that nice i know
-            episode[b'location'] = episode[b'location'][show_path_length:]
+            episode['location'] = episode['location'][show_path_length:]
 
         # convert stuff to human form
-        if try_int(episode[b'airdate'], 1) > 693595:  # 1900
-            episode[b'airdate'] = sbdatetime.sbdatetime.sbfdate(sbdatetime.sbdatetime.convert_to_setting(
-                network_timezones.parse_date_time(int(episode[b'airdate']), show_obj.airs, show_obj.network)),
+        if try_int(episode['airdate'], 1) > 693595:  # 1900
+            episode['airdate'] = sbdatetime.sbdatetime.sbfdate(sbdatetime.sbdatetime.convert_to_setting(
+                network_timezones.parse_date_time(int(episode['airdate']), show_obj.airs, show_obj.network)),
                 d_preset=dateFormat)
         else:
-            episode[b'airdate'] = 'Never'
+            episode['airdate'] = 'Never'
 
-        status, quality = int(episode[b'status']), int(episode[b'quality'])
-        episode[b'status'] = statusStrings[status]
-        episode[b'quality'] = get_quality_string(quality)
-        episode[b'file_size_human'] = pretty_file_size(episode[b'file_size'])
+        status, quality = int(episode['status']), int(episode['quality'])
+        episode['status'] = statusStrings[status]
+        episode['quality'] = get_quality_string(quality)
+        episode['file_size_human'] = pretty_file_size(episode['file_size'])
 
         return _responds(RESULT_SUCCESS, episode)
 
@@ -1009,10 +1009,10 @@ class CMD_Exceptions(ApiCall):
             sql_results = cache_db_con.select("SELECT show_name, indexer_id AS 'indexerid' FROM scene_exceptions")
             scene_exceptions = {}
             for row in sql_results:
-                indexerid = row[b'indexerid']
+                indexerid = row['indexerid']
                 if indexerid not in scene_exceptions:
                     scene_exceptions[indexerid] = []
-                scene_exceptions[indexerid].append(row[b'show_name'])
+                scene_exceptions[indexerid].append(row['show_name'])
 
         else:
             show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
@@ -1024,7 +1024,7 @@ class CMD_Exceptions(ApiCall):
                 [self.indexerid])
             scene_exceptions = []
             for row in sql_results:
-                scene_exceptions.append(row[b'show_name'])
+                scene_exceptions.append(row['show_name'])
 
         return _responds(RESULT_SUCCESS, scene_exceptions)
 
@@ -1185,7 +1185,7 @@ class CMD_Backlog(ApiCall):
             for cur_result in sql_results:
 
                 cur_ep_cat = cur_show.get_overview(
-                    cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched']
+                    cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched']
                 )
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(cur_result)
@@ -1446,7 +1446,7 @@ class CMD_CheckScheduler(ApiCall):
         next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
 
         data = {'backlog_is_paused': int(backlog_paused), 'backlog_is_running': int(backlog_running),
-                'last_backlog': _ordinal_to_date_form(sql_results[0][b'last_backlog']),
+                'last_backlog': _ordinal_to_date_form(sql_results[0]['last_backlog']),
                 'next_backlog': next_backlog}
         return _responds(RESULT_SUCCESS, data)
 
@@ -2506,7 +2506,7 @@ class CMD_ShowSeasonList(ApiCall):
                 [INDEXER_TVDBV2, self.indexerid])
         season_list = []  # a list with all season numbers
         for row in sql_results:
-            season_list.append(int(row[b'season']))
+            season_list.append(int(row['season']))
 
         return _responds(RESULT_SUCCESS, season_list)
 
@@ -2546,19 +2546,19 @@ class CMD_ShowSeasons(ApiCall):
                 [INDEXER_TVDBV2, self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = int(row[b'status']), int(row[b'quality'])
-                row[b'status'] = statusStrings[status]
-                row[b'quality'] = get_quality_string(quality)
-                if try_int(row[b'airdate'], 1) > 693595:  # 1900
+                status, quality = int(row['status']), int(row['quality'])
+                row['status'] = statusStrings[status]
+                row['quality'] = get_quality_string(quality)
+                if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row[b'airdate'], show_obj.airs, show_obj.network))
-                    row[b'airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
+                    row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
-                    row[b'airdate'] = 'Never'
-                cur_season = int(row[b'season'])
-                cur_episode = int(row[b'episode'])
-                del row[b'season']
-                del row[b'episode']
+                    row['airdate'] = 'Never'
+                cur_season = int(row['season'])
+                cur_episode = int(row['episode'])
+                del row['season']
+                del row['episode']
                 if cur_season not in seasons:
                     seasons[cur_season] = {}
                 seasons[cur_season][cur_episode] = row
@@ -2572,17 +2572,17 @@ class CMD_ShowSeasons(ApiCall):
                 return _responds(RESULT_FAILURE, msg='Season not found')
             seasons = {}
             for row in sql_results:
-                cur_episode = int(row[b'episode'])
-                del row[b'episode']
-                status, quality = int(row[b'status']), int(row[b'quality'])
-                row[b'status'] = statusStrings[status]
-                row[b'quality'] = get_quality_string(quality)
-                if try_int(row[b'airdate'], 1) > 693595:  # 1900
+                cur_episode = int(row['episode'])
+                del row['episode']
+                status, quality = int(row['status']), int(row['quality'])
+                row['status'] = statusStrings[status]
+                row['quality'] = get_quality_string(quality)
+                if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row[b'airdate'], show_obj.airs, show_obj.network))
-                    row[b'airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
+                    row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
-                    row[b'airdate'] = 'Never'
+                    row['airdate'] = 'Never'
                 if cur_episode not in seasons:
                     seasons[cur_episode] = {}
                 seasons[cur_episode] = row
@@ -2686,7 +2686,7 @@ class CMD_ShowStats(ApiCall):
 
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = int(row[b'status']), int(row[b'quality'])
+            status, quality = int(row['status']), int(row['quality'])
 
             episode_status_counts_total['total'] += 1
 
