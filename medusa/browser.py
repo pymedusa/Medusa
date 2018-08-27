@@ -8,6 +8,8 @@ import os
 import string
 from builtins import str
 
+import six
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -20,7 +22,13 @@ def get_win_drives():
 
     drives = []
     bitmask = windll.kernel32.GetLogicalDrives()  # @UndefinedVariable
-    for letter in string.uppercase:
+
+    if six.PY3:
+        drive_leters = string.ascii_uppercase
+    else:
+        drive_leters = string.uppercase
+
+    for letter in drive_leters:
         if bitmask & 1:
             drives.append(letter)
         bitmask >>= 1
