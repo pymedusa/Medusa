@@ -489,6 +489,10 @@ class GitUpdateManager(UpdateManager):
             output, err = p.communicate()
             exit_status = p.returncode
 
+            # Convert bytes to string in python3
+            if isinstance(output, (bytes, bytearray)):
+                output = output.decode('utf-8')
+
             if output:
                 output = output.strip()
 
