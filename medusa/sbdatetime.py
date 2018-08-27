@@ -26,6 +26,9 @@ from builtins import object
 from medusa import app
 from medusa.network_timezones import app_timezone
 
+import six
+
+
 date_presets = (
     '%Y-%m-%d',
     '%a, %Y-%m-%d',
@@ -168,7 +171,10 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 sbdatetime.has_locale = False
 
-        return strt.decode(app.SYS_ENCODING)
+        if six.PY3:
+            return strt
+        else:
+            return strt.decode(app.SYS_ENCODING)
 
     # display Date in application Format
     @static_or_instance
@@ -207,7 +213,10 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 pass
 
-        return strd.decode(app.SYS_ENCODING)
+        if six.PY3:
+            return strd
+        else:
+            return strd.decode(app.SYS_ENCODING)
 
     # display Datetime in application Format
     @static_or_instance
@@ -246,11 +255,11 @@ class sbdatetime(datetime.datetime):
                         except Exception:
                             sbdatetime.has_locale = False
                     if t_preset is not None:
-                        strd += b', ' + dt.strftime(t_preset)
+                        strd += ', ' + dt.strftime(t_preset)
                     elif show_seconds:
-                        strd += b', ' + dt.strftime(app.TIME_PRESET_W_SECONDS)
+                        strd += ', ' + dt.strftime(app.TIME_PRESET_W_SECONDS)
                     else:
-                        strd += b', ' + dt.strftime(app.TIME_PRESET)
+                        strd += ', ' + dt.strftime(app.TIME_PRESET)
             else:
                 if d_preset is not None:
                     strd = self.strftime(d_preset)
@@ -266,11 +275,11 @@ class sbdatetime(datetime.datetime):
                     except Exception:
                         sbdatetime.has_locale = False
                 if t_preset is not None:
-                    strd += b', ' + self.strftime(t_preset)
+                    strd += ', ' + self.strftime(t_preset)
                 elif show_seconds:
-                    strd += b', ' + self.strftime(app.TIME_PRESET_W_SECONDS)
+                    strd += ', ' + self.strftime(app.TIME_PRESET_W_SECONDS)
                 else:
-                    strd += b', ' + self.strftime(app.TIME_PRESET)
+                    strd += ', ' + self.strftime(app.TIME_PRESET)
         finally:
             try:
                 if sbdatetime.has_locale:
@@ -278,4 +287,7 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 sbdatetime.has_locale = False
 
-        return strd.decode(app.SYS_ENCODING)
+        if six.PY3:
+            return strd
+        else:
+            return strd.decode(app.SYS_ENCODING)
