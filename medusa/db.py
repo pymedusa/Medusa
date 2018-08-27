@@ -39,7 +39,7 @@ db_locks = {}
 
 
 class DBConnection(object):
-    def __init__(self, filename=None, suffix=None, row_type=None):
+    def __init__(self, filename=None, suffix=None, row_type='dict'):
 
         self.filename = filename or app.APPLICATION_DB
         self.suffix = suffix

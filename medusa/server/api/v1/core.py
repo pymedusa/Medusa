@@ -721,7 +721,7 @@ class CMD_Episode(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT name, description, airdate, status, quality, location, file_size, release_name, subtitles '
             'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
@@ -1003,7 +1003,7 @@ class CMD_Exceptions(ApiCall):
 
     def run(self):
         """ Get the scene exceptions for all or a given show """
-        cache_db_con = db.DBConnection('cache.db', row_type='dict')
+        cache_db_con = db.DBConnection('cache.db')
 
         if self.indexerid is None:
             sql_results = cache_db_con.select("SELECT show_name, indexer_id AS 'indexerid' FROM scene_exceptions")
@@ -1144,7 +1144,7 @@ class CMD_Failed(ApiCall):
     def run(self):
         """ Get the failed downloads """
 
-        failed_db_con = db.DBConnection('failed.db', row_type='dict')
+        failed_db_con = db.DBConnection('failed.db')
 
         u_limit = min(int(self.limit), 100)
         if u_limit == 0:
@@ -1169,7 +1169,7 @@ class CMD_Backlog(ApiCall):
 
         shows = []
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         for cur_show in app.showList:
 
             show_eps = []
@@ -2495,7 +2495,7 @@ class CMD_ShowSeasonList(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         if self.sort == 'asc':
             sql_results = main_db_con.select(
                 'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season ASC',
@@ -2537,7 +2537,7 @@ class CMD_ShowSeasons(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
 
         if self.season is None:
             sql_results = main_db_con.select(
@@ -2679,7 +2679,7 @@ class CMD_ShowStats(ApiCall):
         for status_code in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
             episode_qualities_counts_snatch[status_code] = {}
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT status, quality, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
                                          [INDEXER_TVDBV2, self.indexerid])

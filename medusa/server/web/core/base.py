@@ -299,7 +299,7 @@ class WebRoot(WebHandler):
         def titler(x):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
