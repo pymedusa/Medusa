@@ -42,7 +42,7 @@ class Notifier(object):
 
     def notify_download(self, ep_name):
         """
-        Send a notification that an episode was downloaded
+        Send a notification that an episode was downloaded.
 
         :param ep_name: The name of the episode downloaded
         """
@@ -51,7 +51,7 @@ class Notifier(object):
 
     def notify_subtitle_download(self, ep_name, lang):
         """
-        Send a notification that subtitles for an episode were downloaded
+        Send a notification that subtitles for an episode were downloaded.
 
         :param ep_name: The name of the episode subtitles were downloaded for
         :param lang: The language of the downloaded subtitles
@@ -142,7 +142,7 @@ class Notifier(object):
 
     def _send_tweet(self, message=None):
         """
-        Sends a tweet.
+        Send a tweet.
 
         :param message: Message to send
         :return: True if succeeded, False otherwise
@@ -165,7 +165,7 @@ class Notifier(object):
 
     def _send_dm(self, message=None):
         """
-        Sends a direct message.
+        Send a direct message.
 
         :param message: Message to send
         :return: True if succeeded, False otherwise
