@@ -75,7 +75,7 @@
                         <span>Use current values as the defaults</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <input class="btn-medusa btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" :disabled="saveDefaultsDisabled" />
+                        <button class="btn-medusa btn-inline" id="saveDefaultsButton" :disabled="saveDefaultsDisabled">Save Defaults</button>
                     </div>
                 </div>
             </div>
