@@ -1,11 +1,4 @@
 MEDUSA.common.init = function() {
-    // Reset the layout for the activated tab (when using ui tabs)
-    $('#showTabs').tabs({
-        activate() {
-            $('.show-grid').isotope('layout');
-        }
-    });
-
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');

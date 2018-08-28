@@ -1,7 +1,9 @@
 const path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const pkg = require('./package.json');
 
@@ -15,17 +17,16 @@ const { cssThemes } = pkg.config;
 const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
 
 /**
- * Helper function to simplify CopyWebpackPlugin configuration when copying assets from `./dist`.
+ * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
  * To be used in-conjunction-with `perTheme`.
  * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
  * @param {string} [search] - Glob-like string to match files. (default: `**`)
- * @returns {function} - A function the recieves the theme object from `perTheme`.
+ * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
  */
 const copyAssets = (type, search = '**') => {
     return theme => ({
-        context: './dist/',
-        from: `${type}/${search}`,
-        to: path.resolve(theme.dest, 'assets')
+        source: `./dist/${type}/${search}`,
+        destination: path.resolve(theme.dest, 'assets', type)
     });
 };
 
@@ -154,6 +155,7 @@ const webpackConfig = mode => ({
         ]
     },
     plugins: [
+        new CleanWebpackPlugin(['dist']),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
@@ -163,11 +165,20 @@ const webpackConfig = mode => ({
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
-        // Queue operations for each theme
+        // Copy bundled assets for each theme
+        // Only use for assets emitted by Webpack.
+        new FileManagerPlugin({
+            onEnd: {
+                copy: [
+                    ...perTheme(copyAssets('js')),
+                    ...perTheme(copyAssets('css')),
+                    ...perTheme(copyAssets('fonts'))
+                ]
+            }
+        }),
+        // Copy static files for each theme
+        // Don't use for assets emitted by Webpack because this plugin runs before the bundle is created.
         new CopyWebpackPlugin([
-            ...perTheme(copyAssets('js')),
-            ...perTheme(copyAssets('css')),
-            ...perTheme(copyAssets('fonts')),
             // Templates
             ...perTheme(theme => ({
                 context: './views/',
