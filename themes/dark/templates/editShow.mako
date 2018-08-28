@@ -1,6 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -21,21 +23,19 @@ window.app = new Vue({
     data() {
         return {
             seriesSlug: document.querySelector('#series-slug').value,
-            seriesId: document.querySelector('#series-id').value,
-            indexerName: document.querySelector('#indexer-name').value,
             series: {
                 config: {
                     aliases: [],
-                    dvdOrder: false,
-                    defaultEpisodeStatus: '',
-                    seasonFolders: true,
-                    anime: false,
-                    scene: false,
-                    sports: false,
-                    paused: false,
-                    location: '',
-                    airByDate: false,
-                    subtitlesEnabled: false,
+                    dvdOrder: null,
+                    defaultEpisodeStatus: null,
+                    seasonFolders: null,
+                    anime: null,
+                    scene: null,
+                    sports: null,
+                    paused: null,
+                    location: null,
+                    airByDate: null,
+                    subtitlesEnabled: null,
                     release: {
                         requiredWords: [],
                         ignoredWords: [],
@@ -50,24 +50,17 @@ window.app = new Vue({
                 },
                 language: 'en'
             },
-            defaultEpisodeStatusOptions: [
-                {text: 'Wanted', value: 'Wanted'},
-                {text: 'Skipped', value: 'Skipped'},
-                {text: 'Ignored', value: 'Ignored'}
-            ],
-            seriesLoaded: false,
+            showLoaded: false,
             saving: false
         }
     },
     created() {
-        const { $store, seriesSlug } = this;
+        const { $store, indexer, id } = this;
 
-        const params = { detailed: false }; // Don't get episodes
-        api.get('series/' + seriesSlug, { params }).then(response => {
-            this.series = Object.assign({}, this.series, response.data);
-            this.seriesLoaded = true;
+        $store.dispatch('getShow', { indexer, id }).then(() => {
+            this.showLoaded = true;
         }).catch(error => {
-            const msg = 'Could not get series info for: ' + seriesSlug;
+            const msg = 'Could not get show info for: ' + indexer + String(id);
             this.$snotify.error(msg, 'Error');
             console.debug(msg, error);
         });
@@ -75,11 +68,11 @@ window.app = new Vue({
     methods: {
         saveSeries(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.seriesLoaded) {
+            if (!this.showLoaded) {
                 return;
             }
 
-            if (!['series', 'all'].includes(subject)) {
+            if (!['show', 'all'].includes(subject)) {
                 return;
             }
 
@@ -88,35 +81,36 @@ window.app = new Vue({
 
             const data = {
                 config: {
-                    aliases: this.series.config.aliases,
-                    defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
-                    dvdOrder: this.series.config.dvdOrder,
-                    seasonFolders: this.series.config.seasonFolders,
-                    anime: this.series.config.anime,
-                    scene: this.series.config.scene,
-                    sports: this.series.config.sports,
-                    paused: this.series.config.paused,
-                    location: this.series.config.location,
-                    airByDate: this.series.config.airByDate,
-                    subtitlesEnabled: this.series.config.subtitlesEnabled,
+                    aliases: this.show.config.aliases,
+                    defaultEpisodeStatus: this.show.config.defaultEpisodeStatus,
+                    dvdOrder: this.show.config.dvdOrder,
+                    seasonFolders: this.show.config.seasonFolders,
+                    anime: this.show.config.anime,
+                    scene: this.show.config.scene,
+                    sports: this.show.config.sports,
+                    paused: this.show.config.paused,
+                    location: this.show.config.location,
+                    airByDate: this.show.config.airByDate,
+                    subtitlesEnabled: this.show.config.subtitlesEnabled,
                     release: {
-                        requiredWords: this.series.config.release.requiredWords,
-                        ignoredWords: this.series.config.release.ignoredWords
+                        requiredWords: this.show.config.release.requiredWords,
+                        ignoredWords: this.show.config.release.ignoredWords
                     },
                     qualities: {
-                        preferred: this.series.config.qualities.preferred,
-                        allowed: this.series.config.qualities.allowed
+                        preferred: this.show.config.qualities.preferred,
+                        allowed: this.show.config.qualities.allowed
                     }
                 },
-                language: this.series.language
+                language: this.show.language
             };
 
             if (data.config.anime) {
-                data.config.release.blacklist = this.series.config.release.blacklist;
-                data.config.release.whitelist = this.series.config.release.whitelist;
+                data.config.release.blacklist = this.show.config.release.blacklist;
+                data.config.release.whitelist = this.show.config.release.whitelist;
             }
 
-            api.patch('series/' + this.seriesSlug, data).then(response => {
+            const { indexer, id } = this;
+            $store.dispatch('setShow', { indexer, id, data, save: true }).then(() => {
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
@@ -124,7 +118,7 @@ window.app = new Vue({
                 );
             }).catch(error => {
                 this.$snotify.error(
-                    'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                    'Error while trying to save "' + this.show.title + '": ' + error.message || 'Unknown',
                     'Error'
                 );
             }).finally(() => {
@@ -133,24 +127,45 @@ window.app = new Vue({
             });
         },
         onChangeIgnoredWords(items) {
-            this.series.config.release.ignoredWords = items.map(item => item.value);
+            this.show.config.release.ignoredWords = items.map(item => item.value);
         },
         onChangeRequiredWords(items) {
-            this.series.config.release.requiredWords = items.map(item => item.value);
+            this.show.config.release.requiredWords = items.map(item => item.value);
         },
         onChangeAliases(items) {
-            this.series.config.aliases = items.map(item => item.value);
+            this.show.config.aliases = items.map(item => item.value);
         },
         onChangeReleaseGroupsAnime(items) {
-            this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
-            this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-            this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+            this.show.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+            this.show.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+            this.show.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
         },
         updateLanguage(value) {
-            this.series.language = value;
+            this.show.language = value;
         }
     },
-    computed: {
+    // @TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState({
+        shows: state => state.shows.shows
+    }), {
+        params() {
+            return location.search.slice(1).split('&').reduce((obj, pair) => {
+                const [ key, value ] = pair.split('=');
+                obj[key] = value;
+                return obj;
+            }, {});
+        },
+        id() {
+            return this.params.seriesid;
+        },
+        indexer() {
+            return this.params.indexername;
+        },
+        // @TODO: Enable this once we remove this.series
+        // show() {
+        //     const { $store } = this;
+        //     return this.shows.length === 0 ? $store.defaults.show : this.shows.find(show => show.indexer === this.indexer && Number(show.id[show.indexer]) === Number(this.id));
+        // },
         availableLanguages() {
             if (this.config.indexers.config.main.validLanguages) {
                 return this.config.indexers.config.main.validLanguages.join(',');
@@ -158,8 +173,8 @@ window.app = new Vue({
         },
         combinedQualities() {
             const reducer = (accumulator, currentValue) => accumulator | currentValue;
-            const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
-            const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+            const allowed = this.show.config.qualities.allowed.reduce(reducer, 0);
+            const preferred = this.show.config.qualities.preferred.reduce(reducer, 0);
 
             return (allowed | preferred << 16) >>> 0;  // Unsigned int
         },
@@ -171,7 +186,7 @@ window.app = new Vue({
             // the values are not available at the time of app-link component creation.
             return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
         }
-    }
+    })
 });
 </script>
 </%block>
@@ -182,7 +197,7 @@ window.app = new Vue({
 <input type="hidden" id="series-slug" value="${show.slug}" />
 <h1 class="header">
     Edit Show
-    <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
+    <span v-show="show.title"> - <app-link :href="displayShowUrl">{{show.title}}</app-link></span>
 </h1>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -200,23 +215,24 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="location" class="col-sm-2 control-label">Show Location</label>
                             <div class="col-sm-10 content">
-                                <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
+                                <file-browser name="location" title="Select Show Location" :initial-dir="show.config.location" @update="show.config.location = $event"></file-browser>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="qualityPreset" class="col-sm-2 control-label">Quality</label>
                             <div class="col-sm-10 content">
-                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="show.config.qualities.allowed = $event" @update:quality:preferred="show.config.qualities.preferred = $event"></quality-chooser>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
-                                <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"/>
-                                    <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
+                                <select v-model="show.config.defaultEpisodeStatus" name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
+                                    <option value="Wanted">Wanted</option>
+                                    <option value="Skipped">Skipped</option>
+                                    <option value="Ignored">Ignored</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>
                             </div>
@@ -225,7 +241,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="indexerLangSelect" class="col-sm-2 control-label">Info Language</label>
                             <div class="col-sm-10 content">
-                                <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm"></language-select>
+                                <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="show.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm"></language-select>
                                 <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                             </div>
                         </div>
@@ -233,7 +249,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="subtitles" name="subtitles" v-model="show.config.subtitlesEnabled" sync></toggle-button>
                                 <span>search for subtitles</span>
                             </div>
                         </div>
@@ -241,7 +257,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="paused" class="col-sm-2 control-label">Paused</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="paused" name="paused" v-model="series.config.paused" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="paused" name="paused" v-model="show.config.paused" sync></toggle-button>
                                 <span>pause this show (Medusa will not download episodes)</span>
                             </div>
                         </div>
@@ -256,7 +272,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="airbydate" name="air_by_date" v-model="series.config.airByDate" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="airbydate" name="air_by_date" v-model="show.config.airByDate" sync></toggle-button>
                                 <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                 <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                             </div>
@@ -265,22 +281,22 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="anime" class="col-sm-2 control-label">Anime</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="anime" name="anime" v-model="series.config.anime" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="anime" name="anime" v-model="show.config.anime" sync></toggle-button>
                                 <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                             </div>
                         </div>
 
-                        <div v-if="series.config.anime" class="form-group">
+                        <div v-if="show.config.anime" class="form-group">
                             <label for="anidbReleaseGroup" class="col-sm-2 control-label">Release Groups</label>
                             <div class="col-sm-10 content">
-                                <anidb-release-group-ui class="max-width" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                                <anidb-release-group-ui class="max-width" :blacklist="show.config.release.blacklist" :whitelist="show.config.release.whitelist" :all-groups="show.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="sports" class="col-sm-2 control-label">Sports</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="sports" name="sports" v-model="series.config.sports" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="sports" name="sports" v-model="show.config.sports" sync></toggle-button>
                                 <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<span>
                                 <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                             </div>
@@ -289,7 +305,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="season_folders" name="season_folders" v-model="show.config.seasonFolders" sync></toggle-button>
                                 <span>group episodes by season folder (disable to store in a single folder)</span>
                             </div>
                         </div>
@@ -297,7 +313,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="scene" name="scene" v-model="series.config.scene" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="scene" name="scene" v-model="show.config.scene" sync></toggle-button>
                                 <span>search by scene numbering (disable to search by indexer numbering)</span>
                             </div>
                         </div>
@@ -305,7 +321,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
                             <div class="col-sm-10 content">
-                                <toggle-button :width="45" :height="22" id="dvdorder" name="dvdorder" v-model="series.config.dvdOrder" sync></toggle-button>
+                                <toggle-button :width="45" :height="22" id="dvdorder" name="dvdorder" v-model="show.config.dvdOrder" sync></toggle-button>
                                 <span>use the DVD order instead of the air order</span>
                                 <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                             </div>
@@ -321,7 +337,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
+                                <select-list :list-items="show.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with one or more words from this list will be ignored.</p>
                                 </div>
@@ -331,7 +347,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="rls_require_words" class="col-sm-2 control-label">Required words</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
+                                <select-list :list-items="show.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
                                 <div class="clear-left">
                                     <p>Search results with no words from this list will be ignored.</p>
                                 </div>
@@ -341,7 +357,7 @@ window.app = new Vue({
                         <div class="form-group">
                             <label for="SceneName" class="col-sm-2 control-label">Scene Exception</label>
                             <div class="col-sm-10 content">
-                                <select-list :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
+                                <select-list :list-items="show.config.aliases" @change="onChangeAliases"></select-list>
                                 <div class="clear-left">
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
                                 </div>
@@ -353,7 +369,7 @@ window.app = new Vue({
             </div>
         </div>
         <br>
-        <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !seriesLoaded">
+        <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !showLoaded">
         </form>
     </div>
 </div>
