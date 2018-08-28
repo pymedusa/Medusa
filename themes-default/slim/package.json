@@ -33,7 +33,7 @@
     "@babel/preset-env": "7.0.0-rc.1",
     "@babel/register": "7.0.0-rc.1",
     "@vue/test-utils": "1.0.0-beta.24",
-    "ava": "1.0.0-beta.7",
+    "ava": "1.0.0-beta.8",
     "axios": "0.18.0",
     "babel-loader": "8.0.0-beta.6",
     "babel-plugin-istanbul": "5.0.1",
