@@ -41,7 +41,7 @@
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | Module: `markupsafe`
 :warning: | `mock` | [2.0.0](https://pypi.org/project/mock/2.0.0/) | Tests only | -
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
-:: | `oauth2` | [6689960](https://github.com/joestump/python-oauth2/tree/6689960ca23f79eccf9a25a39e93f6540f44ca23) | **`medusa`**, `python-twitter` | -
+:: | `oauthlib` | [2.1.0](https://pypi.org/project/oauthlib/2.1.0/) | `requests-oauthlib` | -
 :warning: | `pbr` | [4.0.1](https://pypi.org/project/pbr/4.0.1/) | `mock`(?) | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | Module: `pint`
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | -
@@ -52,6 +52,7 @@
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 :: | `rebulk` | [0.9.0](https://pypi.org/project/rebulk/0.9.0/) | **`medusa`**, `guessit` | -
 :: | `requests` | [2.19.1](https://pypi.org/project/requests/2.19.1/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub` | -
+:: | `requests-oauthlib` | [1.0.0](https://pypi.org/project/requests-oauthlib/1.0.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 :: | `stevedore` | [1.29.0](https://pypi.org/project/stevedore/1.29.0/) | `subliminal` | -
