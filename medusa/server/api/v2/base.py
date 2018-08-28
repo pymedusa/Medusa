@@ -232,12 +232,12 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _handle_request_exception(self, e):
-        if isinstance(e, HTTPError):
-            response = self.api_response(e.code, e.message)
+    def _handle_request_exception(self, error):
+        if isinstance(error, HTTPError):
+            response = self.api_response(error.code, error.message)
             self.finish(response)
         else:
-            super(BaseRequestHandler, self)._handle_request_exception(e)
+            super(BaseRequestHandler, self)._handle_request_exception(error)
 
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
         return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
