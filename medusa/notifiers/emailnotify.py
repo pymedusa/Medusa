@@ -16,6 +16,8 @@ from medusa import app, db
 from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
 
+import six
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -371,7 +373,8 @@ class Notifier(object):
 
     @classmethod
     def _parse_name(cls, ep_name):
-        ep_name = ss(ep_name)
+        if six.PY2:
+            ep_name = ss(ep_name)
 
         # @TODO: Prone to issues, best solution is to have a dictionary passed to notifiers
         match = cls.name_pattern.match(ep_name)

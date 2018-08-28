@@ -227,7 +227,7 @@ def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []
@@ -267,7 +267,7 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []

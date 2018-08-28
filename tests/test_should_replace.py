@@ -538,5 +538,5 @@ def test_should_replace(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual

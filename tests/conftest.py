@@ -23,6 +23,7 @@ from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
+import six
 from six import iteritems
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
@@ -176,12 +177,22 @@ def create_file(tmpdir):
     def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
         content = '\n'.join(lines or [])
-        f.write_binary(content)
+
+        if six.PY3:
+            f.write_binary(content.encode())
+        else:
+            f.write_binary(content)
+
         if size:
             tmp_size = f.size()
             if tmp_size < size:
                 add_size = '\0' * (size - tmp_size)
-                f.write_binary(content + add_size)
+                content = content + add_size
+                if six.PY3:
+                    f.write_binary(content.encode())
+                else:
+                    f.write_binary(content)
+
         return str(f)
 
     return create
@@ -201,7 +212,12 @@ def create_structure(tmpdir, create_file, create_dir):
     def create(path, structure):
         for element in structure:
             if isinstance(element, dict):
-                for name, values in element.iteritems():
+                if six.PY3:
+                    element_iter = element.items()
+                else:
+                    element_iter = element.iteritems()
+
+                for name, values in element_iter:
                     path = os.path.join(path, name)
                     create_dir(path)
                     create(path, values)

@@ -234,5 +234,5 @@ def test_should_search(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual

@@ -328,6 +328,8 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
+        if isinstance(candidate, (bytes, bytearray)):
+            candidate = candidate.decode()
         if candidate and (',' in candidate or '.' in candidate):
             # Get the current stack trace (excluding the following line)
             stack_trace = traceback.format_stack(limit=10)[:-2]
