@@ -72,8 +72,11 @@ class ShowUpdater(object):
                 indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                               u'connectivity issues. While trying to look for show updates on show: {show}',
-                               indexer_name=indexerApi(show.indexer).name, show=show.name)
+                               u'connectivity issues. While trying to look for show updates.',
+                               indexer_name=indexerApi(show.indexer).name)
+                logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                            u'connectivity issues. While trying to look for show updates on show: {show}',
+                            indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
 
             # Get the lastUpdate timestamp for this indexer.
@@ -92,8 +95,11 @@ class ShowUpdater(object):
                         )
                     except IndexerUnavailable:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'connectivity issues while trying to look for show updates on show: {show}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
+                                       u'connectivity issues while trying to look for show updates.',
+                                       indexer_name=indexerApi(show.indexer).name)
+                        logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                    u'connectivity issues while trying to look for show updates on show: {show}',
+                                    indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
                     except IndexerException as error:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
@@ -150,8 +156,11 @@ class ShowUpdater(object):
                                                                            update_max_weeks)
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                   u'connectivity issues while trying to look for showupdates on show: {show}',
-                                   indexer_name=indexerApi(show.indexer).name, show=show.name)
+                                   u'connectivity issues while trying to look for show updates.',
+                                   indexer_name=indexerApi(show.indexer).name)
+                    logger.info(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                u'connectivity issues while trying to look for show updates on show: {show}',
+                                indexer_name=indexerApi(show.indexer).name, show=show.name)
                     continue
                 except IndexerException as e:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
