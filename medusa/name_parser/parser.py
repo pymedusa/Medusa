@@ -186,7 +186,8 @@ class NameParser(object):
         # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
-        scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
+        scene_season = scene_exceptions.get_scene_exceptions_by_name(
+            result.series_name or result.series.name)[0][1]
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:
@@ -198,7 +199,8 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None and
+                                              scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
@@ -206,7 +208,7 @@ class NameParser(object):
                 # Translate the absolute episode number, back to the indexers season and episode.
                 (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
 
-                if result.season_number is None and scene_season > 0:
+                if result.season_number is None and scene_season is not None and scene_season > 0:
                     log.debug(
                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
                         'season number in the title, '

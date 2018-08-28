@@ -9,7 +9,7 @@
 :: | `beautifulsoup4` | [4.6.3](https://pypi.org/project/beautifulsoup4/4.6.3/) | **`medusa`**, `subliminal` | Module: `bs4`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie`, `vcrpy`(?) | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
-:: | `certifi` | [2018.8.13](https://pypi.org/project/certifi/2018.8.13/) | **`medusa`**, `traktor`, `requests` | -
+:: | `certifi` | [2018.8.24](https://pypi.org/project/certifi/2018.8.24/) | **`medusa`**, `traktor`, `requests` | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -

@@ -8,6 +8,18 @@ export default {
     components: {
         AppLink
     },
+    metaInfo() {
+        if (!this.show || !this.show.title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        const { title } = this.show;
+        return {
+            title,
+            titleTemplate: '%s | Medusa'
+        };
+    },
     computed: {
         ...mapState({
             shows: state => state.shows.shows
@@ -43,35 +55,38 @@ export default {
             return show;
         }
     },
-    mounted() {
-        window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            window.dispatchEvent(new Event('resize'));
-        });
-
-        attachImdbTooltip(); // eslint-disable-line no-undef
-
-        $(document.body).on('click', '.imdbPlot', event => {
-            $(event.currentTarget).prev('span').toggle();
-            if ($(event.currentTarget).html() === '..show less') {
-                $(event.currentTarget).html('..show more');
-            } else {
-                $(event.currentTarget).html('..show less');
-            }
-            moveSummaryBackground();
-        });
-
-        // Adjust the summary background position and size on page load and resize
-        function moveSummaryBackground() {
+    created() {
+        const { indexer, id, $store } = this;
+        // Needed for the title
+        $store.dispatch('getShow', { indexer, id });
+    },
+    methods: {
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+            });
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
+        moveSummaryBackground() {
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
         }
+    },
+    mounted() {
+        window.addEventListener('load', () => {
+            // Adjust the summary background position and size
+            this.reflowLayout();
+        });
 
-        $(window).resize(() => {
-            moveSummaryBackground();
+        attachImdbTooltip(); // eslint-disable-line no-undef
+
+        window.addEventListener('resize', () => {
+            this.reflowLayout();
         });
 
         const updateSpinner = function(message, showSpinner) {
@@ -315,17 +330,16 @@ export default {
             return false;
         });
 
-        $(() => {
-            initTableSorter('#srchresults');
-            moveSummaryBackground();
-            $('body').on('hide.bs.collapse', '.collapse.toggle', () => {
-                $('#showhistory').text('Show History');
-                $('#wrapper').prop('data-history-toggle', 'hide');
-            });
-            $('body').on('show.bs.collapse', '.collapse.toggle', () => {
-                $('#showhistory').text('Hide History');
-                $('#wrapper').prop('data-history-toggle', 'show');
-            });
+        initTableSorter('#srchresults');
+        this.reflowLayout();
+
+        $('body').on('hide.bs.collapse', '.collapse.toggle', () => {
+            $('#showhistory').text('Show History');
+            $('#wrapper').prop('data-history-toggle', 'hide');
+        });
+        $('body').on('show.bs.collapse', '.collapse.toggle', () => {
+            $('#showhistory').text('Hide History');
+            $('#wrapper').prop('data-history-toggle', 'show');
         });
 
         $(document.body).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', event => {

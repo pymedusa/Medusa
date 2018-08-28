@@ -11,7 +11,7 @@
                 </button>
                 <app-link class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></app-link>
             </div>
-            <div v-if="auth.isAuthenticated" class="collapse navbar-collapse" id="main_nav">
+            <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
                 <ul class="nav navbar-nav navbar-right">
                     <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
                         <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
@@ -94,7 +94,7 @@
                             <li><app-link :href="`home/updateCheck?pid=${config.pid}`"><i class="menu-icon-update"></i>&nbsp;Check For Updates</app-link></li>
                             <li><app-link :href="`home/restart/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart"></i>&nbsp;Restart</app-link></li>
                             <li><app-link :href="`home/shutdown/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</app-link></li>
-                            <li v-if="auth.user.username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
+                            <li v-if="username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown"></i>&nbsp;Logout</app-link></li>
                             <li role="separator" class="divider"></li>
                             <li><app-link href="home/status/"><i class="menu-icon-info"></i>&nbsp;Server Status</app-link></li>
                         </ul>
@@ -128,10 +128,15 @@ export default {
         };
     },
     computed: {
-        ...mapState(['config', 'auth', 'notifiers']),
-        warningLevel() {
-            return this.config.logs.loggingLevels.warning;
-        },
+        ...mapState([
+            'config',
+            'notifiers'
+        ]),
+        ...mapState({
+            isAuthenticated: state => state.auth.isAuthenticated,
+            username: state => state.auth.user.username,
+            warningLevel: state => state.config.logs.loggingLevels.warning
+        }),
         recentShows() {
             const { config } = this;
             const { recentShows } = config;

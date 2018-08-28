@@ -12,13 +12,10 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Notifications'
-    },
     data() {
         return {
-            header: 'Notifications',
             configLoaded: false,
             notifiers: {
                 emby: {
@@ -549,7 +546,7 @@ window.app = new Vue({
             host = host.length > 0 ? host : null;
             let port = $('#email_port').val();
             port = port.length > 0 ? port : null;
-            const tls = $('#email_tls').attr('checked') === undefined ? 0 : 1;
+            const tls = $('#email_tls').is(':checked') ? 1 : 0;
             let from = $('#email_from').val();
             from = from.length > 0 ? from : 'root@localhost';
             const user = $('#email_user').val().trim();
@@ -774,7 +771,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/notifications/saveNotifications" method="post">

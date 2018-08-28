@@ -4,6 +4,7 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
     metaInfo: {
         title: '404'

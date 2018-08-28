@@ -55,11 +55,6 @@ export default {
     mounted() {
         this.localValue = this.value;
     },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        }
-    },
     watch: {
         localValue() {
             this.$emit('update', this.localValue);

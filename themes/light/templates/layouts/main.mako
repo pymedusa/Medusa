@@ -76,9 +76,9 @@
             % endif
             <%include file="/partials/alerts.mako"/>
             <div id="content-row" class="row">
-            <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
+                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                     <%block name="content" />
-            </component>
+                </component>
             </div><!-- /content -->
             <%include file="/partials/footer.mako" />
             <scroll-buttons></scroll-buttons>
@@ -188,6 +188,7 @@
                 // Global components
                 Vue.use(ToggleButton);
                 Vue.use(Snotify);
+                Vue.component('truncate', Truncate);
             }
         </script>
         <%block name="scripts" />

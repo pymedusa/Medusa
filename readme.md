@@ -21,9 +21,6 @@
   <a href="https://codecov.io/gh/pymedusa/Medusa" title="">
     <img src="https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg" alt="codecov"/>
   </a>
-  <a href="https://pyup.io/repos/github/pymedusa/Medusa/" title="">
-    <img src="https://pyup.io/repos/github/pymedusa/Medusa/python-3-shield.svg" alt="Python 3"/>
-  </a>
 </p>
 
 
