@@ -222,9 +222,6 @@ window.app = new Vue({
                     return;
                 }
 
-                // Converts select boxes to command separated values [js/blackwhite.js]
-                //generateBlackWhiteList(); // eslint-disable-line no-undef
-
                 formData = new FormData(this.$refs.addShowForm);
             }
 
