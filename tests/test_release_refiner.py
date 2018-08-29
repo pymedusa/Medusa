@@ -48,8 +48,7 @@ def _to_properties(video):
         'episode': video.episode,
         'title': video.title,
         'year': video.year,
-        # @TODO: subliminal.video.Video: format should be source
-        'source': video.format,
+        'source': video.source,
         'resolution': video.resolution,
         'release_group': video.release_group,
         'video_codec': video.video_codec,
