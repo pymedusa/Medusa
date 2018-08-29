@@ -32,10 +32,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'New Show'
-    },
     data() {
         return {
             // @TODO: Fix Python conversions
@@ -122,6 +120,7 @@ window.app = new Vue({
         });
     },
     computed: {
+        // @TODO: Replace with mapState
         config() {
             return this.$store.state.config;
         },
@@ -412,7 +411,7 @@ window.app = new Vue({
 </%block>
 <%block name="content">
 <vue-snotify></vue-snotify>
-<h1 class="header">New Show</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>

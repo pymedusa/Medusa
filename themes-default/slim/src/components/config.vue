@@ -33,7 +33,7 @@
             <tr><td><i class="icon16-config-db"></i> Database File:</td><td>{{config.dbPath}}</td></tr>
             <tr><td><i class="icon16-config-cache"></i> Cache Folder:</td><td>{{config.cacheDir}}</td></tr>
             <tr><td><i class="icon16-config-log"></i> Log Folder:</td><td>{{config.logDir}}</td></tr>
-            <tr v-if="config.appArgs"><td><i class="icon16-config-arguments"></i> Arguments:</td><td><pre>{{prettyPrintJSON(config.appArgs)}}</pre></td></tr>
+            <tr v-if="config.appArgs"><td><i class="icon16-config-arguments"></i> Arguments:</td><td><pre>{{config.appArgs | prettyPrintJSON}}</pre></td></tr>
             <tr v-if="config.webRoot"><td><i class="icon16-config-folder"></i> Web Root:</td><td>{{config.webRoot}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -45,19 +45,16 @@
     </div>
 </template>
 <script>
+import { mapState } from 'vuex';
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'config',
     components: {
         AppLink
     },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        }
-    },
-    methods: {
+    computed: mapState(['config']),
+    filters: {
         prettyPrintJSON: str => JSON.stringify(str, undefined, 4)
     }
 };

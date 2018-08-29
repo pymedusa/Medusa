@@ -11,10 +11,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Mass Edit'
-    },
     beforeMount() {
         $('#config-components').tabs();
     },

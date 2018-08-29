@@ -1,21 +1,9 @@
-import auth from './auth';
-import config from './config';
-import defaults from './defaults';
-import socket from './socket';
-import notifications from './notifications';
-import qualities from './qualities';
-import shows from './shows';
-import statuses from './statuses';
-import metadata from './metadata';
-
-export {
-    auth,
-    config,
-    defaults,
-    socket,
-    notifications,
-    qualities,
-    shows,
-    statuses,
-    metadata
-};
+export { default as auth } from './auth';
+export { default as config } from './config';
+export { default as defaults } from './defaults';
+export { default as metadata } from './metadata';
+export { default as notifications } from './notifications';
+export { default as qualities } from './qualities';
+export { default as shows } from './shows';
+export { default as socket } from './socket';
+export { default as statuses } from './statuses';

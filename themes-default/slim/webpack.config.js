@@ -1,14 +1,52 @@
 const path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const pkg = require('./package.json');
 
-const { config } = pkg;
-const { cssThemes } = config;
+const { cssThemes } = pkg.config;
+
+/**
+ * Helper function to queue actions for each theme.
+ * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
+ * @returns {Object[]} - The actions for each theme.
+ */
+const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
+
+/**
+ * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
+ * To be used in-conjunction-with `perTheme`.
+ * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
+ * @param {string} [search] - Glob-like string to match files. (default: `**`)
+ * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
+ */
+const copyAssets = (type, search = '**') => {
+    return theme => ({
+        source: `./dist/${type}/${search}`,
+        destination: path.resolve(theme.dest, 'assets', type)
+    });
+};
+
+/**
+ * Make a `package.json` for a theme.
+ * @param {string} themeName - Theme name
+ * @param {string} currentContent - Current package.json contents
+ * @returns {string} - New content
+ */
+const makeThemeMetadata = (themeName, currentContent) => {
+    const { version, author } = JSON.parse(currentContent);
+    return JSON.stringify({
+        name: themeName,
+        version,
+        author
+    }, undefined, 2);
+};
 
 const webpackConfig = mode => ({
+    devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
         // Exports all window. objects for mako files
         index: path.resolve(__dirname, 'src/index.js'),
@@ -29,6 +67,8 @@ const webpackConfig = mode => ({
         hints: false
     },
     stats: {
+        // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
+        excludeAssets: /(\.\.\/)+themes\/.*/,
         // When `false`, hides extra information about assets collected by children (e.g. plugins)
         children: false
     },
@@ -115,6 +155,7 @@ const webpackConfig = mode => ({
         ]
     },
     plugins: [
+        new CleanWebpackPlugin(['dist']),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
@@ -124,26 +165,60 @@ const webpackConfig = mode => ({
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
+        // Copy bundled assets for each theme
+        // Only use for assets emitted by Webpack.
         new FileManagerPlugin({
             onEnd: {
-                copy: Object.values(cssThemes).reduce((operations, theme) => {
-                    // Queue operations for each theme
-                    operations.push({
-                        source: './dist/js/**',
-                        destination: path.join(theme.dest, 'assets', 'js')
-                    });
-                    operations.push({
-                        source: './dist/css/**',
-                        destination: path.join(theme.dest, 'assets', 'css')
-                    });
-                    operations.push({
-                        source: './dist/fonts/**',
-                        destination: path.join(theme.dest, 'assets', 'fonts')
-                    });
-                    return operations;
-                }, [])
+                copy: [
+                    ...perTheme(copyAssets('js')),
+                    ...perTheme(copyAssets('css')),
+                    ...perTheme(copyAssets('fonts'))
+                ]
             }
-        })
+        }),
+        // Copy static files for each theme
+        // Don't use for assets emitted by Webpack because this plugin runs before the bundle is created.
+        new CopyWebpackPlugin([
+            // Templates
+            ...perTheme(theme => ({
+                context: './views/',
+                from: '**',
+                to: path.resolve(theme.dest, 'templates')
+            })),
+            // Create package.json
+            ...perTheme(theme => ({
+                from: 'package.json',
+                to: path.resolve(theme.dest, 'package.json'),
+                toType: 'file',
+                transform: content => makeThemeMetadata(theme.name, content)
+            })),
+            // Root files: index.html
+            ...perTheme(theme => ({
+                from: 'index.html',
+                to: path.resolve(theme.dest),
+                toType: 'dir'
+            })),
+            // Old JS files
+            ...perTheme(theme => ({
+                context: './static/',
+                from: 'js/**',
+                to: path.resolve(theme.dest, 'assets')
+            })),
+            // Old CSS files
+            ...perTheme(theme => ({
+                context: './static/',
+                from: 'css/**',
+                // Ignore theme-specific files as they are handled by the next entry
+                ignore: ['css/dark.css', 'css/light.css'],
+                to: path.resolve(theme.dest, 'assets')
+            })),
+            // Old CSS files - themed.css
+            ...perTheme(theme => ({
+                from: `static/css/${theme.css}`,
+                to: path.resolve(theme.dest, 'assets', 'css', 'themed.css'),
+                toType: 'file'
+            }))
+        ])
     ]
 });
 

@@ -21,7 +21,7 @@
     </div>
 </template>
 <script>
-module.exports = {
+export default {
     name: 'file-browser',
     props: {
         // Used for form submission

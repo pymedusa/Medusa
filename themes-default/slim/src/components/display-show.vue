@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { api } from '../api';
+import { api, apiRoute } from '../api';
 import AppLink from './app-link.vue';
 import PlotInfo from './plot-info.vue';
 
@@ -11,8 +11,17 @@ export default {
         AppLink,
         PlotInfo
     },
-    data() {
-        return {};
+    metaInfo() {
+        if (!this.show || !this.show.title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        const { title } = this.show;
+        return {
+            title,
+            titleTemplate: '%s | Medusa'
+        };
     },
     computed: {
         ...mapState({
@@ -45,24 +54,20 @@ export default {
     },
     mounted() {
         const {
-            moveSummaryBackground,
-            movecheckboxControlsBackground,
             setQuality,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
-            setSeasonSceneException,
+            getSeasonSceneExceptions,
             showHideRows
         } = this;
 
         $(window).on('resize', () => {
-            moveSummaryBackground();
-            movecheckboxControlsBackground();
+            this.reflowLayout();
         });
 
         window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            window.dispatchEvent(new Event('resize'));
+            this.reflowLayout();
 
             $.ajaxEpSearch({
                 colorRow: true
@@ -71,18 +76,6 @@ export default {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
             $.ajaxEpSubtitlesSearch();
             $.ajaxEpRedownloadSubtitle();
-        });
-
-        $(document.body).on('click', '.imdbPlot', event => {
-            const $target = $(event.currentTarget);
-            $target.prev('span').toggle();
-            if ($target.html() === '..show less') {
-                $target.html('..show more');
-            } else {
-                $target.html('..show less');
-            }
-            moveSummaryBackground();
-            movecheckboxControlsBackground();
         });
 
         $(document.body).on('change', '#seasonJump', event => {
@@ -293,14 +286,8 @@ export default {
         });
         attachImdbTooltip(); // eslint-disable-line no-undef
 
-        // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
         // Get the season exceptions and the xem season mappings.
-        $.getJSON('home/getSeasonSceneExceptions', {
-            indexername: $('#indexer-name').val(),
-            seriesid: $('#series-id').val() // eslint-disable-line camelcase
-        }, data => {
-            setSeasonSceneException(data);
-        });
+        getSeasonSceneExceptions();
 
         $(document.body).on('click', '.display-specials a', event => {
             api.patch('config/main', {
@@ -318,7 +305,18 @@ export default {
         });
     },
     methods: {
-        // Adjust the summary background position and size on page load and resize
+        /**
+         * Moves summary background and checkbox controls
+         */
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+                this.movecheckboxControlsBackground();
+            });
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
         moveSummaryBackground() {
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
@@ -426,9 +424,28 @@ export default {
             });
             return false;
         },
+        // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
+        // Get the season exceptions and the xem season mappings.
+        getSeasonSceneExceptions() {
+            const indexerName = document.querySelector('#indexer-name').value;
+            const seriesId = document.querySelector('#series-id').value;
+            if (!indexerName || !seriesId) {
+                console.warn('Unable to get season scene exceptions: Unknown series identifier');
+                return;
+            }
+            const params = {
+                indexername: indexerName,
+                seriesid: seriesId
+            };
+            apiRoute.get('home/getSeasonSceneExceptions', { params }).then(response => {
+                this.setSeasonSceneExceptions(response.data);
+            }).catch(error => {
+                console.error('Error getting season scene exceptions', error);
+            });
+        },
         // Set the season exception based on using the get_xem_numbering_for_show() for animes if available in data.xemNumbering,
         // or else try to map using just the data.season_exceptions.
-        setSeasonSceneException(data) {
+        setSeasonSceneExceptions(data) {
             $.each(data.seasonExceptions, (season, nameExceptions) => {
                 let foundInXem = false;
                 // Check if it is a season name exception, we don't handle the show name exceptions here

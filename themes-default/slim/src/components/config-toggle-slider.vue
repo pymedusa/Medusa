@@ -15,7 +15,7 @@
 </template>
 
 <script>
-module.exports = {
+export default {
     name: 'config-toggle-slider',
     props: {
         label: {
@@ -42,11 +42,6 @@ module.exports = {
     },
     mounted() {
         this.localChecked = this.checked;
-    },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        }
     },
     watch: {
         localChecked() {

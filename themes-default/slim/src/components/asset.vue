@@ -8,7 +8,7 @@
 import { webRoot, apiKey } from '../api';
 import AppLink from './app-link.vue';
 
-module.exports = {
+export default {
     name: 'asset',
     components: {
         AppLink

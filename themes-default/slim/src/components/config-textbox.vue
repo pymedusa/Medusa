@@ -15,7 +15,7 @@
 </template>
 
 <script>
-module.exports = {
+export default {
     name: 'config-textbox',
     props: {
         label: {
@@ -50,11 +50,6 @@ module.exports = {
     },
     mounted() {
         this.localValue = this.value;
-    },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        }
     },
     watch: {
         localValue() {
