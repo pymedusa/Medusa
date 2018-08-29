@@ -62,7 +62,7 @@
                 <span class="component-title">Anime</span>
                 <span class="component-desc">
                     <input type="checkbox" name="anime" id="anime" ${'checked="checked"' if app.ANIME_DEFAULT else ''} />
-                    <p>Is this show an Anime?<p>
+                    <p>Is this show an Anime?</p>
                 </span>
             </label>
         </div>
