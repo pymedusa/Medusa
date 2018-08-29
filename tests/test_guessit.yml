@@ -4205,13 +4205,14 @@
   mimetype: video/mp4
   type: episode
 
-# TODO: Fix anime release group
 ? "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
 : title: Show Name
   absolute_episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   screen_size: 720p
-  release_group: VFR
+  release_group: Zero-Raws
+  aspect_ratio: '1.778'
+  subtitle_language: fr
   video_codec: H.264
   video_encoder: x264
   audio_codec: AAC

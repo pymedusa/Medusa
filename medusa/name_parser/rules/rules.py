@@ -45,7 +45,7 @@ from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
 log = logging.getLogger(__name__)
 
-simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
+simple_separator = ('.', 'and', ',.', '.,', '.,.', ',', '.&.', ' & ')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
 
 
@@ -847,6 +847,73 @@ class PartsAsEpisodeNumbers(Rule):
         return to_rename
 
 
+class RemoveInvalidEpisodeSeparator(Rule):
+    """Remove invalid episode title between absolute episode ranges.
+
+    e.g.: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+
+    guessit -t episode "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
+
+    without the rule:
+        For: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+        GuessIt found: {
+            "release_group": "Zero-Raws",
+            "title": "Show Name",
+            "episode": [
+                493,
+                ...
+                507
+            ],
+            "episode_title": "&",
+            "screen_size": "720p",
+            "aspect_ratio": 1.778,
+            "subtitle_language": "French",
+            "video_codec": "H.264",
+            "audio_codec": "AAC",
+            "type": "episode"
+        }
+
+    without the rule:
+        For: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+        GuessIt found: {
+            "release_group": "Zero-Raws",
+            "title": "Show Name",
+            "episode": [
+                493,
+                ...
+                507
+            ],
+            "screen_size": "720p",
+            "aspect_ratio": 1.778,
+            "subtitle_language": "French",
+            "video_codec": "H.264",
+            "audio_codec": "AAC",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        episode_title = matches.named('episode_title')
+
+        if len(episode_title) == 1:
+            previous = matches.previous(episode_title[0], predicate=lambda match: match.name == 'absolute_episode')
+            next_match = matches.next(episode_title[0], predicate=lambda match: match.name == 'absolute_episode')
+            if previous and next_match and episode_title[0].raw in simple_separator:
+                to_remove = episode_title
+                return to_remove
+
+
 class FixMultipleReleaseGroups(Rule):
     """Fix multiple release groups.
 
@@ -1265,6 +1332,7 @@ def rules():
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
         PartsAsEpisodeNumbers,
+        RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
