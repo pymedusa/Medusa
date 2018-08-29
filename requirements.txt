@@ -34,7 +34,7 @@ rebulk==0.9.0
 requests==2.19.1
 six==1.11.0
 stevedore==1.29.0
-git+https://github.com/Diaoul/subliminal.git@879c0c8d18618e32ad466bb63bd939edb268bc60#egg=subliminal
+git+https://github.com/pymedusa/subliminal.git@78687f45d23b1bc47fae0a5493be0198dc1fd5b5#egg=subliminal
 tornado==5.1
 tornroutes==0.5.1
 validators==0.12.2
