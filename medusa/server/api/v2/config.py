@@ -147,7 +147,35 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.animeMultiEp': IntegerField(app, 'NAMING_ANIME_MULTI_EP'),
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
-        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+
+        'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
+        'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
+        'search.general.checkPropersInterval': IntegerField(app, 'CHECK_PROPERS_INTERVAL'),
+        'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
+        'search.general.propersSearchDays': IntegerField(app, 'PROPERS_SEARCH_DAYS'),
+        'search.general.backlogDays': IntegerField(app, 'BACKLOG_DAYS'),
+        'search.general.backlogFrequency': IntegerField(app, 'BACKLOG_FREQUENCY'),
+        'search.general.minBacklogFrequency': IntegerField(app, 'MIN_BACKLOG_FREQUENCY'),
+        'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
+        'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
+        'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
+        'search.general.torrentCheckerFrequency': IntegerField(app, 'TORRENT_CHECKER_FREQUENCY'),
+        'search.general.minTorrentCheckerFrequency': IntegerField(app, 'MIN_TORRENT_CHECKER_FREQUENCY'),
+        'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
+        'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
+        'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
+        'search.general.useFailedDownloads': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
+        'search.general.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
+        'search.general.cacheTrimming': BooleanField(app, 'CACHE_TRIMMING'),
+        'search.general.maxCacheAge': IntegerField(app, 'MAX_CACHE_AGE'),
+
+        'search.filters.ignored': ListField(app, 'IGNORE_WORDS'),
+        'search.filters.undesired': ListField(app, 'UNDESIRED_WORDS'),
+        'search.filters.preferred': ListField(app, 'PREFERRED_WORDS'),
+        'search.filters.required': ListField(app, 'REQUIRE_WORDS'),
+        'search.filters.ignoredSubsList': ListField(app, 'IGNORED_SUBS_LIST'),
+        'search.filters.ignoreUnknownSubs': BooleanField(app, 'IGNORE_UND_SUBS'),
     }
 
     def get(self, identifier, path_param=None):
@@ -520,5 +548,42 @@ class DataGenerator(object):
         for provider in itervalues(app.metadata_provider_dict):
             json_repr = provider.to_json()
             section_data['metadataProviders'][json_repr['id']] = json_repr
+
+        return section_data
+
+    @staticmethod
+    def data_search():
+        """Search filters."""
+        section_data = NonEmptyDict()
+
+        section_data['general'] = NonEmptyDict()
+        section_data['general']['randomizeProviders'] = app.RANDOMIZE_PROVIDERS
+        section_data['general']['downloadPropers'] = app.DOWNLOAD_PROPERS
+        section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
+        section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
+        section_data['general']['propersSearchDays'] = app.PROPERS_SEARCH_DAYS
+        section_data['general']['backlogDays'] = app.BACKLOG_DAYS
+        section_data['general']['backlogFrequency'] = app.BACKLOG_FREQUENCY
+        section_data['general']['minBacklogFrequency'] = app.MIN_BACKLOG_FREQUENCY
+        section_data['general']['dailySearchFrequency'] = app.DAILYSEARCH_FREQUENCY
+        section_data['general']['minDailySearchFrequency'] = app.MIN_DAILYSEARCH_FREQUENCY
+        section_data['general']['removeFromClient'] = app.REMOVE_FROM_CLIENT
+        section_data['general']['torrentCheckerFrequency'] = app.TORRENT_CHECKER_FREQUENCY
+        section_data['general']['minTorrentCheckerFrequency'] = app.MIN_TORRENT_CHECKER_FREQUENCY
+        section_data['general']['usenetRetention'] = app.USENET_RETENTION
+        section_data['general']['trackersList'] = app.TRACKERS_LIST
+        section_data['general']['allowHighPriority'] = app.ALLOW_HIGH_PRIORITY
+        section_data['general']['useFailedDownloads'] = app.USE_FAILED_DOWNLOADS
+        section_data['general']['deleteFailed'] = app.DELETE_FAILED
+        section_data['general']['cacheTrimming'] = app.CACHE_TRIMMING
+        section_data['general']['maxCacheAge'] = app.MAX_CACHE_AGE
+
+        section_data['filters'] = NonEmptyDict()
+        section_data['filters']['ignored'] = app.IGNORE_WORDS
+        section_data['filters']['undesired'] = app.UNDESIRED_WORDS
+        section_data['filters']['preferred'] = app.PREFERRED_WORDS
+        section_data['filters']['required'] = app.REQUIRE_WORDS
+        section_data['filters']['ignoredSubsList'] = app.IGNORED_SUBS_LIST
+        section_data['filters']['ignoreUnknownSubs'] = app.IGNORE_UND_SUBS
 
         return section_data
