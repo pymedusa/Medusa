@@ -35,8 +35,6 @@ from builtins import range
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
-# @FIXME: `clean_groupname` is no longer available...
-# from guessit.rules.properties.release_group import clean_groupname
 
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
@@ -48,11 +46,6 @@ log = logging.getLogger(__name__)
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',', '.&.', ' & ')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
-
-
-# @FIXME: `clean_groupname` is no longer available...
-def clean_groupname(string):
-    return string
 
 
 class BlacklistedReleaseGroup(Rule):
@@ -1373,7 +1366,7 @@ class ReleaseGroupPostProcessor(Rule):
                 to_remove.append(release_group)
                 if value:
                     new_release_group = copy.copy(release_group)
-                    new_release_group.value = clean_groupname(value)
+                    new_release_group.value = value
                     to_append.append(new_release_group)
 
         return to_remove, to_append
