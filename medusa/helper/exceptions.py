@@ -41,6 +41,8 @@ def ex(e):
                             text_type(message, errors='replace'),
                             text_type(fixed_arg, errors='replace'))
 
+    if isinstance(message, (bytes, bytearray)):
+        message = message.decode('utf-8')
     return message
 
 
