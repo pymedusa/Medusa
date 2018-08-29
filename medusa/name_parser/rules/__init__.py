@@ -16,9 +16,7 @@ from medusa.name_parser.rules.properties import (
 from medusa.name_parser.rules.rules import rules
 
 
-# @FIXME: Workaround
 default_api.configure({})
-
 default_api.rebulk.rebulk(blacklist())
 default_api.rebulk.rebulk(source())
 default_api.rebulk.rebulk(screen_size())
