@@ -75,7 +75,7 @@
                         <span>Use current values as the defaults</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <button class="btn-medusa btn-inline" id="saveDefaultsButton" :disabled="saveDefaultsDisabled">Save Defaults</button>
+                        <button class="btn-medusa btn-inline" @click.prevent="saveDefaults" :disabled="saving || saveDefaultsDisabled">Save Defaults</button>
                     </div>
                 </div>
             </div>
@@ -107,6 +107,7 @@ export default {
     },
     data() {
         return {
+            saving: false,
             selectedStatus: null,
             selectedStatusAfter: null,
             quality: {
@@ -172,6 +173,52 @@ export default {
             this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
             this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
             this.update();
+        },
+        saveDefaults() {
+            const {
+                $store,
+                selectedStatus,
+                selectedStatusAfter,
+                combinedQualities,
+                selectedSubtitleEnabled,
+                selectedSeasonFolderEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled
+            } = this;
+
+            const section = 'main';
+            const config = {
+                showDefaults: {
+                    status: selectedStatus,
+                    statusAfter: selectedStatusAfter,
+                    quality: combinedQualities,
+                    subtitles: selectedSubtitleEnabled,
+                    seasonFolders: selectedSeasonFolderEnabled,
+                    anime: selectedAnimeEnabled,
+                    scene: selectedSceneEnabled
+                }
+            };
+
+            this.saving = true;
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Your "add show" defaults have been set to your current selections.',
+                    'Saved Defaults'
+                );
+                /* window.displayNotification(
+                    'info',
+                    'Saved Defaults',
+                    'Your "add show" defaults have been set to your current selections.',
+                    'show-defaults-saved'
+                ); */
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
+                    'Error'
+                );
+            }).finally(() => {
+                this.saving = false;
+            });
         }
     },
     computed: {

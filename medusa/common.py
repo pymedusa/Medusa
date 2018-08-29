@@ -261,6 +261,21 @@ class Quality(object):
         return sorted(allowed_qualities), sorted(preferred_qualities)
 
     @staticmethod
+    def is_valid_combined_quality(quality):
+        """
+        Check quality value to make sure it is a valid combined quality.
+
+        :param quality: Quality to check
+        :type quality: int
+        :return: True if valid, False if not
+        """
+        for cur_qual in Quality.qualityStrings:
+            if not (cur_qual & quality) and (cur_qual << 16 & quality):
+                return False
+
+        return True
+
+    @staticmethod
     def name_quality(name, anime=False, extend=True):
         """
         Return the quality from an episode filename.
