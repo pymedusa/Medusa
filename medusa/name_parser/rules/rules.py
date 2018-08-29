@@ -42,6 +42,7 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
+from six import text_type
 
 log = logging.getLogger(__name__)
 
@@ -914,6 +915,73 @@ class RemoveInvalidEpisodeSeparator(Rule):
                 return to_remove
 
 
+class RemoveYearAsSeason(Rule):
+    """Remove invalid season from year.
+
+    Related bug report: https://github.com/guessit-io/guessit/issues/561
+
+    e.g.: Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee
+
+    guessit -t episode "Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee"
+
+    without the rule:
+        For: Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 20,
+            "year": 2016,
+            "episode_title": "Nice Title",
+            "screen_size": "1080p",
+            "streaming_service": "SeeSo",
+            "source": "Web",
+            "other": "Rip",
+            "audio_codec": "AAC",
+            "audio_channels": "2.0",
+            "video_codec": "H.264",
+            "release_group": "monkee",
+            "type": "episode"
+        }
+
+    without the rule:
+        For: Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee
+        GuessIt found: {
+            "title": "Show Name",
+            "year": 2016,
+            "episode_title": "Nice Title",
+            "screen_size": "1080p",
+            "streaming_service": "SeeSo",
+            "source": "Web",
+            "other": "Rip",
+            "audio_codec": "AAC",
+            "audio_channels": "2.0",
+            "video_codec": "H.264",
+            "release_group": "monkee",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        year = matches.named('year')
+        if not year:
+            return
+
+        season = matches.named('season')
+        if season and season[0].initiator.value == text_type(year[0].value):
+            to_remove = season
+            return to_remove
+
+
 class FixMultipleReleaseGroups(Rule):
     """Fix multiple release groups.
 
@@ -1333,6 +1401,7 @@ def rules():
         AbsoluteEpisodeNumbers,
         PartsAsEpisodeNumbers,
         RemoveInvalidEpisodeSeparator,
+        RemoveYearAsSeason,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
