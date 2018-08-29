@@ -53,6 +53,7 @@ def theme_name_setter(object, name, value):
 
 
 def season_folders_validator(value):
+    """Validate default season folders setting."""
     return not (app.NAMING_FORCE_FOLDERS and value is False)
 
 

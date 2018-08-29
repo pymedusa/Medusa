@@ -205,12 +205,14 @@ export default {
                     'Your "add show" defaults have been set to your current selections.',
                     'Saved Defaults'
                 );
-                /* window.displayNotification(
+                /* @TODO: Merge the notifications
+                window.displayNotification(
                     'info',
                     'Saved Defaults',
                     'Your "add show" defaults have been set to your current selections.',
                     'show-defaults-saved'
-                ); */
+                );
+                */
             }).catch(error => {
                 this.$snotify.error(
                     'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
