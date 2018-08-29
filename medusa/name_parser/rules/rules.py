@@ -935,7 +935,7 @@ class RemoveYearAsSeason(Rule):
             "type": "episode"
         }
 
-    without the rule:
+    with the rule:
         For: Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee
         GuessIt found: {
             "title": "Show Name",
