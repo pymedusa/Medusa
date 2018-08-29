@@ -17,8 +17,7 @@ log.logger.addHandler(logging.NullHandler())
 MOVIE_ATTRIBUTES = {
     'title': 'title',
     'year': 'year',
-    # @TODO: subliminal.video.Video: format should be source
-    'format': 'source',
+    'source': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',
@@ -30,8 +29,7 @@ EPISODE_ATTRIBUTES = {
     'episode': 'episode',
     'title': 'episode_title',
     'year': 'year',
-    # @TODO: subliminal.video.Video: format should be source
-    'format': 'source',
+    'source': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',
@@ -57,7 +55,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
       * :attr:`~subliminal.video.Video.season`
       * :attr:`~subliminal.video.Video.episode`
       * :attr:`~subliminal.video.Video.year`
-      * :attr:`~subliminal.video.Video.format`
+      * :attr:`~subliminal.video.Video.source`
       * :attr:`~subliminal.video.Video.release_group`
       * :attr:`~subliminal.video.Video.resolution`
       * :attr:`~subliminal.video.Video.video_codec`
