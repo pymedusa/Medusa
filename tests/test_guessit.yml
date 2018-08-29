@@ -728,13 +728,6 @@
   episode: [3, 4, 5]
   type: episode
 
-# FixInvalidAlternativeTitle - title case (negative scenario)
-? Show Name 315-313 s16e03-05
-: title: Show Name
-  season: 16
-  episode: [3, 4, 5]
-  type: episode
-
 # anime_and_normal_front
 # This one doesn't work with both parsers (current nor guessit)
 #? 165.Show Name.s08e014
