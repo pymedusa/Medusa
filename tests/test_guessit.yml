@@ -4251,20 +4251,18 @@
   uuid: 1e5e2f3464df439b92afea14932a87a4
   type: episode
 
-# TODO: Guessit 3 to handle HDR, BT2020 and more
 ? Doctor.Estraño.HDR.VISIONPLUS.1000.[4K.UHD.2160p.HEVC.X265][BT2020][DTS-5.1.Castellano.DTS-HD.7.1-Ingles+Subs][ES-EN].x264-NEWPCT
-: title: Doctor Estraño HDR VISIONPLUS
+: title: Doctor Estraño
   absolute_episode: 1000
   episode: 1000
   screen_size: 2160p
-  other: [UltraHD, HD]
+  other: [HDR10, Ultra HD, BT.2020]
   video_codec: [H.265, H.264]
   video_encoder: [x265, x264]
-  audio_codec: DTS
+  audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
-  audio_profile: HD
-  subtitle_language: [es, en]
+  subtitle_language: [und, es, en]
   release_group: NEWPCT
   type: episode
 
