@@ -2878,6 +2878,7 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
+  episode_title: eps2
   part: 1
   screen_size: 1080p
   source: Web
@@ -2894,7 +2895,7 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: unm4sk
+  episode_title: eps2
   part: 1
   screen_size: 1080p
   source: Web
@@ -3150,7 +3151,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  episode_title: title
+  episode_title: eps2
   part: 1 # not a big issue
   screen_size: 1080p
   source: Web
