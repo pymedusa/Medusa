@@ -265,6 +265,7 @@ class DataGenerator(object):
         section_data['trimZero'] = bool(app.TRIM_ZERO)
         section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
         section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+        section_data['gitUserName'] = app.GIT_USERNAME
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH
         section_data['release'] = app.APP_VERSION

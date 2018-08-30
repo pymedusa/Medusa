@@ -73,6 +73,7 @@ const state = {
     fanartBackground: null,
     trimZero: null,
     animeSplitHome: null,
+    gitUserName: null,
     branch: null,
     commitHash: null,
     indexers: {
