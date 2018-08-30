@@ -10,14 +10,14 @@ export default {
     computed: {
         ...mapState({
             configLoaded: state => state.config.pythonVersion !== null,
-            gitUserName: state => state.config.gitUserName
+            gitUsername: state => state.config.gitUsername
         }),
         frameSrc() {
-            const { configLoaded, gitUserName } = this;
+            const { configLoaded, gitUsername } = this;
             if (!configLoaded) {
                 return undefined;
             }
-            const username = gitUserName || 'MedusaUI|?';
+            const username = gitUsername || 'MedusaUI|?';
             return `https://kiwiirc.com/client/irc.freenode.net/?nick=${username}&theme=basic#pymedusa`;
         }
     }

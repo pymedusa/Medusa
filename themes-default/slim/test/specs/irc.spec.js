@@ -32,7 +32,7 @@ test('renders with username', t => {
         localVue,
         store,
         computed: {
-            gitUserName() {
+            gitUsername() {
                 return 'pymedusa';
             }
         }
