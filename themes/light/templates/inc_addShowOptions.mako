@@ -6,7 +6,7 @@
 %>
         <div class="field-pair alt">
             <label for="customQuality" class="clearfix">
-                <span class="component-title">Preferred Quality</span>
+                <span class="component-title">Quality</span>
                 <span class="component-desc">
                     <quality-chooser></quality-chooser>
                 </span>
