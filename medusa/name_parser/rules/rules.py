@@ -1073,7 +1073,7 @@ class FixParentFolderReplacingTitle(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    ends_with_digit = re.compile(r'\W\d+$')
+    ends_with_digit = re.compile(r'(_|\W)\d+$')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1094,7 +1094,7 @@ class FixParentFolderReplacingTitle(Rule):
             second_part = fileparts[parts_len - 2].value
             if self.ends_with_digit.search(second_part):
                 title = matches.named('title')
-                if title and second_part.startswith(title[0].value):
+                if not title or title and second_part.startswith(title[0].value):
                     episode_title[0].name = 'title'
                     to_append = episode_title
                     to_remove = title
