@@ -136,7 +136,7 @@ export default {
             vm.selectedStatusAfter,
             vm.selectedSubtitleEnabled,
             vm.selectedSeasonFoldersEnabled,
-            vm.selectedSceneEnabled,
+            vm.selectedSceneEnabled
         ].join(), () => {
             this.update();
         });
