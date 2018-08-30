@@ -68,12 +68,12 @@ window.app = new Vue({
             selectedRootDir: '',
             selectedShowSlug: '',
             selectedShowOptions: {
-                subtitles: false,
+                subtitles: null,
                 status: null,
                 statusAfter: null,
-                seasonFolder: false,
-                anime: false,
-                scene: false,
+                seasonFolders: null,
+                anime: null,
+                scene: null,
                 release: {
                     blacklist: [],
                     whitelist: []
@@ -193,13 +193,25 @@ window.app = new Vue({
     },
     methods: {
         async submitForm(skipShow) {
-            const { currentSearch, addButtonDisabled, selectedShowOptions } = this;
-            const { status, statusAfter, subtitles, anime, scene, seasonFolder, release } = selectedShowOptions;
+            const formData = new FormData();
 
-            let formData;
+            /**
+             * Append an array to a FormData object
+             * @param {FormData} appendTo - object to append to
+             * @param {string} fieldName - name of the field to append the values under
+             * @param {(string[]|number[])} array - the array to append
+             */
+            const appendArrayToFormData = (appendTo, fieldName, array) => {
+                for (item of array) {
+                    appendTo.append(fieldName, item);
+                }
+            };
+
+            appendArrayToFormData(formData, 'other_shows', this.otherShows);
 
             if (skipShow && skipShow === true) {
-                formData = new FormData();
+                const { currentSearch } = this;
+
                 formData.append('skipShow', 'true');
 
                 if (currentSearch.cancel) {
@@ -208,35 +220,67 @@ window.app = new Vue({
                     currentSearch.cancel = null;
                 }
             } else {
+                const { addButtonDisabled } = this;
+
                 // If they haven't picked a show or a root dir don't let them submit
                 if (addButtonDisabled) {
                     this.$snotify.warning('You must choose a show and a parent folder to continue.');
                     return;
                 }
 
-                formData = new FormData(this.$refs.addShowForm);
+                // Collect all the needed form data.
+
+                const {
+                    indexerId,
+                    indexerLanguage,
+                    providedInfo,
+                    selectedRootDir,
+                    selectedShow,
+                    selectedShowOptions
+                } = this;
+
+                if (providedInfo.use) {
+                    formData.append('indexer_lang', providedInfo.indexerLanguage);
+                    formData.append('providedIndexer', providedInfo.indexerId);
+                    formData.append('whichSeries', providedInfo.showId);
+                } else {
+                    formData.append('indexer_lang', indexerLanguage);
+                    formData.append('providedIndexer', indexerId);
+                    // @TODO: Remove the need for the `selectedShow.whichSeries` value
+                    formData.append('whichSeries', selectedShow.whichSeries);
+                }
+
+                if (providedInfo.showDir) {
+                    formData.append('fullShowPath', providedInfo.showDir);
+                } else {
+                    formData.append('rootDir', selectedRootDir);
+                }
+
+                const {
+                    anime,
+                    quality,
+                    release,
+                    scene,
+                    seasonFolders,
+                    status,
+                    statusAfter,
+                    subtitles
+                } = selectedShowOptions;
+
+                // Show options
+                formData.append('defaultStatus', status);
+                formData.append('defaultStatusAfter', statusAfter);
+                formData.append('subtitles', Boolean(subtitles));
+                formData.append('anime', Boolean(anime));
+                formData.append('scene', Boolean(scene));
+                formData.append('season_folders', Boolean(seasonFolders));
+
+                appendArrayToFormData(formData, 'allowed_qualities', quality.allowed);
+                appendArrayToFormData(formData, 'preferred_qualities', quality.preferred);
+
+                appendArrayToFormData(formData, 'whitelist', release.whitelist);
+                appendArrayToFormData(formData, 'blacklist', release.blacklist);
             }
-
-            this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
-
-            // Because we're using the toggle-button.vue component, we don't have valid form input's for these.
-            // Therefore we need to add these values manually to the form data.
-
-            formData.append('subtitles', Number(subtitles));
-            formData.append('anime', Number(anime));
-            formData.append('scene', Number(scene));
-            formData.append('season_folders', Number(seasonFolder));
-
-            for (name of release.whitelist) {
-                formData.append('whitelist', name);
-            }
-
-            for (name of release.blacklist) {
-                formData.append('blacklist', name);
-            }
-
-            formData.append('defaultStatus', status);
-            formData.append('defaultStatusAfter', statusAfter);
 
             const response = await apiRoute.post('addShows/addNewShow', formData);
             const { data } = response;
@@ -434,7 +478,7 @@ window.app = new Vue({
             this.selectedShowOptions.subtitles = options.subtitles;
             this.selectedShowOptions.status = options.status;
             this.selectedShowOptions.statusAfter = options.statusAfter;
-            this.selectedShowOptions.seasonFolder = options.seasonFolders;
+            this.selectedShowOptions.seasonFolders = options.seasonFolders;
             this.selectedShowOptions.anime = options.anime;
             this.selectedShowOptions.scene = options.scene;
             this.selectedShowOptions.release.blacklist = options.release.blacklist;
@@ -455,7 +499,7 @@ window.app = new Vue({
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText">Adding show <b v-html="showName"></b> {{showPathPreposition}} <b v-html="showPath"></b></div>
             <br>
-            <form id="addShowForm" ref="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
+            <form id="addShowForm">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div v-if="providedInfo.use" class="stepDiv">
@@ -472,17 +516,14 @@ window.app = new Vue({
                         <span v-else>
                             <b>{{ providedInfo.showName }}</b>
                         </span>
-                        <input type="hidden" name="indexer_lang" :value="providedInfo.indexerLanguage" />
-                        <input type="hidden" name="whichSeries" :value="providedInfo.showId" />
-                        <input type="hidden" name="providedIndexer" :value="providedInfo.indexerId" />
                     </div>
                     <div v-else class="stepDiv">
                         <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350"/>
                         &nbsp;&nbsp;
-                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" name="indexer_lang" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
+                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
                         <b>*</b>
                         &nbsp;
-                        <select name="providedIndexer" v-model.number="indexerId" class="form-control form-control-inline input-sm">
+                        <select v-model.number="indexerId" class="form-control form-control-inline input-sm">
                             <option v-for="(indexer, indexerId) in indexers" :value="indexerId">{{indexer.name}}</option>
                         </select>
                         &nbsp;
@@ -505,8 +546,7 @@ window.app = new Vue({
                             <table v-if="searchResults.length !== 0" class="search-results">
                                 <thead>
                                     <tr>
-                                        ## @TODO: Remove the need for the whichSeries value
-                                        <th><input v-if="selectedShow !== null" type="hidden" name="whichSeries" :value="selectedShow.whichSeries" /></th>
+                                        <th></th>
                                         <th>Show Name</th>
                                         <th class="premiere">Premiere</th>
                                         <th class="network">Network</th>
@@ -545,7 +585,6 @@ window.app = new Vue({
                     <legend class="legendStep">Pick the parent folder</legend>
                     <div v-if="providedInfo.showDir" class="stepDiv">
                         Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
-                        <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br>
                     </div>
                     <div v-else class="stepDiv">
                         <root-dirs @update="rootDirsUpdated"></root-dirs>
@@ -554,7 +593,6 @@ window.app = new Vue({
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <!-- <include file="/inc_addShowOptions.mako"/> -->
                         <add-show-options :show-name="showName" enable-anime-options @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
