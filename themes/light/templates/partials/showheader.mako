@@ -19,7 +19,8 @@
 
         <div v-if="$route.name === 'snatchSelection'" id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
-                <%include file="/partials/seasonEpisode.mako"/>
+                Manual search for:<br>
+                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="snatchTitle">{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode"> Episode {{ episode }}</template>
             </span>
         </div>
         <template v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1">
@@ -105,6 +106,7 @@
                     <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </app-link>
+                    ## @TODO: What is this?
                     <app-link href="${indexerApi(show.indexer).config['show_url']}${show.indexerid}" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
                         <img alt="${indexerApi(show.indexer).name | h}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
                     </app-link>
@@ -134,7 +136,7 @@
             <div class="row">
                 <!-- Show Summary -->
                 <div id="summary" class="col-md-12">
-                    <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
+                    <div id="show-summary" :class="[{ summaryFanArt: config.fanArtBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                         <table class="summaryTable pull-left">
                             <tr v-if="show.plot">
                                 <td colspan="2" style="padding-bottom: 15px;">
@@ -202,15 +204,15 @@
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
                             % if app.USE_SUBTITLES:
-                            <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
+                            <tr><td v-if="config.subtitles.enabled" class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                             % endif
                             <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Anime: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvd_order)]}" alt="${("N", "Y")[bool(show.dvd_order)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Scene Numbering: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Paused: </td><td><img :src="'images/' + (show.config.paused ? 'yes' : 'no') + '16.png'" :alt="show.config.paused ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Air-by-Date: </td><td><img :src="'images/' + (show.config.airByDate ? 'yes' : 'no') + '16.png'" :alt="show.config.airByDate ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Sports: </td><td><img :src="'images/' + (show.config.sports ? 'yes' : 'no') + '16.png'" :alt="show.config.sports ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Anime: </td><td><img :src="'images/' + (show.config.anime ? 'yes' : 'no') + '16.png'" :alt="show.config.anime ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">DVD Order: </td><td><img :src="'images/' + (show.config.dvdOrder ? 'yes' : 'no') + '16.png'" :alt="show.config.dvdOrder ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Scene Numbering: </td><td><img :src="'images/' + (show.config.scene ? 'yes' : 'no') + '16.png'" :alt="show.config.scene ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                         </table>
                      </div> <!-- end of show-status -->
                 </div> <!-- end of summary -->
