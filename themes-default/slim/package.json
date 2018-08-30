@@ -5,6 +5,7 @@
   "author": "p0psicles",
   "scripts": {
     "lint": "xo",
+    "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "install": "yarn run lint",
@@ -32,6 +33,7 @@
     "@babel/polyfill": "7.0.0",
     "@babel/preset-env": "7.0.0",
     "@babel/register": "7.0.0",
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
     "@vue/test-utils": "1.0.0-beta.24",
     "ava": "1.0.0-beta.8",
     "axios": "0.18.0",
@@ -47,9 +49,9 @@
     "eslint": "5.4.0",
     "eslint-config-xo": "0.24.2",
     "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.80",
+    "esm": "3.0.81",
     "file-loader": "2.0.0",
-    "filemanager-webpack-plugin": "2.0.2",
+    "filemanager-webpack-plugin": "2.0.3",
     "glob": "7.1.3",
     "gulp": "3.9.1",
     "gulp-changed": "3.2.0",
@@ -63,6 +65,8 @@
     "require-extension-hooks-babel": "1.0.0-beta.1",
     "require-extension-hooks-vue": "1.1.0",
     "run-sequence": "2.2.1",
+    "stylelint": "9.5.0",
+    "stylelint-config-standard": "18.2.0",
     "vue": "2.5.17",
     "vue-async-computed": "3.4.1",
     "vue-js-toggle-button": "1.3.0",
@@ -132,6 +136,36 @@
       "static/js/vender.js"
     ],
     "esnext": true
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "processors": [
+      [
+        "@mapbox/stylelint-processor-arbitrary-tags",
+        {
+          "fileFilterRegex": [
+            ".vue$"
+          ]
+        }
+      ]
+    ],
+    "rules": {
+      "indentation": [
+        4,
+        {
+          "ignore": [
+            "inside-parens"
+          ],
+          "message": "Please use 4 spaces for indentation.",
+          "severity": "error"
+        }
+      ],
+      "no-descending-specificity": null
+    },
+    "ignoreFiles": [
+      "static/css/lib/**",
+      "static/css/*.min.css"
+    ]
   },
   "ava": {
     "require": [
