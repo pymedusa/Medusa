@@ -294,11 +294,18 @@ export default {
         releaseGroups(groups) {
             this.release.allgroups = groups;
         },
+        release: {
+            handler() {
+                this.update();
+            },
+            deep: true,
+            immediate: false
+        },
         /**
          * Whenever something changes that can impact the height of the component,
          * we need to update the parent formWizard, and make it resize.
          */
-        release: {
+        quality: {
             handler() {
                 this.$emit('refresh');
                 this.update();

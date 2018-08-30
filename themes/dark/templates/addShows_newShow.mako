@@ -121,14 +121,6 @@ window.app = new Vue({
             revealfx: ['slide', 300],
             oninit: init
         });
-
-        $(document.body).on('change', 'select[name="quality_preset"]', () => {
-            this.$nextTick(() => this.formwizard.loadsection(2));
-        });
-
-        $(document.body).on('change', '#anime', () => {
-            this.$nextTick(() => this.formwizard.loadsection(2));
-        });
     },
     computed: {
         // @TODO: Replace with mapState
