@@ -24,7 +24,7 @@
                         <span>Status for previously aired episodes</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <select name="defaultStatus" id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
+                        <select id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
                             <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
                         </select>
                     </div>
@@ -37,7 +37,7 @@
                         <span>Status for all future episodes</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <select name="defaultStatusAfter" id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
+                        <select id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
                             <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
                         </select>
                     </div>
@@ -45,7 +45,7 @@
             </div>
 
             <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folder?']" @update="selectedSeasonFolderEnabled = $event">
+                :explanations="['Group episodes by season folders?']" @update="selectedSeasonFoldersEnabled = $event">
             </config-toggle-slider>
 
             <config-toggle-slider label="Anime" id="anime" :checked="defaultConfig.anime"
@@ -115,7 +115,7 @@ export default {
                 preferred: []
             },
             selectedSubtitleEnabled: false,
-            selectedSeasonFolderEnabled: false,
+            selectedSeasonFoldersEnabled: false,
             selectedAnimeEnabled: false,
             selectedSceneEnabled: false,
             release: {
@@ -150,7 +150,7 @@ export default {
                 selectedSubtitleEnabled,
                 selectedStatus,
                 selectedStatusAfter,
-                selectedSeasonFolderEnabled,
+                selectedSeasonFoldersEnabled,
                 selectedAnimeEnabled,
                 selectedSceneEnabled,
                 release,
@@ -161,7 +161,7 @@ export default {
                     subtitles: selectedSubtitleEnabled,
                     status: selectedStatus,
                     statusAfter: selectedStatusAfter,
-                    seasonFolder: selectedSeasonFolderEnabled,
+                    seasonFolders: selectedSeasonFoldersEnabled,
                     anime: selectedAnimeEnabled,
                     scene: selectedSceneEnabled,
                     release,
@@ -181,7 +181,7 @@ export default {
                 selectedStatusAfter,
                 combinedQualities,
                 selectedSubtitleEnabled,
-                selectedSeasonFolderEnabled,
+                selectedSeasonFoldersEnabled,
                 selectedAnimeEnabled,
                 selectedSceneEnabled
             } = this;
@@ -193,7 +193,7 @@ export default {
                     statusAfter: selectedStatusAfter,
                     quality: combinedQualities,
                     subtitles: selectedSubtitleEnabled,
-                    seasonFolders: selectedSeasonFolderEnabled,
+                    seasonFolders: selectedSeasonFoldersEnabled,
                     anime: selectedAnimeEnabled,
                     scene: selectedSceneEnabled
                 }
@@ -259,7 +259,7 @@ export default {
                 selectedStatus,
                 selectedStatusAfter,
                 combinedQualities,
-                selectedSeasonFolderEnabled,
+                selectedSeasonFoldersEnabled,
                 selectedSubtitleEnabled,
                 selectedAnimeEnabled,
                 selectedSceneEnabled
@@ -269,7 +269,7 @@ export default {
                 selectedStatus === defaultConfig.status,
                 selectedStatusAfter === defaultConfig.statusAfter,
                 combinedQualities === defaultConfig.quality,
-                selectedSeasonFolderEnabled === (defaultConfig.seasonFolders || namingForceFolders),
+                selectedSeasonFoldersEnabled === (defaultConfig.seasonFolders || namingForceFolders),
                 selectedSubtitleEnabled === defaultConfig.subtitles,
                 selectedAnimeEnabled === defaultConfig.anime,
                 selectedSceneEnabled === defaultConfig.scene
@@ -323,7 +323,7 @@ export default {
         selectedStatusAfter() {
             this.update();
         },
-        selectedSeasonFolderEnabled() {
+        selectedSeasonFoldersEnabled() {
             this.update();
         },
         selectedSceneEnabled() {
