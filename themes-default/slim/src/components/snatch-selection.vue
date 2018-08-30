@@ -75,6 +75,9 @@ export default {
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
+        },
+        reverse(array) {
+            return array.slice().reverse();
         }
     },
     mounted() {

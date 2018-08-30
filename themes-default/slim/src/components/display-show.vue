@@ -1,4 +1,6 @@
 <script>
+import isVisible from 'is-visible';
+import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api, apiRoute } from '../api';
 import AppLink from './app-link.vue';
@@ -10,6 +12,20 @@ export default {
     components: {
         AppLink,
         PlotInfo
+    },
+    props: {
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
+        },
+        /**
+         * Show indexer
+         */
+        showIndexer: {
+            type: String
+        }
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -31,10 +47,10 @@ export default {
             'getShowById'
         ]),
         indexer() {
-            return this.$route.query.indexername;
+            return this.showIndexer || this.$route.query.indexername;
         },
         id() {
-            return this.$route.query.seriesid;
+            return this.showId || this.$route.query.seriesid;
         },
         show() {
             const { indexer, id, getShowById, shows, $store } = this;
@@ -52,6 +68,11 @@ export default {
             return show;
         }
     },
+    beforeMount() {
+        // Get detailed show from API
+        const { $store, id, indexer } = this;
+        $store.dispatch('getShow', { id, indexer, detailed: true });
+    },
     mounted() {
         const {
             setQuality,
@@ -62,13 +83,13 @@ export default {
             showHideRows
         } = this;
 
-        $(window).on('resize', () => {
-            this.reflowLayout();
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout()
+            });
         });
 
         window.addEventListener('load', () => {
-            this.reflowLayout();
-
             $.ajaxEpSearch({
                 colorRow: true
             });
@@ -76,17 +97,6 @@ export default {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
             $.ajaxEpSubtitlesSearch();
             $.ajaxEpRedownloadSubtitle();
-        });
-
-        $(document.body).on('change', '#seasonJump', event => {
-            const id = $('#seasonJump option:selected').val();
-            if (id && id !== 'jump') {
-                const season = $('#seasonJump option:selected').data('season');
-                $('html,body').animate({ scrollTop: $('[name="' + id.substring(1) + '"]').offset().top - 100 }, 'slow');
-                $('#collapseSeason-' + season).collapse('show');
-                location.hash = id;
-            }
-            $(event.currentTarget).val('jump');
         });
 
         $(document.body).on('click', '#changeStatus', () => {
@@ -158,24 +168,28 @@ export default {
             });
         });
 
-        // Selects all visible episode checkboxes.
-        $(document.body).on('click', '.seriesCheck', () => {
-            $('.epCheck:visible').each((index, element) => {
-                element.checked = true;
-            });
-            $('.seasonCheck:visible').each((index, element) => {
-                element.checked = true;
-            });
+        // Selects all visible episode checkboxes
+        document.addEventListener('click', event => {
+            if (event.target && event.target.className.includes('clearAll')) {
+                Array.from(document.getElementsByClassName('epCheck')).filter(isVisible).map(element => {
+                    element.checked = true;
+                });
+                Array.from(document.getElementsByClassName('seasonCheck')).filter(isVisible).map(element => {
+                    element.checked = true;
+                });
+            }
         });
 
         // Clears all visible episode checkboxes and the season selectors
-        $(document.body).on('click', '.clearAll', () => {
-            $('.epCheck:visible').each((index, element) => {
-                element.checked = false;
-            });
-            $('.seasonCheck:visible').each((index, element) => {
-                element.checked = false;
-            });
+        document.addEventListener('click', event => {
+            if (event.target && event.target.className.includes('clearAll')) {
+                Array.from(document.getElementsByClassName('epCheck')).filter(isVisible).map(element => {
+                    element.checked = false;
+                });
+                Array.from(document.getElementsByClassName('seasonCheck')).filter(isVisible).map(element => {
+                    element.checked = false;
+                });
+            }
         });
 
         // Show/hide different types of rows when the checkboxes are changed
@@ -265,25 +279,20 @@ export default {
             $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
         });
 
-        // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
-        // Season to Show Episodes or Hide Episodes.
-        $('.collapse.toggle').on('hide.bs.collapse', function() {
+        // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
+        document.addEventListener('hide.bs.collapse', function () {
             const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
             $('#season-' + result[1] + '-cols').addClass('shadow');
         });
-        $('.collapse.toggle').on('show.bs.collapse', function() {
+        document.addEventListener('show.bs.collapse', function () {
             const reg = /collapseSeason-(\d+)/g;
             const result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');
             $('#season-' + result[1] + '-cols').removeClass('shadow');
         });
 
-        // Generate IMDB stars
-        $('.imdbstars').each((index, element) => {
-            $(element).html($('<span/>').width($(element).text() * 12));
-        });
         attachImdbTooltip(); // eslint-disable-line no-undef
 
         // Get the season exceptions and the xem season mappings.
@@ -504,6 +513,36 @@ export default {
                     $('#' + seasonNo + '-cols').show();
                 }
             });
+        },
+        jumpToSeason(event) {
+            const { id } = event.currentTarget;
+
+            // Don't jump until an option is selected
+            if (id && id !== 'jump') {
+                scrollTo(id, 600, {
+                    container: 'body',
+                    easing: 'ease-in',
+                    offset: -100
+                });
+
+                // Update URL hash
+                location.hash = id;
+
+                // Reset jump
+                event.currentTarget.value = 'jump';
+            }
+        },
+        toggleSpecials() {
+            this.$store.dispatch('setConfig', {
+                layout: {
+                    show: {
+                        specials: !this.config.layout.show.specials
+                    }
+                }
+            });
+        },
+        reverse(array) {
+            return array.slice().reverse();
         }
     }
 };
