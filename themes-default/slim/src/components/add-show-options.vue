@@ -130,6 +130,16 @@ export default {
         this.selectedStatus = defaultConfig.status;
         this.selectedStatusAfter = defaultConfig.statusAfter;
         this.$nextTick(() => update());
+
+        this.$watch(vm => [
+            vm.selectedStatus,
+            vm.selectedStatusAfter,
+            vm.selectedSubtitleEnabled,
+            vm.selectedSeasonFoldersEnabled,
+            vm.selectedSceneEnabled,
+        ].join(), () => {
+            this.update();
+        });
     },
     methods: {
         getReleaseGroups(showName) {
@@ -315,18 +325,6 @@ export default {
         },
         selectedAnimeEnabled() {
             this.$emit('refresh');
-            this.update();
-        },
-        selectedStatus() {
-            this.update();
-        },
-        selectedStatusAfter() {
-            this.update();
-        },
-        selectedSeasonFoldersEnabled() {
-            this.update();
-        },
-        selectedSceneEnabled() {
             this.update();
         },
         defaultConfig(newValue) {
