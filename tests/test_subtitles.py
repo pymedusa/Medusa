@@ -539,7 +539,7 @@ def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, crea
     # Given
     subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['list_subtitles']]
     best_subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['best_subtitles']]
-    video_path = str(tmpdir.ensure(os.path.join(video.series, video.name)))
+    video_path = str(tmpdir.ensure(video.name))
     tvepisode = create_tvepisode(series=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
     external_subtitles = p['external_subtitles']
     embedded_subtitles = p['embedded_subtitles'] if p['embedded_subtitles'] is not None else True
