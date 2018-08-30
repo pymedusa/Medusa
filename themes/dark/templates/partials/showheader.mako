@@ -203,9 +203,7 @@
                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-                            % if app.USE_SUBTITLES:
-                            <tr><td v-if="config.subtitles.enabled" class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
-                            % endif
+                            <tr><td v-if="config.subtitles.enabled" class="showLegend">Subtitles: </td><td><img :src="'images/' + (show.config.subtitlesEnabled ? 'yes' : 'no') + '16.png'" :alt="show.config.subtitlesEnabled ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><img :src="'images/' + (show.config.paused ? 'yes' : 'no') + '16.png'" :alt="show.config.paused ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Air-by-Date: </td><td><img :src="'images/' + (show.config.airByDate ? 'yes' : 'no') + '16.png'" :alt="show.config.airByDate ? 'Y' : 'N'" width="16" height="16" /></td></tr>
@@ -223,8 +221,7 @@
 
 <div id="row-show-episodes-controls" class="row">
     <div id="col-show-episodes-controls" class="col-md-12">
-    % if (action == "displayShow"):
-        <div class="row key"> <!-- Checkbox filter controls -->
+        <div v-if="$route.name === 'displayShow'" class="row key"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
                 <div id="key-padding" class="pull-left top-5">
                     <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
@@ -263,8 +260,6 @@
                 </div>
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->
-    % else:
-        <div></div>
-    % endif
+        <div v-else></div>
     </div> <!-- end of col -->
 </div> <!-- end of row -->

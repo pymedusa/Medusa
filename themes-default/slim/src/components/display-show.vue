@@ -65,13 +65,14 @@ export default {
                 return defaults.show;
             }
 
+            // Not detailed
+            if (!show.seasons) {
+                $store.dispatch('getShow', { id, indexer, detailed: true });
+                return getShowById({ indexer, id });
+            }
+
             return show;
         }
-    },
-    beforeMount() {
-        // Get detailed show from API
-        const { $store, id, indexer } = this;
-        $store.dispatch('getShow', { id, indexer, detailed: true });
     },
     mounted() {
         const {
@@ -80,8 +81,14 @@ export default {
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows
+            showHideRows,
+            $store
         } = this;
+
+        this.$watch('show', () => {
+            console.debug('Reloading layout');
+            this.$nextTick(() => this.reflowLayout());
+        });
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
