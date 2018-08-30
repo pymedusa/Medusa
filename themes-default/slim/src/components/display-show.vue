@@ -81,8 +81,7 @@ export default {
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows,
-            $store
+            showHideRows
         } = this;
 
         this.$watch('show', () => {
