@@ -49,7 +49,7 @@
     "eslint": "5.4.0",
     "eslint-config-xo": "0.24.2",
     "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.80",
+    "esm": "3.0.81",
     "file-loader": "2.0.0",
     "filemanager-webpack-plugin": "2.0.3",
     "glob": "7.1.3",
