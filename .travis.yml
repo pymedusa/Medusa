@@ -19,16 +19,15 @@ jobs:
       install:
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH"'
-        - yarn install --ignore-scripts
         - >-
           cd $TRAVIS_BUILD_DIR/themes-default/slim &&
           yarn install --ignore-scripts &&
           cd $TRAVIS_BUILD_DIR
       script:
         - ./.github/build-themes-check.sh
-        - yarn test-css
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
         - yarn xo
+        - yarn lint-css
         - yarn test
         - yarn coverage
     # backend tests start here
