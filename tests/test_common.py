@@ -444,3 +444,33 @@ def test_wanted_quality():
 
     # Then
     assert actual is True
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0 - Invalid combined quality
+        'quality': -4,
+        'expected': False
+    },
+    {  # p1 - Valid 'allowed' quality
+        'quality': Quality.HDTV,
+        'expected': True
+    },
+    {  # p2 - Valid 'allowed' quality + valid 'preferred' quality
+        'quality': Quality.combine_qualities([Quality.HDTV], [Quality.HDWEBDL]),
+        'expected': True
+    },
+    {  # p3 - Valid 'allowed' quality + **invalid** 'preferred' quality
+        'quality': Quality.combine_qualities([Quality.HDTV], [-4]),
+        'expected': False
+    },
+])
+def test_is_valid_combined_quality(p):
+    # Given
+    quality = p['quality']
+    expected = p['expected']
+
+    # When
+    actual = Quality.is_valid_combined_quality(quality)
+
+    # Then
+    assert expected == actual

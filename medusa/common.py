@@ -270,10 +270,11 @@ class Quality(object):
         :return: True if valid, False if not
         """
         for cur_qual in Quality.qualityStrings:
-            if not (cur_qual & quality) and (cur_qual << 16 & quality):
-                return False
-
-        return True
+            if cur_qual & quality:
+                quality -= cur_qual
+            if cur_qual << 16 & quality:
+                quality -= cur_qual << 16
+        return quality == 0
 
     @staticmethod
     def name_quality(name, anime=False, extend=True):
